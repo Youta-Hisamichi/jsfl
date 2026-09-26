@@ -312,6 +312,12 @@
   .settings-row input[type="range"] { width: 100%; accent-color: var(--btn); }
   .settings-btn-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
   .lang-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,107,0.08); }
+  .reward-ad-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; padding: 11px; border-radius: 10px; border: 1px solid #ffb14f; background: linear-gradient(160deg, #ff9f43, #ff6b6b); color: #fff; font-weight: 800; font-size: 0.82rem; cursor: pointer; }
+  .reward-ad-btn.cooling { background: var(--bg-soft); border-color: var(--ring); color: var(--text-dim); cursor: default; }
+  .reward-ad-screen { background: #05070c; border-radius: 12px; aspect-ratio: 16 / 9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; margin: 10px 0; position: relative; overflow: hidden; }
+  .reward-ad-screen .ad-icon { font-size: 2.6rem; animation: gachaSpin 2.4s linear infinite; }
+  .reward-ad-screen .ad-count { font-size: 0.8rem; margin-top: 8px; color: #cfd3e0; }
+  .reward-ad-progress { position: absolute; left: 0; bottom: 0; height: 4px; background: #ffb14f; width: 0%; transition: width 0.25s linear; }
   .rank-tab-btn { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; color: #b4f6ff; padding: 9px; font-weight: 700; cursor: pointer; font-size: 0.78rem; }
 </style>
 </head>
@@ -439,6 +445,7 @@
   <!-- ===== ジェムショップタブ ===== -->
   <div class="tab-page" data-tab="gemshop">
     <div class="artifact-panel">
+      <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
       <div class="title">💎 ジェムショップ（購入効果は転生後も継続）</div>
       <div class="shop-list" id="shopList"></div>
       <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span></div>
@@ -450,6 +457,7 @@
   <!-- ===== ガチャタブ ===== -->
   <div class="tab-page" data-tab="gacha">
     <div class="artifact-panel">
+      <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
       <div class="title">🌌 ジェム召喚・進化</div>
       <div class="gacha-actions"><button class="gacha-pull" id="gachaBtn">✨ 召喚ガチャ　💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚　💎 45</button></div>
       <div class="gacha-result" id="gachaResult" style="display:none;"></div>
@@ -558,6 +566,20 @@
       <button class="modal-close-btn" id="gemShortGoBtn">🛒 ジェム購入ショップへ</button>
       <button class="modal-shop-btn" id="gemShortCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rewardAdModal" style="z-index:75;">
+  <div class="modal-panel" style="text-align:center;">
+    <h2>🎬 リワード動画</h2>
+    <div class="modal-sub">最後まで視聴すると 💎<span id="rewardAdAmount">5</span> を獲得できます</div>
+    <div class="reward-ad-screen">
+      <div class="ad-icon">📺</div>
+      <div class="ad-count" id="rewardAdCount">再生中…</div>
+      <div class="reward-ad-progress" id="rewardAdProgress"></div>
+    </div>
+    <button class="modal-close-btn" id="rewardAdClaimBtn" style="display:none;"></button>
+    <button class="modal-shop-btn" id="rewardAdCloseBtn" style="justify-content:center; margin-top:8px;"><span class="msb-name">閉じる（報酬なし）</span></button>
   </div>
 </div>
 
@@ -760,6 +782,76 @@
     const btn = event.target.closest('.tab-btn');
     if (!btn) return;
     switchTab(btn.dataset.tab);
+  });
+
+  // ---------- リワード動画（視聴でジェム獲得、次の視聴は5分後） ----------
+  // ※ 実際の広告SDK（AdMob / Google H5 Games Ads 等）を導入する場合は playRewardedVideo の中身を差し替える
+  const REWARD_AD_GEMS = 5;
+  const REWARD_AD_COOLDOWN = 5 * 60 * 1000;
+  const REWARD_AD_DURATION = 15 * 1000; // 仮の動画の長さ
+  const rewardAdModal = document.getElementById('rewardAdModal');
+  const rewardAdCount = document.getElementById('rewardAdCount');
+  const rewardAdProgress = document.getElementById('rewardAdProgress');
+  const rewardAdClaimBtn = document.getElementById('rewardAdClaimBtn');
+  const rewardAdCloseBtn = document.getElementById('rewardAdCloseBtn');
+  document.getElementById('rewardAdAmount').textContent = REWARD_AD_GEMS;
+  let rewardAdTimer = null;
+  function getRewardAdRemaining() { return Math.max(0, REWARD_AD_COOLDOWN - (Date.now() - (game.lastRewardAdAt || 0))); }
+  function updateRewardAdButtons() {
+    const remaining = getRewardAdRemaining();
+    document.querySelectorAll('[data-reward-ad]').forEach(btn => {
+      btn.classList.toggle('cooling', remaining > 0);
+      if (remaining > 0) {
+        const sec = Math.ceil(remaining / 1000);
+        btn.textContent = `🎬 次の動画まで ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+      } else {
+        btn.textContent = `🎬 動画を見て 💎${REWARD_AD_GEMS} GET`;
+      }
+    });
+  }
+  function playRewardedVideo(onComplete) {
+    const startedAt = Date.now();
+    rewardAdClaimBtn.style.display = 'none';
+    rewardAdProgress.style.width = '0%';
+    rewardAdModal.classList.add('show');
+    clearInterval(rewardAdTimer);
+    const tick = () => {
+      const elapsed = Date.now() - startedAt;
+      rewardAdProgress.style.width = Math.min(100, elapsed / REWARD_AD_DURATION * 100) + '%';
+      if (elapsed >= REWARD_AD_DURATION) {
+        clearInterval(rewardAdTimer);
+        rewardAdCount.textContent = '視聴完了！';
+        onComplete();
+        return;
+      }
+      rewardAdCount.textContent = `再生中… 残り ${Math.ceil((REWARD_AD_DURATION - elapsed) / 1000)} 秒`;
+    };
+    tick();
+    rewardAdTimer = setInterval(tick, 250);
+  }
+  document.addEventListener('click', event => {
+    const btn = event.target.closest('[data-reward-ad]');
+    if (!btn) return;
+    if (getRewardAdRemaining() > 0) { showTapError('次の動画はまだ見られません', event.clientX, event.clientY); return; }
+    playRewardedVideo(() => {
+      rewardAdClaimBtn.textContent = `💎${REWARD_AD_GEMS} を受け取る`;
+      rewardAdClaimBtn.style.display = 'block';
+    });
+  });
+  rewardAdClaimBtn.addEventListener('click', () => {
+    if (getRewardAdRemaining() > 0) return; // 二重受け取り防止
+    game.gems += REWARD_AD_GEMS;
+    game.lastRewardAdAt = Date.now(); // 視聴完了から5分後に次を視聴可能
+    rewardAdModal.classList.remove('show');
+    playLoginBonusSound();
+    showNotice(`🎬 動画視聴ボーナス 💎${REWARD_AD_GEMS} 獲得！`);
+    updateRewardAdButtons();
+    updateStatsUI();
+    saveGame();
+  });
+  rewardAdCloseBtn.addEventListener('click', () => {
+    clearInterval(rewardAdTimer);
+    rewardAdModal.classList.remove('show'); // 途中で閉じた場合は報酬なし・クールダウンなし
   });
 
   // ---------- ジェム不足 → ジェム購入ショップへ誘導 ----------
@@ -1059,7 +1151,8 @@
     sfxVolume: 0.7,
     bgmVolume: 0.7,
     vibration: true,
-    skipChallenge: null // ステージスキップのボス挑戦中 { origin, target }
+    skipChallenge: null, // ステージスキップのボス挑戦中 { origin, target }
+    lastRewardAdAt: 0    // 最後にリワード動画の報酬を受け取った時刻
   };
 
   function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
@@ -3654,6 +3747,7 @@
   setInterval(updateAccelButton, 1000);
   setInterval(updateHealButton, 1000);
   setInterval(updateBarrierButton, 1000);
+  setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
   window.addEventListener('pagehide', saveGame);
@@ -3679,6 +3773,7 @@
   sfxVolRange.value = Math.round((game.sfxVolume ?? 0.7) * 100);
   sfxVolVal.textContent = sfxVolRange.value + '%';
   renderVibrationSetting();
+  updateRewardAdButtons();
   usernameInput.value = game.username || '';
   resizeCanvas();
   renderArtifactList();
