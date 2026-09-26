@@ -221,6 +221,19 @@
 
   .record-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ring); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
   .record-panel.two { grid-template-columns: repeat(2, 1fr); }
+  .bestiary-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
+  .bst-card { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; background: var(--bg-soft); border: 1px solid var(--ring); text-align: center; }
+  .bst-card.boss { border-color: #ba6cff; box-shadow: 0 0 8px rgba(186,108,255,0.35) inset; }
+  .bst-card.unknown { opacity: 0.55; }
+  .bst-card.unknown .bst-face { color: var(--text-dim); font-weight: 900; }
+  .bst-face { font-size: 1.6rem; line-height: 1.2; height: 2rem; display: flex; align-items: center; justify-content: center; }
+  .bst-shape { display: inline-block; width: 22px; height: 22px; }
+  .bst-circle { border-radius: 50%; }
+  .bst-diamond { transform: rotate(45deg) scale(0.8); }
+  .bst-square { border-radius: 3px; }
+  .bst-hex { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+  .bst-name { font-size: 0.68rem; font-weight: 800; color: var(--text); }
+  .bst-info { font-size: 0.6rem; color: var(--text-dim); }
   .rank-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--ring); font-size: 0.82rem; }
   .rank-row:last-child { border-bottom: none; }
   .rank-row .rank-no { width: 2.6em; font-weight: 800; color: var(--text-dim); }
@@ -252,12 +265,12 @@
   .loot-popup .lp-title { font-size: 0.7rem; font-weight: 800; color: #ffd76b; letter-spacing: 0.05em; }
   .loot-popup .lp-main { font-size: 1.05rem; font-weight: 900; margin-top: 3px; }
   .loot-popup .lp-sub { font-size: 0.68rem; color: #cfd3e0; margin-top: 2px; }
-  .loot-popup.show { animation: lootPop 3.2s ease-out forwards; }
+  .loot-popup.show { animation: lootPop 5.5s ease-out forwards; }
   @keyframes lootPop {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-    8% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    14% { transform: translate(-50%, -50%) scale(1); }
-    85% { opacity: 1; }
+    5% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    9% { transform: translate(-50%, -50%) scale(1); }
+    90% { opacity: 1; }
     100% { opacity: 0; transform: translate(-50%, -60%); }
   }
   .record-badge { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; text-align: center; font-size: 0.72rem; font-weight: 800; color: #ffd76b; background: rgba(8,11,18,0.8); border: 1px solid rgba(255,215,107,0.7); border-radius: 12px; padding: 5px 12px; line-height: 1.5; opacity: 0; }
@@ -591,6 +604,8 @@
         <div class="record">BOSS<strong id="bossDmgNum">+0%</strong>ボス特攻</div>
         <div class="record">COUNTER<strong id="counterNum">0%</strong>カウンター率</div>
       </div>
+      <div class="title" style="margin-top:14px;">📖 敵図鑑 <span id="bestiaryCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="bestiary-list" id="bestiaryList"></div>
       <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
       <div class="supergem-note">総プレイ時間: <span id="playTimeText">0時間00分00秒</span></div>
     </div>
@@ -922,6 +937,7 @@
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+    if (name === 'records') renderBestiary();
     if (name === 'game') resizeCanvas();
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
     if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
@@ -1102,8 +1118,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・サークルをタップすると、自機がタップした方向へ進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap inside the arena to steer your ball toward that spot (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・サークルをタップすると、自機がタップした方向へ進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap inside the arena to steer your ball toward that spot (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1191,8 +1207,9 @@
     { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）', rarity: 'rare' },
     { id: 'crest', icon: '👑', name: '覇王の紋章', desc: 'ボスへのダメージ +25%（最大4個）', rarity: 'epic' },
     { id: 'gauntletCounter', icon: '🔄', name: '反撃の籠手', desc: 'カウンター率 +10%（最大4個）', rarity: 'epic' },
+    { id: 'horn', icon: '🦏', name: '突撃の角', desc: 'タメ体当たりダメージ +30%（最大5個）', rarity: 'epic' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -1223,6 +1240,7 @@
     evade:    { icon: '🍃', name: '幻影の欠片',   rarity: 'rare',      desc: '回避率 +1%/Lv',         bonus: { evasion: 0.01 },           weight: 7 },
     slayer:   { icon: '🗡️', name: '討伐の欠片',   rarity: 'epic',      desc: 'ボスへのダメージ +5%/Lv', bonus: { bossDmg: 0.05 },         weight: 5 },
     counter:  { icon: '🔁', name: '反撃の欠片',   rarity: 'rare',      desc: 'カウンター率 +2%/Lv',   bonus: { counter: 0.02 },           weight: 7 },
+    rush:     { icon: '🐗', name: '猛進の欠片',   rarity: 'rare',      desc: 'タメ体当たりダメージ +10%/Lv', bonus: { tackle: 0.10 },   weight: 7 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
   function pickGachaId() {
@@ -1330,10 +1348,11 @@
     upgrades: { atk: 0, hp: 0, clash: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
+    bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
     startedAt: Date.now(),
@@ -1353,7 +1372,7 @@
 
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1 };
     for (const id in game.ownedArtifacts) {
       const count = game.ownedArtifacts[id];
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
@@ -1373,6 +1392,7 @@
       if (id === 'feather') b.evasion += 0.03 * cap;
       if (id === 'crest') b.bossDmg += 0.25 * cap;
       if (id === 'gauntletCounter') b.counter += 0.10 * cap;
+      if (id === 'horn') b.tackleMult += 0.30 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -1395,6 +1415,7 @@
       if (bonus.evasion) b.evasion += bonus.evasion * level;
       if (bonus.bossDmg) b.bossDmg += bonus.bossDmg * level;
       if (bonus.counter) b.counter += bonus.counter * level;
+      if (bonus.tackle) b.tackleMult += bonus.tackle * level;
     }
 
     for (const id in COMPANIONS) {
@@ -1665,7 +1686,7 @@
     }
     playGachaSound(rarity);
     showLootPopup('🏺 スキップ報酬（遺物）', `${pick.icon} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
-    showNotice(`🏺 スキップ報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS);
+    showNotice(`🏺 スキップ報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS, true);
     renderArtifactList();
     updateStatsUI();
     saveGame();
@@ -1820,6 +1841,107 @@
   let lastAccelAt = Date.now() - ACCEL_COOLDOWN;
   let accelEndAt = 0;
   const HEAL_COOLDOWN = 90 * 1000;
+  // ---------- タメ打ち：ゲームサークルを長押し → 離すと敵を追尾する強力な体当たり ----------
+  const TACKLE_CHARGE_MIN_MS = 350;   // これ以上押し続けるとタメ開始
+  const TACKLE_CHARGE_FULL_MS = 1500; // フルチャージまでの時間
+  const TACKLE_MIN_MULT = 3;          // 最小タメのダメージ倍率（攻撃力比）
+  const TACKLE_MAX_MULT = 8;          // フルチャージのダメージ倍率
+  const TACKLE_DURATION_MS = 1600;    // 体当たりが続く時間（当たらなければ終了）
+  const TACKLE_SPEED = 3.2 * 3.4;
+  const TACKLE_TURN_RATE = 0.22;
+  const TACKLE_COOLDOWN_MS = 3000;
+  const TACKLE_STUN_MS = 600;
+  let tackleChargeStart = 0;
+  let tackle = null; // { until, mult, full }
+  let tackleReadyAt = 0;
+  function isTackling() { return !!tackle && Date.now() < tackle.until; }
+  function getTackleChargeLevel() {
+    if (!tackleChargeStart) return -1;
+    const held = Date.now() - tackleChargeStart;
+    if (held < TACKLE_CHARGE_MIN_MS) return -1;
+    return Math.min(1, (held - TACKLE_CHARGE_MIN_MS) / (TACKLE_CHARGE_FULL_MS - TACKLE_CHARGE_MIN_MS));
+  }
+  function releaseTackleCharge() {
+    const level = getTackleChargeLevel();
+    tackleChargeStart = 0;
+    if (level < 0 || phase !== 'battle') return;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!player || !enemy) return;
+    tackle = { until: Date.now() + TACKLE_DURATION_MS, mult: TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level, full: level >= 1 };
+    tackleReadyAt = Date.now() + TACKLE_COOLDOWN_MS;
+    const a = Math.atan2(enemy.y - player.y, enemy.x - player.x);
+    player.vx = Math.cos(a) * TACKLE_SPEED; player.vy = Math.sin(a) * TACKLE_SPEED;
+    spawnDamageText(player.x, player.y - player.radius - 16, tackle.full ? '全力タックル！' : 'タックル！', '#ffb35c', 0.02, tackle.full);
+    spawnHitParticles(player.x, player.y, '#ffb35c');
+    playAccelSound();
+  }
+  ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, releaseTackleCharge));
+  function steerTackle(ball) {
+    const enemy = balls.find(x => !x.isPlayer);
+    if (enemy && !enemy.isDying) {
+      const dx = enemy.x - ball.x, dy = enemy.y - ball.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      ball.vx += ((dx / dist) * TACKLE_SPEED - ball.vx) * TACKLE_TURN_RATE;
+      ball.vy += ((dy / dist) * TACKLE_SPEED - ball.vy) * TACKLE_TURN_RATE;
+    }
+    normalizeSpeed(ball, TACKLE_SPEED);
+  }
+  function performTackleHit(a, e, b) {
+    const t = tackle;
+    tackle = null;
+    a.hitCooldown = 20; e.hitCooldown = 20;
+    registerHit();
+    const comboMult = getComboMultiplier(b.comboGrowth);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * t.mult * b.tackleMult * comboMult)), e);
+    e.hp -= dmg;
+    trackDamage(dmg);
+    spawnDamageText(e.x, e.y - e.radius - 36, t.full ? '💥 全力タックル！' : '💥 タックル！', '#ffb35c', 0.014, true);
+    spawnAttackDamageText(e, dmg, crit, '#ffcf8a');
+    for (let i = 0; i < 3; i++) spawnHitParticles(e.x, e.y, i === 1 ? '#ffd76b' : '#ffb35c');
+    onPlayerHitEnemy(e, dmg);
+    if (!e.isDying && e.hp > 0) e.stunnedUntil = Date.now() + TACKLE_STUN_MS;
+    applyHitKnockback(e, a, t.full ? 11 : 8);
+    applyHitKnockback(a, e, 4);
+    playMeteorImpactSound();
+    if (t.full) shakeScreen();
+    updateHPUI();
+  }
+  function drawTackleEffects() {
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) return;
+    const level = getTackleChargeLevel();
+    if (level >= 0) {
+      // タメ中：自機のまわりにゲージのリング
+      const full = level >= 1;
+      const pulse = full ? 1 + Math.sin(Date.now() / 60) * 0.12 : 1;
+      ctx.save();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = full ? '#ff6b3d' : '#ffb35c';
+      ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = full ? 18 : 8;
+      ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, level)); ctx.stroke();
+      if (full) {
+        ctx.shadowBlur = 0;
+        ctx.font = '800 11px sans-serif'; ctx.textAlign = 'center';
+        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+        ctx.strokeText('MAX', player.x, player.y - player.radius - 16);
+        ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', player.x, player.y - player.radius - 16);
+      }
+      ctx.restore();
+    }
+    if (isTackling()) {
+      // 体当たり中：炎のオーラと残像
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = tackle.full ? '#ff6b3d' : '#ffb35c';
+      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 20;
+      ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      if (Math.random() < 0.6) particles.push({ x: player.x, y: player.y, vx: -player.vx * 0.15 + (Math.random() - 0.5), vy: -player.vy * 0.15 + (Math.random() - 0.5), life: 0.7, color: '#ffb35c', decay: 0.05 });
+    }
+  }
   const BOOST_DURATION = 2500;
   const BOOST_MULT = 1.9;
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
@@ -2558,7 +2680,16 @@
     return h + '時間' + String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
   }
 
-  function showNotice(text, isError = false, duration = 1500) {
+  let noticeHoldUntil = 0; // 宝箱などの重要な通知を表示中は、他の通知で上書きしない（終わってから表示）
+  let noticeDeferTimer = null;
+  function showNotice(text, isError = false, duration = 1500, hold = false) {
+    const now = Date.now();
+    if (!hold && !isError && now < noticeHoldUntil) {
+      clearTimeout(noticeDeferTimer);
+      noticeDeferTimer = setTimeout(() => showNotice(text, isError, duration), noticeHoldUntil - now);
+      return;
+    }
+    if (hold) noticeHoldUntil = now + duration;
     battleNotice.textContent = text;
     battleNotice.classList.toggle('error', isError);
     battleNotice.classList.remove('at-tap');
@@ -2571,8 +2702,8 @@
     noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), duration);
   }
 
-  const TREASURE_TEXT_DECAY = 1 / 160; // 宝箱のテキストは約2.5秒表示（通常のダメージ表示より長め）
-  const TREASURE_NOTICE_MS = 3000;
+  const TREASURE_TEXT_DECAY = 1 / 280; // 宝箱のテキストは約4.5秒表示（通常のダメージ表示より長め）
+  const TREASURE_NOTICE_MS = 5000;
   // 宝箱・報酬の中身をアリーナ中央に大きく表示（通知バーと違い他の通知で上書きされない）
   const lootPopup = document.getElementById('lootPopup');
   function showLootPopup(title, main, sub, color) {
@@ -2591,14 +2722,14 @@
       game.coins += bonus;
       spawnCoinBurst(arena.x, arena.y + 20, bonus);
       showLootPopup('🎁 宝箱の中身', `🟡 ${formatCoinNumber(bonus)} コイン`, '', '#ffd76b');
-      showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS);
+      showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS, true);
     } else {
       const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
       game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
       spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
       const info = RARITY_INFO[pick.rarity];
       showLootPopup('🎁 宝箱の中身（遺物）', `${pick.icon} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
-      showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`, false, TREASURE_NOTICE_MS);
+      showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`, false, TREASURE_NOTICE_MS, true);
       renderArtifactList();
     }
     updateStatsUI();
@@ -2869,6 +3000,53 @@
   // ---------- ボール生成 ----------
   const EMOJI_ENEMIES = ['👹', '👺', '💀', '👻', '🎃', '🐉', '🦂', '🕷️', '🦇', '👾', '🧟', '🐺', '🦖', '🐲'];
   const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲'];
+  // ---------- 敵図鑑 ----------
+  const SHAPE_ENEMY_NAMES = { circle: 'レッドスライム', diamond: 'フレイムクリスタル', hex: 'グリーンヘキサ', square: 'ピンクキューブ' };
+  const SHAPE_ENEMY_COLORS = { circle: '#ff5c6c', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
+  const EMOJI_ENEMY_NAMES = { '👹': '赤鬼', '👺': '天狗', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'パンプキン', '🐉': 'ドラゴン', '🦂': '毒サソリ', '🕷️': '大蜘蛛', '🦇': '吸血コウモリ', '👾': 'インベーダー', '🧟': 'ゾンビ', '🐺': 'ウルフ', '🦖': 'ティラノ', '🐲': '竜の子' };
+  const BOSS_ENEMY_NAMES = { '👹': '鬼王', '🐉': '古代竜', '💀': '死霊王', '🦖': '暴君竜', '👺': '大天狗', '🐲': '竜帝' };
+  const ENEMY_BOOK = [
+    ...Object.keys(SHAPE_ENEMY_NAMES).map(shape => ({ key: 'shape:' + shape, kind: 'normal', name: SHAPE_ENEMY_NAMES[shape], shape, color: SHAPE_ENEMY_COLORS[shape] })),
+    ...EMOJI_ENEMIES.map(em => ({ key: 'emoji:' + em, kind: 'normal', name: EMOJI_ENEMY_NAMES[em], icon: em })),
+    ...BOSS_EMOJIS.map(em => ({ key: 'boss:' + em, kind: 'boss', name: BOSS_ENEMY_NAMES[em], icon: em }))
+  ];
+  const ENEMY_BOOK_BY_KEY = {};
+  ENEMY_BOOK.forEach(entry => ENEMY_BOOK_BY_KEY[entry.key] = entry);
+  function getEnemyBookKey(enemy) {
+    if (enemy.isBoss) return 'boss:' + enemy.emoji;
+    return enemy.emoji ? 'emoji:' + enemy.emoji : 'shape:' + enemy.shape;
+  }
+  // 倒した敵を図鑑に記録（初撃破ステージ・撃破数）
+  function recordBestiaryKill(enemy) {
+    if (!enemy || enemy.bookRecorded) return;
+    enemy.bookRecorded = true;
+    const key = getEnemyBookKey(enemy);
+    if (!ENEMY_BOOK_BY_KEY[key]) return;
+    if (!game.bestiary) game.bestiary = {};
+    const rec = game.bestiary[key];
+    if (!rec) {
+      game.bestiary[key] = { kills: 1, firstStage: game.stage };
+      spawnDamageText(arena.x, arena.y + 46, '📖 図鑑に登録：' + ENEMY_BOOK_BY_KEY[key].name, '#8fd3ff', 0.008);
+    } else {
+      rec.kills++;
+    }
+    if (getActiveTab() === 'records') renderBestiary();
+  }
+  function renderBestiary() {
+    const list = document.getElementById('bestiaryList');
+    if (!list) return;
+    const book = game.bestiary || {};
+    const found = ENEMY_BOOK.filter(entry => book[entry.key]).length;
+    document.getElementById('bestiaryCount').textContent = `${found} / ${ENEMY_BOOK.length}`;
+    list.innerHTML = ENEMY_BOOK.map(entry => {
+      const rec = book[entry.key];
+      const face = entry.icon
+        ? `<span class="bst-face">${entry.icon}</span>`
+        : `<span class="bst-face"><span class="bst-shape bst-${entry.shape}" style="background:${entry.color}"></span></span>`;
+      if (!rec) return `<div class="bst-card unknown"><span class="bst-face">？</span><span class="bst-name">？？？</span><span class="bst-info">${entry.kind === 'boss' ? '👑 ボス' : '未発見'}</span></div>`;
+      return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ST.${rec.firstStage}</span></div>`;
+    }).join('');
+  }
 
   // 敵の移動スタイル：ステージごとに主流スタイルを変えつつ、ある程度ランダム性も持たせる
   const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit'];
@@ -3228,6 +3406,7 @@
 
   // ---------- メインステップ ----------
   function triggerEnemyDefeat(enemy, sourceX, sourceY) {
+    recordBestiaryKill(enemy);
     enemy.hp = 0;
     enemy.isDying = true;
     const dx = enemy.x - sourceX, dy = enemy.y - sourceY;
@@ -3272,6 +3451,8 @@
         }
         const baseSpeed = (ball.isPlayer ? 3.2 * (ball.speedFactor || 1) : 3.2);
         normalizeSpeed(ball, baseSpeed);
+      } else if (ball.isPlayer && !ball.isClone && !ball.isCompanion && isTackling()) {
+        steerTackle(ball);
       } else if (ball.movementStyle !== 'orbit') {
         const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
         const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult * getTapBoostMult()) : 3.2;
@@ -3373,7 +3554,11 @@
     movePlayerSideBalls([...balls, ...adds], speedMult, b);
 
     const collided = resolveBallCollision(a, e);
-    if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
+    if (collided && isTackling()) {
+      // タメ打ちの体当たり：迫り合い・命中判定なしで必ず当たり、敵は反撃できない
+      performTackleHit(a, e, b);
+      if (e.hp <= 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
+    } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
       a.hitCooldown = 20; e.hitCooldown = 20;
       const combo = registerHit();
       const comboMult = getComboMultiplier(b.comboGrowth);
@@ -3566,6 +3751,7 @@
             spawnAttackDamageText(add, dmg, crit, '#ffd9a0', 6);
             playEnemyHitSound();
             if (add.hp <= 0) {
+              recordBestiaryKill(add);
               const coinGain = 5 + Math.floor(Math.random() * 8);
               game.coins += coinGain;
               if (Math.random() < 0.3) game.gems += 1;
@@ -3601,7 +3787,9 @@
     enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
     enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
     document.getElementById('enemyClashNum').textContent = +getEnemyClash(en).toFixed(1);
-    enemyName.textContent = en.isBoss ? (game.skipChallenge ? '👑 ボス（スキップ挑戦）' : '👑 ボス') : '🔴 敵';
+    const bookEntry = ENEMY_BOOK_BY_KEY[getEnemyBookKey(en)];
+    const enName = bookEntry ? bookEntry.name : '敵';
+    enemyName.textContent = en.isBoss ? (game.skipChallenge ? `👑 ${enName}（スキップ挑戦）` : `👑 ${enName}`) : (bookEntry && bookEntry.icon ? bookEntry.icon + ' ' : '🔴 ') + enName;
   }
 
   // ---------- ステージクリア ----------
@@ -4383,6 +4571,7 @@
     drawParalyzeEffects();
     drawSleepEffects();
     drawAtkUpEffects();
+    drawTackleEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -4467,9 +4656,9 @@
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
-    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 };
+    game.ownedArtifacts = {}; game.bestiary = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -5144,6 +5333,8 @@
     const dx = x - arena.x, dy = y - arena.y;
     if (Math.hypot(dx, dy) < arena.radius - 12) {
       addTapBoost();
+      // 長押しでタメ開始（クールダウン中・体当たり中は不可）
+      if (Date.now() >= tackleReadyAt && !isTackling()) tackleChargeStart = Date.now();
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
       const enemy = balls.find(ball => !ball.isPlayer);
       if (player && Math.hypot(x - player.x, y - player.y) < player.radius + 10 && enemy) {
