@@ -1082,8 +1082,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・サークルをタップすると、自機がタップした方向へ進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap inside the arena to steer your ball toward that spot (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -3063,6 +3063,13 @@
     }
   }
 
+  // タップした地点に小さなリングを表示（自機の移動先の目印）
+  function spawnTapMarker(x, y) {
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      particles.push({ x: x + Math.cos(a) * 10, y: y + Math.sin(a) * 10, vx: Math.cos(a) * 0.6, vy: Math.sin(a) * 0.6, life: 0.8, color: '#4fa8ff', decay: 0.05 });
+    }
+  }
   function spawnCoinBurst(x, y, coinGain) {
     for (let i = 0; i < 10; i++) {
       const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
@@ -5038,10 +5045,21 @@
         playAccelSound();
         return;
       }
-      if (enemy && Math.hypot(x - enemy.x, y - enemy.y) < enemy.radius + 10) {
-        // 敵をタップ → その場で加速
-        enemy.boostUntil = Date.now() + BOOST_DURATION;
-        spawnHitParticles(enemy.x, enemy.y, enemy.color);
+      // タップした方向へ自機の進行方向を変える（速さはそのまま）
+      if (player) {
+        const tdx = x - player.x, tdy = y - player.y;
+        const tdist = Math.hypot(tdx, tdy);
+        if (tdist > 4) {
+          const speed = Math.hypot(player.vx, player.vy) || 3.2;
+          player.vx = (tdx / tdist) * speed;
+          player.vy = (tdy / tdist) * speed;
+          spawnTapMarker(x, y);
+        }
+      }
+      if (enemy && player && Math.hypot(x - enemy.x, y - enemy.y) < enemy.radius + 10) {
+        // 敵をタップ → 自機が敵に向かって突進（少しの間加速）
+        player.boostUntil = Date.now() + BOOST_DURATION;
+        spawnHitParticles(player.x, player.y, '#4fa8ff');
         playAccelSound();
         return;
       }
