@@ -541,7 +541,7 @@
     <div style="font-size:2.4rem;">💔</div>
     <h2>スキップ失敗…</h2>
     <div class="modal-sub" id="skipRetryText"></div>
-    <div class="modal-shop-list">
+    <div class="modal-shop-list" id="skipRetryActions">
       <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
       <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
     </div>
@@ -697,6 +697,9 @@
   const skipRetryText = document.getElementById('skipRetryText');
   const skipRetryBtn = document.getElementById('skipRetryBtn');
   const skipGiveUpBtn = document.getElementById('skipGiveUpBtn');
+  const skipRetryActions = document.getElementById('skipRetryActions');
+  const SKIP_RETRY_BUTTON_DELAY_MS = 1000; // 連打による誤タップ防止：ボタンは少し遅れて表示
+  let skipRetryShownAt = 0;
 
   const loginBonusModal = document.getElementById('loginBonusModal');
   const loginBonusStreak = document.getElementById('loginBonusStreak');
@@ -2616,7 +2619,14 @@
     skipRetryBtn.innerHTML = `<span class="msb-name">🔁 💎${retryCost} でリトライ</span>`;
     skipRetryBtn.disabled = game.gems < retryCost;
     skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて STAGE ${origin} に戻る</span>`;
+    // ボタンは1秒後に表示（レイアウトは保ったまま非表示にしておく）
+    skipRetryActions.style.visibility = 'hidden';
+    const shownAt = skipRetryShownAt = Date.now();
+    setTimeout(() => { if (skipRetryShownAt === shownAt) skipRetryActions.style.visibility = 'visible'; }, SKIP_RETRY_BUTTON_DELAY_MS);
     skipRetryModal.classList.add('show');
+  }
+  function skipRetryButtonsReady() {
+    return skipRetryModal.classList.contains('show') && Date.now() - skipRetryShownAt >= SKIP_RETRY_BUTTON_DELAY_MS;
   }
   function retrySkipChallenge() {
     const { target, cost } = game.skipChallenge;
@@ -2666,12 +2676,12 @@
   });
   stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
   skipRetryBtn.addEventListener('click', event => {
-    if (!game.skipChallenge || !skipRetryModal.classList.contains('show')) return;
+    if (!game.skipChallenge || !skipRetryButtonsReady()) return;
     if (game.gems < (game.skipChallenge.cost || 0)) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
     retrySkipChallenge();
   });
   skipGiveUpBtn.addEventListener('click', () => {
-    if (!game.skipChallenge || !skipRetryModal.classList.contains('show')) return;
+    if (!game.skipChallenge || !skipRetryButtonsReady()) return;
     giveUpSkipChallenge();
   });
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
