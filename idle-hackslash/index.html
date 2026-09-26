@@ -131,6 +131,8 @@
   .action-btn.barrier { border-color: #5cc8ff; color: #b3e8ff; }
   .action-row.four .action-btn { font-size: 0.62rem; padding: 8px 3px; white-space: pre-line; line-height: 1.35; }
   .action-btn.reborn-action { border-color: #c792ea; color: #dcbdff; }
+  .action-btn.skip-action { border-color: #ffb14f; color: #ffd9a0; }
+  .action-btn.skip-action.challenging { border-color: #ff5c6c; color: #ff9aa5; }
   .action-btn:disabled { opacity: 0.48; cursor: not-allowed; }
 
   .shop-list { display: grid; grid-template-columns: 1fr; gap: 7px; }
@@ -374,6 +376,9 @@
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
     </div>
     <div class="action-row single">
+      <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（ボスに挑戦）</button>
+    </div>
+    <div class="action-row single">
       <button class="action-btn reborn-action" id="rebornBtn" style="display:none;">🌌 転生する</button>
     </div>
 
@@ -522,6 +527,15 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="stageSkipModal">
+  <div class="modal-panel">
+    <h2>⏭️ ステージスキップ</h2>
+    <div class="modal-sub">所持ジェム: <span id="stageSkipGems">0</span><br>ジェムを消費して先のステージのボスに挑戦します。勝てばそのステージまでスキップ、負けたら現在のステージ <b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
+    <div class="modal-shop-list" id="stageSkipList"></div>
+    <button class="modal-close-btn" id="stageSkipCloseBtn">やめる</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="loginBonusModal">
   <div class="modal-panel" style="text-align:center;">
     <div class="login-gift-icon" style="font-size:2.4rem;">🎰</div>
@@ -661,6 +675,12 @@
   const rebirthShopList = document.getElementById('rebirthShopList');
   const rebirthShopGems = document.getElementById('rebirthShopGems');
   const rebirthShopCloseBtn = document.getElementById('rebirthShopCloseBtn');
+  const stageSkipBtn = document.getElementById('stageSkipBtn');
+  const stageSkipModal = document.getElementById('stageSkipModal');
+  const stageSkipList = document.getElementById('stageSkipList');
+  const stageSkipGems = document.getElementById('stageSkipGems');
+  const stageSkipOrigin = document.getElementById('stageSkipOrigin');
+  const stageSkipCloseBtn = document.getElementById('stageSkipCloseBtn');
 
   const loginBonusModal = document.getElementById('loginBonusModal');
   const loginBonusStreak = document.getElementById('loginBonusStreak');
@@ -959,7 +979,8 @@
     dailyClearHistory: {},
     sfxVolume: 0.7,
     bgmVolume: 0.7,
-    vibration: true
+    vibration: true,
+    skipChallenge: null // ステージスキップのボス挑戦中 { origin, target }
   };
 
   function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
@@ -1238,6 +1259,10 @@
     renderCompanionList();
     renderRanking();
     rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
+    stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
+    stageSkipBtn.textContent = game.skipChallenge
+      ? `⚔️ スキップ挑戦中：STAGE ${game.skipChallenge.target} ボス（負けたら STAGE ${game.skipChallenge.origin} へ）`
+      : '⏭️ ステージスキップ（ボスに挑戦）';
     updateSpecialButton();
     updateAccelButton();
     updateHealButton();
@@ -2368,7 +2393,7 @@
     enemyAtkNum.textContent = en.atk;
     enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
     enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
-    enemyName.textContent = en.isBoss ? '👑 ボス' : '🔴 敵';
+    enemyName.textContent = en.isBoss ? (game.skipChallenge ? '👑 ボス（スキップ挑戦）' : '👑 ボス') : '🔴 敵';
   }
 
   // ---------- ステージクリア ----------
@@ -2391,7 +2416,12 @@
     ensureDailyClearReset();
     game.dailyClears++;
     resetCombo();
-    showNotice(`STAGE ${game.stage} CLEAR　+${expGain} EXP`);
+    if (game.skipChallenge) {
+      showNotice(`⏭️ スキップ成功！ STAGE ${game.stage} のボスを撃破　+${expGain} EXP`);
+      game.skipChallenge = null;
+    } else {
+      showNotice(`STAGE ${game.stage} CLEAR　+${expGain} EXP`);
+    }
     game.stage++;
     game.bestStage = Math.max(game.bestStage, game.stage);
     stageAnnounceText = 'STAGE ' + game.stage;
@@ -2407,16 +2437,7 @@
     const nextIsBoss = game.stage % 10 === 0;
     if (nextIsBoss) {
       // ボスはワーニング演出が消えた後に、それっぽく出現させる（この間も操作・自機の動きは止めない）
-      showBossWarning();
-      balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
-      setTimeout(() => {
-        balls = spawnBattleBalls();
-        const bossBall = balls.find(ball => ball.isBoss);
-        if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
-        refreshPlayerBallStats(true);
-        updateHPUI();
-        startBgm('boss');
-      }, 1850);
+      spawnBossWithWarning();
     } else {
       balls = spawnBattleBalls();
       refreshPlayerBallStats(true);
@@ -2429,6 +2450,7 @@
 
   // ---------- プレイヤー死亡・転生 ----------
   function onPlayerDeath(forceRebirth = false) {
+    if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
     phase = 'paused';
     meteors = []; adds = [];
     resetCombo();
@@ -2454,6 +2476,7 @@
 
   function completeReincarnation() {
     clearInterval(continueTimer);
+    game.skipChallenge = null;
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
@@ -2513,6 +2536,90 @@
     updateHPUI();
     phase = 'battle';
   }
+
+  // ---------- ステージスキップ（先のボスに挑戦） ----------
+  // 消費ジェムが多いほど先のボスに挑戦できる。勝てばそのステージへ、負けたら元のステージへ戻る
+  const STAGE_SKIP_OPTIONS = [
+    { bosses: 1, cost: 5 },
+    { bosses: 2, cost: 12 },
+    { bosses: 3, cost: 20 },
+    { bosses: 5, cost: 35 },
+  ];
+  function getSkipTargetStage(bosses) {
+    const nextBoss = Math.ceil((game.stage + 1) / 10) * 10; // 現在より先で最も近いボスステージ
+    return nextBoss + (bosses - 1) * 10;
+  }
+  function renderStageSkipList() {
+    stageSkipGems.textContent = Math.floor(game.gems);
+    stageSkipOrigin.textContent = game.stage;
+    stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
+      const target = getSkipTargetStage(opt.bosses);
+      const es = getEnemyStats(target);
+      const disabled = game.gems < opt.cost;
+      return `<button class="modal-shop-btn" data-stage-skip="${i}" ${disabled ? 'disabled' : ''}><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">${target - game.stage} ステージ先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+    }).join('');
+  }
+  function spawnBossWithWarning() {
+    showBossWarning();
+    balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
+    setTimeout(() => {
+      balls = spawnBattleBalls();
+      const bossBall = balls.find(ball => ball.isBoss);
+      if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
+      refreshPlayerBallStats(true);
+      updateHPUI();
+      startBgm('boss');
+    }, 1850);
+  }
+  function startSkipChallenge(opt) {
+    const target = getSkipTargetStage(opt.bosses);
+    game.gems -= opt.cost;
+    game.skipChallenge = { origin: game.stage, target };
+    game.stage = target;
+    meteors = []; adds = [];
+    resetCombo();
+    stageAnnounceText = 'STAGE ' + target;
+    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    spawnBossWithWarning();
+    showNotice(`⏭️ STAGE ${target} のボスに挑戦！`);
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+  function failSkipChallenge() {
+    const { origin, target } = game.skipChallenge;
+    game.skipChallenge = null;
+    game.stage = origin;
+    meteors = []; adds = [];
+    resetCombo();
+    playDeathSound();
+    balls = spawnBattleBalls();
+    refreshPlayerBallStats(true);
+    stageAnnounceText = 'STAGE ' + origin;
+    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    showNotice(`💔 スキップ失敗… STAGE ${target} のボスに敗北。STAGE ${origin} に戻ります`, true);
+    startBgm(origin % 10 === 0 ? 'boss' : 'normal');
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+  stageSkipBtn.addEventListener('click', event => {
+    if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
+    if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今はスキップできません', event.clientX, event.clientY); return; }
+    renderStageSkipList();
+    stageSkipModal.classList.add('show');
+  });
+  stageSkipList.addEventListener('click', event => {
+    const button = event.target.closest('[data-stage-skip]');
+    if (!button) return;
+    const opt = STAGE_SKIP_OPTIONS[Number(button.dataset.stageSkip)];
+    if (game.gems < opt.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { stageSkipModal.classList.remove('show'); return; }
+    stageSkipModal.classList.remove('show');
+    startSkipChallenge(opt);
+  });
+  stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
+  stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
   const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4 };
@@ -2870,7 +2977,7 @@
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
+    game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -2999,6 +3106,7 @@
     }
     if (action === 'prev') game.stage = Math.max(1, game.stage - 1);
     if (action === 'next') game.stage++;
+    if (action === 'prev' || action === 'next' || action === 'nextboss') game.skipChallenge = null;
     if (action === 'prev' || action === 'next') {
       game.bestStage = Math.max(game.bestStage, game.stage);
       balls = spawnBattleBalls(); meteors = []; adds = [];
