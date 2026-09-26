@@ -813,6 +813,7 @@
   function playRewardedVideo(onComplete) {
     const startedAt = Date.now();
     rewardAdClaimBtn.style.display = 'none';
+    rewardAdCloseBtn.style.display = 'flex';
     rewardAdProgress.style.width = '0%';
     rewardAdModal.classList.add('show');
     clearInterval(rewardAdTimer);
@@ -837,6 +838,7 @@
     playRewardedVideo(() => {
       rewardAdClaimBtn.textContent = `💎${REWARD_AD_GEMS} を受け取る`;
       rewardAdClaimBtn.style.display = 'block';
+      rewardAdCloseBtn.style.display = 'none'; // 視聴完了後は受け取りのみ
     });
   });
   rewardAdClaimBtn.addEventListener('click', () => {
