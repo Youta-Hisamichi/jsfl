@@ -2817,15 +2817,24 @@
   function skipRetryButtonsReady() {
     return skipRetryModal.classList.contains('show') && Date.now() - skipRetryShownAt >= SKIP_RETRY_BUTTON_DELAY_MS;
   }
+  // リトライ：敵（ボス）はそのままの状態で残し、自機だけHP全快で復活させて戦闘を続ける
+  const REVIVE_INVINCIBLE_FRAMES = 90; // 復活直後の無敵時間（即死防止）
+  function revivePlayerInPlace() {
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!player || !enemy) { balls = spawnBattleBalls(); refreshPlayerBallStats(true); return; }
+    refreshPlayerBallStats(true);
+    player.hitCooldown = REVIVE_INVINCIBLE_FRAMES;
+    spawnHitParticles(player.x, player.y, '#7ee787');
+    spawnDamageText(player.x, player.y - player.radius - 12, 'REVIVE!', '#7ee787');
+    playHealSound();
+  }
   function retrySkipChallenge() {
     const { target, cost } = game.skipChallenge;
     game.gems -= cost || 0;
     game.skipChallenge.lost = false;
     skipRetryModal.classList.remove('show');
-    refreshPlayerBallStats(true);
-    stageAnnounceText = 'STAGE ' + target;
-    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
-    spawnBossWithWarning();
+    revivePlayerInPlace();
     phase = 'battle';
     showNotice(`🔁 STAGE ${target} のボスに再挑戦！`);
     updateStatsUI();
@@ -3322,7 +3331,7 @@
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
     toast.classList.remove('show');
-    balls = spawnBattleBalls();
+    revivePlayerInPlace();
     meteors = []; adds = [];
     resetCombo();
     updateStatsUI();
