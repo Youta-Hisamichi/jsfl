@@ -1644,6 +1644,7 @@
     [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));
   }
   function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
+  function playCritSound() { playNoiseBurst(0.08, 0.22); playTone(1400, 0.12, 'square', 0.16, 2200); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
   function getEffectiveSpeed() {
@@ -1816,7 +1817,24 @@
     ball.vy = (ball.vy / s) * targetSpeed;
   }
 
-  function spawnDamageText(x, y, text, color, decay) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.7, decay: decay || 0.018 }); }
+  function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.7, decay: decay || 0.018, big: !!big }); }
+
+  // ---------- クリティカル（味方側の攻撃に一定確率で発生） ----------
+  const CRIT_CHANCE = 0.1; // 発生率 10%
+  const CRIT_MULT = 2;     // ダメージ 2倍
+  function rollCrit(dmg) {
+    const crit = Math.random() < CRIT_CHANCE;
+    return { dmg: crit ? Math.round(dmg * CRIT_MULT) : dmg, crit };
+  }
+  // 与ダメージ表示。クリティカル時は大きな文字＋追加エフェクト
+  function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
+    const y = target.y - target.radius - (offsetY || 8);
+    if (!crit) { spawnDamageText(target.x, y, '-' + dmg, color); return; }
+    spawnDamageText(target.x, y - 6, 'CRITICAL! -' + dmg, '#ff7a3d', 0.014, true);
+    spawnHitParticles(target.x, target.y, '#ff7a3d');
+    spawnHitParticles(target.x, target.y, '#ffd76b');
+    playCritSound();
+  }
   function spawnHitParticles(x, y, color) {
     for (let i = 0; i < 8; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -1949,7 +1967,7 @@
     }
     const canDamage = enemy && !enemy.isDying && !(enemy.spawnTimer > 0);
     const comboMult = getComboMultiplier(b.comboGrowth);
-    const dmg = Math.max(1, Math.round(player.atk * 0.4 * comboMult));
+    const baseDmg = Math.max(1, Math.round(player.atk * 0.4 * comboMult));
     for (const orb of barrierOrbs) {
       orb.angle += BARRIER_ROT_SPEED * speedMult;
       orb.x = player.x + Math.cos(orb.angle) * BARRIER_ORBIT_RADIUS;
@@ -1959,10 +1977,11 @@
         const dist = Math.hypot(orb.x - enemy.x, orb.y - enemy.y);
         if (dist < enemy.radius + 9) {
           orb.hitCooldown = 18;
+          const { dmg, crit } = rollCrit(baseDmg);
           enemy.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(orb.x, orb.y, getBarrierColors().glow);
-          spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, '-' + dmg, '#c7ecff');
+          spawnAttackDamageText(enemy, dmg, crit, '#c7ecff');
           playBarrierHitSound();
           updateHPUI();
           if (enemy.hp <= 0) triggerEnemyDefeat(enemy, orb.x, orb.y);
@@ -2038,11 +2057,11 @@
 
       const enemyIsHit = Math.random() < 0.5;
       if (enemyIsHit) {
-        const dmg = Math.max(1, Math.round(a.atk * comboMult));
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult)));
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
-        spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+        spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       } else if (absorbWithBarrier(a)) {
@@ -2071,11 +2090,11 @@
           const combo = registerHit();
           const comboMult = getComboMultiplier(b.comboGrowth);
           if (combo >= 2) playChainSound(combo);
-          const dmg = Math.max(1, Math.round(clone.atk * comboMult));
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult)));
           e.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(clone.x, clone.y, '#ffb35c');
-          spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+          spawnAttackDamageText(e, dmg, crit, '#fff4b8');
           const cloneX = clone.x, cloneY = clone.y;
           balls = balls.filter(ball => ball !== clone);
           playEnemyHitSound();
@@ -2097,11 +2116,11 @@
           if (combo >= 2) playChainSound(combo);
           
           // 仲間が敵を攻撃
-          const dmg = Math.max(1, Math.round(comp.atk * comboMult));
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult)));
           e.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(comp.x, comp.y, comp.color);
-          spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+          spawnAttackDamageText(e, dmg, crit, '#fff4b8');
           playEnemyHitSound();
           applyHitKnockback(e, comp, 3.2);
           
@@ -2152,11 +2171,11 @@
         if (add.hp <= 0) continue;
         for (const atk of attackers) {
           if (resolveBallCollision(atk, add)) {
-            const dmg = Math.max(1, Math.round((atk.atk || 1)));
+            const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1))));
             add.hp -= dmg;
             trackDamage(dmg);
             spawnHitParticles(add.x, add.y, '#ffb35c');
-            spawnDamageText(add.x, add.y - add.radius - 6, '-' + dmg, '#ffd9a0');
+            spawnAttackDamageText(add, dmg, crit, '#ffd9a0', 6);
             playEnemyHitSound();
             if (add.hp <= 0) {
               const coinGain = 5 + Math.floor(Math.random() * 8);
@@ -2629,8 +2648,8 @@
 
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = 'bold 17px "Hiragino Sans", sans-serif';
     for (const d of damageTexts) {
+      ctx.font = d.big ? 'bold 23px "Hiragino Sans", sans-serif' : 'bold 17px "Hiragino Sans", sans-serif';
       ctx.globalAlpha = Math.max(0, d.life);
       ctx.fillStyle = d.color;
       ctx.strokeStyle = 'rgba(0,0,0,0.6)';
