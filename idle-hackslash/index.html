@@ -801,11 +801,17 @@
   const rankingTitle = document.getElementById('rankingTitle');
 
   // ---------- タブ切り替え ----------
+  let rebirthShopPending = false; // 他タブ表示中に転生した場合、ゲームタブに戻ったら転生ショップを開く
+  function getActiveTab() {
+    const page = document.querySelector('.tab-page.active');
+    return page ? page.dataset.tab : 'game';
+  }
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
     if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
+    if (name === 'game' && rebirthShopPending) { rebirthShopPending = false; openRebirthShop(true); }
   }
   tabBar.addEventListener('click', event => {
     const btn = event.target.closest('.tab-btn');
@@ -2771,6 +2777,8 @@
     rebirthSkippable = false;
     clearTimeout(rebirthTimer);
     toast.classList.remove('show');
+    // 転生ショップはゲームタブでのみ表示。他のタブにいる間は、ゲームタブに戻ったときに開く
+    if (getActiveTab() !== 'game') { rebirthShopPending = true; return; }
     openRebirthShop(true);
   }
 
@@ -3351,6 +3359,7 @@
     dialogCloseBtn.style.display = 'none';
     toast.classList.remove('show');
     rebirthShopModal.classList.remove('show');
+    rebirthShopPending = false;
     renderArtifactList();
     updateStatsUI();
     balls = spawnBattleBalls();
