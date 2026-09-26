@@ -1,0 +1,3211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>放置系ハクスラ無限反射</title>
+<style>
+  :root {
+    --bg: #12141c;
+    --bg-soft: #1b1e29;
+    --panel: #202436;
+    --text: #eef0f6;
+    --text-dim: #9aa0b4;
+    --accent-player: #4fa8ff;
+    --accent-enemy: #ff5c6c;
+    --gold: #ffd76b;
+    --exp: #7ee787;
+    --ring: #3a3f55;
+    --btn: #4f7bff;
+    --btn-text: #ffffff;
+    --btn-hover: #6b91ff;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f5fa;
+      --bg-soft: #ffffff;
+      --panel: #ffffff;
+      --text: #1c1e29;
+      --text-dim: #6b7085;
+      --ring: #d8dbe6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12141c; --bg-soft: #1b1e29; --panel: #202436;
+    --text: #eef0f6; --text-dim: #9aa0b4; --ring: #3a3f55;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: env(safe-area-inset-top, 0px) 16px 0px;
+    min-height: 100%;
+  }
+
+  h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center; }
+
+  .top-header {
+    position: sticky; top: 0; z-index: 45; width: 100%; max-width: 560px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    background: var(--panel); border: 1px solid var(--ring); border-radius: 0 0 12px 12px;
+    padding: 7px 14px; margin: 0 auto 6px; font-size: 0.82rem; font-weight: 800;
+  }
+  .top-header .th-right { display: flex; align-items: center; gap: 12px; }
+  .top-header .th-item.coin { color: var(--gold); }
+  .top-header .th-item.gem { color: #64e8ff; }
+  .top-header .th-gear { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 2px 4px; color: var(--text); }
+  .subtitle { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 14px; text-align: center; }
+
+  .layout {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 84px;
+  }
+
+  .top-stats {
+    display: flex; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--ring); border-radius: 14px;
+    padding: 10px 14px; font-size: 0.78rem;
+  }
+  .top-stats .stat { text-align: center; flex: 1; }
+  .top-stats .stat .num { font-size: 1.0rem; font-weight: 800; display: block; }
+  .top-stats .stat .lbl { color: var(--text-dim); font-size: 0.65rem; }
+  .top-stats .stat.stage .num { color: #ffb14f; }
+  .top-stats .stat.level .num { color: var(--accent-player); }
+  .top-stats .stat.coins .num { color: var(--gold); }
+  .top-stats .stat.gems .num { color: #64e8ff; }
+  .top-stats .stat.reborn .num { color: #c792ea; }
+
+  .exp-wrap { background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 8px 14px; }
+  .exp-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 4px; }
+  .exp-track { background: var(--bg); border-radius: 999px; height: 8px; overflow: hidden; border: 1px solid var(--ring); }
+  .exp-fill { height: 100%; background: linear-gradient(90deg, var(--exp), #4fd67e); border-radius: 999px; transition: width 0.2s ease-out; width: 0%; }
+
+  .hp-row { display: flex; gap: 12px; }
+  .hp-card { flex: 1; background: var(--panel); border-radius: 14px; padding: 10px 14px; border: 1px solid var(--ring); }
+  .hp-card .label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px; color: var(--text-dim); }
+  .hp-card .label .name { font-weight: 700; color: var(--text); }
+  .hp-bar-track { background: var(--bg); border-radius: 999px; height: 10px; overflow: hidden; border: 1px solid var(--ring); }
+  .hp-bar-fill { height: 100%; border-radius: 999px; transition: width 0.15s ease-out; }
+  .hp-card.player .hp-bar-fill { background: var(--accent-player); }
+  .hp-card.enemy .hp-bar-fill { background: var(--accent-enemy); }
+  .hp-card .atk-tag { font-size: 0.68rem; color: var(--text-dim); margin-top: 4px; }
+
+  .speed-control { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 9px 14px; font-size: 0.78rem; }
+  .speed-control label { white-space: nowrap; font-weight: 700; }
+  .speed-control input { flex: 1; accent-color: var(--btn); }
+  .speed-value { min-width: 3.4em; text-align: right; color: var(--accent-player); font-weight: 800; }
+
+  .upgrade-panel, .artifact-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 10px 14px; }
+  .upgrade-title, .artifact-panel .title { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; }
+  .upgrade-list { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .upgrade-row { display: flex; gap: 6px; align-items: stretch; }
+  .upgrade-row .upgrade-btn { flex: 1; }
+  .upgrade-max-btn { flex: 0 0 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #1a1408; background: linear-gradient(160deg, #ffe08a, #ffb84d); border: 1px solid var(--gold); border-radius: 9px; padding: 6px 4px; font-size: 0.68rem; font-weight: 800; cursor: pointer; }
+  .upgrade-max-btn span { font-size: 0.56rem; font-weight: 700; opacity: 0.85; }
+  .upgrade-max-btn.is-disabled { opacity: 0.4; cursor: default; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
+  .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
+  .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
+  .upgrade-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .upgrade-btn:disabled, .is-disabled { opacity: 0.48; cursor: not-allowed; }
+  .upgrade-btn .cost { display: block; margin-top: 3px; color: var(--gold); font-weight: 800; }
+
+  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .action-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .action-row.single { grid-template-columns: 1fr; }
+  .action-btn { border: 1px solid var(--ring); border-radius: 10px; padding: 10px 6px; color: var(--text); background: var(--bg-soft); font-weight: 800; cursor: pointer; font-size: 0.78rem; }
+  .action-btn.special { border-color: #e58aff; color: #f0b7ff; }
+  .action-btn.accel { border-color: #ffb14f; color: #ffd9a0; }
+  .action-btn.heal { border-color: #7ee787; color: #b6f5c0; }
+  .action-btn.barrier { border-color: #5cc8ff; color: #b3e8ff; }
+  .action-row.four .action-btn { font-size: 0.62rem; padding: 8px 3px; }
+  .action-btn.reborn-action { border-color: #c792ea; color: #dcbdff; }
+  .action-btn:disabled { opacity: 0.48; cursor: not-allowed; }
+
+  .shop-list { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .shop-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 8px; text-align: left; font-size: 0.7rem; cursor: pointer; }
+  .shop-btn:hover:not(:disabled) { border-color: #64e8ff; }
+  .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .shop-btn .shop-desc, .shop-btn .cost { display: block; margin-top: 3px; color: var(--text-dim); }
+  .shop-btn .cost { color: #64e8ff; font-weight: 800; }
+  .coin-shop-btn .cost { color: var(--gold); }
+  .supergem-note { font-size: 0.68rem; color: var(--text-dim); margin: 10px 0 6px; }
+
+  .gacha-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 9px; }
+  .gacha-actions.rank-tabs { flex-direction: row; }
+  .gacha-result { background: var(--bg-soft); border: 1px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; text-align: center; overflow: hidden; position: relative; }
+  .gacha-result .gr-icon { font-size: 2.6rem; }
+  .gacha-result .gr-title { font-weight: 800; margin: 4px 0 2px; font-size: 1.05rem; }
+  .gacha-result .gr-sub { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; }
+  .gacha-result .gr-sparkle { font-size: 0.9rem; letter-spacing: 6px; opacity: 0.85; animation: sparkleMove 1.2s ease-in-out infinite; }
+  .gacha-result button { border: 1px solid var(--ring); border-radius: 8px; background: transparent; color: var(--text); padding: 6px 14px; font-size: 0.75rem; cursor: pointer; }
+  .gacha-result .gr-pop { animation: gachaPop 0.45s cubic-bezier(.34,1.56,.64,1); }
+  .gacha-result.rarity-epic { border-color: #c792ea; box-shadow: 0 0 18px rgba(199,146,234,0.5); }
+  .gacha-result.rarity-legendary { border-color: #ffd76b; box-shadow: 0 0 26px rgba(255,215,107,0.7); animation: legendaryGlow 1s ease-in-out infinite alternate; }
+  @keyframes gachaSpin { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(200deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
+  .gacha-summoning .gr-icon { animation: gachaSpin 0.7s linear infinite; display: inline-block; }
+  .gacha-summoning { transition: background 0.5s ease, box-shadow 0.5s ease; }
+  .gacha-summoning.rarity-bg-common { background: linear-gradient(160deg, rgba(154,160,180,0.18), rgba(20,26,40,0.9)); }
+  .gacha-summoning.rarity-bg-rare { background: linear-gradient(160deg, rgba(100,232,255,0.22), rgba(20,26,40,0.9)); box-shadow: 0 0 20px rgba(100,232,255,0.25) inset; }
+  .gacha-summoning.rarity-bg-epic { background: linear-gradient(160deg, rgba(199,146,234,0.28), rgba(20,26,40,0.9)); box-shadow: 0 0 26px rgba(199,146,234,0.35) inset; }
+  .gacha-summoning.rarity-bg-legendary { background: linear-gradient(160deg, rgba(255,215,107,0.35), rgba(20,26,40,0.9)); box-shadow: 0 0 34px rgba(255,215,107,0.5) inset; animation: legendaryBgPulse 0.9s ease-in-out infinite alternate; }
+  @keyframes legendaryBgPulse { from { filter: brightness(1); } to { filter: brightness(1.25); } }
+  .gacha-countdown-num { font-size: 2.6rem; font-weight: 900; margin: 6px 0; }
+  @keyframes countdownPop { 0% { transform: scale(1.6); opacity: 0.3; } 60% { transform: scale(0.95); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  .gacha-countdown-num.pop { animation: countdownPop 0.35s ease-out; }
+  .gacha-multi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0; }
+  .gacha-multi-grid .gm-item { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 6px 2px; font-size: 1.3rem; text-align: center; }
+  .gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.5rem; color: var(--text-dim); margin-top: 2px; }
+  @keyframes gachaPop { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+  @keyframes sparkleMove { 0%, 100% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
+  @keyframes legendaryGlow { from { box-shadow: 0 0 16px rgba(255,215,107,0.5); } to { box-shadow: 0 0 34px rgba(255,215,107,0.95); } }
+  .gacha-pull { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; background: #142d39; color: #b4f6ff; padding: 9px; font-weight: 800; cursor: pointer; }
+  .evolution-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .evolution { background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px; font-size: 0.66rem; }
+  .evolution .rarity-tag { font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 999px; display: inline-block; margin-bottom: 3px; }
+  .evolution button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 4px; cursor: pointer; }
+  .evolution button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .companion-list { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .companion-card { background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 8px; font-size: 0.68rem; }
+  .companion-card.recruited { border-color: #ffb14f; }
+  .companion-card .cc-name { font-weight: 700; }
+  .companion-card .cc-desc { color: var(--text-dim); display: block; margin: 2px 0 5px; }
+  .companion-card .cc-level { color: #ffd76b; font-size: 0.65rem; }
+  .companion-card button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 5px; cursor: pointer; }
+  .companion-card button.recruit-btn { border-color: var(--gold); color: var(--gold); }
+  .companion-card button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .record-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ring); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
+  .record-panel.two { grid-template-columns: repeat(2, 1fr); }
+  .rank-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--ring); font-size: 0.82rem; }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-row .rank-no { width: 2.6em; font-weight: 800; color: var(--text-dim); }
+  .rank-row .rank-name { flex: 1; font-weight: 700; }
+  .rank-row .rank-score { color: var(--gold); font-weight: 800; }
+  .rank-row.me { background: rgba(79,168,255,0.12); border-radius: 8px; }
+  .rank-row.me .rank-name { color: var(--accent-player); }
+  .record { padding: 8px 5px; background: var(--panel); text-align: center; font-size: 0.67rem; color: var(--text-dim); }
+  .record strong { display: block; color: var(--text); font-size: 0.95rem; }
+
+  .battle-notice { position: fixed; top: 54px; left: 50%; transform: translateX(-50%); z-index: 55; min-width: 60%; max-width: 90%; padding: 7px 10px; border-radius: 999px; text-align: center; background: rgba(8,11,18,0.85); color: #7ee787; font-size: 0.75rem; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .battle-notice.show { opacity: 1; }
+  .battle-notice.error { color: #ff9aa5; border: 1px solid #ff5c6c; }
+  .battle-notice.at-tap { transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
+  .clone-counter { position: absolute; right: 2%; top: 2%; z-index: 2; color: #b9e0ff; background: rgba(8,11,18,.75); border: 1px solid rgba(134,197,255,.55); padding: 4px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; pointer-events: none; }
+  .boss-warning {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+    font-size: 1.9rem; font-weight: 900; letter-spacing: 0.08em; color: #ff3b4a;
+    text-shadow: 0 0 10px rgba(255,59,74,0.9), 0 0 22px rgba(255,59,74,0.6);
+    opacity: 0; pointer-events: none; z-index: 6; transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .boss-warning.show { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: warnFlash 0.4s ease-in-out infinite alternate; }
+  @keyframes warnFlash { from { opacity: 1; } to { opacity: 0.45; } }
+  .debug-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .debug-row button { border: 1px dashed var(--ring); border-radius: 8px; color: var(--text-dim); background: transparent; padding: 6px 3px; font-size: 0.63rem; cursor: pointer; }
+
+  .arena-wrap {
+    position: relative; width: 100%; aspect-ratio: 1 / 1; max-width: 460px; margin: 0 auto;
+    border-radius: 50%; background: radial-gradient(circle at 50% 40%, var(--bg-soft), var(--bg));
+    transition: background 0.6s ease;
+  }
+  .arena-wrap.boss-mode {
+    background: radial-gradient(circle at 50% 40%, #3a1030, #1a0a12);
+    animation: bossArenaPulse 2.4s ease-in-out infinite alternate;
+  }
+  @keyframes bossArenaPulse {
+    from { box-shadow: 0 0 0 rgba(199, 60, 100, 0); }
+    to { box-shadow: 0 0 34px rgba(220, 70, 110, 0.55); }
+  }
+  canvas { width: 100%; height: 100%; display: block; border-radius: 50%; }
+
+  .toast {
+    position: absolute; inset: 0; border-radius: 50%;
+    display: none; align-items: center; justify-content: center; flex-direction: column;
+    background: rgba(10, 11, 16, 0.78); backdrop-filter: blur(2px);
+    text-align: center; padding: 20px; opacity: 0; transition: opacity 0.25s ease;
+  }
+  .toast.show { display: flex; opacity: 1; }
+  .toast .big { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+  .toast .big.stage-clear { color: #7ee787; }
+  .toast .big.reborn { color: #c792ea; }
+  .toast .sub { color: #d0d3e0; font-size: 0.85rem; }
+  .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
+
+  .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
+  .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
+  .artifact-chip .chip-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px; }
+  .artifact-chip .chip-desc { color: var(--text-dim); font-size: 0.68rem; }
+  .artifact-chip .count { background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 0.65rem; padding: 1px 6px; color: var(--text-dim); white-space: nowrap; }
+  .artifact-chip.not-owned { opacity: 0.42; filter: grayscale(0.6); }
+  .artifact-chip.not-owned .count { color: #ff9aa5; }
+  .artifact-empty { color: var(--text-dim); font-size: 0.75rem; }
+
+  .footer-row { display: flex; justify-content: center; margin-top: 2px; }
+  button.tiny { background: transparent; color: var(--text-dim); border: 1px solid var(--ring); border-radius: 999px; padding: 7px 16px; font-size: 0.75rem; cursor: pointer; }
+  button.tiny:hover { color: var(--text); border-color: var(--text-dim); }
+
+  .hint-footer { color: var(--text-dim); font-size: 0.68rem; margin-top: 2px; text-align: center; }
+
+  /* ---- タブ切り替え ---- */
+  .tab-page { display: none; flex-direction: column; gap: 12px; }
+  .tab-page.active { display: flex; }
+
+  .tab-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    display: flex; background: var(--panel); border-top: 1px solid var(--ring);
+    padding: 6px max(6px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left,0px));
+  }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; color: var(--text-dim); font-size: 0.62rem; padding: 6px 2px; cursor: pointer; border-radius: 10px; }
+  .tab-btn .tab-icon { font-size: 1.15rem; }
+  .tab-btn.active { color: var(--accent-player); background: rgba(79,168,255,0.1); }
+
+  /* ---- モーダル(転生ショップ等) ---- */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(6,8,14,0.82); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
+  .modal-overlay.show { display: flex; }
+  .modal-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; max-height: 82vh; overflow-y: auto; }
+  @keyframes loginGiftPop { 0% { transform: scale(0.3) rotate(-15deg); opacity: 0; } 55% { transform: scale(1.25) rotate(8deg); opacity: 1; } 75% { transform: scale(0.95) rotate(-4deg); } 100% { transform: scale(1) rotate(0deg); } }
+  .login-gift-icon { animation: loginGiftPop 0.6s cubic-bezier(.34,1.56,.64,1); display: inline-block; }
+  @keyframes loginSparkle { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  .login-bonus-sparkle { animation: loginSparkle 1.1s ease-in-out infinite; }
+  .login-slot-box { font-size: 2.2rem; font-weight: 900; background: linear-gradient(160deg, rgba(255,215,107,0.15), rgba(20,26,40,0.9)); border: 2px solid var(--gold); border-radius: 12px; padding: 14px 8px; margin: 12px 0; letter-spacing: 1px; }
+  .login-slot-box.spinning #loginSlotNum { display: inline-block; filter: blur(1px); }
+  .login-slot-box.settled { animation: slotSettlePop 0.4s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 0 24px rgba(255,215,107,0.6) inset; }
+  @keyframes slotSettlePop { 0% { transform: scale(1.3); } 60% { transform: scale(0.92); } 100% { transform: scale(1); } }
+  .modal-panel h2 { margin: 0 0 4px; font-size: 1.05rem; }
+  .modal-sub { color: var(--text-dim); font-size: 0.75rem; margin-bottom: 12px; }
+  .modal-shop-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .modal-shop-btn { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 10px; padding: 9px 12px; text-align: left; color: var(--text); cursor: pointer; font-size: 0.76rem; width: 100%; }
+  .modal-shop-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .modal-shop-btn .msb-name { font-weight: 700; }
+  .modal-shop-btn .msb-desc { color: var(--text-dim); font-size: 0.68rem; display: block; margin-top: 2px; }
+  .modal-shop-btn .msb-cost { color: #64e8ff; font-weight: 800; white-space: nowrap; }
+  .modal-close-btn { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid var(--btn); background: var(--btn); color: #fff; font-weight: 800; cursor: pointer; }
+  .settings-row { margin-bottom: 14px; }
+  .settings-row label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px; }
+  .settings-row input[type="range"] { width: 100%; accent-color: var(--btn); }
+  .settings-btn-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .lang-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,107,0.08); }
+  .rank-tab-btn { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; color: #b4f6ff; padding: 9px; font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+</style>
+</head>
+<body>
+
+<h1 style="display:none;">⚔️ 放置系ハクスラ無限反射</h1>
+
+<div class="top-header" id="topHeader">
+  <span class="th-item coin">🟡 <span id="headerCoins">0</span></span>
+  <div class="th-right">
+    <span class="th-item gem">💎 <span id="headerGems">0</span></span>
+    <button class="th-gear" id="settingsBtn">⚙️</button>
+  </div>
+</div>
+
+<div class="battle-notice" id="battleNotice"></div>
+
+<div class="layout">
+
+  <!-- ===== ゲーム画面タブ ===== -->
+  <div class="tab-page active" data-tab="game">
+
+    <div class="exp-wrap">
+      <div class="exp-label" style="justify-content:flex-start; gap:6px;"><span>ステージ <b id="stageNum">1</b>　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
+      <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
+    </div>
+
+    <div class="hp-row">
+      <div class="hp-card enemy" style="flex:1;">
+        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100 / 100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
+        <div class="atk-tag">ATK <span id="enemyAtkNum">8</span></div>
+      </div>
+    </div>
+
+    <div class="arena-wrap">
+      <canvas id="arenaCanvas"></canvas>
+      <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
+      <div class="boss-warning" id="bossWarning">WARNING</div>
+      <div class="toast" id="toast">
+        <div class="artifact-icon" id="toastIcon" style="display:none;"></div>
+        <div class="big" id="toastBig"></div>
+        <div class="sub" id="toastSub"></div>
+        <button class="action-btn special" id="continueBtn" style="display:none; margin-top:12px;">💎 3 でリトライ</button>
+        <button class="action-btn" id="giveUpBtn" style="display:none; margin-top:8px;">🕊️ あきらめて転生</button>
+        <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
+      </div>
+    </div>
+
+    <div class="hp-row">
+      <div class="hp-card player" style="flex:1;">
+        <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100 / 100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
+        <div class="atk-tag">ATK <span id="playerAtkNum">10</span></div>
+      </div>
+    </div>
+
+    <div class="action-row four" id="skillRow">
+      <button class="action-btn special" id="specialBtn">🔒 必殺技</button>
+      <button class="action-btn accel" id="accelBtn">🔒 加速</button>
+      <button class="action-btn heal" id="healBtn">🔒 回復</button>
+      <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
+    </div>
+    <div class="action-row single">
+      <button class="action-btn reborn-action" id="rebornBtn" style="display:none;">🌌 転生する</button>
+    </div>
+
+    <div class="hint-footer"></div>
+
+    <div class="footer-row">
+      <button class="tiny" id="resetBtn">🔄 最初から全部やり直す</button>
+    </div>
+
+    <div class="debug-row">
+      <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
+      <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
+      <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
+    </div>
+
+    <div class="speed-control">
+      <label for="speedRange">⚡ ゲーム速度</label>
+      <input id="speedRange" type="range" min="0.5" max="2.5" step="0.1" value="0.5">
+      <span class="speed-value" id="speedValue">0.5×</span>
+    </div>
+
+  </div>
+
+  <!-- ===== コイン強化タブ ===== -->
+  <div class="tab-page" data-tab="upgrade">
+    <div class="upgrade-panel">
+      <div class="upgrade-title">🟡 コイン強化（転生するとリセット）</div>
+      <div class="upgrade-list" id="upgradeList"></div>
+    </div>
+  </div>
+
+  <!-- ===== コインショップタブ ===== -->
+  <div class="tab-page" data-tab="coinshop">
+    <div class="artifact-panel">
+      <div class="title">🟡 コインショップ（転生でリセット・戦闘中のみ使用可）</div>
+      <div class="shop-list" id="coinShopList"></div>
+    </div>
+  </div>
+
+  <!-- ===== アーティファクトタブ ===== -->
+  <div class="tab-page" data-tab="artifact">
+    <div class="artifact-panel">
+      <div class="title">所持アーティファクト（転生で入手・永続）</div>
+      <div class="artifact-list" id="artifactList">
+        <span class="artifact-empty">まだ何も持っていません</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 仲間タブ ===== -->
+  <div class="tab-page" data-tab="companion">
+    <div class="artifact-panel">
+      <div class="title">🐾 仲間（コインで仲間に・レベルもコインで上昇／転生でリセット）</div>
+      <div class="companion-list" id="companionList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ジェムショップタブ ===== -->
+  <div class="tab-page" data-tab="gemshop">
+    <div class="artifact-panel">
+      <div class="title">💎 ジェムショップ（購入効果は転生後も継続）</div>
+      <div class="shop-list" id="shopList"></div>
+      <div class="supergem-note">🌟 所持スーパージェム: <span id="superGemsNum">0</span></div>
+      <div class="shop-list" id="supergemShopList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ガチャタブ ===== -->
+  <div class="tab-page" data-tab="gacha">
+    <div class="artifact-panel">
+      <div class="title">🌌 ジェム召喚・進化</div>
+      <div class="gacha-actions"><button class="gacha-pull" id="gachaBtn">✨ 召喚ガチャ　💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚　💎 45</button></div>
+      <div class="gacha-result" id="gachaResult" style="display:none;"></div>
+      <div class="evolution-list" id="evolutionList"></div>
+    </div>
+  </div>
+
+  <!-- ===== 戦績タブ ===== -->
+  <div class="tab-page" data-tab="records">
+    <div class="artifact-panel">
+      <div class="title">📊 戦績</div>
+      <div class="settings-row">
+        <label>👤 ユーザー名</label>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="usernameInput" maxlength="12" placeholder="名無しの勇者" style="flex:1; background:var(--bg-soft); border:1px solid var(--ring); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.8rem;">
+          <button class="modal-shop-btn" id="usernameSaveBtn" style="width:auto; padding:8px 14px;">保存</button>
+        </div>
+      </div>
+      <div class="record-panel two">
+        <div class="record">BEST<strong id="bestStageNum">1</strong>到達ステージ</div>
+        <div class="record">BEST<strong id="bestCoinsNum">0</strong>コイン所持数</div>
+        <div class="record">TOTAL<strong id="totalKillsNum">0</strong>キル</div>
+        <div class="record">TOTAL<strong id="totalTapsNum">0</strong>タップ</div>
+        <div class="record">TOTAL<strong id="rebornNum">0</strong>転生回数</div>
+        <div class="record">MAX<strong id="maxDamageNum">0</strong>単発ダメージ</div>
+        <div class="record">MAX<strong id="maxDpsNum">0</strong>DPS</div>
+        <div class="record">MAX<strong id="maxComboNum">0</strong>コンボ</div>
+      </div>
+      <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
+      <div class="supergem-note">総プレイ時間: <span id="playTimeText">0時間00分00秒</span></div>
+    </div>
+  </div>
+
+  <!-- ===== ランキングタブ ===== -->
+  <div class="tab-page" data-tab="ranking">
+    <div class="artifact-panel">
+      <div id="totalUserCount" style="text-align:center; font-size:14px; color:#9db0d8; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.04); border-radius:10px;">👥 累計プレイヤー数：--- 人</div>
+      <div class="gacha-actions rank-tabs">
+        <button class="gacha-pull rank-tab-btn active" id="rankDailyBtn" style="background:#142d39;">本日のクリア数</button>
+        <button class="gacha-pull rank-tab-btn" id="rankStageBtn" style="background:transparent;">到達ステージ</button>
+      </div>
+      <div class="title" id="rankingTitle">🏆 本日のクリア数ランキング</div>
+      <div id="rankDateNav" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;">
+        <button id="rankPrevDayBtn" class="modal-shop-btn" style="width:auto; padding:6px 12px;">◀ 前日</button>
+        <span id="rankDateLabel" style="font-size:0.8rem; color:var(--text-dim); min-width:90px; text-align:center;">本日</span>
+        <button id="rankNextDayBtn" class="modal-shop-btn" style="width:auto; padding:6px 12px;">翌日 ▶</button>
+      </div>
+      <div id="rankingList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="game"><span class="tab-icon">🎮</span><span class="tab-label" data-i18n="tabGame">ゲーム</span></button>
+  <button class="tab-btn" data-tab="upgrade"><span class="tab-icon">⚔️</span><span class="tab-label" data-i18n="tabUpgrade">強化</span></button>
+  <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
+  <button class="tab-btn" data-tab="coinshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabShop">ショップ</span></button>
+  <button class="tab-btn" data-tab="artifact"><span class="tab-icon">🏺</span><span class="tab-label" data-i18n="tabArtifact">遺物</span></button>
+  <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">💎</span><span class="tab-label" data-i18n="tabGem">ジェム</span></button>
+  <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">ガチャ</span></button>
+  <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
+  <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
+</div>
+
+<div class="modal-overlay" id="rebirthShopModal">
+  <div class="modal-panel">
+    <h2>🌌 転生ショップ</h2>
+    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（このショップの効果は今回の周回中のみ有効です）</div>
+    <div class="modal-shop-list" id="rebirthShopList"></div>
+    <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loginBonusModal">
+  <div class="modal-panel" style="text-align:center;">
+    <div class="login-gift-icon" style="font-size:2.4rem;">🎰</div>
+    <h2>復帰ガチャ！</h2>
+    <div class="modal-sub login-bonus-sparkle" id="loginBonusStreak">連続ログイン 1日目</div>
+    <div id="loginSlotBox" class="login-slot-box">🟡 <span id="loginSlotNum">0</span></div>
+    <div id="loginBonusReward" style="font-weight:800; font-size:1.05rem; margin:10px 0 16px; min-height:1.4em;"></div>
+    <button class="modal-close-btn" id="loginBonusCloseBtn" disabled>抽選中……</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-panel">
+    <h2 data-i18n="settingsTitle">⚙️ 設定</h2>
+    <div class="modal-sub" data-i18n="settingsSub">音量やヘルプの設定です</div>
+    <div class="settings-row">
+      <label><span data-i18n="bgmLabel">🎵 BGM音量　</span><span id="bgmVolVal">70%</span></label>
+      <input type="range" id="bgmVolRange" min="0" max="100" value="70">
+    </div>
+    <div class="settings-row">
+      <label><span data-i18n="sfxLabel">🔊 効果音音量　</span><span id="sfxVolVal">70%</span></label>
+      <input type="range" id="sfxVolRange" min="0" max="100" value="70">
+    </div>
+    <div class="settings-btn-row">
+      <button class="modal-shop-btn" id="howToPlayBtn"><span class="msb-name" data-i18n="howToPlayBtn">📖 遊び方</span></button>
+      <button class="modal-shop-btn" id="contactBtn"><span class="msb-name" data-i18n="contactBtn">✉️ お問い合わせ</span></button>
+      <button class="modal-shop-btn" id="termsBtn"><span class="msb-name" data-i18n="termsBtn">📜 利用規約</span></button>
+      <button class="modal-shop-btn" id="privacyBtn"><span class="msb-name" data-i18n="privacyBtn">🔒 プライバシーポリシー</span></button>
+    </div>
+    <div class="settings-row">
+      <label data-i18n="langLabel">🌐 言語 / Language</label>
+      <div class="settings-btn-row">
+        <button class="modal-shop-btn lang-btn active" id="langJaBtn" data-lang="ja"><span class="msb-name">日本語</span></button>
+        <button class="modal-shop-btn lang-btn" id="langEnBtn" data-lang="en"><span class="msb-name">English</span></button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <label data-i18n="devLabel">👤 開発者</label>
+      <div class="settings-btn-row">
+        <a class="modal-shop-btn" href="https://x.com/Hisashi_vc" target="_blank" rel="noopener"><span class="msb-name">𝕏 X (Twitter)</span></a>
+        <a class="modal-shop-btn" href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener"><span class="msb-name">▶️ YouTube</span></a>
+      </div>
+      <div class="modal-sub" style="margin-top:6px;" data-i18n="contactRow">お問い合わせ: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a></div>
+    </div>
+    <button class="modal-close-btn" id="settingsCloseBtn" data-i18n="closeBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-panel">
+    <h2 id="infoModalTitle">📖 遊び方</h2>
+    <div class="modal-sub" id="infoModalBody" style="white-space:pre-line; color:var(--text); font-size:0.82rem; line-height:1.6;"></div>
+    <button class="modal-close-btn" id="infoModalCloseBtn">閉じる</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('arenaCanvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = canvas.parentElement;
+
+  const stageNumEl = document.getElementById('stageNum');
+  const superGemsNumEl = document.getElementById('superGemsNum');
+  const bestStageNumEl = document.getElementById('bestStageNum');
+  const totalKillsNumEl = document.getElementById('totalKillsNum');
+  const totalTapsNumEl = document.getElementById('totalTapsNum');
+  const maxDamageNumEl = document.getElementById('maxDamageNum');
+  const maxDpsNumEl = document.getElementById('maxDpsNum');
+  const maxComboNumEl = document.getElementById('maxComboNum');
+  const bestCoinsNumEl = document.getElementById('bestCoinsNum');
+  const usernameInput = document.getElementById('usernameInput');
+  const usernameSaveBtn = document.getElementById('usernameSaveBtn');
+  const playTimeText = document.getElementById('playTimeText');
+  const rebornNumEl = document.getElementById('rebornNum');
+  const headerCoinsEl = document.getElementById('headerCoins');
+  const headerGemsEl = document.getElementById('headerGems');
+  const stageProgressText = document.getElementById('stageProgressText');
+  const stageProgressFill = document.getElementById('stageProgressFill');
+  const startedAtText = document.getElementById('startedAtText');
+
+  const playerHPFill = document.getElementById('playerHPFill');
+  const enemyHPFill = document.getElementById('enemyHPFill');
+  const playerHPText = document.getElementById('playerHPText');
+  const enemyHPText = document.getElementById('enemyHPText');
+  const playerAtkNum = document.getElementById('playerAtkNum');
+  const enemyAtkNum = document.getElementById('enemyAtkNum');
+  const enemyName = document.getElementById('enemyName');
+  const speedRange = document.getElementById('speedRange');
+  const speedValue = document.getElementById('speedValue');
+  const upgradeList = document.getElementById('upgradeList');
+  const specialBtn = document.getElementById('specialBtn');
+  const accelBtn = document.getElementById('accelBtn');
+  const healBtn = document.getElementById('healBtn');
+  const barrierBtn = document.getElementById('barrierBtn');
+  const rebornBtn = document.getElementById('rebornBtn');
+  const shopList = document.getElementById('shopList');
+  const coinShopList = document.getElementById('coinShopList');
+  const supergemShopList = document.getElementById('supergemShopList');
+  const gachaBtn = document.getElementById('gachaBtn');
+  const gacha10Btn = document.getElementById('gacha10Btn');
+  const gachaResult = document.getElementById('gachaResult');
+  const evolutionList = document.getElementById('evolutionList');
+  const companionList = document.getElementById('companionList');
+  const battleNotice = document.getElementById('battleNotice');
+  const cloneCounter = document.getElementById('cloneCounter');
+  const bossWarning = document.getElementById('bossWarning');
+
+  const toast = document.getElementById('toast');
+  const toastIcon = document.getElementById('toastIcon');
+  const toastBig = document.getElementById('toastBig');
+  const toastSub = document.getElementById('toastSub');
+  const continueBtn = document.getElementById('continueBtn');
+  const giveUpBtn = document.getElementById('giveUpBtn');
+  const dialogCloseBtn = document.getElementById('dialogCloseBtn');
+
+  const artifactListEl = document.getElementById('artifactList');
+  const rankingList = document.getElementById('rankingList');
+  const totalUserCountEl = document.getElementById('totalUserCount');
+  const resetBtn = document.getElementById('resetBtn');
+  const debugRow = document.querySelector('.debug-row');
+
+  const tabBar = document.getElementById('tabBar');
+  const tabPages = document.querySelectorAll('.tab-page');
+
+  const rebirthShopModal = document.getElementById('rebirthShopModal');
+  const rebirthShopList = document.getElementById('rebirthShopList');
+  const rebirthShopGems = document.getElementById('rebirthShopGems');
+  const rebirthShopCloseBtn = document.getElementById('rebirthShopCloseBtn');
+
+  const loginBonusModal = document.getElementById('loginBonusModal');
+  const loginBonusStreak = document.getElementById('loginBonusStreak');
+  const loginSlotBox = document.getElementById('loginSlotBox');
+  const loginSlotNum = document.getElementById('loginSlotNum');
+  const loginBonusReward = document.getElementById('loginBonusReward');
+  const loginBonusCloseBtn = document.getElementById('loginBonusCloseBtn');
+
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  const bgmVolRange = document.getElementById('bgmVolRange');
+  const bgmVolVal = document.getElementById('bgmVolVal');
+  const sfxVolRange = document.getElementById('sfxVolRange');
+  const sfxVolVal = document.getElementById('sfxVolVal');
+  const howToPlayBtn = document.getElementById('howToPlayBtn');
+  const contactBtn = document.getElementById('contactBtn');
+  const termsBtn = document.getElementById('termsBtn');
+  const privacyBtn = document.getElementById('privacyBtn');
+  const langJaBtn = document.getElementById('langJaBtn');
+  const langEnBtn = document.getElementById('langEnBtn');
+  const infoModal = document.getElementById('infoModal');
+  const infoModalTitle = document.getElementById('infoModalTitle');
+  const infoModalBody = document.getElementById('infoModalBody');
+  const infoModalCloseBtn = document.getElementById('infoModalCloseBtn');
+
+  const rankDailyBtn = document.getElementById('rankDailyBtn');
+  const rankStageBtn = document.getElementById('rankStageBtn');
+  const rankDateNav = document.getElementById('rankDateNav');
+  const rankPrevDayBtn = document.getElementById('rankPrevDayBtn');
+  const rankNextDayBtn = document.getElementById('rankNextDayBtn');
+  const rankDateLabel = document.getElementById('rankDateLabel');
+  const rankingTitle = document.getElementById('rankingTitle');
+
+  // ---------- タブ切り替え ----------
+  tabBar.addEventListener('click', event => {
+    const btn = event.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === btn.dataset.tab));
+  });
+
+  rankDailyBtn.addEventListener('click', () => {
+    rankingMode = 'daily';
+    rankDailyBtn.classList.add('active'); rankDailyBtn.style.background = '#142d39';
+    rankStageBtn.classList.remove('active'); rankStageBtn.style.background = 'transparent';
+    renderRanking();
+  });
+  rankStageBtn.addEventListener('click', () => {
+    rankingMode = 'stage';
+    rankStageBtn.classList.add('active'); rankStageBtn.style.background = '#142d39';
+    rankDailyBtn.classList.remove('active'); rankDailyBtn.style.background = 'transparent';
+    renderRanking();
+  });
+  rankPrevDayBtn.addEventListener('click', () => {
+    rankingDateOffset -= 1;
+    renderRanking();
+  });
+  rankNextDayBtn.addEventListener('click', () => {
+    if (rankingDateOffset >= 0) return;
+    rankingDateOffset += 1;
+    renderRanking();
+  });
+
+  settingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); });
+  settingsCloseBtn.addEventListener('click', () => { settingsModal.classList.remove('show'); });
+  settingsModal.addEventListener('click', event => { if (event.target === settingsModal) settingsModal.classList.remove('show'); });
+
+  bgmVolRange.addEventListener('input', () => {
+    game.bgmVolume = Number(bgmVolRange.value) / 100;
+    bgmVolVal.textContent = bgmVolRange.value + '%';
+    saveGame();
+  });
+  sfxVolRange.addEventListener('input', () => {
+    game.sfxVolume = Number(sfxVolRange.value) / 100;
+    sfxVolVal.textContent = sfxVolRange.value + '%';
+    saveGame();
+  });
+
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・壁に反射するたびにコインと攻撃力が少し増加します。\n・敵を倒すとEXPを獲得しレベルアップします。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、レベル・コイン・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nEach wall bounce gives a small amount of coins and attack power.\nDefeating enemies grants EXP and levels you up.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: level, coins and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
+  const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
+  const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
+  const TERMS_TEXT_EN = 'This app is a free browser game.\n\n・The developer is not responsible for any damages arising from the use of this app.\n・In-game data (coins, gems, etc.) has no real-world monetary value.\n・Game content may change without notice for bug fixes or balance adjustments.\n・Copying, modifying, or redistributing this app is prohibited.\n・Access may be restricted if anti-social or disruptive behavior (such as data tampering) is confirmed.\n\nBy using this app, you are considered to have agreed to these terms.';
+  const PRIVACY_TEXT_JA = '本アプリのプライバシーポリシーです。\n\n・本アプリはブラウザのローカルストレージにのみゲーム進行データを保存します。\n・氏名・メールアドレス等、個人を特定できる情報を収集することはありません。\n・お問い合わせでいただいたメールアドレスは、返信目的以外には使用しません。\n・第三者への情報提供は行いません。\n\nご不明な点はお問い合わせ窓口までご連絡ください。';
+  const PRIVACY_TEXT_EN = 'Privacy Policy for this app.\n\n・This app only saves game progress data in your browser\'s local storage.\n・We do not collect personally identifiable information such as your name or email address.\n・Any email address provided via contact will only be used to respond to your inquiry.\n・We do not share information with third parties.\n\nPlease contact us if you have any questions.';
+
+  const I18N = {
+    ja: {
+      tabGame: 'ゲーム', tabUpgrade: '強化', tabCompanion: '仲間', tabShop: 'ショップ', tabArtifact: '遺物', tabGem: 'ジェム', tabGacha: 'ガチャ', tabRecords: '戦績', tabRanking: 'ランキング',
+      settingsTitle: '⚙️ 設定', settingsSub: '音量やヘルプの設定です',
+      bgmLabel: '🎵 BGM音量　', sfxLabel: '🔊 効果音音量　',
+      howToPlayBtn: '📖 遊び方', contactBtn: '✉️ お問い合わせ', termsBtn: '📜 利用規約', privacyBtn: '🔒 プライバシーポリシー',
+      langLabel: '🌐 言語 / Language', devLabel: '👤 開発者', closeBtn: '閉じる',
+      contactRow: 'お問い合わせ: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
+      howToPlayText: HOW_TO_PLAY_TEXT_JA, contactText: CONTACT_TEXT_JA, termsText: TERMS_TEXT_JA, privacyText: PRIVACY_TEXT_JA,
+    },
+    en: {
+      tabGame: 'Game', tabUpgrade: 'Upgrade', tabCompanion: 'Allies', tabShop: 'Shop', tabArtifact: 'Relics', tabGem: 'Gems', tabGacha: 'Gacha', tabRecords: 'Records', tabRanking: 'Ranking',
+      settingsTitle: '⚙️ Settings', settingsSub: 'Volume and help settings',
+      bgmLabel: '🎵 BGM Volume　', sfxLabel: '🔊 SFX Volume　',
+      howToPlayBtn: '📖 How to Play', contactBtn: '✉️ Contact', termsBtn: '📜 Terms of Service', privacyBtn: '🔒 Privacy Policy',
+      langLabel: '🌐 言語 / Language', devLabel: '👤 Developer', closeBtn: 'Close',
+      contactRow: 'Contact: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
+      howToPlayText: HOW_TO_PLAY_TEXT_EN, contactText: CONTACT_TEXT_EN, termsText: TERMS_TEXT_EN, privacyText: PRIVACY_TEXT_EN,
+    }
+  };
+  let currentLang = 'ja'; // 実際の値はloadGame()後に反映
+  function applyLanguage(lang) {
+    currentLang = (I18N[lang] ? lang : 'ja');
+    game.language = currentLang;
+    document.documentElement.lang = currentLang;
+    const dict = I18N[currentLang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (!dict[key]) return;
+      if (key === 'contactRow') el.innerHTML = dict[key];
+      else el.textContent = dict[key];
+    });
+    langJaBtn.classList.toggle('active', currentLang === 'ja');
+    langEnBtn.classList.toggle('active', currentLang === 'en');
+    saveGame();
+  }
+  langJaBtn.addEventListener('click', () => applyLanguage('ja'));
+  langEnBtn.addEventListener('click', () => applyLanguage('en'));
+
+  howToPlayBtn.addEventListener('click', () => {
+    infoModalTitle.textContent = I18N[currentLang].howToPlayBtn;
+    infoModalBody.textContent = I18N[currentLang].howToPlayText;
+    infoModal.classList.add('show');
+  });
+  contactBtn.addEventListener('click', () => {
+    infoModalTitle.textContent = I18N[currentLang].contactBtn;
+    infoModalBody.textContent = I18N[currentLang].contactText;
+    infoModal.classList.add('show');
+  });
+  termsBtn.addEventListener('click', () => {
+    infoModalTitle.textContent = I18N[currentLang].termsBtn;
+    infoModalBody.textContent = I18N[currentLang].termsText;
+    infoModal.classList.add('show');
+  });
+  privacyBtn.addEventListener('click', () => {
+    infoModalTitle.textContent = I18N[currentLang].privacyBtn;
+    infoModalBody.textContent = I18N[currentLang].privacyText;
+    infoModal.classList.add('show');
+  });
+  infoModalCloseBtn.addEventListener('click', () => { infoModal.classList.remove('show'); });
+  infoModal.addEventListener('click', event => { if (event.target === infoModal) infoModal.classList.remove('show'); });
+
+  // ---------- アーティファクト定義 ----------
+  const ARTIFACT_POOL = [
+    { id: 'heart',  icon: '🔥', name: '猛攻の心臓',     desc: '攻撃力 +20%' },
+    { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%' },
+    { id: 'book',   icon: '📖', name: '賢者の書',       desc: '経験値獲得 +30%' },
+    { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%' },
+    { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%' },
+    { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射ボーナス +100%' },
+    { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）' },
+    { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%' },
+    { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: '必殺技ダメージ +35%' },
+    { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: '必殺技の待機時間 -15%（最大3個）' },
+    { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）' },
+  ];
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3 };
+  const ARTIFACT_BY_ID = {};
+  ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
+
+  // ---------- ガチャ・進化（レア度つき） ----------
+  const RARITY_INFO = {
+    common:    { label: 'コモン',     stars: 1, color: '#9aa0b4', needMult: 3 },
+    rare:      { label: 'レア',       stars: 2, color: '#64e8ff', needMult: 2 },
+    epic:      { label: 'エピック',   stars: 3, color: '#c792ea', needMult: 2 },
+    legendary: { label: 'レジェンド', stars: 4, color: '#ffd76b', needMult: 1 },
+  };
+  function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(4 - RARITY_INFO[rarity].stars); }
+  const GACHA_POOL = {
+    power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
+    vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },
+    swift:    { icon: '💨', name: '疾風の欠片',   rarity: 'rare',      desc: '移動速度 +8%/Lv',       bonus: { speed: 0.08 },             weight: 18 },
+    fortune:  { icon: '🍀', name: '幸運の欠片',   rarity: 'rare',      desc: 'コイン獲得 +15%/Lv',    bonus: { coin: 0.15 },              weight: 16 },
+    meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: '必殺技ダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
+    chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
+    phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
+  };
+  function pickGachaId() {
+    const total = Object.values(GACHA_POOL).reduce((s, i) => s + i.weight, 0);
+    let r = Math.random() * total;
+    for (const id in GACHA_POOL) {
+      r -= GACHA_POOL[id].weight;
+      if (r <= 0) return id;
+    }
+    return Object.keys(GACHA_POOL)[0];
+  }
+  function getEvolveNeed(id) {
+    const level = game.evolutions[id];
+    const mult = RARITY_INFO[GACHA_POOL[id].rarity].needMult;
+    return (level + 1) * mult;
+  }
+
+  // ---------- ショップ定義 ----------
+  const UPGRADES = {
+    atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25 },
+    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 },
+    speed: { icon: '💨', name: '移動速度', desc: '+10%', baseCost: 30 }
+  };
+  const SHOP_ITEMS = {
+    sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
+    shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
+    meteor: { icon: '☄️', name: '流星術', desc: '必殺技ダメージ +50%', cost: 12 },
+    fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
+    summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 }
+  };
+  const COIN_SHOP_ITEMS = {
+    potion: { icon: '🧪', name: '回復ポーション', desc: 'HPを最大値の45%回復', cost: 35 },
+    cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 },
+    skillSpecial: { icon: '✨', name: '必殺技解放', desc: '隕石の必殺技スキルを使用可能に', cost: 120 },
+    skillAccel: { icon: '⏩', name: '加速スキル解放', desc: '2.5倍速スキルを使用可能に', cost: 90 },
+    skillHeal: { icon: '💗', name: '回復スキル解放', desc: 'HPを回復するスキルを使用可能に', cost: 90 },
+    skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回するバリアを展開', cost: 100 }
+  };
+  const SUPERGEM_SHOP_ITEMS = {
+    small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
+    medium: { icon: '💎', name: 'ジェム袋', desc: 'ジェム +20', cost: 3 },
+    large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +60', cost: 8 }
+  };
+  // 転生直後のみ開く、ジェット消費専用ショップ（効果はその周回のみ）
+  const REBIRTH_SHOP_ITEMS = {
+    startFund: { icon: '🟡', name: '開始資金', desc: '今すぐコイン +150', cost: 2, effect: () => { game.coins += 150; } },
+    warCry:    { icon: '⚔️', name: '闘気鼓舞', desc: '今回の周回中、攻撃力 +15%', cost: 3, effect: () => { game.rebirthBonus.atk += 0.15; } },
+    blessing:  { icon: '❤️', name: '女神の加護', desc: '今回の周回中、最大HP +15%', cost: 3, effect: () => { game.rebirthBonus.hp += 0.15; } },
+    reserve:   { icon: '👥', name: '予備兵招集', desc: '今回の周回中、分身上限 +1', cost: 2, effect: () => { game.rebirthBonus.cloneSlots += 1; } }
+  };
+
+  // 仲間：ジェムで仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
+  const COMPANIONS = {
+    knight: { icon: '🛡️', name: '守護の騎士', stat: 'hp',    desc: '最大HP上昇',     recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20 },
+    archer: { icon: '🏹', name: '疾風の射手', stat: 'atk',   desc: '攻撃力上昇',     recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20 },
+    witch:  { icon: '🧙', name: '黄金の魔女', stat: 'coin',  desc: 'コイン獲得上昇', recruitCost: 130, baseBonus: 0.10, perLevel: 0.04, levelCostBase: 25 },
+    sprite: { icon: '🧚', name: '俊敏の妖精', stat: 'speed', desc: '移動速度上昇',   recruitCost: 80, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 20 }
+  };
+
+  // ---------- ゲーム状態 ----------
+  const game = {
+    stage: 1, level: 1, exp: 0, coins: 0, gems: 0, superGems: 0,
+    reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
+    bounceAtkBonus: 0,
+    upgrades: { atk: 0, hp: 0, speed: 0 },
+    coinCloneSlots: 0,
+    shopOwned: {},
+    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 },
+    ownedArtifacts: {},
+    rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
+    companions: { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
+    startedAt: Date.now(),
+    lastLoginDate: null,
+    loginStreak: 0,
+    maxDamage: 0,
+    maxDps: 0,
+    dailyClearDate: null,
+    dailyClears: 0,
+    dailyClearHistory: {},
+    sfxVolume: 0.7,
+    bgmVolume: 0.7
+  };
+
+  function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
+
+  function computeBonuses() {
+    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1 };
+    for (const id in game.ownedArtifacts) {
+      const count = game.ownedArtifacts[id];
+      const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
+      if (id === 'heart') b.atkMult += 0.2 * count;
+      if (id === 'ring') b.coinMult += 0.3 * count;
+      if (id === 'book') b.expMult += 0.3 * count;
+      if (id === 'armor') b.hpMult += 0.25 * count;
+      if (id === 'boots') b.speedMult += 0.15 * count;
+      if (id === 'clover') b.bounceMult += 1.0 * count;
+      if (id === 'compass') b.bounceCoinCount = count;
+      if (id === 'calendar') b.loginBonusMult += 0.4 * count;
+      if (id === 'gauntlet') b.specialDmgMult += 0.35 * count;
+      if (id === 'hourglass') b.specialCooldownMult -= 0.15 * cap;
+      if (id === 'turbo') b.accelDmgMult += 0.25 * cap;
+    }
+    b.atkMult += game.upgrades.atk * 0.15;
+    b.hpMult += game.upgrades.hp * 0.20;
+    b.speedMult += game.upgrades.speed * 0.10;
+    if (game.shopOwned.sword) b.atkMult += 0.25;
+    if (game.shopOwned.shield) b.hpMult += 0.25;
+    if (game.shopOwned.fairy) b.coinMult += 0.30;
+
+    for (const id in GACHA_POOL) {
+      const level = game.evolutions[id] || 0;
+      if (!level) continue;
+      const bonus = GACHA_POOL[id].bonus;
+      if (bonus.atk) b.atkMult += bonus.atk * level;
+      if (bonus.hp) b.hpMult += bonus.hp * level;
+      if (bonus.speed) b.speedMult += bonus.speed * level;
+      if (bonus.coin) b.coinMult += bonus.coin * level;
+      if (bonus.special) b.specialMult += bonus.special * level;
+      if (bonus.combo) b.comboGrowth += bonus.combo * level;
+    }
+
+    for (const id in COMPANIONS) {
+      if (!game.companions.recruited[id]) continue;
+      const c = COMPANIONS[id];
+      const level = game.companions.level[id] || 0;
+      const bonus = c.baseBonus + level * c.perLevel;
+      if (c.stat === 'hp') b.hpMult += bonus;
+      if (c.stat === 'atk') b.atkMult += bonus;
+      if (c.stat === 'coin') b.coinMult += bonus;
+      if (c.stat === 'speed') b.speedMult += bonus;
+    }
+
+    b.atkMult += game.rebirthBonus.atk;
+    b.hpMult += game.rebirthBonus.hp;
+    return b;
+  }
+
+  function getCloneLimit() {
+    return 3 + game.coinCloneSlots + (game.shopOwned.summoner ? 2 : 0) + game.rebirthBonus.cloneSlots;
+  }
+  function getUpgradeCost(id) { return UPGRADES[id].baseCost * (game.upgrades[id] + 1); }
+  function sumUpgradeCost(id, fromLevel, count) {
+    const base = UPGRADES[id].baseCost;
+    return base * count * (2 * fromLevel + count + 1) / 2;
+  }
+  function getMaxAffordableUpgradeLevels(id, coins) {
+    const base = UPGRADES[id].baseCost;
+    const L = game.upgrades[id];
+    const A = base, B = base * (2 * L + 1), C = -2 * coins;
+    let count = Math.floor((-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A));
+    if (!isFinite(count) || count < 0) count = 0;
+    while (count > 0 && sumUpgradeCost(id, L, count) > coins) count--;
+    while (sumUpgradeCost(id, L, count + 1) <= coins) count++;
+    return count;
+  }
+
+  function renderUpgradeList() {
+    upgradeList.innerHTML = Object.entries(UPGRADES).map(([id, upgrade]) => {
+      const level = game.upgrades[id];
+      const cost = getUpgradeCost(id);
+      const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
+      return `<div class="upgrade-row">
+        <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${upgrade.icon}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
+        <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
+      </div>`;
+    }).join('');
+  }
+  function renderShopList() {
+    shopList.innerHTML = Object.entries(SHOP_ITEMS).map(([id, item]) => {
+      const owned = game.shopOwned[id];
+      return `<button class="shop-btn ${owned || game.gems < item.cost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? '購入済み' : item.desc}</span><span class="cost">${owned ? '✓ 所持中' : '💎 ' + item.cost}</span></button>`;
+    }).join('');
+  }
+  function renderCoinShopList() {
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier';
+    coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
+      if (isSkill(id)) {
+        const owned = game.shopOwned[id];
+        return `<button class="shop-btn coin-shop-btn ${owned || game.coins < item.cost ? 'is-disabled' : ''}" data-coin-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? '購入済み' : item.desc}</span><span class="cost">${owned ? '✓ 所持中' : '🟡 ' + formatCoinNumber(item.cost)}</span></button>`;
+      }
+      const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
+      const suffix = id === 'cloneSlot' ? `（上限 ${getCloneLimit()}）` : '';
+      return `<button class="shop-btn coin-shop-btn ${game.coins < cost ? 'is-disabled' : ''}" data-coin-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}${suffix}</span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>`;
+    }).join('');
+  }
+  function renderSupergemShopList() {
+    supergemShopList.innerHTML = Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item]) => {
+      return `<button class="shop-btn ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}</span><span class="cost">🌟 ${item.cost}</span></button>`;
+    }).join('');
+  }
+  function renderEvolutionList() {
+    evolutionList.innerHTML = Object.entries(GACHA_POOL).map(([id, type]) => {
+      const level = game.evolutions[id];
+      const rarity = RARITY_INFO[type.rarity];
+      return `<div class="evolution"><span class="rarity-tag" style="background:${rarity.color}22;color:${rarity.color};border:1px solid ${rarity.color}55;">${rarityStars(type.rarity)}</span><br><span class="item-icon">${type.icon}</span> ${type.name} Lv.${level}<br><span>${type.desc}</span></div>`;
+    }).join('');
+    gachaBtn.classList.toggle('is-disabled', game.gems < 5);
+    gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
+  }
+  function renderRebirthShopList() {
+    rebirthShopGems.textContent = Math.floor(game.gems);
+    rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).map(([id, item]) => {
+      const disabled = game.gems < item.cost;
+      return `<button class="modal-shop-btn" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}</span></span><span class="msb-cost">💎 ${item.cost}</span></button>`;
+    }).join('');
+  }
+
+  function getCompanionLevelCost(id) {
+    const c = COMPANIONS[id];
+    return c.levelCostBase * (game.companions.level[id] + 1);
+  }
+  function renderCompanionList() {
+    companionList.innerHTML = Object.entries(COMPANIONS).map(([id, c]) => {
+      const recruited = !!game.companions.recruited[id];
+      if (!recruited) {
+        const disabled = game.coins < c.recruitCost;
+        return `<div class="companion-card"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span><span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><button class="recruit-btn ${disabled ? 'is-disabled' : ''}" data-recruit="${id}">仲間にする　🟡 ${formatCoinNumber(c.recruitCost)}</button></div>`;
+      }
+      const level = game.companions.level[id];
+      const cost = getCompanionLevelCost(id);
+      const disabled = game.coins < cost;
+      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span><span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span></span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
+    }).join('');
+  }
+
+  function getPlayerAtk() {
+    const b = computeBonuses();
+    const base = 10 + (game.level - 1) * 2 + game.bounceAtkBonus;
+    const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
+    return Math.max(1, Math.round(base * b.atkMult * accelBonus));
+  }
+  function getPlayerMaxHP() {
+    const b = computeBonuses();
+    const base = 100 + (game.level - 1) * 6;
+    return Math.round(base * b.hpMult);
+  }
+  function getEnemyStats(stage) {
+    const isBoss = stage % 10 === 0;
+    const baseHp = Math.round(80 + stage * 24);
+    const baseAtk = Math.round(6 + stage * 2.4);
+    return {
+      hp: isBoss ? Math.round(baseHp * 3.5) : baseHp,
+      atk: isBoss ? Math.round(baseAtk * 1.6) : baseAtk,
+      isBoss
+    };
+  }
+
+  function renderArtifactList() {
+    artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
+      const count = game.ownedArtifacts[a.id] || 0;
+      const owned = count > 0;
+      return `<button class="artifact-chip ${owned ? '' : 'not-owned'}" data-artifact="${a.id}">
+        <span class="chip-head"><span class="item-icon">${a.icon}</span> ${a.name}<span class="count">${owned ? 'x' + count : '未所持'}</span></span>
+        <span class="chip-desc">${a.desc}</span>
+      </button>`;
+    }).join('');
+  }
+
+  const RIVALS = ['ケンタ', 'ユキ', 'ソラ', 'ハルト', 'ミオ', 'レン', 'アカリ', 'ツバサ']
+    .map(name => ({ name, stageScore: 3 + Math.floor(Math.random() * 45), dailyScore: Math.floor(Math.random() * 12) }));
+  let rankingMode = 'daily';
+  const SERVICE_START_DATE_KEY = '2026-06-01'; // サービス開始日（これより過去へは遡れない）
+  let rankingDateOffset = 0; // 0=本日, -1=前日, ...
+
+  function getRankingDateKey() {
+    const d = new Date();
+    d.setDate(d.getDate() + rankingDateOffset);
+    return dateKey(d);
+  }
+
+  // 累計プレイヤー数の表示値（他のランキング項目と同様、疑似的に算出した演出用の数値）
+  function getTotalUserCountDisplay() {
+    const epoch = new Date(SERVICE_START_DATE_KEY + 'T00:00:00Z').getTime();
+    const daysSince = Math.max(0, Math.floor((Date.now() - epoch) / 86400000));
+    const wobble = Math.floor((Math.sin(daysSince * 0.7) + 1) * 40);
+    return 18400 + daysSince * 37 + wobble;
+  }
+  function renderTotalUserCount() {
+    if (!totalUserCountEl) return;
+    const count = getTotalUserCountDisplay();
+    totalUserCountEl.textContent = `👥 累計プレイヤー数：${count.toLocaleString('ja-JP')} 人`;
+  }
+
+  function renderRanking() {
+    renderTotalUserCount();
+    const isDaily = rankingMode === 'daily';
+    rankDateNav.style.display = isDaily ? 'flex' : 'none';
+    ensureDailyClearReset();
+
+    const todayKey = dateKey(new Date());
+    const selectedKey = getRankingDateKey();
+    const atServiceStart = daysBetweenKeys(SERVICE_START_DATE_KEY, selectedKey) <= 0;
+    const atToday = rankingDateOffset >= 0;
+    rankPrevDayBtn.disabled = atServiceStart;
+    rankPrevDayBtn.style.opacity = atServiceStart ? 0.4 : 1;
+    rankNextDayBtn.disabled = atToday;
+    rankNextDayBtn.style.opacity = atToday ? 0.4 : 1;
+    if (rankingDateOffset === 0) rankDateLabel.textContent = '本日';
+    else if (rankingDateOffset === -1) rankDateLabel.textContent = '昨日';
+    else if (rankingDateOffset === -2) rankDateLabel.textContent = '一昨日';
+    else rankDateLabel.textContent = selectedKey;
+
+    rankingTitle.textContent = isDaily ? `🏆 ${rankDateLabel.textContent}のクリア数ランキング` : '🏆 到達ステージランキング';
+    const daysAgo = Math.max(0, daysBetweenKeys(selectedKey, todayKey));
+    const rivalFactor = Math.max(0.3, 1 - daysAgo * 0.05); // 過去日ほどライバルのスコアも控えめに演出
+    const entries = RIVALS.map(r => ({ name: r.name, score: isDaily ? Math.round(r.dailyScore * rivalFactor) : r.stageScore, isPlayer: false }));
+    const myScore = isDaily ? getDailyClearsForDate(selectedKey) : game.bestStage;
+    entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
+    entries.sort((a, b) => b.score - a.score);
+    rankingList.innerHTML = entries.map((entry, i) =>
+      `<div class="rank-row ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${i + 1}位</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : 'Stage ' + entry.score}</span></div>`
+    ).join('');
+  }
+
+  function updateStatsUI() {
+    stageNumEl.textContent = game.stage;
+    superGemsNumEl.textContent = Math.floor(game.superGems);
+    rebornNumEl.textContent = game.reincarnations;
+    bestStageNumEl.textContent = game.bestStage;
+    totalKillsNumEl.textContent = game.totalKills;
+    totalTapsNumEl.textContent = game.totalTaps;
+    maxDamageNumEl.textContent = Math.floor(game.maxDamage || 0);
+    maxDpsNumEl.textContent = Math.floor(game.maxDps || 0);
+    maxComboNumEl.textContent = game.maxCombo || 0;
+    game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
+    bestCoinsNumEl.textContent = formatCoinNumber(game.bestCoins);
+    headerCoinsEl.textContent = formatCoinNumber(game.coins);
+    headerGemsEl.textContent = Math.floor(game.gems);
+    startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
+    playTimeText.textContent = formatDuration(Date.now() - game.startedAt);
+
+    const stageInCycle = ((game.stage - 1) % 10) + 1;
+    stageProgressText.textContent = stageInCycle + ' / 10';
+    stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
+
+    renderUpgradeList();
+    renderShopList();
+    renderCoinShopList();
+    renderSupergemShopList();
+    renderEvolutionList();
+    renderCompanionList();
+    renderRanking();
+    rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
+    updateSpecialButton();
+    updateAccelButton();
+    updateHealButton();
+    updateBarrierButton();
+  }
+
+  // ---------- Canvas / 物理 ----------
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  let size = 0;
+  let arena = { x: 0, y: 0, radius: 0 };
+  let animId = null;
+  let phase = 'battle'; // 'battle' | 'paused'
+  let hitStopFrames = 0; // ヒットストップ用フレームカウンター（撃破時のみ使用）
+  const KILL_HITSTOP_DURATION = 3; // 撃破時のヒットストップの長さ（フレーム数）
+  const KNOCKBACK_SHAKE_FRAMES = 12; // 撃破後、震えながら吹っ飛ぶ演出の長さ（短縮済み）
+  let stageAnnounceText = ''; // サークル中央に表示するステージ数
+  let stageAnnounceTimer = 0; // 表示残りフレーム
+  const STAGE_ANNOUNCE_DURATION = 50;
+  const KNOCKBACK_SPEED = 38; // 吹っ飛ぶ初速（サークル外まで爆発的に）
+  const KNOCKBACK_DECEL = 0.985; // 吹っ飛び速度の減衰（ほぼ減速せず飛んでいく）
+
+  let balls = [];
+  let adds = [];
+  let particles = [];
+  let damageTexts = [];
+  let meteors = [];
+  let audioCtx = null;
+  let gameSpeed = Number(speedRange.value);
+  const SPECIAL_COOLDOWN = 5 * 60 * 1000;
+  let lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
+  const ACCEL_COOLDOWN = 3 * 60 * 1000;
+  const ACCEL_DURATION = 15 * 1000;
+  let lastAccelAt = Date.now() - ACCEL_COOLDOWN;
+  let accelEndAt = 0;
+  const HEAL_COOLDOWN = 90 * 1000;
+  const BOOST_DURATION = 2500;
+  const BOOST_MULT = 1.9;
+  let lastHealAt = Date.now() - HEAL_COOLDOWN;
+  const BARRIER_COOLDOWN = 4 * 60 * 1000;
+  const BARRIER_DURATION = 10 * 1000;
+  const BARRIER_ORB_COUNT = 3;
+  const BARRIER_ORBIT_RADIUS = 44;
+  const BARRIER_ROT_SPEED = 0.06;
+  let lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
+  let barrierEndAt = 0;
+  let barrierOrbs = [];
+
+  // ---------- セーブ／ロード（このブラウザにのみ保存） ----------
+  const SAVE_KEY = 'circle-battle-idle-save-v1';
+  let saveTimer = null;
+  function saveGame() {
+    try {
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, savedAt: Date.now() };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    } catch (err) { /* 保存できない環境では無視 */ }
+  }
+  function loadGame() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || !data.game) return false;
+      Object.assign(game, data.game);
+      if (typeof data.lastSpecialAt === 'number') lastSpecialAt = data.lastSpecialAt;
+      if (typeof data.lastAccelAt === 'number') lastAccelAt = data.lastAccelAt;
+      if (typeof data.accelEndAt === 'number') accelEndAt = data.accelEndAt;
+      if (typeof data.lastHealAt === 'number') lastHealAt = data.lastHealAt;
+      if (typeof data.lastBarrierAt === 'number') lastBarrierAt = data.lastBarrierAt;
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+  function clearSave() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (err) { /* 無視 */ }
+  }
+
+  // ---------- ログインボーナス ----------
+  const LOGIN_BONUS_TABLE = [
+    { coins: 50, gems: 0 },
+    { coins: 80, gems: 1 },
+    { coins: 120, gems: 1 },
+    { coins: 160, gems: 2 },
+    { coins: 200, gems: 2 },
+    { coins: 260, gems: 3 },
+    { coins: 350, gems: 5 }
+  ];
+  const LOGIN_RARITY_MULT = { common: 1, rare: 1.5, epic: 2.5, legendary: 5 };
+  const LOGIN_RARITY_EXTRA_GEMS = { common: 0, rare: 0, epic: 1, legendary: 3 };
+  function pickLoginRarity() {
+    const roll = Math.random() * 100;
+    if (roll < 3) return 'legendary';
+    if (roll < 15) return 'epic';
+    if (roll < 45) return 'rare';
+    return 'common';
+  }
+  function formatCoinNumber(num) {
+    num = Math.floor(num || 0);
+    if (num < 10000) return num.toLocaleString('ja-JP');
+    const units = [
+      { value: 1e4, symbol: '万' },
+      { value: 1e8, symbol: '億' },
+      { value: 1e12, symbol: '兆' },
+    ];
+    let idx = units.length - 1;
+    while (idx > 0 && num < units[idx].value) idx--;
+    while (true) {
+      const u = units[idx];
+      const raw = num / u.value;
+      const decimals = raw < 10 ? 2 : (raw < 100 ? 1 : 0);
+      const rounded = Math.round(raw * Math.pow(10, decimals)) / Math.pow(10, decimals);
+      if (rounded >= 10000 && idx < units.length - 1) { idx++; continue; } // 桁上りで一つ大きい単位へ
+      return rounded.toLocaleString('ja-JP', { maximumFractionDigits: decimals }) + u.symbol;
+    }
+  }
+  function dateKey(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function daysBetweenKeys(a, b) {
+    const [ay, am, ad] = a.split('-').map(Number);
+    const [by, bm, bd] = b.split('-').map(Number);
+    const da = new Date(ay, am - 1, ad);
+    const db = new Date(by, bm - 1, bd);
+    return Math.round((db - da) / 86400000);
+  }
+  function showBossWarning() {
+    bossWarning.classList.add('show');
+    playWarningSound();
+    setTimeout(() => bossWarning.classList.remove('show'), 1800);
+  }
+
+  function ensureDailyClearReset() {
+    const today = dateKey(new Date());
+    if (game.dailyClearDate !== today) {
+      if (!game.dailyClearHistory) game.dailyClearHistory = {};
+      if (game.dailyClearDate) game.dailyClearHistory[game.dailyClearDate] = game.dailyClears;
+      game.dailyClearDate = today;
+      game.dailyClears = 0;
+    }
+  }
+  function getDailyClearsForDate(key) {
+    const today = dateKey(new Date());
+    if (key === today) return game.dailyClears;
+    if (game.dailyClearHistory && game.dailyClearHistory[key] != null) return game.dailyClearHistory[key];
+    return 0;
+  }
+
+  function checkLoginBonus() {
+    const today = dateKey(new Date());
+    if (game.lastLoginDate === today) return;
+    let newStreak = 1;
+    if (game.lastLoginDate) {
+      const diff = daysBetweenKeys(game.lastLoginDate, today);
+      if (diff === 1) newStreak = (game.loginStreak || 0) + 1;
+    }
+    const reward = LOGIN_BONUS_TABLE[(newStreak - 1) % LOGIN_BONUS_TABLE.length];
+    const rarity = pickLoginRarity();
+    const rarityInfo = RARITY_INFO[rarity];
+    const b = computeBonuses();
+    const bonusCoins = Math.round(reward.coins * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
+    const bonusGems = reward.gems + LOGIN_RARITY_EXTRA_GEMS[rarity];
+    game.loginStreak = newStreak;
+    game.lastLoginDate = today;
+
+    loginBonusStreak.textContent = '連続ログイン ' + newStreak + '日目';
+    loginBonusReward.textContent = '';
+    loginBonusCloseBtn.disabled = true;
+    loginBonusCloseBtn.textContent = '抽選中……';
+    loginSlotBox.classList.remove('settled');
+    loginSlotBox.classList.add('spinning');
+    loginSlotNum.textContent = '0';
+    loginBonusModal.classList.add('show');
+
+    // スロットが回って徐々に減速しながらコイン数が確定する演出
+    let ticks = 0;
+    const totalTicks = 16;
+    const spin = () => {
+      ticks++;
+      if (ticks < totalTicks) {
+        loginSlotNum.textContent = Math.round(Math.random() * bonusCoins * 1.4).toLocaleString('ja-JP');
+        playSlotTickSound();
+        const delay = 40 + Math.pow(ticks / totalTicks, 2) * 180; // 徐々に間隔を伸ばして減速
+        setTimeout(spin, delay);
+      } else {
+        loginSlotNum.textContent = formatCoinNumber(bonusCoins);
+        loginSlotBox.classList.remove('spinning');
+        loginSlotBox.classList.add('settled');
+        loginSlotBox.style.borderColor = rarityInfo.color;
+        loginSlotBox.style.boxShadow = `0 0 24px ${rarityInfo.color}99 inset`;
+        playSlotSettleSound();
+        game.coins += bonusCoins;
+        game.gems += bonusGems;
+        saveGame();
+        loginBonusReward.innerHTML = `<span style="color:${rarityInfo.color}">${rarityStars(rarity)}</span>` + (bonusGems ? `　💎 +${bonusGems} ジェムもGET！` : '');
+        loginBonusCloseBtn.disabled = false;
+        loginBonusCloseBtn.textContent = '受け取る';
+        if (rarity === 'epic' || rarity === 'legendary') setTimeout(playLoginBonusSound, 150);
+        updateStatsUI();
+      }
+    };
+    setTimeout(spin, 300);
+  }
+  loginBonusCloseBtn.addEventListener('click', () => {
+    if (loginBonusCloseBtn.disabled) return;
+    loginBonusModal.classList.remove('show');
+  });
+
+  let noticeTimer = null;
+  let continueTimer = null;
+  let continueDeadline = 0;
+  let rebirthTimer = null;
+  let rebirthSkippable = false;
+  let gachaDialogOpen = false;
+
+  // 連鎖(コンボ)
+  let comboCount = 0;
+  let lastHitAt = 0;
+  const COMBO_WINDOW_MS = 900;
+  const COMBO_STEP = 0.08;
+  const COMBO_MAX_STACKS = 12;
+
+  function registerHit() {
+    const now = Date.now();
+    if (now - lastHitAt <= COMBO_WINDOW_MS) comboCount++;
+    else comboCount = 1;
+    lastHitAt = now;
+    if (comboCount > (game.maxCombo || 0)) game.maxCombo = comboCount;
+    return comboCount;
+  }
+  function getComboMultiplier(comboGrowthBonus) {
+    const stacks = Math.min(comboCount - 1, COMBO_MAX_STACKS);
+    return 1 + stacks * (COMBO_STEP + comboGrowthBonus);
+  }
+  function resetCombo() { comboCount = 0; }
+
+  // ---------- 最大ダメージ／最大DPS計測 ----------
+  let dpsAccum = 0;
+  function trackDamage(amount) {
+    if (amount > game.maxDamage) game.maxDamage = amount;
+    dpsAccum += amount;
+  }
+  setInterval(() => {
+    if (dpsAccum > game.maxDps) game.maxDps = dpsAccum;
+    dpsAccum = 0;
+  }, 1000);
+
+  function formatDuration(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return h + '時間' + String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
+  }
+
+  function showNotice(text, isError = false) {
+    battleNotice.textContent = text;
+    battleNotice.classList.toggle('error', isError);
+    battleNotice.classList.remove('at-tap');
+    battleNotice.style.position = '';
+    battleNotice.style.left = '';
+    battleNotice.style.top = '';
+    battleNotice.classList.add('show');
+    if (isError) playErrorSound();
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
+  }
+
+  function dropTreasureChest() {
+    spawnDamageText(arena.x, arena.y - 40, '🎁 宝箱発見！', '#ffd76b');
+    playLoginBonusSound();
+    const isCoin = Math.random() < 0.6;
+    if (isCoin) {
+      const bonus = Math.round((60 + game.stage * 10) * computeBonuses().coinMult);
+      game.coins += bonus;
+      spawnCoinBurst(arena.x, arena.y + 20, bonus);
+      showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`);
+    } else {
+      const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
+      game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+      spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
+      spawnDamageText(arena.x, arena.y + 20, pick.icon + ' ' + pick.name, '#c792ea');
+      showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`);
+      renderArtifactList();
+    }
+    updateStatsUI();
+    saveGame();
+  }
+  function showTapError(text, clientX, clientY) {
+    battleNotice.textContent = text;
+    battleNotice.style.position = 'fixed';
+    battleNotice.style.left = clientX + 'px';
+    battleNotice.style.top = (clientY - 14) + 'px';
+    battleNotice.classList.add('error', 'at-tap', 'show');
+    playErrorSound();
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
+  }
+
+  function resizeCanvas() {
+    const rect = wrap.getBoundingClientRect();
+    size = rect.width;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    arena.x = size / 2;
+    arena.y = size / 2;
+    arena.radius = size / 2 - 6;
+  }
+
+  // ---------- 音 ----------
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    else if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  // ---------- BGM（簡易シンセによるループ演奏） ----------
+  const BGM_PATTERNS = {
+    normal: [
+      { freq: 261.63, dur: 0.3, type: 'triangle', gain: 0.05 },
+      { freq: 329.63, dur: 0.3, type: 'triangle', gain: 0.045 },
+      { freq: 392.00, dur: 0.3, type: 'triangle', gain: 0.045 },
+      { freq: 329.63, dur: 0.3, type: 'triangle', gain: 0.04 },
+      { freq: 293.66, dur: 0.3, type: 'triangle', gain: 0.045 },
+      { freq: 349.23, dur: 0.3, type: 'triangle', gain: 0.045 },
+      { freq: 440.00, dur: 0.3, type: 'triangle', gain: 0.04 },
+      { freq: 349.23, dur: 0.3, type: 'triangle', gain: 0.04 },
+    ],
+    boss: [
+      { freq: 130.81, dur: 0.2, type: 'sawtooth', gain: 0.07 },
+      { freq: 130.81, dur: 0.2, type: 'sawtooth', gain: 0.05 },
+      { freq: 155.56, dur: 0.2, type: 'square',   gain: 0.06 },
+      { freq: 130.81, dur: 0.2, type: 'sawtooth', gain: 0.05 },
+      { freq: 174.61, dur: 0.2, type: 'square',   gain: 0.06 },
+      { freq: 130.81, dur: 0.2, type: 'sawtooth', gain: 0.05 },
+      { freq: 155.56, dur: 0.2, type: 'square',   gain: 0.06 },
+      { freq: 196.00, dur: 0.2, type: 'sawtooth', gain: 0.07 },
+    ]
+  };
+  let bgmTimer = null;
+  let bgmToken = 0;
+  let currentBgmType = null;
+
+  function playBgmNote(note) {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = note.type;
+    osc.frequency.setValueAtTime(note.freq, t0);
+    const vol = Math.max(0.0001, note.gain * (game.bgmVolume ?? 0.7));
+    gain.gain.setValueAtTime(vol, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + note.dur * 0.95);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + note.dur);
+  }
+  function scheduleBgmStep(type, index, token) {
+    if (token !== bgmToken || currentBgmType !== type) return;
+    const pattern = BGM_PATTERNS[type];
+    const note = pattern[index % pattern.length];
+    playBgmNote(note);
+    bgmTimer = setTimeout(() => scheduleBgmStep(type, index + 1, token), note.dur * 1000);
+  }
+  function startBgm(type) {
+    if (currentBgmType === type) return;
+    bgmToken++;
+    currentBgmType = type;
+    clearTimeout(bgmTimer);
+    scheduleBgmStep(type, 0, bgmToken);
+  }
+  function stopBgm() {
+    bgmToken++;
+    currentBgmType = null;
+    clearTimeout(bgmTimer);
+  }
+  function playTone(freq, duration, type, startGain, glideTo) {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    if (glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, t0 + duration);
+    gain.gain.setValueAtTime((startGain || 0.2) * game.sfxVolume, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + duration);
+  }
+  function playNoiseBurst(duration, startGain) {
+    if (!audioCtx) return;
+    const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const gain = audioCtx.createGain();
+    const t0 = audioCtx.currentTime;
+    gain.gain.setValueAtTime((startGain || 0.3) * game.sfxVolume, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+    noise.connect(gain); gain.connect(audioCtx.destination);
+    noise.start(t0);
+  }
+  // 被弾音：敵に当てた時／自分が当てられた時で変える
+  function playEnemyHitSound() { playNoiseBurst(0.09, 0.3); playTone(320, 0.1, 'square', 0.22, 700); }
+  function playPlayerHitSound() { playNoiseBurst(0.1, 0.28); playTone(150, 0.16, 'sawtooth', 0.22, 70); }
+  // 壁反射音：プレイヤー側／敵側で変える
+  function playPlayerWallSound() { playTone(560, 0.07, 'sine', 0.07, 760); }
+  function playEnemyWallSound() { playTone(320, 0.07, 'triangle', 0.07, 200); }
+  function playChainSound(n) {
+    const freq = Math.min(1600, 480 + n * 55);
+    playTone(freq, 0.07, 'triangle', 0.15, freq * 1.3);
+  }
+  function playLevelUpSound() {
+    [659.25, 880, 1174.66].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'triangle', 0.18), i * 90));
+  }
+  function playStageClearSound() {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.16), i * 110));
+  }
+  function playWarningSound() {
+    [200, 160, 200, 160].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'square', 0.22), i * 220));
+  }
+  function playDeathSound() { playTone(220, 0.4, 'sawtooth', 0.2, 60); }
+  function playCoinGainSound() { playTone(1046.5, 0.08, 'square', 0.12, 1318.5); }
+  function playLoginBonusSound() {
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.16, f * 1.1), i * 100));
+  }
+  function playSlotTickSound() { playTone(1600, 0.04, 'square', 0.08); }
+  function playSlotSettleSound() { playTone(880, 0.12, 'triangle', 0.18, 1320); playNoiseBurst(0.15, 0.1); }
+  function playRebirthSound() {
+    [261.63, 329.63, 392, 523.25, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.45, 'sine', 0.12, f * 1.12), i * 130));
+  }
+  function playErrorSound() {
+    playTone(220, 0.09, 'square', 0.16, 160);
+    setTimeout(() => playTone(160, 0.13, 'square', 0.16, 100), 90);
+  }
+  function playCloneSound() {
+    playNoiseBurst(0.04, 0.05);
+    playTone(520, 0.05, 'sine', 0.09, 760);
+    setTimeout(() => playTone(920, 0.08, 'sine', 0.1, 1200), 35);
+  }
+  function playUpgradeSound() {
+    playTone(660, 0.08, 'triangle', 0.12, 880);
+    setTimeout(() => playTone(990, 0.12, 'triangle', 0.14), 70);
+  }
+  function playSpecialSound() {
+    playTone(130, 0.35, 'sawtooth', 0.2, 700);
+    setTimeout(() => playTone(880, 0.25, 'square', 0.16), 90);
+  }
+  function playAccelSound() {
+    playTone(220, 0.25, 'sawtooth', 0.18, 900);
+    playNoiseBurst(0.15, 0.12);
+  }
+  function playHealSound() {
+    [523.25, 659.25, 880].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.14), i * 70));
+  }
+  function playBarrierSound() {
+    playTone(220, 0.3, 'sine', 0.16, 660);
+    [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));
+  }
+  function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
+
+  function getEffectiveSpeed() {
+    return Date.now() < accelEndAt ? 2.5 : gameSpeed;
+  }
+
+  // ---------- ボール生成 ----------
+  const EMOJI_ENEMIES = ['👹', '👺', '💀', '👻', '🎃', '🐉', '🦂', '🕷️', '🦇', '👾', '🧟', '🐺', '🦖', '🐲'];
+  const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲'];
+
+  // 敵の移動スタイル：ステージごとに主流スタイルを変えつつ、ある程度ランダム性も持たせる
+  const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit'];
+  function pickEnemyMovementStyle(stage) {
+    const primary = MOVEMENT_STYLES[stage % MOVEMENT_STYLES.length];
+    return Math.random() < 0.65 ? primary : MOVEMENT_STYLES[Math.floor(Math.random() * MOVEMENT_STYLES.length)];
+  }
+
+  function makeBall(isPlayer) {
+    const b = computeBonuses();
+    const speed = 3.2 * b.speedMult;
+    const angle = Math.random() * Math.PI * 2;
+    if (isPlayer) {
+      const maxHp = getPlayerMaxHP();
+      return {
+        isPlayer: true,
+        x: arena.x - arena.radius * 0.3, y: arena.y,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        radius: 16, maxHp, hp: maxHp, atk: getPlayerAtk(),
+        color: '#4fa8ff', glow: 'rgba(79,168,255,0.55)', hitCooldown: 0
+      };
+    } else {
+      const es = getEnemyStats(game.stage);
+      const enemyStyles = [
+        { color: '#ff5c6c', glow: 'rgba(255,92,108,0.55)', shape: 'circle' },
+        { color: '#ff9d4f', glow: 'rgba(255,157,79,0.55)', shape: 'diamond' },
+        { color: '#60d6a6', glow: 'rgba(96,214,166,0.55)', shape: 'hex' },
+        { color: '#f46bd4', glow: 'rgba(244,107,212,0.55)', shape: 'square' }
+      ];
+      const style = enemyStyles[(game.stage - 1) % enemyStyles.length];
+      const isEmoji = !es.isBoss && Math.random() < 0.45;
+      const emoji = es.isBoss
+        ? BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)]
+        : (isEmoji ? EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)] : null);
+      const movementStyle = es.isBoss ? 'normal' : pickEnemyMovementStyle(game.stage);
+      const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
+      return {
+        isPlayer: false,
+        x: arena.x + arena.radius * 0.3, y: arena.y,
+        vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
+        maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss,
+        radius: es.isBoss ? 34 : 16,
+        color: es.isBoss ? '#ba6cff' : style.color,
+        glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
+        shape: es.isBoss ? 'emoji' : (isEmoji ? 'emoji' : style.shape),
+        emoji,
+        movementStyle,
+        zigzagTimer: Math.random() * 40,
+        orbitAngle: Math.random() * Math.PI * 2,
+        orbitRadius,
+        orbitSpeed: (0.018 + Math.random() * 0.018) * (Math.random() < 0.5 ? 1 : -1),
+        hitCooldown: 0
+      };
+    }
+  }
+  function makeAddEnemy(mainEnemy) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * arena.radius * 0.6;
+    const emoji = EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)];
+    return {
+      isPlayer: false, isAdd: true,
+      x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
+      vx: Math.cos(angle) * 3.4, vy: Math.sin(angle) * 3.4,
+      radius: 11, maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
+      atk: Math.max(1, Math.round(mainEnemy.atk * 0.4)),
+      color: '#ff9d4f', glow: 'rgba(255,157,79,0.5)', shape: 'emoji', emoji,
+      movementStyle: pickEnemyMovementStyle(game.stage),
+      zigzagTimer: Math.random() * 40,
+      orbitAngle: angle, orbitRadius: arena.radius * (0.35 + Math.random() * 0.25),
+      orbitSpeed: (0.02 + Math.random() * 0.02) * (Math.random() < 0.5 ? 1 : -1),
+      hitCooldown: 0
+    };
+  }
+  function makeClone(x, y) {
+    const b = computeBonuses();
+    const speed = 3.2 * b.speedMult;
+    const angle = Math.random() * Math.PI * 2;
+    return {
+      isPlayer: true, isClone: true, x, y,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      radius: 10, maxHp: 1, hp: 1, atk: getPlayerAtk(),
+      color: '#86c5ff', glow: 'rgba(134,197,255,0.5)', hitCooldown: 0
+    };
+  }
+
+  const COMPANION_COLORS = { knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff' };
+  const COMPANION_MOVEMENT = {
+    knight: { style: 'normal', speedFactor: 0.6 },
+    archer: { style: 'zigzag', speedFactor: 1.15 },
+    witch:  { style: 'orbit', speedFactor: 1 },
+    sprite: { style: 'zigzag', speedFactor: 1.4 }
+  };
+  function getCompanionMaxHP(id) {
+    if (!COMPANIONS[id]) return 0;
+    const c = COMPANIONS[id];
+    const level = game.companions.level[id] || 0;
+    const baseBonus = c.baseBonus + level * c.perLevel;
+    const playerMaxHP = getPlayerMaxHP();
+    return Math.round(playerMaxHP * baseBonus * 0.8);
+  }
+
+  function makeCompanionBall(id) {
+    const c = COMPANIONS[id];
+    const level = game.companions.level[id] || 0;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * arena.radius * 0.5;
+    const move = COMPANION_MOVEMENT[id] || { style: 'normal', speedFactor: 1 };
+    const speed = 3.2 * move.speedFactor;
+    const maxHP = getCompanionMaxHP(id);
+    return {
+      isPlayer: true, isCompanion: true, companionId: id,
+      x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
+      vx: Math.cos(angle + 1.4) * speed, vy: Math.sin(angle + 1.4) * speed,
+      radius: 11, atk: Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05))),
+      hp: maxHP, maxHp: maxHP,
+      color: COMPANION_COLORS[id] || '#ffffff', glow: (COMPANION_COLORS[id] || '#ffffff') + '88',
+      icon: c.icon, hitCooldown: 0,
+      movementStyle: move.style, speedFactor: move.speedFactor,
+      zigzagTimer: Math.random() * 30,
+      orbitAngle: angle, orbitRadius: arena.radius * (0.3 + Math.random() * 0.15),
+      orbitSpeed: (0.03 + Math.random() * 0.015) * (Math.random() < 0.5 ? 1 : -1)
+    };
+  }
+  function makeCompanionBalls() {
+    return Object.keys(game.companions.recruited)
+      .filter(id => game.companions.recruited[id])
+      .map(makeCompanionBall);
+  }
+  function spawnBattleBalls() {
+    return [makeBall(true), makeBall(false), ...makeCompanionBalls()];
+  }
+  function refreshCompanionBalls() {
+    for (const ball of balls) {
+      if (!ball.isCompanion) continue;
+      const level = game.companions.level[ball.companionId] || 0;
+      ball.atk = Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05)));
+      // 仲間のHP を更新
+      const maxHP = getCompanionMaxHP(ball.companionId);
+      ball.maxHp = maxHP;
+      // 生きている仲間は HP を満タンに回復
+      if (game.companions.alive[ball.companionId]) {
+        ball.hp = maxHP;
+      }
+    }
+  }
+
+  function refreshPlayerBallStats(healFull) {
+    const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
+    if (!p) return;
+    const newMax = getPlayerMaxHP();
+    if (healFull) p.hp = newMax;
+    else p.hp = Math.min(newMax, p.hp + (newMax - p.maxHp > 0 ? newMax - p.maxHp : 0));
+    p.maxHp = newMax;
+    p.atk = getPlayerAtk();
+  }
+
+  function normalizeSpeed(ball, targetSpeed) {
+    const s = Math.hypot(ball.vx, ball.vy);
+    if (s === 0) return;
+    ball.vx = (ball.vx / s) * targetSpeed;
+    ball.vy = (ball.vy / s) * targetSpeed;
+  }
+
+  function spawnDamageText(x, y, text, color, decay) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.7, decay: decay || 0.018 }); }
+  function spawnHitParticles(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = 1 + Math.random() * 2.5;
+      particles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, life: 1, color });
+    }
+  }
+
+  function spawnCoinBurst(x, y, coinGain) {
+    for (let i = 0; i < 10; i++) {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
+      const spd = 2 + Math.random() * 3;
+      particles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd - 1, life: 1, color: '#ffd76b', isCoin: true, decay: 0.012 });
+    }
+    spawnDamageText(x, y - 20, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b', 0.006);
+    playCoinGainSound();
+  }
+
+  function wallBounce(ball) {
+    const dx = ball.x - arena.x, dy = ball.y - arena.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist + ball.radius >= arena.radius) {
+      const nx = dx / dist, ny = dy / dist;
+      ball.x = arena.x + nx * (arena.radius - ball.radius);
+      ball.y = arena.y + ny * (arena.radius - ball.radius);
+      const dot = ball.vx * nx + ball.vy * ny;
+      ball.vx -= 2 * dot * nx;
+      ball.vy -= 2 * dot * ny;
+      if (ball.isPlayer) playPlayerWallSound(); else playEnemyWallSound();
+      if (ball.isPlayer && !ball.isClone && !ball.isCompanion) applyBounceReward();
+    }
+  }
+
+  function applyBounceReward() {
+    const b = computeBonuses();
+    if (b.bounceCoinCount > 0) {
+      game.coins += 0.5 * b.bounceCoinCount * b.coinMult * b.bounceMult;
+    }
+    game.bounceAtkBonus += 0.15 * b.bounceMult;
+    const p = balls.find(bl => bl.isPlayer && !bl.isClone && !bl.isCompanion);
+    if (p) p.atk = getPlayerAtk();
+    updateStatsUI();
+  }
+  function checkLevelUp() {
+    let leveled = false;
+    while (game.exp >= expToNext(game.level)) {
+      game.exp -= expToNext(game.level);
+      game.level++;
+      leveled = true;
+    }
+    if (leveled) playLevelUpSound();
+    return leveled;
+  }
+
+  function resolveBallCollision(a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    let dist = Math.hypot(dx, dy);
+    const minDist = a.radius + b.radius;
+    if (dist >= minDist) return false;
+    if (dist === 0) dist = 0.01;
+    const nx = dx / dist, ny = dy / dist;
+    const overlap = minDist - dist;
+    a.x -= nx * overlap / 2; a.y -= ny * overlap / 2;
+    b.x += nx * overlap / 2; b.y += ny * overlap / 2;
+    const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+    const velAlongNormal = rvx * nx + rvy * ny;
+    if (velAlongNormal < 0) {
+      a.vx += velAlongNormal * nx; a.vy += velAlongNormal * ny;
+      b.vx -= velAlongNormal * nx; b.vy -= velAlongNormal * ny;
+    }
+    return true;
+  }
+
+  // ---------- メインステップ ----------
+  function triggerEnemyDefeat(enemy, sourceX, sourceY) {
+    enemy.hp = 0;
+    enemy.isDying = true;
+    const dx = enemy.x - sourceX, dy = enemy.y - sourceY;
+    const dist = Math.hypot(dx, dy) || 1;
+    enemy.vx = (dx / dist) * KNOCKBACK_SPEED;
+    enemy.vy = (dy / dist) * KNOCKBACK_SPEED;
+    enemy.shakeTimer = KNOCKBACK_SHAKE_FRAMES;
+    hitStopFrames = KILL_HITSTOP_DURATION;
+  }
+
+  function movePlayerSideBalls(list, speedMult, b) {
+    for (const ball of list) {
+      if (ball.movementStyle === 'orbit') {
+        ball.orbitAngle += ball.orbitSpeed * speedMult;
+        ball.x = arena.x + Math.cos(ball.orbitAngle) * ball.orbitRadius;
+        ball.y = arena.y + Math.sin(ball.orbitAngle) * ball.orbitRadius;
+        ball.vx = -Math.sin(ball.orbitAngle) * ball.orbitRadius * ball.orbitSpeed;
+        ball.vy = Math.cos(ball.orbitAngle) * ball.orbitRadius * ball.orbitSpeed;
+      } else {
+        ball.x += ball.vx * speedMult;
+        ball.y += ball.vy * speedMult;
+        wallBounce(ball);
+      }
+
+      if (ball.movementStyle === 'gravity') {
+        ball.vy += 0.18 * speedMult;
+        const maxV = 11;
+        const mag = Math.hypot(ball.vx, ball.vy);
+        if (mag > maxV) { ball.vx = ball.vx / mag * maxV; ball.vy = ball.vy / mag * maxV; }
+      } else if (ball.movementStyle === 'zigzag') {
+        ball.zigzagTimer = (ball.zigzagTimer || 0) + speedMult;
+        if (ball.zigzagTimer > 40) {
+          ball.zigzagTimer = 0;
+          const curAngle = Math.atan2(ball.vy, ball.vx) + (Math.random() * 1.3 - 0.65);
+          const speedNow = Math.hypot(ball.vx, ball.vy) || 3.2;
+          ball.vx = Math.cos(curAngle) * speedNow;
+          ball.vy = Math.sin(curAngle) * speedNow;
+        }
+        const baseSpeed = (ball.isPlayer ? 3.2 * (ball.speedFactor || 1) : 3.2);
+        normalizeSpeed(ball, baseSpeed);
+      } else if (ball.movementStyle !== 'orbit') {
+        const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
+        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult) : 3.2;
+        const targetSpeed = baseSpeed * (boosted ? BOOST_MULT : 1);
+        normalizeSpeed(ball, targetSpeed);
+      }
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+    }
+  }
+
+  function updateBarrierOrbs(player, enemy, speedMult, b) {
+    if (Date.now() > barrierEndAt) {
+      if (barrierOrbs.length) barrierOrbs = [];
+      return;
+    }
+    const canDamage = enemy && !enemy.isDying && !(enemy.spawnTimer > 0);
+    const comboMult = getComboMultiplier(b.comboGrowth);
+    const dmg = Math.max(1, Math.round(player.atk * 0.4 * comboMult));
+    for (const orb of barrierOrbs) {
+      orb.angle += BARRIER_ROT_SPEED * speedMult;
+      orb.x = player.x + Math.cos(orb.angle) * BARRIER_ORBIT_RADIUS;
+      orb.y = player.y + Math.sin(orb.angle) * BARRIER_ORBIT_RADIUS;
+      if (orb.hitCooldown > 0) orb.hitCooldown -= speedMult;
+      if (canDamage && orb.hitCooldown <= 0) {
+        const dist = Math.hypot(orb.x - enemy.x, orb.y - enemy.y);
+        if (dist < enemy.radius + 9) {
+          orb.hitCooldown = 18;
+          enemy.hp -= dmg;
+          trackDamage(dmg);
+          spawnHitParticles(orb.x, orb.y, '#5cc8ff');
+          spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, '-' + dmg, '#c7ecff');
+          playBarrierHitSound();
+          updateHPUI();
+          if (enemy.hp <= 0) triggerEnemyDefeat(enemy, orb.x, orb.y);
+        }
+      }
+    }
+  }
+
+  function applyHitKnockback(hitBall, sourceBall, force) {
+    const dx = hitBall.x - sourceBall.x, dy = hitBall.y - sourceBall.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    hitBall.vx += (dx / dist) * force;
+    hitBall.vy += (dy / dist) * force;
+  }
+
+  function step() {
+    const a = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!a) return;
+    const b = computeBonuses();
+    const speedMult = getEffectiveSpeed();
+    a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
+    const e = balls.find(ball => !ball.isPlayer);
+    updateBarrierOrbs(a, e, speedMult, b);
+
+    if (!e) {
+      // ボスのワーニング演出中など敵がまだいない間も、自機・仲間・分身は動き続ける
+      movePlayerSideBalls(balls, speedMult, b);
+      return;
+    }
+
+    // 撃破後：震えながら吹っ飛ぶ演出。終わったら次ステージへ
+    if (e.isDying) {
+      e.shakeTimer = Math.max(0, e.shakeTimer - speedMult);
+      e.x += e.vx * speedMult;
+      e.y += e.vy * speedMult;
+      e.vx *= KNOCKBACK_DECEL;
+      e.vy *= KNOCKBACK_DECEL;
+      movePlayerSideBalls(balls, speedMult, b); // 演出中も自機側は動かし続ける
+      if (e.shakeTimer <= 0) onStageClear();
+      return;
+    }
+
+    let battleEnded = false;
+    if (e.spawnTimer > 0) {
+      e.spawnTimer = Math.max(0, e.spawnTimer - speedMult);
+      const t = 1 - e.spawnTimer / 24;
+      e.radius = Math.max(4, e.baseRadius * t);
+      e.hitCooldown = Math.max(e.hitCooldown || 0, 10); // 出現中は無敵気味に
+      if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); return; } // 完全出現までは攻撃判定なし
+    }
+
+    // ランダムに自機へ数秒間の加速バフを付与（スキル解放とは無関係の突発イベント）
+    if (Math.random() < 0.0006 && !(a.boostUntil && Date.now() < a.boostUntil)) {
+      a.boostUntil = Date.now() + 4000;
+      spawnDamageText(a.x, a.y - a.radius - 14, 'BOOST!', '#ffd76b');
+      spawnHitParticles(a.x, a.y, '#ffd76b');
+      playAccelSound();
+    }
+
+    // 敵の数を時々増やす（本体は変えず、サブの雑魚を追加）
+    if (!e.isBoss && adds.length < 2 && Math.random() < 0.0009) {
+      adds.push(makeAddEnemy(e));
+    }
+
+    movePlayerSideBalls([...balls, ...adds], speedMult, b);
+
+    const collided = resolveBallCollision(a, e);
+    if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
+      a.hitCooldown = 20; e.hitCooldown = 20;
+      const combo = registerHit();
+      const comboMult = getComboMultiplier(b.comboGrowth);
+      if (combo >= 2) playChainSound(combo);
+
+      const enemyIsHit = Math.random() < 0.5;
+      if (enemyIsHit) {
+        const dmg = Math.max(1, Math.round(a.atk * comboMult));
+        e.hp -= dmg;
+        trackDamage(dmg);
+        spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
+        spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+        playEnemyHitSound();
+        applyHitKnockback(e, a, 3.2);
+      } else {
+        const dmg = Math.max(1, Math.round(e.atk * comboMult));
+        a.hp -= dmg;
+        trackDamage(dmg);
+        spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
+        spawnDamageText(a.x, a.y - a.radius - 8, '-' + dmg, '#ffb3b3');
+        playPlayerHitSound();
+        applyHitKnockback(a, e, 3.2);
+      }
+      if (combo >= 4) spawnDamageText((a.x + e.x) / 2, Math.min(a.y, e.y) - 30, 'COMBO x' + combo, '#ffd76b');
+      updateHPUI();
+
+      if (e.hp <= 0 && a.hp > 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
+      else if (a.hp <= 0) { onPlayerDeath(); return; }
+    }
+
+    // 分身は敵にぶつかると一撃を与えて消滅する
+    if (!battleEnded) {
+      const clones = balls.filter(ball => ball.isClone);
+      for (const clone of clones) {
+        if (resolveBallCollision(clone, e)) {
+          const combo = registerHit();
+          const comboMult = getComboMultiplier(b.comboGrowth);
+          if (combo >= 2) playChainSound(combo);
+          const dmg = Math.max(1, Math.round(clone.atk * comboMult));
+          e.hp -= dmg;
+          trackDamage(dmg);
+          spawnHitParticles(clone.x, clone.y, '#ffb35c');
+          spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+          const cloneX = clone.x, cloneY = clone.y;
+          balls = balls.filter(ball => ball !== clone);
+          playEnemyHitSound();
+          updateHPUI();
+          if (e.hp <= 0) { triggerEnemyDefeat(e, cloneX, cloneY); battleEnded = true; break; }
+        }
+      }
+    }
+
+    // 仲間キャラは消滅せず、クールダウンを挟んで継続的に攻撃する
+    if (!battleEnded) {
+      const companionsInPlay = balls.filter(ball => ball.isCompanion && ball.hp > 0);
+      for (const comp of companionsInPlay) {
+        if (comp.hitCooldown > 0) continue;
+        if (resolveBallCollision(comp, e)) {
+          comp.hitCooldown = 30;
+          const combo = registerHit();
+          const comboMult = getComboMultiplier(b.comboGrowth);
+          if (combo >= 2) playChainSound(combo);
+          
+          // 仲間が敵を攻撃
+          const dmg = Math.max(1, Math.round(comp.atk * comboMult));
+          e.hp -= dmg;
+          trackDamage(dmg);
+          spawnHitParticles(comp.x, comp.y, comp.color);
+          spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
+          playEnemyHitSound();
+          applyHitKnockback(e, comp, 3.2);
+          
+          // 敵が仲間に反撃
+          const enemyDmg = Math.max(1, Math.round(e.atk * comboMult));
+          comp.hp -= enemyDmg;
+          spawnHitParticles(comp.x, comp.y, '#5cc8ff');
+          spawnDamageText(comp.x, comp.y - comp.radius - 8, '-' + enemyDmg, '#ffb3b3');
+          applyHitKnockback(comp, e, 3.2);
+          
+          // 仲間が倒れたら状態を保存
+          if (comp.hp <= 0) {
+            game.companions.alive[comp.companionId] = false;
+            game.companions.hp[comp.companionId] = 0;
+            spawnDamageText(comp.x, comp.y, '倒れた', '#ff9999');
+          }
+          
+          updateHPUI();
+          if (e.hp <= 0) { triggerEnemyDefeat(e, comp.x, comp.y); battleEnded = true; break; }
+        }
+      }
+    }
+
+    if (!battleEnded) {
+      for (const meteor of meteors) {
+        const mdx = e.x - meteor.x, mdy = e.y - meteor.y;
+        const distance = Math.hypot(mdx, mdy) || 1;
+        meteor.x += (mdx / distance) * meteor.speed * speedMult;
+        meteor.y += (mdy / distance) * meteor.speed * speedMult;
+        if (distance < meteor.radius + e.radius) {
+          e.hp -= meteor.damage;
+          trackDamage(meteor.damage);
+          meteor.hit = true;
+          spawnHitParticles(e.x, e.y, '#ffbc5c');
+          spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR -' + meteor.damage, '#ffd76b');
+          playEnemyHitSound();
+          updateHPUI();
+          if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }
+        }
+      }
+    }
+    meteors = meteors.filter(meteor => !meteor.hit);
+
+    // 雑魚敵(adds)：自機・分身・仲間のいずれかが当たるとダメージ、倒すと少量のコイン/ジェムを獲得
+    if (adds.length) {
+      const attackers = balls.filter(ball => ball.isPlayer);
+      for (const add of adds) {
+        if (add.hp <= 0) continue;
+        for (const atk of attackers) {
+          if (resolveBallCollision(atk, add)) {
+            const dmg = Math.max(1, Math.round((atk.atk || 1)));
+            add.hp -= dmg;
+            trackDamage(dmg);
+            spawnHitParticles(add.x, add.y, '#ffb35c');
+            spawnDamageText(add.x, add.y - add.radius - 6, '-' + dmg, '#ffd9a0');
+            playEnemyHitSound();
+            if (add.hp <= 0) {
+              const coinGain = 5 + Math.floor(Math.random() * 8);
+              game.coins += coinGain;
+              if (Math.random() < 0.3) game.gems += 1;
+              spawnDamageText(add.x, add.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
+              updateStatsUI();
+              break;
+            }
+          }
+        }
+      }
+      adds = adds.filter(add => add.hp > 0);
+    }
+
+    for (const p of particles) { p.x += p.vx; p.y += p.vy; p.life -= (p.decay || 0.04); }
+    particles = particles.filter(p => p.life > 0);
+    for (const d of damageTexts) { d.y += d.vy; d.life -= (d.decay || 0.018); }
+    damageTexts = damageTexts.filter(d => d.life > 0);
+  }
+
+  function updateHPUI() {
+    const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
+    const en = balls.find(b => !b.isPlayer);
+    if (!p || !en) return;
+    playerHPFill.style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
+    enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
+    playerHPText.textContent = Math.max(0, Math.round(p.hp)) + ' / ' + p.maxHp;
+    enemyHPText.textContent = Math.max(0, Math.round(en.hp)) + ' / ' + en.maxHp;
+    playerAtkNum.textContent = p.atk;
+    enemyAtkNum.textContent = en.atk;
+    enemyName.textContent = en.isBoss ? '👑 ボス' : '🔴 敵';
+  }
+
+  // ---------- ステージクリア ----------
+  function onStageClear() {
+    const b = computeBonuses();
+    const isBossStage = game.stage % 10 === 0;
+    const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1));
+    const expGain = Math.round((18 + game.stage * 4) * b.expMult * (isBossStage ? 2 : 1));
+    game.coins += coinGain;
+    game.exp += expGain;
+    if (isBossStage) game.gems += 5;
+    checkLevelUp();
+    playStageClearSound();
+    spawnCoinBurst(arena.x, arena.y - 10, coinGain);
+    if (isBossStage) spawnDamageText(arena.x, arena.y, '+5 💎', '#64e8ff');
+    if (isBossStage && Math.random() < 0.35) {
+      setTimeout(() => dropTreasureChest(), 900);
+    }
+    game.totalKills++;
+    ensureDailyClearReset();
+    game.dailyClears++;
+    resetCombo();
+    showNotice(`STAGE ${game.stage} CLEAR　+${expGain} EXP`);
+    game.stage++;
+    game.bestStage = Math.max(game.bestStage, game.stage);
+    stageAnnounceText = 'STAGE ' + game.stage;
+    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    meteors = []; adds = [];
+    // 仲間を全員復活させる
+    for (const id in COMPANIONS) {
+      if (game.companions.recruited[id]) {
+        game.companions.alive[id] = true;
+        game.companions.hp[id] = getCompanionMaxHP(id);
+      }
+    }
+    const nextIsBoss = game.stage % 10 === 0;
+    if (nextIsBoss) {
+      // ボスはワーニング演出が消えた後に、それっぽく出現させる（この間も操作・自機の動きは止めない）
+      showBossWarning();
+      balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
+      setTimeout(() => {
+        balls = spawnBattleBalls();
+        const bossBall = balls.find(ball => ball.isBoss);
+        if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
+        refreshPlayerBallStats(true);
+        updateHPUI();
+        startBgm('boss');
+      }, 1850);
+    } else {
+      balls = spawnBattleBalls();
+      refreshPlayerBallStats(true);
+      startBgm('normal');
+    }
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+
+  // ---------- プレイヤー死亡・転生 ----------
+  function onPlayerDeath(forceRebirth = false) {
+    phase = 'paused';
+    meteors = []; adds = [];
+    resetCombo();
+    if (forceRebirth) { completeReincarnation(); return; }
+    playDeathSound();
+    continueDeadline = Date.now() + 10000;
+    continueBtn.style.display = 'block';
+    giveUpBtn.style.display = 'block';
+    toastIcon.style.display = 'block';
+    toastIcon.textContent = '💔';
+    toastBig.textContent = 'コンテニュー？';
+    toastBig.className = 'big reborn';
+    toast.classList.add('show');
+    clearInterval(continueTimer);
+    const updateContinue = () => {
+      const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
+      toastSub.textContent = `残り ${seconds} 秒　💎 3 で現在ステージをリトライ`;
+      if (seconds <= 0) { clearInterval(continueTimer); completeReincarnation(); }
+    };
+    updateContinue();
+    continueTimer = setInterval(updateContinue, 200);
+  }
+
+  function completeReincarnation() {
+    clearInterval(continueTimer);
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
+    game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+    game.level = 1; game.exp = 0; game.coins = 0; game.stage = 1;
+    game.bounceAtkBonus = 0; game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
+    game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
+    // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
+    const companionInfo = game.companions;
+    const recruitedStatus = { ...companionInfo.recruited };
+    game.companions = { 
+      recruited: recruitedStatus, 
+      level: { knight: 0, archer: 0, witch: 0, sprite: 0 },
+      hp: { knight: 0, archer: 0, witch: 0, sprite: 0 },
+      alive: { knight: true, archer: true, witch: true, sprite: true }
+    };
+    // 仲間を回復させる
+    for (const id in recruitedStatus) {
+      if (recruitedStatus[id]) {
+        game.companions.hp[id] = getCompanionMaxHP(id);
+        game.companions.alive[id] = true;
+      }
+    }
+    game.gems += 2; game.reincarnations++;
+    renderArtifactList();
+    updateStatsUI();
+    saveGame();
+    playRebirthSound();
+    toastIcon.style.display = 'block';
+    toastIcon.textContent = pick.icon;
+    toastBig.textContent = '輪廻転生……';
+    toastBig.className = 'big reborn';
+    toastSub.textContent = `転生 ${game.reincarnations}回目！　` + pick.name + ' を獲得！（' + pick.desc + '）　+2 💎';
+    toast.classList.add('show');
+    rebirthSkippable = true;
+    clearTimeout(rebirthTimer);
+    rebirthTimer = setTimeout(finishRebirth, 7500);
+  }
+
+  function finishRebirth() {
+    if (!rebirthSkippable) return;
+    rebirthSkippable = false;
+    clearTimeout(rebirthTimer);
+    toast.classList.remove('show');
+    openRebirthShop();
+  }
+
+  function openRebirthShop() {
+    renderRebirthShopList();
+    rebirthShopModal.classList.add('show');
+  }
+  function closeRebirthShop() {
+    rebirthShopModal.classList.remove('show');
+    balls = spawnBattleBalls();
+    refreshPlayerBallStats(true);
+    updateHPUI();
+    phase = 'battle';
+  }
+
+  function getSpecialCooldown() {
+    const b = computeBonuses();
+    return Math.round(SPECIAL_COOLDOWN * Math.max(0.4, b.specialCooldownMult));
+  }
+  function updateSpecialButton() {
+    if (!game.shopOwned.skillSpecial) {
+      specialBtn.disabled = false;
+      specialBtn.classList.add('is-disabled');
+      specialBtn.textContent = '🔒 必殺技';
+      return;
+    }
+    const cooldown = getSpecialCooldown();
+    const remaining = Math.max(0, cooldown - (Date.now() - lastSpecialAt));
+    if (remaining === 0) {
+      specialBtn.disabled = false;
+      specialBtn.classList.toggle('is-disabled', phase !== 'battle');
+      specialBtn.textContent = '✨ 必殺技　READY';
+      return;
+    }
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
+    specialBtn.disabled = false;
+    specialBtn.classList.add('is-disabled');
+    specialBtn.textContent = `✨ 必殺技　${minutes}:${seconds}`;
+  }
+
+  function updateAccelButton() {
+    if (!game.shopOwned.skillAccel) {
+      accelBtn.disabled = false;
+      accelBtn.classList.add('is-disabled');
+      accelBtn.textContent = '🔒 加速';
+      speedValue.textContent = gameSpeed.toFixed(1) + '×';
+      return;
+    }
+    const now = Date.now();
+    if (now < accelEndAt) {
+      const remainingSec = Math.ceil((accelEndAt - now) / 1000);
+      accelBtn.disabled = true;
+      accelBtn.classList.add('is-disabled');
+      accelBtn.textContent = `⏩ 加速中 ${remainingSec}s`;
+      speedValue.textContent = '2.5×（加速中）';
+      return;
+    }
+    speedValue.textContent = gameSpeed.toFixed(1) + '×';
+    const remaining = Math.max(0, ACCEL_COOLDOWN - (now - lastAccelAt));
+    if (remaining === 0) {
+      accelBtn.disabled = false;
+      accelBtn.classList.toggle('is-disabled', phase !== 'battle');
+      accelBtn.textContent = '⏩ 加速（2.5倍）';
+      return;
+    }
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
+    accelBtn.disabled = false;
+    accelBtn.classList.add('is-disabled');
+    accelBtn.textContent = `⏩ 加速 ${minutes}:${seconds}`;
+  }
+
+  function updateHealButton() {
+    if (!game.shopOwned.skillHeal) {
+      healBtn.disabled = false;
+      healBtn.classList.add('is-disabled');
+      healBtn.textContent = '🔒 回復';
+      return;
+    }
+    const remaining = Math.max(0, HEAL_COOLDOWN - (Date.now() - lastHealAt));
+    if (remaining === 0) {
+      healBtn.disabled = false;
+      healBtn.classList.toggle('is-disabled', phase !== 'battle');
+      healBtn.textContent = '💗 回復　READY';
+      return;
+    }
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
+    healBtn.disabled = false;
+    healBtn.classList.add('is-disabled');
+    healBtn.textContent = `💗 回復　${minutes}:${seconds}`;
+  }
+
+  function updateBarrierButton() {
+    if (!game.shopOwned.skillBarrier) {
+      barrierBtn.disabled = false;
+      barrierBtn.classList.add('is-disabled');
+      barrierBtn.textContent = '🔒 バリア';
+      return;
+    }
+    const now = Date.now();
+    if (now < barrierEndAt) {
+      const remainingSec = Math.ceil((barrierEndAt - now) / 1000);
+      barrierBtn.disabled = true;
+      barrierBtn.classList.add('is-disabled');
+      barrierBtn.textContent = `🌀 展開中 ${remainingSec}s`;
+      return;
+    }
+    const remaining = Math.max(0, BARRIER_COOLDOWN - (now - lastBarrierAt));
+    if (remaining === 0) {
+      barrierBtn.disabled = false;
+      barrierBtn.classList.toggle('is-disabled', phase !== 'battle');
+      barrierBtn.textContent = '🌀 バリア　READY';
+      return;
+    }
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
+    barrierBtn.disabled = false;
+    barrierBtn.classList.add('is-disabled');
+    barrierBtn.textContent = `🌀 バリア　${minutes}:${seconds}`;
+  }
+
+  // ---------- 描画 ----------
+  function draw() {
+    cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
+    wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
+    ctx.clearRect(0, 0, size, size);
+    ctx.beginPath();
+    ctx.arc(arena.x, arena.y, arena.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(150,160,190,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.isCoin ? 4.5 : 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      if (p.isCoin) { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
+
+    if (barrierOrbs.length && Date.now() < barrierEndAt) {
+      for (const orb of barrierOrbs) {
+        if (orb.x == null) continue;
+        ctx.save();
+        ctx.shadowColor = '#5cc8ff';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#8fe0ff';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    for (const ball of [...balls, ...adds]) {
+      ctx.save();
+      if (ball.isDying) {
+        const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
+        ctx.translate((Math.random() - 0.5) * 2 * intensity, (Math.random() - 0.5) * 2 * intensity);
+      }
+      ctx.save();
+      ctx.shadowColor = ball.glow;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      if (!ball.isPlayer && ball.shape === 'diamond') {
+        ctx.moveTo(ball.x, ball.y - ball.radius); ctx.lineTo(ball.x + ball.radius, ball.y); ctx.lineTo(ball.x, ball.y + ball.radius); ctx.lineTo(ball.x - ball.radius, ball.y); ctx.closePath();
+      } else if (!ball.isPlayer && ball.shape === 'square') {
+        ctx.rect(ball.x - ball.radius * .8, ball.y - ball.radius * .8, ball.radius * 1.6, ball.radius * 1.6);
+      } else if (!ball.isPlayer && (ball.shape === 'hex' || ball.shape === 'star')) {
+        const points = ball.shape === 'star' ? 10 : 6;
+        for (let i = 0; i < points; i++) {
+          const angle = -Math.PI / 2 + i * Math.PI * 2 / points;
+          const r = ball.shape === 'star' && i % 2 ? ball.radius * .48 : ball.radius;
+          const px = ball.x + Math.cos(angle) * r, py = ball.y + Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+      } else if (!ball.isPlayer && ball.shape === 'emoji') {
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      } else {
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      }
+      if (ball.shape === 'emoji') {
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+      }
+      ctx.restore();
+
+      if (ball.shape === 'emoji') {
+        ctx.save();
+        ctx.font = `${Math.round(ball.radius * 1.5)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ball.emoji, ball.x, ball.y + 1);
+        ctx.restore();
+      }
+
+      if (ball.isCompanion) {
+        ctx.save();
+        ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ball.icon, ball.x, ball.y + 1);
+        ctx.restore();
+      }
+
+      if (!ball.isClone && !ball.isCompanion && !ball.isDying) {
+        const barWidth = ball.radius * 2;
+        const barHeight = 5;
+        const barX = ball.x - ball.radius;
+        const barY = ball.y - ball.radius - 10;
+        ctx.fillStyle = '#080b12';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = ball.isPlayer ? '#7ed0ff' : (ball.isBoss ? '#d39cff' : '#ff7b87');
+        ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+
+        if (ball.isPlayer) {
+          ctx.save();
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#ffd76b';
+          ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+          ctx.lineWidth = 3;
+          ctx.strokeText('Lv.' + game.level, ball.x, barY - 5);
+          ctx.fillText('Lv.' + game.level, ball.x, barY - 5);
+          ctx.restore();
+        }
+      }
+
+      // 仲間のHP バーを描画
+      if (ball.isCompanion && ball.maxHp) {
+        const barWidth = ball.radius * 2;
+        const barHeight = 4;
+        const barX = ball.x - ball.radius;
+        const barY = ball.y - ball.radius - 8;
+        ctx.fillStyle = '#080b12';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.strokeStyle = 'rgba(200,200,200,0.5)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+        // 倒れた仲間はグレーアウト、生きている仲間はカラフル
+        if (ball.hp <= 0) {
+          ctx.fillStyle = '#666666';
+        } else {
+          ctx.fillStyle = COMPANION_COLORS[ball.companionId] || '#ffffff';
+        }
+        ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+      }
+      ctx.restore(); // 震えtranslate用
+    }
+
+    for (const meteor of meteors) {
+      ctx.save();
+      ctx.shadowColor = '#ff9f43';
+      ctx.shadowBlur = 22;
+      ctx.beginPath();
+      ctx.arc(meteor.x, meteor.y, meteor.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#f07b32';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(meteor.x - meteor.radius * 0.22, meteor.y - meteor.radius * 0.25, meteor.radius * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffd76b';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 17px "Hiragino Sans", sans-serif';
+    for (const d of damageTexts) {
+      ctx.globalAlpha = Math.max(0, d.life);
+      ctx.fillStyle = d.color;
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 3;
+      ctx.strokeText(d.text, d.x, d.y);
+      ctx.fillText(d.text, d.x, d.y);
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // サークル中央：次のステージ数を大きく表示
+    if (stageAnnounceTimer > 0) {
+      const t = stageAnnounceTimer / STAGE_ANNOUNCE_DURATION;
+      const fadeIn = Math.min(1, (STAGE_ANNOUNCE_DURATION - stageAnnounceTimer) / 8);
+      const alpha = Math.min(fadeIn, t > 0.3 ? 1 : t / 0.3);
+      const scale = 1 + (1 - Math.min(1, fadeIn)) * 0.6;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, alpha);
+      ctx.translate(arena.x, arena.y);
+      ctx.scale(scale, scale);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 34px "Hiragino Sans", sans-serif';
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 6;
+      ctx.strokeText(stageAnnounceText, 0, 0);
+      ctx.fillStyle = '#ffd76b';
+      ctx.fillText(stageAnnounceText, 0, 0);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      stageAnnounceTimer--;
+    }
+  }
+
+  function loop() {
+    try {
+      // ヒットストップ中はゲーム更新をスキップ
+      if (hitStopFrames <= 0) {
+        if (phase === 'battle') step();
+      } else {
+        hitStopFrames--;
+      }
+      draw();
+    } catch (err) {
+      // 予期しないエラーが発生してもゲームループ自体は継続させる（フリーズ防止）
+      console.error('ゲームループ内でエラーが発生しました:', err);
+    }
+    animId = requestAnimationFrame(loop);
+  }
+
+  // ---------- 初期化・フルリセット ----------
+  function fullReset() {
+    if (animId) cancelAnimationFrame(animId);
+    clearSave();
+    game.stage = 1; game.level = 1; game.exp = 0; game.coins = 0; game.gems = 0; game.superGems = 0;
+    game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
+    game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
+    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 };
+    game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
+    game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
+    lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
+    lastAccelAt = Date.now() - ACCEL_COOLDOWN;
+    accelEndAt = 0;
+    lastHealAt = Date.now() - HEAL_COOLDOWN;
+    lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
+    barrierEndAt = 0;
+    barrierOrbs = [];
+    game.startedAt = Date.now();
+    particles = []; damageTexts = []; meteors = []; adds = [];
+    stageAnnounceTimer = 0;
+    hitStopFrames = 0; // ヒットストップをリセット
+    resetCombo();
+    clearInterval(continueTimer); clearTimeout(rebirthTimer);
+    rebirthSkippable = false; gachaDialogOpen = false;
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    dialogCloseBtn.style.display = 'none';
+    toast.classList.remove('show');
+    rebirthShopModal.classList.remove('show');
+    renderArtifactList();
+    updateStatsUI();
+    balls = spawnBattleBalls();
+    refreshPlayerBallStats(true);
+    updateHPUI();
+    phase = 'battle';
+    updateSpecialButton();
+    updateAccelButton();
+    updateHealButton();
+    updateBarrierButton();
+    startBgm('normal');
+    loop();
+  }
+
+  resetBtn.addEventListener('click', fullReset);
+  usernameSaveBtn.addEventListener('click', () => {
+    const name = usernameInput.value.trim().slice(0, 12);
+    game.username = name;
+    saveGame();
+    renderRanking();
+    showNotice(name ? `ユーザー名を「${name}」に設定しました` : 'ユーザー名をリセットしました');
+  });
+
+  artifactListEl.addEventListener('click', event => {
+    const chip = event.target.closest('[data-artifact]');
+    if (!chip) return;
+    const artifact = ARTIFACT_BY_ID[chip.dataset.artifact];
+    const count = game.ownedArtifacts[chip.dataset.artifact] || 0;
+    toastIcon.style.display = 'block';
+    toastIcon.textContent = artifact.icon;
+    toastBig.textContent = artifact.name;
+    toastBig.className = 'big stage-clear';
+    toastSub.textContent = artifact.desc + (count > 0 ? `　所持数 x${count}` : '　（未所持）');
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    toast.classList.add('show');
+    setTimeout(() => { if (phase === 'battle') toast.classList.remove('show'); }, 1800);
+  });
+
+  toast.addEventListener('click', event => {
+    if (event.target === continueBtn || event.target === dialogCloseBtn || event.target === giveUpBtn) return;
+    if (rebirthSkippable) finishRebirth();
+  });
+
+  dialogCloseBtn.addEventListener('click', () => {
+    if (!gachaDialogOpen) return;
+    gachaDialogOpen = false;
+    dialogCloseBtn.style.display = 'none';
+    toast.classList.remove('show');
+    phase = 'battle';
+  });
+
+  continueBtn.addEventListener('click', event => {
+    if (phase !== 'paused') return;
+    if (game.gems < 3) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    clearInterval(continueTimer);
+    game.gems -= 3;
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    toast.classList.remove('show');
+    balls = spawnBattleBalls();
+    meteors = []; adds = [];
+    resetCombo();
+    updateStatsUI();
+    updateHPUI();
+    phase = 'battle';
+    showNotice('コンテニュー！', false);
+  });
+
+  giveUpBtn.addEventListener('click', () => {
+    if (phase !== 'paused') return;
+    clearInterval(continueTimer);
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    completeReincarnation();
+  });
+
+  const DEBUG_ACTION_LABELS = {
+    coins: 'DEBUG: コイン +100 を付与しました',
+    gems: 'DEBUG: ジェム +10 を付与しました',
+    supergems: 'DEBUG: スーパージェム +5 を付与しました',
+    special: 'DEBUG: 必殺技・加速・回復・バリアのクールダウンをすべてリセットしました',
+    prev: 'DEBUG: ステージを1つ戻しました',
+    next: 'DEBUG: ステージを1つ進めました',
+    nextboss: 'DEBUG: 次のボスステージまでスキップしました',
+  };
+  debugRow.addEventListener('click', event => {
+    const button = event.target.closest('[data-debug]');
+    if (!button) return;
+    const action = button.dataset.debug;
+    if (action === 'coins') game.coins += 100;
+    if (action === 'gems') game.gems += 10;
+    if (action === 'supergems') game.superGems += 5;
+    if (action === 'special') {
+      lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
+      lastAccelAt = Date.now() - ACCEL_COOLDOWN;
+      accelEndAt = 0;
+      lastHealAt = Date.now() - HEAL_COOLDOWN;
+      lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
+      barrierEndAt = 0;
+      barrierOrbs = [];
+      updateSpecialButton();
+      updateAccelButton();
+      updateHealButton();
+      updateBarrierButton();
+    }
+    if (action === 'prev') game.stage = Math.max(1, game.stage - 1);
+    if (action === 'next') game.stage++;
+    if (action === 'prev' || action === 'next') {
+      game.bestStage = Math.max(game.bestStage, game.stage);
+      balls = spawnBattleBalls(); meteors = []; adds = [];
+      refreshPlayerBallStats(true); updateHPUI();
+      startBgm(game.stage % 10 === 0 ? 'boss' : 'normal');
+    }
+    if (action === 'nextboss') {
+      game.stage = Math.ceil((game.stage + 1) / 10) * 10;
+      game.bestStage = Math.max(game.bestStage, game.stage);
+      balls = spawnBattleBalls(); meteors = []; adds = [];
+      refreshPlayerBallStats(true); updateHPUI();
+      showBossWarning();
+      startBgm('boss');
+    }
+    if (action === 'saveReset') {
+      clearSave();
+      fullReset();
+      showNotice('DEBUG: セーブデータを削除し、ゲームを最初からやり直しました');
+      return;
+    }
+    if (action === 'loginBonus') {
+      // 押すたびに「前日ログイン済み」扱いにして、連続日数を1日進めながら復帰ガチャを再表示
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      game.lastLoginDate = dateKey(yesterday);
+      checkLoginBonus();
+      return;
+    }
+    updateStatsUI();
+    showNotice(DEBUG_ACTION_LABELS[action] || 'DEBUG: 更新しました');
+  });
+
+  upgradeList.addEventListener('click', event => {
+    const maxButton = event.target.closest('[data-upgrade-max]');
+    if (maxButton) {
+      if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
+      const id = maxButton.dataset.upgradeMax;
+      const count = getMaxAffordableUpgradeLevels(id, game.coins);
+      if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
+      game.coins -= totalCost;
+      game.upgrades[id] += count;
+      refreshPlayerBallStats(false);
+      playUpgradeSound();
+      showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
+      updateStatsUI();
+      updateHPUI();
+      return;
+    }
+    const button = event.target.closest('[data-upgrade]');
+    if (!button || phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
+    const id = button.dataset.upgrade;
+    const cost = getUpgradeCost(id);
+    if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+    game.coins -= cost;
+    game.upgrades[id]++;
+    refreshPlayerBallStats(false);
+    playUpgradeSound();
+    updateStatsUI();
+    updateHPUI();
+  });
+
+  shopList.addEventListener('click', event => {
+    const button = event.target.closest('[data-shop]');
+    if (!button) return;
+    const id = button.dataset.shop;
+    const item = SHOP_ITEMS[id];
+    if (game.shopOwned[id]) { showTapError('すでに所持しています', event.clientX, event.clientY); return; }
+    if (game.gems < item.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    game.gems -= item.cost;
+    game.shopOwned[id] = true;
+    refreshPlayerBallStats(false);
+    playUpgradeSound();
+    updateStatsUI();
+    updateHPUI();
+  });
+
+  coinShopList.addEventListener('click', event => {
+    const button = event.target.closest('[data-coin-shop]');
+    if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
+    const id = button.dataset.coinShop;
+    const item = COIN_SHOP_ITEMS[id];
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier';
+    if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
+    const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
+    if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+    if (id === 'potion') {
+      const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+      if (!player || player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
+      player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.45);
+      spawnDamageText(player.x, player.y - player.radius - 12, '+HP', '#7ee787');
+    } else if (id === 'cloneSlot') {
+      game.coinCloneSlots++;
+    } else if (isSkill) {
+      game.shopOwned[id] = true;
+    }
+    game.coins -= cost;
+    playUpgradeSound();
+    updateStatsUI();
+    updateHPUI();
+  });
+
+  supergemShopList.addEventListener('click', event => {
+    const button = event.target.closest('[data-supergem-shop]');
+    if (!button) return;
+    const id = button.dataset.supergemShop;
+    const item = SUPERGEM_SHOP_ITEMS[id];
+    if (game.superGems < item.cost) { showTapError('スーパージェムが足りません', event.clientX, event.clientY); return; }
+    game.superGems -= item.cost;
+    const gain = { small: 5, medium: 20, large: 60 }[id] || 0;
+    game.gems += gain;
+    playUpgradeSound();
+    updateStatsUI();
+  });
+
+  function playGachaSound(rarity) {
+    const tablesByRarity = {
+      common: [523.25, 659.25],
+      rare: [523.25, 659.25, 783.99],
+      epic: [440, 554.37, 659.25, 880],
+      legendary: [392, 523.25, 659.25, 783.99, 1046.5, 1318.5]
+    };
+    const notes = tablesByRarity[rarity] || tablesByRarity.common;
+    notes.forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.2), i * 90));
+    if (rarity === 'legendary' || rarity === 'epic') playNoiseBurst(0.3, 0.15);
+  }
+  function playGachaSummonSound() {
+    [220, 277.18, 349.23, 440].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 1.5), i * 260));
+  }
+
+  function runGachaCountdown(hintRarity, onDone) {
+    gachaResult.style.display = 'block';
+    gachaResult.className = 'gacha-result gacha-summoning rarity-bg-' + hintRarity;
+    let count = 2;
+    const render = () => {
+      gachaResult.innerHTML = `<div class="gr-icon">🌀</div><div class="gacha-countdown-num pop" style="color:${RARITY_INFO[hintRarity].color}">${count}</div><div class="gr-title">召喚中……</div>`;
+    };
+    render();
+    const timer = setInterval(() => {
+      count--;
+      if (count > 0) { render(); }
+      else { clearInterval(timer); onDone(); }
+    }, 1000);
+  }
+
+  gachaBtn.addEventListener('click', event => {
+    if (game.gems < 5) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (gachaBtn.disabled) return;
+    gachaBtn.disabled = true; gacha10Btn.disabled = true;
+    game.gems -= 5;
+    playGachaSummonSound();
+    const id = pickGachaId(); // 排出結果は先に決定し、カウントダウン中の背景で予感させる
+    runGachaCountdown(GACHA_POOL[id].rarity, () => {
+      game.evolutions[id]++;
+      refreshPlayerBallStats(false);
+      updateStatsUI();
+      updateHPUI();
+      const result = GACHA_POOL[id];
+      const rarity = RARITY_INFO[result.rarity];
+      playGachaSound(result.rarity);
+      gachaResult.className = 'gacha-result rarity-' + result.rarity;
+      gachaResult.innerHTML = `<div class="gr-icon gr-pop">${result.icon}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(result.rarity)} ${result.name}</div><div class="gr-sub">Lv.${game.evolutions[id]} に進化！（${result.desc}）</div><button id="gachaResultCloseBtn">閉じる</button>`;
+      document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
+      gachaBtn.disabled = false; gacha10Btn.disabled = false;
+      updateStatsUI();
+    });
+  });
+
+  function revealGachaResultsSequentially(results, onAllDone) {
+    let idx = 0;
+    function showNext() {
+      if (idx >= results.length) { onAllDone(); return; }
+      const r = results[idx];
+      const rarity = RARITY_INFO[r.rarity];
+      playGachaSound(r.rarity);
+      gachaResult.className = 'gacha-result rarity-' + r.rarity;
+      const isLast = idx + 1 >= results.length;
+      gachaResult.innerHTML = `<div class="gr-icon gr-pop">${r.icon}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(r.rarity)} ${r.name}</div><div class="gr-sub">Lv.${game.evolutions[r.id]} に進化！（${idx + 1} / ${results.length}）</div><button id="gachaNextBtn">${isLast ? '結果一覧へ' : 'タップして次へ ▶'}</button>`;
+      idx++;
+      document.getElementById('gachaNextBtn').addEventListener('click', showNext);
+    }
+    showNext();
+  }
+
+  gacha10Btn.addEventListener('click', event => {
+    if (game.gems < 45) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (gachaBtn.disabled) return;
+    gachaBtn.disabled = true; gacha10Btn.disabled = true;
+    game.gems -= 45;
+    playGachaSummonSound();
+    const ids = []; // 排出結果は先に決定し、カウントダウン中の背景で予感させる
+    for (let i = 0; i < 10; i++) ids.push(pickGachaId());
+    const bestRarityForHint = ids.reduce((best, id) => RARITY_INFO[GACHA_POOL[id].rarity].needMult < RARITY_INFO[best].needMult ? GACHA_POOL[id].rarity : best, GACHA_POOL[ids[0]].rarity);
+    runGachaCountdown(bestRarityForHint, () => {
+      const results = ids.map(id => { game.evolutions[id]++; return { id, ...GACHA_POOL[id] }; });
+      refreshPlayerBallStats(false);
+      updateStatsUI();
+      updateHPUI();
+      revealGachaResultsSequentially(results, () => {
+        const bestRarity = results.reduce((best, r) => RARITY_INFO[r.rarity].needMult < RARITY_INFO[best.rarity].needMult ? r : best, results[0]).rarity;
+        gachaResult.className = 'gacha-result rarity-' + bestRarity;
+        const gridHtml = results.map(r => `<div class="gm-item" style="border:1px solid ${RARITY_INFO[r.rarity].color};"><div>${r.icon}</div><span class="gm-name">${rarityStars(r.rarity)}<br>${r.name}</span></div>`).join('');
+        gachaResult.innerHTML = `<div class="gr-title gr-pop">🌟 10連召喚結果 🌟</div><div class="gacha-multi-grid">${gridHtml}</div><button id="gachaResultCloseBtn">閉じる</button>`;
+        document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
+        gachaBtn.disabled = false; gacha10Btn.disabled = false;
+        updateStatsUI();
+      });
+    });
+  });
+
+  evolutionList.addEventListener('click', event => {
+    const button = event.target.closest('[data-evolve]');
+    if (!button) return;
+    const id = button.dataset.evolve;
+    const need = getEvolveNeed(id);
+    if (game.gachaShards[id] < need) { showTapError('進化用の欠片が足りません', event.clientX, event.clientY); return; }
+    game.gachaShards[id] -= need;
+    game.evolutions[id]++;
+    refreshPlayerBallStats(false);
+    playUpgradeSound();
+    updateStatsUI();
+    updateHPUI();
+  });
+
+  companionList.addEventListener('click', event => {
+    const recruitBtn = event.target.closest('[data-recruit]');
+    const levelBtn = event.target.closest('[data-companion-level]');
+    if (recruitBtn) {
+      const id = recruitBtn.dataset.recruit;
+      const c = COMPANIONS[id];
+      if (game.coins < c.recruitCost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      game.coins -= c.recruitCost;
+      game.companions.recruited[id] = true;
+      if (!game.companions.hp) game.companions.hp = {};
+      if (!game.companions.alive) game.companions.alive = {};
+      game.companions.alive[id] = true;
+      game.companions.hp[id] = getCompanionMaxHP(id);
+      if (phase === 'battle' && !balls.some(ball => ball.isCompanion && ball.companionId === id)) {
+        balls.push(makeCompanionBall(id));
+      }
+      refreshPlayerBallStats(false);
+      playUpgradeSound();
+      updateStatsUI();
+      updateHPUI();
+      return;
+    }
+    if (levelBtn) {
+      const id = levelBtn.dataset.companionLevel;
+      const cost = getCompanionLevelCost(id);
+      if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', event.clientX, event.clientY); return; }
+      if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      game.coins -= cost;
+      game.companions.level[id]++;
+      refreshPlayerBallStats(false);
+      refreshCompanionBalls();
+      playUpgradeSound();
+      updateStatsUI();
+      updateHPUI();
+    }
+  });
+
+  rebirthShopList.addEventListener('click', event => {
+    const button = event.target.closest('[data-rebirth-shop]');
+    if (!button) return;
+    const id = button.dataset.rebirthShop;
+    const item = REBIRTH_SHOP_ITEMS[id];
+    if (game.gems < item.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    game.gems -= item.cost;
+    item.effect();
+    playUpgradeSound();
+    updateStatsUI();
+    renderRebirthShopList();
+  });
+  rebirthShopCloseBtn.addEventListener('click', closeRebirthShop);
+
+  rebornBtn.addEventListener('click', event => {
+    if (phase === 'battle' && game.stage >= 3) {
+      const ok = window.confirm(`本当に転生しますか？\nレベル・コイン・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
+      if (ok) onPlayerDeath(true);
+    } else {
+      showTapError('ステージ3から転生できます', event.clientX, event.clientY);
+    }
+  });
+
+  specialBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillSpecial) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は必殺技を使えません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastSpecialAt < getSpecialCooldown()) { showTapError('必殺技は準備中です', event.clientX, event.clientY); return; }
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!enemy) return;
+    const b = computeBonuses();
+    const multiplier = (game.shopOwned.meteor ? 1.5 : 1) * b.specialMult * b.specialDmgMult;
+    const damage = Math.round(enemy.maxHp * 0.35 * multiplier);
+    lastSpecialAt = Date.now();
+    meteors.push({
+      x: arena.x + (Math.random() - 0.5) * arena.radius,
+      y: arena.y - arena.radius - 45,
+      radius: 32, speed: 10, damage, hit: false
+    });
+    playSpecialSound();
+    updateSpecialButton();
+  });
+
+  accelBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillAccel) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は加速できません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastAccelAt < ACCEL_COOLDOWN) { showTapError('加速は準備中です', event.clientX, event.clientY); return; }
+    lastAccelAt = Date.now();
+    accelEndAt = Date.now() + ACCEL_DURATION;
+    playAccelSound();
+    updateAccelButton();
+  });
+
+  healBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillHeal) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は回復できません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastHealAt < HEAL_COOLDOWN) { showTapError('回復は準備中です', event.clientX, event.clientY); return; }
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) return;
+    lastHealAt = Date.now();
+    player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.5);
+    spawnDamageText(player.x, player.y - player.radius - 12, '+HEAL', '#7ee787');
+    spawnHitParticles(player.x, player.y, '#7ee787');
+    playHealSound();
+    updateHealButton();
+    updateBarrierButton();
+    updateHPUI();
+  });
+
+  barrierBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillBarrier) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今はバリアを展開できません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastBarrierAt < BARRIER_COOLDOWN) { showTapError('バリアは準備中です', event.clientX, event.clientY); return; }
+    lastBarrierAt = Date.now();
+    barrierEndAt = Date.now() + BARRIER_DURATION;
+    barrierOrbs = Array.from({ length: BARRIER_ORB_COUNT }, (_, i) => ({
+      angle: (Math.PI * 2 / BARRIER_ORB_COUNT) * i,
+      hitCooldown: 0
+    }));
+    playBarrierSound();
+    updateBarrierButton();
+  });
+
+  speedRange.addEventListener('input', () => {
+    gameSpeed = Number(speedRange.value);
+    if (Date.now() >= accelEndAt) speedValue.textContent = gameSpeed.toFixed(1) + '×';
+  });
+
+  canvas.addEventListener('pointerdown', event => {
+    if (phase !== 'battle') return;
+    ensureAudio();
+    startBgm(game.stage % 10 === 0 ? 'boss' : 'normal');
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * (size / rect.width);
+    const y = (event.clientY - rect.top) * (size / rect.height);
+    const dx = x - arena.x, dy = y - arena.y;
+    if (Math.hypot(dx, dy) < arena.radius - 12) {
+      const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+      const enemy = balls.find(ball => !ball.isPlayer);
+      if (player && Math.hypot(x - player.x, y - player.y) < player.radius + 10 && enemy) {
+        // 自機をタップ → 敵に向かって突進しつつ加速
+        const edx = enemy.x - player.x, edy = enemy.y - player.y;
+        const dist = Math.hypot(edx, edy) || 1;
+        const speed = Math.hypot(player.vx, player.vy) || 3.2;
+        player.vx = (edx / dist) * speed;
+        player.vy = (edy / dist) * speed;
+        player.boostUntil = Date.now() + BOOST_DURATION;
+        spawnHitParticles(player.x, player.y, '#4fa8ff');
+        playAccelSound();
+        return;
+      }
+      if (enemy && Math.hypot(x - enemy.x, y - enemy.y) < enemy.radius + 10) {
+        // 敵をタップ → その場で加速
+        enemy.boostUntil = Date.now() + BOOST_DURATION;
+        spawnHitParticles(enemy.x, enemy.y, enemy.color);
+        playAccelSound();
+        return;
+      }
+      game.totalTaps++;
+      const limit = getCloneLimit();
+      let cloneCount = balls.filter(ball => ball.isClone).length;
+      // MAXを超える場合は古い分身から間引いて必ず出撃させる（無限連打OK）
+      while (cloneCount >= limit) {
+        const oldestIdx = balls.findIndex(ball => ball.isClone);
+        if (oldestIdx === -1) break;
+        balls.splice(oldestIdx, 1);
+        cloneCount--;
+      }
+      balls.push(makeClone(x, y));
+      spawnHitParticles(x, y, '#86c5ff');
+      playCloneSound();
+      updateStatsUI();
+    }
+  });
+
+  // 最初のユーザー操作で効果音を有効化（自動再生制限への対応。ゲーム進行はこれを待たない）
+  document.addEventListener('pointerdown', ensureAudio, { once: true });
+  document.addEventListener('keydown', ensureAudio, { once: true });
+
+  window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+  setInterval(updateSpecialButton, 1000);
+  setInterval(updateAccelButton, 1000);
+  setInterval(updateHealButton, 1000);
+  setInterval(saveGame, 8000);
+  window.addEventListener('beforeunload', saveGame);
+  window.addEventListener('pagehide', saveGame);
+
+  loadGame();
+  // 仲間の状態が未初期化の場合は初期化
+  if (!game.companions.hp) game.companions.hp = { knight: 0, archer: 0, witch: 0, sprite: 0 };
+  if (!game.companions.alive) game.companions.alive = { knight: true, archer: true, witch: true, sprite: true };
+  // 仲間を回復させる
+  for (const id in game.companions.recruited) {
+    if (game.companions.recruited[id]) {
+      game.companions.hp[id] = getCompanionMaxHP(id);
+      game.companions.alive[id] = true;
+    }
+  }
+  bgmVolRange.value = Math.round((game.bgmVolume ?? 0.7) * 100);
+  bgmVolVal.textContent = bgmVolRange.value + '%';
+  sfxVolRange.value = Math.round((game.sfxVolume ?? 0.7) * 100);
+  sfxVolVal.textContent = sfxVolRange.value + '%';
+  usernameInput.value = game.username || '';
+  resizeCanvas();
+  renderArtifactList();
+  updateStatsUI();
+  balls = spawnBattleBalls();
+  refreshPlayerBallStats(true);
+  refreshCompanionBalls(); // 仲間の状態を正しく設定
+  updateHPUI();
+  updateSpecialButton();
+  updateAccelButton();
+  updateHealButton();
+  updateBarrierButton();
+  currentLang = game.language || 'ja';
+  applyLanguage(currentLang);
+  checkLoginBonus();
+  loop();
+})();
+</script>
+
+</body>
+</html>
