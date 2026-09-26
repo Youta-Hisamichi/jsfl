@@ -398,6 +398,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button>
     </div>
 
     <div class="speed-control">
@@ -3315,6 +3316,7 @@
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
+    rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
   };
   debugRow.addEventListener('click', event => {
     const button = event.target.closest('[data-debug]');
@@ -3323,6 +3325,7 @@
     if (action === 'coins') game.coins += 100;
     if (action === 'gems') game.gems += 10;
     if (action === 'supergems') game.superGems += 5;
+    if (action === 'rewardAdReset') { game.lastRewardAdAt = 0; updateRewardAdButtons(); saveGame(); }
     if (action === 'special') {
       lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
       lastAccelAt = Date.now() - ACCEL_COOLDOWN;
