@@ -1369,13 +1369,15 @@
     const base = 100 + (game.level - 1) * 6;
     return Math.round(base * b.hpMult);
   }
+  const BOSS_HP_MULT = 4.5;  // ボスのHP倍率（通常敵比）
+  const BOSS_ATK_MULT = 1.8; // ボスの攻撃力倍率（通常敵比）
   function getEnemyStats(stage) {
     const isBoss = stage % 10 === 0;
     const baseHp = Math.round(80 + stage * 24);
     const baseAtk = Math.round(6 + stage * 2.4);
     return {
-      hp: isBoss ? Math.round(baseHp * 3.5) : baseHp,
-      atk: isBoss ? Math.round(baseAtk * 1.6) : baseAtk,
+      hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT) : baseHp,
+      atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT) : baseAtk,
       isBoss
     };
   }
