@@ -432,7 +432,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
-      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button>
     </div>
 
     <div class="speed-control">
@@ -3548,6 +3548,7 @@
   const DEBUG_ACTION_LABELS = {
     coins: 'DEBUG: コイン +100 を付与しました',
     gems: 'DEBUG: ジェム +10 を付与しました',
+    gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
     special: 'DEBUG: 必殺技・加速・回復・バリアのクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
@@ -3561,6 +3562,7 @@
     const action = button.dataset.debug;
     if (action === 'coins') game.coins += 100;
     if (action === 'gems') game.gems += 10;
+    if (action === 'gems1000') game.gems += 1000;
     if (action === 'supergems') game.superGems += 5;
     if (action === 'die') {
       // 自機を即死させて死亡時の流れ（コンテニュー／スキップ失敗）を確認する
