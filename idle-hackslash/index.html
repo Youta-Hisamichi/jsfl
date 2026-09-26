@@ -1993,6 +1993,15 @@
     playTone(130, 0.35, 'sawtooth', 0.2, 700);
     setTimeout(() => playTone(880, 0.25, 'square', 0.16), 90);
   }
+  // 必殺技（隕石）着弾：重低音の爆発＋衝撃のクラック＋余韻の地鳴り
+  function playMeteorImpactSound() {
+    playNoiseBurst(0.6, 0.45);
+    playTone(140, 0.7, 'sawtooth', 0.32, 30);
+    playTone(90, 0.9, 'square', 0.22, 25);
+    playTone(1800, 0.12, 'square', 0.14, 300);
+    setTimeout(() => { playNoiseBurst(0.5, 0.25); playTone(60, 0.8, 'triangle', 0.25, 28); }, 120);
+    setTimeout(() => playNoiseBurst(0.7, 0.12), 320);
+  }
   function playAccelSound() {
     playTone(220, 0.25, 'sawtooth', 0.18, 900);
     playNoiseBurst(0.15, 0.12);
@@ -2598,7 +2607,7 @@
           meteor.hit = true;
           spawnHitParticles(e.x, e.y, '#ffbc5c');
           spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteor.damage, '#ffd76b');
-          playEnemyHitSound();
+          playMeteorImpactSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }
         }
