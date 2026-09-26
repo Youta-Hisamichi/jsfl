@@ -441,7 +441,8 @@
     <div class="artifact-panel">
       <div class="title">💎 ジェムショップ（購入効果は転生後も継続）</div>
       <div class="shop-list" id="shopList"></div>
-      <div class="supergem-note">🌟 所持スーパージェム: <span id="superGemsNum">0</span></div>
+      <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span></div>
+      <button class="modal-shop-btn" id="gemReturnBtn" style="display:none; justify-content:center; margin-bottom:8px; border-color:var(--gold); color:var(--gold);"><span class="msb-name">↩️ 元の画面に戻る</span></button>
       <div class="shop-list" id="supergemShopList"></div>
     </div>
   </div>
@@ -544,6 +545,18 @@
     <div class="modal-shop-list" id="skipRetryActions">
       <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
       <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="gemShortModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;">💎</div>
+    <h2>ジェムが足りません</h2>
+    <div class="modal-sub" id="gemShortText" style="color:var(--text); font-size:0.85rem;"></div>
+    <div class="modal-shop-list">
+      <button class="modal-close-btn" id="gemShortGoBtn">🛒 ジェム購入ショップへ</button>
+      <button class="modal-shop-btn" id="gemShortCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
     </div>
   </div>
 </div>
@@ -737,12 +750,59 @@
   const rankingTitle = document.getElementById('rankingTitle');
 
   // ---------- タブ切り替え ----------
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+    // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
+    if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
+  }
   tabBar.addEventListener('click', event => {
     const btn = event.target.closest('.tab-btn');
     if (!btn) return;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-    tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === btn.dataset.tab));
+    switchTab(btn.dataset.tab);
   });
+
+  // ---------- ジェム不足 → ジェム購入ショップへ誘導 ----------
+  const gemShortModal = document.getElementById('gemShortModal');
+  const gemShortText = document.getElementById('gemShortText');
+  const gemShortGoBtn = document.getElementById('gemShortGoBtn');
+  const gemShortCancelBtn = document.getElementById('gemShortCancelBtn');
+  const gemReturnBtn = document.getElementById('gemReturnBtn');
+  let gemShortPending = null;  // 確認中の { onLeave, returnTo }
+  let gemShopReturn = null;    // ショップから戻る先 { fn, mustResume }
+  // needed: 必要ジェム数 / returnTo: ショップから戻る処理 / mustResume: 戦闘停止中の画面から来た（戻らないと進行しない）
+  // onLeave: ショップへ移動する直前に元の画面を片付ける処理
+  function promptGemShortage(needed, options = {}) {
+    const lack = Math.max(1, Math.ceil(needed - game.gems));
+    gemShortText.textContent = `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
+    gemShortPending = options;
+    playErrorSound();
+    gemShortModal.classList.add('show');
+  }
+  function runGemShopReturn() {
+    const ret = gemShopReturn;
+    gemShopReturn = null;
+    gemReturnBtn.style.display = 'none';
+    if (ret) ret.fn();
+  }
+  gemShortGoBtn.addEventListener('click', () => {
+    const opts = gemShortPending || {};
+    gemShortPending = null;
+    gemShortModal.classList.remove('show');
+    if (opts.onLeave) opts.onLeave();
+    [rebirthShopModal, stageSkipModal, skipRetryModal].forEach(m => m.classList.remove('show'));
+    gemShopReturn = opts.returnTo ? { fn: opts.returnTo, mustResume: !!opts.mustResume } : null;
+    gemReturnBtn.style.display = gemShopReturn ? 'flex' : 'none';
+    switchTab('gemshop');
+    document.getElementById('supergemSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  gemShortCancelBtn.addEventListener('click', () => {
+    const opts = gemShortPending || {};
+    gemShortPending = null;
+    gemShortModal.classList.remove('show');
+    if (opts.onCancel) opts.onCancel();
+  });
+  gemReturnBtn.addEventListener('click', runGemShopReturn);
 
   rankDailyBtn.addEventListener('click', () => {
     rankingMode = 'daily';
@@ -1130,9 +1190,10 @@
     rebirthShopGems.textContent = Math.floor(game.gems);
     rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
-      const disabled = maxed || game.gems < item.cost;
+      const disabled = maxed;
+      const short = !maxed && game.gems < item.cost;
       const owned = item.artifactId ? `　所持 ${game.ownedArtifacts[item.artifactId] || 0} / ${ARTIFACT_STACK_LIMIT[item.artifactId]}` : '';
-      return `<button class="modal-shop-btn" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -2483,6 +2544,9 @@
     toastBig.textContent = 'コンテニュー？';
     toastBig.className = 'big reborn';
     toast.classList.add('show');
+    startContinueCountdown();
+  }
+  function startContinueCountdown() {
     clearInterval(continueTimer);
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
@@ -2574,8 +2638,8 @@
     stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
       const target = getSkipTargetStage(opt.skip);
       const es = getEnemyStats(target);
-      const disabled = game.gems < opt.cost;
-      return `<button class="modal-shop-btn" data-stage-skip="${i}" ${disabled ? 'disabled' : ''}><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+      const short = game.gems < opt.cost;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
     }).join('');
   }
   function spawnBossWithWarning() {
@@ -2617,7 +2681,7 @@
     const retryCost = cost || 0;
     skipRetryText.innerHTML = `STAGE ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持ジェム: 💎${Math.floor(game.gems)}）`;
     skipRetryBtn.innerHTML = `<span class="msb-name">🔁 💎${retryCost} でリトライ</span>`;
-    skipRetryBtn.disabled = game.gems < retryCost;
+    skipRetryBtn.classList.toggle('is-disabled', game.gems < retryCost);
     skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて STAGE ${origin} に戻る</span>`;
     // ボタンは1秒後に表示（レイアウトは保ったまま非表示にしておく）
     skipRetryActions.style.visibility = 'hidden';
@@ -2669,7 +2733,7 @@
     const button = event.target.closest('[data-stage-skip]');
     if (!button) return;
     const opt = STAGE_SKIP_OPTIONS[Number(button.dataset.stageSkip)];
-    if (game.gems < opt.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < opt.cost) { promptGemShortage(opt.cost, { returnTo: () => { switchTab('game'); renderStageSkipList(); stageSkipModal.classList.add('show'); } }); return; }
     if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { stageSkipModal.classList.remove('show'); return; }
     stageSkipModal.classList.remove('show');
     startSkipChallenge(opt);
@@ -2677,7 +2741,7 @@
   stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
   skipRetryBtn.addEventListener('click', event => {
     if (!game.skipChallenge || !skipRetryButtonsReady()) return;
-    if (game.gems < (game.skipChallenge.cost || 0)) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < (game.skipChallenge.cost || 0)) { promptGemShortage(game.skipChallenge.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
     retrySkipChallenge();
   });
   skipGiveUpBtn.addEventListener('click', () => {
@@ -2712,7 +2776,7 @@
       return;
     }
     pendingSkillReset = null;
-    if (game.gems < cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); updateButton(); return; }
+    if (game.gems < cost) { updateButton(); promptGemShortage(cost, { returnTo: () => switchTab('game') }); return; }
     game.gems -= cost;
     resetCooldown();
     playUpgradeSound();
@@ -3117,7 +3181,17 @@
 
   continueBtn.addEventListener('click', event => {
     if (phase !== 'paused') return;
-    if (game.gems < 3) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < 3) {
+      clearInterval(continueTimer); // 確認中・ショップにいる間はカウントダウンを止める
+      const remaining = Math.max(1000, continueDeadline - Date.now());
+      promptGemShortage(3, {
+        onCancel: () => { continueDeadline = Date.now() + remaining; startContinueCountdown(); },
+        onLeave: () => { toast.classList.remove('show'); },
+        returnTo: () => { switchTab('game'); onPlayerDeath(); },
+        mustResume: true
+      });
+      return;
+    }
     clearInterval(continueTimer);
     game.gems -= 3;
     continueBtn.style.display = 'none';
@@ -3240,7 +3314,7 @@
     const id = button.dataset.shop;
     const item = SHOP_ITEMS[id];
     if (game.shopOwned[id]) { showTapError('すでに所持しています', event.clientX, event.clientY); return; }
-    if (game.gems < item.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < item.cost) { promptGemShortage(item.cost); return; }
     game.gems -= item.cost;
     game.shopOwned[id] = true;
     refreshPlayerBallStats(false);
@@ -3318,7 +3392,7 @@
   }
 
   gachaBtn.addEventListener('click', event => {
-    if (game.gems < 5) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < 5) { promptGemShortage(5, { returnTo: () => switchTab('gacha') }); return; }
     if (gachaBtn.disabled) return;
     gachaBtn.disabled = true; gacha10Btn.disabled = true;
     game.gems -= 5;
@@ -3357,7 +3431,7 @@
   }
 
   gacha10Btn.addEventListener('click', event => {
-    if (game.gems < 45) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < 45) { promptGemShortage(45, { returnTo: () => switchTab('gacha') }); return; }
     if (gachaBtn.disabled) return;
     gachaBtn.disabled = true; gacha10Btn.disabled = true;
     game.gems -= 45;
@@ -3439,7 +3513,7 @@
     const id = button.dataset.rebirthShop;
     const item = REBIRTH_SHOP_ITEMS[id];
     if (isRebirthItemMaxed(item)) { showTapError('所持上限に達しています', event.clientX, event.clientY); return; }
-    if (game.gems < item.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    if (game.gems < item.cost) { promptGemShortage(item.cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }); return; }
     game.gems -= item.cost;
     item.effect();
     if (item.artifactId) renderArtifactList();
