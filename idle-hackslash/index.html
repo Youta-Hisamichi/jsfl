@@ -145,7 +145,7 @@
   .action-btn.skip-action.challenging { border-color: #ff5c6c; color: #ff9aa5; }
   .action-btn:disabled { opacity: 0.48; cursor: not-allowed; }
 
-  .shop-list { display: grid; grid-template-columns: 1fr; gap: 7px; }
+  .shop-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
   .shop-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 8px; text-align: left; font-size: 0.7rem; cursor: pointer; }
   .shop-btn:hover:not(:disabled) { border-color: #64e8ff; }
   .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
