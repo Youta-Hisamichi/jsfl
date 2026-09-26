@@ -543,6 +543,10 @@
       <label><span data-i18n="sfxLabel">🔊 効果音音量　</span><span id="sfxVolVal">70%</span></label>
       <input type="range" id="sfxVolRange" min="0" max="100" value="70">
     </div>
+    <div class="settings-row">
+      <label><span data-i18n="vibrationLabel">📳 振動（対応スマホのみ）</span></label>
+      <button class="modal-shop-btn lang-btn" id="vibrationBtn"><span class="msb-name" id="vibrationState">ON</span></button>
+    </div>
     <div class="settings-btn-row">
       <button class="modal-shop-btn" id="howToPlayBtn"><span class="msb-name" data-i18n="howToPlayBtn">📖 遊び方</span></button>
       <button class="modal-shop-btn" id="contactBtn"><span class="msb-name" data-i18n="contactBtn">✉️ お問い合わせ</span></button>
@@ -666,6 +670,8 @@
   const bgmVolVal = document.getElementById('bgmVolVal');
   const sfxVolRange = document.getElementById('sfxVolRange');
   const sfxVolVal = document.getElementById('sfxVolVal');
+  const vibrationBtn = document.getElementById('vibrationBtn');
+  const vibrationState = document.getElementById('vibrationState');
   const howToPlayBtn = document.getElementById('howToPlayBtn');
   const contactBtn = document.getElementById('contactBtn');
   const termsBtn = document.getElementById('termsBtn');
@@ -730,6 +736,22 @@
     saveGame();
   });
 
+  function renderVibrationSetting() {
+    vibrationState.textContent = game.vibration === false ? 'OFF' : 'ON';
+    vibrationBtn.classList.toggle('active', game.vibration !== false);
+  }
+  vibrationBtn.addEventListener('click', () => {
+    game.vibration = game.vibration === false;
+    renderVibrationSetting();
+    if (game.vibration) vibrate(40); // ONにしたときの確認用
+    saveGame();
+  });
+  // 端末を振動させる（Vibration API 非対応の端末・ブラウザでは何もしない）
+  function vibrate(pattern) {
+    if (game.vibration === false) return;
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
+  }
+
   const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・壁に反射するたびにコインと攻撃力が少し増加します。\n・敵を倒すとEXPを獲得しレベルアップします。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、レベル・コイン・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
   const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nEach wall bounce gives a small amount of coins and attack power.\nDefeating enemies grants EXP and levels you up.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: level, coins and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
@@ -743,7 +765,7 @@
     ja: {
       tabGame: 'ゲーム', tabUpgrade: '強化', tabCompanion: '仲間', tabShop: 'ショップ', tabArtifact: '遺物', tabGem: 'ジェム', tabGacha: 'ガチャ', tabRecords: '戦績', tabRanking: 'ランキング',
       settingsTitle: '⚙️ 設定', settingsSub: '音量やヘルプの設定です',
-      bgmLabel: '🎵 BGM音量　', sfxLabel: '🔊 効果音音量　',
+      bgmLabel: '🎵 BGM音量　', sfxLabel: '🔊 効果音音量　', vibrationLabel: '📳 振動（対応スマホのみ）',
       howToPlayBtn: '📖 遊び方', contactBtn: '✉️ お問い合わせ', termsBtn: '📜 利用規約', privacyBtn: '🔒 プライバシーポリシー',
       langLabel: '🌐 言語 / Language', devLabel: '👤 開発者', closeBtn: '閉じる',
       contactRow: 'お問い合わせ: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
@@ -752,7 +774,7 @@
     en: {
       tabGame: 'Game', tabUpgrade: 'Upgrade', tabCompanion: 'Allies', tabShop: 'Shop', tabArtifact: 'Relics', tabGem: 'Gems', tabGacha: 'Gacha', tabRecords: 'Records', tabRanking: 'Ranking',
       settingsTitle: '⚙️ Settings', settingsSub: 'Volume and help settings',
-      bgmLabel: '🎵 BGM Volume　', sfxLabel: '🔊 SFX Volume　',
+      bgmLabel: '🎵 BGM Volume　', sfxLabel: '🔊 SFX Volume　', vibrationLabel: '📳 Vibration (supported phones only)',
       howToPlayBtn: '📖 How to Play', contactBtn: '✉️ Contact', termsBtn: '📜 Terms of Service', privacyBtn: '🔒 Privacy Policy',
       langLabel: '🌐 言語 / Language', devLabel: '👤 Developer', closeBtn: 'Close',
       contactRow: 'Contact: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
@@ -919,7 +941,8 @@
     dailyClears: 0,
     dailyClearHistory: {},
     sfxVolume: 0.7,
-    bgmVolume: 0.7
+    bgmVolume: 0.7,
+    vibration: true
   };
 
   function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
@@ -1876,6 +1899,7 @@
     void gameTabPage.offsetWidth;
     gameTabPage.classList.add('screen-shake');
     wrap.classList.add('crit-flash');
+    vibrate([70, 40, 110]);
   }
   gameTabPage.addEventListener('animationend', ev => { if (ev.animationName === 'screenShake') gameTabPage.classList.remove('screen-shake'); });
   wrap.addEventListener('animationend', ev => { if (ev.animationName === 'critFlash') wrap.classList.remove('crit-flash'); });
@@ -3330,6 +3354,7 @@
   bgmVolVal.textContent = bgmVolRange.value + '%';
   sfxVolRange.value = Math.round((game.sfxVolume ?? 0.7) * 100);
   sfxVolVal.textContent = sfxVolRange.value + '%';
+  renderVibrationSetting();
   usernameInput.value = game.username || '';
   resizeCanvas();
   renderArtifactList();
