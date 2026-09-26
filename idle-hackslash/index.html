@@ -385,6 +385,16 @@
   .custom-skip-row .modal-shop-btn { width: auto; flex: 0 0 auto; padding: 8px 12px; gap: 8px; }
   .custom-skip-info { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; min-height: 1.2em; }
   .custom-skip-info.error { color: #ff5c6c; }
+  .slot-row { display: flex; align-items: center; gap: 6px; background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 8px; }
+  .slot-row .slot-info { flex: 1; min-width: 0; font-size: 0.66rem; line-height: 1.4; }
+  .slot-row .slot-info b { font-size: 0.74rem; }
+  .slot-row .slot-info .slot-empty { color: var(--text-dim); }
+  .slot-row button { flex: 0 0 auto; border: 1px solid var(--ring); border-radius: 8px; background: transparent; color: var(--text); font-size: 0.64rem; font-weight: 800; padding: 6px 7px; cursor: pointer; }
+  .slot-row button.save { border-color: #4fa8ff; color: #4fa8ff; }
+  .slot-row button.load { border-color: #2ea043; color: #2ea043; }
+  .slot-row button.del { border-color: #ff5c6c; color: #ff5c6c; }
+  .slot-row button.armed { background: #ffb14f; border-color: #ffb14f; color: #1a1408; }
+  .slot-row button:disabled { opacity: 0.35; cursor: default; }
   .auto-skip-wrap { margin: 0 0 10px; }
   .auto-skip-label { font-size: 0.68rem; color: var(--text-dim); text-align: center; margin-bottom: 4px; }
   .auto-skip-track { background: var(--bg); border: 1px solid var(--ring); border-radius: 999px; height: 6px; overflow: hidden; }
@@ -474,7 +484,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
-      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="slots">💾 セーブ/ロード</button>
     </div>
 
     <div class="speed-control">
@@ -676,6 +686,15 @@
     </div>
     <button class="modal-close-btn" id="rewardAdClaimBtn" style="display:none;"></button>
     <button class="modal-shop-btn" id="rewardAdCloseBtn" style="justify-content:center; margin-top:8px;"><span class="msb-name">閉じる（報酬なし）</span></button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="debugSlotModal" style="z-index:72;">
+  <div class="modal-panel">
+    <h2>💾 デバッグ：セーブスロット</h2>
+    <div class="modal-sub">現在の状態を好きなスロットに保存し、あとで選んでロードできます（ロードするとページを再読み込みします）</div>
+    <div class="modal-shop-list" id="debugSlotList"></div>
+    <button class="modal-close-btn" id="debugSlotCloseBtn">閉じる</button>
   </div>
 </div>
 
@@ -961,6 +980,8 @@
     updateStatsUI();
     saveGame();
   });
+  document.getElementById('debugSlotList').addEventListener('click', handleDebugSlotClick);
+  document.getElementById('debugSlotCloseBtn').addEventListener('click', () => document.getElementById('debugSlotModal').classList.remove('show'));
   rewardAdCloseBtn.addEventListener('click', () => {
     clearInterval(rewardAdTimer);
     rewardAdModal.classList.remove('show'); // 途中で閉じた場合は報酬なし・クールダウンなし
@@ -2142,7 +2163,9 @@
   // ---------- セーブ／ロード（このブラウザにのみ保存） ----------
   const SAVE_KEY = 'circle-battle-idle-save-v1';
   let saveTimer = null;
+  let suppressAutoSave = false; // デバッグのロード中は自動セーブで上書きしない
   function saveGame() {
+    if (suppressAutoSave) return;
     try {
       const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -2170,6 +2193,71 @@
       return false;
     }
   }
+  // ---------- デバッグ：セーブスロット（10個） ----------
+  const DEBUG_SLOT_COUNT = 10;
+  const debugSlotKey = i => `circle-battle-idle-debug-slot-${i}`;
+  let debugSlotArmed = null; // 2回タップ確認用 'save-3' など
+  function readDebugSlot(i) {
+    try { const raw = localStorage.getItem(debugSlotKey(i)); return raw ? JSON.parse(raw) : null; } catch (err) { return null; }
+  }
+  function renderDebugSlots() {
+    const list = document.getElementById('debugSlotList');
+    let html = '';
+    for (let i = 1; i <= DEBUG_SLOT_COUNT; i++) {
+      const slot = readDebugSlot(i);
+      const g = slot && slot.data && slot.data.game;
+      const info = g
+        ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>STAGE ${g.stage}　🟡 ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
+        : `<b>スロット${i}</b>　<span class="slot-empty">（空き）</span>`;
+      const arm = kind => debugSlotArmed === `${kind}-${i}`;
+      html += `<div class="slot-row"><div class="slot-info">${info}</div>`
+        + `<button class="save ${arm('save') ? 'armed' : ''}" data-slot-save="${i}">${arm('save') ? '上書き?' : '保存'}</button>`
+        + `<button class="load ${arm('load') ? 'armed' : ''}" data-slot-load="${i}" ${g ? '' : 'disabled'}>${arm('load') ? '本当に?' : 'ロード'}</button>`
+        + `<button class="del ${arm('del') ? 'armed' : ''}" data-slot-del="${i}" ${g ? '' : 'disabled'}>${arm('del') ? '削除?' : '削除'}</button></div>`;
+    }
+    list.innerHTML = html;
+  }
+  function openDebugSlots() {
+    debugSlotArmed = null;
+    renderDebugSlots();
+    document.getElementById('debugSlotModal').classList.add('show');
+  }
+  function handleDebugSlotClick(event) {
+    const saveBtn = event.target.closest('[data-slot-save]');
+    const loadBtn = event.target.closest('[data-slot-load]');
+    const delBtn = event.target.closest('[data-slot-del]');
+    const btn = saveBtn || loadBtn || delBtn;
+    if (!btn || btn.disabled) return;
+    const kind = saveBtn ? 'save' : loadBtn ? 'load' : 'del';
+    const i = Number(btn.dataset.slotSave || btn.dataset.slotLoad || btn.dataset.slotDel);
+    const occupied = !!readDebugSlot(i);
+    // 上書き保存・ロード・削除は2回タップで実行
+    const needConfirm = kind !== 'save' || occupied;
+    if (needConfirm && debugSlotArmed !== `${kind}-${i}`) { debugSlotArmed = `${kind}-${i}`; renderDebugSlots(); return; }
+    debugSlotArmed = null;
+    try {
+      if (kind === 'save') {
+        saveGame();
+        const data = JSON.parse(localStorage.getItem(SAVE_KEY));
+        localStorage.setItem(debugSlotKey(i), JSON.stringify({ savedAt: Date.now(), data }));
+        showNotice(`💾 スロット${i}に保存しました`);
+      } else if (kind === 'del') {
+        localStorage.removeItem(debugSlotKey(i));
+        showNotice(`🗑️ スロット${i}を削除しました`);
+      } else {
+        const slot = readDebugSlot(i);
+        localStorage.setItem(SAVE_KEY, JSON.stringify(slot.data));
+        suppressAutoSave = true; // 再読み込み時の自動セーブでロードしたデータを上書きしない
+        showNotice(`📂 スロット${i}をロードします…`);
+        setTimeout(() => location.reload(), 300);
+        return;
+      }
+    } catch (err) {
+      showNotice('セーブスロットを利用できません（保存領域が使えない環境です）', true);
+    }
+    renderDebugSlots();
+  }
+
   function clearSave() {
     try { localStorage.removeItem(SAVE_KEY); } catch (err) { /* 無視 */ }
   }
@@ -4409,6 +4497,7 @@
       onPlayerDeath();
       return;
     }
+    if (action === 'slots') { openDebugSlots(); return; }
     if (action === 'rewardAdReset') { game.lastRewardAdAt = 0; updateRewardAdButtons(); saveGame(); }
     if (action === 'special') {
       lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
