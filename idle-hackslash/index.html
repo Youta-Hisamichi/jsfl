@@ -127,8 +127,9 @@
   .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .action-row.three { grid-template-columns: 1fr 1fr 1fr; }
   .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .action-row.four.five { grid-template-columns: repeat(5, 1fr); gap: 5px; }
-  .action-row.four.five .action-btn { font-size: 0.56rem; padding: 7px 2px; }
+  .action-row.four.six { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
+  .action-btn.poison.buffing { background: rgba(126,231,135,0.15); }
   .action-btn.homing { border-color: #ff8a4f; color: #ffc3a0; }
   .action-row.single { grid-template-columns: 1fr; }
   .action-btn { border: 1px solid var(--ring); border-radius: 10px; padding: 10px 6px; color: var(--text); background: var(--bg-soft); font-weight: 800; cursor: pointer; font-size: 0.78rem; }
@@ -413,12 +414,13 @@
       </div>
     </div>
 
-    <div class="action-row four five" id="skillRow">
+    <div class="action-row four six" id="skillRow">
       <button class="action-btn special" id="specialBtn">🔒 必殺技</button>
       <button class="action-btn accel" id="accelBtn">🔒 加速</button>
       <button class="action-btn heal" id="healBtn">🔒 回復</button>
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
       <button class="action-btn homing" id="homingBtn">🔒 追尾</button>
+      <button class="action-btn poison" id="poisonBtn">🔒 毒</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -744,6 +746,7 @@
   const healBtn = document.getElementById('healBtn');
   const barrierBtn = document.getElementById('barrierBtn');
   const homingBtn = document.getElementById('homingBtn');
+  const poisonBtn = document.getElementById('poisonBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1169,7 +1172,8 @@
     skillAccel: { icon: '⏩', name: '加速スキル解放', desc: '2.5倍速スキルを使用可能に', cost: 90 },
     skillHeal: { icon: '💗', name: '回復スキル解放', desc: 'HPを回復するスキルを使用可能に', cost: 90 },
     skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 },
-    skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 }
+    skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 },
+    skillPoison: { icon: '☠️', name: '毒スキル解放', desc: '一定時間、攻撃が当たった敵を毒状態にして継続ダメージ', cost: 120 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1326,7 +1330,7 @@
     }).join('');
   }
   function renderCoinShopList() {
-    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming';
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison';
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
       if (isSkill(id)) {
         const owned = game.shopOwned[id];
@@ -1515,6 +1519,7 @@
     updateHealButton();
     updateBarrierButton();
     updateHomingButton();
+    updatePoisonButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -1610,12 +1615,96 @@
         enemy.hp -= dmg;
         trackDamage(dmg);
         spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
+        applyPoison(enemy);
         playHomingHitSound();
         updateHPUI();
         if (enemy.hp <= 0) triggerEnemyDefeat(enemy, m.x, m.y);
       }
     }
     homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
+  }
+  // ---------- 毒スキル ----------
+  // 発動中（POISON_BUFF_MS）に味方の攻撃が当たると敵が毒状態に。当たるたびにスタック（最大 POISON_MAX_STACKS）し、
+  // 毒は POISON_TICK_MS ごとに「攻撃力 × POISON_DMG_MULT × スタック数」の追加ダメージ。最後に当ててから POISON_DURATION_MS で消える
+  const POISON_COOLDOWN = 150 * 1000;
+  const POISON_BUFF_MS = 15 * 1000;
+  const POISON_TICK_MS = 1000;
+  const POISON_DURATION_MS = 6 * 1000;
+  const POISON_MAX_STACKS = 5;
+  const POISON_DMG_MULT = 0.3;
+  let lastPoisonAt = Date.now() - POISON_COOLDOWN;
+  let poisonBuffEndAt = 0;
+  function isPoisonBuffActive() { return Date.now() < poisonBuffEndAt; }
+  function applyPoison(enemy) {
+    if (!enemy || enemy.isAdd || !isPoisonBuffActive()) return;
+    const now = Date.now();
+    const prev = enemy.poison;
+    enemy.poison = {
+      stacks: Math.min(POISON_MAX_STACKS, (prev ? prev.stacks : 0) + 1),
+      until: now + POISON_DURATION_MS,
+      nextTick: prev ? prev.nextTick : now + POISON_TICK_MS
+    };
+  }
+  function updatePoison() {
+    if (phase !== 'battle') return;
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!enemy || !enemy.poison || enemy.isDying) return;
+    const now = Date.now();
+    const pz = enemy.poison;
+    if (now - pz.nextTick > POISON_TICK_MS) pz.nextTick = now; // 一時停止明けにまとめて入らないように
+    if (now >= pz.nextTick) {
+      pz.nextTick += POISON_TICK_MS;
+      const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+      const dmg = Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * POISON_DMG_MULT * pz.stacks));
+      enemy.hp -= dmg;
+      trackDamage(dmg);
+      spawnDamageText(enemy.x + (Math.random() - 0.5) * 20, enemy.y - enemy.radius - 4, '☠ ' + dmg, '#7ee787');
+      for (let i = 0; i < 4; i++) particles.push({ x: enemy.x + (Math.random() - 0.5) * enemy.radius, y: enemy.y, vx: (Math.random() - 0.5) * 0.8, vy: -1 - Math.random(), life: 1, color: '#7ee787', decay: 0.03 });
+      playPoisonTickSound();
+      updateHPUI();
+      if (enemy.hp <= 0) { triggerEnemyDefeat(enemy, enemy.x, enemy.y + 1); return; }
+    }
+    if (now > pz.until) delete enemy.poison;
+  }
+  function drawPoisonEffects() {
+    const t = Date.now() / 200;
+    // 発動中は自機に緑のオーラ
+    if (isPoisonBuffActive()) {
+      const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+      if (player) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(126,231,135,0.8)';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#7ee787';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius + 5 + Math.sin(t) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // 毒状態の敵は緑の輪＋スタック数
+    for (const ball of balls) {
+      if (ball.isPlayer || !ball.poison || ball.isDying) continue;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(126,231,135,0.85)';
+      ctx.lineWidth = 2 + ball.poison.stacks * 0.6;
+      ctx.setLineDash([6, 5]);
+      ctx.lineDashOffset = -t * 6;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius + 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#7ee787';
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 3;
+      const label = '☠x' + ball.poison.stacks;
+      ctx.strokeText(label, ball.x, ball.y + ball.radius + 20);
+      ctx.fillText(label, ball.x, ball.y + ball.radius + 20);
+      ctx.restore();
+    }
   }
   function drawHomingMissiles() {
     for (const m of homingMissiles) {
@@ -1672,7 +1761,7 @@
   let saveTimer = null;
   function saveGame() {
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -1689,6 +1778,7 @@
       if (typeof data.lastHealAt === 'number') lastHealAt = data.lastHealAt;
       if (typeof data.lastBarrierAt === 'number') lastBarrierAt = data.lastBarrierAt;
       if (typeof data.lastHomingAt === 'number') lastHomingAt = data.lastHomingAt;
+      if (typeof data.lastPoisonAt === 'number') lastPoisonAt = data.lastPoisonAt;
       return true;
     } catch (err) {
       return false;
@@ -2134,6 +2224,11 @@
   function playHomingLaunchSound() {
     for (let i = 0; i < HOMING_MISSILE_COUNT; i++) setTimeout(() => { playTone(700 + i * 60, 0.12, 'sawtooth', 0.07, 1400); playNoiseBurst(0.05, 0.05); }, i * 60);
   }
+  function playPoisonActivateSound() {
+    [220, 185, 247, 196].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.14, f * 0.7), i * 70));
+    playNoiseBurst(0.25, 0.06);
+  }
+  function playPoisonTickSound() { playTone(330, 0.08, 'sine', 0.07, 200); }
   function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
@@ -2539,6 +2634,7 @@
           trackDamage(dmg);
           spawnHitParticles(orb.x, orb.y, getBarrierColors().glow);
           spawnAttackDamageText(enemy, dmg, crit, '#c7ecff');
+          applyPoison(enemy);
           playBarrierHitSound();
           updateHPUI();
           if (enemy.hp <= 0) triggerEnemyDefeat(enemy, orb.x, orb.y);
@@ -2621,6 +2717,7 @@
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        applyPoison(e);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       } else if (!enemyAttackHits(e)) {
@@ -2658,6 +2755,7 @@
           trackDamage(dmg);
           spawnHitParticles(clone.x, clone.y, '#ffb35c');
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+          applyPoison(e);
           playEnemyHitSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, cloneX, cloneY); battleEnded = true; break; }
@@ -2683,6 +2781,7 @@
             trackDamage(dmg);
             spawnHitParticles(comp.x, comp.y, comp.color);
             spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+            applyPoison(e);
             playEnemyHitSound();
             applyHitKnockback(e, comp, 3.2);
           } else {
@@ -3175,7 +3274,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -3282,6 +3381,33 @@
     healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
+  function updatePoisonButton() {
+    poisonBtn.classList.remove('buffing');
+    if (!game.shopOwned.skillPoison) {
+      poisonBtn.disabled = false;
+      poisonBtn.classList.add('is-disabled');
+      poisonBtn.textContent = '🔒 毒';
+      return;
+    }
+    const now = Date.now();
+    if (now < poisonBuffEndAt) {
+      poisonBtn.disabled = true;
+      poisonBtn.classList.remove('is-disabled');
+      poisonBtn.classList.add('buffing');
+      poisonBtn.textContent = `☠️ 毒付与中\n${Math.ceil((poisonBuffEndAt - now) / 1000)}s`;
+      return;
+    }
+    const remaining = Math.max(0, POISON_COOLDOWN - (now - lastPoisonAt));
+    if (remaining === 0) {
+      poisonBtn.disabled = false;
+      poisonBtn.classList.toggle('is-disabled', phase !== 'battle');
+      poisonBtn.textContent = '☠️ 毒\nREADY';
+      return;
+    }
+    poisonBtn.disabled = false;
+    poisonBtn.classList.toggle('is-disabled', !isSkillResetPending('poison'));
+    poisonBtn.textContent = cooldownLabel('poison', '☠️ 毒', remaining);
+  }
   function updateHomingButton() {
     if (!game.shopOwned.skillHoming) {
       homingBtn.disabled = false;
@@ -3471,6 +3597,7 @@
     }
 
     drawHomingMissiles();
+    drawPoisonEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -3535,7 +3662,7 @@
     try {
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
-        if (phase === 'battle') { step(); updateHomingMissiles(getEffectiveSpeed()); }
+        if (phase === 'battle') { step(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); }
       } else {
         hitStopFrames--;
       }
@@ -3567,6 +3694,8 @@
     barrierOrbs = [];
     lastHomingAt = Date.now() - HOMING_COOLDOWN;
     homingMissiles = [];
+    lastPoisonAt = Date.now() - POISON_COOLDOWN;
+    poisonBuffEndAt = 0;
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
@@ -3591,6 +3720,7 @@
     updateHealButton();
     updateBarrierButton();
     updateHomingButton();
+    updatePoisonButton();
     startBgm('normal');
     loop();
   }
@@ -3673,7 +3803,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミングのクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -3707,6 +3837,9 @@
       barrierOrbs = [];
       lastHomingAt = Date.now() - HOMING_COOLDOWN;
       updateHomingButton();
+      lastPoisonAt = Date.now() - POISON_COOLDOWN;
+      poisonBuffEndAt = 0;
+      updatePoisonButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -3803,7 +3936,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming';
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison';
     if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
     const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
@@ -4128,6 +4261,18 @@
     updateHPUI();
   });
 
+  poisonBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillPoison) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は毒を付与できません', event.clientX, event.clientY); return; }
+    if (isPoisonBuffActive()) return;
+    if (Date.now() - lastPoisonAt < POISON_COOLDOWN) { tryGemResetSkill('poison', event, () => { lastPoisonAt = Date.now() - POISON_COOLDOWN; }, updatePoisonButton); return; }
+    lastPoisonAt = Date.now();
+    poisonBuffEndAt = Date.now() + POISON_BUFF_MS;
+    playPoisonActivateSound();
+    showNotice('☠️ 毒付与！ 攻撃が当たると敵を毒状態に');
+    updatePoisonButton();
+  });
+
   homingBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillHoming) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はホーミングを撃てません', event.clientX, event.clientY); return; }
@@ -4218,6 +4363,7 @@
   setInterval(updateHealButton, 1000);
   setInterval(updateBarrierButton, 1000);
   setInterval(updateHomingButton, 1000);
+  setInterval(updatePoisonButton, 500);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -4258,6 +4404,7 @@
   updateHealButton();
   updateBarrierButton();
   updateHomingButton();
+  updatePoisonButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
