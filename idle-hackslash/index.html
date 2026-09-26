@@ -595,7 +595,7 @@
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
       <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
-      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>🟡 1800</button></div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button></div>
       <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
       <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
@@ -1604,10 +1604,9 @@
     }).join('');
     gachaBtn.classList.toggle('is-disabled', game.gems < 5);
     gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
-    const cgb = document.getElementById('compGachaBtn'), cgb10 = document.getElementById('compGacha10Btn');
-    const cost1 = getCompSummonCost(1), cost10 = getCompSummonCost(10);
+    const cgb = document.getElementById('compGachaBtn');
+    const cost1 = getCompSummonCost(1);
     if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `🐾 仲間召喚<br>🟡 ${formatCoinNumber(cost1)}`; }
-    if (cgb10) { cgb10.classList.toggle('is-disabled', game.coins < cost10); cgb10.innerHTML = `🐾 10連召喚<br>🟡 ${formatCoinNumber(cost10)}`; }
   }
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
@@ -1648,12 +1647,12 @@
 
   // ---------- 仲間召喚（コインガチャ） ----------
   // 召喚するたびに値段が上がる（1回ごとに +10%）。回数は転生でリセット
-  const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1, COMP_GACHA10_DISCOUNT = 0.9;
+  const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1;
   function getCompSummonCost(count) {
     const done = game.companionSummons || 0;
     let total = 0;
     for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
-    return count > 1 ? Math.round(total * COMP_GACHA10_DISCOUNT) : total;
+    return total;
   }
   const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
   function pickCompanionId() {
@@ -1717,7 +1716,6 @@
     saveGame();
   }
   document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
-  document.getElementById('compGacha10Btn').addEventListener('click', event => runCompanionGacha(10, getCompSummonCost(10), event));
 
   function getPlayerAtk() {
     const b = computeBonuses();
