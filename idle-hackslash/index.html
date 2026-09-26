@@ -359,6 +359,14 @@
   .modal-sub { color: var(--text-dim); font-size: 0.75rem; margin-bottom: 12px; }
   .modal-shop-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
   .modal-shop-btn { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 10px; padding: 9px 12px; text-align: left; color: var(--text); cursor: pointer; font-size: 0.76rem; width: 100%; }
+  .modal-shop-list.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; max-height: 52vh; overflow-y: auto; }
+  .modal-shop-list.two .modal-shop-btn { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 9px; }
+  .modal-shop-list.two .msb-cost { text-align: right; }
+  .modal-shop-btn .msb-rarity { display: block; font-size: 0.64rem; font-weight: 700; margin-top: 2px; }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .modal-shop-btn .msb-cost { color: #0a7ea4; }
+    :root:not([data-theme="dark"]) .modal-shop-btn .msb-rarity { filter: brightness(0.7) saturate(1.3); }
+  }
   .modal-shop-btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .modal-shop-btn .msb-name { font-weight: 700; }
   .modal-shop-btn .msb-desc { color: var(--text-dim); font-size: 0.68rem; display: block; margin-top: 2px; }
@@ -623,9 +631,9 @@
 <div class="modal-overlay" id="rebirthShopModal">
   <div class="modal-panel">
     <h2>🌌 転生ショップ</h2>
-    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物以外の効果は今回の周回中のみ有効です）</div>
+    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物の効果は転生しても永続します）</div>
     <div class="purchase-msg" id="rebirthShopMsg"></div>
-    <div class="modal-shop-list" id="rebirthShopList"></div>
+    <div class="modal-shop-list two" id="rebirthShopList"></div>
     <div class="auto-skip-wrap" id="rebirthAutoSkipWrap">
       <div class="auto-skip-label" id="rebirthAutoSkipLabel">操作がないと 10 秒後に自動で周回開始</div>
       <div class="auto-skip-track"><div class="auto-skip-fill" id="rebirthAutoSkipFill"></div></div>
@@ -1253,19 +1261,17 @@
     medium: { icon: '💎', name: 'ジェム袋', desc: 'ジェム +20', cost: 3 },
     large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +60', cost: 8 }
   };
-  // 転生直後のみ開く、ジェット消費専用ショップ（効果はその周回のみ）
-  const REBIRTH_SHOP_ITEMS = {
-    startFund: { icon: '🟡', name: '開始資金', desc: '今すぐコイン +150', cost: 2, effect: () => { game.coins += 150; } },
-    warCry:    { icon: '⚔️', name: '闘気鼓舞', desc: '今回の周回中、攻撃力 +15%', cost: 3, effect: () => { game.rebirthBonus.atk += 0.15; } },
-    blessing:  { icon: '❤️', name: '女神の加護', desc: '今回の周回中、最大HP +15%', cost: 3, effect: () => { game.rebirthBonus.hp += 0.15; } },
-    reserve:   { icon: '👥', name: '予備兵招集', desc: '今回の周回中、分身上限 +1', cost: 2, effect: () => { game.rebirthBonus.cloneSlots += 1; } },
-    // 遺物（アーティファクト）そのものを購入。効果は永続、所持上限まで
-    lens:      { icon: '🔭', name: '遺物：千里眼のレンズ', desc: '命中率 +3%（永続）', cost: 8, artifactId: 'lens', effect: () => { game.ownedArtifacts.lens = (game.ownedArtifacts.lens || 0) + 1; } },
-    feather:   { icon: '🪶', name: '遺物：風切りの羽', desc: '回避率 +3%（永続）', cost: 8, artifactId: 'feather', effect: () => { game.ownedArtifacts.feather = (game.ownedArtifacts.feather || 0) + 1; } }
-  };
+  // 転生直後のみ開く、ジェム消費専用ショップ。効果が永続の遺物（アーティファクト）だけを販売
+  const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 20 };
+  const REBIRTH_SHOP_ITEMS = {};
+  ARTIFACT_POOL.forEach(a => {
+    REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
+      effect: () => { game.ownedArtifacts[a.id] = (game.ownedArtifacts[a.id] || 0) + 1; } };
+  });
   function isRebirthItemMaxed(item) {
     if (!item.artifactId) return false;
-    return (game.ownedArtifacts[item.artifactId] || 0) >= ARTIFACT_STACK_LIMIT[item.artifactId];
+    const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
+    return !!limit && (game.ownedArtifacts[item.artifactId] || 0) >= limit;
   }
 
   // 仲間：ジェムで仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
@@ -1446,8 +1452,11 @@
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
       const short = !maxed && game.gems < item.cost;
-      const owned = item.artifactId ? `　所持 ${game.ownedArtifacts[item.artifactId] || 0} / ${ARTIFACT_STACK_LIMIT[item.artifactId]}` : '';
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
+      const count = game.ownedArtifacts[item.artifactId] || 0;
+      const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
+      const owned = `所持 ${count}${limit ? ' / ' + limit : ''}`;
+      const rar = RARITY_INFO[item.rarity];
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -3649,7 +3658,8 @@
   const rebirthShopMsg = document.getElementById('rebirthShopMsg');
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
   function showRebirthPurchaseMessage(item) {
-    const owned = item.artifactId ? `（所持 ${game.ownedArtifacts[item.artifactId]} / ${ARTIFACT_STACK_LIMIT[item.artifactId]}）` : '';
+    const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
+    const owned = `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
     rebirthShopMsg.innerHTML = `✅ ${item.icon} ${item.name} を購入！<br><span style="color:#2ea043;">${item.desc}${owned}</span>`;
     rebirthShopMsg.classList.remove('show');
     void rebirthShopMsg.offsetWidth; // 連続購入でもアニメーションを再生
@@ -4874,7 +4884,7 @@
     if (game.gems < item.cost) { promptGemShortage(item.cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }); return; }
     game.gems -= item.cost;
     item.effect();
-    if (item.artifactId) renderArtifactList();
+    renderArtifactList();
     showRebirthPurchaseMessage(item);
     playUpgradeSound();
     updateStatsUI();
