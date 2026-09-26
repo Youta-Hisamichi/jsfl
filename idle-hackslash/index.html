@@ -99,7 +99,14 @@
   .hp-bar-fill { height: 100%; border-radius: 999px; transition: width 0.15s ease-out; }
   .hp-card.player .hp-bar-fill { background: var(--accent-player); }
   .hp-card.enemy .hp-bar-fill { background: var(--accent-enemy); }
-  .hp-card .atk-tag { font-size: 0.68rem; color: var(--text-dim); margin-top: 4px; }
+  .hp-card .atk-tag { font-size: 0.68rem; color: var(--text-dim); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 1px 8px; }
+  .hp-row .hp-card { min-width: 0; padding: 9px 11px; }
+  .hp-card .label { gap: 6px; flex-wrap: wrap; }
+  .hp-card .label .name { white-space: nowrap; }
+  @media (max-width: 480px) {
+    /* 横並びで幅が狭いときは、名前とHP数値を2段にしてカードの高さをそろえる */
+    .hp-row .hp-card .label { flex-direction: column; gap: 1px; }
+  }
 
   .speed-control { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 9px 14px; font-size: 0.78rem; }
   .speed-control label { white-space: nowrap; font-weight: 700; }
@@ -368,10 +375,15 @@
     </div>
 
     <div class="hp-row">
+      <div class="hp-card player" style="flex:1;">
+        <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100 / 100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
+        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
+      </div>
       <div class="hp-card enemy" style="flex:1;">
         <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100 / 100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
-        <div class="atk-tag">ATK <span id="enemyAtkNum">8</span>　命中 <span id="enemyAccNum">95%</span>　回避 <span id="enemyEvaNum">5%</span></div>
+        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
       </div>
     </div>
 
@@ -387,14 +399,6 @@
         <button class="action-btn special" id="continueBtn" style="display:none; margin-top:12px;">💎 3 でリトライ</button>
         <button class="action-btn" id="giveUpBtn" style="display:none; margin-top:8px;">🕊️ あきらめて転生</button>
         <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
-      </div>
-    </div>
-
-    <div class="hp-row">
-      <div class="hp-card player" style="flex:1;">
-        <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100 / 100</span></div>
-        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
-        <div class="atk-tag">ATK <span id="playerAtkNum">10</span>　命中 <span id="playerAccNum">95%</span>　回避 <span id="playerEvaNum">5%</span></div>
       </div>
     </div>
 
