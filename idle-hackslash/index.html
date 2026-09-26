@@ -458,7 +458,7 @@
         <div class="record">MAX<strong id="maxDamageNum">0</strong>単発ダメージ</div>
         <div class="record">MAX<strong id="maxDpsNum">0</strong>DPS</div>
         <div class="record">MAX<strong id="maxComboNum">0</strong>コンボ</div>
-        <div class="record">CRIT<strong id="critRateNum">10%</strong>クリティカル率</div>
+        <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
       </div>
       <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
@@ -1836,7 +1836,7 @@
   function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.7, decay: decay || 0.018, big: !!big }); }
 
   // ---------- クリティカル（味方側の攻撃に一定確率で発生） ----------
-  const CRIT_CHANCE = 0.1; // 基本発生率 10%（アーティファクト「鷹の眼」で上昇）
+  const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
   const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
   function rollCrit(dmg) {
     const b = computeBonuses();
