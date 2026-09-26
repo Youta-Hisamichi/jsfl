@@ -819,6 +819,7 @@
     fortune:  { icon: '🍀', name: '幸運の欠片',   rarity: 'rare',      desc: 'コイン獲得 +15%/Lv',    bonus: { coin: 0.15 },              weight: 16 },
     meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: '必殺技ダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
     chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
+    critical: { icon: '🎯', name: '会心の欠片',   rarity: 'epic',      desc: 'クリティカル率 +1%/Lv', bonus: { crit: 0.01 },              weight: 5 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
   function pickGachaId() {
@@ -886,8 +887,8 @@
     upgrades: { atk: 0, hp: 0, speed: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     companions: { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
@@ -941,6 +942,7 @@
       if (bonus.coin) b.coinMult += bonus.coin * level;
       if (bonus.special) b.specialMult += bonus.special * level;
       if (bonus.combo) b.comboGrowth += bonus.combo * level;
+      if (bonus.crit) b.critChance += bonus.crit * level;
     }
 
     for (const id in COMPANIONS) {
@@ -2712,8 +2714,8 @@
     game.stage = 1; game.level = 1; game.exp = 0; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
-    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
@@ -3254,6 +3256,11 @@
   window.addEventListener('pagehide', saveGame);
 
   loadGame();
+  // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
+  for (const id in GACHA_POOL) {
+    if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
+    if (typeof game.gachaShards[id] !== 'number') game.gachaShards[id] = 0;
+  }
   // 仲間の状態が未初期化の場合は初期化
   if (!game.companions.hp) game.companions.hp = { knight: 0, archer: 0, witch: 0, sprite: 0 };
   if (!game.companions.alive) game.companions.alive = { knight: true, archer: true, witch: true, sprite: true };
