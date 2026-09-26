@@ -103,10 +103,6 @@
   .hp-row .hp-card { min-width: 0; padding: 9px 11px; }
   .hp-card .label { gap: 6px; flex-wrap: wrap; }
   .hp-card .label .name { white-space: nowrap; }
-  @media (max-width: 480px) {
-    /* 横並びで幅が狭いときは、名前とHP数値を2段にしてカードの高さをそろえる */
-    .hp-row .hp-card .label { flex-direction: column; gap: 1px; }
-  }
 
   .speed-control { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 9px 14px; font-size: 0.78rem; }
   .speed-control label { white-space: nowrap; font-weight: 700; }
@@ -376,12 +372,12 @@
 
     <div class="hp-row">
       <div class="hp-card player" style="flex:1;">
-        <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100 / 100</span></div>
+        <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
         <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
       </div>
       <div class="hp-card enemy" style="flex:1;">
-        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100 / 100</span></div>
+        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
         <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
       </div>
@@ -2649,8 +2645,8 @@
     if (!p || !en) return;
     playerHPFill.style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
     enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
-    playerHPText.textContent = Math.max(0, Math.round(p.hp)) + ' / ' + p.maxHp;
-    enemyHPText.textContent = Math.max(0, Math.round(en.hp)) + ' / ' + en.maxHp;
+    playerHPText.textContent = Math.max(0, Math.round(p.hp));
+    enemyHPText.textContent = Math.max(0, Math.round(en.hp));
     playerAtkNum.textContent = p.atk;
     playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
     playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
@@ -2864,12 +2860,13 @@
   function renderStageSkipList() {
     stageSkipGems.textContent = Math.floor(game.gems);
     stageSkipOrigin.textContent = game.stage;
+    // 遠いスキップ（高コスト）から順に表示
     stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
       const target = getSkipTargetStage(opt.skip);
       const es = getEnemyStats(target);
       const short = game.gems < opt.cost;
       return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
-    }).join('');
+    }).reverse().join('');
   }
   function spawnBossWithWarning() {
     showBossWarning();
