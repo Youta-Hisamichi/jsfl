@@ -1846,9 +1846,10 @@
   }
   // 敵の攻撃のクリティカル（自機・仲間が受けるダメージ）
   const ENEMY_CRIT_CHANCE = 0.05; // 発生率 5%
+  const BOSS_CRIT_CHANCE = 0.15;  // ボスの発生率 15%
   const ENEMY_CRIT_MULT = 1.5;    // ダメージ 1.5倍
-  function rollEnemyCrit(dmg) {
-    const crit = Math.random() < ENEMY_CRIT_CHANCE;
+  function rollEnemyCrit(attacker, dmg) {
+    const crit = Math.random() < (attacker.isBoss ? BOSS_CRIT_CHANCE : ENEMY_CRIT_CHANCE);
     return { dmg: crit ? Math.round(dmg * ENEMY_CRIT_MULT) : dmg, crit };
   }
   // 被ダメージ表示。敵のクリティカル時は赤い大きな文字＋追加エフェクト
@@ -2101,7 +2102,7 @@
       } else if (absorbWithBarrier(a)) {
         applyHitKnockback(a, e, 3.2);
       } else {
-        const { dmg, crit } = rollEnemyCrit(Math.max(1, Math.round(e.atk * comboMult)));
+        const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
         a.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
@@ -2159,7 +2160,7 @@
           applyHitKnockback(e, comp, 3.2);
           
           // 敵が仲間に反撃
-          const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(Math.max(1, Math.round(e.atk * comboMult)));
+          const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
           comp.hp -= enemyDmg;
           spawnHitParticles(comp.x, comp.y, '#5cc8ff');
           spawnReceivedDamageText(comp, enemyDmg, enemyCrit);
