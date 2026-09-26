@@ -127,7 +127,9 @@
   .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .action-row.three { grid-template-columns: 1fr 1fr 1fr; }
   .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .action-row.four.six { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .action-row.four.six { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .action-btn.atkup { border-color: #ff6b6b; color: #ffb3b3; }
+  .action-btn.atkup.buffing { background: rgba(255,107,107,0.15); }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
@@ -453,6 +455,7 @@
       <button class="action-btn poison" id="poisonBtn">🔒 毒</button>
       <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
       <button class="action-btn sleep" id="sleepBtn">🔒 眠り</button>
+      <button class="action-btn atkup" id="atkUpBtn">🔒 攻撃UP</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -787,6 +790,7 @@
   const poisonBtn = document.getElementById('poisonBtn');
   const paralyzeBtn = document.getElementById('paralyzeBtn');
   const sleepBtn = document.getElementById('sleepBtn');
+  const atkUpBtn = document.getElementById('atkUpBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1220,7 +1224,8 @@
     skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 },
     skillPoison: { icon: '☠️', name: '毒スキル解放', desc: '一定時間、攻撃が当たった敵を毒状態にして継続ダメージ', cost: 120 },
     skillParalyze: { icon: '⚡', name: '麻痺スキル解放', desc: '雷を落として敵を麻痺させ、しばらく動きと攻撃を封じる', cost: 130 },
-    skillSleep: { icon: '💤', name: '眠りスキル解放', desc: '敵を眠らせる。攻撃すると起きるが、その一撃は大ダメージ', cost: 120 }
+    skillSleep: { icon: '💤', name: '眠りスキル解放', desc: '敵を眠らせる。攻撃すると起きるが、その一撃は大ダメージ', cost: 120 },
+    skillAtkUp: { icon: '💪', name: '攻撃力UPスキル解放', desc: '20秒間、自機の攻撃力が1.5倍になる', cost: 110 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1389,7 +1394,7 @@
     }).join('');
   }
   function renderCoinShopList() {
-    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep';
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep' || id === 'skillAtkUp';
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
       if (isSkill(id)) {
         const owned = game.shopOwned[id];
@@ -1516,7 +1521,8 @@
     const b = computeBonuses();
     const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
     const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
-    return Math.max(1, Math.round(base * b.atkMult * accelBonus));
+    const atkUpBonus = (Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル
+    return Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus));
   }
   function getPlayerMaxHP() {
     const b = computeBonuses();
@@ -1694,6 +1700,7 @@
     updatePoisonButton();
     updateParalyzeButton();
     updateSleepButton();
+    updateAtkUpButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -1798,6 +1805,34 @@
     }
     homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
   }
+  // ---------- 攻撃力UPスキル ----------
+  const ATK_UP_COOLDOWN = 180 * 1000;
+  const ATK_UP_MS = 20 * 1000;
+  const ATK_UP_MULT = 1.5;
+  let lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
+  let atkUpEndAt = 0;
+  function drawAtkUpEffects() {
+    if (Date.now() >= atkUpEndAt) return;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) return;
+    const t = Date.now() / 120;
+    ctx.save();
+    ctx.shadowColor = '#ff6b6b';
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = 'rgba(255,107,107,0.85)';
+    ctx.lineWidth = 2.5;
+    // 炎のように揺らめく赤いオーラ
+    ctx.beginPath();
+    for (let i = 0; i <= 24; i++) {
+      const a = i / 24 * Math.PI * 2;
+      const rr = player.radius + 7 + Math.sin(a * 5 + t) * 2.5;
+      const px = player.x + Math.cos(a) * rr, py = player.y + Math.sin(a) * rr;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // ---------- 毒スキル ----------
   // 発動中（POISON_BUFF_MS）に味方の攻撃が当たると敵が毒状態に。当たるたびにスタック（最大 POISON_MAX_STACKS）し、
   // 毒は POISON_TICK_MS ごとに「攻撃力 × POISON_DMG_MULT × スタック数」の追加ダメージ。最後に当ててから POISON_DURATION_MS で消える
@@ -2109,7 +2144,7 @@
   let saveTimer = null;
   function saveGame() {
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -2129,6 +2164,7 @@
       if (typeof data.lastPoisonAt === 'number') lastPoisonAt = data.lastPoisonAt;
       if (typeof data.lastParalyzeAt === 'number') lastParalyzeAt = data.lastParalyzeAt;
       if (typeof data.lastSleepAt === 'number') lastSleepAt = data.lastSleepAt;
+      if (typeof data.lastAtkUpAt === 'number') lastAtkUpAt = data.lastAtkUpAt;
       return true;
     } catch (err) {
       return false;
@@ -2602,6 +2638,10 @@
     playNoiseBurst(0.35, 0.3);
     playTone(1800, 0.25, 'sawtooth', 0.14, 120);
     [0, 50, 110, 170].forEach(d => setTimeout(() => playTone(900 + Math.random() * 900, 0.05, 'square', 0.08), d));
+  }
+  function playAtkUpSound() {
+    playTone(150, 0.35, 'sawtooth', 0.18, 420);
+    [392, 523.25, 659.25, 783.99].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'square', 0.1), 120 + i * 70));
   }
   function playSleepSound() {
     [659.25, 523.25, 392, 329.63].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 0.98), i * 160));
@@ -3747,7 +3787,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -3854,6 +3894,40 @@
     healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
+  function updateAtkUpButton() {
+    atkUpBtn.classList.remove('buffing');
+    if (atkUpEndAt && Date.now() >= atkUpEndAt) {
+      // 効果が切れたら攻撃力の表示もすぐ元に戻す
+      atkUpEndAt = 0;
+      const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+      if (player) player.atk = getPlayerAtk();
+      updateHPUI();
+    }
+    if (!game.shopOwned.skillAtkUp) {
+      atkUpBtn.disabled = false;
+      atkUpBtn.classList.add('is-disabled');
+      atkUpBtn.textContent = '🔒 攻撃UP';
+      return;
+    }
+    const now = Date.now();
+    if (now < atkUpEndAt) {
+      atkUpBtn.disabled = true;
+      atkUpBtn.classList.remove('is-disabled');
+      atkUpBtn.classList.add('buffing');
+      atkUpBtn.textContent = `💪 攻撃UP中\n${Math.ceil((atkUpEndAt - now) / 1000)}s`;
+      return;
+    }
+    const remaining = Math.max(0, ATK_UP_COOLDOWN - (now - lastAtkUpAt));
+    if (remaining === 0) {
+      atkUpBtn.disabled = false;
+      atkUpBtn.classList.toggle('is-disabled', phase !== 'battle');
+      atkUpBtn.textContent = '💪 攻撃UP\nREADY';
+      return;
+    }
+    atkUpBtn.disabled = false;
+    atkUpBtn.classList.toggle('is-disabled', !isSkillResetPending('atkup'));
+    atkUpBtn.textContent = cooldownLabel('atkup', '💪 攻撃UP', remaining);
+  }
   function updateSleepButton() {
     if (!game.shopOwned.skillSleep) {
       sleepBtn.disabled = false;
@@ -4098,6 +4172,7 @@
     drawPoisonEffects();
     drawParalyzeEffects();
     drawSleepEffects();
+    drawAtkUpEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -4199,6 +4274,8 @@
     poisonBuffEndAt = 0;
     lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
     lastSleepAt = Date.now() - SLEEP_COOLDOWN;
+    lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
+    atkUpEndAt = 0;
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
@@ -4226,6 +4303,7 @@
     updatePoisonButton();
     updateParalyzeButton();
     updateSleepButton();
+    updateAtkUpButton();
     startBgm('normal');
     loop();
   }
@@ -4308,7 +4386,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠りのクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UPのクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -4349,6 +4427,9 @@
       updateParalyzeButton();
       lastSleepAt = Date.now() - SLEEP_COOLDOWN;
       updateSleepButton();
+      lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
+      atkUpEndAt = 0;
+      updateAtkUpButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -4445,7 +4526,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep';
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep' || id === 'skillAtkUp';
     if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
     const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
@@ -4750,6 +4831,25 @@
     updateHPUI();
   });
 
+  atkUpBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillAtkUp) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は攻撃UPを使えません', event.clientX, event.clientY); return; }
+    if (Date.now() < atkUpEndAt) return;
+    if (Date.now() - lastAtkUpAt < ATK_UP_COOLDOWN) { tryGemResetSkill('atkup', event, () => { lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN; }, updateAtkUpButton); return; }
+    lastAtkUpAt = Date.now();
+    atkUpEndAt = Date.now() + ATK_UP_MS;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (player) {
+      player.atk = getPlayerAtk();
+      spawnDamageText(player.x, player.y - player.radius - 14, `💪 攻撃力 ×${ATK_UP_MULT}`, '#ff6b6b', 0.012);
+      spawnHitParticles(player.x, player.y, '#ff6b6b');
+    }
+    playAtkUpSound();
+    showNotice(`💪 攻撃力UP！ ${ATK_UP_MS / 1000}秒間 攻撃力 ×${ATK_UP_MULT}`);
+    updateAtkUpButton();
+    updateHPUI();
+  });
+
   sleepBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillSleep) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は眠りを使えません', event.clientX, event.clientY); return; }
@@ -4880,6 +4980,7 @@
   setInterval(updatePoisonButton, 500);
   setInterval(updateParalyzeButton, 1000);
   setInterval(updateSleepButton, 1000);
+  setInterval(updateAtkUpButton, 500);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -4932,6 +5033,7 @@
   updatePoisonButton();
   updateParalyzeButton();
   updateSleepButton();
+  updateAtkUpButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
