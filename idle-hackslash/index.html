@@ -1179,7 +1179,6 @@
     { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
     { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
     { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
-    { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%', rarity: 'common' },
     { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射コイン +100%（反射のコンパス所持時）', rarity: 'rare' },
     { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
     { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
@@ -1215,7 +1214,6 @@
   const GACHA_POOL = {
     power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
     vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },
-    swift:    { icon: '💨', name: '疾風の欠片',   rarity: 'rare',      desc: '移動速度 +8%/Lv',       bonus: { speed: 0.08 },             weight: 18 },
     fortune:  { icon: '🍀', name: '幸運の欠片',   rarity: 'rare',      desc: 'コイン獲得 +15%/Lv',    bonus: { coin: 0.15 },              weight: 16 },
     meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: '必殺技ダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
     chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
@@ -1332,8 +1330,8 @@
     upgrades: { atk: 0, hp: 0, clash: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
@@ -1363,7 +1361,6 @@
       if (id === 'ring') b.coinMult += 0.3 * count;
       if (id === 'book') { b.atkMult += 0.1 * count; b.hpMult += 0.1 * count; }
       if (id === 'armor') b.hpMult += 0.25 * count;
-      if (id === 'boots') b.speedMult += 0.15 * count;
       if (id === 'clover') b.bounceMult += 1.0 * count;
       if (id === 'compass') b.bounceCoinCount = count;
       if (id === 'calendar') b.loginBonusMult += 0.4 * count;
@@ -1389,7 +1386,6 @@
       const bonus = GACHA_POOL[id].bonus;
       if (bonus.atk) b.atkMult += bonus.atk * level;
       if (bonus.hp) b.hpMult += bonus.hp * level;
-      if (bonus.speed) b.speedMult += bonus.speed * level;
       if (bonus.coin) b.coinMult += bonus.coin * level;
       if (bonus.special) b.specialMult += bonus.special * level;
       if (bonus.combo) b.comboGrowth += bonus.combo * level;
@@ -4471,8 +4467,8 @@
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
-    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
@@ -5223,6 +5219,10 @@
   delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
   delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
   if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
+  // 移動速度アップの遺物・進化は廃止
+  if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
+  if (game.evolutions) delete game.evolutions.swift;
+  if (game.gachaShards) delete game.gachaShards.swift;
   if (game.upgrades && typeof game.upgrades.clash !== 'number') game.upgrades.clash = 0; // 迫り合いは後から追加
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
