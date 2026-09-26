@@ -127,7 +127,8 @@
   .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .action-row.three { grid-template-columns: 1fr 1fr 1fr; }
   .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .action-row.four.six { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .action-row.four.six { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
   .action-btn.poison.buffing { background: rgba(126,231,135,0.15); }
   .action-btn.homing { border-color: #ff8a4f; color: #ffc3a0; }
@@ -421,6 +422,7 @@
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
       <button class="action-btn homing" id="homingBtn">🔒 追尾</button>
       <button class="action-btn poison" id="poisonBtn">🔒 毒</button>
+      <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -747,6 +749,7 @@
   const barrierBtn = document.getElementById('barrierBtn');
   const homingBtn = document.getElementById('homingBtn');
   const poisonBtn = document.getElementById('poisonBtn');
+  const paralyzeBtn = document.getElementById('paralyzeBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1173,7 +1176,8 @@
     skillHeal: { icon: '💗', name: '回復スキル解放', desc: 'HPを回復するスキルを使用可能に', cost: 90 },
     skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 },
     skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 },
-    skillPoison: { icon: '☠️', name: '毒スキル解放', desc: '一定時間、攻撃が当たった敵を毒状態にして継続ダメージ', cost: 120 }
+    skillPoison: { icon: '☠️', name: '毒スキル解放', desc: '一定時間、攻撃が当たった敵を毒状態にして継続ダメージ', cost: 120 },
+    skillParalyze: { icon: '⚡', name: '麻痺スキル解放', desc: '雷を落として敵を麻痺させ、しばらく動きと攻撃を封じる', cost: 130 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1330,7 +1334,7 @@
     }).join('');
   }
   function renderCoinShopList() {
-    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison';
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze';
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
       if (isSkill(id)) {
         const owned = game.shopOwned[id];
@@ -1520,6 +1524,7 @@
     updateBarrierButton();
     updateHomingButton();
     updatePoisonButton();
+    updateParalyzeButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -1706,6 +1711,80 @@
       ctx.restore();
     }
   }
+  // ---------- 麻痺スキル ----------
+  // 雷を落として少しダメージを与え、敵を麻痺させる。麻痺中の敵は動けず、攻撃もしてこない（ボスは効果時間が半分）
+  const PARALYZE_COOLDOWN = 150 * 1000;
+  const PARALYZE_MS = 5 * 1000;
+  const PARALYZE_BOSS_MS = 2.5 * 1000;
+  const PARALYZE_DMG_MULT = 0.5;
+  let lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
+  let lightningFx = null; // 落雷エフェクト { x, y, until }
+  function isParalyzed(ball) { return !!ball && ball.paralyzedUntil > Date.now(); }
+  function castParalyze(enemy) {
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    const dur = enemy.isBoss ? PARALYZE_BOSS_MS : PARALYZE_MS;
+    enemy.paralyzedUntil = Date.now() + dur;
+    lightningFx = { x: enemy.x, y: enemy.y, until: Date.now() + 350 };
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT)));
+    enemy.hp -= dmg;
+    trackDamage(dmg);
+    spawnAttackDamageText(enemy, dmg, crit, '#fff1a8');
+    spawnDamageText(enemy.x, enemy.y + enemy.radius + 26, `⚡ 麻痺 ${dur / 1000}秒`, '#ffe14f', 0.012);
+    for (let i = 0; i < 12; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3;
+      particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: '#ffe14f', decay: 0.035 });
+    }
+    playParalyzeSound();
+    updateHPUI();
+    if (enemy.hp <= 0) triggerEnemyDefeat(enemy, enemy.x, enemy.y - 1);
+  }
+  function drawLightningBolt(x1, y1, x2, y2, width, color) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    const segs = 9;
+    for (let i = 1; i < segs; i++) {
+      const t = i / segs;
+      ctx.lineTo(x1 + (x2 - x1) * t + (Math.random() - 0.5) * 22, y1 + (y2 - y1) * t);
+    }
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+  function drawParalyzeEffects() {
+    const now = Date.now();
+    if (lightningFx && now < lightningFx.until) {
+      ctx.save();
+      ctx.shadowColor = '#ffe14f';
+      ctx.shadowBlur = 18;
+      drawLightningBolt(lightningFx.x + (Math.random() - 0.5) * 30, 0, lightningFx.x, lightningFx.y, 5, '#fff7c2');
+      drawLightningBolt(lightningFx.x + (Math.random() - 0.5) * 30, 0, lightningFx.x, lightningFx.y, 2, '#ffe14f');
+      ctx.restore();
+    } else if (lightningFx) {
+      lightningFx = null;
+    }
+    // 麻痺中の敵のまわりに小さな電撃
+    for (const ball of balls) {
+      if (ball.isPlayer || !isParalyzed(ball) || ball.isDying) continue;
+      ctx.save();
+      ctx.shadowColor = '#ffe14f';
+      ctx.shadowBlur = 8;
+      for (let i = 0; i < 3; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const r1 = ball.radius * 0.6, r2 = ball.radius + 10;
+        drawLightningBolt(ball.x + Math.cos(a) * r1, ball.y + Math.sin(a) * r1, ball.x + Math.cos(a) * r2, ball.y + Math.sin(a) * r2, 1.5, '#ffe14f');
+      }
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffe14f';
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 3;
+      const label = '⚡' + Math.ceil((ball.paralyzedUntil - now) / 1000) + 's';
+      ctx.strokeText(label, ball.x, ball.y - ball.radius - 18);
+      ctx.fillText(label, ball.x, ball.y - ball.radius - 18);
+      ctx.restore();
+    }
+  }
   function drawHomingMissiles() {
     for (const m of homingMissiles) {
       if (m.delay > 0) continue;
@@ -1761,7 +1840,7 @@
   let saveTimer = null;
   function saveGame() {
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -1779,6 +1858,7 @@
       if (typeof data.lastBarrierAt === 'number') lastBarrierAt = data.lastBarrierAt;
       if (typeof data.lastHomingAt === 'number') lastHomingAt = data.lastHomingAt;
       if (typeof data.lastPoisonAt === 'number') lastPoisonAt = data.lastPoisonAt;
+      if (typeof data.lastParalyzeAt === 'number') lastParalyzeAt = data.lastParalyzeAt;
       return true;
     } catch (err) {
       return false;
@@ -2228,6 +2308,11 @@
     [220, 185, 247, 196].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.14, f * 0.7), i * 70));
     playNoiseBurst(0.25, 0.06);
   }
+  function playParalyzeSound() {
+    playNoiseBurst(0.35, 0.3);
+    playTone(1800, 0.25, 'sawtooth', 0.14, 120);
+    [0, 50, 110, 170].forEach(d => setTimeout(() => playTone(900 + Math.random() * 900, 0.05, 'square', 0.08), d));
+  }
   function playPoisonTickSound() { playTone(330, 0.08, 'sine', 0.07, 200); }
   function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
@@ -2573,6 +2658,10 @@
 
   function movePlayerSideBalls(list, speedMult, b) {
     for (const ball of list) {
+      if (!ball.isPlayer && isParalyzed(ball)) { // 麻痺中の敵はその場で動けない
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
       if (ball.movementStyle === 'orbit') {
         ball.orbitAngle += ball.orbitSpeed * speedMult;
         ball.x = arena.x + Math.cos(ball.orbitAngle) * ball.orbitRadius;
@@ -2708,7 +2797,7 @@
       const comboMult = getComboMultiplier(b.comboGrowth);
       if (combo >= 2) playChainSound(combo);
 
-      const enemyIsHit = Math.random() < 0.5;
+      const enemyIsHit = isParalyzed(e) || Math.random() < 0.5; // 麻痺中の敵は反撃できない
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
@@ -2788,8 +2877,10 @@
             spawnMissText(e);
           }
           
-          // 敵が仲間に反撃
-          if (enemyAttackHits(e)) {
+          // 敵が仲間に反撃（麻痺中は反撃しない）
+          if (isParalyzed(e)) {
+            // 反撃なし
+          } else if (enemyAttackHits(e)) {
             const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
             comp.hp -= enemyDmg;
             spawnHitParticles(comp.x, comp.y, '#5cc8ff');
@@ -3274,7 +3365,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -3381,6 +3472,24 @@
     healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
+  function updateParalyzeButton() {
+    if (!game.shopOwned.skillParalyze) {
+      paralyzeBtn.disabled = false;
+      paralyzeBtn.classList.add('is-disabled');
+      paralyzeBtn.textContent = '🔒 麻痺';
+      return;
+    }
+    const remaining = Math.max(0, PARALYZE_COOLDOWN - (Date.now() - lastParalyzeAt));
+    if (remaining === 0) {
+      paralyzeBtn.disabled = false;
+      paralyzeBtn.classList.toggle('is-disabled', phase !== 'battle');
+      paralyzeBtn.textContent = '⚡ 麻痺\nREADY';
+      return;
+    }
+    paralyzeBtn.disabled = false;
+    paralyzeBtn.classList.toggle('is-disabled', !isSkillResetPending('paralyze'));
+    paralyzeBtn.textContent = cooldownLabel('paralyze', '⚡ 麻痺', remaining);
+  }
   function updatePoisonButton() {
     poisonBtn.classList.remove('buffing');
     if (!game.shopOwned.skillPoison) {
@@ -3598,6 +3707,7 @@
 
     drawHomingMissiles();
     drawPoisonEffects();
+    drawParalyzeEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -3696,6 +3806,7 @@
     homingMissiles = [];
     lastPoisonAt = Date.now() - POISON_COOLDOWN;
     poisonBuffEndAt = 0;
+    lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
@@ -3721,6 +3832,7 @@
     updateBarrierButton();
     updateHomingButton();
     updatePoisonButton();
+    updateParalyzeButton();
     startBgm('normal');
     loop();
   }
@@ -3803,7 +3915,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -3840,6 +3952,8 @@
       lastPoisonAt = Date.now() - POISON_COOLDOWN;
       poisonBuffEndAt = 0;
       updatePoisonButton();
+      lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
+      updateParalyzeButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -3936,7 +4050,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison';
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze';
     if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
     const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
@@ -4261,6 +4375,17 @@
     updateHPUI();
   });
 
+  paralyzeBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillParalyze) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は麻痺を使えません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastParalyzeAt < PARALYZE_COOLDOWN) { tryGemResetSkill('paralyze', event, () => { lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN; }, updateParalyzeButton); return; }
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!enemy || enemy.isDying || enemy.spawnTimer > 0) { showTapError('敵がいません', event.clientX, event.clientY); return; }
+    lastParalyzeAt = Date.now();
+    castParalyze(enemy);
+    updateParalyzeButton();
+  });
+
   poisonBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillPoison) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は毒を付与できません', event.clientX, event.clientY); return; }
@@ -4364,6 +4489,7 @@
   setInterval(updateBarrierButton, 1000);
   setInterval(updateHomingButton, 1000);
   setInterval(updatePoisonButton, 500);
+  setInterval(updateParalyzeButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -4405,6 +4531,7 @@
   updateBarrierButton();
   updateHomingButton();
   updatePoisonButton();
+  updateParalyzeButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
