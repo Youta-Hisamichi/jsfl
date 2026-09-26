@@ -2250,8 +2250,8 @@
   wrap.addEventListener('animationend', ev => { if (ev.animationName === 'critFlash') wrap.classList.remove('crit-flash'); });
   function spawnReceivedDamageText(target, dmg, crit, attacker) {
     const y = target.y - target.radius - 8;
-    if (!crit) { spawnDamageText(target.x, y, '-' + dmg, '#ffb3b3'); return; }
-    spawnDamageText(target.x, y - 6, 'CRITICAL!\n-' + dmg, '#ff3b4a', 0.014, true);
+    if (!crit) { spawnDamageText(target.x, y, String(dmg), '#ffb3b3'); return; }
+    spawnDamageText(target.x, y - 6, 'CRITICAL!\n' + dmg, '#ff3b4a', 0.014, true);
     spawnHitParticles(target.x, target.y, '#ff3b4a');
     spawnHitParticles(target.x, target.y, '#ff9aa5');
     playEnemyCritSound();
@@ -2260,8 +2260,8 @@
   // 与ダメージ表示。クリティカル時は大きな文字＋追加エフェクト
   function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
     const y = target.y - target.radius - (offsetY || 8);
-    if (!crit) { spawnDamageText(target.x, y, '-' + dmg, color); return; }
-    spawnDamageText(target.x, y - 6, 'CRITICAL!\n-' + dmg, '#ff7a3d', 0.014, true);
+    if (!crit) { spawnDamageText(target.x, y, String(dmg), color); return; }
+    spawnDamageText(target.x, y - 6, 'CRITICAL!\n' + dmg, '#ff7a3d', 0.014, true);
     spawnHitParticles(target.x, target.y, '#ff7a3d');
     spawnHitParticles(target.x, target.y, '#ffd76b');
     playCritSound();
@@ -2599,7 +2599,7 @@
           trackDamage(meteor.damage);
           meteor.hit = true;
           spawnHitParticles(e.x, e.y, '#ffbc5c');
-          spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR -' + meteor.damage, '#ffd76b');
+          spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteor.damage, '#ffd76b');
           playEnemyHitSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }
