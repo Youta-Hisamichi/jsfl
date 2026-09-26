@@ -548,7 +548,7 @@
     <h2>🌌 転生ショップ</h2>
     <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物以外の効果は今回の周回中のみ有効です）</div>
     <div class="modal-shop-list" id="rebirthShopList"></div>
-    <div class="auto-skip-wrap">
+    <div class="auto-skip-wrap" id="rebirthAutoSkipWrap">
       <div class="auto-skip-label" id="rebirthAutoSkipLabel">操作がないと 10 秒後に自動で周回開始</div>
       <div class="auto-skip-track"><div class="auto-skip-fill" id="rebirthAutoSkipFill"></div></div>
     </div>
@@ -2745,16 +2745,23 @@
     rebirthSkippable = false;
     clearTimeout(rebirthTimer);
     toast.classList.remove('show');
-    openRebirthShop();
+    openRebirthShop(true);
   }
 
-  // 転生ショップ：操作がないまま一定時間たつと自動で閉じて周回開始（タップするたびにリセット）
+  // 転生ショップ：操作がないまま一定時間たつと自動で閉じて周回開始（一度でもタップしたらゲージごと解除）
   const REBIRTH_SHOP_AUTO_SKIP_MS = 10 * 1000;
   const rebirthAutoSkipLabel = document.getElementById('rebirthAutoSkipLabel');
   const rebirthAutoSkipFill = document.getElementById('rebirthAutoSkipFill');
   let rebirthShopIdleSince = 0;
   let rebirthAutoSkipTimer = null;
+  let rebirthAutoSkipCancelled = false; // 今回の転生ショップで一度でもタップしたか
+  const rebirthAutoSkipWrap = document.getElementById('rebirthAutoSkipWrap');
   function resetRebirthShopIdle() { rebirthShopIdleSince = Date.now(); }
+  function cancelRebirthAutoSkip() {
+    rebirthAutoSkipCancelled = true;
+    clearInterval(rebirthAutoSkipTimer);
+    rebirthAutoSkipWrap.style.display = 'none';
+  }
   function tickRebirthAutoSkip() {
     if (!rebirthShopModal.classList.contains('show')) { clearInterval(rebirthAutoSkipTimer); return; }
     if (gemShortModal.classList.contains('show')) resetRebirthShopIdle(); // ジェム不足の確認中は止める
@@ -2763,12 +2770,16 @@
     rebirthAutoSkipLabel.textContent = `操作がないと ${Math.ceil(remaining / 1000)} 秒後に自動で周回開始`;
     if (remaining <= 0) closeRebirthShop();
   }
-  rebirthShopModal.addEventListener('pointerdown', resetRebirthShopIdle);
-  function openRebirthShop() {
+  rebirthShopModal.addEventListener('pointerdown', cancelRebirthAutoSkip);
+  // fresh: 転生直後に開いた場合 true（ジェムショップから戻ったときは、タップ済みならゲージを出さない）
+  function openRebirthShop(fresh = false) {
     renderRebirthShopList();
     rebirthShopModal.classList.add('show');
-    resetRebirthShopIdle();
     clearInterval(rebirthAutoSkipTimer);
+    if (fresh) rebirthAutoSkipCancelled = false;
+    if (rebirthAutoSkipCancelled) { rebirthAutoSkipWrap.style.display = 'none'; return; }
+    rebirthAutoSkipWrap.style.display = '';
+    resetRebirthShopIdle();
     tickRebirthAutoSkip();
     rebirthAutoSkipTimer = setInterval(tickRebirthAutoSkip, 100);
   }
