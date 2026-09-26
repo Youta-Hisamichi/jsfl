@@ -117,6 +117,7 @@
   .upgrade-max-btn { flex: 0 0 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #1a1408; background: linear-gradient(160deg, #ffe08a, #ffb84d); border: 1px solid var(--gold); border-radius: 9px; padding: 6px 4px; font-size: 0.68rem; font-weight: 800; cursor: pointer; }
   .upgrade-max-btn span { font-size: 0.56rem; font-weight: 700; opacity: 0.85; }
   .upgrade-max-btn.is-disabled { opacity: 0.4; cursor: default; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
+  .upgrade-btn, .companion-card button { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
   .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
   .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
   .upgrade-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
@@ -446,7 +447,7 @@
   <!-- ===== コイン強化タブ ===== -->
   <div class="tab-page" data-tab="upgrade">
     <div class="upgrade-panel">
-      <div class="upgrade-title">🟡 コイン強化（転生するとリセット）</div>
+      <div class="upgrade-title">🟡 コイン強化（転生するとリセット・長押しで連続強化）</div>
       <div class="upgrade-list" id="upgradeList"></div>
     </div>
   </div>
@@ -472,7 +473,7 @@
   <!-- ===== 仲間タブ ===== -->
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
-      <div class="title">🐾 仲間（コインで仲間に・レベルもコインで上昇／転生でリセット）</div>
+      <div class="title">🐾 仲間（コインで仲間に・レベルもコインで上昇／転生でリセット・長押しで連続レベルアップ）</div>
       <div class="companion-list" id="companionList"></div>
     </div>
   </div>
@@ -3640,17 +3641,23 @@
       return;
     }
     const button = event.target.closest('[data-upgrade]');
+    if (button && consumeHoldClick()) return; // 長押しで連続強化した直後のクリックは無視
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
-    const id = button.dataset.upgrade;
+    levelUpUpgrade(button.dataset.upgrade, event.clientX, event.clientY);
+  });
+  // コイン強化を1レベル上げる。成功したら true
+  function levelUpUpgrade(id, x, y) {
+    if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
     const cost = getUpgradeCost(id);
-    if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+    if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
     game.coins -= cost;
     game.upgrades[id]++;
     refreshPlayerBallStats(false);
     playUpgradeSound();
     updateStatsUI();
     updateHPUI();
-  });
+    return true;
+  }
 
   shopList.addEventListener('click', event => {
     const button = event.target.closest('[data-shop]');
@@ -3867,19 +3874,64 @@
       return;
     }
     if (levelBtn) {
-      const id = levelBtn.dataset.companionLevel;
-      const cost = getCompanionLevelCost(id);
-      if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', event.clientX, event.clientY); return; }
-      if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
-      game.coins -= cost;
-      game.companions.level[id]++;
-      refreshPlayerBallStats(false);
-      refreshCompanionBalls();
-      playUpgradeSound();
-      updateStatsUI();
-      updateHPUI();
+      if (consumeHoldClick()) return;
+      levelUpCompanion(levelBtn.dataset.companionLevel, event.clientX, event.clientY);
     }
   });
+  // 仲間を1レベル上げる。成功したら true
+  function levelUpCompanion(id, x, y) {
+    const cost = getCompanionLevelCost(id);
+    if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', x, y); return false; }
+    if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
+    game.coins -= cost;
+    game.companions.level[id]++;
+    refreshPlayerBallStats(false);
+    refreshCompanionBalls();
+    playUpgradeSound();
+    updateStatsUI();
+    updateHPUI();
+    return true;
+  }
+
+  // ---------- 長押しで連続レベルアップ ----------
+  // 押し続けると HOLD_DELAY_MS 後から連続で強化し、だんだん速くなる。コイン不足などで失敗したら止まる
+  const HOLD_DELAY_MS = 400;
+  const HOLD_FIRST_INTERVAL_MS = 150;
+  const HOLD_MIN_INTERVAL_MS = 40;
+  const HOLD_TARGETS = [
+    { attr: 'upgrade', action: levelUpUpgrade },
+    { attr: 'companionLevel', action: levelUpCompanion },
+  ];
+  let holdTimer = null;
+  let holdRepeated = false;
+  function stopHold() {
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+  function consumeHoldClick() {
+    if (!holdRepeated) return false;
+    holdRepeated = false;
+    return true;
+  }
+  document.addEventListener('pointerdown', event => {
+    stopHold();
+    holdRepeated = false;
+    const el = event.target.closest('[data-upgrade], [data-companion-level]');
+    if (!el) return;
+    const target = HOLD_TARGETS.find(t => el.dataset[t.attr] !== undefined);
+    const id = el.dataset[target.attr];
+    const x = event.clientX, y = event.clientY;
+    let interval = HOLD_FIRST_INTERVAL_MS;
+    const repeat = () => {
+      holdRepeated = true;
+      if (!target.action(id, x, y)) { stopHold(); return; }
+      interval = Math.max(HOLD_MIN_INTERVAL_MS, interval * 0.85);
+      holdTimer = setTimeout(repeat, interval);
+    };
+    holdTimer = setTimeout(repeat, HOLD_DELAY_MS);
+  });
+  ['pointerup', 'pointercancel'].forEach(type => document.addEventListener(type, stopHold));
+  window.addEventListener('blur', stopHold);
 
   rebirthShopList.addEventListener('click', event => {
     const button = event.target.closest('[data-rebirth-shop]');
