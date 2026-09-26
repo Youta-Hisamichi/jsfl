@@ -290,6 +290,7 @@
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
   .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
   .artifact-chip .chip-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px; }
+  .artifact-chip .chip-rarity { font-size: 0.62rem; font-weight: 800; }
   .artifact-chip .chip-desc { color: var(--text-dim); font-size: 0.68rem; }
   .artifact-chip .count { background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 0.65rem; padding: 1px 6px; color: var(--text-dim); white-space: nowrap; }
   .artifact-chip.not-owned { opacity: 0.42; filter: grayscale(0.6); }
@@ -1095,21 +1096,21 @@
 
   // ---------- アーティファクト定義 ----------
   const ARTIFACT_POOL = [
-    { id: 'heart',  icon: '🔥', name: '猛攻の心臓',     desc: '攻撃力 +20%' },
-    { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%' },
-    { id: 'book',   icon: '📖', name: '賢者の書',       desc: '経験値獲得 +30%' },
-    { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%' },
-    { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%' },
-    { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射ボーナス +100%' },
-    { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）' },
-    { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%' },
-    { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: '必殺技ダメージ +35%' },
-    { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: '必殺技の待機時間 -15%（最大3個）' },
-    { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）' },
-    { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）' },
-    { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）' },
-    { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）' },
-    { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）' },
+    { id: 'heart',  icon: '🔥', name: '猛攻の心臓',     desc: '攻撃力 +20%', rarity: 'common' },
+    { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
+    { id: 'book',   icon: '📖', name: '賢者の書',       desc: '経験値獲得 +30%', rarity: 'common' },
+    { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
+    { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%', rarity: 'common' },
+    { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射ボーナス +100%', rarity: 'rare' },
+    { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
+    { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
+    { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: '必殺技ダメージ +35%', rarity: 'epic' },
+    { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: '必殺技の待機時間 -15%（最大3個）', rarity: 'epic' },
+    { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）', rarity: 'epic' },
+    { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）', rarity: 'legendary' },
+    { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）', rarity: 'legendary' },
+    { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）', rarity: 'rare' },
+    { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）', rarity: 'rare' },
   ];
   const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5 };
   const ARTIFACT_BY_ID = {};
@@ -1416,12 +1417,53 @@
     };
   }
 
+  // ---------- ステージスキップ成功時の遺物ドロップ ----------
+  // スキップしたステージ数が多いほど高レア度の遺物が出やすい（重み: common, rare, epic, legendary）
+  const SKIP_DROP_TABLE = [
+    { minSkip: 1000, weights: [0, 0, 0, 100] },
+    { minSkip: 500,  weights: [0, 0, 50, 50] },
+    { minSkip: 200,  weights: [0, 20, 60, 20] },
+    { minSkip: 100,  weights: [0, 60, 40, 0] },
+    { minSkip: 0,    weights: [50, 50, 0, 0] },
+  ];
+  const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
+  function pickSkipDropRarity(skipped) {
+    const row = SKIP_DROP_TABLE.find(t => skipped >= t.minSkip);
+    let roll = Math.random() * 100;
+    for (let i = 0; i < RARITY_ORDER.length; i++) {
+      roll -= row.weights[i];
+      if (roll < 0) return RARITY_ORDER[i];
+    }
+    return RARITY_ORDER[row.weights.findIndex(w => w > 0)];
+  }
+  function dropSkipArtifact(skipped) {
+    const rarity = pickSkipDropRarity(skipped);
+    const pool = ARTIFACT_POOL.filter(a => a.rarity === rarity);
+    // 所持上限に達していないものを優先
+    const available = pool.filter(a => !ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]);
+    const list = available.length ? available : pool;
+    const pick = list[Math.floor(Math.random() * list.length)];
+    game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+    const info = RARITY_INFO[rarity];
+    spawnDamageText(arena.x, arena.y - 30, `${rarityStars(rarity)}\n${pick.icon} ${pick.name}`, info.color, TREASURE_TEXT_DECAY, true);
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3;
+      particles.push({ x: arena.x, y: arena.y - 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: info.color, decay: 0.015 });
+    }
+    playGachaSound(rarity);
+    showNotice(`🏺 スキップ報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS);
+    renderArtifactList();
+    updateStatsUI();
+    saveGame();
+  }
+
   function renderArtifactList() {
     artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
       const count = game.ownedArtifacts[a.id] || 0;
       const owned = count > 0;
       return `<button class="artifact-chip ${owned ? '' : 'not-owned'}" data-artifact="${a.id}">
         <span class="chip-head"><span class="item-icon">${a.icon}</span> ${a.name}<span class="count">${owned ? 'x' + count : '未所持'}</span></span>
+        <span class="chip-rarity" style="color:${RARITY_INFO[a.rarity].color}">${rarityStars(a.rarity)} ${RARITY_INFO[a.rarity].label}</span>
         <span class="chip-desc">${a.desc}</span>
       </button>`;
     }).join('');
@@ -3068,7 +3110,9 @@
     resetCombo();
     if (game.skipChallenge) {
       showNotice(`⏭️ スキップ成功！ STAGE ${game.stage} のボスを撃破　+${expGain} EXP`);
+      const skipped = game.skipChallenge.target - game.skipChallenge.origin;
       game.skipChallenge = null;
+      setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
     } else {
       showNotice(`STAGE ${game.stage} CLEAR　+${expGain} EXP`);
     }
