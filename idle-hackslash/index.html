@@ -535,7 +535,7 @@
       <div class="title">🐾 仲間（コインの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>🟡 1800</button></div>
       <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
-      <div class="supergem-note">召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
+      <div class="supergem-note">召喚するたびに費用が上がります（転生でリセット）。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
@@ -1324,6 +1324,7 @@
     evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
+    companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
     startedAt: Date.now(),
     lastLoginDate: null,
@@ -1466,8 +1467,9 @@
     gachaBtn.classList.toggle('is-disabled', game.gems < 5);
     gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
     const cgb = document.getElementById('compGachaBtn'), cgb10 = document.getElementById('compGacha10Btn');
-    if (cgb) cgb.classList.toggle('is-disabled', game.coins < COMP_GACHA_COST);
-    if (cgb10) cgb10.classList.toggle('is-disabled', game.coins < COMP_GACHA10_COST);
+    const cost1 = getCompSummonCost(1), cost10 = getCompSummonCost(10);
+    if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `🐾 仲間召喚<br>🟡 ${formatCoinNumber(cost1)}`; }
+    if (cgb10) { cgb10.classList.toggle('is-disabled', game.coins < cost10); cgb10.innerHTML = `🐾 10連召喚<br>🟡 ${formatCoinNumber(cost10)}`; }
   }
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
@@ -1507,7 +1509,14 @@
   }
 
   // ---------- 仲間召喚（コインガチャ） ----------
-  const COMP_GACHA_COST = 200, COMP_GACHA10_COST = 1800;
+  // 召喚するたびに値段が上がる（1回ごとに +10%）。回数は転生でリセット
+  const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1, COMP_GACHA10_DISCOUNT = 0.9;
+  function getCompSummonCost(count) {
+    const done = game.companionSummons || 0;
+    let total = 0;
+    for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
+    return count > 1 ? Math.round(total * COMP_GACHA10_DISCOUNT) : total;
+  }
   const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
   function pickCompanionId() {
     const entries = Object.entries(COMPANIONS);
@@ -1546,6 +1555,7 @@
   function runCompanionGacha(count, cost, event) {
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
     game.coins -= cost;
+    game.companionSummons = (game.companionSummons || 0) + count;
     const results = [];
     for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
     refreshPlayerBallStats(false);
@@ -1568,8 +1578,8 @@
     updateHPUI();
     saveGame();
   }
-  document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, COMP_GACHA_COST, event));
-  document.getElementById('compGacha10Btn').addEventListener('click', event => runCompanionGacha(10, COMP_GACHA10_COST, event));
+  document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
+  document.getElementById('compGacha10Btn').addEventListener('click', event => runCompanionGacha(10, getCompSummonCost(10), event));
 
   function getPlayerAtk() {
     const b = computeBonuses();
@@ -3670,6 +3680,7 @@
     game.coins = 0; game.stage = 1;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
+    game.companionSummons = 0;
     barrierHits = 0; barrierOrbs = [];
     // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
     const companionInfo = game.companions;
