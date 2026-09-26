@@ -205,6 +205,10 @@
   .companion-card.recruited { border-color: #ffb14f; }
   .companion-card .cc-name { font-weight: 700; }
   .companion-card .cc-desc { color: var(--text-dim); display: block; margin: 2px 0 5px; }
+  .companion-card .cc-rarity { font-size: 0.6rem; font-weight: 800; margin-left: 4px; }
+  .companion-card .cc-awaken { font-size: 0.6rem; font-weight: 800; color: #ffb14f; }
+  .companion-card .cc-locked { display: block; text-align: center; font-size: 0.66rem; color: var(--text-dim); border: 1px dashed var(--ring); border-radius: 6px; padding: 5px; }
+  .companion-card.not-owned { opacity: 0.6; }
   .companion-card .cc-trait { display: block; font-size: 0.64rem; color: var(--text); background: rgba(255,177,79,0.12); border-left: 3px solid #ffb14f; border-radius: 4px; padding: 3px 6px; margin-bottom: 4px; }
   .companion-card .cc-level { color: #ffd76b; font-size: 0.65rem; }
   .companion-card button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 5px; cursor: pointer; }
@@ -505,7 +509,10 @@
   <!-- ===== 仲間タブ ===== -->
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
-      <div class="title">🐾 仲間（コインで仲間に・レベルもコインで上昇／転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
+      <div class="title">🐾 仲間（ジェムの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>💎 10</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>💎 90</button></div>
+      <div class="supergem-note">未入手の仲間が出たら仲間に加入、入手済みの仲間が出たら「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
+      <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
   </div>
@@ -1231,13 +1238,13 @@
 
   // 仲間：ジェムで仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
   const COMPANIONS = {
-    knight: { icon: '🛡️', name: '守護の騎士', stat: 'hp',    desc: '最大HP上昇',     recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
+    knight: { icon: '🛡️', name: '守護の騎士', stat: 'hp',    desc: '最大HP上昇',     rarity: 'rare', weight: 35, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
               trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.8秒気絶させ大きく弾き飛ばす' },
-    archer: { icon: '🏹', name: '疾風の射手', stat: 'atk',   desc: '攻撃力上昇',     recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
+    archer: { icon: '🏹', name: '疾風の射手', stat: 'atk',   desc: '攻撃力上昇',     rarity: 'epic', weight: 18, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
               trait: '【狙撃】3秒ごとに敵を追尾する矢を自動で放つ' },
-    witch:  { icon: '🧙', name: '黄金の魔女', stat: 'coin',  desc: 'コイン獲得上昇', recruitCost: 130, baseBonus: 0.10, perLevel: 0.04, levelCostBase: 25,
+    witch:  { icon: '🧙', name: '黄金の魔女', stat: 'coin',  desc: 'コイン獲得上昇', rarity: 'epic', weight: 12, recruitCost: 130, baseBonus: 0.10, perLevel: 0.04, levelCostBase: 25,
               trait: '【錬金】攻撃を当てるたびにコイン獲得／【癒し】10秒ごとに自機のHPを8%回復' },
-    sprite: { icon: '🧚', name: '俊敏の妖精', stat: 'speed', desc: '移動速度上昇',   recruitCost: 80, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 20,
+    sprite: { icon: '🧚', name: '俊敏の妖精', stat: 'speed', desc: '移動速度上昇',   rarity: 'rare', weight: 35, recruitCost: 80, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 20,
               trait: '【急所突き】クリティカル率+30%／【追い風】当てると自機が1.5秒加速' }
   };
   const KNIGHT_DAMAGE_TAKEN_MULT = 0.5;
@@ -1259,7 +1266,7 @@
     evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
-    companions: { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
+    companions: { recruited: {}, awaken: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
     startedAt: Date.now(),
     lastLoginDate: null,
     loginStreak: 0,
@@ -1417,16 +1424,76 @@
   function renderCompanionList() {
     companionList.innerHTML = Object.entries(COMPANIONS).map(([id, c]) => {
       const recruited = !!game.companions.recruited[id];
+      const rar = RARITY_INFO[c.rarity];
+      const rarTag = `<span class="cc-rarity" style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>`;
       if (!recruited) {
-        const disabled = game.coins < c.recruitCost;
-        return `<div class="companion-card"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span><span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><button class="recruit-btn ${disabled ? 'is-disabled' : ''}" data-recruit="${id}">仲間にする　🟡 ${formatCoinNumber(c.recruitCost)}</button></div>`;
+        return `<div class="companion-card not-owned"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span>${rarTag}<span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><span class="cc-locked">🔒 未入手（仲間召喚で入手）</span></div>`;
       }
+      const aw = getCompanionAwaken(id);
+      const awTag = `<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span>`;
       const level = game.companions.level[id];
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
-      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span><span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span></span><span class="cc-trait">${c.trait}</span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
+      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span></span><span class="cc-trait">${c.trait}</span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
     }).join('');
   }
+
+  // ---------- 仲間召喚（ジェムガチャ） ----------
+  const COMP_GACHA_COST = 10, COMP_GACHA10_COST = 90;
+  function pickCompanionId() {
+    const entries = Object.entries(COMPANIONS);
+    let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
+    for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }
+    return entries[0][0];
+  }
+  // 1体分の結果を反映し、表示用の情報を返す
+  function grantCompanion(id) {
+    const cp = game.companions;
+    if (!cp.awaken) cp.awaken = {};
+    if (!cp.recruited[id]) {
+      cp.recruited[id] = true;
+      if (!cp.hp) cp.hp = {};
+      if (!cp.alive) cp.alive = {};
+      cp.alive[id] = true;
+      cp.hp[id] = getCompanionMaxHP(id);
+      if (phase === 'battle' && !balls.some(ball => ball.isCompanion && ball.companionId === id)) balls.push(makeCompanionBall(id));
+      return { id, label: 'NEW! 仲間に加入' };
+    }
+    if (getCompanionAwaken(id) < COMPANION_AWAKEN_MAX) {
+      cp.awaken[id] = getCompanionAwaken(id) + 1;
+      return { id, label: `覚醒 ★${cp.awaken[id]}` };
+    }
+    // 覚醒が最大なら代わりにジェムを少し返す
+    game.gems += 3;
+    return { id, label: '覚醒MAX → 💎3' };
+  }
+  function runCompanionGacha(count, cost, event) {
+    if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('companion') }); return; }
+    game.gems -= cost;
+    const results = [];
+    for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
+    refreshPlayerBallStats(false);
+    refreshCompanionBalls();
+    const box = document.getElementById('compGachaResult');
+    const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
+    box.style.display = 'block';
+    box.className = 'gacha-result rarity-' + bestRarity;
+    box.style.background = rarityBackground(bestRarity);
+    const cell = r => {
+      const c = COMPANIONS[r.id];
+      return `<div class="gm-item gm-open rarity-${c.rarity}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${c.icon}</div><span class="gm-name">${c.name}<br><b>${r.label}</b></span></div>`;
+    };
+    box.innerHTML = count === 1
+      ? `<div class="gr-icon gr-pop">${COMPANIONS[results[0].id].icon}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStars(COMPANIONS[results[0].id].rarity)} ${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
+      : `<div class="gr-title gr-pop">🐾 仲間10連召喚結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
+    document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });
+    playGachaSound(bestRarity);
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+  document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, COMP_GACHA_COST, event));
+  document.getElementById('compGacha10Btn').addEventListener('click', event => runCompanionGacha(10, COMP_GACHA10_COST, event));
 
   function getPlayerAtk() {
     const b = computeBonuses();
@@ -2653,13 +2720,17 @@
     witch:  { style: 'orbit', speedFactor: 1 },
     sprite: { style: 'zigzag', speedFactor: 1.4 }
   };
+  const COMPANION_AWAKEN_MAX = 5;
+  const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
+  function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
+  function getCompanionPower(id) { return 1 + COMPANION_AWAKEN_BONUS * getCompanionAwaken(id); }
   function getCompanionMaxHP(id) {
     if (!COMPANIONS[id]) return 0;
     const c = COMPANIONS[id];
     const level = game.companions.level[id] || 0;
     const baseBonus = c.baseBonus + level * c.perLevel;
     const playerMaxHP = getPlayerMaxHP();
-    return Math.round(playerMaxHP * baseBonus * 0.8);
+    return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id));
   }
 
   function makeCompanionBall(id) {
@@ -2674,7 +2745,7 @@
       isPlayer: true, isCompanion: true, companionId: id,
       x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
       vx: Math.cos(angle + 1.4) * speed, vy: Math.sin(angle + 1.4) * speed,
-      radius: 11, atk: Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05))),
+      radius: 11, atk: Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(id))),
       hp: maxHP, maxHp: maxHP,
       color: COMPANION_COLORS[id] || '#ffffff', glow: (COMPANION_COLORS[id] || '#ffffff') + '88',
       icon: c.icon, hitCooldown: 0,
@@ -2696,7 +2767,7 @@
     for (const ball of balls) {
       if (!ball.isCompanion) continue;
       const level = game.companions.level[ball.companionId] || 0;
-      ball.atk = Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05)));
+      ball.atk = Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(ball.companionId)));
       // 仲間のHP を更新
       const maxHP = getCompanionMaxHP(ball.companionId);
       ball.maxHp = maxHP;
@@ -3335,6 +3406,7 @@
     const recruitedStatus = { ...companionInfo.recruited };
     game.companions = { 
       recruited: recruitedStatus, 
+      awaken: { ...(companionInfo.awaken || {}) }, // 覚醒は永続
       level: { knight: 0, archer: 0, witch: 0, sprite: 0 },
       hp: { knight: 0, archer: 0, witch: 0, sprite: 0 },
       alive: { knight: true, archer: true, witch: true, sprite: true }
@@ -4067,7 +4139,7 @@
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
-    game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
+    game.companions = { recruited: {}, awaken: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
     accelEndAt = 0;
@@ -4500,27 +4572,7 @@
   });
 
   companionList.addEventListener('click', event => {
-    const recruitBtn = event.target.closest('[data-recruit]');
     const levelBtn = event.target.closest('[data-companion-level]');
-    if (recruitBtn) {
-      const id = recruitBtn.dataset.recruit;
-      const c = COMPANIONS[id];
-      if (game.coins < c.recruitCost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
-      game.coins -= c.recruitCost;
-      game.companions.recruited[id] = true;
-      if (!game.companions.hp) game.companions.hp = {};
-      if (!game.companions.alive) game.companions.alive = {};
-      game.companions.alive[id] = true;
-      game.companions.hp[id] = getCompanionMaxHP(id);
-      if (phase === 'battle' && !balls.some(ball => ball.isCompanion && ball.companionId === id)) {
-        balls.push(makeCompanionBall(id));
-      }
-      refreshPlayerBallStats(false);
-      playUpgradeSound();
-      updateStatsUI();
-      updateHPUI();
-      return;
-    }
     if (levelBtn) {
       if (consumeHoldClick()) return;
       levelUpCompanion(levelBtn.dataset.companionLevel, event.clientX, event.clientY);
@@ -4800,6 +4852,7 @@
   // 仲間の状態が未初期化の場合は初期化
   if (!game.companions.hp) game.companions.hp = { knight: 0, archer: 0, witch: 0, sprite: 0 };
   if (!game.companions.alive) game.companions.alive = { knight: true, archer: true, witch: true, sprite: true };
+  if (!game.companions.awaken) game.companions.awaken = {};
   // 仲間を回復させる
   for (const id in game.companions.recruited) {
     if (game.companions.recruited[id]) {
