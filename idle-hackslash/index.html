@@ -671,6 +671,18 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;">🌌</div>
+    <h2>本当に転生しますか？</h2>
+    <div class="modal-sub" style="color:var(--text); font-size:0.85rem;">コイン・強化・仲間・ステージ進行がリセットされます<br>（代わりにランダムなアーティファクトを1つ獲得できます）</div>
+    <div class="modal-shop-list">
+      <button class="modal-close-btn" id="rebornConfirmOkBtn">🌌 転生する</button>
+      <button class="modal-shop-btn" id="rebornConfirmCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="gemShortModal" style="z-index:70;">
   <div class="modal-panel" style="text-align:center;">
     <div style="font-size:2.4rem;">💎</div>
@@ -4973,10 +4985,17 @@
   });
   rebirthShopCloseBtn.addEventListener('click', closeRebirthShop);
 
+  const rebornConfirmModal = document.getElementById('rebornConfirmModal');
+  document.getElementById('rebornConfirmOkBtn').addEventListener('click', () => {
+    rebornConfirmModal.classList.remove('show');
+    if (phase === 'battle' && game.stage >= 3) onPlayerDeath(true);
+  });
+  document.getElementById('rebornConfirmCancelBtn').addEventListener('click', () => rebornConfirmModal.classList.remove('show'));
+  rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) rebornConfirmModal.classList.remove('show'); });
   rebornBtn.addEventListener('click', event => {
+    // ※ window.confirm はアーティファクト表示など一部の環境でブロックされるため、ゲーム内の確認ダイアログを使う
     if (phase === 'battle' && game.stage >= 3) {
-      const ok = window.confirm(`本当に転生しますか？\nコイン・強化・仲間・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
-      if (ok) onPlayerDeath(true);
+      rebornConfirmModal.classList.add('show');
     } else {
       showTapError('ステージ3から転生できます', event.clientX, event.clientY);
     }
