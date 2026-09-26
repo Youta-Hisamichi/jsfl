@@ -127,6 +127,9 @@
   .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .action-row.three { grid-template-columns: 1fr 1fr 1fr; }
   .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .action-row.four.five { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .action-row.four.five .action-btn { font-size: 0.56rem; padding: 7px 2px; }
+  .action-btn.homing { border-color: #ff8a4f; color: #ffc3a0; }
   .action-row.single { grid-template-columns: 1fr; }
   .action-btn { border: 1px solid var(--ring); border-radius: 10px; padding: 10px 6px; color: var(--text); background: var(--bg-soft); font-weight: 800; cursor: pointer; font-size: 0.78rem; }
   .action-btn.special { border-color: #e58aff; color: #f0b7ff; }
@@ -410,11 +413,12 @@
       </div>
     </div>
 
-    <div class="action-row four" id="skillRow">
+    <div class="action-row four five" id="skillRow">
       <button class="action-btn special" id="specialBtn">🔒 必殺技</button>
       <button class="action-btn accel" id="accelBtn">🔒 加速</button>
       <button class="action-btn heal" id="healBtn">🔒 回復</button>
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
+      <button class="action-btn homing" id="homingBtn">🔒 追尾</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -739,6 +743,7 @@
   const accelBtn = document.getElementById('accelBtn');
   const healBtn = document.getElementById('healBtn');
   const barrierBtn = document.getElementById('barrierBtn');
+  const homingBtn = document.getElementById('homingBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1163,7 +1168,8 @@
     skillSpecial: { icon: '✨', name: '必殺技解放', desc: '隕石の必殺技スキルを使用可能に', cost: 120 },
     skillAccel: { icon: '⏩', name: '加速スキル解放', desc: '2.5倍速スキルを使用可能に', cost: 90 },
     skillHeal: { icon: '💗', name: '回復スキル解放', desc: 'HPを回復するスキルを使用可能に', cost: 90 },
-    skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 }
+    skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 },
+    skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1320,7 +1326,7 @@
     }).join('');
   }
   function renderCoinShopList() {
-    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier';
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming';
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
       if (isSkill(id)) {
         const owned = game.shopOwned[id];
@@ -1508,6 +1514,7 @@
     updateAccelButton();
     updateHealButton();
     updateBarrierButton();
+    updateHomingButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -1548,6 +1555,92 @@
   const BARRIER_ORBIT_RADIUS = 44;
   const BARRIER_ROT_SPEED = 0.06;
   let lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
+
+  // ---------- ホーミング攻撃スキル ----------
+  // 自機から扇状にミサイルを発射し、敵に向かって徐々に曲がりながら追尾する
+  const HOMING_COOLDOWN = 2 * 60 * 1000;
+  const HOMING_MISSILE_COUNT = 6;
+  const HOMING_DMG_MULT = 0.8;       // 1発あたり 攻撃力 × 0.8（命中判定・クリティカルあり）
+  const HOMING_TURN_RATE = 0.1;      // 追尾の曲がりやすさ
+  const HOMING_START_SPEED = 3.5, HOMING_MAX_SPEED = 8;
+  const HOMING_LIFE_FRAMES = 300;
+  let lastHomingAt = Date.now() - HOMING_COOLDOWN;
+  let homingMissiles = [];
+  function launchHomingMissiles(player) {
+    const enemy = balls.find(ball => !ball.isPlayer);
+    const baseAngle = enemy ? Math.atan2(enemy.y - player.y, enemy.x - player.x) + Math.PI : Math.random() * Math.PI * 2;
+    for (let i = 0; i < HOMING_MISSILE_COUNT; i++) {
+      // 敵と反対側へ扇状に打ち出し、弧を描いて敵へ向かわせる
+      const angle = baseAngle + (i - (HOMING_MISSILE_COUNT - 1) / 2) * 0.45;
+      homingMissiles.push({
+        x: player.x, y: player.y,
+        vx: Math.cos(angle) * HOMING_START_SPEED, vy: Math.sin(angle) * HOMING_START_SPEED,
+        speed: HOMING_START_SPEED, life: HOMING_LIFE_FRAMES, trail: [], delay: i * 4
+      });
+    }
+  }
+  function updateHomingMissiles(speedMult) {
+    if (!homingMissiles.length || phase !== 'battle') return;
+    const enemy = balls.find(ball => !ball.isPlayer);
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    const canHit = enemy && !enemy.isDying && !(enemy.spawnTimer > 0);
+    for (const m of homingMissiles) {
+      if (m.delay > 0) { m.delay -= speedMult; if (player) { m.x = player.x; m.y = player.y; } continue; }
+      m.life -= speedMult;
+      // 速度は一定の割合で加速し、向きだけを敵の方へ曲げる（旋回中に失速しないよう毎回速さを揃える）
+      m.speed = Math.min(HOMING_MAX_SPEED, m.speed + 0.12 * speedMult);
+      if (canHit) {
+        const dx = enemy.x - m.x, dy = enemy.y - m.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        m.vx += ((dx / dist) * m.speed - m.vx) * HOMING_TURN_RATE * speedMult;
+        m.vy += ((dy / dist) * m.speed - m.vy) * HOMING_TURN_RATE * speedMult;
+      }
+      const cur = Math.hypot(m.vx, m.vy) || 1;
+      m.vx = m.vx / cur * m.speed;
+      m.vy = m.vy / cur * m.speed;
+      m.trail.push({ x: m.x, y: m.y });
+      if (m.trail.length > 6) m.trail.shift();
+      m.x += m.vx * speedMult;
+      m.y += m.vy * speedMult;
+      if (canHit && !enemy.isDying && Math.hypot(enemy.x - m.x, enemy.y - m.y) < enemy.radius + 5) {
+        m.hit = true;
+        spawnHitParticles(m.x, m.y, '#ff8a4f');
+        if (!playerAttackHits(enemy)) { spawnMissText(enemy); continue; }
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * HOMING_DMG_MULT)));
+        enemy.hp -= dmg;
+        trackDamage(dmg);
+        spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
+        playHomingHitSound();
+        updateHPUI();
+        if (enemy.hp <= 0) triggerEnemyDefeat(enemy, m.x, m.y);
+      }
+    }
+    homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
+  }
+  function drawHomingMissiles() {
+    for (const m of homingMissiles) {
+      if (m.delay > 0) continue;
+      ctx.save();
+      for (let i = 0; i < m.trail.length; i++) {
+        const t = m.trail[i];
+        ctx.globalAlpha = (i + 1) / m.trail.length * 0.5;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 2 + i * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffb14f';
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowColor = '#ff8a4f';
+      ctx.shadowBlur = 10;
+      ctx.translate(m.x, m.y);
+      ctx.rotate(Math.atan2(m.vy, m.vx));
+      ctx.beginPath();
+      ctx.moveTo(8, 0); ctx.lineTo(-5, 4); ctx.lineTo(-3, 0); ctx.lineTo(-5, -4); ctx.closePath();
+      ctx.fillStyle = '#ffe0c2';
+      ctx.fill();
+      ctx.restore();
+    }
+  }
   let barrierHits = 0; // 残りの肩代わり回数（0 = バリアなし）
   let barrierOrbs = [];
   // 残り回数に応じたバリアの色（壊れそうになると黄→赤に変化）
@@ -1579,7 +1672,7 @@
   let saveTimer = null;
   function saveGame() {
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -1595,6 +1688,7 @@
       if (typeof data.accelEndAt === 'number') accelEndAt = data.accelEndAt;
       if (typeof data.lastHealAt === 'number') lastHealAt = data.lastHealAt;
       if (typeof data.lastBarrierAt === 'number') lastBarrierAt = data.lastBarrierAt;
+      if (typeof data.lastHomingAt === 'number') lastHomingAt = data.lastHomingAt;
       return true;
     } catch (err) {
       return false;
@@ -2037,6 +2131,10 @@
   function playMissSound() { playTone(900, 0.08, 'sine', 0.08, 1500); }
   function playEnemyCritSound() { playNoiseBurst(0.12, 0.26); playTone(260, 0.2, 'sawtooth', 0.2, 90); }
   function playCritSound() { playNoiseBurst(0.08, 0.22); playTone(1400, 0.12, 'square', 0.16, 2200); }
+  function playHomingLaunchSound() {
+    for (let i = 0; i < HOMING_MISSILE_COUNT; i++) setTimeout(() => { playTone(700 + i * 60, 0.12, 'sawtooth', 0.07, 1400); playNoiseBurst(0.05, 0.05); }, i * 60);
+  }
+  function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
   function getEffectiveSpeed() {
@@ -2739,6 +2837,7 @@
 
   // ---------- プレイヤー死亡・転生 ----------
   function onPlayerDeath(forceRebirth = false) {
+    homingMissiles = [];
     if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
     phase = 'paused';
     meteors = []; adds = [];
@@ -3076,7 +3175,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -3183,6 +3282,24 @@
     healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
+  function updateHomingButton() {
+    if (!game.shopOwned.skillHoming) {
+      homingBtn.disabled = false;
+      homingBtn.classList.add('is-disabled');
+      homingBtn.textContent = '🔒 追尾';
+      return;
+    }
+    const remaining = Math.max(0, HOMING_COOLDOWN - (Date.now() - lastHomingAt));
+    if (remaining === 0) {
+      homingBtn.disabled = false;
+      homingBtn.classList.toggle('is-disabled', phase !== 'battle');
+      homingBtn.textContent = '🎯 追尾\nREADY';
+      return;
+    }
+    homingBtn.disabled = false;
+    homingBtn.classList.toggle('is-disabled', !isSkillResetPending('homing'));
+    homingBtn.textContent = cooldownLabel('homing', '🎯 追尾', remaining);
+  }
   function updateBarrierButton() {
     if (!game.shopOwned.skillBarrier) {
       barrierBtn.disabled = false;
@@ -3353,6 +3470,8 @@
       ctx.restore(); // 震えtranslate用
     }
 
+    drawHomingMissiles();
+
     for (const meteor of meteors) {
       ctx.save();
       ctx.shadowColor = '#ff9f43';
@@ -3416,7 +3535,7 @@
     try {
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
-        if (phase === 'battle') step();
+        if (phase === 'battle') { step(); updateHomingMissiles(getEffectiveSpeed()); }
       } else {
         hitStopFrames--;
       }
@@ -3446,6 +3565,8 @@
     lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
     barrierHits = 0;
     barrierOrbs = [];
+    lastHomingAt = Date.now() - HOMING_COOLDOWN;
+    homingMissiles = [];
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
@@ -3469,6 +3590,7 @@
     updateAccelButton();
     updateHealButton();
     updateBarrierButton();
+    updateHomingButton();
     startBgm('normal');
     loop();
   }
@@ -3551,7 +3673,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリアのクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミングのクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -3583,6 +3705,8 @@
       lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
       barrierHits = 0;
       barrierOrbs = [];
+      lastHomingAt = Date.now() - HOMING_COOLDOWN;
+      updateHomingButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -3679,7 +3803,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier';
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming';
     if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
     const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
@@ -4004,6 +4128,18 @@
     updateHPUI();
   });
 
+  homingBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillHoming) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今はホーミングを撃てません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastHomingAt < HOMING_COOLDOWN) { tryGemResetSkill('homing', event, () => { lastHomingAt = Date.now() - HOMING_COOLDOWN; }, updateHomingButton); return; }
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) return;
+    lastHomingAt = Date.now();
+    launchHomingMissiles(player);
+    playHomingLaunchSound();
+    updateHomingButton();
+  });
+
   barrierBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillBarrier) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はバリアを展開できません', event.clientX, event.clientY); return; }
@@ -4081,6 +4217,7 @@
   setInterval(updateAccelButton, 1000);
   setInterval(updateHealButton, 1000);
   setInterval(updateBarrierButton, 1000);
+  setInterval(updateHomingButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -4120,6 +4257,7 @@
   updateAccelButton();
   updateHealButton();
   updateBarrierButton();
+  updateHomingButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
