@@ -318,6 +318,10 @@
   .reward-ad-screen .ad-icon { font-size: 2.6rem; animation: gachaSpin 2.4s linear infinite; }
   .reward-ad-screen .ad-count { font-size: 0.8rem; margin-top: 8px; color: #cfd3e0; }
   .reward-ad-progress { position: absolute; left: 0; bottom: 0; height: 4px; background: #ffb14f; width: 0%; transition: width 0.25s linear; }
+  .auto-skip-wrap { margin: 0 0 10px; }
+  .auto-skip-label { font-size: 0.68rem; color: var(--text-dim); text-align: center; margin-bottom: 4px; }
+  .auto-skip-track { background: var(--bg); border: 1px solid var(--ring); border-radius: 999px; height: 6px; overflow: hidden; }
+  .auto-skip-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c792ea, #4f7bff); border-radius: 999px; }
   .rank-tab-btn { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; color: #b4f6ff; padding: 9px; font-weight: 700; cursor: pointer; font-size: 0.78rem; }
 </style>
 </head>
@@ -533,6 +537,10 @@
     <h2>🌌 転生ショップ</h2>
     <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物以外の効果は今回の周回中のみ有効です）</div>
     <div class="modal-shop-list" id="rebirthShopList"></div>
+    <div class="auto-skip-wrap">
+      <div class="auto-skip-label" id="rebirthAutoSkipLabel">操作がないと 10 秒後に自動で周回開始</div>
+      <div class="auto-skip-track"><div class="auto-skip-fill" id="rebirthAutoSkipFill"></div></div>
+    </div>
     <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
   </div>
 </div>
@@ -2704,11 +2712,32 @@
     openRebirthShop();
   }
 
+  // 転生ショップ：操作がないまま一定時間たつと自動で閉じて周回開始（タップするたびにリセット）
+  const REBIRTH_SHOP_AUTO_SKIP_MS = 10 * 1000;
+  const rebirthAutoSkipLabel = document.getElementById('rebirthAutoSkipLabel');
+  const rebirthAutoSkipFill = document.getElementById('rebirthAutoSkipFill');
+  let rebirthShopIdleSince = 0;
+  let rebirthAutoSkipTimer = null;
+  function resetRebirthShopIdle() { rebirthShopIdleSince = Date.now(); }
+  function tickRebirthAutoSkip() {
+    if (!rebirthShopModal.classList.contains('show')) { clearInterval(rebirthAutoSkipTimer); return; }
+    if (gemShortModal.classList.contains('show')) resetRebirthShopIdle(); // ジェム不足の確認中は止める
+    const remaining = Math.max(0, REBIRTH_SHOP_AUTO_SKIP_MS - (Date.now() - rebirthShopIdleSince));
+    rebirthAutoSkipFill.style.width = (remaining / REBIRTH_SHOP_AUTO_SKIP_MS * 100) + '%';
+    rebirthAutoSkipLabel.textContent = `操作がないと ${Math.ceil(remaining / 1000)} 秒後に自動で周回開始`;
+    if (remaining <= 0) closeRebirthShop();
+  }
+  rebirthShopModal.addEventListener('pointerdown', resetRebirthShopIdle);
   function openRebirthShop() {
     renderRebirthShopList();
     rebirthShopModal.classList.add('show');
+    resetRebirthShopIdle();
+    clearInterval(rebirthAutoSkipTimer);
+    tickRebirthAutoSkip();
+    rebirthAutoSkipTimer = setInterval(tickRebirthAutoSkip, 100);
   }
   function closeRebirthShop() {
+    clearInterval(rebirthAutoSkipTimer);
     rebirthShopModal.classList.remove('show');
     balls = spawnBattleBalls();
     refreshPlayerBallStats(true);
