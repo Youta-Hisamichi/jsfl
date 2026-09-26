@@ -458,6 +458,8 @@
         <div class="record">MAX<strong id="maxDamageNum">0</strong>単発ダメージ</div>
         <div class="record">MAX<strong id="maxDpsNum">0</strong>DPS</div>
         <div class="record">MAX<strong id="maxComboNum">0</strong>コンボ</div>
+        <div class="record">CRIT<strong id="critRateNum">10%</strong>クリティカル率</div>
+        <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
       </div>
       <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
       <div class="supergem-note">総プレイ時間: <span id="playTimeText">0時間00分00秒</span></div>
@@ -576,6 +578,8 @@
   const maxDpsNumEl = document.getElementById('maxDpsNum');
   const maxComboNumEl = document.getElementById('maxComboNum');
   const bestCoinsNumEl = document.getElementById('bestCoinsNum');
+  const critRateNumEl = document.getElementById('critRateNum');
+  const critMultNumEl = document.getElementById('critMultNum');
   const usernameInput = document.getElementById('usernameInput');
   const usernameSaveBtn = document.getElementById('usernameSaveBtn');
   const playTimeText = document.getElementById('playTimeText');
@@ -1150,6 +1154,10 @@
     maxDamageNumEl.textContent = Math.floor(game.maxDamage || 0);
     maxDpsNumEl.textContent = Math.floor(game.maxDps || 0);
     maxComboNumEl.textContent = game.maxCombo || 0;
+    const critBonuses = computeBonuses();
+    const critRate = Math.min(1, CRIT_CHANCE + critBonuses.critChance); // 100%を超えても実質は必ずクリティカル
+    critRateNumEl.textContent = +(critRate * 100).toFixed(1) + '%';
+    critMultNumEl.textContent = '×' + +(CRIT_MULT + critBonuses.critMultBonus).toFixed(2);
     game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
     bestCoinsNumEl.textContent = Math.floor(game.bestCoins).toLocaleString('ja-JP'); // 戦績では端数を省略せず全桁表示
     headerCoinsEl.textContent = formatCoinNumber(game.coins);
