@@ -1552,9 +1552,18 @@
   }
   const BOSS_HP_MULT = 4.5;  // ボスのHP倍率（通常敵比）
   const BOSS_ATK_MULT = 1.8; // ボスの攻撃力倍率（通常敵比）
+  // 序盤はすぐ倒せるよう敵のHPを下げる：ステージ1で10%（ほぼ一撃）、ステージ20で100%（以降は通常）まで
+  // 最初はゆっくり、後半にかけて加速的に戻す
+  const EARLY_HP_MIN_RATE = 0.1;
+  const EARLY_HP_UNTIL_STAGE = 20;
+  function getEarlyHpRate(stage) {
+    if (stage >= EARLY_HP_UNTIL_STAGE) return 1;
+    const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
+    return EARLY_HP_MIN_RATE + (1 - EARLY_HP_MIN_RATE) * t * t;
+  }
   function getEnemyStats(stage) {
     const isBoss = stage % 10 === 0;
-    const baseHp = Math.round(80 + stage * 24);
+    const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage)));
     const baseAtk = Math.round(6 + stage * 2.4);
     return {
       hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT) : baseHp,
