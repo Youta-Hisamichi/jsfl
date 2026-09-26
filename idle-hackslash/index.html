@@ -1603,7 +1603,14 @@
   function getPlayerMaxHP() {
     const b = computeBonuses();
     const base = 100;
-    return Math.round(base * b.hpMult);
+    return Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage)));
+  }
+  // 序盤は自機のHPも低め：ステージ1で40%、ステージ20で100%（以降は通常）まで直線的に戻す
+  const EARLY_PLAYER_HP_MIN_RATE = 0.4;
+  function getEarlyPlayerHpRate(stage) {
+    if (stage >= EARLY_HP_UNTIL_STAGE) return 1;
+    const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
+    return EARLY_PLAYER_HP_MIN_RATE + (1 - EARLY_PLAYER_HP_MIN_RATE) * t;
   }
   const BOSS_HP_MULT = 4.5;  // ボスのHP倍率（通常敵比）
   const BOSS_ATK_MULT = 1.8; // ボスの攻撃力倍率（通常敵比）
