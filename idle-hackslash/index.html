@@ -4022,14 +4022,63 @@
   }
 
   // ---------- プレイヤー死亡・転生 ----------
-  function onPlayerDeath(forceRebirth = false) {
+  // ---------- やられ演出：自機が赤く点滅・震えながら縮んで消え、少し間を置いてからコンテニューを表示 ----------
+  const DEATH_FX_MS = 1600;
+  let deathFx = null; // { start, ball }
+  let deathFxTimer = null;
+  function startDeathFx() {
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    deathFx = { start: Date.now(), ball: player };
+    if (player) {
+      spawnDamageText(player.x, player.y - player.radius - 18, 'やられた…', '#ff6b7a', 0.012, true);
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2, sp = 1 + Math.random() * 3.5;
+        particles.push({ x: player.x, y: player.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: i % 3 === 0 ? '#ffffff' : (i % 3 === 1 ? '#4fa8ff' : '#ff6b7a'), decay: 0.018 });
+      }
+    }
+    shakeScreen();
+    playDeathSound();
+  }
+  function updateDeathFx() {
+    if (!deathFx) return;
+    for (const p of particles) { p.x += p.vx; p.y += p.vy; p.vx *= 0.97; p.vy *= 0.97; p.life -= (p.decay || 0.04); }
+    particles = particles.filter(p => p.life > 0);
+    for (const d of damageTexts) { d.y += d.vy; d.life -= (d.decay || 0.018); }
+    damageTexts = damageTexts.filter(d => d.life > 0);
+  }
+  function getDeathFxProgress() { return deathFx ? Math.min(1, (Date.now() - deathFx.start) / DEATH_FX_MS) : 0; }
+  function drawDeathDim() {
+    if (!deathFx) return;
+    const t = getDeathFxProgress();
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(arena.x, arena.y, arena.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(10,6,20,${0.45 * t})`;
+    ctx.fill();
+    ctx.restore();
+  }
+  function endDeathFx() {
+    clearTimeout(deathFxTimer);
+    deathFx = null;
+  }
+  function onPlayerDeath(forceRebirth = false, skipFx = false) {
     homingMissiles = [];
     if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
+    if (deathFx && !skipFx) return; // 演出中の二重呼び出しを防ぐ
     phase = 'paused';
     meteors = []; adds = [];
     resetCombo();
-    if (forceRebirth) { completeReincarnation(); return; }
-    playDeathSound();
+    if (forceRebirth) { endDeathFx(); completeReincarnation(); return; }
+    if (!skipFx) {
+      startDeathFx();
+      clearTimeout(deathFxTimer);
+      deathFxTimer = setTimeout(() => showContinuePrompt(), DEATH_FX_MS);
+      return;
+    }
+    showContinuePrompt();
+  }
+  function showContinuePrompt() {
+    if (phase !== 'paused') return;
     continueDeadline = Date.now() + 10000;
     continueBtn.style.display = 'block';
     giveUpBtn.style.display = 'block';
@@ -4052,6 +4101,7 @@
   }
 
   function completeReincarnation() {
+    endDeathFx();
     clearInterval(continueTimer);
     game.skipChallenge = null;
     continueBtn.style.display = 'none';
@@ -4252,6 +4302,7 @@
   // リトライ：敵（ボス）はそのままの状態で残し、自機だけHP全快で復活させて戦闘を続ける
   const REVIVE_INVINCIBLE_FRAMES = 90; // 復活直後の無敵時間（即死防止）
   function revivePlayerInPlace() {
+    endDeathFx();
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     const enemy = balls.find(ball => !ball.isPlayer);
     if (!player || !enemy) { balls = spawnBattleBalls(); refreshPlayerBallStats(true); return; }
@@ -4651,8 +4702,22 @@
       }
     }
 
+    drawDeathDim();
     for (const ball of [...balls, ...adds]) {
       ctx.save();
+      if (deathFx && ball === deathFx.ball) {
+        // やられ演出：震え → 赤く点滅 → 縮みながら消える
+        const t = getDeathFxProgress();
+        const shake = 6 * (1 - t);
+        ctx.translate((Math.random() - 0.5) * 2 * shake, (Math.random() - 0.5) * 2 * shake + t * 10);
+        const scale = Math.max(0.05, 1 - t * 0.9);
+        ctx.translate(ball.x, ball.y); ctx.scale(scale, scale); ctx.translate(-ball.x, -ball.y);
+        ctx.globalAlpha = Math.max(0, 1 - t * 0.95) * (Math.floor(Date.now() / 90) % 2 ? 1 : 0.55);
+        if (!ball.baseColor) ball.baseColor = ball.color;
+        ball.color = Math.floor(Date.now() / 90) % 2 ? '#ff4f6b' : ball.baseColor;
+      } else if (ball.baseColor) {
+        ball.color = ball.baseColor; delete ball.baseColor;
+      }
       if (ball.isDying) {
         const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
         ctx.translate((Math.random() - 0.5) * 2 * intensity, (Math.random() - 0.5) * 2 * intensity);
@@ -4858,6 +4923,7 @@
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
         if (phase === 'battle') { step(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
+        else updateDeathFx();
       } else {
         hitStopFrames--;
       }
@@ -5006,7 +5072,7 @@
       promptGemShortage(3, {
         onCancel: () => { continueDeadline = Date.now() + remaining; startContinueCountdown(); },
         onLeave: () => { toast.classList.remove('show'); },
-        returnTo: () => { switchTab('game'); onPlayerDeath(); },
+        returnTo: () => { switchTab('game'); onPlayerDeath(false, true); },
         mustResume: true
       });
       return;
