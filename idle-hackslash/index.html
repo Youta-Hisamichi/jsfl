@@ -156,6 +156,8 @@
 
   .gacha-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 9px; }
   .gacha-actions.rank-tabs { flex-direction: row; }
+  .gacha-actions.pull-row { flex-direction: row; }
+  .gacha-actions.pull-row .gacha-pull { line-height: 1.5; }
   .gacha-result { background: var(--bg-soft); border: 1px solid var(--gold); border-radius: 10px; padding: 12px; margin-bottom: 10px; text-align: center; overflow: hidden; position: relative; }
   .gacha-result .gr-icon { font-size: 2.6rem; }
   .gacha-result .gr-title { font-weight: 800; margin: 4px 0 2px; font-size: 1.05rem; }
@@ -506,7 +508,7 @@
     <div class="artifact-panel">
       <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
       <div class="title">🌌 ジェム召喚・進化</div>
-      <div class="gacha-actions"><button class="gacha-pull" id="gachaBtn">✨ 召喚ガチャ　💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚　💎 45</button></div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull" id="gachaBtn">✨ 1回召喚<br>💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚<br>💎 45</button></div>
       <div class="gacha-result" id="gachaResult" style="display:none;"></div>
       <div class="evolution-list" id="evolutionList"></div>
     </div>
