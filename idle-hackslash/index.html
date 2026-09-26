@@ -867,6 +867,7 @@
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+    if (name === 'game') resizeCanvas();
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
     if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
     if (name === 'game' && rebirthShopPending) { rebirthShopPending = false; openRebirthShop(true); }
@@ -2265,13 +2266,25 @@
 
   function resizeCanvas() {
     const rect = wrap.getBoundingClientRect();
-    size = rect.width;
+    // ゲームタブが非表示の間は幅が0になる。ここで0に合わせるとキャンバスが0×0になり何も描画されなくなるため無視する
+    if (rect.width < 10) return;
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    const newSize = rect.width;
+    const oldSize = size;
+    size = newSize;
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     arena.x = size / 2;
     arena.y = size / 2;
     arena.radius = size / 2 - 6;
+    // 画面サイズが変わったら、アリーナ内の物体の位置も新しい大きさに合わせる
+    if (oldSize > 0 && Math.abs(newSize - oldSize) > 0.5) {
+      const k = newSize / oldSize;
+      const scalePos = o => { o.x *= k; o.y *= k; if (o.orbitRadius) o.orbitRadius *= k; };
+      balls.forEach(scalePos); adds.forEach(scalePos); meteors.forEach(scalePos); particles.forEach(scalePos); damageTexts.forEach(scalePos);
+      homingMissiles.forEach(m => { scalePos(m); m.trail.forEach(scalePos); });
+    }
   }
 
   // ---------- 音 ----------
@@ -4689,6 +4702,8 @@
   document.addEventListener('keydown', ensureAudio, { once: true });
 
   window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+  // タブ切り替えで再表示されたときや、スマホのアドレスバー表示切替などでサイズが変わったときも測り直す
+  if (window.ResizeObserver) new ResizeObserver(() => resizeCanvas()).observe(wrap);
 
   setInterval(updateSpecialButton, 1000);
   setInterval(updateAccelButton, 1000);
