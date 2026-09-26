@@ -1026,8 +1026,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・壁に反射するたびにコインと攻撃力が少し増加します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nEach wall bounce gives a small amount of coins and attack power.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1104,7 +1104,7 @@
     { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
     { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
     { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%', rarity: 'common' },
-    { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射ボーナス +100%', rarity: 'rare' },
+    { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射コイン +100%（反射のコンパス所持時）', rarity: 'rare' },
     { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
     { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
     { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: '必殺技ダメージ +35%', rarity: 'epic' },
@@ -1221,7 +1221,6 @@
   const game = {
     stage: 1, coins: 0, gems: 0, superGems: 0,
     reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
-    bounceAtkBonus: 0,
     upgrades: { atk: 0, hp: 0, speed: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
@@ -1401,7 +1400,7 @@
 
   function getPlayerAtk() {
     const b = computeBonuses();
-    const base = 10 + game.bounceAtkBonus;
+    const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
     const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
     return Math.max(1, Math.round(base * b.atkMult * accelBonus));
   }
@@ -2726,14 +2725,11 @@
     }
   }
 
+  // 壁反射の報酬：遺物「反射のコンパス」所持時のみコインを獲得（攻撃力は増えない）
   function applyBounceReward() {
     const b = computeBonuses();
-    if (b.bounceCoinCount > 0) {
-      game.coins += 0.5 * b.bounceCoinCount * b.coinMult * b.bounceMult;
-    }
-    game.bounceAtkBonus += 0.15 * b.bounceMult;
-    const p = balls.find(bl => bl.isPlayer && !bl.isClone && !bl.isCompanion);
-    if (p) p.atk = getPlayerAtk();
+    if (b.bounceCoinCount <= 0) return;
+    game.coins += 0.5 * b.bounceCoinCount * b.coinMult * b.bounceMult;
     updateStatsUI();
   }
 
@@ -3175,7 +3171,7 @@
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
     game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
     game.coins = 0; game.stage = 1;
-    game.bounceAtkBonus = 0; game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
+    game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     barrierHits = 0; barrierOrbs = [];
     // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
@@ -3909,7 +3905,7 @@
     if (animId) cancelAnimationFrame(animId);
     clearSave();
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
-    game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
+    game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
@@ -4633,6 +4629,7 @@
 
   loadGame();
   delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
+  delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
     if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
