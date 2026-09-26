@@ -394,7 +394,7 @@
       <div class="hp-card player" style="flex:1;">
         <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100 / 100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
-        <div class="atk-tag">ATK <span id="playerAtkNum">10</span></div>
+        <div class="atk-tag">ATK <span id="playerAtkNum">10</span>　命中 <span id="playerAccNum">95%</span>　回避 <span id="playerEvaNum">5%</span></div>
       </div>
     </div>
 
@@ -708,6 +708,8 @@
   const playerAtkNum = document.getElementById('playerAtkNum');
   const enemyAtkNum = document.getElementById('enemyAtkNum');
   const enemyAccNum = document.getElementById('enemyAccNum');
+  const playerAccNum = document.getElementById('playerAccNum');
+  const playerEvaNum = document.getElementById('playerEvaNum');
   const enemyEvaNum = document.getElementById('enemyEvaNum');
   const enemyName = document.getElementById('enemyName');
   const speedRange = document.getElementById('speedRange');
@@ -2642,6 +2644,8 @@
     playerHPText.textContent = Math.max(0, Math.round(p.hp)) + ' / ' + p.maxHp;
     enemyHPText.textContent = Math.max(0, Math.round(en.hp)) + ' / ' + en.maxHp;
     playerAtkNum.textContent = p.atk;
+    playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
+    playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
     enemyAtkNum.textContent = en.atk;
     enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
     enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
