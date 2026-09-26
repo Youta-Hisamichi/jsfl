@@ -853,7 +853,7 @@
     skillSpecial: { icon: '✨', name: '必殺技解放', desc: '隕石の必殺技スキルを使用可能に', cost: 120 },
     skillAccel: { icon: '⏩', name: '加速スキル解放', desc: '2.5倍速スキルを使用可能に', cost: 90 },
     skillHeal: { icon: '💗', name: '回復スキル解放', desc: 'HPを回復するスキルを使用可能に', cost: 90 },
-    skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回するバリアを展開', cost: 100 }
+    skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1200,13 +1200,36 @@
   const BOOST_MULT = 1.9;
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
   const BARRIER_COOLDOWN = 4 * 60 * 1000;
-  const BARRIER_DURATION = 10 * 1000;
+  const BARRIER_MAX_HITS = 5; // バリアが肩代わりできる被ダメージ回数
   const BARRIER_ORB_COUNT = 3;
   const BARRIER_ORBIT_RADIUS = 44;
   const BARRIER_ROT_SPEED = 0.06;
   let lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
-  let barrierEndAt = 0;
+  let barrierHits = 0; // 残りの肩代わり回数（0 = バリアなし）
   let barrierOrbs = [];
+  // 残り回数に応じたバリアの色（壊れそうになると黄→赤に変化）
+  function getBarrierColors() {
+    if (barrierHits <= 1) return { fill: '#ff7b87', glow: '#ff3b4a' };
+    if (barrierHits <= 2) return { fill: '#ffd76b', glow: '#ffb14f' };
+    return { fill: '#8fe0ff', glow: '#5cc8ff' };
+  }
+  // 被ダメージをバリアが肩代わりする。肩代わりしたら true
+  function absorbWithBarrier(player) {
+    if (barrierHits <= 0) return false;
+    barrierHits--;
+    spawnHitParticles(player.x, player.y, getBarrierColors().glow);
+    if (barrierHits > 0) {
+      spawnDamageText(player.x, player.y - player.radius - 8, 'GUARD ×' + barrierHits, '#c7ecff');
+      playBarrierHitSound();
+    } else {
+      barrierOrbs = [];
+      lastBarrierAt = Date.now(); // バリアが壊れた時点からクールダウン開始
+      spawnDamageText(player.x, player.y - player.radius - 8, 'BARRIER BREAK', '#ff9aa5');
+      playBarrierBreakSound();
+    }
+    updateBarrierButton();
+    return true;
+  }
 
   // ---------- セーブ／ロード（このブラウザにのみ保存） ----------
   const SAVE_KEY = 'circle-battle-idle-save-v1';
@@ -1621,6 +1644,7 @@
     [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));
   }
   function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
+  function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
   function getEffectiveSpeed() {
     return Date.now() < accelEndAt ? 2.5 : gameSpeed;
@@ -1919,7 +1943,7 @@
   }
 
   function updateBarrierOrbs(player, enemy, speedMult, b) {
-    if (Date.now() > barrierEndAt) {
+    if (barrierHits <= 0) {
       if (barrierOrbs.length) barrierOrbs = [];
       return;
     }
@@ -1937,7 +1961,7 @@
           orb.hitCooldown = 18;
           enemy.hp -= dmg;
           trackDamage(dmg);
-          spawnHitParticles(orb.x, orb.y, '#5cc8ff');
+          spawnHitParticles(orb.x, orb.y, getBarrierColors().glow);
           spawnDamageText(enemy.x, enemy.y - enemy.radius - 8, '-' + dmg, '#c7ecff');
           playBarrierHitSound();
           updateHPUI();
@@ -2021,6 +2045,8 @@
         spawnDamageText(e.x, e.y - e.radius - 8, '-' + dmg, '#fff4b8');
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
+      } else if (absorbWithBarrier(a)) {
+        applyHitKnockback(a, e, 3.2);
       } else {
         const dmg = Math.max(1, Math.round(e.atk * comboMult));
         a.hp -= dmg;
@@ -2255,6 +2281,7 @@
     game.level = 1; game.exp = 0; game.coins = 0; game.stage = 1;
     game.bounceAtkBonus = 0; game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
+    barrierHits = 0; barrierOrbs = [];
     // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
     const companionInfo = game.companions;
     const recruitedStatus = { ...companionInfo.recruited };
@@ -2394,11 +2421,10 @@
       return;
     }
     const now = Date.now();
-    if (now < barrierEndAt) {
-      const remainingSec = Math.ceil((barrierEndAt - now) / 1000);
+    if (barrierHits > 0) {
       barrierBtn.disabled = true;
       barrierBtn.classList.add('is-disabled');
-      barrierBtn.textContent = `🌀 展開中 ${remainingSec}s`;
+      barrierBtn.textContent = `🌀 展開中 残り${barrierHits}回`;
       return;
     }
     const remaining = Math.max(0, BARRIER_COOLDOWN - (now - lastBarrierAt));
@@ -2436,15 +2462,16 @@
     }
     ctx.globalAlpha = 1;
 
-    if (barrierOrbs.length && Date.now() < barrierEndAt) {
+    if (barrierOrbs.length && barrierHits > 0) {
+      const barrierColors = getBarrierColors();
       for (const orb of barrierOrbs) {
         if (orb.x == null) continue;
         ctx.save();
-        ctx.shadowColor = '#5cc8ff';
+        ctx.shadowColor = barrierColors.glow;
         ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.arc(orb.x, orb.y, 7, 0, Math.PI * 2);
-        ctx.fillStyle = '#8fe0ff';
+        ctx.fillStyle = barrierColors.fill;
         ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.8)';
         ctx.lineWidth = 1.5;
@@ -2643,7 +2670,7 @@
     accelEndAt = 0;
     lastHealAt = Date.now() - HEAL_COOLDOWN;
     lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
-    barrierEndAt = 0;
+    barrierHits = 0;
     barrierOrbs = [];
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
@@ -2756,7 +2783,7 @@
       accelEndAt = 0;
       lastHealAt = Date.now() - HEAL_COOLDOWN;
       lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
-      barrierEndAt = 0;
+      barrierHits = 0;
       barrierOrbs = [];
       updateSpecialButton();
       updateAccelButton();
@@ -3097,9 +3124,10 @@
   barrierBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillBarrier) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はバリアを展開できません', event.clientX, event.clientY); return; }
+    if (barrierHits > 0) { showTapError('バリアは展開中です', event.clientX, event.clientY); return; }
     if (Date.now() - lastBarrierAt < BARRIER_COOLDOWN) { showTapError('バリアは準備中です', event.clientX, event.clientY); return; }
     lastBarrierAt = Date.now();
-    barrierEndAt = Date.now() + BARRIER_DURATION;
+    barrierHits = BARRIER_MAX_HITS;
     barrierOrbs = Array.from({ length: BARRIER_ORB_COUNT }, (_, i) => ({
       angle: (Math.PI * 2 / BARRIER_ORB_COUNT) * i,
       hitCooldown: 0
