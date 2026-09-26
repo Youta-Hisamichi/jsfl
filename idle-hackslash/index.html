@@ -1283,8 +1283,28 @@
     witch:  { icon: '🧙', name: '黄金の魔女', stat: 'coin',  desc: 'コイン獲得上昇', rarity: 'epic', weight: 12, recruitCost: 130, baseBonus: 0.10, perLevel: 0.04, levelCostBase: 25,
               trait: '【錬金】攻撃を当てるたびにコイン獲得／【癒し】10秒ごとに自機のHPを8%回復' },
     sprite: { icon: '🧚', name: '俊敏の妖精', stat: 'speed', desc: '移動速度上昇',   rarity: 'rare', weight: 35, recruitCost: 80, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 20,
-              trait: '【急所突き】クリティカル率+30%／【追い風】当てると自機が1.5秒加速' }
+              trait: '【急所突き】クリティカル率+30%／【追い風】当てると自機が1.5秒加速' },
+    golem:  { icon: '🗿', name: '岩石ゴーレム', stat: 'hp',    desc: '最大HP上昇',     rarity: 'common', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+              trait: '【巨体】体が大きく、HPが2倍' },
+    monk:   { icon: '🥋', name: '拳聖の武僧', stat: 'atk',   desc: '攻撃力上昇',     rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+              trait: '【連撃】攻撃が当たると、追加でもう1発（50%ダメージ）' },
+    bard:   { icon: '🎸', name: '旅の吟遊詩人', stat: 'coin',  desc: 'コイン獲得上昇', rarity: 'rare', weight: 20, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
+              trait: '【鼓舞】仲間全員の攻撃力 +10%（吟遊詩人1人ごと）' },
+    ninja:  { icon: '🥷', name: '影の忍者',   stat: 'speed', desc: '移動速度上昇',   rarity: 'epic', weight: 10, recruitCost: 130, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 25,
+              trait: '【毒刃】当てた敵を毒状態にする（毒スキルなしでも発動）' },
+    priest: { icon: '⛪', name: '聖なる司祭', stat: 'hp',    desc: '最大HP上昇',     rarity: 'epic', weight: 10, recruitCost: 130, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 25,
+              trait: '【蘇生】12秒ごとに倒れた仲間を1人復活、いなければ仲間全員のHPを20%回復' },
+    dragon: { icon: '🐉', name: '覇竜バハムート', stat: 'atk', desc: '攻撃力上昇',   rarity: 'legendary', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+              trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（激レア）' }
   };
+  const COMPANION_IDS = Object.keys(COMPANIONS);
+  function companionMap(value) { const m = {}; COMPANION_IDS.forEach(id => m[id] = value); return m; }
+  const GOLEM_HP_MULT = 2;
+  const MONK_EXTRA_HIT_RATIO = 0.5;
+  const BARD_ATK_BONUS = 0.1;
+  const PRIEST_INTERVAL_MS = 12000;
+  const PRIEST_REVIVE_RATIO = 0.5;
+  const PRIEST_HEAL_RATIO = 0.2;
   const KNIGHT_DAMAGE_TAKEN_MULT = 0.5;
   const KNIGHT_STUN_MS = 800;
   const ARCHER_SHOT_INTERVAL_MS = 3000;
@@ -1304,7 +1324,7 @@
     evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
-    companions: { recruited: {}, awaken: {}, count: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
+    companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
     startedAt: Date.now(),
     lastLoginDate: null,
     loginStreak: 0,
@@ -1482,7 +1502,7 @@
       const level = game.companions.level[id];
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
-      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span></span><span class="cc-trait">${c.trait}</span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
+      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
     }).join('');
   }
 
@@ -1888,8 +1908,8 @@
   let lastPoisonAt = Date.now() - POISON_COOLDOWN;
   let poisonBuffEndAt = 0;
   function isPoisonBuffActive() { return Date.now() < poisonBuffEndAt; }
-  function applyPoison(enemy) {
-    if (!enemy || enemy.isAdd || !isPoisonBuffActive()) return;
+  function applyPoison(enemy, force = false) {
+    if (!enemy || enemy.isAdd || (!force && !isPoisonBuffActive())) return;
     const now = Date.now();
     const prev = enemy.poison;
     enemy.poison = {
@@ -2113,6 +2133,32 @@
           const a = Math.atan2(enemy.y - comp.y, enemy.x - comp.x);
           homingMissiles.push({ x: comp.x, y: comp.y, vx: Math.cos(a) * 6, vy: Math.sin(a) * 6, speed: 6, life: HOMING_LIFE_FRAMES, trail: [], delay: 0, dmg: comp.atk, kind: 'arrow' });
           playTone(1500, 0.06, 'triangle', 0.08, 900);
+        }
+      }
+      if (comp.companionId === 'priest') {
+        if (!comp.nextAbilityAt) comp.nextAbilityAt = now + PRIEST_INTERVAL_MS;
+        if (now >= comp.nextAbilityAt) {
+          comp.nextAbilityAt = now + PRIEST_INTERVAL_MS;
+          const fallen = balls.find(ball => ball.isCompanion && ball.hp <= 0);
+          if (fallen) {
+            // 蘇生：倒れた仲間を1人復活
+            fallen.hp = Math.max(1, Math.round(fallen.maxHp * PRIEST_REVIVE_RATIO));
+            game.companions.alive[fallen.companionId] = true;
+            game.companions.hp[fallen.companionId] = fallen.hp;
+            spawnDamageText(fallen.x, fallen.y - fallen.radius - 14, '✨ 復活', '#fff4b8');
+            spawnHitParticles(fallen.x, fallen.y, '#fff4b8');
+            playHealSound();
+          } else {
+            // 全員のHPを回復
+            let healed = false;
+            for (const ally of balls) {
+              if (!ally.isCompanion || ally.hp <= 0 || ally.hp >= ally.maxHp) continue;
+              ally.hp = Math.min(ally.maxHp, ally.hp + Math.max(1, Math.round(ally.maxHp * PRIEST_HEAL_RATIO)));
+              spawnHitParticles(ally.x, ally.y, '#7ee787');
+              healed = true;
+            }
+            if (healed) playHealSound();
+          }
         }
       }
       if (comp.companionId === 'witch') {
@@ -2883,13 +2929,20 @@
     };
   }
 
-  const COMPANION_COLORS = { knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff' };
+  const COMPANION_COLORS = { knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b' };
   const COMPANION_MOVEMENT = {
     knight: { style: 'normal', speedFactor: 0.6 },
     archer: { style: 'zigzag', speedFactor: 1.15 },
     witch:  { style: 'orbit', speedFactor: 1 },
-    sprite: { style: 'zigzag', speedFactor: 1.4 }
+    sprite: { style: 'zigzag', speedFactor: 1.4 },
+    golem:  { style: 'normal', speedFactor: 0.5 },
+    monk:   { style: 'normal', speedFactor: 1.2 },
+    bard:   { style: 'orbit', speedFactor: 1 },
+    ninja:  { style: 'zigzag', speedFactor: 1.6 },
+    priest: { style: 'orbit', speedFactor: 0.9 },
+    dragon: { style: 'normal', speedFactor: 0.9 }
   };
+  const COMPANION_RADIUS = { golem: 16, dragon: 15 };
   const COMPANION_AWAKEN_MAX = 5;
   const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
   function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
@@ -2900,7 +2953,21 @@
     const level = game.companions.level[id] || 0;
     const baseBonus = c.baseBonus + level * c.perLevel;
     const playerMaxHP = getPlayerMaxHP();
-    return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id));
+    return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (id === 'golem' ? GOLEM_HP_MULT : 1));
+  }
+  // 仲間1人ぶんの攻撃力（吟遊詩人の鼓舞を含む）。覇竜は仲間全員の攻撃力を合計した値
+  function getCompanionBaseAtk(id) {
+    const level = game.companions.level[id] || 0;
+    const inspire = 1 + BARD_ATK_BONUS * getCompanionCount('bard');
+    return Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(id) * inspire));
+  }
+  function getCompanionAtk(id) {
+    if (id !== 'dragon') return getCompanionBaseAtk(id);
+    let total = getCompanionBaseAtk('dragon');
+    for (const other of COMPANION_IDS) {
+      if (other !== 'dragon') total += getCompanionBaseAtk(other) * getCompanionCount(other);
+    }
+    return total;
   }
 
   function makeCompanionBall(id) {
@@ -2915,7 +2982,7 @@
       isPlayer: true, isCompanion: true, companionId: id,
       x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
       vx: Math.cos(angle + 1.4) * speed, vy: Math.sin(angle + 1.4) * speed,
-      radius: 11, atk: Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(id))),
+      radius: COMPANION_RADIUS[id] || 11, atk: getCompanionAtk(id),
       hp: maxHP, maxHp: maxHP,
       color: COMPANION_COLORS[id] || '#ffffff', glow: (COMPANION_COLORS[id] || '#ffffff') + '88',
       icon: c.icon, hitCooldown: 0,
@@ -2938,8 +3005,7 @@
   function refreshCompanionBalls() {
     for (const ball of balls) {
       if (!ball.isCompanion) continue;
-      const level = game.companions.level[ball.companionId] || 0;
-      ball.atk = Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(ball.companionId)));
+      ball.atk = getCompanionAtk(ball.companionId);
       // 仲間のHP を更新
       const maxHP = getCompanionMaxHP(ball.companionId);
       ball.maxHp = maxHP;
@@ -3389,6 +3455,20 @@
               game.coins += coin;
               spawnDamageText(comp.x, comp.y - comp.radius - 10, '+' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
             }
+            if (cid === 'monk' && !e.isDying && e.hp > 0) {
+              // 連撃：もう1発（50%ダメージ）
+              const extra = Math.max(1, Math.round(dmg * MONK_EXTRA_HIT_RATIO));
+              e.hp -= extra;
+              trackDamage(extra);
+              spawnDamageText(e.x + 14, e.y - e.radius - 24, '連撃 ' + formatCoinNumber(extra), '#ff8a5c');
+            }
+            if (cid === 'ninja') {
+              // 毒刃：毒スキルなしでも毒を与える
+              applyPoison(e, true);
+            }
+            if (cid === 'dragon') {
+              spawnHitParticles(e.x, e.y, '#ff4f7b');
+            }
             if (cid === 'sprite') {
               // 追い風：自機を少しの間加速
               const pl = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -3598,9 +3678,9 @@
       recruited: recruitedStatus, 
       awaken: { ...(companionInfo.awaken || {}) }, // 覚醒は永続
       count: { ...(companionInfo.count || {}) },   // 人数も永続
-      level: { knight: 0, archer: 0, witch: 0, sprite: 0 },
-      hp: { knight: 0, archer: 0, witch: 0, sprite: 0 },
-      alive: { knight: true, archer: true, witch: true, sprite: true }
+      level: companionMap(0),
+      hp: companionMap(0),
+      alive: companionMap(true)
     };
     // 仲間を回復させる
     for (const id in recruitedStatus) {
@@ -4378,7 +4458,7 @@
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
-    game.companions = { recruited: {}, awaken: {}, count: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
+    game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
     accelEndAt = 0;
@@ -5127,8 +5207,15 @@
     if (typeof game.gachaShards[id] !== 'number') game.gachaShards[id] = 0;
   }
   // 仲間の状態が未初期化の場合は初期化
-  if (!game.companions.hp) game.companions.hp = { knight: 0, archer: 0, witch: 0, sprite: 0 };
-  if (!game.companions.alive) game.companions.alive = { knight: true, archer: true, witch: true, sprite: true };
+  if (!game.companions.level) game.companions.level = {};
+  if (!game.companions.hp) game.companions.hp = {};
+  if (!game.companions.alive) game.companions.alive = {};
+  // 後から追加した仲間の項目を旧セーブに補完
+  COMPANION_IDS.forEach(id => {
+    if (typeof game.companions.level[id] !== 'number') game.companions.level[id] = 0;
+    if (typeof game.companions.hp[id] !== 'number') game.companions.hp[id] = 0;
+    if (typeof game.companions.alive[id] !== 'boolean') game.companions.alive[id] = true;
+  });
   if (!game.companions.awaken) game.companions.awaken = {};
   if (!game.companions.count) game.companions.count = {};
   for (const id in game.companions.recruited) {
