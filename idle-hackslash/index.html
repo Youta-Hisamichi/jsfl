@@ -532,10 +532,10 @@
   <!-- ===== 仲間タブ ===== -->
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
-      <div class="title">🐾 仲間（コインの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
+      <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>🟡 1800</button></div>
       <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
-      <div class="supergem-note">召喚するたびに費用が上がります（転生でリセット）。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
+      <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
@@ -1090,8 +1090,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・サークルをタップすると、自機がタップした方向へ進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap inside the arena to steer your ball toward that spot (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・サークルをタップすると、自機がタップした方向へ進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap inside the arena to steer your ball toward that spot (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1274,7 +1274,7 @@
     return !!limit && (game.ownedArtifacts[item.artifactId] || 0) >= limit;
   }
 
-  // 仲間：コインの仲間召喚で仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
+  // 仲間：コインの仲間召喚で仲間にし、コインでレベルを上げる（転生で仲間はすべてリセット）
   const COMPANIONS = {
     knight: { icon: '🛡️', name: '守護の騎士', stat: 'hp',    desc: '最大HP上昇',     rarity: 'rare', weight: 35, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
               trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.8秒気絶させ大きく弾き飛ばす' },
@@ -3682,24 +3682,10 @@
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     game.companionSummons = 0;
     barrierHits = 0; barrierOrbs = [];
-    // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
-    const companionInfo = game.companions;
-    const recruitedStatus = { ...companionInfo.recruited };
-    game.companions = { 
-      recruited: recruitedStatus, 
-      awaken: { ...(companionInfo.awaken || {}) }, // 覚醒は永続
-      count: { ...(companionInfo.count || {}) },   // 人数も永続
-      level: companionMap(0),
-      hp: companionMap(0),
-      alive: companionMap(true)
-    };
-    // 仲間を回復させる
-    for (const id in recruitedStatus) {
-      if (recruitedStatus[id]) {
-        game.companions.hp[id] = getCompanionMaxHP(id);
-        game.companions.alive[id] = true;
-      }
-    }
+    // 仲間もすべてリセット（加入・人数・覚醒・レベル）
+    game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
+    balls = balls.filter(ball => !ball.isCompanion);
+    renderCompanionList();
     game.gems += 2; game.reincarnations++;
     renderArtifactList();
     updateStatsUI();
@@ -4989,7 +4975,7 @@
 
   rebornBtn.addEventListener('click', event => {
     if (phase === 'battle' && game.stage >= 3) {
-      const ok = window.confirm(`本当に転生しますか？\nコイン・強化・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
+      const ok = window.confirm(`本当に転生しますか？\nコイン・強化・仲間・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
       if (ok) onPlayerDeath(true);
     } else {
       showTapError('ステージ3から転生できます', event.clientX, event.clientY);
