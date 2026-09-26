@@ -536,6 +536,18 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="skipRetryModal">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;">💔</div>
+    <h2>スキップ失敗…</h2>
+    <div class="modal-sub" id="skipRetryText"></div>
+    <div class="modal-shop-list">
+      <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
+      <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="loginBonusModal">
   <div class="modal-panel" style="text-align:center;">
     <div class="login-gift-icon" style="font-size:2.4rem;">🎰</div>
@@ -681,6 +693,10 @@
   const stageSkipGems = document.getElementById('stageSkipGems');
   const stageSkipOrigin = document.getElementById('stageSkipOrigin');
   const stageSkipCloseBtn = document.getElementById('stageSkipCloseBtn');
+  const skipRetryModal = document.getElementById('skipRetryModal');
+  const skipRetryText = document.getElementById('skipRetryText');
+  const skipRetryBtn = document.getElementById('skipRetryBtn');
+  const skipGiveUpBtn = document.getElementById('skipGiveUpBtn');
 
   const loginBonusModal = document.getElementById('loginBonusModal');
   const loginBonusStreak = document.getElementById('loginBonusStreak');
@@ -2574,7 +2590,7 @@
   function startSkipChallenge(opt) {
     const target = getSkipTargetStage(opt.skip);
     game.gems -= opt.cost;
-    game.skipChallenge = { origin: game.stage, target };
+    game.skipChallenge = { origin: game.stage, target, cost: opt.cost };
     game.stage = target;
     meteors = []; adds = [];
     resetCombo();
@@ -2586,18 +2602,48 @@
     updateHPUI();
     saveGame();
   }
+  // 挑戦に負けたら、同じボスにリトライするか確認する（ダイアログ表示中は戦闘を止める）
   function failSkipChallenge() {
-    const { origin, target } = game.skipChallenge;
-    game.skipChallenge = null;
-    game.stage = origin;
+    const { origin, target, cost } = game.skipChallenge;
+    game.skipChallenge.lost = true; // リロードしても無料で再挑戦できないよう記録
+    saveGame();
+    phase = 'paused';
     meteors = []; adds = [];
     resetCombo();
     playDeathSound();
+    const retryCost = cost || 0;
+    skipRetryText.innerHTML = `STAGE ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持ジェム: 💎${Math.floor(game.gems)}）`;
+    skipRetryBtn.innerHTML = `<span class="msb-name">🔁 💎${retryCost} でリトライ</span>`;
+    skipRetryBtn.disabled = game.gems < retryCost;
+    skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて STAGE ${origin} に戻る</span>`;
+    skipRetryModal.classList.add('show');
+  }
+  function retrySkipChallenge() {
+    const { target, cost } = game.skipChallenge;
+    game.gems -= cost || 0;
+    game.skipChallenge.lost = false;
+    skipRetryModal.classList.remove('show');
+    refreshPlayerBallStats(true);
+    stageAnnounceText = 'STAGE ' + target;
+    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    spawnBossWithWarning();
+    phase = 'battle';
+    showNotice(`🔁 STAGE ${target} のボスに再挑戦！`);
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+  function giveUpSkipChallenge() {
+    const { origin, target } = game.skipChallenge;
+    skipRetryModal.classList.remove('show');
+    game.skipChallenge = null;
+    game.stage = origin;
+    phase = 'battle';
     balls = spawnBattleBalls();
     refreshPlayerBallStats(true);
     stageAnnounceText = 'STAGE ' + origin;
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
-    showNotice(`💔 スキップ失敗… STAGE ${target} のボスに敗北。STAGE ${origin} に戻ります`, true);
+    showNotice(`🏳️ STAGE ${target} への挑戦をあきらめ、STAGE ${origin} に戻りました`, true);
     startBgm(origin % 10 === 0 ? 'boss' : 'normal');
     updateStatsUI();
     updateHPUI();
@@ -2619,6 +2665,15 @@
     startSkipChallenge(opt);
   });
   stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
+  skipRetryBtn.addEventListener('click', event => {
+    if (!game.skipChallenge || !skipRetryModal.classList.contains('show')) return;
+    if (game.gems < (game.skipChallenge.cost || 0)) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+    retrySkipChallenge();
+  });
+  skipGiveUpBtn.addEventListener('click', () => {
+    if (!game.skipChallenge || !skipRetryModal.classList.contains('show')) return;
+    giveUpSkipChallenge();
+  });
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
@@ -3555,6 +3610,7 @@
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
+  if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開
   loop();
 })();
 </script>
