@@ -1660,6 +1660,7 @@
     [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));
   }
   function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
+  function playEnemyCritSound() { playNoiseBurst(0.12, 0.26); playTone(260, 0.2, 'sawtooth', 0.2, 90); }
   function playCritSound() { playNoiseBurst(0.08, 0.22); playTone(1400, 0.12, 'square', 0.16, 2200); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
@@ -1842,6 +1843,22 @@
     const b = computeBonuses();
     const crit = Math.random() < CRIT_CHANCE + b.critChance;
     return { dmg: crit ? Math.round(dmg * (CRIT_MULT + b.critMultBonus)) : dmg, crit };
+  }
+  // 敵の攻撃のクリティカル（自機・仲間が受けるダメージ）
+  const ENEMY_CRIT_CHANCE = 0.05; // 発生率 5%
+  const ENEMY_CRIT_MULT = 1.5;    // ダメージ 1.5倍
+  function rollEnemyCrit(dmg) {
+    const crit = Math.random() < ENEMY_CRIT_CHANCE;
+    return { dmg: crit ? Math.round(dmg * ENEMY_CRIT_MULT) : dmg, crit };
+  }
+  // 被ダメージ表示。敵のクリティカル時は赤い大きな文字＋追加エフェクト
+  function spawnReceivedDamageText(target, dmg, crit) {
+    const y = target.y - target.radius - 8;
+    if (!crit) { spawnDamageText(target.x, y, '-' + dmg, '#ffb3b3'); return; }
+    spawnDamageText(target.x, y - 6, 'CRITICAL! -' + dmg, '#ff3b4a', 0.014, true);
+    spawnHitParticles(target.x, target.y, '#ff3b4a');
+    spawnHitParticles(target.x, target.y, '#ff9aa5');
+    playEnemyCritSound();
   }
   // 与ダメージ表示。クリティカル時は大きな文字＋追加エフェクト
   function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
@@ -2084,11 +2101,11 @@
       } else if (absorbWithBarrier(a)) {
         applyHitKnockback(a, e, 3.2);
       } else {
-        const dmg = Math.max(1, Math.round(e.atk * comboMult));
+        const { dmg, crit } = rollEnemyCrit(Math.max(1, Math.round(e.atk * comboMult)));
         a.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
-        spawnDamageText(a.x, a.y - a.radius - 8, '-' + dmg, '#ffb3b3');
+        spawnReceivedDamageText(a, dmg, crit);
         playPlayerHitSound();
         applyHitKnockback(a, e, 3.2);
       }
@@ -2142,10 +2159,10 @@
           applyHitKnockback(e, comp, 3.2);
           
           // 敵が仲間に反撃
-          const enemyDmg = Math.max(1, Math.round(e.atk * comboMult));
+          const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(Math.max(1, Math.round(e.atk * comboMult)));
           comp.hp -= enemyDmg;
           spawnHitParticles(comp.x, comp.y, '#5cc8ff');
-          spawnDamageText(comp.x, comp.y - comp.radius - 8, '-' + enemyDmg, '#ffb3b3');
+          spawnReceivedDamageText(comp, enemyDmg, enemyCrit);
           applyHitKnockback(comp, e, 3.2);
           
           // 仲間が倒れたら状態を保存
