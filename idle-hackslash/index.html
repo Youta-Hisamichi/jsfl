@@ -2211,7 +2211,7 @@
   function spawnReceivedDamageText(target, dmg, crit, attacker) {
     const y = target.y - target.radius - 8;
     if (!crit) { spawnDamageText(target.x, y, '-' + dmg, '#ffb3b3'); return; }
-    spawnDamageText(target.x, y - 6, 'CRITICAL! -' + dmg, '#ff3b4a', 0.014, true);
+    spawnDamageText(target.x, y - 6, 'CRITICAL!\n-' + dmg, '#ff3b4a', 0.014, true);
     spawnHitParticles(target.x, target.y, '#ff3b4a');
     spawnHitParticles(target.x, target.y, '#ff9aa5');
     playEnemyCritSound();
@@ -2221,7 +2221,7 @@
   function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
     const y = target.y - target.radius - (offsetY || 8);
     if (!crit) { spawnDamageText(target.x, y, '-' + dmg, color); return; }
-    spawnDamageText(target.x, y - 6, 'CRITICAL! -' + dmg, '#ff7a3d', 0.014, true);
+    spawnDamageText(target.x, y - 6, 'CRITICAL!\n-' + dmg, '#ff7a3d', 0.014, true);
     spawnHitParticles(target.x, target.y, '#ff7a3d');
     spawnHitParticles(target.x, target.y, '#ffd76b');
     playCritSound();
@@ -3221,8 +3221,14 @@
       ctx.fillStyle = d.color;
       ctx.strokeStyle = 'rgba(0,0,0,0.6)';
       ctx.lineWidth = 3;
-      ctx.strokeText(d.text, d.x, d.y);
-      ctx.fillText(d.text, d.x, d.y);
+      // 改行（\n）対応：最終行が基準位置に来るよう、上の行を積み上げて描画
+      const lines = d.text.split('\n');
+      const lineHeight = d.big ? 25 : 19;
+      lines.forEach((line, i) => {
+        const ly = d.y - (lines.length - 1 - i) * lineHeight;
+        ctx.strokeText(line, d.x, ly);
+        ctx.fillText(line, d.x, ly);
+      });
     }
     ctx.globalAlpha = 1;
     ctx.restore();
