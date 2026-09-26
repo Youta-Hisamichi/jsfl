@@ -129,6 +129,7 @@
   .action-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
   .action-row.four.six { grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
+  .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
   .action-btn.poison.buffing { background: rgba(126,231,135,0.15); }
   .action-btn.homing { border-color: #ff8a4f; color: #ffc3a0; }
@@ -423,6 +424,7 @@
       <button class="action-btn homing" id="homingBtn">🔒 追尾</button>
       <button class="action-btn poison" id="poisonBtn">🔒 毒</button>
       <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
+      <button class="action-btn sleep" id="sleepBtn">🔒 眠り</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -750,6 +752,7 @@
   const homingBtn = document.getElementById('homingBtn');
   const poisonBtn = document.getElementById('poisonBtn');
   const paralyzeBtn = document.getElementById('paralyzeBtn');
+  const sleepBtn = document.getElementById('sleepBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1177,7 +1180,8 @@
     skillBarrier: { icon: '🌀', name: 'バリアスキル解放', desc: '自機を周回し、被ダメージを数回肩代わりするバリアを展開', cost: 100 },
     skillHoming: { icon: '🎯', name: 'ホーミングスキル解放', desc: '敵を自動で追尾するミサイルを一斉発射', cost: 110 },
     skillPoison: { icon: '☠️', name: '毒スキル解放', desc: '一定時間、攻撃が当たった敵を毒状態にして継続ダメージ', cost: 120 },
-    skillParalyze: { icon: '⚡', name: '麻痺スキル解放', desc: '雷を落として敵を麻痺させ、しばらく動きと攻撃を封じる', cost: 130 }
+    skillParalyze: { icon: '⚡', name: '麻痺スキル解放', desc: '雷を落として敵を麻痺させ、しばらく動きと攻撃を封じる', cost: 130 },
+    skillSleep: { icon: '💤', name: '眠りスキル解放', desc: '敵を眠らせる。攻撃すると起きるが、その一撃は大ダメージ', cost: 120 }
   };
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
@@ -1334,7 +1338,7 @@
     }).join('');
   }
   function renderCoinShopList() {
-    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze';
+    const isSkill = id => id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep';
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).map(([id, item]) => {
       if (isSkill(id)) {
         const owned = game.shopOwned[id];
@@ -1525,6 +1529,7 @@
     updateHomingButton();
     updatePoisonButton();
     updateParalyzeButton();
+    updateSleepButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -1620,7 +1625,7 @@
         enemy.hp -= dmg;
         trackDamage(dmg);
         spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
-        applyPoison(enemy);
+        onPlayerHitEnemy(enemy, dmg);
         playHomingHitSound();
         updateHPUI();
         if (enemy.hp <= 0) triggerEnemyDefeat(enemy, m.x, m.y);
@@ -1785,6 +1790,69 @@
       ctx.restore();
     }
   }
+  // ---------- 眠りスキル ----------
+  // 敵を眠らせる（通常10秒・ボス5秒）。眠っている間は動かず攻撃もしない。
+  // 味方の攻撃が当たると目を覚ますが、その一撃には「寝込み攻撃」として追加ダメージ（毒の継続ダメージでは起きない）
+  const SLEEP_COOLDOWN = 150 * 1000;
+  const SLEEP_MS = 10 * 1000;
+  const SLEEP_BOSS_MS = 5 * 1000;
+  const SLEEP_WAKE_BONUS = 1.5; // 起こした一撃に、そのダメージ×1.5 を追加（合計2.5倍）
+  let lastSleepAt = Date.now() - SLEEP_COOLDOWN;
+  function isAsleep(ball) { return !!ball && ball.asleepUntil > Date.now(); }
+  // 麻痺・眠りのどちらかで行動できない
+  function isDisabled(ball) { return isParalyzed(ball) || isAsleep(ball); }
+  function castSleep(enemy) {
+    const dur = enemy.isBoss ? SLEEP_BOSS_MS : SLEEP_MS;
+    enemy.asleepUntil = Date.now() + dur;
+    spawnDamageText(enemy.x, enemy.y + enemy.radius + 26, `💤 眠り ${dur / 1000}秒`, '#a5a8ff', 0.012);
+    for (let i = 0; i < 10; i++) particles.push({ x: enemy.x + (Math.random() - 0.5) * 30, y: enemy.y, vx: (Math.random() - 0.5) * 1.2, vy: -0.6 - Math.random(), life: 1, color: '#c9cbff', decay: 0.02 });
+    playSleepSound();
+  }
+  // 味方の攻撃が敵に当たった直後に呼ぶ：寝込み攻撃の追加ダメージ＋毒付与
+  function onPlayerHitEnemy(enemy, dmg) {
+    if (isAsleep(enemy)) {
+      enemy.asleepUntil = 0;
+      const bonus = Math.max(1, Math.round(dmg * SLEEP_WAKE_BONUS));
+      enemy.hp -= bonus;
+      trackDamage(bonus);
+      spawnDamageText(enemy.x, enemy.y - enemy.radius - 40, '寝込み攻撃！\n+' + bonus, '#c9a5ff', 0.012, true);
+      playWakeHitSound();
+    }
+    applyPoison(enemy);
+  }
+  function drawSleepEffects() {
+    const t = Date.now() / 1000;
+    for (const ball of balls) {
+      if (ball.isPlayer || !isAsleep(ball) || ball.isDying) continue;
+      ctx.save();
+      // うっすら暗くして「Zzz」を浮かべる
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = '#1a1c40';
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius + 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 3; i++) {
+        const phase = (t * 0.8 + i / 3) % 1;
+        ctx.globalAlpha = 1 - phase;
+        ctx.font = `bold ${10 + i * 4}px sans-serif`;
+        ctx.fillStyle = '#c9cbff';
+        const zx = ball.x + ball.radius * 0.6 + phase * 14 + i * 4, zy = ball.y - ball.radius - phase * 28;
+        ctx.strokeText('Z', zx, zy);
+        ctx.fillText('Z', zx, zy);
+      }
+      ctx.globalAlpha = 1;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#c9cbff';
+      const label = '💤' + Math.ceil((ball.asleepUntil - Date.now()) / 1000) + 's';
+      ctx.strokeText(label, ball.x, ball.y + ball.radius + 34);
+      ctx.fillText(label, ball.x, ball.y + ball.radius + 34);
+      ctx.restore();
+    }
+  }
   function drawHomingMissiles() {
     for (const m of homingMissiles) {
       if (m.delay > 0) continue;
@@ -1840,7 +1908,7 @@
   let saveTimer = null;
   function saveGame() {
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -1859,6 +1927,7 @@
       if (typeof data.lastHomingAt === 'number') lastHomingAt = data.lastHomingAt;
       if (typeof data.lastPoisonAt === 'number') lastPoisonAt = data.lastPoisonAt;
       if (typeof data.lastParalyzeAt === 'number') lastParalyzeAt = data.lastParalyzeAt;
+      if (typeof data.lastSleepAt === 'number') lastSleepAt = data.lastSleepAt;
       return true;
     } catch (err) {
       return false;
@@ -2313,6 +2382,10 @@
     playTone(1800, 0.25, 'sawtooth', 0.14, 120);
     [0, 50, 110, 170].forEach(d => setTimeout(() => playTone(900 + Math.random() * 900, 0.05, 'square', 0.08), d));
   }
+  function playSleepSound() {
+    [659.25, 523.25, 392, 329.63].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 0.98), i * 160));
+  }
+  function playWakeHitSound() { playNoiseBurst(0.18, 0.25); playTone(520, 0.2, 'square', 0.16, 1400); }
   function playPoisonTickSound() { playTone(330, 0.08, 'sine', 0.07, 200); }
   function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
@@ -2658,7 +2731,7 @@
 
   function movePlayerSideBalls(list, speedMult, b) {
     for (const ball of list) {
-      if (!ball.isPlayer && isParalyzed(ball)) { // 麻痺中の敵はその場で動けない
+      if (!ball.isPlayer && isDisabled(ball)) { // 麻痺・眠り中の敵はその場で動けない
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
@@ -2723,7 +2796,7 @@
           trackDamage(dmg);
           spawnHitParticles(orb.x, orb.y, getBarrierColors().glow);
           spawnAttackDamageText(enemy, dmg, crit, '#c7ecff');
-          applyPoison(enemy);
+          onPlayerHitEnemy(enemy, dmg);
           playBarrierHitSound();
           updateHPUI();
           if (enemy.hp <= 0) triggerEnemyDefeat(enemy, orb.x, orb.y);
@@ -2797,7 +2870,7 @@
       const comboMult = getComboMultiplier(b.comboGrowth);
       if (combo >= 2) playChainSound(combo);
 
-      const enemyIsHit = isParalyzed(e) || Math.random() < 0.5; // 麻痺中の敵は反撃できない
+      const enemyIsHit = isDisabled(e) || Math.random() < 0.5; // 麻痺・眠り中の敵は反撃できない
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
@@ -2806,7 +2879,7 @@
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        applyPoison(e);
+        onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       } else if (!enemyAttackHits(e)) {
@@ -2844,7 +2917,7 @@
           trackDamage(dmg);
           spawnHitParticles(clone.x, clone.y, '#ffb35c');
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-          applyPoison(e);
+          onPlayerHitEnemy(e, dmg);
           playEnemyHitSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, cloneX, cloneY); battleEnded = true; break; }
@@ -2870,15 +2943,15 @@
             trackDamage(dmg);
             spawnHitParticles(comp.x, comp.y, comp.color);
             spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-            applyPoison(e);
+            onPlayerHitEnemy(e, dmg);
             playEnemyHitSound();
             applyHitKnockback(e, comp, 3.2);
           } else {
             spawnMissText(e);
           }
           
-          // 敵が仲間に反撃（麻痺中は反撃しない）
-          if (isParalyzed(e)) {
+          // 敵が仲間に反撃（麻痺・眠り中は反撃しない）
+          if (isDisabled(e)) {
             // 反撃なし
           } else if (enemyAttackHits(e)) {
             const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
@@ -3365,7 +3438,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -3472,6 +3545,24 @@
     healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
+  function updateSleepButton() {
+    if (!game.shopOwned.skillSleep) {
+      sleepBtn.disabled = false;
+      sleepBtn.classList.add('is-disabled');
+      sleepBtn.textContent = '🔒 眠り';
+      return;
+    }
+    const remaining = Math.max(0, SLEEP_COOLDOWN - (Date.now() - lastSleepAt));
+    if (remaining === 0) {
+      sleepBtn.disabled = false;
+      sleepBtn.classList.toggle('is-disabled', phase !== 'battle');
+      sleepBtn.textContent = '💤 眠り\nREADY';
+      return;
+    }
+    sleepBtn.disabled = false;
+    sleepBtn.classList.toggle('is-disabled', !isSkillResetPending('sleep'));
+    sleepBtn.textContent = cooldownLabel('sleep', '💤 眠り', remaining);
+  }
   function updateParalyzeButton() {
     if (!game.shopOwned.skillParalyze) {
       paralyzeBtn.disabled = false;
@@ -3708,6 +3799,7 @@
     drawHomingMissiles();
     drawPoisonEffects();
     drawParalyzeEffects();
+    drawSleepEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -3807,6 +3899,7 @@
     lastPoisonAt = Date.now() - POISON_COOLDOWN;
     poisonBuffEndAt = 0;
     lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
+    lastSleepAt = Date.now() - SLEEP_COOLDOWN;
     game.startedAt = Date.now();
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
@@ -3833,6 +3926,7 @@
     updateHomingButton();
     updatePoisonButton();
     updateParalyzeButton();
+    updateSleepButton();
     startBgm('normal');
     loop();
   }
@@ -3915,7 +4009,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠りのクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -3954,6 +4048,8 @@
       updatePoisonButton();
       lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
       updateParalyzeButton();
+      lastSleepAt = Date.now() - SLEEP_COOLDOWN;
+      updateSleepButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -4050,7 +4146,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze';
+    const isSkill = id === 'skillSpecial' || id === 'skillAccel' || id === 'skillHeal' || id === 'skillBarrier' || id === 'skillHoming' || id === 'skillPoison' || id === 'skillParalyze' || id === 'skillSleep';
     if (isSkill && game.shopOwned[id]) { showTapError('すでに解放済みです', event.clientX, event.clientY); return; }
     const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
@@ -4375,6 +4471,17 @@
     updateHPUI();
   });
 
+  sleepBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillSleep) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は眠りを使えません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastSleepAt < SLEEP_COOLDOWN) { tryGemResetSkill('sleep', event, () => { lastSleepAt = Date.now() - SLEEP_COOLDOWN; }, updateSleepButton); return; }
+    const enemy = balls.find(ball => !ball.isPlayer);
+    if (!enemy || enemy.isDying || enemy.spawnTimer > 0) { showTapError('敵がいません', event.clientX, event.clientY); return; }
+    lastSleepAt = Date.now();
+    castSleep(enemy);
+    updateSleepButton();
+  });
+
   paralyzeBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillParalyze) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は麻痺を使えません', event.clientX, event.clientY); return; }
@@ -4490,6 +4597,7 @@
   setInterval(updateHomingButton, 1000);
   setInterval(updatePoisonButton, 500);
   setInterval(updateParalyzeButton, 1000);
+  setInterval(updateSleepButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -4532,6 +4640,7 @@
   updateHomingButton();
   updatePoisonButton();
   updateParalyzeButton();
+  updateSleepButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
