@@ -341,7 +341,7 @@
       <div class="hp-card enemy" style="flex:1;">
         <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100 / 100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
-        <div class="atk-tag">ATK <span id="enemyAtkNum">8</span></div>
+        <div class="atk-tag">ATK <span id="enemyAtkNum">8</span>　命中 <span id="enemyAccNum">95%</span>　回避 <span id="enemyEvaNum">5%</span></div>
       </div>
     </div>
 
@@ -516,7 +516,7 @@
 <div class="modal-overlay" id="rebirthShopModal">
   <div class="modal-panel">
     <h2>🌌 転生ショップ</h2>
-    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（このショップの効果は今回の周回中のみ有効です）</div>
+    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物以外の効果は今回の周回中のみ有効です）</div>
     <div class="modal-shop-list" id="rebirthShopList"></div>
     <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
   </div>
@@ -617,6 +617,8 @@
   const enemyHPText = document.getElementById('enemyHPText');
   const playerAtkNum = document.getElementById('playerAtkNum');
   const enemyAtkNum = document.getElementById('enemyAtkNum');
+  const enemyAccNum = document.getElementById('enemyAccNum');
+  const enemyEvaNum = document.getElementById('enemyEvaNum');
   const enemyName = document.getElementById('enemyName');
   const speedRange = document.getElementById('speedRange');
   const speedValue = document.getElementById('speedValue');
@@ -916,8 +918,15 @@
     startFund: { icon: '🟡', name: '開始資金', desc: '今すぐコイン +150', cost: 2, effect: () => { game.coins += 150; } },
     warCry:    { icon: '⚔️', name: '闘気鼓舞', desc: '今回の周回中、攻撃力 +15%', cost: 3, effect: () => { game.rebirthBonus.atk += 0.15; } },
     blessing:  { icon: '❤️', name: '女神の加護', desc: '今回の周回中、最大HP +15%', cost: 3, effect: () => { game.rebirthBonus.hp += 0.15; } },
-    reserve:   { icon: '👥', name: '予備兵招集', desc: '今回の周回中、分身上限 +1', cost: 2, effect: () => { game.rebirthBonus.cloneSlots += 1; } }
+    reserve:   { icon: '👥', name: '予備兵招集', desc: '今回の周回中、分身上限 +1', cost: 2, effect: () => { game.rebirthBonus.cloneSlots += 1; } },
+    // 遺物（アーティファクト）そのものを購入。効果は永続、所持上限まで
+    lens:      { icon: '🔭', name: '遺物：千里眼のレンズ', desc: '命中率 +3%（永続）', cost: 8, artifactId: 'lens', effect: () => { game.ownedArtifacts.lens = (game.ownedArtifacts.lens || 0) + 1; } },
+    feather:   { icon: '🪶', name: '遺物：風切りの羽', desc: '回避率 +3%（永続）', cost: 8, artifactId: 'feather', effect: () => { game.ownedArtifacts.feather = (game.ownedArtifacts.feather || 0) + 1; } }
   };
+  function isRebirthItemMaxed(item) {
+    if (!item.artifactId) return false;
+    return (game.ownedArtifacts[item.artifactId] || 0) >= ARTIFACT_STACK_LIMIT[item.artifactId];
+  }
 
   // 仲間：ジェムで仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
   const COMPANIONS = {
@@ -1080,8 +1089,10 @@
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
     rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).map(([id, item]) => {
-      const disabled = game.gems < item.cost;
-      return `<button class="modal-shop-btn" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}</span></span><span class="msb-cost">💎 ${item.cost}</span></button>`;
+      const maxed = isRebirthItemMaxed(item);
+      const disabled = maxed || game.gems < item.cost;
+      const owned = item.artifactId ? `　所持 ${game.ownedArtifacts[item.artifactId] || 0} / ${ARTIFACT_STACK_LIMIT[item.artifactId]}` : '';
+      return `<button class="modal-shop-btn" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''}><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-desc">${item.desc}${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -1912,16 +1923,21 @@
   const ENEMY_ACCURACY = 0.95, ENEMY_EVASION = 0.05;
   const BOSS_ACCURACY = 1.0, BOSS_EVASION = 0.10;
   const MIN_HIT_CHANCE = 0.2; // 回避を積んでも無敵にはならない
+  const ENEMY_HIT_EVA_PER_STAGE = 0.002; // ステージごとに敵の命中率・回避率が +0.2%
+  const ENEMY_HIT_EVA_STAGE_CAP = 0.25;  // ステージによる上昇は最大 +25%（ステージ126で到達）
+  function getEnemyStageBonus() { return Math.min(ENEMY_HIT_EVA_STAGE_CAP, (game.stage - 1) * ENEMY_HIT_EVA_PER_STAGE); }
+  function getEnemyAccuracy(enemy) { return (enemy.isBoss ? BOSS_ACCURACY : ENEMY_ACCURACY) + getEnemyStageBonus(); }
+  function getEnemyEvasion(enemy) { return (enemy.isBoss ? BOSS_EVASION : ENEMY_EVASION) + getEnemyStageBonus(); }
   function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
   function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
   function hitChance(accuracy, evasion) { return Math.min(1, Math.max(MIN_HIT_CHANCE, accuracy - evasion)); }
   // 味方側（自機・分身・仲間・バリア）の攻撃が敵に当たるか
   function playerAttackHits(target) {
-    return Math.random() < hitChance(getPlayerAccuracy(), target.isBoss ? BOSS_EVASION : ENEMY_EVASION);
+    return Math.random() < hitChance(getPlayerAccuracy(), getEnemyEvasion(target));
   }
   // 敵の攻撃が自機・仲間に当たるか
   function enemyAttackHits(attacker) {
-    return Math.random() < hitChance(attacker.isBoss ? BOSS_ACCURACY : ENEMY_ACCURACY, getPlayerEvasion());
+    return Math.random() < hitChance(getEnemyAccuracy(attacker), getPlayerEvasion());
   }
   function spawnMissText(target) {
     spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
@@ -2350,6 +2366,8 @@
     enemyHPText.textContent = Math.max(0, Math.round(en.hp)) + ' / ' + en.maxHp;
     playerAtkNum.textContent = p.atk;
     enemyAtkNum.textContent = en.atk;
+    enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
+    enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
     enemyName.textContent = en.isBoss ? '👑 ボス' : '🔴 敵';
   }
 
@@ -3247,9 +3265,11 @@
     if (!button) return;
     const id = button.dataset.rebirthShop;
     const item = REBIRTH_SHOP_ITEMS[id];
+    if (isRebirthItemMaxed(item)) { showTapError('所持上限に達しています', event.clientX, event.clientY); return; }
     if (game.gems < item.cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
     game.gems -= item.cost;
     item.effect();
+    if (item.artifactId) renderArtifactList();
     playUpgradeSound();
     updateStatsUI();
     renderRebirthShopList();
