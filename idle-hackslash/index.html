@@ -226,6 +226,10 @@
   .battle-notice.show { opacity: 1; }
   .battle-notice.error { color: #ff9aa5; border: 1px solid #ff5c6c; }
   .battle-notice.at-tap { transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
+  .tap-boost { position: absolute; left: 2%; top: 2%; z-index: 2; color: #d2f7ff; background: rgba(8,11,18,.75); border: 1px solid rgba(100,232,255,.55); padding: 4px 8px; border-radius: 10px; font-size: .62rem; font-weight: 800; pointer-events: none; opacity: 0; transition: opacity .3s; min-width: 92px; }
+  .tap-boost.show { opacity: 1; }
+  .tap-boost-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-top: 3px; }
+  .tap-boost-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #64e8ff, #4f7bff); }
   .clone-counter { position: absolute; right: 2%; top: 2%; z-index: 2; color: #b9e0ff; background: rgba(8,11,18,.75); border: 1px solid rgba(134,197,255,.55); padding: 4px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; pointer-events: none; }
   .boss-warning {
     position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
@@ -407,6 +411,7 @@
     <div class="arena-wrap">
       <canvas id="arenaCanvas"></canvas>
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
+      <div class="tap-boost" id="tapBoost"><span>💨 タップ加速</span><div class="tap-boost-track"><div class="tap-boost-fill" id="tapBoostFill"></div></div></div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
       <div class="record-badge" id="recordBadge"></div>
       <div class="toast" id="toast">
@@ -1026,8 +1031,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1167,8 +1172,7 @@
   // ---------- ショップ定義 ----------
   const UPGRADES = {
     atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25 },
-    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 },
-    speed: { icon: '💨', name: '移動速度', desc: '+10%', baseCost: 30 }
+    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 }
   };
   const SHOP_ITEMS = {
     sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
@@ -1221,7 +1225,7 @@
   const game = {
     stage: 1, coins: 0, gems: 0, superGems: 0,
     reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
-    upgrades: { atk: 0, hp: 0, speed: 0 },
+    upgrades: { atk: 0, hp: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
     gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
@@ -1269,7 +1273,6 @@
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
-    b.speedMult += game.upgrades.speed * 0.10;
     if (game.shopOwned.sword) b.atkMult += 0.25;
     if (game.shopOwned.shield) b.hpMult += 0.25;
     if (game.shopOwned.fairy) b.coinMult += 0.30;
@@ -2435,6 +2438,34 @@
   function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
+  // ---------- タップ加速 ----------
+  // ゲームサークルをタップするたびに自機（と分身）の移動速度が上がり、タップをやめると少しして元に戻る
+  const TAP_BOOST_PER_TAP = 0.08;   // 1タップあたり +8%
+  const TAP_BOOST_MAX = 1.0;        // 最大 +100%（2倍速）
+  const TAP_BOOST_HOLD_MS = 1500;   // 最後のタップからこの時間は維持
+  const TAP_BOOST_DECAY_PER_SEC = 0.5;
+  let tapBoost = 0;
+  let lastTapBoostAt = 0;
+  let lastTapBoostTick = Date.now();
+  const tapBoostEl = document.getElementById('tapBoost');
+  const tapBoostFill = document.getElementById('tapBoostFill');
+  function addTapBoost() {
+    tapBoost = Math.min(TAP_BOOST_MAX, tapBoost + TAP_BOOST_PER_TAP);
+    lastTapBoostAt = Date.now();
+  }
+  function updateTapBoost() {
+    const now = Date.now();
+    const dt = (now - lastTapBoostTick) / 1000;
+    lastTapBoostTick = now;
+    if (tapBoost > 0 && now - lastTapBoostAt > TAP_BOOST_HOLD_MS) tapBoost = Math.max(0, tapBoost - TAP_BOOST_DECAY_PER_SEC * dt);
+    tapBoostEl.classList.toggle('show', tapBoost > 0);
+    if (tapBoost > 0) {
+      tapBoostEl.firstElementChild.textContent = `💨 タップ加速 +${Math.round(tapBoost * 100)}%`;
+      tapBoostFill.style.width = (tapBoost / TAP_BOOST_MAX * 100) + '%';
+    }
+  }
+  function getTapBoostMult() { return 1 + tapBoost; }
+
   function getEffectiveSpeed() {
     return Date.now() < accelEndAt ? 2.5 : gameSpeed;
   }
@@ -2800,7 +2831,7 @@
         normalizeSpeed(ball, baseSpeed);
       } else if (ball.movementStyle !== 'orbit') {
         const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
-        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult) : 3.2;
+        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult * getTapBoostMult()) : 3.2;
         const targetSpeed = baseSpeed * (boosted ? BOOST_MULT : 1);
         normalizeSpeed(ball, targetSpeed);
       }
@@ -3171,7 +3202,7 @@
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
     game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
     game.coins = 0; game.stage = 1;
-    game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
+    game.upgrades = { atk: 0, hp: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     barrierHits = 0; barrierOrbs = [];
     // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
@@ -3892,6 +3923,7 @@
       } else {
         hitStopFrames--;
       }
+      updateTapBoost();
       draw();
     } catch (err) {
       // 予期しないエラーが発生してもゲームループ自体は継続させる（フリーズ防止）
@@ -3906,7 +3938,7 @@
     clearSave();
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
-    game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
+    game.upgrades = { atk: 0, hp: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -4570,6 +4602,7 @@
     const y = (event.clientY - rect.top) * (size / rect.height);
     const dx = x - arena.x, dy = y - arena.y;
     if (Math.hypot(dx, dy) < arena.radius - 12) {
+      addTapBoost();
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
       const enemy = balls.find(ball => !ball.isPlayer);
       if (player && Math.hypot(x - player.x, y - player.y) < player.radius + 10 && enemy) {
@@ -4630,6 +4663,7 @@
   loadGame();
   delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
   delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
+  if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
     if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
