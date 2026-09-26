@@ -2829,6 +2829,11 @@
   const RECORD_BADGE_INTERVAL_MS = 2500;
   const RECORD_LABELS = { damage: 'MAX ダメージ', dps: 'MAX DPS' };
   const recordBadge = document.getElementById('recordBadge');
+  // 表示し終わったら（またはタブ切り替えで中断されたら）show を外す。付けたままだとゲーム画面に戻るたびにアニメーションが再生されてしまう
+  ['animationend', 'animationcancel'].forEach(type => {
+    recordBadge.addEventListener(type, () => recordBadge.classList.remove('show'));
+    document.getElementById('lootPopup').addEventListener(type, ev => ev.currentTarget.classList.remove('show'));
+  });
   const pendingRecords = {};
   let lastRecordBadgeAt = 0;
   function announceRecord(type, value) { pendingRecords[type] = value; }
