@@ -532,8 +532,8 @@
   <!-- ===== 仲間タブ ===== -->
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
-      <div class="title">🐾 仲間（ジェムの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
-      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>💎 10</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>💎 90</button></div>
+      <div class="title">🐾 仲間（コインの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>🟡 1800</button></div>
       <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
       <div class="supergem-note">召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
@@ -1274,7 +1274,7 @@
     return !!limit && (game.ownedArtifacts[item.artifactId] || 0) >= limit;
   }
 
-  // 仲間：ジェムで仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
+  // 仲間：コインの仲間召喚で仲間にし、コインでレベルを上げる（レベルは転生でリセット、仲間になった状態は継続）
   const COMPANIONS = {
     knight: { icon: '🛡️', name: '守護の騎士', stat: 'hp',    desc: '最大HP上昇',     rarity: 'rare', weight: 35, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
               trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.8秒気絶させ大きく弾き飛ばす' },
@@ -1445,6 +1445,9 @@
     }).join('');
     gachaBtn.classList.toggle('is-disabled', game.gems < 5);
     gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
+    const cgb = document.getElementById('compGachaBtn'), cgb10 = document.getElementById('compGacha10Btn');
+    if (cgb) cgb.classList.toggle('is-disabled', game.coins < COMP_GACHA_COST);
+    if (cgb10) cgb10.classList.toggle('is-disabled', game.coins < COMP_GACHA10_COST);
   }
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
@@ -1483,8 +1486,9 @@
     }).join('');
   }
 
-  // ---------- 仲間召喚（ジェムガチャ） ----------
-  const COMP_GACHA_COST = 10, COMP_GACHA10_COST = 90;
+  // ---------- 仲間召喚（コインガチャ） ----------
+  const COMP_GACHA_COST = 200, COMP_GACHA10_COST = 1800;
+  const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
   function pickCompanionId() {
     const entries = Object.entries(COMPANIONS);
     let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
@@ -1492,7 +1496,7 @@
     return entries[0][0];
   }
   // 1体分の結果を反映し、表示用の情報を返す
-  // 同じ仲間が出ても人数が増える（パーティ上限まで）。満員なら覚醒、覚醒MAXならジェム
+  // 同じ仲間が出ても人数が増える（パーティ上限まで）。満員なら覚醒、覚醒MAXならコイン
   const COMPANION_PARTY_MAX = 8;
   function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
   function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
@@ -1515,13 +1519,13 @@
       cp.awaken[id] = getCompanionAwaken(id) + 1;
       return { id, label: `満員 → 覚醒 ★${cp.awaken[id]}` };
     }
-    // 覚醒が最大なら代わりにジェムを少し返す
-    game.gems += 3;
-    return { id, label: '覚醒MAX → 💎3' };
+    // 覚醒が最大なら代わりにコインを少し返す
+    game.coins += COMP_AWAKEN_MAX_REFUND;
+    return { id, label: `覚醒MAX → 🟡${COMP_AWAKEN_MAX_REFUND}` };
   }
   function runCompanionGacha(count, cost, event) {
-    if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('companion') }); return; }
-    game.gems -= cost;
+    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+    game.coins -= cost;
     const results = [];
     for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
     refreshPlayerBallStats(false);
