@@ -538,6 +538,7 @@
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
         <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
         <div class="record">EVADE<strong id="evasionNum">5%</strong>回避率</div>
+        <div class="record">BOSS<strong id="bossDmgNum">+0%</strong>ボス特攻</div>
       </div>
       <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
       <div class="supergem-note">総プレイ時間: <span id="playTimeText">0時間00分00秒</span></div>
@@ -1113,8 +1114,9 @@
     { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）', rarity: 'legendary' },
     { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）', rarity: 'rare' },
     { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）', rarity: 'rare' },
+    { id: 'crest', icon: '👑', name: '覇王の紋章', desc: 'ボスへのダメージ +25%（最大4個）', rarity: 'epic' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -1144,6 +1146,7 @@
     critdmg:  { icon: '💥', name: '剛撃の欠片',   rarity: 'epic',      desc: 'クリティカルダメージ +10%/Lv', bonus: { critDmg: 0.10 },    weight: 5 },
     aim:      { icon: '🔍', name: '照準の欠片',   rarity: 'rare',      desc: '命中率 +1%/Lv',         bonus: { accuracy: 0.01 },          weight: 7 },
     evade:    { icon: '🍃', name: '幻影の欠片',   rarity: 'rare',      desc: '回避率 +1%/Lv',         bonus: { evasion: 0.01 },           weight: 7 },
+    slayer:   { icon: '🗡️', name: '討伐の欠片',   rarity: 'epic',      desc: 'ボスへのダメージ +5%/Lv', bonus: { bossDmg: 0.05 },         weight: 5 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
   function pickGachaId() {
@@ -1222,8 +1225,8 @@
     upgrades: { atk: 0, hp: 0, speed: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     companions: { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
@@ -1244,7 +1247,7 @@
 
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0 };
     for (const id in game.ownedArtifacts) {
       const count = game.ownedArtifacts[id];
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
@@ -1263,6 +1266,7 @@
       if (id === 'fang') b.critMultBonus += 0.5 * cap;
       if (id === 'lens') b.accuracy += 0.03 * cap;
       if (id === 'feather') b.evasion += 0.03 * cap;
+      if (id === 'crest') b.bossDmg += 0.25 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -1285,6 +1289,7 @@
       if (bonus.critDmg) b.critMultBonus += bonus.critDmg * level;
       if (bonus.accuracy) b.accuracy += bonus.accuracy * level;
       if (bonus.evasion) b.evasion += bonus.evasion * level;
+      if (bonus.bossDmg) b.bossDmg += bonus.bossDmg * level;
     }
 
     for (const id in COMPANIONS) {
@@ -1542,6 +1547,7 @@
     critMultNumEl.textContent = '×' + +(CRIT_MULT + critBonuses.critMultBonus).toFixed(2);
     accuracyNumEl.textContent = +((PLAYER_BASE_ACCURACY + critBonuses.accuracy) * 100).toFixed(1) + '%';
     evasionNumEl.textContent = +((PLAYER_BASE_EVASION + critBonuses.evasion) * 100).toFixed(1) + '%';
+    document.getElementById('bossDmgNum').textContent = '+' + +(critBonuses.bossDmg * 100).toFixed(1) + '%';
     game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
     bestCoinsNumEl.textContent = Math.floor(game.bestCoins).toLocaleString('ja-JP'); // 戦績では端数を省略せず全桁表示
     headerCoinsEl.textContent = formatCoinNumber(game.coins);
@@ -1664,7 +1670,7 @@
         m.hit = true;
         spawnHitParticles(m.x, m.y, '#ff8a4f');
         if (!playerAttackHits(enemy)) { spawnMissText(enemy); continue; }
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * HOMING_DMG_MULT)));
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * HOMING_DMG_MULT)), enemy);
         enemy.hp -= dmg;
         trackDamage(dmg);
         spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
@@ -1708,7 +1714,7 @@
     if (now >= pz.nextTick) {
       pz.nextTick += POISON_TICK_MS;
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-      const dmg = Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * POISON_DMG_MULT * pz.stacks));
+      const dmg = Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * POISON_DMG_MULT * pz.stacks * bossDamageMult(enemy)));
       enemy.hp -= dmg;
       trackDamage(dmg);
       spawnDamageText(enemy.x + (Math.random() - 0.5) * 20, enemy.y - enemy.radius - 4, '☠ ' + dmg, '#7ee787');
@@ -1773,7 +1779,7 @@
     const dur = enemy.isBoss ? PARALYZE_BOSS_MS : PARALYZE_MS;
     enemy.paralyzedUntil = Date.now() + dur;
     lightningFx = { x: enemy.x, y: enemy.y, until: Date.now() + 350 };
-    const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT)));
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT)), enemy);
     enemy.hp -= dmg;
     trackDamage(dmg);
     spawnAttackDamageText(enemy, dmg, crit, '#fff1a8');
@@ -2605,7 +2611,10 @@
   // ---------- クリティカル（味方側の攻撃に一定確率で発生） ----------
   const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
   const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
-  function rollCrit(dmg) {
+  // ボス特攻：ボスへのダメージ倍率（遺物「覇王の紋章」・ガチャ「討伐の欠片」）
+  function bossDamageMult(target) { return target && target.isBoss ? 1 + computeBonuses().bossDmg : 1; }
+  function rollCrit(dmg, target) {
+    dmg = Math.max(1, Math.round(dmg * bossDamageMult(target)));
     const b = computeBonuses();
     const crit = Math.random() < CRIT_CHANCE + b.critChance;
     return { dmg: crit ? Math.round(dmg * (CRIT_MULT + b.critMultBonus)) : dmg, crit };
@@ -2821,7 +2830,7 @@
         if (dist < enemy.radius + 9) {
           orb.hitCooldown = 18;
           if (!playerAttackHits(enemy)) { spawnMissText(enemy); continue; }
-          const { dmg, crit } = rollCrit(baseDmg);
+          const { dmg, crit } = rollCrit(baseDmg, enemy);
           enemy.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(orb.x, orb.y, getBarrierColors().glow);
@@ -2904,7 +2913,7 @@
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult)));
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult)), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
@@ -2942,7 +2951,7 @@
           const cloneX = clone.x, cloneY = clone.y;
           balls = balls.filter(ball => ball !== clone); // 外しても分身は消滅
           if (!playerAttackHits(e)) { spawnMissText(e); continue; }
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult)));
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult)), e);
           e.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(clone.x, clone.y, '#ffb35c');
@@ -2968,7 +2977,7 @@
           
           // 仲間が敵を攻撃
           if (playerAttackHits(e)) {
-            const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult)));
+            const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult)), e);
             e.hp -= dmg;
             trackDamage(dmg);
             spawnHitParticles(comp.x, comp.y, comp.color);
@@ -3013,11 +3022,12 @@
         meteor.x += (mdx / distance) * meteor.speed * speedMult;
         meteor.y += (mdy / distance) * meteor.speed * speedMult;
         if (distance < meteor.radius + e.radius) {
-          e.hp -= meteor.damage;
-          trackDamage(meteor.damage);
+          const meteorDmg = Math.max(1, Math.round(meteor.damage * bossDamageMult(e)));
+          e.hp -= meteorDmg;
+          trackDamage(meteorDmg);
           meteor.hit = true;
           spawnHitParticles(e.x, e.y, '#ffbc5c');
-          spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteor.damage, '#ffd76b');
+          spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteorDmg, '#ffd76b');
           playMeteorImpactSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }
@@ -3901,8 +3911,8 @@
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
-    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
