@@ -2540,23 +2540,23 @@
   // ---------- ステージスキップ（先のボスに挑戦） ----------
   // 消費ジェムが多いほど先のボスに挑戦できる。勝てばそのステージへ、負けたら元のステージへ戻る
   const STAGE_SKIP_OPTIONS = [
-    { bosses: 1, cost: 5 },
-    { bosses: 2, cost: 12 },
-    { bosses: 3, cost: 20 },
-    { bosses: 5, cost: 35 },
+    { skip: 50, cost: 10 },
+    { skip: 100, cost: 25 },
+    { skip: 200, cost: 50 },
+    { skip: 500, cost: 120 },
+    { skip: 1000, cost: 250 },
   ];
-  function getSkipTargetStage(bosses) {
-    const nextBoss = Math.ceil((game.stage + 1) / 10) * 10; // 現在より先で最も近いボスステージ
-    return nextBoss + (bosses - 1) * 10;
+  function getSkipTargetStage(skip) {
+    return Math.ceil((game.stage + skip) / 10) * 10; // 基準ステージ数先の、最初のボスステージ
   }
   function renderStageSkipList() {
     stageSkipGems.textContent = Math.floor(game.gems);
     stageSkipOrigin.textContent = game.stage;
     stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
-      const target = getSkipTargetStage(opt.bosses);
+      const target = getSkipTargetStage(opt.skip);
       const es = getEnemyStats(target);
       const disabled = game.gems < opt.cost;
-      return `<button class="modal-shop-btn" data-stage-skip="${i}" ${disabled ? 'disabled' : ''}><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">${target - game.stage} ステージ先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+      return `<button class="modal-shop-btn" data-stage-skip="${i}" ${disabled ? 'disabled' : ''}><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
     }).join('');
   }
   function spawnBossWithWarning() {
@@ -2572,7 +2572,7 @@
     }, 1850);
   }
   function startSkipChallenge(opt) {
-    const target = getSkipTargetStage(opt.bosses);
+    const target = getSkipTargetStage(opt.skip);
     game.gems -= opt.cost;
     game.skipChallenge = { origin: game.stage, target };
     game.stage = target;
