@@ -256,7 +256,7 @@
   .bst-card.unknown .bst-face { color: var(--text-dim); font-weight: 900; }
   .bst-face { font-size: 1.6rem; line-height: 1.2; height: 2rem; display: flex; align-items: center; justify-content: center; }
   .bst-shape { display: inline-block; width: 22px; height: 22px; }
-  .bst-circle { border-radius: 50%; }
+  .bst-spike { clip-path: polygon(50% 0, 61% 30%, 93% 25%, 72% 50%, 93% 75%, 61% 70%, 50% 100%, 39% 70%, 7% 75%, 28% 50%, 7% 25%, 39% 30%); }
   .bst-diamond { transform: rotate(45deg) scale(0.8); }
   .bst-square { border-radius: 3px; }
   .bst-hex { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
@@ -3163,8 +3163,8 @@
   const EMOJI_ENEMIES = ['👹', '👺', '💀', '👻', '🎃', '🐉', '🦂', '🕷️', '🦇', '👾', '🧟', '🐺', '🦖', '🐲'];
   const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲'];
   // ---------- 敵図鑑 ----------
-  const SHAPE_ENEMY_NAMES = { circle: 'レッドスライム', diamond: 'フレイムクリスタル', hex: 'グリーンヘキサ', square: 'ピンクキューブ' };
-  const SHAPE_ENEMY_COLORS = { circle: '#ff5c6c', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
+  const SHAPE_ENEMY_NAMES = { spike: 'レッドスパイク', diamond: 'フレイムクリスタル', hex: 'グリーンヘキサ', square: 'ピンクキューブ' };
+  const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
   const EMOJI_ENEMY_NAMES = { '👹': '赤鬼', '👺': '天狗', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'パンプキン', '🐉': 'ドラゴン', '🦂': '毒サソリ', '🕷️': '大蜘蛛', '🦇': '吸血コウモリ', '👾': 'インベーダー', '🧟': 'ゾンビ', '🐺': 'ウルフ', '🦖': 'ティラノ', '🐲': '竜の子' };
   const BOSS_ENEMY_NAMES = { '👹': '鬼王', '🐉': '古代竜', '💀': '死霊王', '🦖': '暴君竜', '👺': '大天狗', '🐲': '竜帝' };
   const ENEMY_BOOK = [
@@ -3233,7 +3233,7 @@
     } else {
       const es = getEnemyStats(game.stage);
       const enemyStyles = [
-        { color: '#ff5c6c', glow: 'rgba(255,92,108,0.55)', shape: 'circle' },
+        { color: '#ff5c6c', glow: 'rgba(255,92,108,0.55)', shape: 'spike' },
         { color: '#ff9d4f', glow: 'rgba(255,157,79,0.55)', shape: 'diamond' },
         { color: '#60d6a6', glow: 'rgba(96,214,166,0.55)', shape: 'hex' },
         { color: '#f46bd4', glow: 'rgba(244,107,212,0.55)', shape: 'square' }
@@ -4658,21 +4658,63 @@
           if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         }
         ctx.closePath();
-      } else if (!ball.isPlayer && ball.shape === 'emoji') {
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      } else if (!ball.isPlayer && (ball.shape === 'spike' || ball.shape === 'emoji')) {
+        // 敵はトゲトゲの輪郭で、丸い自機・仲間と見分けやすく
+        const spikes = ball.shape === 'emoji' ? 12 : 8;
+        const rot = (ball.spinAngle = (ball.spinAngle || 0) + 0.01);
+        for (let i = 0; i < spikes * 2; i++) {
+          const angle = rot - Math.PI / 2 + i * Math.PI / spikes;
+          const rr = i % 2 === 0 ? ball.radius * (ball.shape === 'emoji' ? 1.18 : 1.12) : ball.radius * (ball.shape === 'emoji' ? 0.86 : 0.62);
+          const px = ball.x + Math.cos(angle) * rr, py = ball.y + Math.sin(angle) * rr;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
       } else {
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       }
       if (ball.shape === 'emoji') {
-        ctx.globalAlpha = 0.22;
+        ctx.globalAlpha = 0.3;
         ctx.fillStyle = ball.color;
         ctx.fill();
         ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = ball.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
       } else {
         ctx.fillStyle = ball.color;
         ctx.fill();
       }
       ctx.restore();
+
+      // 図形の敵には怒った目を描いて「敵」だとひと目で分かるように
+      if (!ball.isPlayer && ball.shape !== 'emoji') {
+        const er = ball.radius;
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.ellipse(ball.x + side * er * 0.3, ball.y - er * 0.02, er * 0.17, er * 0.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#1a1020';
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.arc(ball.x + side * er * 0.27, ball.y + er * 0.03, er * 0.09, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // つり上がった眉
+        ctx.strokeStyle = '#1a1020';
+        ctx.lineWidth = Math.max(1.5, er * 0.1);
+        ctx.lineCap = 'round';
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(ball.x + side * er * 0.5, ball.y - er * 0.3);
+          ctx.lineTo(ball.x + side * er * 0.12, ball.y - er * 0.14);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
 
       if (ball.shape === 'emoji') {
         ctx.save();
@@ -5713,6 +5755,11 @@
   // 移動速度アップの遺物・進化は廃止
   if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
   if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
+  // 丸い敵はトゲトゲの敵に変更（図鑑の記録を引き継ぐ）
+  if (game.bestiary && game.bestiary['shape:circle']) {
+    if (!game.bestiary['shape:spike']) game.bestiary['shape:spike'] = game.bestiary['shape:circle'];
+    delete game.bestiary['shape:circle'];
+  }
   if (!Array.isArray(game.artifactSlots)) autoFillArtifactSlots(); // 遺物スロット導入前のセーブ
   ensureArtifactSlots();
   if (game.evolutions) delete game.evolutions.swift;
