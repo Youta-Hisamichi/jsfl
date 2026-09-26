@@ -129,7 +129,7 @@
   .action-btn.accel { border-color: #ffb14f; color: #ffd9a0; }
   .action-btn.heal { border-color: #7ee787; color: #b6f5c0; }
   .action-btn.barrier { border-color: #5cc8ff; color: #b3e8ff; }
-  .action-row.four .action-btn { font-size: 0.62rem; padding: 8px 3px; }
+  .action-row.four .action-btn { font-size: 0.62rem; padding: 8px 3px; white-space: pre-line; line-height: 1.35; }
   .action-btn.reborn-action { border-color: #c792ea; color: #dcbdff; }
   .action-btn:disabled { opacity: 0.48; cursor: not-allowed; }
 
@@ -2334,6 +2334,41 @@
     phase = 'battle';
   }
 
+  // ---------- ジェムでスキルのクールダウンをリセット ----------
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4 };
+  const SKILL_RESET_CONFIRM_MS = 3000;
+  let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
+  let pendingSkillResetUntil = 0;
+  function isSkillResetPending(key) {
+    return pendingSkillReset === key && Date.now() < pendingSkillResetUntil;
+  }
+  function cooldownLabel(key, label, remaining) {
+    if (isSkillResetPending(key)) return `💎${SKILL_RESET_COST[key]} 消費で\nリセット？`;
+    const totalSec = Math.ceil(remaining / 1000); // 「4:60」表記にならないよう秒単位に切り上げてから分解
+    const minutes = Math.floor(totalSec / 60);
+    const seconds = String(totalSec % 60).padStart(2, '0');
+    return `${label} ${minutes}:${seconds}\n💎${SKILL_RESET_COST[key]}でリセット`;
+  }
+  function tryGemResetSkill(key, event, resetCooldown, updateButton) {
+    const cost = SKILL_RESET_COST[key];
+    if (!isSkillResetPending(key)) {
+      pendingSkillReset = key;
+      pendingSkillResetUntil = Date.now() + SKILL_RESET_CONFIRM_MS;
+      showNotice(`もう一度タップで 💎${cost} 消費してクールダウンをリセット`);
+      updateButton();
+      setTimeout(updateButton, SKILL_RESET_CONFIRM_MS + 50);
+      return;
+    }
+    pendingSkillReset = null;
+    if (game.gems < cost) { showTapError('ジェムが足りません', event.clientX, event.clientY); updateButton(); return; }
+    game.gems -= cost;
+    resetCooldown();
+    playUpgradeSound();
+    showNotice(`💎${cost} でクールダウンをリセットしました！`);
+    updateStatsUI();
+    saveGame();
+  }
+
   function getSpecialCooldown() {
     const b = computeBonuses();
     return Math.round(SPECIAL_COOLDOWN * Math.max(0.4, b.specialCooldownMult));
@@ -2353,11 +2388,9 @@
       specialBtn.textContent = '✨ 必殺技　READY';
       return;
     }
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
     specialBtn.disabled = false;
-    specialBtn.classList.add('is-disabled');
-    specialBtn.textContent = `✨ 必殺技　${minutes}:${seconds}`;
+    specialBtn.classList.toggle('is-disabled', !isSkillResetPending('special'));
+    specialBtn.textContent = cooldownLabel('special', '✨ 必殺技', remaining);
   }
 
   function updateAccelButton() {
@@ -2385,11 +2418,9 @@
       accelBtn.textContent = '⏩ 加速（2.5倍）';
       return;
     }
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
     accelBtn.disabled = false;
-    accelBtn.classList.add('is-disabled');
-    accelBtn.textContent = `⏩ 加速 ${minutes}:${seconds}`;
+    accelBtn.classList.toggle('is-disabled', !isSkillResetPending('accel'));
+    accelBtn.textContent = cooldownLabel('accel', '⏩ 加速', remaining);
   }
 
   function updateHealButton() {
@@ -2406,11 +2437,9 @@
       healBtn.textContent = '💗 回復　READY';
       return;
     }
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
     healBtn.disabled = false;
-    healBtn.classList.add('is-disabled');
-    healBtn.textContent = `💗 回復　${minutes}:${seconds}`;
+    healBtn.classList.toggle('is-disabled', !isSkillResetPending('heal'));
+    healBtn.textContent = cooldownLabel('heal', '💗 回復', remaining);
   }
 
   function updateBarrierButton() {
@@ -2434,11 +2463,9 @@
       barrierBtn.textContent = '🌀 バリア　READY';
       return;
     }
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.ceil((remaining % 60000) / 1000).toString().padStart(2, '0');
     barrierBtn.disabled = false;
-    barrierBtn.classList.add('is-disabled');
-    barrierBtn.textContent = `🌀 バリア　${minutes}:${seconds}`;
+    barrierBtn.classList.toggle('is-disabled', !isSkillResetPending('barrier'));
+    barrierBtn.textContent = cooldownLabel('barrier', '🌀 バリア', remaining);
   }
 
   // ---------- 描画 ----------
@@ -3079,7 +3106,7 @@
   specialBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillSpecial) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は必殺技を使えません', event.clientX, event.clientY); return; }
-    if (Date.now() - lastSpecialAt < getSpecialCooldown()) { showTapError('必殺技は準備中です', event.clientX, event.clientY); return; }
+    if (Date.now() - lastSpecialAt < getSpecialCooldown()) { tryGemResetSkill('special', event, () => { lastSpecialAt = Date.now() - SPECIAL_COOLDOWN; }, updateSpecialButton); return; }
     const enemy = balls.find(ball => !ball.isPlayer);
     if (!enemy) return;
     const b = computeBonuses();
@@ -3098,7 +3125,7 @@
   accelBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillAccel) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は加速できません', event.clientX, event.clientY); return; }
-    if (Date.now() - lastAccelAt < ACCEL_COOLDOWN) { showTapError('加速は準備中です', event.clientX, event.clientY); return; }
+    if (Date.now() - lastAccelAt < ACCEL_COOLDOWN) { tryGemResetSkill('accel', event, () => { lastAccelAt = Date.now() - ACCEL_COOLDOWN; }, updateAccelButton); return; }
     lastAccelAt = Date.now();
     accelEndAt = Date.now() + ACCEL_DURATION;
     playAccelSound();
@@ -3108,7 +3135,7 @@
   healBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillHeal) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は回復できません', event.clientX, event.clientY); return; }
-    if (Date.now() - lastHealAt < HEAL_COOLDOWN) { showTapError('回復は準備中です', event.clientX, event.clientY); return; }
+    if (Date.now() - lastHealAt < HEAL_COOLDOWN) { tryGemResetSkill('heal', event, () => { lastHealAt = Date.now() - HEAL_COOLDOWN; }, updateHealButton); return; }
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (!player) return;
     lastHealAt = Date.now();
@@ -3125,7 +3152,7 @@
     if (!game.shopOwned.skillBarrier) { showTapError('コインショップで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はバリアを展開できません', event.clientX, event.clientY); return; }
     if (barrierHits > 0) { showTapError('バリアは展開中です', event.clientX, event.clientY); return; }
-    if (Date.now() - lastBarrierAt < BARRIER_COOLDOWN) { showTapError('バリアは準備中です', event.clientX, event.clientY); return; }
+    if (Date.now() - lastBarrierAt < BARRIER_COOLDOWN) { tryGemResetSkill('barrier', event, () => { lastBarrierAt = Date.now() - BARRIER_COOLDOWN; }, updateBarrierButton); return; }
     lastBarrierAt = Date.now();
     barrierHits = BARRIER_MAX_HITS;
     barrierOrbs = Array.from({ length: BARRIER_ORB_COUNT }, (_, i) => ({
@@ -3197,6 +3224,7 @@
   setInterval(updateSpecialButton, 1000);
   setInterval(updateAccelButton, 1000);
   setInterval(updateHealButton, 1000);
+  setInterval(updateBarrierButton, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
   window.addEventListener('pagehide', saveGame);
