@@ -1080,6 +1080,13 @@
     epic:      { label: 'エピック',   stars: 3, color: '#c792ea', needMult: 2 },
     legendary: { label: 'レジェンド', stars: 4, color: '#ffd76b', needMult: 1 },
   };
+  // レア度ごとの背景色（レアが高いほど濃く）
+  const RARITY_BG_ALPHA = { common: ['30', '10'], rare: ['44', '14'], epic: ['55', '18'], legendary: ['70', '22'] };
+  function rarityBackground(rarity) {
+    const c = RARITY_INFO[rarity].color;
+    const [a1, a2] = RARITY_BG_ALPHA[rarity];
+    return `linear-gradient(160deg, ${c}${a1}, ${c}${a2})`;
+  }
   function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(4 - RARITY_INFO[rarity].stars); }
   const GACHA_POOL = {
     power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
@@ -3606,6 +3613,7 @@
 
   function runGachaCountdown(hintRarity, onDone) {
     gachaResult.style.display = 'block';
+    gachaResult.style.background = '';
     gachaResult.className = 'gacha-result gacha-summoning rarity-bg-' + hintRarity;
     let count = 2;
     const render = () => {
@@ -3635,6 +3643,7 @@
       const rarity = RARITY_INFO[result.rarity];
       playGachaSound(result.rarity);
       gachaResult.className = 'gacha-result rarity-' + result.rarity;
+      gachaResult.style.background = rarityBackground(result.rarity);
       gachaResult.innerHTML = `<div class="gr-icon gr-pop">${result.icon}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(result.rarity)} ${result.name}</div><div class="gr-sub">Lv.${game.evolutions[id]} に進化！（${result.desc}）</div><button id="gachaResultCloseBtn">閉じる</button>`;
       document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
       gachaBtn.disabled = false; gacha10Btn.disabled = false;
@@ -3646,6 +3655,7 @@
   const GACHA_AUTO_OPEN_INTERVAL_MS = 380;
   function autoOpenGachaResults(results, onAllDone) {
     gachaResult.className = 'gacha-result';
+    gachaResult.style.background = '';
     const cards = results.map((r, i) => `<div class="gm-item gm-hidden" data-gm="${i}"><div class="gm-face">❔</div><span class="gm-name">&nbsp;<br>&nbsp;</span></div>`).join('');
     gachaResult.innerHTML = `<div class="gr-title">🌟 10連召喚結果 🌟</div><div class="gacha-multi-grid">${cards}</div><div class="gr-sub" id="gachaAutoOpenHint">タップで一気に開封</div>`;
     let idx = 0;
@@ -3657,6 +3667,7 @@
       el.classList.remove('gm-hidden');
       el.classList.add('gm-open', 'rarity-' + r.rarity);
       el.style.border = `1px solid ${rarity.color}`;
+      el.style.background = rarityBackground(r.rarity);
       el.innerHTML = `<div class="gm-face">${r.icon}</div><span class="gm-name">${rarityStars(r.rarity)}<br>${r.name}</span>`;
       if (withSound) playGachaSound(r.rarity);
     };
