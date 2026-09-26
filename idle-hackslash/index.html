@@ -214,6 +214,16 @@
   }
   .boss-warning.show { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: warnFlash 0.4s ease-in-out infinite alternate; }
   @keyframes warnFlash { from { opacity: 1; } to { opacity: 0.45; } }
+  .record-badge { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; text-align: center; font-size: 0.72rem; font-weight: 800; color: #ffd76b; background: rgba(8,11,18,0.8); border: 1px solid rgba(255,215,107,0.7); border-radius: 12px; padding: 5px 12px; line-height: 1.5; opacity: 0; }
+  .record-badge b { color: #fff; }
+  .record-badge.show { animation: recordPop 2.2s ease-out forwards; }
+  @keyframes recordPop {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
+    12% { opacity: 1; transform: translateX(-50%) scale(1.08); }
+    20% { transform: translateX(-50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
   .debug-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .debug-row button { border: 1px dashed var(--ring); border-radius: 8px; color: var(--text-dim); background: transparent; padding: 6px 3px; font-size: 0.63rem; cursor: pointer; }
 
@@ -361,6 +371,7 @@
       <canvas id="arenaCanvas"></canvas>
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
+      <div class="record-badge" id="recordBadge"></div>
       <div class="toast" id="toast">
         <div class="artifact-icon" id="toastIcon" style="display:none;"></div>
         <div class="big" id="toastBig"></div>
@@ -1708,13 +1719,39 @@
   // ---------- 最大ダメージ／最大DPS計測 ----------
   let dpsAccum = 0;
   function trackDamage(amount) {
-    if (amount > game.maxDamage) game.maxDamage = amount;
+    if (amount > game.maxDamage) {
+      if (game.maxDamage > 0) announceRecord('damage', amount); // 初回記録は通知しない
+      game.maxDamage = amount;
+    }
     dpsAccum += amount;
   }
   setInterval(() => {
-    if (dpsAccum > game.maxDps) game.maxDps = dpsAccum;
+    if (dpsAccum > game.maxDps) {
+      if (game.maxDps > 0) announceRecord('dps', dpsAccum);
+      game.maxDps = dpsAccum;
+    }
     dpsAccum = 0;
   }, 1000);
+
+  // ---------- 記録更新の通知（ゲーム画面に表示） ----------
+  // 序盤は頻繁に更新されるので、表示は一定間隔ごとにまとめて最新値だけを出す
+  const RECORD_BADGE_INTERVAL_MS = 2500;
+  const RECORD_LABELS = { damage: 'MAX ダメージ', dps: 'MAX DPS' };
+  const recordBadge = document.getElementById('recordBadge');
+  const pendingRecords = {};
+  let lastRecordBadgeAt = 0;
+  function announceRecord(type, value) { pendingRecords[type] = value; }
+  setInterval(() => {
+    const types = Object.keys(pendingRecords);
+    if (!types.length || Date.now() - lastRecordBadgeAt < RECORD_BADGE_INTERVAL_MS) return;
+    lastRecordBadgeAt = Date.now();
+    recordBadge.innerHTML = types.map(t => `<div>🏆 ${RECORD_LABELS[t]} 更新！ <b>${Math.floor(pendingRecords[t]).toLocaleString('ja-JP')}</b></div>`).join('');
+    types.forEach(t => delete pendingRecords[t]);
+    recordBadge.classList.remove('show');
+    void recordBadge.offsetWidth; // アニメーションを最初から再生
+    recordBadge.classList.add('show');
+    playTone(1318.5, 0.12, 'triangle', 0.12, 1760);
+  }, 250);
 
   function formatDuration(ms) {
     const totalSec = Math.max(0, Math.floor(ms / 1000));
@@ -2428,7 +2465,6 @@
       } else {
         const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
         a.hp -= dmg;
-        trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
         spawnReceivedDamageText(a, dmg, crit, e);
         playPlayerHitSound();
