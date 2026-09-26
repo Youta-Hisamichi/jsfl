@@ -399,12 +399,12 @@
       <div class="hp-card player" style="flex:1;">
         <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
+        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span><span>迫り合い <span id="playerClashNum">10</span></span></div>
       </div>
       <div class="hp-card enemy" style="flex:1;">
         <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
+        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span><span>迫り合い <span id="enemyClashNum">10</span></span></div>
       </div>
     </div>
 
@@ -1031,8 +1031,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1172,7 +1172,8 @@
   // ---------- ショップ定義 ----------
   const UPGRADES = {
     atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25 },
-    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 }
+    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 },
+    clash: { icon: '🤜', name: '迫り合い', desc: '+10%（衝突時に攻撃できる確率アップ）', baseCost: 30 }
   };
   const SHOP_ITEMS = {
     sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
@@ -1225,7 +1226,7 @@
   const game = {
     stage: 1, coins: 0, gems: 0, superGems: 0,
     reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
-    upgrades: { atk: 0, hp: 0 },
+    upgrades: { atk: 0, hp: 0, clash: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
     gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
@@ -2682,6 +2683,20 @@
   function enemyAttackHits(attacker) {
     return Math.random() < hitChance(getEnemyAccuracy(attacker), getPlayerEvasion());
   }
+  // ---------- 迫り合い ----------
+  // 自機と敵がぶつかったとき、どちらが攻撃できるかを決める力。自機が攻撃できる確率 = 自機 ÷ (自機 + 敵)
+  const PLAYER_BASE_CLASH = 10;
+  const ENEMY_BASE_CLASH = 10;
+  const ENEMY_CLASH_PER_STAGE = 0.01;   // ステージごとに敵の迫り合い +1%
+  const BOSS_CLASH_MULT = 1.3;          // ボスは1.3倍
+  function getPlayerClash() { return PLAYER_BASE_CLASH * (1 + 0.1 * (game.upgrades.clash || 0)); }
+  function getEnemyClash(enemy) {
+    return ENEMY_BASE_CLASH * (1 + (game.stage - 1) * ENEMY_CLASH_PER_STAGE) * (enemy && enemy.isBoss ? BOSS_CLASH_MULT : 1);
+  }
+  function getClashWinChance(enemy) {
+    const pc = getPlayerClash(), ec = getEnemyClash(enemy);
+    return pc / (pc + ec);
+  }
   function spawnMissText(target) {
     spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
     playMissSound();
@@ -2936,7 +2951,8 @@
       const comboMult = getComboMultiplier(b.comboGrowth);
       if (combo >= 2) playChainSound(combo);
 
-      const enemyIsHit = isDisabled(e) || Math.random() < 0.5; // 麻痺・眠り中の敵は反撃できない
+      // 迫り合いの強さで攻撃側を決める（麻痺・眠り中の敵は反撃できない）
+      const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
@@ -3107,9 +3123,11 @@
     playerAtkNum.textContent = p.atk;
     playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
     playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
+    document.getElementById('playerClashNum').textContent = +getPlayerClash().toFixed(1);
     enemyAtkNum.textContent = en.atk;
     enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
     enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
+    document.getElementById('enemyClashNum').textContent = +getEnemyClash(en).toFixed(1);
     enemyName.textContent = en.isBoss ? (game.skipChallenge ? '👑 ボス（スキップ挑戦）' : '👑 ボス') : '🔴 敵';
   }
 
@@ -3202,7 +3220,7 @@
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
     game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
     game.coins = 0; game.stage = 1;
-    game.upgrades = { atk: 0, hp: 0 }; game.coinCloneSlots = 0;
+    game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     barrierHits = 0; barrierOrbs = [];
     // 仲間の状態をリセット（仲間にした状態は継続、HP/レベルはリセット）
@@ -3938,7 +3956,7 @@
     clearSave();
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
-    game.upgrades = { atk: 0, hp: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
+    game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -4664,6 +4682,7 @@
   delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
   delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
   if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
+  if (game.upgrades && typeof game.upgrades.clash !== 'number') game.upgrades.clash = 0; // 迫り合いは後から追加
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
     if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
