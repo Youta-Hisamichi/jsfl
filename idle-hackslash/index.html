@@ -798,8 +798,9 @@
     { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: '必殺技の待機時間 -15%（最大3個）' },
     { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）' },
     { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）' },
+    { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -905,7 +906,7 @@
   function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0 };
+    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0 };
     for (const id in game.ownedArtifacts) {
       const count = game.ownedArtifacts[id];
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
@@ -921,6 +922,7 @@
       if (id === 'hourglass') b.specialCooldownMult -= 0.15 * cap;
       if (id === 'turbo') b.accelDmgMult += 0.25 * cap;
       if (id === 'eye') b.critChance += 0.05 * cap;
+      if (id === 'fang') b.critMultBonus += 0.5 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -1823,10 +1825,11 @@
 
   // ---------- クリティカル（味方側の攻撃に一定確率で発生） ----------
   const CRIT_CHANCE = 0.1; // 基本発生率 10%（アーティファクト「鷹の眼」で上昇）
-  const CRIT_MULT = 2;     // ダメージ 2倍
+  const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
   function rollCrit(dmg) {
-    const crit = Math.random() < CRIT_CHANCE + computeBonuses().critChance;
-    return { dmg: crit ? Math.round(dmg * CRIT_MULT) : dmg, crit };
+    const b = computeBonuses();
+    const crit = Math.random() < CRIT_CHANCE + b.critChance;
+    return { dmg: crit ? Math.round(dmg * (CRIT_MULT + b.critMultBonus)) : dmg, crit };
   }
   // 与ダメージ表示。クリティカル時は大きな文字＋追加エフェクト
   function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
