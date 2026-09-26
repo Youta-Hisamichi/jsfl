@@ -242,7 +242,7 @@
   .rank-row.me { background: rgba(79,168,255,0.12); border-radius: 8px; }
   .rank-row.me .rank-name { color: var(--accent-player); }
   .record { padding: 8px 5px; background: var(--panel); text-align: center; font-size: 0.67rem; color: var(--text-dim); }
-  .record strong { display: block; color: var(--text); font-size: 0.95rem; overflow-wrap: anywhere; }
+  .record strong { display: block; color: var(--text); font-size: 0.8rem; overflow-wrap: anywhere; }
 
   .battle-notice { position: fixed; top: 54px; left: 50%; transform: translateX(-50%); z-index: 55; min-width: 60%; max-width: 90%; padding: 7px 10px; border-radius: 999px; text-align: center; background: rgba(8,11,18,0.85); color: #7ee787; font-size: 0.75rem; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity .2s; }
   .battle-notice.show { opacity: 1; }
@@ -334,6 +334,18 @@
   .artifact-chip .chip-desc { color: var(--text-dim); font-size: 0.68rem; }
   .artifact-chip .count { background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 0.65rem; padding: 1px 6px; color: var(--text-dim); white-space: nowrap; }
   .artifact-chip.not-owned { opacity: 0.42; filter: grayscale(0.6); }
+  .artifact-chip.equipped { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  .artifact-chip .chip-equip { font-size: 0.62rem; font-weight: 700; color: var(--accent-player); }
+  .artifact-chip.equipped .chip-equip { color: #2ea043; }
+  .artifact-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-bottom: 12px; }
+  .artifact-slot { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px; border-radius: 12px; border: 2px solid var(--ring); background: var(--bg-soft); color: var(--text); cursor: pointer; text-align: center; min-height: 92px; justify-content: center; }
+  .artifact-slot.empty { border-style: dashed; cursor: default; }
+  .artifact-slot .slot-no { font-size: 0.58rem; font-weight: 800; color: var(--text-dim); letter-spacing: 0.05em; }
+  .artifact-slot .slot-icon { font-size: 1.5rem; line-height: 1.2; }
+  .artifact-slot .slot-name { font-size: 0.66rem; font-weight: 800; }
+  .artifact-slot .slot-count { font-size: 0.6rem; color: var(--text-dim); }
+  .artifact-slot .slot-remove { font-size: 0.55rem; color: var(--text-dim); }
+  .artifact-slot .slot-empty { font-size: 0.72rem; color: var(--text-dim); margin-top: 6px; }
   .artifact-chip.not-owned .count { color: #ff9aa5; }
   .artifact-empty { color: var(--text-dim); font-size: 0.75rem; }
 
@@ -535,7 +547,9 @@
   <!-- ===== アーティファクトタブ ===== -->
   <div class="tab-page" data-tab="artifact">
     <div class="artifact-panel">
-      <div class="title">所持アーティファクト（転生で入手・永続）</div>
+      <div class="title">🏺 遺物スロット（セットした3つだけ効果を発揮）</div>
+      <div class="artifact-slots" id="artifactSlots"></div>
+      <div class="title">所持アーティファクト（転生で入手・永続）　タップでセット／外す</div>
       <div class="artifact-list" id="artifactList">
         <span class="artifact-empty">まだ何も持っていません</span>
       </div>
@@ -594,6 +608,7 @@
         <div class="record">TOTAL<strong id="totalKillsNum">0</strong>キル</div>
         <div class="record">TOTAL<strong id="totalTapsNum">0</strong>タップ</div>
         <div class="record">TOTAL<strong id="rebornNum">0</strong>転生回数</div>
+        <div class="record">TOTAL<strong id="totalSpentNum">0</strong>消費コイン</div>
         <div class="record">MAX<strong id="maxDamageNum">0</strong>単発ダメージ</div>
         <div class="record">MAX<strong id="maxDpsNum">0</strong>DPS</div>
         <div class="record">MAX<strong id="maxComboNum">0</strong>コンボ</div>
@@ -646,7 +661,7 @@
 <div class="modal-overlay" id="rebirthShopModal">
   <div class="modal-panel">
     <h2>🌌 転生ショップ</h2>
-    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物の効果は転生しても永続します）</div>
+    <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物は永続。効果は遺物タブで3つまでセットしたものだけ）</div>
     <div class="purchase-msg" id="rebirthShopMsg"></div>
     <div class="modal-shop-list two" id="rebirthShopList"></div>
     <div class="auto-skip-wrap" id="rebirthAutoSkipWrap">
@@ -1294,7 +1309,7 @@
   const REBIRTH_SHOP_ITEMS = {};
   ARTIFACT_POOL.forEach(a => {
     REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
-      effect: () => { game.ownedArtifacts[a.id] = (game.ownedArtifacts[a.id] || 0) + 1; } };
+      effect: () => { gainArtifact(a.id); } };
   });
   function isRebirthItemMaxed(item) {
     if (!item.artifactId) return false;
@@ -1352,6 +1367,8 @@
     evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
+    totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
+    artifactSlots: null, // セット中の遺物（3スロット）。null は未設定（読み込み時に自動セット）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
@@ -1373,8 +1390,8 @@
 
   function computeBonuses() {
     const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1 };
-    for (const id in game.ownedArtifacts) {
-      const count = game.ownedArtifacts[id];
+    for (const id of getEquippedArtifacts()) { // 遺物はスロットにセットしたものだけ有効
+      const count = game.ownedArtifacts[id] || 0;
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
       if (id === 'heart') b.atkMult += 0.2 * count;
       if (id === 'ring') b.coinMult += 0.3 * count;
@@ -1583,7 +1600,7 @@
   }
   function runCompanionGacha(count, cost, event) {
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-    game.coins -= cost;
+    spendCoins(cost);
     game.companionSummons = (game.companionSummons || 0) + count;
     const results = [];
     for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
@@ -1677,7 +1694,7 @@
     const available = pool.filter(a => !ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]);
     const list = available.length ? available : pool;
     const pick = list[Math.floor(Math.random() * list.length)];
-    game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+    gainArtifact(pick.id);
     const info = RARITY_INFO[rarity];
     spawnDamageText(arena.x, arena.y - 30, `${rarityStars(rarity)}\n${pick.icon} ${pick.name}`, info.color, TREASURE_TEXT_DECAY, true);
     for (let i = 0; i < 16; i++) {
@@ -1692,12 +1709,55 @@
     saveGame();
   }
 
+  // ---------- 遺物スロット：3つまでセットした遺物だけ効果を発揮 ----------
+  const ARTIFACT_SLOT_COUNT = 3;
+  function ensureArtifactSlots() {
+    if (!Array.isArray(game.artifactSlots)) game.artifactSlots = [];
+    while (game.artifactSlots.length < ARTIFACT_SLOT_COUNT) game.artifactSlots.push(null);
+    game.artifactSlots.length = ARTIFACT_SLOT_COUNT;
+    // 所持していない・存在しない遺物は外す／重複も外す
+    game.artifactSlots = game.artifactSlots.map((id, i, arr) => (id && ARTIFACT_BY_ID[id] && (game.ownedArtifacts[id] || 0) > 0 && arr.indexOf(id) === i) ? id : null);
+  }
+  function getEquippedArtifacts() {
+    if (!Array.isArray(game.artifactSlots)) return [];
+    return game.artifactSlots.filter(id => id && (game.ownedArtifacts[id] || 0) > 0);
+  }
+  function isArtifactEquipped(id) { return getEquippedArtifacts().includes(id); }
+  // 遺物を入手。空きスロットがあれば自動でセット
+  function gainArtifact(id) {
+    game.ownedArtifacts[id] = (game.ownedArtifacts[id] || 0) + 1;
+    ensureArtifactSlots();
+    if (!isArtifactEquipped(id)) {
+      const empty = game.artifactSlots.indexOf(null);
+      if (empty !== -1) game.artifactSlots[empty] = id;
+    }
+  }
+  // 旧セーブ：レア度の高い順に3つを自動でセット
+  function autoFillArtifactSlots() {
+    const owned = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0)
+      .sort((x, y) => RARITY_ORDER.indexOf(y.rarity) - RARITY_ORDER.indexOf(x.rarity) || (game.ownedArtifacts[y.id] - game.ownedArtifacts[x.id]));
+    game.artifactSlots = owned.slice(0, ARTIFACT_SLOT_COUNT).map(a => a.id);
+    ensureArtifactSlots();
+  }
+  function renderArtifactSlots() {
+    const el = document.getElementById('artifactSlots');
+    if (!el) return;
+    ensureArtifactSlots();
+    el.innerHTML = game.artifactSlots.map((id, i) => {
+      if (!id) return `<div class="artifact-slot empty"><span class="slot-no">SLOT ${i + 1}</span><span class="slot-empty">空き</span></div>`;
+      const a = ARTIFACT_BY_ID[id];
+      return `<button class="artifact-slot" data-slot="${i}" style="border-color:${RARITY_INFO[a.rarity].color}"><span class="slot-no">SLOT ${i + 1}</span><span class="slot-icon">${a.icon}</span><span class="slot-name">${a.name}</span><span class="slot-count">x${game.ownedArtifacts[id]}</span><span class="slot-remove">タップで外す</span></button>`;
+    }).join('');
+  }
   function renderArtifactList() {
+    renderArtifactSlots();
     artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
       const count = game.ownedArtifacts[a.id] || 0;
       const owned = count > 0;
-      return `<button class="artifact-chip ${owned ? '' : 'not-owned'}" data-artifact="${a.id}">
+      const equipped = owned && isArtifactEquipped(a.id);
+      return `<button class="artifact-chip ${owned ? '' : 'not-owned'} ${equipped ? 'equipped' : ''}" data-artifact="${a.id}">
         <span class="chip-head"><span class="item-icon">${a.icon}</span> ${a.name}<span class="count">${owned ? 'x' + count : '未所持'}</span></span>
+        ${owned ? `<span class="chip-equip">${equipped ? '✅ セット中（タップで外す）' : '＋ タップでセット'}</span>` : ''}
         <span class="chip-rarity" style="color:${RARITY_INFO[a.rarity].color}">${rarityStars(a.rarity)} ${RARITY_INFO[a.rarity].label}</span>
         <span class="chip-desc">${a.desc}</span>
       </button>`;
@@ -1760,6 +1820,11 @@
     ).join('');
   }
 
+  // コインを消費（戦績の TOTAL 消費コインに記録）
+  function spendCoins(amount) {
+    game.coins -= amount;
+    game.totalCoinsSpent = (game.totalCoinsSpent || 0) + amount;
+  }
   function updateStatsUI() {
     stageNumEl.textContent = game.stage;
     superGemsNumEl.textContent = Math.floor(game.superGems);
@@ -1770,6 +1835,7 @@
     maxDamageNumEl.textContent = Math.floor(game.maxDamage || 0);
     maxDpsNumEl.textContent = Math.floor(game.maxDps || 0);
     maxComboNumEl.textContent = game.maxCombo || 0;
+    document.getElementById('totalSpentNum').textContent = Math.floor(game.totalCoinsSpent || 0).toLocaleString('ja-JP');
     const critBonuses = computeBonuses();
     const critRate = Math.min(1, CRIT_CHANCE + critBonuses.critChance); // 100%を超えても実質は必ずクリティカル
     critRateNumEl.textContent = +(critRate * 100).toFixed(1) + '%';
@@ -2725,7 +2791,7 @@
       showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS, true);
     } else {
       const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
-      game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+      gainArtifact(pick.id);
       spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
       const info = RARITY_INFO[pick.rarity];
       showLootPopup('🎁 宝箱の中身（遺物）', `${pick.icon} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
@@ -3037,7 +3103,7 @@
     if (!list) return;
     const book = game.bestiary || {};
     const found = ENEMY_BOOK.filter(entry => book[entry.key]).length;
-    document.getElementById('bestiaryCount').textContent = `${found} / ${ENEMY_BOOK.length}`;
+    document.getElementById('bestiaryCount').textContent = `${found} / ${ENEMY_BOOK.length}（${Math.floor(found / ENEMY_BOOK.length * 100)}%）`;
     list.innerHTML = ENEMY_BOOK.map(entry => {
       const rec = book[entry.key];
       const face = entry.icon
@@ -3879,7 +3945,7 @@
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
-    game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
+    gainArtifact(pick.id);
     game.coins = 0; game.stage = 1;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
@@ -4658,7 +4724,7 @@
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.artifactSlots = [null, null, null]; game.bestiary = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -4716,11 +4782,43 @@
     showNotice(name ? `ユーザー名を「${name}」に設定しました` : 'ユーザー名をリセットしました');
   });
 
+  function afterArtifactSlotChange() {
+    renderArtifactList();
+    refreshPlayerBallStats(false);
+    refreshCompanionBalls();
+    updateStatsUI();
+    updateHPUI();
+    saveGame();
+  }
+  document.getElementById('artifactSlots').addEventListener('click', event => {
+    const slot = event.target.closest('[data-slot]');
+    if (!slot) return;
+    game.artifactSlots[+slot.dataset.slot] = null;
+    playTone(500, 0.08, 'triangle', 0.1, 300);
+    afterArtifactSlotChange();
+  });
   artifactListEl.addEventListener('click', event => {
     const chip = event.target.closest('[data-artifact]');
     if (!chip) return;
     const artifact = ARTIFACT_BY_ID[chip.dataset.artifact];
     const count = game.ownedArtifacts[chip.dataset.artifact] || 0;
+    if (count > 0) {
+      // 所持している遺物：タップでスロットにセット／外す
+      ensureArtifactSlots();
+      const id = chip.dataset.artifact;
+      const idx = game.artifactSlots.indexOf(id);
+      if (idx !== -1) {
+        game.artifactSlots[idx] = null;
+        playTone(500, 0.08, 'triangle', 0.1, 300);
+      } else {
+        const empty = game.artifactSlots.indexOf(null);
+        if (empty === -1) { showTapError('スロットがいっぱいです（外してからセット）', event.clientX, event.clientY); return; }
+        game.artifactSlots[empty] = id;
+        playUpgradeSound();
+      }
+      afterArtifactSlotChange();
+      return;
+    }
     toastIcon.style.display = 'block';
     toastIcon.textContent = artifact.icon;
     toastBig.textContent = artifact.name;
@@ -4878,7 +4976,7 @@
       const count = getMaxAffordableUpgradeLevels(id, game.coins);
       if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
       const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
-      game.coins -= totalCost;
+      spendCoins(totalCost);
       game.upgrades[id] += count;
       refreshPlayerBallStats(false);
       playUpgradeSound();
@@ -4897,7 +4995,7 @@
     if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
     const cost = getUpgradeCost(id);
     if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
-    game.coins -= cost;
+    spendCoins(cost);
     game.upgrades[id]++;
     refreshPlayerBallStats(false);
     playUpgradeSound();
@@ -4940,7 +5038,7 @@
     } else if (isSkill) {
       game.shopOwned[id] = true;
     }
-    game.coins -= cost;
+    spendCoins(cost);
     playUpgradeSound();
     updateStatsUI();
     updateHPUI();
@@ -5110,7 +5208,7 @@
     const cost = getCompanionLevelCost(id);
     if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', x, y); return false; }
     if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
-    game.coins -= cost;
+    spendCoins(cost);
     game.companions.level[id]++;
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
@@ -5412,6 +5510,8 @@
   if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
   // 移動速度アップの遺物・進化は廃止
   if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
+  if (!Array.isArray(game.artifactSlots)) autoFillArtifactSlots(); // 遺物スロット導入前のセーブ
+  ensureArtifactSlots();
   if (game.evolutions) delete game.evolutions.swift;
   if (game.gachaShards) delete game.gachaShards.swift;
   if (game.upgrades && typeof game.upgrades.clash !== 'number') game.upgrades.clash = 0; // 迫り合いは後から追加
