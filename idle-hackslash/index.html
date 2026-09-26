@@ -1791,7 +1791,7 @@
     return h + '時間' + String(m).padStart(2, '0') + '分' + String(s).padStart(2, '0') + '秒';
   }
 
-  function showNotice(text, isError = false) {
+  function showNotice(text, isError = false, duration = 1500) {
     battleNotice.textContent = text;
     battleNotice.classList.toggle('error', isError);
     battleNotice.classList.remove('at-tap');
@@ -1801,24 +1801,26 @@
     battleNotice.classList.add('show');
     if (isError) playErrorSound();
     clearTimeout(noticeTimer);
-    noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
+    noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), duration);
   }
 
+  const TREASURE_TEXT_DECAY = 1 / 160; // 宝箱のテキストは約2.5秒表示（通常のダメージ表示より長め）
+  const TREASURE_NOTICE_MS = 3000;
   function dropTreasureChest() {
-    spawnDamageText(arena.x, arena.y - 40, '🎁 宝箱発見！', '#ffd76b');
+    spawnDamageText(arena.x, arena.y - 40, '🎁 宝箱発見！', '#ffd76b', TREASURE_TEXT_DECAY);
     playLoginBonusSound();
     const isCoin = Math.random() < 0.6;
     if (isCoin) {
       const bonus = Math.round((60 + game.stage * 10) * computeBonuses().coinMult);
       game.coins += bonus;
       spawnCoinBurst(arena.x, arena.y + 20, bonus);
-      showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`);
+      showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS);
     } else {
       const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
       game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
       spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
-      spawnDamageText(arena.x, arena.y + 20, pick.icon + ' ' + pick.name, '#c792ea');
-      showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`);
+      spawnDamageText(arena.x, arena.y + 20, pick.icon + ' ' + pick.name, '#c792ea', TREASURE_TEXT_DECAY);
+      showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`, false, TREASURE_NOTICE_MS);
       renderArtifactList();
     }
     updateStatsUI();
