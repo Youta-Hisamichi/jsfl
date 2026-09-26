@@ -473,6 +473,8 @@
         <div class="record">MAX<strong id="maxComboNum">0</strong>コンボ</div>
         <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
+        <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
+        <div class="record">EVADE<strong id="evasionNum">5%</strong>回避率</div>
       </div>
       <div class="supergem-note">ゲーム開始日時: <span id="startedAtText">-</span></div>
       <div class="supergem-note">総プレイ時間: <span id="playTimeText">0時間00分00秒</span></div>
@@ -597,6 +599,8 @@
   const bestCoinsNumEl = document.getElementById('bestCoinsNum');
   const critRateNumEl = document.getElementById('critRateNum');
   const critMultNumEl = document.getElementById('critMultNum');
+  const accuracyNumEl = document.getElementById('accuracyNum');
+  const evasionNumEl = document.getElementById('evasionNum');
   const usernameInput = document.getElementById('usernameInput');
   const usernameSaveBtn = document.getElementById('usernameSaveBtn');
   const playTimeText = document.getElementById('playTimeText');
@@ -838,8 +842,10 @@
     { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）' },
     { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）' },
     { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）' },
+    { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）' },
+    { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -860,6 +866,8 @@
     chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
     critical: { icon: '🎯', name: '会心の欠片',   rarity: 'epic',      desc: 'クリティカル率 +1%/Lv', bonus: { crit: 0.01 },              weight: 5 },
     critdmg:  { icon: '💥', name: '剛撃の欠片',   rarity: 'epic',      desc: 'クリティカルダメージ +10%/Lv', bonus: { critDmg: 0.10 },    weight: 5 },
+    aim:      { icon: '🔍', name: '照準の欠片',   rarity: 'rare',      desc: '命中率 +1%/Lv',         bonus: { accuracy: 0.01 },          weight: 7 },
+    evade:    { icon: '🍃', name: '幻影の欠片',   rarity: 'rare',      desc: '回避率 +1%/Lv',         bonus: { evasion: 0.01 },           weight: 7 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
   function pickGachaId() {
@@ -927,8 +935,8 @@
     upgrades: { atk: 0, hp: 0, speed: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     companions: { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
@@ -948,7 +956,7 @@
   function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0 };
+    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0 };
     for (const id in game.ownedArtifacts) {
       const count = game.ownedArtifacts[id];
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
@@ -965,6 +973,8 @@
       if (id === 'turbo') b.accelDmgMult += 0.25 * cap;
       if (id === 'eye') b.critChance += 0.05 * cap;
       if (id === 'fang') b.critMultBonus += 0.5 * cap;
+      if (id === 'lens') b.accuracy += 0.03 * cap;
+      if (id === 'feather') b.evasion += 0.03 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -985,6 +995,8 @@
       if (bonus.combo) b.comboGrowth += bonus.combo * level;
       if (bonus.crit) b.critChance += bonus.crit * level;
       if (bonus.critDmg) b.critMultBonus += bonus.critDmg * level;
+      if (bonus.accuracy) b.accuracy += bonus.accuracy * level;
+      if (bonus.evasion) b.evasion += bonus.evasion * level;
     }
 
     for (const id in COMPANIONS) {
@@ -1194,6 +1206,8 @@
     const critRate = Math.min(1, CRIT_CHANCE + critBonuses.critChance); // 100%を超えても実質は必ずクリティカル
     critRateNumEl.textContent = +(critRate * 100).toFixed(1) + '%';
     critMultNumEl.textContent = '×' + +(CRIT_MULT + critBonuses.critMultBonus).toFixed(2);
+    accuracyNumEl.textContent = +((PLAYER_BASE_ACCURACY + critBonuses.accuracy) * 100).toFixed(1) + '%';
+    evasionNumEl.textContent = +((PLAYER_BASE_EVASION + critBonuses.evasion) * 100).toFixed(1) + '%';
     game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
     bestCoinsNumEl.textContent = Math.floor(game.bestCoins).toLocaleString('ja-JP'); // 戦績では端数を省略せず全桁表示
     headerCoinsEl.textContent = formatCoinNumber(game.coins);
@@ -1696,6 +1710,7 @@
     [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));
   }
   function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
+  function playMissSound() { playTone(900, 0.08, 'sine', 0.08, 1500); }
   function playEnemyCritSound() { playNoiseBurst(0.12, 0.26); playTone(260, 0.2, 'sawtooth', 0.2, 90); }
   function playCritSound() { playNoiseBurst(0.08, 0.22); playTone(1400, 0.12, 'square', 0.16, 2200); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
@@ -1890,6 +1905,34 @@
     const mult = attacker.isBoss ? BOSS_CRIT_MULT : ENEMY_CRIT_MULT;
     return { dmg: crit ? Math.round(dmg * mult) : dmg, crit };
   }
+  // ---------- 命中率・回避率 ----------
+  // 命中確率 = 攻撃側の命中率 − 防御側の回避率（MIN_HIT_CHANCE〜100% に収める）
+  const PLAYER_BASE_ACCURACY = 0.95;
+  const PLAYER_BASE_EVASION = 0.05;
+  const ENEMY_ACCURACY = 0.95, ENEMY_EVASION = 0.05;
+  const BOSS_ACCURACY = 1.0, BOSS_EVASION = 0.10;
+  const MIN_HIT_CHANCE = 0.2; // 回避を積んでも無敵にはならない
+  function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
+  function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
+  function hitChance(accuracy, evasion) { return Math.min(1, Math.max(MIN_HIT_CHANCE, accuracy - evasion)); }
+  // 味方側（自機・分身・仲間・バリア）の攻撃が敵に当たるか
+  function playerAttackHits(target) {
+    return Math.random() < hitChance(getPlayerAccuracy(), target.isBoss ? BOSS_EVASION : ENEMY_EVASION);
+  }
+  // 敵の攻撃が自機・仲間に当たるか
+  function enemyAttackHits(attacker) {
+    return Math.random() < hitChance(attacker.isBoss ? BOSS_ACCURACY : ENEMY_ACCURACY, getPlayerEvasion());
+  }
+  function spawnMissText(target) {
+    spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
+    playMissSound();
+  }
+  function spawnEvadeText(target) {
+    spawnDamageText(target.x, target.y - target.radius - 8, 'EVADE!', '#7ee7ff');
+    spawnHitParticles(target.x, target.y, '#7ee7ff');
+    playMissSound();
+  }
+
   // 被ダメージ表示。敵のクリティカル時は赤い大きな文字＋追加エフェクト
   const gameTabPage = document.querySelector('.tab-page[data-tab="game"]');
   function shakeScreen() {
@@ -2063,6 +2106,7 @@
         const dist = Math.hypot(orb.x - enemy.x, orb.y - enemy.y);
         if (dist < enemy.radius + 9) {
           orb.hitCooldown = 18;
+          if (!playerAttackHits(enemy)) { spawnMissText(enemy); continue; }
           const { dmg, crit } = rollCrit(baseDmg);
           enemy.hp -= dmg;
           trackDamage(dmg);
@@ -2142,7 +2186,9 @@
       if (combo >= 2) playChainSound(combo);
 
       const enemyIsHit = Math.random() < 0.5;
-      if (enemyIsHit) {
+      if (enemyIsHit && !playerAttackHits(e)) {
+        spawnMissText(e);
+      } else if (enemyIsHit) {
         const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult)));
         e.hp -= dmg;
         trackDamage(dmg);
@@ -2150,6 +2196,8 @@
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
+      } else if (!enemyAttackHits(e)) {
+        spawnEvadeText(a); // 回避したらバリアも消費しない
       } else if (absorbWithBarrier(a)) {
         applyHitKnockback(a, e, 3.2);
       } else {
@@ -2176,13 +2224,14 @@
           const combo = registerHit();
           const comboMult = getComboMultiplier(b.comboGrowth);
           if (combo >= 2) playChainSound(combo);
+          const cloneX = clone.x, cloneY = clone.y;
+          balls = balls.filter(ball => ball !== clone); // 外しても分身は消滅
+          if (!playerAttackHits(e)) { spawnMissText(e); continue; }
           const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult)));
           e.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(clone.x, clone.y, '#ffb35c');
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-          const cloneX = clone.x, cloneY = clone.y;
-          balls = balls.filter(ball => ball !== clone);
           playEnemyHitSound();
           updateHPUI();
           if (e.hp <= 0) { triggerEnemyDefeat(e, cloneX, cloneY); battleEnded = true; break; }
@@ -2202,20 +2251,28 @@
           if (combo >= 2) playChainSound(combo);
           
           // 仲間が敵を攻撃
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult)));
-          e.hp -= dmg;
-          trackDamage(dmg);
-          spawnHitParticles(comp.x, comp.y, comp.color);
-          spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-          playEnemyHitSound();
-          applyHitKnockback(e, comp, 3.2);
+          if (playerAttackHits(e)) {
+            const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult)));
+            e.hp -= dmg;
+            trackDamage(dmg);
+            spawnHitParticles(comp.x, comp.y, comp.color);
+            spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+            playEnemyHitSound();
+            applyHitKnockback(e, comp, 3.2);
+          } else {
+            spawnMissText(e);
+          }
           
           // 敵が仲間に反撃
-          const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
-          comp.hp -= enemyDmg;
-          spawnHitParticles(comp.x, comp.y, '#5cc8ff');
-          spawnReceivedDamageText(comp, enemyDmg, enemyCrit, e);
-          applyHitKnockback(comp, e, 3.2);
+          if (enemyAttackHits(e)) {
+            const { dmg: enemyDmg, crit: enemyCrit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
+            comp.hp -= enemyDmg;
+            spawnHitParticles(comp.x, comp.y, '#5cc8ff');
+            spawnReceivedDamageText(comp, enemyDmg, enemyCrit, e);
+            applyHitKnockback(comp, e, 3.2);
+          } else {
+            spawnEvadeText(comp);
+          }
           
           // 仲間が倒れたら状態を保存
           if (comp.hp <= 0) {
@@ -2793,8 +2850,8 @@
     game.stage = 1; game.level = 1; game.exp = 0; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
-    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     game.companions = { recruited: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
