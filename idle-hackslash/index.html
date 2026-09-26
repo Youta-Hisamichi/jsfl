@@ -197,7 +197,7 @@
   .rank-row.me { background: rgba(79,168,255,0.12); border-radius: 8px; }
   .rank-row.me .rank-name { color: var(--accent-player); }
   .record { padding: 8px 5px; background: var(--panel); text-align: center; font-size: 0.67rem; color: var(--text-dim); }
-  .record strong { display: block; color: var(--text); font-size: 0.95rem; }
+  .record strong { display: block; color: var(--text); font-size: 0.95rem; overflow-wrap: anywhere; }
 
   .battle-notice { position: fixed; top: 54px; left: 50%; transform: translateX(-50%); z-index: 55; min-width: 60%; max-width: 90%; padding: 7px 10px; border-radius: 999px; text-align: center; background: rgba(8,11,18,0.85); color: #7ee787; font-size: 0.75rem; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity .2s; }
   .battle-notice.show { opacity: 1; }
@@ -1143,7 +1143,7 @@
     maxDpsNumEl.textContent = Math.floor(game.maxDps || 0);
     maxComboNumEl.textContent = game.maxCombo || 0;
     game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
-    bestCoinsNumEl.textContent = formatCoinNumber(game.bestCoins);
+    bestCoinsNumEl.textContent = Math.floor(game.bestCoins).toLocaleString('ja-JP'); // 戦績では端数を省略せず全桁表示
     headerCoinsEl.textContent = formatCoinNumber(game.coins);
     headerGemsEl.textContent = Math.floor(game.gems);
     startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
