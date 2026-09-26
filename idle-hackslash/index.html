@@ -1023,8 +1023,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・壁に反射するたびにコインと攻撃力が少し増加します。\n・敵を倒すとEXPを獲得しレベルアップします。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、レベル・コイン・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nEach wall bounce gives a small amount of coins and attack power.\nDefeating enemies grants EXP and levels you up.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: level, coins and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・アリーナをタップすると分身が出撃し、敵に当たると1回で消えます。\n・自機や敵本体をタップすると一時的に加速します。\n・壁に反射するたびにコインと攻撃力が少し増加します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap the arena to send out a clone that hits the enemy once and disappears.\nTap your ball or the enemy to trigger a temporary speed boost.\nEach wall bounce gives a small amount of coins and attack power.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1098,7 +1098,7 @@
   const ARTIFACT_POOL = [
     { id: 'heart',  icon: '🔥', name: '猛攻の心臓',     desc: '攻撃力 +20%', rarity: 'common' },
     { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
-    { id: 'book',   icon: '📖', name: '賢者の書',       desc: '経験値獲得 +30%', rarity: 'common' },
+    { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
     { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
     { id: 'boots',  icon: '⚡', name: '俊足のブーツ',    desc: '移動速度 +15%', rarity: 'common' },
     { id: 'clover', icon: '🍀', name: '幸運のクローバー', desc: '反射ボーナス +100%', rarity: 'rare' },
@@ -1214,7 +1214,7 @@
 
   // ---------- ゲーム状態 ----------
   const game = {
-    stage: 1, level: 1, exp: 0, coins: 0, gems: 0, superGems: 0,
+    stage: 1, coins: 0, gems: 0, superGems: 0,
     reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
     bounceAtkBonus: 0,
     upgrades: { atk: 0, hp: 0, speed: 0 },
@@ -1240,16 +1240,15 @@
     lastRewardAdAt: 0    // 最後にリワード動画の報酬を受け取った時刻
   };
 
-  function expToNext(level) { return Math.round(20 * Math.pow(1.15, level - 1)); }
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, expMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0 };
     for (const id in game.ownedArtifacts) {
       const count = game.ownedArtifacts[id];
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
       if (id === 'heart') b.atkMult += 0.2 * count;
       if (id === 'ring') b.coinMult += 0.3 * count;
-      if (id === 'book') b.expMult += 0.3 * count;
+      if (id === 'book') { b.atkMult += 0.1 * count; b.hpMult += 0.1 * count; }
       if (id === 'armor') b.hpMult += 0.25 * count;
       if (id === 'boots') b.speedMult += 0.15 * count;
       if (id === 'clover') b.bounceMult += 1.0 * count;
@@ -1395,13 +1394,13 @@
 
   function getPlayerAtk() {
     const b = computeBonuses();
-    const base = 10 + (game.level - 1) * 2 + game.bounceAtkBonus;
+    const base = 10 + game.bounceAtkBonus;
     const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
     return Math.max(1, Math.round(base * b.atkMult * accelBonus));
   }
   function getPlayerMaxHP() {
     const b = computeBonuses();
-    const base = 100 + (game.level - 1) * 6;
+    const base = 100;
     return Math.round(base * b.hpMult);
   }
   const BOSS_HP_MULT = 4.5;  // ボスのHP倍率（通常敵比）
@@ -2342,9 +2341,6 @@
     const freq = Math.min(1600, 480 + n * 55);
     playTone(freq, 0.07, 'triangle', 0.15, freq * 1.3);
   }
-  function playLevelUpSound() {
-    [659.25, 880, 1174.66].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'triangle', 0.18), i * 90));
-  }
   function playStageClearSound() {
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.16), i * 110));
   }
@@ -2729,16 +2725,6 @@
     if (p) p.atk = getPlayerAtk();
     updateStatsUI();
   }
-  function checkLevelUp() {
-    let leveled = false;
-    while (game.exp >= expToNext(game.level)) {
-      game.exp -= expToNext(game.level);
-      game.level++;
-      leveled = true;
-    }
-    if (leveled) playLevelUpSound();
-    return leveled;
-  }
 
   function resolveBallCollision(a, b) {
     const dx = b.x - a.x, dy = b.y - a.y;
@@ -3093,11 +3079,8 @@
     const b = computeBonuses();
     const isBossStage = game.stage % 10 === 0;
     const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1));
-    const expGain = Math.round((18 + game.stage * 4) * b.expMult * (isBossStage ? 2 : 1));
     game.coins += coinGain;
-    game.exp += expGain;
     if (isBossStage) game.gems += 5;
-    checkLevelUp();
     playStageClearSound();
     spawnCoinBurst(arena.x, arena.y - 10, coinGain);
     if (isBossStage) spawnDamageText(arena.x, arena.y, '+5 💎', '#64e8ff');
@@ -3109,12 +3092,12 @@
     game.dailyClears++;
     resetCombo();
     if (game.skipChallenge) {
-      showNotice(`⏭️ スキップ成功！ STAGE ${game.stage} のボスを撃破　+${expGain} EXP`);
+      showNotice(`⏭️ スキップ成功！ STAGE ${game.stage} のボスを撃破`);
       const skipped = game.skipChallenge.target - game.skipChallenge.origin;
       game.skipChallenge = null;
       setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
     } else {
-      showNotice(`STAGE ${game.stage} CLEAR　+${expGain} EXP`);
+      showNotice(`STAGE ${game.stage} CLEAR`);
     }
     game.stage++;
     game.bestStage = Math.max(game.bestStage, game.stage);
@@ -3179,7 +3162,7 @@
     giveUpBtn.style.display = 'none';
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
     game.ownedArtifacts[pick.id] = (game.ownedArtifacts[pick.id] || 0) + 1;
-    game.level = 1; game.exp = 0; game.coins = 0; game.stage = 1;
+    game.coins = 0; game.stage = 1;
     game.bounceAtkBonus = 0; game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     barrierHits = 0; barrierOrbs = [];
@@ -3805,17 +3788,6 @@
         ctx.fillStyle = ball.isPlayer ? '#7ed0ff' : (ball.isBoss ? '#d39cff' : '#ff7b87');
         ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
 
-        if (ball.isPlayer) {
-          ctx.save();
-          ctx.font = 'bold 11px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#ffd76b';
-          ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-          ctx.lineWidth = 3;
-          ctx.strokeText('Lv.' + game.level, ball.x, barY - 5);
-          ctx.fillText('Lv.' + game.level, ball.x, barY - 5);
-          ctx.restore();
-        }
       }
 
       // 仲間のHP バーを描画
@@ -3924,7 +3896,7 @@
   function fullReset() {
     if (animId) cancelAnimationFrame(animId);
     clearSave();
-    game.stage = 1; game.level = 1; game.exp = 0; game.coins = 0; game.gems = 0; game.superGems = 0;
+    game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.bounceAtkBonus = 0;
     game.upgrades = { atk: 0, hp: 0, speed: 0 }; game.coinCloneSlots = 0; game.shopOwned = {};
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, phoenix: 0 };
@@ -4463,7 +4435,7 @@
 
   rebornBtn.addEventListener('click', event => {
     if (phase === 'battle' && game.stage >= 3) {
-      const ok = window.confirm(`本当に転生しますか？\nレベル・コイン・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
+      const ok = window.confirm(`本当に転生しますか？\nコイン・強化・ステージ進行がリセットされます（代わりにランダムなアーティファクトを1つ獲得できます）。`);
       if (ok) onPlayerDeath(true);
     } else {
       showTapError('ステージ3から転生できます', event.clientX, event.clientY);
@@ -4648,6 +4620,7 @@
   window.addEventListener('pagehide', saveGame);
 
   loadGame();
+  delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
     if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
