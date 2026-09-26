@@ -343,6 +343,13 @@
   .purchase-msg { display: none; margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid #7ee787; background: rgba(126,231,135,0.12); color: var(--text); font-size: 0.78rem; font-weight: 700; text-align: center; }
   .purchase-msg.show { display: block; animation: purchasePop 0.35s cubic-bezier(.34,1.56,.64,1); }
   @keyframes purchasePop { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .custom-skip { background: var(--bg-soft); border: 1px solid #ffb14f; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+  .custom-skip-title { font-size: 0.76rem; font-weight: 800; margin-bottom: 6px; }
+  .custom-skip-row { display: flex; gap: 6px; }
+  .custom-skip-row input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--ring); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 0.9rem; font-weight: 700; }
+  .custom-skip-row .modal-shop-btn { width: auto; flex: 0 0 auto; padding: 8px 12px; gap: 8px; }
+  .custom-skip-info { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; min-height: 1.2em; }
+  .custom-skip-info.error { color: #ff5c6c; }
   .auto-skip-wrap { margin: 0 0 10px; }
   .auto-skip-label { font-size: 0.68rem; color: var(--text-dim); text-align: center; margin-bottom: 4px; }
   .auto-skip-track { background: var(--bg); border: 1px solid var(--ring); border-radius: 999px; height: 6px; overflow: hidden; }
@@ -409,7 +416,7 @@
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
     </div>
     <div class="action-row single">
-      <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（ボスに挑戦）</button>
+      <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
     </div>
     <div class="action-row single">
       <button class="action-btn reborn-action" id="rebornBtn" style="display:none;">🌌 転生する</button>
@@ -573,6 +580,14 @@
   <div class="modal-panel">
     <h2>⏭️ ステージスキップ</h2>
     <div class="modal-sub">所持ジェム: <span id="stageSkipGems">0</span><br>ジェムを消費して先のステージのボスに挑戦します。勝てばそのステージまでスキップ、負けたら現在のステージ <b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
+    <div class="custom-skip">
+      <div class="custom-skip-title">🎯 好きなステージに挑戦（ジェムは距離に応じて消費）</div>
+      <div class="custom-skip-row">
+        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦ステージ">
+        <button class="modal-shop-btn" id="customSkipBtn"><span class="msb-name">挑戦</span><span class="msb-cost" id="customSkipCost">💎 -</span></button>
+      </div>
+      <div class="custom-skip-info" id="customSkipInfo">挑戦したいステージを入力してください</div>
+    </div>
     <div class="modal-shop-list" id="stageSkipList"></div>
     <button class="modal-close-btn" id="stageSkipCloseBtn">やめる</button>
   </div>
@@ -1487,7 +1502,7 @@
     stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
     stageSkipBtn.textContent = game.skipChallenge
       ? `⚔️ スキップ挑戦中：STAGE ${game.skipChallenge.target} ボス（負けたら STAGE ${game.skipChallenge.origin} へ）`
-      : '⏭️ ステージスキップ（ボスに挑戦）';
+      : '⏭️ ステージスキップ（強ボスに挑戦）';
     updateSpecialButton();
     updateAccelButton();
     updateHealButton();
@@ -2867,10 +2882,23 @@
     { skip: 500, cost: 120 },
     { skip: 1000, cost: 250 },
   ];
+  // 任意ステージの消費ジェム：プリセット（50→10, 100→25, 200→50, 500→120, 1000→250）を結んだ折れ線、1000超は1ステージ0.25個
+  // distance: 入力したステージまでの距離（プリセットと同じく、ボスへの切り上げ分は含めない）
+  function getCustomSkipCost(distance) {
+    const d = Math.max(0, distance);
+    const pts = [[0, 0], ...STAGE_SKIP_OPTIONS.map(o => [o.skip, o.cost])];
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      if (d <= x1) return Math.max(1, Math.ceil(y0 + (y1 - y0) * (d - x0) / (x1 - x0)));
+    }
+    const [xl, yl] = pts[pts.length - 1];
+    return Math.ceil(yl + (d - xl) * 0.25);
+  }
   function getSkipTargetStage(skip) {
     return Math.ceil((game.stage + skip) / 10) * 10; // 基準ステージ数先の、最初のボスステージ
   }
   function renderStageSkipList() {
+    updateCustomSkip();
     stageSkipGems.textContent = Math.floor(game.gems);
     stageSkipOrigin.textContent = game.stage;
     // 遠いスキップ（高コスト）から順に表示
@@ -2893,10 +2921,11 @@
       startBgm('boss');
     }, 1850);
   }
-  function startSkipChallenge(opt) {
-    const target = getSkipTargetStage(opt.skip);
-    game.gems -= opt.cost;
-    game.skipChallenge = { origin: game.stage, target, cost: opt.cost };
+  // challenge: { target, cost }
+  function startSkipChallenge(challenge) {
+    const { target, cost } = challenge;
+    game.gems -= cost;
+    game.skipChallenge = { origin: game.stage, target, cost };
     game.stage = target;
     meteors = []; adds = [];
     resetCombo();
@@ -2984,7 +3013,54 @@
     if (game.gems < opt.cost) { promptGemShortage(opt.cost, { returnTo: () => { switchTab('game'); renderStageSkipList(); stageSkipModal.classList.add('show'); } }); return; }
     if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { stageSkipModal.classList.remove('show'); return; }
     stageSkipModal.classList.remove('show');
-    startSkipChallenge(opt);
+    startSkipChallenge({ target: getSkipTargetStage(opt.skip), cost: opt.cost });
+  });
+
+  // ----- 任意ステージ入力 -----
+  const customSkipInput = document.getElementById('customSkipInput');
+  const customSkipBtn = document.getElementById('customSkipBtn');
+  const customSkipCost = document.getElementById('customSkipCost');
+  const customSkipInfo = document.getElementById('customSkipInfo');
+  function getCustomSkipInput() {
+    const v = Math.floor(Number(customSkipInput.value));
+    return v > game.stage ? v : null;
+  }
+  function getCustomSkipTarget() {
+    const v = getCustomSkipInput();
+    return v ? Math.ceil(v / 10) * 10 : null; // 入力したステージ以降で最初のボスステージ
+  }
+  function updateCustomSkip() {
+    const target = getCustomSkipTarget();
+    customSkipInfo.classList.remove('error');
+    if (!customSkipInput.value) {
+      customSkipCost.textContent = '💎 -';
+      customSkipInfo.textContent = `STAGE ${game.stage + 1} 以降を入力（ボスステージに切り上げ）`;
+      customSkipBtn.classList.add('is-disabled');
+      return;
+    }
+    if (!target) {
+      customSkipCost.textContent = '💎 -';
+      customSkipInfo.textContent = `現在の STAGE ${game.stage} より先を入力してください`;
+      customSkipInfo.classList.add('error');
+      customSkipBtn.classList.add('is-disabled');
+      return;
+    }
+    const cost = getCustomSkipCost(getCustomSkipInput() - game.stage);
+    const es = getEnemyStats(target);
+    customSkipCost.textContent = '💎 ' + cost.toLocaleString('ja-JP');
+    customSkipInfo.textContent = `👑 STAGE ${target} のボス（${target - game.stage} ステージ先）HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}`;
+    customSkipBtn.classList.toggle('is-disabled', game.gems < cost);
+  }
+  customSkipInput.addEventListener('input', updateCustomSkip);
+  customSkipInput.addEventListener('keydown', event => { if (event.key === 'Enter') customSkipBtn.click(); });
+  customSkipBtn.addEventListener('click', event => {
+    const target = getCustomSkipTarget();
+    if (!target) { customSkipInput.focus(); updateCustomSkip(); return; }
+    const cost = getCustomSkipCost(getCustomSkipInput() - game.stage);
+    if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => { switchTab('game'); renderStageSkipList(); stageSkipModal.classList.add('show'); } }); return; }
+    if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { stageSkipModal.classList.remove('show'); return; }
+    stageSkipModal.classList.remove('show');
+    startSkipChallenge({ target, cost });
   });
   stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
   skipRetryBtn.addEventListener('click', event => {
