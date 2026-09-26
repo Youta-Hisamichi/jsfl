@@ -3365,7 +3365,7 @@
       // ボスはワーニング演出が消えた後に、それっぽく出現させる（この間も操作・自機の動きは止めない）
       spawnBossWithWarning();
     } else {
-      balls = spawnBattleBalls();
+      spawnNextEnemy();
       refreshPlayerBallStats(true);
       startBgm('normal');
     }
@@ -3550,11 +3550,23 @@
       return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
     }).reverse().join('');
   }
+  // 次の敵だけを出現させる。自機・仲間・分身はその場に残したまま（位置をリセットしない）、仲間はHP全快で復活
+  function spawnNextEnemy() {
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) { balls = spawnBattleBalls(); return; }
+    const allies = balls.filter(ball => ball.isPlayer);
+    for (const comp of allies) {
+      if (!comp.isCompanion) continue;
+      comp.maxHp = getCompanionMaxHP(comp.companionId);
+      comp.hp = comp.maxHp;
+    }
+    balls = [...allies, makeBall(false)];
+  }
   function spawnBossWithWarning() {
     showBossWarning();
     balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
     setTimeout(() => {
-      balls = spawnBattleBalls();
+      spawnNextEnemy();
       const bossBall = balls.find(ball => ball.isBoss);
       if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
       refreshPlayerBallStats(true);
@@ -3631,7 +3643,7 @@
     game.skipChallenge = null;
     game.stage = origin;
     phase = 'battle';
-    balls = spawnBattleBalls();
+    spawnNextEnemy();
     refreshPlayerBallStats(true);
     stageAnnounceText = 'STAGE ' + origin;
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
