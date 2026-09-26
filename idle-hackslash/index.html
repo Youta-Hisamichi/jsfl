@@ -206,6 +206,8 @@
   .companion-card .cc-name { font-weight: 700; }
   .companion-card .cc-desc { color: var(--text-dim); display: block; margin: 2px 0 5px; }
   .companion-card .cc-rarity { font-size: 0.6rem; font-weight: 800; margin-left: 4px; }
+  .party-count { text-align: center; font-size: 0.8rem; font-weight: 800; margin: 8px 0 2px; }
+  .companion-card .cc-count { font-size: 0.66rem; font-weight: 900; color: #64e8ff; }
   .companion-card .cc-awaken { font-size: 0.6rem; font-weight: 800; color: #ffb14f; }
   .companion-card .cc-locked { display: block; text-align: center; font-size: 0.66rem; color: var(--text-dim); border: 1px dashed var(--ring); border-radius: 6px; padding: 5px; }
   .companion-card.not-owned { opacity: 0.6; }
@@ -511,7 +513,8 @@
     <div class="artifact-panel">
       <div class="title">🐾 仲間（ジェムの仲間召喚で入手・覚醒／レベルはコインで上昇し転生でリセット・長押しで連続レベルアップ）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>💎 10</button><button class="gacha-pull" id="compGacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🐾 10連召喚<br>💎 90</button></div>
-      <div class="supergem-note">未入手の仲間が出たら仲間に加入、入手済みの仲間が出たら「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
+      <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
+      <div class="supergem-note">召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（永続で攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
@@ -1266,7 +1269,7 @@
     evolutions: { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
-    companions: { recruited: {}, awaken: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
+    companions: { recruited: {}, awaken: {}, count: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } },
     startedAt: Date.now(),
     lastLoginDate: null,
     loginStreak: 0,
@@ -1422,6 +1425,8 @@
     return c.levelCostBase * (game.companions.level[id] + 1);
   }
   function renderCompanionList() {
+    const pc = document.getElementById('partyCount');
+    if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${COMPANION_PARTY_MAX}人`;
     companionList.innerHTML = Object.entries(COMPANIONS).map(([id, c]) => {
       const recruited = !!game.companions.recruited[id];
       const rar = RARITY_INFO[c.rarity];
@@ -1430,7 +1435,7 @@
         return `<div class="companion-card not-owned"><span class="cc-name"><span class="item-icon">${c.icon}</span> ${c.name}</span>${rarTag}<span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><span class="cc-locked">🔒 未入手（仲間召喚で入手）</span></div>`;
       }
       const aw = getCompanionAwaken(id);
-      const awTag = `<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span>`;
+      const awTag = `<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span> <span class="cc-count">×${getCompanionCount(id)}人</span>`;
       const level = game.companions.level[id];
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
@@ -1447,21 +1452,28 @@
     return entries[0][0];
   }
   // 1体分の結果を反映し、表示用の情報を返す
+  // 同じ仲間が出ても人数が増える（パーティ上限まで）。満員なら覚醒、覚醒MAXならジェム
+  const COMPANION_PARTY_MAX = 8;
+  function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
+  function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
   function grantCompanion(id) {
     const cp = game.companions;
     if (!cp.awaken) cp.awaken = {};
-    if (!cp.recruited[id]) {
+    if (!cp.count) cp.count = {};
+    if (getCompanionTotal() < COMPANION_PARTY_MAX) {
+      const isNew = !cp.recruited[id];
       cp.recruited[id] = true;
+      cp.count[id] = getCompanionCount(id) + 1;
       if (!cp.hp) cp.hp = {};
       if (!cp.alive) cp.alive = {};
       cp.alive[id] = true;
       cp.hp[id] = getCompanionMaxHP(id);
-      if (phase === 'battle' && !balls.some(ball => ball.isCompanion && ball.companionId === id)) balls.push(makeCompanionBall(id));
-      return { id, label: 'NEW! 仲間に加入' };
+      if (phase === 'battle') balls.push(makeCompanionBall(id));
+      return { id, label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）` };
     }
     if (getCompanionAwaken(id) < COMPANION_AWAKEN_MAX) {
       cp.awaken[id] = getCompanionAwaken(id) + 1;
-      return { id, label: `覚醒 ★${cp.awaken[id]}` };
+      return { id, label: `満員 → 覚醒 ★${cp.awaken[id]}` };
     }
     // 覚醒が最大なら代わりにジェムを少し返す
     game.gems += 3;
@@ -2756,9 +2768,11 @@
     };
   }
   function makeCompanionBalls() {
-    return Object.keys(game.companions.recruited)
-      .filter(id => game.companions.recruited[id])
-      .map(makeCompanionBall);
+    const list = [];
+    for (const id of Object.keys(COMPANIONS)) {
+      for (let i = 0; i < getCompanionCount(id); i++) list.push(makeCompanionBall(id));
+    }
+    return list;
   }
   function spawnBattleBalls() {
     return [makeBall(true), makeBall(false), ...makeCompanionBalls()];
@@ -3407,6 +3421,7 @@
     game.companions = { 
       recruited: recruitedStatus, 
       awaken: { ...(companionInfo.awaken || {}) }, // 覚醒は永続
+      count: { ...(companionInfo.count || {}) },   // 人数も永続
       level: { knight: 0, archer: 0, witch: 0, sprite: 0 },
       hp: { knight: 0, archer: 0, witch: 0, sprite: 0 },
       alive: { knight: true, archer: true, witch: true, sprite: true }
@@ -4139,7 +4154,7 @@
     game.gachaShards = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, swift: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
-    game.companions = { recruited: {}, awaken: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
+    game.companions = { recruited: {}, awaken: {}, count: {}, level: { knight: 0, archer: 0, witch: 0, sprite: 0 }, hp: { knight: 0, archer: 0, witch: 0, sprite: 0 }, alive: { knight: true, archer: true, witch: true, sprite: true } };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
     accelEndAt = 0;
@@ -4853,6 +4868,10 @@
   if (!game.companions.hp) game.companions.hp = { knight: 0, archer: 0, witch: 0, sprite: 0 };
   if (!game.companions.alive) game.companions.alive = { knight: true, archer: true, witch: true, sprite: true };
   if (!game.companions.awaken) game.companions.awaken = {};
+  if (!game.companions.count) game.companions.count = {};
+  for (const id in game.companions.recruited) {
+    if (game.companions.recruited[id] && !game.companions.count[id]) game.companions.count[id] = 1; // 旧セーブは1人ずつ
+  }
   // 仲間を回復させる
   for (const id in game.companions.recruited) {
     if (game.companions.recruited[id]) {
