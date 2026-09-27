@@ -253,18 +253,18 @@
   .gacha-countdown-num { font-size: 2.6rem; font-weight: 900; margin: 6px 0; }
   /* 進化ガチャの盛り上がる召喚演出 */
   .gc-stage { position: relative; width: 110px; height: 110px; margin: 4px auto 2px; }
-  .gc-ring { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--gc-color), transparent 40%, var(--gc-color), transparent 80%); -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%); mask: radial-gradient(circle, transparent 52%, #000 54%); animation: gcSpin 0.5s linear infinite, gcGrow 1s ease-in forwards; }
-  .gc-ring2 { inset: 14px; animation: gcSpin 0.35s linear infinite reverse, gcGrow 1s ease-in forwards; opacity: 0.8; }
-  .gc-orb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; animation: gcOrb 1s ease-in forwards; filter: drop-shadow(0 0 10px var(--gc-color)); }
+  .gc-ring { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent, var(--gc-color), transparent 40%, var(--gc-color), transparent 80%); -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%); mask: radial-gradient(circle, transparent 52%, #000 54%); animation: gcSpin 0.5s linear infinite, gcGrow var(--gc-dur, 1s) ease-in forwards; }
+  .gc-ring2 { inset: 14px; animation: gcSpin 0.35s linear infinite reverse, gcGrow var(--gc-dur, 1s) ease-in forwards; opacity: 0.8; }
+  .gc-orb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; animation: gcOrb var(--gc-dur, 1s) ease-in forwards; filter: drop-shadow(0 0 10px var(--gc-color)); }
   @keyframes gcSpin { to { transform: rotate(360deg); } }
   @keyframes gcGrow { from { filter: brightness(0.8); } to { filter: brightness(2) drop-shadow(0 0 16px var(--gc-color)); } }
   @keyframes gcOrb { 0% { transform: scale(0.8); } 40% { transform: scale(1.1) rotate(-8deg); } 70% { transform: scale(1.25) rotate(8deg); } 100% { transform: scale(1.7); filter: brightness(3) drop-shadow(0 0 24px var(--gc-color)); } }
   .gc-text { font-size: 1.1rem; letter-spacing: 0.1em; color: #fff; text-shadow: 0 0 8px var(--gc-color, #fff), 0 1px 2px #000; animation: gcText 0.25s ease-in-out infinite alternate; }
   @keyframes gcText { from { transform: scale(1); } to { transform: scale(1.12); } }
   .gc-bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; margin: 6px 20px 2px; }
-  .gc-fill { height: 100%; width: 0; animation: gcFill 1s linear forwards; box-shadow: 0 0 10px currentColor; }
+  .gc-fill { height: 100%; width: 0; animation: gcFill var(--gc-dur, 1s) linear forwards; box-shadow: 0 0 10px currentColor; }
   @keyframes gcFill { to { width: 100%; } }
-  .gacha-result.gc-building { animation: gcShake 1s ease-in forwards; }
+  .gacha-result.gc-building { animation: gcShake var(--gc-dur, 1s) ease-in forwards; }
   @keyframes gcShake { 0%, 50% { transform: translate(0, 0); } 60% { transform: translate(-1px, 1px); } 70% { transform: translate(2px, -1px); } 80% { transform: translate(-3px, 2px); } 90% { transform: translate(3px, -2px); } 100% { transform: translate(0, 0); } }
   .gacha-result.gc-flash::after { content: ''; position: absolute; inset: 0; background: #fff; pointer-events: none; animation: gcFlash 0.5s ease-out forwards; }
   @keyframes gcFlash { from { opacity: 0.9; } to { opacity: 0; } }
@@ -7063,18 +7063,21 @@
   }
 
   // 進化ガチャの召喚演出（約1秒）：光の輪が回り、音がせり上がり、画面が震えて最後に閃光
-  const GACHA_LOADING_MS = 1000;
+  // レア度が高いほど演出を長めに（期待感アップ）
+  const GACHA_LOADING_MS_BY_RARITY = { common: 1000, rare: 1300, epic: 1700, legendary: 2300 };
+  function getGachaLoadingMs(rarity) { return GACHA_LOADING_MS_BY_RARITY[rarity] || 1000; }
   function playGachaBuildUpSound(hintRarity) {
-    const steps = 9;
+    const GACHA_LOADING_MS = getGachaLoadingMs(hintRarity);
+    const steps = Math.round(9 * GACHA_LOADING_MS / 1000);
     for (let i = 0; i < steps; i++) {
       setTimeout(() => {
-        const f = 330 * Math.pow(1.16, i);
-        playTone(f, 0.09, 'square', 0.05 + i * 0.008, f * 1.5);
-        if (i % 2 === 0) playNoiseBurst(0.03, 0.05 + i * 0.01);
+        const f = 330 * Math.pow(Math.pow(2.3, 1 / steps), i * 1.6);
+        playTone(f, 0.09, 'square', 0.05 + i / steps * 0.07, f * 1.5);
+        if (i % 2 === 0) playNoiseBurst(0.03, 0.05 + i / steps * 0.08);
       }, i * (GACHA_LOADING_MS / steps));
     }
     // 高レアほど低音のうなりを重ねて期待感アップ
-    if (hintRarity === 'epic' || hintRarity === 'legendary') thump(60, 120, 0.9, 0.25, 'sawtooth');
+    if (hintRarity === 'epic' || hintRarity === 'legendary') thump(60, 120, GACHA_LOADING_MS / 1000 * 0.9, 0.25, 'sawtooth');
     setTimeout(() => { noiseSweep(0.35, 8000, 1200, 'highpass', 0.7, 0.35); thump(90, 40, 0.3, 0.5); }, GACHA_LOADING_MS - 40); // シャーン！
   }
   function runGachaCountdown(hintRarity, onDone) {
@@ -7082,6 +7085,8 @@
     gachaResult.style.background = '';
     gachaResult.className = 'gacha-result gacha-summoning gc-building rarity-bg-' + hintRarity;
     const col = RARITY_INFO[hintRarity].color;
+    const dur = getGachaLoadingMs(hintRarity);
+    gachaResult.style.setProperty('--gc-dur', dur + 'ms'); // CSSアニメの長さも合わせる
     gachaResult.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div><div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
     playGachaBuildUpSound(hintRarity);
     setTimeout(() => {
@@ -7090,7 +7095,7 @@
       // 結果表示と同時に閃光
       gachaResult.classList.add('gc-flash');
       setTimeout(() => gachaResult.classList.remove('gc-flash'), 500);
-    }, GACHA_LOADING_MS);
+    }, dur);
   }
 
   gachaBtn.addEventListener('click', event => {
