@@ -2789,7 +2789,7 @@
   // 連鎖(コンボ)
   let comboCount = 0;
   let lastHitAt = 0;
-  const COMBO_WINDOW_MS = 900;
+  const COMBO_WINDOW_MS = 300; // 前のヒットからこの時間以内に再ヒットしたらコンボ
   const COMBO_STEP = 0.08;
   const COMBO_MAX_STACKS = 12;
 
