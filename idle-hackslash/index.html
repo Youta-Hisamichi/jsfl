@@ -624,6 +624,7 @@
       <div class="title">🌌 ジェム召喚・進化</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="gachaBtn">✨ 1回召喚<br>💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚<br>💎 45</button></div>
       <div class="gacha-result" id="gachaResult" style="display:none;"></div>
+      <div class="artifact-progress" id="evolutionProgress">取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
       <div class="evolution-list" id="evolutionList"></div>
     </div>
   </div>
@@ -1611,6 +1612,11 @@
     }).join('');
   }
   function renderEvolutionList() {
+    // 取得数：欠片を所持しているか、進化済み（Lv1以上）の種類数
+    const evoIds = Object.keys(GACHA_POOL);
+    const obtained = evoIds.filter(id => (game.evolutions[id] || 0) > 0 || (game.gachaShards[id] || 0) > 0).length;
+    const evoRate = (evoIds.length ? Math.floor(obtained / evoIds.length * 1000) / 10 : 0).toFixed(1);
+    document.getElementById('evolutionProgress').innerHTML = `取得数 <strong>${obtained} / ${evoIds.length}</strong>　取得率 <strong>${evoRate}%</strong>`;
     evolutionList.innerHTML = Object.entries(GACHA_POOL).map(([id, type]) => {
       const level = game.evolutions[id];
       const rarity = RARITY_INFO[type.rarity];
