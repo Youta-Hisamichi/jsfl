@@ -458,6 +458,7 @@
   #rebirthShopList .msb-desc { display: inline; margin: 0; }
   #rebirthShopList .rs-owned { color: var(--text-dim); font-size: 0.64rem; margin-left: 6px; }
   #rebirthShopList .item-icon { font-size: 1.25em; }
+  #rebirthShopList .rs-current { color: var(--gold); font-size: 0.64rem; font-weight: 800; margin-left: 8px; }
   .modal-overlay.fullscreen .modal-panel > :not(.modal-shop-list) { flex-shrink: 0; }
   .modal-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; max-height: 82vh; overflow-y: auto; }
   @keyframes loginGiftPop { 0% { transform: scale(0.3) rotate(-15deg); opacity: 0; } 55% { transform: scale(1.25) rotate(8deg); opacity: 1; } 75% { transform: scale(0.95) rotate(-4deg); } 100% { transform: scale(1) rotate(0deg); } }
@@ -1539,6 +1540,19 @@
     el.innerHTML = cats.map(c => `<button class="sub-tab-btn ${c.id === current ? 'active' : ''}" data-subtab="${c.id}">${c.label}</button>`).join('');
     el.onclick = ev => { const btn = ev.target.closest('[data-subtab]'); if (btn) onPick(btn.dataset.subtab); };
   }
+  // 遺物の現在の効果（所持数ぶんの合計）
+  const ARTIFACT_CURRENT = {
+    heart: n => `攻撃力 +${20 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
+    compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `必殺技 +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
+    turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
+    feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
+    banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
+  };
+  function getArtifactCurrentText(id) {
+    const count = game.ownedArtifacts[id] || 0;
+    const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
+    return ARTIFACT_CURRENT[id] && cap > 0 ? ARTIFACT_CURRENT[id](cap) : '';
+  }
   function isRebirthItemLocked(item) { return !!item.requires && !game[item.requires]; } // 前提の開放がまだ
   function isRebirthItemMaxed(item) {
     if (item.unlockKey) return !!game[item.unlockKey];
@@ -1904,11 +1918,12 @@
       const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
       const isUnlockItem = item.companionId || item.unlockKey;
       const locked = !maxed && isRebirthItemLocked(item);
+      const current = !isUnlockItem ? getArtifactCurrentText(item.artifactId) : '';
       const owned = locked ? '🔒 タックル開放が必要' : isUnlockItem ? (maxed ? '開放済み' : '未開放') : `所持 ${count}${limit ? ' / ' + limit : ''}`;
       const rar = RARITY_INFO[item.rarity];
       const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
       const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span></span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -2483,8 +2498,8 @@
   }
   const BOOST_MULT = 1.9;
   // サークルをタップするたびに自機が加速（敵に衝突したら元の速さに戻る）
-  const TAP_ACCEL_PER_TAP = 0.3;  // 1タップあたり +30%
-  const TAP_ACCEL_MAX = 4;        // 最大4倍速
+  const TAP_ACCEL_PER_TAP = 0.5;  // 1タップあたり +50%
+  const TAP_ACCEL_MAX = 5;        // 最大5倍速
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
   const BARRIER_COOLDOWN = 4 * 60 * 1000;
   const BARRIER_MAX_HITS = 5; // バリアが肩代わりできる被ダメージ回数
@@ -4765,7 +4780,8 @@
       const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
       dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
     }
-    const turn = Math.min(1, WALK_TURN * speedMult);
+    // タップで加速中の自機はすばやく速度が上がる
+    const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : 1));
     ball.vx += (dvx - ball.vx) * turn;
     ball.vy += (dvy - ball.vy) * turn;
     applySeparation(ball, speedMult);
