@@ -3735,14 +3735,6 @@
       if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); return; } // 完全出現までは攻撃判定なし
     }
 
-    // ランダムに自機へ数秒間の加速バフを付与（スキル解放とは無関係の突発イベント）
-    if (Math.random() < 0.0006 && !(a.boostUntil && Date.now() < a.boostUntil)) {
-      a.boostUntil = Date.now() + 4000;
-      spawnDamageText(a.x, a.y - a.radius - 14, 'BOOST!', '#ffd76b');
-      spawnHitParticles(a.x, a.y, '#ffd76b');
-      playAccelSound();
-    }
-
     // 敵の数を時々増やす（本体は変えず、サブの雑魚を追加）
     if (!e.isBoss && adds.length < 2 && Math.random() < 0.0009) {
       adds.push(makeAddEnemy(e));
