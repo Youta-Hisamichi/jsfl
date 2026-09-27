@@ -3959,7 +3959,22 @@
   function playWarningSound() {
     [200, 160, 200, 160].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'square', 0.22), i * 220));
   }
-  function playDeathSound() { playTone(220, 0.4, 'sawtooth', 0.2, 60); }
+  // 自分がやられた：大ダメージを喰らった「ドゴォッ」＋崩れ落ちる音
+  function playDeathSound() {
+    thump(110, 28, 0.55, 0.85);                                  // 重い衝撃
+    noiseSweep(0.45, 2600, 90, 'lowpass', 0.8, 0.7);              // 砕けるノイズ
+    noiseSweep(0.12, 5000, 1500, 'bandpass', 1.2, 0.35);          // 打撃の破裂音
+    playTone(330, 0.7, 'sawtooth', 0.16, 45);                     // 力が抜けて落ちる音
+    setTimeout(() => thump(70, 30, 0.35, 0.5, 'triangle'), 180);  // 地面に落ちる
+  }
+  // 大群ステージ開始：「デデドン！」というやらかし系ジングル
+  function playSwarmSound() {
+    const note = (f, dur, delay, g) => setTimeout(() => { playTone(f, dur, 'square', g); playTone(f / 2, dur, 'sawtooth', g * 0.6); }, delay);
+    note(196, 0.16, 0, 0.14);      // デ
+    note(185, 0.16, 190, 0.14);    // デ
+    note(131, 0.9, 400, 0.18);     // ドーン
+    setTimeout(() => { thump(80, 35, 0.8, 0.6); noiseSweep(0.5, 800, 80, 'lowpass', 0.7, 0.3); }, 400);
+  }
   function playCoinGainSound() { playTone(1046.5, 0.08, 'square', 0.12, 1318.5); }
   function playLoginBonusSound() {
     [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.16, f * 1.1), i * 100));
@@ -4214,6 +4229,17 @@
       const a = Math.random() * Math.PI * 2, r = arena.radius * maxR * Math.sqrt(0.35 + Math.random() * 0.65);
       const x = arena.x + Math.cos(a) * r, y = arena.y + Math.sin(a) * r;
       const d = (x - px) ** 2 + (y - py) ** 2;
+      if (d > bd) { bd = d; best = { x, y }; }
+    }
+    return best;
+  }
+  // 指定した相手からなるべく離れたサークル内の位置
+  function farSpawnPointFrom(from, maxR) {
+    let best = { x: arena.x, y: arena.y }, bd = -1;
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2, r = arena.radius * maxR * Math.sqrt(Math.random());
+      const x = arena.x + Math.cos(a) * r, y = arena.y + Math.sin(a) * r;
+      const d = from ? (x - from.x) ** 2 + (y - from.y) ** 2 : 0;
       if (d > bd) { bd = d; best = { x, y }; }
     }
     return best;
@@ -4843,6 +4869,7 @@
       e.swarmStarted = true;
       for (let i = 0; i < SWARM_ADDS; i++) adds.push(makeAddEnemy(e));
       showNotice('⚠️ 大群ステージ！ 敵を全部倒すと次のステージへ');
+      playSwarmSound();
     }
     const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
     if (!e.isBoss && !swarm && freeAdds < 2 && Math.random() < 0.0009) { // 大群ステージは補充しない（全滅させたらクリア）
@@ -5193,6 +5220,12 @@
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     deathFx = { start: Date.now(), ball: player };
     if (player) {
+      // 敵と同じく、一番近い敵から遠ざかる向きに吹っ飛ぶ
+      const foe = nearestOf(player, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying));
+      const ang = foe ? Math.atan2(player.y - foe.y, player.x - foe.x) : Math.random() * Math.PI * 2;
+      player.vx = Math.cos(ang) * KNOCKBACK_SPEED * 0.8;
+      player.vy = Math.sin(ang) * KNOCKBACK_SPEED * 0.8;
+      startFlyout(player);
       spawnDamageText(player.x, player.y - player.radius - 18, 'やられた…', '#ff6b7a', 0.012, true);
       for (let i = 0; i < 26; i++) {
         const a = Math.random() * Math.PI * 2, sp = 1 + Math.random() * 3.5;
@@ -5522,6 +5555,10 @@
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     const enemy = balls.find(ball => !ball.isPlayer);
     if (!player || !enemy) { balls = spawnBattleBalls(); refreshPlayerBallStats(true); return; }
+    // 吹っ飛んでいた自機をサークル内（敵から離れた場所）に戻す
+    flyouts = flyouts.filter(f => f !== player);
+    const spot = farSpawnPointFrom(enemy, 0.6);
+    player.x = spot.x; player.y = spot.y; player.vx = 0; player.vy = 0;
     refreshPlayerBallStats(true);
     player.hitCooldown = REVIVE_INVINCIBLE_FRAMES;
     spawnHitParticles(player.x, player.y, '#7ee787');
