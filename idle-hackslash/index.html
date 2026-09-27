@@ -3874,7 +3874,55 @@
     playTone(180 + level * 360, 0.12, 'sine', 0.05 + level * 0.06, 360 + level * 900); // 加速の「ヒュッ」
   }
   // 被弾音：敵に当てた時／自分が当てられた時で変える
-  function playEnemyHitSound() { playNoiseBurst(0.09, 0.3); playTone(320, 0.1, 'square', 0.22, 700); }
+  // ---------- こちらの攻撃音（斬撃・打撃のバリエーション） ----------
+  // フィルターをかけたノイズを周波数スイープさせて「シュッ」「ザシュ」などの音を作る
+  function noiseSweep(dur, f0, f1, filterType, q, gainAmt, delay = 0) {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime + delay;
+    const size = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+    const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter(); filter.type = filterType; filter.Q.value = q;
+    filter.frequency.setValueAtTime(f0, t0);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t0 + dur);
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(gainAmt * game.sfxVolume, t0 + dur * 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+    src.start(t0); src.stop(t0 + dur + 0.02);
+  }
+  // 「ドッ」という低い衝撃音
+  function thump(f0, f1, dur, gainAmt, type = 'sine', delay = 0) {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator(); osc.type = type;
+    osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(gainAmt * game.sfxVolume, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  const ATTACK_SOUNDS = [
+    () => { noiseSweep(0.12, 4200, 900, 'bandpass', 1.2, 0.5); playTone(1900, 0.05, 'triangle', 0.05); },                  // 軽い斬撃「シュッ」
+    () => { noiseSweep(0.18, 2600, 450, 'bandpass', 0.9, 0.55); thump(150, 55, 0.14, 0.35); },                            // 重い斬撃「ザシュッ」
+    () => { noiseSweep(0.08, 4800, 1400, 'bandpass', 1.4, 0.4); noiseSweep(0.09, 4200, 1000, 'bandpass', 1.4, 0.45, 0.06); }, // 二連斬り
+    () => { thump(190, 50, 0.12, 0.55); noiseSweep(0.07, 1400, 300, 'lowpass', 0.7, 0.4); },                              // パンチ「ドッ」
+    () => { thump(120, 38, 0.2, 0.6, 'triangle'); noiseSweep(0.1, 900, 200, 'lowpass', 0.8, 0.45); },                      // 鈍い打撃「ゴッ」
+    () => { noiseSweep(0.06, 6000, 2500, 'highpass', 0.8, 0.35); playTone(2600, 0.06, 'sine', 0.06, 1800); },             // 突き「キンッ」
+    () => { noiseSweep(0.14, 3200, 700, 'bandpass', 1, 0.45); thump(260, 90, 0.08, 0.3, 'square'); },                      // 斬り払い
+  ];
+  let lastAttackSound = -1;
+  function playEnemyHitSound() {
+    let i = Math.floor(Math.random() * ATTACK_SOUNDS.length);
+    if (i === lastAttackSound) i = (i + 1) % ATTACK_SOUNDS.length; // 同じ音が続かないように
+    lastAttackSound = i;
+    ATTACK_SOUNDS[i]();
+  }
   function playPlayerHitSound() { playNoiseBurst(0.1, 0.28); playTone(150, 0.16, 'sawtooth', 0.22, 70); }
   // 壁反射音：プレイヤー側／敵側で変える
   function playPlayerWallSound() { playTone(560, 0.07, 'sine', 0.07, 760); }
