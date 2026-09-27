@@ -3851,6 +3851,28 @@
     noise.connect(gain); gain.connect(audioCtx.destination);
     noise.start(t0);
   }
+  // 足音：ローパスをかけた短いノイズで「トッ」という踏み込み音（pitch で高さ、gain で強さ）
+  function playFootstep(pitch, gainAmt) {
+    if (!audioCtx) return;
+    const dur = 0.05;
+    const size = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+    const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / size, 2);
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 500 + pitch * 900;
+    const gain = audioCtx.createGain(); gain.gain.value = gainAmt * game.sfxVolume;
+    src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+    src.start();
+  }
+  // タップで加速したときの「タタッ」という駆け出し音。速いほど歩数が増え、音が高く・強くなる
+  function playTapDashSound(mult) {
+    const level = Math.max(0, Math.min(1, (mult - 1) / (TAP_ACCEL_MAX - 1)));
+    const steps = 1 + Math.round(level * 2);
+    const gap = 70 - level * 30;
+    for (let i = 0; i < steps; i++) setTimeout(() => playFootstep(level + i * 0.15, 0.22 + level * 0.18), i * gap);
+    playTone(180 + level * 360, 0.12, 'sine', 0.05 + level * 0.06, 360 + level * 900); // 加速の「ヒュッ」
+  }
   // 被弾音：敵に当てた時／自分が当てられた時で変える
   function playEnemyHitSound() { playNoiseBurst(0.09, 0.3); playTone(320, 0.1, 'square', 0.22, 700); }
   function playPlayerHitSound() { playNoiseBurst(0.1, 0.28); playTone(150, 0.16, 'sawtooth', 0.22, 70); }
@@ -4656,6 +4678,15 @@
     ball.vx += (dvx - ball.vx) * turn;
     ball.vy += (dvy - ball.vy) * turn;
     applySeparation(ball, speedMult);
+    // タップで加速して走っている間は、速さに応じた間隔で足音を鳴らす
+    if (isMain && (ball.tapSpeedMult || 1) > 1.2) {
+      ball.stepDist = (ball.stepDist || 0) + Math.hypot(ball.vx, ball.vy) * speedMult;
+      if (ball.stepDist > 26) {
+        ball.stepDist = 0;
+        const lv = Math.min(1, ((ball.tapSpeedMult || 1) - 1) / (TAP_ACCEL_MAX - 1));
+        playFootstep(0.2 + lv * 0.6, 0.08 + lv * 0.1);
+      }
+    }
     ball.x += ball.vx * speedMult;
     ball.y += ball.vy * speedMult;
     wallBounce(ball);
@@ -7377,7 +7408,10 @@
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
       const enemy = balls.find(ball => !ball.isPlayer);
       // サークルをタップ → 自機が加速（敵に衝突するまで持続）
-      if (player) player.tapSpeedMult = Math.min(TAP_ACCEL_MAX, (player.tapSpeedMult || 1) + TAP_ACCEL_PER_TAP);
+      if (player) {
+        player.tapSpeedMult = Math.min(TAP_ACCEL_MAX, (player.tapSpeedMult || 1) + TAP_ACCEL_PER_TAP);
+        playTapDashSound(player.tapSpeedMult);
+      }
       // 敵の方へ向きを変える（自機をタップしたときも同様）
       if (player && enemy) {
         const tdx = enemy.x - player.x, tdy = enemy.y - player.y;
