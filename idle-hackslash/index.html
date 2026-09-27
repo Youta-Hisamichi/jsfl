@@ -1276,8 +1276,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力です（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -1500,6 +1500,11 @@
     REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
       effect: () => { gainArtifact(a.id); } };
   });
+  // タックル・超タックルの開放（転生しても永続）
+  REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
+    effect: () => { game.tackleUnlocked = true; } };
+  REBIRTH_SHOP_ITEMS.unlockSuperTackle = { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル（永続）', rarity: 'epic', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked', category: 'attack',
+    effect: () => { game.superTackleUnlocked = true; } };
   // 転生ショップのカテゴリ（上部タブ）
   const REBIRTH_SHOP_CATEGORIES = [
     { id: 'attack', label: '⚔️ 攻撃' },
@@ -1514,6 +1519,7 @@
     banner: 'companion', amulet: 'companion',
   };
   function getRebirthItemCategory(item) {
+    if (item.category) return item.category;
     if (item.companionId) return 'companion';
     return ARTIFACT_CATEGORY[item.artifactId] || 'attack';
   }
@@ -1522,7 +1528,9 @@
     el.innerHTML = cats.map(c => `<button class="sub-tab-btn ${c.id === current ? 'active' : ''}" data-subtab="${c.id}">${c.label}</button>`).join('');
     el.onclick = ev => { const btn = ev.target.closest('[data-subtab]'); if (btn) onPick(btn.dataset.subtab); };
   }
+  function isRebirthItemLocked(item) { return !!item.requires && !game[item.requires]; } // 前提の開放がまだ
   function isRebirthItemMaxed(item) {
+    if (item.unlockKey) return !!game[item.unlockKey];
     if (item.companionId) return isCompanionUnlocked(item.companionId);
     if (!item.artifactId) return false;
     const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
@@ -1637,6 +1645,7 @@
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
+    tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
     companionUnlocks: {}, // 転生ショップで開放した仲間 { id: true }（転生しても残る）
     companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
@@ -1879,13 +1888,15 @@
     rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory).map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
-      const short = !maxed && game.gems < item.cost;
+      const short = !maxed && (game.gems < item.cost || isRebirthItemLocked(item));
       const count = game.ownedArtifacts[item.artifactId] || 0;
       const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
-      const owned = item.companionId ? (maxed ? '開放済み' : '未開放') : `所持 ${count}${limit ? ' / ' + limit : ''}`;
+      const isUnlockItem = item.companionId || item.unlockKey;
+      const locked = !maxed && isRebirthItemLocked(item);
+      const owned = locked ? '🔒 タックル開放が必要' : isUnlockItem ? (maxed ? '開放済み' : '未開放') : `所持 ${count}${limit ? ' / ' + limit : ''}`;
       const rar = RARITY_INFO[item.rarity];
       const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? (item.companionId ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -2291,6 +2302,7 @@
     const held = Date.now() - tackleChargeStart;
     if (held < TACKLE_CHARGE_MIN_MS) return -1;
     if (held < TACKLE_CHARGE_FULL_MS) return (held - TACKLE_CHARGE_MIN_MS) / (TACKLE_CHARGE_FULL_MS - TACKLE_CHARGE_MIN_MS);
+    if (!game.superTackleUnlocked) return 1; // 超タックル未開放なら1段階目で止まる
     // 1段階目MAX（1）から2段階目MAX（2）まで
     return 1 + Math.min(1, (held - TACKLE_CHARGE_FULL_MS) / (TACKLE_CHARGE_FULL2_MS - TACKLE_CHARGE_FULL_MS));
   }
@@ -2324,7 +2336,7 @@
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(t0); lfo.start(t0);
     const fullTimer = setTimeout(() => { playTone(1318.5, 0.25, 'triangle', 0.14, 1760); }, TACKLE_CHARGE_FULL_MS);
-    const full2Timer = setTimeout(() => { playTone(1760, 0.3, 'triangle', 0.16, 2637); setTimeout(() => playTone(2637, 0.25, 'triangle', 0.12), 90); }, TACKLE_CHARGE_FULL2_MS);
+    const full2Timer = game.superTackleUnlocked && setTimeout(() => { playTone(1760, 0.3, 'triangle', 0.16, 2637); setTimeout(() => playTone(2637, 0.25, 'triangle', 0.12), 90); }, TACKLE_CHARGE_FULL2_MS);
     chargeSound = { osc, lfo, gain, fullTimer, full2Timer };
   }
   function stopChargeSound() {
@@ -2343,6 +2355,7 @@
   }
   // 押したらすぐタメを開始（体当たり中でもタメられる。クールダウンなし）
   function updateTackleHold() {
+    if (!game.tackleUnlocked) return; // 転生ショップで開放するまでタックルは使えない
     if (!arenaHeld || tackleChargeStart || phase !== 'battle') return;
     tackleChargeStart = Date.now();
     startChargeSound();
@@ -5263,7 +5276,7 @@
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
   function showRebirthPurchaseMessage(item) {
     const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
-    const owned = item.companionId ? '' : `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
+    const owned = item.companionId || item.unlockKey ? '' : `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
     rebirthShopMsg.innerHTML = `✅ ${item.icon} ${item.name} を購入！<br><span style="color:#2ea043;">${item.desc}${owned}</span>`;
     rebirthShopMsg.classList.remove('show');
     void rebirthShopMsg.offsetWidth; // 連続購入でもアニメーションを再生
@@ -6276,7 +6289,7 @@
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -6925,7 +6938,8 @@
   function buyRebirthItem(id, x, y, fromHold) {
     const item = REBIRTH_SHOP_ITEMS[id];
     if (!item) return false;
-    if (isRebirthItemMaxed(item)) { showTapError(item.companionId ? 'すでに開放しています' : '所持上限に達しています', x, y); return false; }
+    if (isRebirthItemMaxed(item)) { showTapError(item.companionId || item.unlockKey ? 'すでに開放しています' : '所持上限に達しています', x, y); return false; }
+    if (isRebirthItemLocked(item)) { showTapError('先にタックルを開放してください', x, y); return false; }
     if (game.gems < item.cost) {
       if (fromHold) showTapError('ジェムが足りません', x, y); // 連続購入中はダイアログを出さずに止める
       else promptGemShortage(item.cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true });
