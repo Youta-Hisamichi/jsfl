@@ -447,7 +447,15 @@
   .modal-overlay.fullscreen .modal-panel { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; border: none; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
   /* 全画面のときはリストが残りの高さいっぱいに広がってスクロール */
   .modal-overlay.fullscreen .modal-shop-list.two { flex: 1 1 auto; min-height: 0; max-height: none; align-content: start; }
-  #rebirthShopList { grid-template-columns: 1fr; } /* 転生ショップは1列 */
+  #rebirthShopList { grid-template-columns: 1fr; gap: 5px; } /* 転生ショップは1列 */
+  /* 転生ショップの商品はなるべく改行せず、横1行＋説明1行にまとめる */
+  #rebirthShopList .modal-shop-btn { flex-direction: row; align-items: center; gap: 8px; padding: 7px 10px; }
+  #rebirthShopList .rs-main { flex: 1; min-width: 0; }
+  #rebirthShopList .rs-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #rebirthShopList .msb-rarity { display: inline; margin: 0 0 0 6px; }
+  #rebirthShopList .msb-desc { display: inline; margin: 0; }
+  #rebirthShopList .rs-owned { color: var(--text-dim); font-size: 0.64rem; margin-left: 6px; }
+  #rebirthShopList .item-icon { font-size: 1.25em; }
   .modal-overlay.fullscreen .modal-panel > :not(.modal-shop-list) { flex-shrink: 0; }
   .modal-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; max-height: 82vh; overflow-y: auto; }
   @keyframes loginGiftPop { 0% { transform: scale(0.3) rotate(-15deg); opacity: 0; } 55% { transform: scale(1.25) rotate(8deg); opacity: 1; } 75% { transform: scale(0.95) rotate(-4deg); } 100% { transform: scale(1) rotate(0deg); } }
@@ -1897,7 +1905,8 @@
       const owned = locked ? '🔒 タックル開放が必要' : isUnlockItem ? (maxed ? '開放済み' : '未開放') : `所持 ${count}${limit ? ' / ' + limit : ''}`;
       const rar = RARITY_INFO[item.rarity];
       const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
+      const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span></span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
