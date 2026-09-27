@@ -1184,8 +1184,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップすると、自機が敵に向かって進みます。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap inside the arena to steer your ball toward the enemy.\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -2113,6 +2113,9 @@
     }
   }
   const BOOST_MULT = 1.9;
+  // サークルをタップするたびに自機が加速（敵に衝突したら元の速さに戻る）
+  const TAP_ACCEL_PER_TAP = 0.3;  // 1タップあたり +30%
+  const TAP_ACCEL_MAX = 4;        // 最大4倍速
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
   const BARRIER_COOLDOWN = 4 * 60 * 1000;
   const BARRIER_MAX_HITS = 5; // バリアが肩代わりできる被ダメージ回数
@@ -3618,7 +3621,7 @@
         steerTackle(ball);
       } else if (ball.movementStyle !== 'orbit') {
         const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
-        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult) : 3.2;
+        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult * (ball.tapSpeedMult || 1)) : 3.2;
         const targetSpeed = baseSpeed * (boosted ? BOOST_MULT : 1);
         normalizeSpeed(ball, targetSpeed);
       }
@@ -3709,6 +3712,7 @@
     movePlayerSideBalls([...balls, ...adds], speedMult, b);
 
     const collided = resolveBallCollision(a, e);
+    if (collided) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
     if (collided && isTackling()) {
       // タメ打ちの体当たり：迫り合い・命中判定なしで必ず当たり、敵は反撃できない
       performTackleHit(a, e, b);
@@ -3899,6 +3903,7 @@
         if (add.hp <= 0) continue;
         for (const atk of attackers) {
           if (resolveBallCollision(atk, add)) {
+            if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
             const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1))));
             add.hp -= dmg;
             trackDamage(dmg);
@@ -5702,8 +5707,9 @@
       const enemy = balls.find(ball => !ball.isPlayer);
       // 自機をタップしたときは向きを変えない（敵に突撃させない）
       const tappedSelf = player && Math.hypot(x - player.x, y - player.y) < player.radius + 10;
-      // サークルをタップ → 自機の進行方向を敵に向ける（速さはそのまま）
+      // サークルをタップ → 自機が敵に向かって加速（敵に衝突するまで持続）
       if (player && enemy && !tappedSelf) {
+        player.tapSpeedMult = Math.min(TAP_ACCEL_MAX, (player.tapSpeedMult || 1) + TAP_ACCEL_PER_TAP);
         const tdx = enemy.x - player.x, tdy = enemy.y - player.y;
         const tdist = Math.hypot(tdx, tdy);
         if (tdist > 4) {
