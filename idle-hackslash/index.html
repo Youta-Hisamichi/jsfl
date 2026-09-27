@@ -135,6 +135,9 @@
   .action-btn.atkup.buffing { background: rgba(255,107,107,0.15); }
   .action-btn.regen { border-color: #5fe0a8; color: #b8f5da; }
   .action-btn.regen.buffing { background: rgba(95,224,168,0.15); }
+  .action-btn.silence { border-color: #9fa8ff; color: #d3d7ff; }
+  .action-btn.silence.buffing { background: rgba(159,168,255,0.15); }
+  .action-btn.sacrifice { border-color: #ff5c7a; color: #ffb3c1; }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
@@ -536,6 +539,8 @@
       <button class="action-btn sleep" id="sleepBtn">🔒 眠り</button>
       <button class="action-btn atkup" id="atkUpBtn">🔒 攻撃UP</button>
       <button class="action-btn regen" id="regenBtn">🔒 リジェネ</button>
+      <button class="action-btn silence" id="silenceBtn">🔒 魔法封じ</button>
+      <button class="action-btn sacrifice" id="sacrificeBtn">🔒 捨て身</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -923,6 +928,8 @@
   const sleepBtn = document.getElementById('sleepBtn');
   const atkUpBtn = document.getElementById('atkUpBtn');
   const regenBtn = document.getElementById('regenBtn');
+  const silenceBtn = document.getElementById('silenceBtn');
+  const sacrificeBtn = document.getElementById('sacrificeBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1122,10 +1129,10 @@
     gemShortText.textContent = `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
     gemShortPending = options;
     playErrorSound();
-    // 誤タップ防止：ボタンは1秒後に表示（レイアウトは保ったまま非表示にしておく）
+    // 誤タップ防止：ボタンは0.6秒後に表示（レイアウトは保ったまま非表示にしておく）
     [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'hidden'; });
     clearTimeout(gemShortBtnTimer);
-    gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 1000);
+    gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 600);
     gemShortModal.classList.add('show');
   }
   function runGemShopReturn() {
@@ -1297,8 +1304,9 @@
     { id: 'horn', icon: '🦏', name: '突撃の角', desc: 'タメ体当たりダメージ +30%（最大5個）', rarity: 'epic' },
     { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +25%（最大5個）', rarity: 'epic' },
     { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +25%（最大5個）', rarity: 'epic' },
+    { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +40%（最大3個）', rarity: 'epic' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -1331,6 +1339,7 @@
     counter:  { icon: '🔁', name: '反撃の欠片',   rarity: 'rare',      desc: 'カウンター率 +2%/Lv',   bonus: { counter: 0.02 },           weight: 7 },
     rush:     { icon: '🐗', name: '猛進の欠片',   rarity: 'rare',      desc: 'タメ体当たりダメージ +10%/Lv', bonus: { tackle: 0.10 },   weight: 7 },
     bond:     { icon: '🤝', name: '絆の欠片',     rarity: 'rare',      desc: '仲間の攻撃力 +10%/Lv',  bonus: { companionAtk: 0.10 },      weight: 7 },
+    pinch:    { icon: '🩹', name: '背水の欠片',   rarity: 'rare',      desc: 'HP30%以下で攻撃力 +10%/Lv', bonus: { pinchAtk: 0.10 },   weight: 7 },
     guard:    { icon: '🫶', name: '守護の欠片',   rarity: 'rare',      desc: '仲間の最大HP +10%/Lv',  bonus: { companionHp: 0.10 },       weight: 7 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
@@ -1377,7 +1386,9 @@
     skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
     skillSleep:    { icon: '💤', name: '眠り',     desc: '敵を眠らせる（起こす一撃は大ダメージ）' },
     skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '20秒間 攻撃力1.5倍' },
-    skillRegen:    { icon: '🌿', name: 'リジェネ', desc: '20秒間 HPが少しずつ自動回復' }
+    skillRegen:    { icon: '🌿', name: 'リジェネ', desc: '20秒間 HPが少しずつ自動回復' },
+    skillSilence:  { icon: '🔇', name: '魔法封じ', desc: '15秒間 敵の魔法・弾を封じる' },
+    skillSacrifice:{ icon: '🩸', name: '捨て身',   desc: 'HPを30%削って大ダメージ' }
   };
   const SKILL_MAX_LEVEL = 10;
   const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
@@ -1476,8 +1487,8 @@
     upgrades: { atk: 0, hp: 0, clash: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
@@ -1504,7 +1515,7 @@
 
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0 };
     for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
       if (!ARTIFACT_BY_ID[id]) continue;
       const count = game.ownedArtifacts[id] || 0;
@@ -1527,6 +1538,7 @@
       if (id === 'horn') b.tackleMult += 0.30 * cap;
       if (id === 'banner') b.companionAtkMult += 0.25 * cap;
       if (id === 'amulet') b.companionHpMult += 0.25 * cap;
+      if (id === 'pinchMask') b.pinchAtk += 0.40 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -1552,6 +1564,7 @@
       if (bonus.tackle) b.tackleMult += bonus.tackle * level;
       if (bonus.companionAtk) b.companionAtkMult += bonus.companionAtk * level;
       if (bonus.companionHp) b.companionHpMult += bonus.companionHp * level;
+      if (bonus.pinchAtk) b.pinchAtk += bonus.pinchAtk * level;
     }
 
     for (const id in COMPANIONS) {
@@ -2003,6 +2016,8 @@
     updateSleepButton();
     updateAtkUpButton();
     updateRegenButton();
+    updateSilenceButton();
+    updateSacrificeButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -2313,6 +2328,253 @@
     ctx.arc(player.x, player.y, player.radius + 4 + Math.sin(Date.now() / 200) * 1.5, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
+  }
+
+  // ---------- 魔法封じ・捨て身スキル ----------
+  const SILENCE_COOLDOWN = 120 * 1000;
+  const SILENCE_MS = 15 * 1000;
+  let lastSilenceAt = Date.now() - SILENCE_COOLDOWN;
+  let silenceEndAt = 0;
+  function isSilenced() { return Date.now() < silenceEndAt; }
+  const SACRIFICE_COOLDOWN = 45 * 1000;
+  const SACRIFICE_HP_RATIO = 0.3;  // 現在HPの30%を削る
+  const SACRIFICE_DMG_MULT = 8;    // 攻撃力の8倍ダメージ
+  let lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
+  const PINCH_HP_RATIO = 0.3;      // 背水：HPがこの割合以下で発動
+
+  // ---------- 敵の特性（突進・回転ガード・分裂・巨大化・攻撃魔法・回復魔法・ホーミング弾・地雷） ----------
+  const ENEMY_TRAITS = {
+    'emoji:🐺': 'charge', 'emoji:👹': 'charge',
+    'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
+    'shape:spike': 'split',
+    'shape:square': 'grow',
+    'emoji:👻': 'attackMagic', 'boss:💀': 'attackMagic',
+    'shape:hex': 'healMagic',
+    'emoji:🐲': 'homing', 'boss:🐉': 'homing',
+    'emoji:🎃': 'mines',
+  };
+  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷' };
+  const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1 }; // 魔法封じで止まる特性
+  const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330] }; // 次の行動までのフレーム（ゲーム速度1倍）
+  const SPLIT_TIMES = 2;         // 分裂できる回数
+  const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
+  const GROW_MAX = 1.8;
+  const SPIN_GUARD_FRAMES = 120; // 回転ガードの長さ
+  const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
+  let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
+  let enemyMines = [];           // 敵の地雷
+  function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
+  function randTraitCd(trait) { const [lo, hi] = TRAIT_CD[trait] || [300, 400]; return lo + Math.random() * (hi - lo); }
+  function getEnemyTrait(enemy) {
+    if (!enemy || enemy.isPlayer || enemy.isAdd) return null;
+    if (enemy.trait === undefined) {
+      enemy.trait = ENEMY_TRAITS[getEnemyBookKey(enemy)] || null;
+      enemy.traitCd = enemy.trait ? randTraitCd(enemy.trait) * 0.6 : 0;
+      enemy.splitsLeft = enemy.trait === 'split' ? SPLIT_TIMES : 0;
+      enemy.growScale = 1;
+      enemy.traitBaseAtk = enemy.atk;
+      enemy.traitLastHp = enemy.hp;
+    }
+    return enemy.trait;
+  }
+  function getTraitBaseRadius(e) { if (!e.traitBaseRadius) e.traitBaseRadius = e.radius; return e.traitBaseRadius; }
+  // 特性による自機へのダメージ（回避不可・バリアで防げる）。倒れたら true
+  function damagePlayerByTrait(a, e, dmg, color) {
+    if (a.hp <= 0) return false;
+    if (absorbWithBarrier(a)) { updateHPUI(); return false; }
+    const { dmg: d, crit } = rollEnemyCrit(e, Math.max(1, Math.round(dmg)));
+    a.hp -= d;
+    spawnReceivedDamageText(a, d, crit, e);
+    spawnHitParticles(a.x, a.y, color || '#ff6b6b');
+    playPlayerHitSound();
+    updateHPUI();
+    return a.hp <= 0;
+  }
+  // 撃破直前の処理：回転ガード中はダメージを軽減、分裂できるなら分裂して生き残る。生き残ったら true
+  function enemySurvivesDefeat(enemy) {
+    const trait = getEnemyTrait(enemy);
+    if (!trait) return false;
+    if (enemy.guarding && enemy.traitLastHp > 0) {
+      const lost = enemy.traitLastHp - enemy.hp;
+      enemy.hp = enemy.traitLastHp - lost * (1 - SPIN_GUARD_CUT);
+      enemy.traitLastHp = enemy.hp;
+      if (enemy.hp > 0) { spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 'GUARD', '#c7ecff', 0.02); return true; }
+    }
+    if (trait === 'split' && enemy.splitsLeft > 0) {
+      enemy.splitsLeft--;
+      enemy.maxHp = Math.max(1, Math.ceil(enemy.maxHp * 0.6));
+      enemy.hp = enemy.maxHp;
+      enemy.traitLastHp = enemy.hp;
+      enemy.traitBaseRadius = Math.max(8, getTraitBaseRadius(enemy) * 0.75);
+      enemy.radius = enemy.traitBaseRadius;
+      const child = makeAddEnemy(enemy);
+      child.x = enemy.x; child.y = enemy.y;
+      child.shape = enemy.shape; child.emoji = enemy.emoji;
+      child.radius = Math.max(8, enemy.radius * 0.8);
+      adds.push(child);
+      spawnDamageText(enemy.x, enemy.y - enemy.radius - 24, '分裂！', '#7fd6ff', 0.014, true);
+      spawnHitParticles(enemy.x, enemy.y, '#7fd6ff');
+      playTone(520, 0.2, 'sine', 0.14, 260);
+      updateHPUI();
+      return true;
+    }
+    return false;
+  }
+  // 毎フレームの特性処理。自機が倒れたら true
+  function updateEnemyTraits(a, e, speedMult) {
+    let playerDown = false;
+    const trait = getEnemyTrait(e);
+    if (trait && !e.isDying && !(e.spawnTimer > 0)) {
+      // 被ダメージの検知（回転ガードの軽減・巨大化）
+      if (e.hp < e.traitLastHp) {
+        if (e.guarding) {
+          const lost = e.traitLastHp - e.hp;
+          e.hp += lost * SPIN_GUARD_CUT;
+          if (Math.random() < 0.5) spawnDamageText(e.x, e.y - e.radius - 18, 'GUARD', '#c7ecff', 0.03);
+        }
+        if (trait === 'grow' && e.growScale < GROW_MAX) {
+          e.growScale = Math.min(GROW_MAX, e.growScale + GROW_PER_HIT);
+          e.radius = getTraitBaseRadius(e) * e.growScale;
+          e.atk = Math.round(e.traitBaseAtk * (1 + (e.growScale - 1) * 0.6));
+          updateHPUI();
+        }
+      } else if (e.hp > e.traitLastHp && e.hp > e.maxHp) e.hp = e.maxHp;
+      if (trait === 'grow') getTraitBaseRadius(e);
+      const disabled = isDisabled(e);
+      if (!disabled) e.traitCd -= speedMult;
+      if (e.traitState) e.traitTimer -= speedMult;
+      if (trait === 'charge') {
+        if (!e.traitState && e.traitCd <= 0) {
+          e.traitState = 'windup'; e.traitTimer = 40; e.traitFreeze = true;
+          spawnDamageText(e.x, e.y - e.radius - 22, '！', '#ff6b6b', 0.025, true);
+        } else if (e.traitState === 'windup' && e.traitTimer <= 0) {
+          e.traitState = 'dash'; e.traitTimer = 30; e.traitFreeze = false; e.dashing = true;
+          const ang = Math.atan2(a.y - e.y, a.x - e.x);
+          e.vx = Math.cos(ang) * 11; e.vy = Math.sin(ang) * 11;
+          playTone(180, 0.25, 'sawtooth', 0.14, 90);
+        } else if (e.traitState === 'dash' && e.traitTimer <= 0) {
+          e.traitState = null; e.dashing = false; e.traitCd = randTraitCd(trait);
+        }
+      } else if (trait === 'spinGuard') {
+        if (!e.traitState && e.traitCd <= 0) {
+          e.traitState = 'guard'; e.traitTimer = SPIN_GUARD_FRAMES; e.guarding = true;
+          spawnDamageText(e.x, e.y - e.radius - 22, '回転ガード', '#c7ecff', 0.016);
+          playTone(900, 0.2, 'square', 0.1, 1400);
+        } else if (e.traitState === 'guard' && e.traitTimer <= 0) {
+          e.traitState = null; e.guarding = false; e.traitCd = randTraitCd(trait);
+        }
+      } else if (MAGIC_TRAITS[trait] || trait === 'mines') {
+        const silenced = MAGIC_TRAITS[trait] && isSilenced();
+        if (!e.traitState && e.traitCd <= 0) {
+          if (silenced || (trait === 'healMagic' && e.hp >= e.maxHp * 0.85)) {
+            e.traitCd = 60; // 封じられている／回復不要なら少し待って再判定
+          } else if (trait === 'mines') {
+            if (enemyMines.length < 5) enemyMines.push({ x: e.x, y: e.y, armIn: 40, life: 720, dmg: e.atk * 1.5, owner: e });
+            spawnDamageText(e.x, e.y - e.radius - 18, '💣', '#ffb35c', 0.03);
+            e.traitCd = randTraitCd(trait);
+          } else {
+            e.traitState = 'cast'; e.traitTimer = trait === 'homing' ? 30 : 45; e.traitFreeze = trait !== 'homing';
+            const castName = trait === 'attackMagic' ? '🔥 ファイア' : trait === 'healMagic' ? '💚 ヒール' : '🎯 ロックオン';
+            spawnDamageText(e.x, e.y - e.radius - 22, castName, trait === 'healMagic' ? '#7ee787' : '#ffb35c', 0.016);
+          }
+        } else if (e.traitState === 'cast' && e.traitTimer <= 0) {
+          e.traitState = null; e.traitFreeze = false; e.traitCd = randTraitCd(trait);
+          if (!silenced) {
+            if (trait === 'attackMagic') {
+              const ang = Math.atan2(a.y - e.y, a.x - e.x);
+              enemyShots.push({ x: e.x, y: e.y, vx: Math.cos(ang) * 5, vy: Math.sin(ang) * 5, life: 200, dmg: e.atk * 1.2, magic: true, kind: 'fire', owner: e });
+              playTone(300, 0.3, 'sawtooth', 0.12, 600);
+            } else if (trait === 'healMagic') {
+              const heal = Math.round(e.maxHp * 0.15);
+              e.hp = Math.min(e.maxHp, e.hp + heal);
+              spawnDamageText(e.x, e.y - e.radius - 30, '+' + heal, '#7ee787', 0.014, true);
+              spawnHitParticles(e.x, e.y, '#7ee787');
+              playHealSound();
+              updateHPUI();
+            } else if (trait === 'homing') {
+              for (const off of [-0.5, 0.5]) {
+                const ang = Math.atan2(a.y - e.y, a.x - e.x) + off;
+                enemyShots.push({ x: e.x, y: e.y, vx: Math.cos(ang) * 3.4, vy: Math.sin(ang) * 3.4, life: 200, dmg: e.atk * 0.7, magic: true, homing: true, kind: 'homing', owner: e });
+              }
+              playTone(1200, 0.15, 'square', 0.1, 600);
+            }
+          }
+        }
+      }
+      e.traitLastHp = e.hp;
+    }
+    // 弾の移動と当たり判定
+    for (const sh of enemyShots) {
+      if (sh.homing) {
+        const want = Math.atan2(a.y - sh.y, a.x - sh.x), cur = Math.atan2(sh.vy, sh.vx);
+        let diff = want - cur; while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2;
+        const ang = cur + Math.max(-0.06, Math.min(0.06, diff)) * speedMult, sp = Math.hypot(sh.vx, sh.vy);
+        sh.vx = Math.cos(ang) * sp; sh.vy = Math.sin(ang) * sp;
+      }
+      sh.x += sh.vx * speedMult; sh.y += sh.vy * speedMult; sh.life -= speedMult;
+      if (Math.hypot(sh.x - arena.x, sh.y - arena.y) > arena.radius) sh.life = 0;
+      if (sh.life > 0 && a.hp > 0 && Math.hypot(sh.x - a.x, sh.y - a.y) < a.radius + 6) {
+        sh.life = 0;
+        if (damagePlayerByTrait(a, sh.owner || e, sh.dmg, sh.kind === 'fire' ? '#ff9f43' : '#c792ea')) playerDown = true;
+      }
+    }
+    enemyShots = enemyShots.filter(sh => sh.life > 0);
+    // 地雷：時間で消える。設置から少しして起動し、自機が踏むと爆発
+    for (const m of enemyMines) {
+      m.life -= speedMult; if (m.armIn > 0) m.armIn -= speedMult;
+      if (m.armIn <= 0 && m.life > 0 && a.hp > 0 && Math.hypot(m.x - a.x, m.y - a.y) < a.radius + 9) {
+        m.life = 0;
+        spawnHitParticles(m.x, m.y, '#ff9f43'); spawnHitParticles(m.x, m.y, '#ffd76b');
+        spawnDamageText(m.x, m.y - 14, 'BOMB!', '#ff9f43', 0.02, true);
+        playNoiseBurst(0.3, 0.3);
+        shakeScreenLight();
+        if (damagePlayerByTrait(a, m.owner || e, m.dmg, '#ff9f43')) playerDown = true;
+      }
+    }
+    enemyMines = enemyMines.filter(m => m.life > 0);
+    return playerDown;
+  }
+  function drawEnemyTraitEffects() {
+    const t = Date.now();
+    for (const m of enemyMines) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, m.life / 60);
+      ctx.fillStyle = '#3a3040';
+      ctx.beginPath(); ctx.arc(m.x, m.y, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ffb35c'; ctx.lineWidth = 1.5; ctx.stroke();
+      if (m.armIn <= 0 && Math.floor(t / 250) % 2) { ctx.fillStyle = '#ff3b4a'; ctx.beginPath(); ctx.arc(m.x, m.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+    for (const sh of enemyShots) {
+      ctx.save();
+      const col = sh.kind === 'fire' ? '#ff9f43' : '#c792ea';
+      ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(sh.x, sh.y, sh.kind === 'fire' ? 7 : 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sh.x, sh.y, 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    for (const e of balls) {
+      if (e.isPlayer || e.isDying || !e.trait) continue;
+      const r = e.radius * ENEMY_SPRITE_SCALE / 2;
+      ctx.save();
+      if (e.guarding) { // 回転ガード：回るシールド
+        ctx.strokeStyle = 'rgba(199,236,255,0.9)'; ctx.lineWidth = 3;
+        for (let i = 0; i < 3; i++) { const a0 = t / 120 + i * Math.PI * 2 / 3; ctx.beginPath(); ctx.arc(e.x, e.y, r + 4, a0, a0 + 1.2); ctx.stroke(); }
+      }
+      if (e.traitState === 'windup') { // 突進の溜め
+        ctx.strokeStyle = 'rgba(255,90,90,' + (0.5 + 0.5 * Math.sin(t / 60)) + ')'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(e.x, e.y, r + 3, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (e.traitState === 'cast') { // 詠唱の魔法陣
+        ctx.strokeStyle = e.trait === 'healMagic' ? 'rgba(126,231,135,0.85)' : 'rgba(255,159,67,0.85)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(e.x, e.y, r + 6, t / 200, t / 200 + Math.PI * 1.6); ctx.stroke();
+      }
+      if (MAGIC_TRAITS[e.trait] && isSilenced()) {
+        ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('🔇', e.x + r * 0.8, e.y - r * 0.8);
+      }
+      ctx.restore();
+    }
   }
 
   // ---------- 攻撃力UPスキル ----------
@@ -2682,7 +2944,7 @@
   function saveGame() {
     if (suppressAutoSave) return;
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -2704,6 +2966,8 @@
       if (typeof data.lastSleepAt === 'number') lastSleepAt = data.lastSleepAt;
       if (typeof data.lastAtkUpAt === 'number') lastAtkUpAt = data.lastAtkUpAt;
       if (typeof data.lastRegenAt === 'number') lastRegenAt = data.lastRegenAt;
+      if (typeof data.lastSilenceAt === 'number') lastSilenceAt = data.lastSilenceAt;
+      if (typeof data.lastSacrificeAt === 'number') lastSacrificeAt = data.lastSacrificeAt;
       return true;
     } catch (err) {
       return false;
@@ -3766,6 +4030,7 @@
 
   // ---------- メインステップ ----------
   function triggerEnemyDefeat(enemy, sourceX, sourceY) {
+    if (enemySurvivesDefeat(enemy)) return; // 回転ガード・分裂で生き残った
     recordBestiaryKill(enemy);
     enemy.hp = 0;
     enemy.isDying = true;
@@ -3781,7 +4046,13 @@
   function movePlayerSideBalls(list, speedMult, b) {
     for (const ball of list) {
       if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
-      if (!ball.isPlayer && isDisabled(ball)) { // 麻痺・眠り中の敵はその場で動けない
+      if (!ball.isPlayer && (isDisabled(ball) || ball.traitFreeze)) { // 麻痺・眠り中・溜め／詠唱中の敵はその場で動けない
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
+      if (ball.dashing) { // 突進中はまっすぐ高速で進む
+        ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+        wallBounce(ball);
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
@@ -3870,6 +4141,9 @@
     const b = computeBonuses();
     const speedMult = getEffectiveSpeed();
     a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
+    // 背水：HP30%以下で攻撃力アップ（遺物「背水の仮面」・進化「背水の欠片」）
+    a.inPinch = b.pinchAtk > 0 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
+    if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk)));
     const e = balls.find(ball => !ball.isPlayer);
     updateBarrierOrbs(a, e, speedMult, b);
 
@@ -3902,6 +4176,7 @@
     }
 
     movePlayerSideBalls([...balls, ...adds], speedMult, b);
+    if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
 
     const collided = resolveBallCollision(a, e);
     if (collided) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
@@ -4145,7 +4420,9 @@
     const bookEntry = ENEMY_BOOK_BY_KEY[getEnemyBookKey(en)];
     const enName = bookEntry ? bookEntry.name : '敵';
     const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
-    enemyName.innerHTML = en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（スキップ挑戦）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`;
+    const enTrait = getEnemyTrait(en);
+    const traitTag = enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '';
+    enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（スキップ挑戦）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
   }
 
   // ---------- ステージクリア ----------
@@ -4177,7 +4454,7 @@
     game.bestStage = Math.max(game.bestStage, game.stage);
     stageAnnounceText = 'STAGE ' + game.stage;
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
-    meteors = []; adds = [];
+    meteors = []; adds = []; clearEnemyTraitObjects();
     // 仲間を全員復活させる
     for (const id in COMPANIONS) {
       if (game.companions.recruited[id]) {
@@ -4244,7 +4521,7 @@
     if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
     if (deathFx && !skipFx) return; // 演出中の二重呼び出しを防ぐ
     phase = 'paused';
-    meteors = []; adds = [];
+    meteors = []; adds = []; clearEnemyTraitObjects();
     resetCombo();
     if (forceRebirth) { endDeathFx(); completeReincarnation(); return; }
     if (!skipFx) {
@@ -4450,7 +4727,7 @@
     game.gems -= cost;
     game.skipChallenge = { origin: game.stage, target, cost };
     game.stage = target;
-    meteors = []; adds = [];
+    meteors = []; adds = []; clearEnemyTraitObjects();
     resetCombo();
     stageAnnounceText = 'STAGE ' + target;
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
@@ -4466,7 +4743,7 @@
     game.skipChallenge.lost = true; // リロードしても無料で再挑戦できないよう記録
     saveGame();
     phase = 'paused';
-    meteors = []; adds = [];
+    meteors = []; adds = []; clearEnemyTraitObjects();
     resetCombo();
     playDeathSound();
     const retryCost = cost || 0;
@@ -4599,7 +4876,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -4739,6 +5016,51 @@
     atkUpBtn.disabled = false;
     atkUpBtn.classList.toggle('is-disabled', !isSkillResetPending('atkup'));
     atkUpBtn.textContent = cooldownLabel('atkup', '💪 攻撃UP', remaining);
+  }
+  function updateSilenceButton() {
+    silenceBtn.classList.remove('buffing');
+    if (!game.shopOwned.skillSilence) {
+      silenceBtn.disabled = false;
+      silenceBtn.classList.add('is-disabled');
+      silenceBtn.textContent = '🔒 魔法封じ';
+      return;
+    }
+    const now = Date.now();
+    if (now < silenceEndAt) {
+      silenceBtn.disabled = true;
+      silenceBtn.classList.remove('is-disabled');
+      silenceBtn.classList.add('buffing');
+      silenceBtn.textContent = `🔇 封印中\n${Math.ceil((silenceEndAt - now) / 1000)}s`;
+      return;
+    }
+    const remaining = Math.max(0, skillCd('skillSilence', SILENCE_COOLDOWN) - (now - lastSilenceAt));
+    if (remaining === 0) {
+      silenceBtn.disabled = false;
+      silenceBtn.classList.toggle('is-disabled', phase !== 'battle');
+      silenceBtn.textContent = '🔇 魔法封じ\nREADY';
+      return;
+    }
+    silenceBtn.disabled = false;
+    silenceBtn.classList.toggle('is-disabled', !isSkillResetPending('silence'));
+    silenceBtn.textContent = cooldownLabel('silence', '🔇 魔法封じ', remaining);
+  }
+  function updateSacrificeButton() {
+    if (!game.shopOwned.skillSacrifice) {
+      sacrificeBtn.disabled = false;
+      sacrificeBtn.classList.add('is-disabled');
+      sacrificeBtn.textContent = '🔒 捨て身';
+      return;
+    }
+    const remaining = Math.max(0, skillCd('skillSacrifice', SACRIFICE_COOLDOWN) - (Date.now() - lastSacrificeAt));
+    if (remaining === 0) {
+      sacrificeBtn.disabled = false;
+      sacrificeBtn.classList.toggle('is-disabled', phase !== 'battle');
+      sacrificeBtn.textContent = '🩸 捨て身\nREADY';
+      return;
+    }
+    sacrificeBtn.disabled = false;
+    sacrificeBtn.classList.toggle('is-disabled', !isSkillResetPending('sacrifice'));
+    sacrificeBtn.textContent = cooldownLabel('sacrifice', '🩸 捨て身', remaining);
   }
   function updateRegenButton() {
     regenBtn.classList.remove('buffing');
@@ -4902,10 +5224,11 @@
       }
       flip = (ball.faceDir || base) !== base;
     }
-    if (!flip) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); return; }
+    if (!flip && !ball.guarding) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); return; }
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.scale(-1, 1);
+    if (ball.guarding) ctx.rotate(Date.now() / 90); // 回転ガード中はくるくる回る
+    if (flip) ctx.scale(-1, 1);
     ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
     ctx.restore();
   }
@@ -5194,6 +5517,7 @@
     drawAtkUpEffects();
     drawRegenEffects();
     drawTackleEffects();
+    drawEnemyTraitEffects();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -5281,8 +5605,8 @@
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
-    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
@@ -5302,9 +5626,12 @@
     atkUpEndAt = 0;
     lastRegenAt = Date.now() - REGEN_COOLDOWN;
     regenEndAt = 0;
+    lastSilenceAt = Date.now() - SILENCE_COOLDOWN;
+    silenceEndAt = 0;
+    lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
-    particles = []; damageTexts = []; meteors = []; adds = []; flyouts = [];
+    particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
     stageAnnounceTimer = 0;
     hitStopFrames = 0; // ヒットストップをリセット
     resetCombo();
@@ -5332,6 +5659,8 @@
     updateSleepButton();
     updateAtkUpButton();
     updateRegenButton();
+    updateSilenceButton();
+    updateSacrificeButton();
     startBgm('normal');
     loop();
   }
@@ -5393,7 +5722,7 @@
     giveUpBtn.style.display = 'none';
     toast.classList.remove('show');
     revivePlayerInPlace();
-    meteors = []; adds = [];
+    meteors = []; adds = []; clearEnemyTraitObjects();
     resetCombo();
     updateStatsUI();
     updateHPUI();
@@ -5415,7 +5744,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネのクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -5476,6 +5805,11 @@
       lastRegenAt = Date.now() - REGEN_COOLDOWN;
       regenEndAt = 0;
       updateRegenButton();
+      lastSilenceAt = Date.now() - SILENCE_COOLDOWN;
+      silenceEndAt = 0;
+      updateSilenceButton();
+      lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
+      updateSacrificeButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -5486,14 +5820,14 @@
     if (action === 'prev' || action === 'next' || action === 'nextboss' || action === 'tradeBoss') game.skipChallenge = null;
     if (action === 'prev' || action === 'next') {
       game.bestStage = Math.max(game.bestStage, game.stage);
-      balls = spawnBattleBalls(); meteors = []; adds = [];
+      balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
       refreshPlayerBallStats(true); updateHPUI();
       startBgm(game.stage % 10 === 0 ? 'boss' : 'normal');
     }
     if (action === 'nextboss') {
       game.stage = Math.ceil((game.stage + 1) / 10) * 10;
       game.bestStage = Math.max(game.bestStage, game.stage);
-      balls = spawnBattleBalls(); meteors = []; adds = [];
+      balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
       refreshPlayerBallStats(true); updateHPUI();
       showBossWarning();
       startBgm('boss');
@@ -5503,7 +5837,7 @@
       if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10;
       game.bestStage = Math.max(game.bestStage, game.stage);
       forcedBossEmoji = TACKLE_TRADE_BOSS;
-      balls = spawnBattleBalls(); meteors = []; adds = [];
+      balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
       forcedBossEmoji = null;
       refreshPlayerBallStats(true); updateHPUI();
       showBossWarning();
@@ -6003,6 +6337,48 @@
     updateHPUI();
   });
 
+  silenceBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillSilence) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今は魔法封じを使えません', event.clientX, event.clientY); return; }
+    if (Date.now() < silenceEndAt) return;
+    if (Date.now() - lastSilenceAt < skillCd('skillSilence', SILENCE_COOLDOWN)) { tryGemResetSkill('silence', event, () => { lastSilenceAt = Date.now() - SILENCE_COOLDOWN; }, updateSilenceButton); return; }
+    lastSilenceAt = Date.now();
+    silenceEndAt = Date.now() + SILENCE_MS;
+    enemyShots = enemyShots.filter(sh => !sh.magic); // 飛んでいる魔法弾も消す
+    for (const en of [...balls, ...adds]) {
+      if (en.isPlayer || en.isDying) continue;
+      if (en.traitState === 'cast') { en.traitState = null; en.traitFreeze = false; }
+      spawnDamageText(en.x, en.y - en.radius - 20, '🔇 魔法封じ', '#9fa8ff', 0.012);
+      spawnHitParticles(en.x, en.y, '#9fa8ff');
+    }
+    playTone(700, 0.3, 'triangle', 0.14, 220);
+    showNotice(`🔇 魔法封じ！ ${SILENCE_MS / 1000}秒間 敵の魔法と弾を封じた`);
+    updateSilenceButton();
+  });
+  sacrificeBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillSacrifice) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    const player = balls.find(ball => isMainPlayerBall(ball));
+    const enemy = balls.find(ball => !ball.isPlayer && !ball.isDying);
+    if (phase !== 'battle' || !player || !enemy || enemy.spawnTimer > 0) { showTapError('今は捨て身を使えません', event.clientX, event.clientY); return; }
+    if (Date.now() - lastSacrificeAt < skillCd('skillSacrifice', SACRIFICE_COOLDOWN)) { tryGemResetSkill('sacrifice', event, () => { lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN; }, updateSacrificeButton); return; }
+    lastSacrificeAt = Date.now();
+    // HPを削る（最低1は残す）
+    const cost = Math.min(player.hp - 1, Math.round(player.hp * SACRIFICE_HP_RATIO));
+    if (cost > 0) { player.hp -= cost; spawnDamageText(player.x, player.y - player.radius - 14, '-' + cost + ' HP', '#ff5c7a', 0.014); }
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * SACRIFICE_DMG_MULT)), enemy);
+    enemy.hp -= dmg;
+    trackDamage(dmg);
+    spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, '捨て身！', '#ff5c7a', 0.014, true);
+    spawnAttackDamageText(enemy, dmg, crit, '#ffb3c1');
+    spawnHitParticles(enemy.x, enemy.y, '#ff5c7a');
+    onPlayerHitEnemy(enemy, dmg);
+    shakeScreenLight();
+    playEnemyHitSound();
+    if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
+    updateSacrificeButton();
+    updateHPUI();
+  });
+
   regenBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillRegen) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はリジェネを使えません', event.clientX, event.clientY); return; }
@@ -6152,6 +6528,8 @@
   setInterval(updateSleepButton, 1000);
   setInterval(updateAtkUpButton, 500);
   setInterval(updateRegenButton, 500);
+  setInterval(updateSilenceButton, 500);
+  setInterval(updateSacrificeButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -6226,6 +6604,8 @@
   updateSleepButton();
   updateAtkUpButton();
   updateRegenButton();
+  updateSilenceButton();
+  updateSacrificeButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
