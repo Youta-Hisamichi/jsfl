@@ -2217,7 +2217,7 @@
     player.hp = Math.min(player.maxHp, player.hp + heal);
     regenHealAccum += heal;
     if (regenHealAccum >= Math.max(1, player.maxHp * REGEN_RATIO_PER_SEC)) {
-      spawnDamageText(player.x, player.y - player.radius - 14, '+' + Math.round(regenHealAccum) + ' HP', '#5fe0a8', 0.03);
+      spawnDamageText(player.x, player.y - player.radius - 14, '+' + Math.round(regenHealAccum) + ' HP', '#5fe0a8', 0.012); // 約1.4秒表示
       regenHealAccum = 0;
     }
     updateHPUI();
