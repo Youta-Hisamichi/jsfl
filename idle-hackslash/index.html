@@ -552,7 +552,7 @@
     <div class="debug-row">
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
-      <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
+      <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
       <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button>
     </div>
 
@@ -3268,6 +3268,7 @@
   const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲', '🦔'];
   // 針鎧の王：タメ体当たりを受けると、一定確率でトゲで反撃して相打ちになる
   const TACKLE_TRADE_BOSS = '🦔';
+  let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
   const TACKLE_TRADE_CHANCE = 0.4;
   const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）
   // ---------- 敵図鑑 ----------
@@ -3349,7 +3350,7 @@
       const style = enemyStyles[(game.stage - 1) % enemyStyles.length];
       const isEmoji = !es.isBoss && Math.random() < 0.45;
       const emoji = es.isBoss
-        ? BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)]
+        ? (forcedBossEmoji || BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)])
         : (isEmoji ? EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)] : null);
       const movementStyle = es.isBoss ? 'normal' : pickEnemyMovementStyle(game.stage);
       const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
@@ -5270,6 +5271,7 @@
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
+    tradeBoss: 'DEBUG: 針鎧の王を出現させました',
     rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
   };
   debugRow.addEventListener('click', event => {
@@ -5333,7 +5335,7 @@
     }
     if (action === 'prev') game.stage = Math.max(1, game.stage - 1);
     if (action === 'next') game.stage++;
-    if (action === 'prev' || action === 'next' || action === 'nextboss') game.skipChallenge = null;
+    if (action === 'prev' || action === 'next' || action === 'nextboss' || action === 'tradeBoss') game.skipChallenge = null;
     if (action === 'prev' || action === 'next') {
       game.bestStage = Math.max(game.bestStage, game.stage);
       balls = spawnBattleBalls(); meteors = []; adds = [];
@@ -5344,6 +5346,17 @@
       game.stage = Math.ceil((game.stage + 1) / 10) * 10;
       game.bestStage = Math.max(game.bestStage, game.stage);
       balls = spawnBattleBalls(); meteors = []; adds = [];
+      refreshPlayerBallStats(true); updateHPUI();
+      showBossWarning();
+      startBgm('boss');
+    }
+    if (action === 'tradeBoss') {
+      // 今がボスステージならそのまま、そうでなければ次のボスステージで針鎧の王を出現させる
+      if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10;
+      game.bestStage = Math.max(game.bestStage, game.stage);
+      forcedBossEmoji = TACKLE_TRADE_BOSS;
+      balls = spawnBattleBalls(); meteors = []; adds = [];
+      forcedBossEmoji = null;
       refreshPlayerBallStats(true); updateHPUI();
       showBossWarning();
       startBgm('boss');
