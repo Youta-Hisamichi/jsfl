@@ -4378,6 +4378,14 @@
     // 撃破後：震えながら吹っ飛ぶ演出。終わったら次ステージへ
     if (e.isDying) {
       e.shakeTimer = Math.max(0, e.shakeTimer - speedMult); // 吹っ飛びの移動は updateFlyouts で行う
+      // 大群ステージは、本体を倒しても雑魚が残っていれば全滅させるまで次に進まない
+      const swarmLeft = !e.isBoss && isSwarmStage(game.stage) ? adds.filter(ad => ad.hp > 0).length : 0;
+      if (swarmLeft > 0) {
+        movePlayerSideBalls([...balls, ...adds], speedMult, b);
+        if (!e.swarmNotified) { e.swarmNotified = true; showNotice(`残りの敵を全部倒せ！（あと ${swarmLeft} 体）`); }
+        processAdds(a);
+        return;
+      }
       movePlayerSideBalls(balls, speedMult, b); // 演出中も自機側は動かし続ける
       if (e.shakeTimer <= 0) onStageClear();
       return;
@@ -4397,10 +4405,10 @@
     if (swarm && !e.swarmStarted) { // 大群ステージ：開始時にまとめて出現し、減ったら補充
       e.swarmStarted = true;
       for (let i = 0; i < SWARM_ADDS; i++) adds.push(makeAddEnemy(e));
-      showNotice('⚠️ 大群ステージ！ 敵がたくさん出現した');
+      showNotice('⚠️ 大群ステージ！ 敵を全部倒すと次のステージへ');
     }
     const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
-    if (!e.isBoss && freeAdds < (swarm ? SWARM_ADDS : 2) && Math.random() < (swarm ? 0.02 : 0.0009)) {
+    if (!e.isBoss && !swarm && freeAdds < 2 && Math.random() < 0.0009) { // 大群ステージは補充しない（全滅させたらクリア）
       adds.push(makeAddEnemy(e));
     }
 
@@ -4593,7 +4601,10 @@
     }
     meteors = meteors.filter(meteor => !meteor.hit);
 
-    // 雑魚敵(adds)：自機・分身・仲間のいずれかが当たるとダメージ、倒すと少量のコイン/ジェムを獲得
+    processAdds(a);
+  }
+  // 雑魚敵(adds)：自機・分身・仲間のいずれかが当たるとダメージ、倒すと少量のコイン/ジェムを獲得
+  function processAdds(a) {
     if (adds.length) {
       const attackers = balls.filter(ball => ball.isPlayer);
       for (const add of adds) {
@@ -5772,7 +5783,7 @@
 
     drawDeathDim();
     for (const ball of [...balls, ...adds]) {
-      if (flyouts.includes(ball)) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
+      if (flyouts.includes(ball) || ball.isDying) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
       drawBall(ball);
     }
 
