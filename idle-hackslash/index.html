@@ -306,6 +306,10 @@
   .record-badge { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; text-align: center; font-size: 0.72rem; font-weight: 800; color: #ffd76b; background: rgba(8,11,18,0.8); border: 1px solid rgba(255,215,107,0.7); border-radius: 12px; padding: 5px 12px; line-height: 1.5; opacity: 0; }
   .record-badge b { color: #fff; }
   .record-badge.show { animation: recordPop 2.2s ease-out forwards; }
+  .combo-badge { position: absolute; left: 50%; top: 24%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; font-size: 1.4rem; font-weight: 900; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,140,40,0.9), 0 2px 0 #8a4b00; opacity: 0; transition: opacity 0.25s; }
+  .combo-badge.show { opacity: 1; transition: none; }
+  .combo-badge.pop { animation: comboPop 0.18s ease-out; }
+  @keyframes comboPop { from { transform: translateX(-50%) scale(1.45); } to { transform: translateX(-50%) scale(1); } }
   @keyframes recordPop {
     0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
     12% { opacity: 1; transform: translateX(-50%) scale(1.08); }
@@ -501,6 +505,7 @@
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
       <div class="record-badge" id="recordBadge"></div>
+      <div class="combo-badge" id="comboBadge"></div>
       <div class="loot-popup" id="lootPopup"></div>
       <div class="toast" id="toast">
         <div class="artifact-icon" id="toastIcon" style="display:none;"></div>
@@ -2799,13 +2804,24 @@
     else comboCount = 1;
     lastHitAt = now;
     if (comboCount > (game.maxCombo || 0)) game.maxCombo = comboCount;
+    if (comboCount >= 2) showComboBadge(comboCount);
     return comboCount;
+  }
+  // コンボ表示：ゲーム画面に「〜コンボ！」を出し、コンボが途切れたら消す
+  const comboBadge = document.getElementById('comboBadge');
+  let comboBadgeTimer = null;
+  function showComboBadge(count) {
+    comboBadge.textContent = `${count} コンボ！`;
+    comboBadge.classList.add('show');
+    comboBadge.classList.remove('pop'); void comboBadge.offsetWidth; comboBadge.classList.add('pop');
+    clearTimeout(comboBadgeTimer);
+    comboBadgeTimer = setTimeout(() => comboBadge.classList.remove('show'), COMBO_WINDOW_MS + 500);
   }
   function getComboMultiplier(comboGrowthBonus) {
     const stacks = Math.min(comboCount - 1, COMBO_MAX_STACKS);
     return 1 + stacks * (COMBO_STEP + comboGrowthBonus);
   }
-  function resetCombo() { comboCount = 0; }
+  function resetCombo() { comboCount = 0; clearTimeout(comboBadgeTimer); comboBadge.classList.remove('show'); }
 
   // ---------- 最大ダメージ／最大DPS計測 ----------
   let dpsAccum = 0;
@@ -3759,7 +3775,6 @@
           playCounterSound();
         }
       }
-      if (combo >= 4) spawnDamageText((a.x + e.x) / 2, Math.min(a.y, e.y) - 30, 'COMBO x' + combo, '#ffd76b');
       updateHPUI();
 
       if (e.hp <= 0 && a.hp > 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
