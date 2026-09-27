@@ -414,6 +414,7 @@
   .toast .sub .continue-count b { font-size: 1.9rem; color: #ffd76b; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
   /* 転生報酬の宝箱演出 */
+  .toast .sub .chest-rarity { font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 0 8px rgba(0,0,0,0.6); }
   .toast .artifact-icon.chest-shake { font-size: 3rem; animation: chestShake 0.5s ease-in-out infinite; }
   @keyframes chestShake { 0%, 100% { transform: rotate(0) scale(1); } 20% { transform: rotate(-10deg) scale(1.05); } 40% { transform: rotate(9deg); } 60% { transform: rotate(-6deg) scale(1.08); } 80% { transform: rotate(4deg); } }
   .toast .artifact-icon.chest-open { font-size: 3rem; animation: chestOpen 0.7s cubic-bezier(.34,1.56,.64,1); filter: drop-shadow(0 0 14px var(--chest-glow, #ffd76b)); }
@@ -5433,7 +5434,8 @@
     toastIcon.textContent = pick.icon;
     toastIcon.className = 'artifact-icon chest-open';
     toastIcon.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color);
-    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
+    const rar = RARITY_INFO[pick.rarity];
+    toastSub.innerHTML = `転生 ${game.reincarnations}回目！\n<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
     playGachaSound(pick.rarity);
     rebirthSkippable = true;
     rebirthTimer = setTimeout(finishRebirth, 6500);
