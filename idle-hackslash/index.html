@@ -3333,6 +3333,7 @@
   const SHAPE_ENEMY_SPRITE = { spike: 'slime', diamond: 'flameWisp', hex: 'windSpirit', square: 'worm' };
   const EMOJI_ENEMY_SPRITE = { '👹': 'ogre', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🕷️': 'bigSpider', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🐺': 'cerberus', '🦖': 'salamander', '🐲': 'wyvern' };
   const BOSS_ENEMY_SPRITE = { '👹': 'demon', '🐉': 'redDragon', '💀': 'lich', '🦖': 'blackDragon', '👺': 'archDemon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
+  const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
   const enemySpriteImgs = {};
   for (const k in ENEMY_SPRITES) { const img = new Image(); img.src = ENEMY_SPRITES[k]; enemySpriteImgs[k] = img; }
   function getEnemySpriteKey(enemy) {
@@ -4869,7 +4870,7 @@
   // 1体ぶんの描画（自機・仲間・分身・敵）
   function drawBall(ball) {
     const enemySprite = ball.isPlayer ? null : getEnemySpriteImg(ball);
-    const shape = enemySprite ? 'emoji' : ball.shape; // ドット絵の敵はトゲトゲの輪郭（薄く）＋画像で描く
+    const shape = enemySprite ? 'emoji' : ball.shape;
     ctx.save();
     if (deathFx && ball === deathFx.ball) {
       // やられ演出：震え → 赤く点滅 → 縮みながら消える
@@ -4919,7 +4920,9 @@
     } else {
       ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     }
-    if (shape === 'emoji') {
+    if (enemySprite) {
+      // ドット絵の敵は輪郭の図形を描かない
+    } else if (shape === 'emoji') {
       ctx.globalAlpha = 0.3;
       ctx.fillStyle = ball.color;
       ctx.fill();
@@ -4965,7 +4968,7 @@
     }
 
     if (enemySprite) {
-      const sz = ball.radius * 2.6;
+      const sz = ball.radius * ENEMY_SPRITE_SCALE;
       ctx.drawImage(enemySprite, ball.x - sz / 2, ball.y - sz / 2, sz, sz);
     } else if (shape === 'emoji') {
       ctx.save();
@@ -5000,7 +5003,7 @@
       const barWidth = ball.radius * 2;
       const barHeight = 5;
       const barX = ball.x - ball.radius;
-      const barY = ball.y - ball.radius - 10;
+      const barY = enemySprite ? ball.y - ball.radius * ENEMY_SPRITE_SCALE / 2 - 6 : ball.y - ball.radius - 10; // 大きめのドット絵の上に出す
       ctx.fillStyle = '#080b12';
       ctx.fillRect(barX, barY, barWidth, barHeight);
       ctx.strokeStyle = 'rgba(255,255,255,0.65)';
