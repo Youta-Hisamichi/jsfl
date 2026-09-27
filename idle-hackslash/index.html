@@ -413,6 +413,11 @@
   .toast .sub .continue-count { font-size: 1.3rem; font-weight: 800; color: #fff; }
   .toast .sub .continue-count b { font-size: 1.9rem; color: #ffd76b; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
+  /* 転生報酬の宝箱演出 */
+  .toast .artifact-icon.chest-shake { font-size: 3rem; animation: chestShake 0.5s ease-in-out infinite; }
+  @keyframes chestShake { 0%, 100% { transform: rotate(0) scale(1); } 20% { transform: rotate(-10deg) scale(1.05); } 40% { transform: rotate(9deg); } 60% { transform: rotate(-6deg) scale(1.08); } 80% { transform: rotate(4deg); } }
+  .toast .artifact-icon.chest-open { font-size: 3rem; animation: chestOpen 0.7s cubic-bezier(.34,1.56,.64,1); filter: drop-shadow(0 0 14px var(--chest-glow, #ffd76b)); }
+  @keyframes chestOpen { 0% { transform: scale(0.2) rotate(-30deg); opacity: 0; filter: brightness(3) drop-shadow(0 0 30px #fff); } 60% { transform: scale(1.35) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
 
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
   .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
@@ -5405,15 +5410,33 @@
     updateStatsUI();
     saveGame();
     playRebirthSound();
+    // 報酬の遺物は宝箱を開ける演出で見せる（揺れる宝箱 → タップか少し待つと開封）
     toastIcon.style.display = 'block';
-    toastIcon.textContent = pick.icon;
+    toastIcon.textContent = '🎁';
+    toastIcon.className = 'artifact-icon chest-shake';
     toastBig.textContent = '輪廻転生……';
     toastBig.className = 'big reborn';
-    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
+    toastSub.textContent = `転生 ${game.reincarnations}回目！\n宝箱を開けています…（タップで開封）`;
     toast.classList.add('show');
-    rebirthSkippable = true;
+    rebirthSkippable = false;
     clearTimeout(rebirthTimer);
-    rebirthTimer = setTimeout(finishRebirth, 7500);
+    rebirthChest = { pick, rebirthGemGain };
+    rebirthTimer = setTimeout(openRebirthChest, REBIRTH_CHEST_MS);
+  }
+  const REBIRTH_CHEST_MS = 1400;
+  let rebirthChest = null;
+  function openRebirthChest() {
+    if (!rebirthChest) return;
+    const { pick, rebirthGemGain } = rebirthChest;
+    rebirthChest = null;
+    clearTimeout(rebirthTimer);
+    toastIcon.textContent = pick.icon;
+    toastIcon.className = 'artifact-icon chest-open';
+    toastIcon.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color);
+    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
+    playGachaSound(pick.rarity);
+    rebirthSkippable = true;
+    rebirthTimer = setTimeout(finishRebirth, 6500);
   }
 
   function finishRebirth() {
@@ -5421,6 +5444,7 @@
     rebirthSkippable = false;
     clearTimeout(rebirthTimer);
     toast.classList.remove('show');
+    toastIcon.className = 'artifact-icon'; // 宝箱演出のクラスを戻す
     // 転生ショップはゲームタブでのみ表示。他のタブにいる間は、ゲームタブに戻ったときに開く
     if (getActiveTab() !== 'game') { rebirthShopPending = true; return; }
     openRebirthShop(true);
@@ -6577,6 +6601,7 @@
 
   toast.addEventListener('click', event => {
     if (event.target === continueBtn || event.target === dialogCloseBtn || event.target === giveUpBtn) return;
+    if (rebirthChest) { openRebirthChest(); return; } // 宝箱演出中はタップで開封
     if (rebirthSkippable) finishRebirth();
   });
 
