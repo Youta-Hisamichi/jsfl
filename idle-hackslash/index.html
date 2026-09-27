@@ -153,6 +153,7 @@
   .action-btn.coinstrike { border-color: #ffd76b; color: #ffd76b; }
   .action-btn.zeni { border-color: #ffcf4a; color: #ffcf4a; }
   .action-btn.mystery { border-color: #7fe0ff; color: #7fe0ff; }
+  .action-btn.comprush { border-color: #8fe3a0; color: #b8f5c6; }
   .action-btn.coinstrike.buffing { background: rgba(255,215,107,0.15); }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
@@ -425,6 +426,8 @@
   /* ---- モーダル(転生ショップ等) ---- */
   .modal-overlay { position: fixed; inset: 0; background: rgba(6,8,14,0.82); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
   .modal-overlay.show { display: flex; }
+  .modal-overlay.fullscreen { padding: 0; }
+  .modal-overlay.fullscreen .modal-panel { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; border: none; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
   .modal-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; max-height: 82vh; overflow-y: auto; }
   @keyframes loginGiftPop { 0% { transform: scale(0.3) rotate(-15deg); opacity: 0; } 55% { transform: scale(1.25) rotate(8deg); opacity: 1; } 75% { transform: scale(0.95) rotate(-4deg); } 100% { transform: scale(1) rotate(0deg); } }
   .login-gift-icon { animation: loginGiftPop 0.6s cubic-bezier(.34,1.56,.64,1); display: inline-block; }
@@ -561,6 +564,7 @@
       <button class="action-btn coinstrike" id="coinStrikeBtn">🔒 コイン攻撃</button>
       <button class="action-btn zeni" id="zeniBtn">🔒 ゼニ投げ</button>
       <button class="action-btn mystery" id="mysteryBtn">🔒 謎魔法</button>
+      <button class="action-btn comprush" id="compRushBtn">🔒 仲間特攻</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -730,7 +734,7 @@
   <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
 </div>
 
-<div class="modal-overlay" id="rebirthShopModal">
+<div class="modal-overlay fullscreen" id="rebirthShopModal">
   <div class="modal-panel">
     <h2>🌌 転生ショップ</h2>
     <div class="modal-sub">所持ジェム: <span id="rebirthShopGems">0</span>　（遺物の効果は転生しても永続します）</div>
@@ -954,6 +958,7 @@
   const coinStrikeBtn = document.getElementById('coinStrikeBtn');
   const zeniBtn = document.getElementById('zeniBtn');
   const mysteryBtn = document.getElementById('mysteryBtn');
+  const compRushBtn = document.getElementById('compRushBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1329,8 +1334,9 @@
     { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +25%（最大5個）', rarity: 'epic' },
     { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +25%（最大5個）', rarity: 'epic' },
     { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +40%（最大3個）', rarity: 'epic' },
+    { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -1432,7 +1438,8 @@
     skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
     skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 タップでコイン獲得・討伐コイン1.5倍' },
     skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
-    skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' }
+    skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
+    skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' }
   };
   const SKILL_MAX_LEVEL = 10;
   const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
@@ -1559,7 +1566,7 @@
 
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 };
     for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
       if (!ARTIFACT_BY_ID[id]) continue;
       const count = game.ownedArtifacts[id] || 0;
@@ -1583,6 +1590,7 @@
       if (id === 'banner') b.companionAtkMult += 0.25 * cap;
       if (id === 'amulet') b.companionHpMult += 0.25 * cap;
       if (id === 'pinchMask') b.pinchAtk += 0.40 * cap;
+      if (id === 'rebirthOrb') b.rebirthGems += 2 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -2112,6 +2120,7 @@
     updateCoinStrikeButton();
     updateZeniButton();
     updateMysteryButton();
+    updateCompRushButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -2148,6 +2157,8 @@
   const TACKLE_CHARGE_FULL_MS = 1500; // フルチャージまでの時間
   const TACKLE_MIN_MULT = 3;          // 最小タメのダメージ倍率（攻撃力比）
   const TACKLE_MAX_MULT = 8;          // フルチャージのダメージ倍率
+  const TACKLE_CHARGE_FULL2_MS = 3200; // 2段階目のフルチャージまでの時間
+  const TACKLE_MAX2_MULT = 18;         // 2段階目のダメージ倍率
   const TACKLE_DURATION_MS = 1600;    // 体当たりが続く時間（当たらなければ終了）
   const TACKLE_SPEED = 3.2 * 3.4;
   const TACKLE_TURN_RATE = 0.22;
@@ -2160,7 +2171,9 @@
     if (!tackleChargeStart) return -1;
     const held = Date.now() - tackleChargeStart;
     if (held < TACKLE_CHARGE_MIN_MS) return -1;
-    return Math.min(1, (held - TACKLE_CHARGE_MIN_MS) / (TACKLE_CHARGE_FULL_MS - TACKLE_CHARGE_MIN_MS));
+    if (held < TACKLE_CHARGE_FULL_MS) return (held - TACKLE_CHARGE_MIN_MS) / (TACKLE_CHARGE_FULL_MS - TACKLE_CHARGE_MIN_MS);
+    // 1段階目MAX（1）から2段階目MAX（2）まで
+    return 1 + Math.min(1, (held - TACKLE_CHARGE_FULL_MS) / (TACKLE_CHARGE_FULL2_MS - TACKLE_CHARGE_FULL_MS));
   }
   // タメ中のチャージ音：タメ開始後に音程が上がっていき、フルチャージで「キーン」と鳴って揺れる音で維持
   let chargeSound = null; // { osc, lfo, gain, fullTimer }
@@ -2192,13 +2205,15 @@
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(t0); lfo.start(t0);
     const fullTimer = setTimeout(() => { playTone(1318.5, 0.25, 'triangle', 0.14, 1760); }, TACKLE_CHARGE_FULL_MS);
-    chargeSound = { osc, lfo, gain, fullTimer };
+    const full2Timer = setTimeout(() => { playTone(1760, 0.3, 'triangle', 0.16, 2637); setTimeout(() => playTone(2637, 0.25, 'triangle', 0.12), 90); }, TACKLE_CHARGE_FULL2_MS);
+    chargeSound = { osc, lfo, gain, fullTimer, full2Timer };
   }
   function stopChargeSound() {
     if (!chargeSound) return;
-    const { osc, lfo, gain, fullTimer } = chargeSound;
+    const { osc, lfo, gain, fullTimer, full2Timer } = chargeSound;
     chargeSound = null;
     clearTimeout(fullTimer);
+    clearTimeout(full2Timer);
     try {
       const t = audioCtx.currentTime;
       gain.gain.cancelScheduledValues(t);
@@ -2222,11 +2237,15 @@
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     const enemy = balls.find(ball => !ball.isPlayer);
     if (!player || !enemy) return;
-    tackle = { until: Date.now() + TACKLE_DURATION_MS, mult: TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level, full: level >= 1 };
+    const mult = level <= 1
+      ? TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level
+      : TACKLE_MAX_MULT + (TACKLE_MAX2_MULT - TACKLE_MAX_MULT) * (level - 1);
+    tackle = { until: Date.now() + TACKLE_DURATION_MS, mult, full: level >= 1, full2: level >= 2 };
     const a = Math.atan2(enemy.y - player.y, enemy.x - player.x);
     player.vx = Math.cos(a) * TACKLE_SPEED; player.vy = Math.sin(a) * TACKLE_SPEED;
-    spawnDamageText(player.x, player.y - player.radius - 16, 'タックル！', '#ffb35c', 0.025);
-    spawnHitParticles(player.x, player.y, '#ffb35c');
+    const lvl2 = level >= 2;
+    spawnDamageText(player.x, player.y - player.radius - 16, lvl2 ? '超タックル！！' : 'タックル！', lvl2 ? '#d38cff' : '#ffb35c', 0.025, lvl2);
+    spawnHitParticles(player.x, player.y, lvl2 ? '#d38cff' : '#ffb35c');
     playAccelSound();
   }
   ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, releaseTackleCharge));
@@ -2257,7 +2276,8 @@
     applyHitKnockback(e, a, t.full ? 8 : 6);
     applyHitKnockback(a, e, 3.5);
     playEnemyHitSound();
-    if (t.full) shakeScreenLight(); // 控えめな揺れのみ（円周を赤く光らせる演出はしない）
+    if (t.full2) { shakeScreenLight(); spawnHitParticles(e.x, e.y, '#d38cff'); spawnHitParticles(e.x, e.y, '#ffffff'); }
+    else if (t.full) shakeScreenLight(); // 控えめな揺れのみ（円周を赤く光らせる演出はしない）
     updateHPUI();
   }
   // 相打ち：タックルを当てた直後、ボスのトゲで自機もダメージを受ける（回避不可・バリアでは防げる）
@@ -2277,22 +2297,27 @@
     if (!player) return;
     const level = getTackleChargeLevel();
     if (level >= 0) {
-      // タメ中：自機のまわりにゲージのリング
-      const full = level >= 1;
-      const pulse = full ? 1 + Math.sin(Date.now() / 60) * 0.12 : 1;
+      // タメ中：自機のまわりにゲージのリング（2段階目は外側に紫のリング）
+      const full = level >= 1, full2 = level >= 2;
+      const pulse = full ? 1 + Math.sin(Date.now() / (full2 ? 40 : 60)) * 0.12 : 1;
       ctx.save();
       ctx.lineWidth = 4;
       ctx.strokeStyle = 'rgba(255,255,255,0.18)';
       ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, 0, Math.PI * 2); ctx.stroke();
       ctx.strokeStyle = full ? '#ff6b3d' : '#ffb35c';
       ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = full ? 10 : 4;
-      ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, level)); ctx.stroke();
+      ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, Math.min(1, level))); ctx.stroke();
+      if (level > 1) {
+        ctx.strokeStyle = '#d38cff'; ctx.shadowColor = '#d38cff'; ctx.shadowBlur = full2 ? 16 : 8;
+        ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 15) * pulse, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, level - 1)); ctx.stroke();
+      }
       if (full) {
         ctx.shadowBlur = 0;
         ctx.font = '800 11px sans-serif'; ctx.textAlign = 'center';
         ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-        ctx.strokeText('MAX', player.x, player.y - player.radius - 16);
-        ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', player.x, player.y - player.radius - 16);
+        const label = full2 ? 'MAX×2' : 'MAX';
+        ctx.strokeText(label, player.x, player.y - player.radius - 22);
+        ctx.fillStyle = full2 ? '#e9c4ff' : '#ffd76b'; ctx.fillText(label, player.x, player.y - player.radius - 22);
       }
       ctx.restore();
     }
@@ -2450,6 +2475,9 @@
   let coinStrikeEndAt = 0;
   let lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
   let lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
+  const SKILL_COMPRUSH_COOLDOWN = 60 * 1000;
+  const COMP_RUSH_DMG_MULT = 4; // 仲間1体（人数込みの攻撃力）あたりのダメージ倍率
+  let lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
   function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
   // スキルを使える状態か確認し、待機中ならジェムリセットを案内。使えるなら { player, enemy } を返す
   function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {
@@ -2473,16 +2501,22 @@
     'emoji:🐲': 'homing', 'boss:🐉': 'homing',
     'emoji:🎃': 'mines',
     'emoji:🦂': 'deathMagic', 'boss:👺': 'deathMagic',
+    'emoji:🦇': 'merge',
   };
-  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷', deathMagic: '即死魔法' };
+  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷', deathMagic: '即死魔法', merge: '合体' };
   const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
-  const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600] }; // 次の行動までのフレーム（ゲーム速度1倍）
+  const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
   const SPLIT_TIMES = 2;         // 分裂できる回数
   const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
   const GROW_MAX = 1.8;
   const SPIN_GUARD_FRAMES = 120; // 回転ガードの長さ
   const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
-  const ENEMY_DEATH_CHANCE = 0.12; // 敵の即死魔法の成功率（バリアで防げる）
+  const ENEMY_DEATH_CHANCE = 0.12;
+  const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
+  const MERGE_MINIONS = 4;          // 手下がこの数集まると合体
+  const MERGE_MAX = 6;              // 合体の上限回数
+  const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
+  function isSwarmStage(stage) { return stage % 10 === 5; } // 大群ステージ（5, 15, 25…） // 敵の即死魔法の成功率（バリアで防げる）
   let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
   let enemyMines = [];           // 敵の地雷
   function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
@@ -2584,6 +2618,46 @@
           playTone(900, 0.2, 'square', 0.1, 1400);
         } else if (e.traitState === 'guard' && e.traitTimer <= 0) {
           e.traitState = null; e.guarding = false; e.traitCd = randTraitCd(trait);
+        }
+      } else if (trait === 'merge') {
+        // 手下を呼び、数が揃ったら本体に集まって合体（HP・攻撃力・大きさアップ）
+        const mine = adds.filter(ad => ad.mergeOwner === e && ad.hp > 0);
+        if (!mine.some(ad => ad.merging) && e.traitCd <= 0) {
+          e.traitCd = randTraitCd(trait);
+          if ((e.mergeCount || 0) < MERGE_MAX) {
+            if (mine.length >= MERGE_MINIONS - 1) {
+              mine.forEach(ad => { ad.merging = true; ad.traitFreeze = true; });
+              spawnDamageText(e.x, e.y - e.radius - 22, '集まれ！', '#c792ea', 0.016);
+            } else {
+              for (let i = 0; i < 2; i++) {
+                const m = makeAddEnemy(e);
+                m.emoji = e.emoji; m.shape = e.shape; m.radius = 9; m.mergeOwner = e;
+                m.x = e.x + (Math.random() - 0.5) * 40; m.y = e.y + (Math.random() - 0.5) * 40;
+                adds.push(m);
+              }
+              spawnDamageText(e.x, e.y - e.radius - 22, '仲間を呼んだ！', '#c792ea', 0.016);
+            }
+          }
+        }
+        for (const ad of mine) {
+          if (!ad.merging) continue;
+          const dx = e.x - ad.x, dy = e.y - ad.y, dist = Math.hypot(dx, dy) || 1;
+          const step = Math.min(dist, 7 * speedMult);
+          ad.x += dx / dist * step; ad.y += dy / dist * step;
+          if (dist < e.radius) {
+            ad.hp = 0;
+            e.mergeCount = (e.mergeCount || 0) + 1;
+            const hpBoost = Math.round(e.maxHp * 0.15);
+            e.maxHp += hpBoost; e.hp += hpBoost;
+            e.atk = Math.round(e.atk * 1.1);
+            e.traitBaseRadius = Math.min(getTraitBaseRadius(e) * 1.06, 40);
+            e.radius = e.traitBaseRadius;
+            e.traitLastHp = e.hp;
+            spawnDamageText(e.x, e.y - e.radius - 24, '合体！', '#c792ea', 0.02, true);
+            spawnHitParticles(e.x, e.y, '#c792ea');
+            playTone(330, 0.2, 'square', 0.1, 660);
+            updateHPUI();
+          }
         }
       } else if (MAGIC_TRAITS[trait] || trait === 'mines') {
         const silenced = MAGIC_TRAITS[trait] && isSilenced();
@@ -3080,7 +3154,7 @@
   function saveGame() {
     if (suppressAutoSave) return;
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -3108,6 +3182,7 @@
       if (typeof data.lastCoinStrikeAt === 'number') lastCoinStrikeAt = data.lastCoinStrikeAt;
       if (typeof data.lastZeniAt === 'number') lastZeniAt = data.lastZeniAt;
       if (typeof data.lastMysteryAt === 'number') lastMysteryAt = data.lastMysteryAt;
+      if (typeof data.lastCompRushAt === 'number') lastCompRushAt = data.lastCompRushAt;
       return true;
     } catch (err) {
       return false;
@@ -4311,7 +4386,14 @@
     }
 
     // 敵の数を時々増やす（本体は変えず、サブの雑魚を追加）
-    if (!e.isBoss && adds.length < 2 && Math.random() < 0.0009) {
+    const swarm = !e.isBoss && isSwarmStage(game.stage);
+    if (swarm && !e.swarmStarted) { // 大群ステージ：開始時にまとめて出現し、減ったら補充
+      e.swarmStarted = true;
+      for (let i = 0; i < SWARM_ADDS; i++) adds.push(makeAddEnemy(e));
+      showNotice('⚠️ 大群ステージ！ 敵がたくさん出現した');
+    }
+    const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
+    if (!e.isBoss && freeAdds < (swarm ? SWARM_ADDS : 2) && Math.random() < (swarm ? 0.02 : 0.0009)) {
       adds.push(makeAddEnemy(e));
     }
 
@@ -4569,7 +4651,10 @@
   function onStageClear() {
     const b = computeBonuses();
     const isBossStage = game.stage % 10 === 0;
-    const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1));
+    const defeated = balls.find(ball => !ball.isPlayer);
+    const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
+    const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
+    if (isMetal) spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
     game.coins += coinGain;
     if (isBossStage) game.gems += 5;
     playStageClearSound();
@@ -4592,7 +4677,7 @@
     }
     game.stage++;
     game.bestStage = Math.max(game.bestStage, game.stage);
-    stageAnnounceText = 'STAGE ' + game.stage;
+    stageAnnounceText = 'STAGE ' + game.stage + (isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     meteors = []; adds = []; clearEnemyTraitObjects();
     // 仲間を全員復活させる
@@ -4713,7 +4798,8 @@
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     balls = balls.filter(ball => !ball.isCompanion);
     renderCompanionList();
-    game.gems += 2; game.reincarnations++;
+    const rebirthGemGain = 2 + computeBonuses().rebirthGems; // 遺物「輪廻の宝珠」で増加
+    game.gems += rebirthGemGain; game.reincarnations++;
     renderArtifactList();
     updateStatsUI();
     saveGame();
@@ -4722,7 +4808,7 @@
     toastIcon.textContent = pick.icon;
     toastBig.textContent = '輪廻転生……';
     toastBig.className = 'big reborn';
-    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+2 💎';
+    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
     toast.classList.add('show');
     rebirthSkippable = true;
     clearTimeout(rebirthTimer);
@@ -5016,7 +5102,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3, compRush: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -5188,6 +5274,7 @@
   function updateDeathButton() { renderSkillButton(deathBtn, 'skillDeath', 'death', '💀 即死魔法', SKILL_DEATH_COOLDOWN, lastDeathAt); }
   function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン攻撃', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン攻撃中'); }
   function updateZeniButton() { renderSkillButton(zeniBtn, 'skillZeni', 'zeni', '💰 ゼニ投げ', SKILL_ZENI_COOLDOWN, lastZeniAt); }
+  function updateCompRushButton() { renderSkillButton(compRushBtn, 'skillCompRush', 'compRush', '🐾 仲間特攻', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt); }
   function updateMysteryButton() { renderSkillButton(mysteryBtn, 'skillMystery', 'mystery', '❓ 謎魔法', SKILL_MYSTERY_COOLDOWN, lastMysteryAt); }
   function updateSilenceButton() {
     silenceBtn.classList.remove('buffing');
@@ -5806,6 +5893,7 @@
     coinStrikeEndAt = 0;
     lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
     lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
+    lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
     particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
@@ -5842,6 +5930,7 @@
     updateCoinStrikeButton();
     updateZeniButton();
     updateMysteryButton();
+    updateCompRushButton();
     startBgm('normal');
     loop();
   }
@@ -5925,7 +6014,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -6007,6 +6096,8 @@
       coinStrikeEndAt = 0;
       lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
       lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
+      lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
+      updateCompRushButton();
       updateDeathButton();
       updateCoinStrikeButton();
       updateZeniButton();
@@ -6666,8 +6757,36 @@
     { w: 8,  name: '🤔 何も起きなかった…', color: '#9aa3b8', fn: () => {} },
     { w: 8,  name: '😱 敵が回復してしまった！', color: '#ff6b6b', fn: ({ enemy }) => { enemy.hp = Math.min(enemy.maxHp, enemy.hp + Math.round(enemy.maxHp * 0.3)); } },
     { w: 8,  name: '💫 自分にダメージ！', color: '#ff6b6b', fn: ({ player }) => { const d = Math.min(player.hp - 1, Math.round(player.maxHp * 0.2)); if (d > 0) { player.hp -= d; spawnDamageText(player.x, player.y - player.radius - 14, '-' + d, '#ff6b6b', 0.02); } } },
-    { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = 0; updateStatsUI(); } },
+    { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = lastCompRushAt = 0; updateStatsUI(); } },
   ];
+  // 仲間特攻：生きている仲間全員が敵へ突撃し、それぞれ大ダメージ
+  compRushBtn.addEventListener('click', event => {
+    const comps = balls.filter(ball => ball.isCompanion && ball.hp > 0);
+    if (game.shopOwned.skillCompRush && !comps.length && Date.now() - lastCompRushAt >= skillCd('skillCompRush', SKILL_COMPRUSH_COOLDOWN)) { showTapError('戦える仲間がいません', event.clientX, event.clientY); return; }
+    const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton);
+    if (!ctxs) return;
+    const { player, enemy } = ctxs;
+    let total = 0;
+    comps.forEach((comp, i) => {
+      // 見た目：敵に向かって飛び込む
+      const ang = Math.atan2(enemy.y - comp.y, enemy.x - comp.x);
+      comp.vx = Math.cos(ang) * 12; comp.vy = Math.sin(ang) * 12;
+      for (let k = 0; k < 6; k++) particles.push({ x: comp.x, y: comp.y, vx: Math.cos(ang) * (3 + k), vy: Math.sin(ang) * (3 + k), life: 0.8, color: COMPANION_COLORS[comp.companionId] || '#8fe3a0', decay: 0.05 });
+      const { dmg } = rollCrit(Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT)), enemy);
+      total += dmg;
+    });
+    enemy.hp -= total;
+    trackDamage(total);
+    spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `🐾 仲間特攻！ ×${comps.length}`, '#8fe3a0', 0.014, true);
+    spawnAttackDamageText(enemy, total, false, '#d4ffdd');
+    spawnHitParticles(enemy.x, enemy.y, '#8fe3a0');
+    onPlayerHitEnemy(enemy, total);
+    shakeScreenLight();
+    [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.1), i * 50));
+    if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
+    updateCompRushButton();
+    updateHPUI();
+  });
   mysteryBtn.addEventListener('click', event => {
     const ctxs = beginSkill(event, 'skillMystery', 'mystery', SKILL_MYSTERY_COOLDOWN, lastMysteryAt, v => { lastMysteryAt = v; }, updateMysteryButton);
     if (!ctxs) return;
@@ -6840,6 +6959,7 @@
   setInterval(updateCoinStrikeButton, 500);
   setInterval(updateZeniButton, 1000);
   setInterval(updateMysteryButton, 1000);
+  setInterval(updateCompRushButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -6922,6 +7042,7 @@
   updateCoinStrikeButton();
   updateZeniButton();
   updateMysteryButton();
+  updateCompRushButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
