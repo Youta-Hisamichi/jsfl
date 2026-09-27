@@ -121,6 +121,8 @@
   .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
   .upgrade-btn .upgrade-value { display: block; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
   .upgrade-btn .upgrade-value b { color: var(--gold); }
+  .upgrade-group-title { font-size: 0.78rem; font-weight: 800; color: var(--text); margin: 10px 2px 4px; padding-bottom: 3px; border-bottom: 1px solid var(--ring); }
+  .upgrade-group-title:first-child { margin-top: 0; }
   .levelup-pop { position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 0.9s ease-out forwards; }
   @keyframes levelUpPop {
     0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
@@ -1382,10 +1384,26 @@
 
   // ---------- ショップ定義 ----------
   const UPGRADES = {
-    atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25 },
-    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25 },
-    clash: { icon: '🤜', name: '迫り合い', desc: '+10%（衝突時に攻撃できる確率アップ）', baseCost: 30 }
+    atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25, group: 'attack' },
+    crit: { icon: '🎯', name: '会心率', desc: '+1%', baseCost: 40, group: 'attack', max: 30 },
+    critDmg: { icon: '💥', name: '会心ダメージ', desc: '+5%', baseCost: 40, group: 'attack' },
+    accuracy: { icon: '🔍', name: '命中', desc: '+0.5%', baseCost: 35, group: 'attack', max: 20 },
+    tackle: { icon: '🦏', name: 'タックル威力', desc: '+8%', baseCost: 35, group: 'attack' },
+    bossDmg: { icon: '👑', name: 'ボス特攻', desc: '+3%', baseCost: 45, group: 'attack' },
+    hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
+    clash: { icon: '🤜', name: '迫り合い', desc: '+10%（衝突時に攻撃できる確率アップ）', baseCost: 30, group: 'defense' },
+    evasion: { icon: '🍃', name: '回避', desc: '+0.5%', baseCost: 35, group: 'defense', max: 20 },
+    coin: { icon: '🟡', name: 'コイン獲得', desc: '+5%', baseCost: 40, group: 'economy' },
+    compAtk: { icon: '🐾', name: '仲間の攻撃力', desc: '+8%', baseCost: 40, group: 'companion' },
   };
+  const UPGRADE_GROUPS = [
+    { id: 'attack', label: '⚔️ 攻撃' },
+    { id: 'defense', label: '🛡️ 防御' },
+    { id: 'economy', label: '🟡 経済' },
+    { id: 'companion', label: '🐾 仲間' },
+  ];
+  function newUpgradeLevels() { const o = {}; for (const id in UPGRADES) o[id] = 0; return o; }
+  function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
   const SHOP_ITEMS = {
     sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
     shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
@@ -1510,7 +1528,7 @@
   const game = {
     stage: 1, coins: 0, gems: 0, superGems: 0,
     reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
-    upgrades: { atk: 0, hp: 0, clash: 0 },
+    upgrades: newUpgradeLevels(),
     coinCloneSlots: 0,
     shopOwned: {},
     gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
@@ -1568,6 +1586,15 @@
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
+    const up = game.upgrades;
+    b.critChance += (up.crit || 0) * 0.01;
+    b.critMultBonus += (up.critDmg || 0) * 0.05;
+    b.accuracy += (up.accuracy || 0) * 0.005;
+    b.evasion += (up.evasion || 0) * 0.005;
+    b.tackleMult += (up.tackle || 0) * 0.08;
+    b.bossDmg += (up.bossDmg || 0) * 0.03;
+    b.coinMult += (up.coin || 0) * 0.05;
+    b.companionAtkMult += (up.compAtk || 0) * 0.08;
     if (game.shopOwned.sword) b.atkMult += 0.25;
     if (game.shopOwned.shield) b.hpMult += 0.25;
     if (game.shopOwned.fairy) b.coinMult += 0.30;
@@ -1625,22 +1652,40 @@
     if (!isFinite(count) || count < 0) count = 0;
     while (count > 0 && sumUpgradeCost(id, L, count) > coins) count--;
     while (sumUpgradeCost(id, L, count + 1) <= coins) count++;
-    return count;
+    return Math.max(0, Math.min(count, getUpgradeLevelCap(id) - L)); // 上限レベルを超えない
   }
 
   function getUpgradeStatValue(id) {
     if (id === 'atk') return getPlayerAtk();
     if (id === 'hp') return getPlayerMaxHP();
     if (id === 'clash') return getPlayerClash();
+    const b = computeBonuses();
+    if (id === 'crit') return Math.min(1, CRIT_CHANCE + b.critChance);
+    if (id === 'critDmg') return CRIT_MULT + b.critMultBonus;
+    if (id === 'accuracy') return PLAYER_BASE_ACCURACY + b.accuracy;
+    if (id === 'evasion') return PLAYER_BASE_EVASION + b.evasion;
+    if (id === 'tackle') return b.tackleMult;
+    if (id === 'bossDmg') return b.bossDmg;
+    if (id === 'coin') return b.coinMult;
+    if (id === 'compAtk') return b.companionAtkMult;
     return 0;
   }
   function formatUpgradeStat(id, v) {
     if (id === 'clash') return +v.toFixed(1);
+    if (id === 'crit' || id === 'accuracy' || id === 'evasion') return +(v * 100).toFixed(1) + '%';
+    if (id === 'critDmg' || id === 'tackle' || id === 'coin' || id === 'compAtk') return '×' + +v.toFixed(2);
+    if (id === 'bossDmg') return '+' + +(v * 100).toFixed(0) + '%';
     return formatCoinNumber(Math.round(v));
   }
   function renderUpgradeList() {
-    upgradeList.innerHTML = Object.entries(UPGRADES).map(([id, upgrade]) => {
+    const row = ([id, upgrade]) => {
       const level = game.upgrades[id];
+      if (level >= getUpgradeLevelCap(id)) {
+        return `<div class="upgrade-row">
+        <button class="upgrade-btn is-disabled" data-upgrade="${id}"><span class="item-icon">${upgrade.icon}</span> ${upgrade.name} Lv.${level}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></button>
+        <button class="upgrade-max-btn is-disabled" data-upgrade-max="${id}">MAX<span>—</span></button>
+      </div>`;
+      }
       const cost = getUpgradeCost(id);
       const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
       // 実際の値（現在 → 強化後）
@@ -1652,6 +1697,10 @@
         <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${upgrade.icon}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
         <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
       </div>`;
+    };
+    upgradeList.innerHTML = UPGRADE_GROUPS.map(g => {
+      const items = Object.entries(UPGRADES).filter(([, u]) => u.group === g.id);
+      return `<div class="upgrade-group-title">${g.label}</div>` + items.map(row).join('');
     }).join('');
   }
   function renderShopList() {
@@ -4655,7 +4704,7 @@
     const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
     gainArtifact(pick.id);
     game.coins = 0; game.stage = 1;
-    game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0;
+    game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     game.companionSummons = 0;
     game.skillGachaPulls = 0;
@@ -5727,7 +5776,7 @@
     clearSave();
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
-    game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
+    game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -6007,6 +6056,7 @@
     if (maxButton) {
       if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
       const id = maxButton.dataset.upgradeMax;
+      if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', event.clientX, event.clientY); return; }
       const count = getMaxAffordableUpgradeLevels(id, game.coins);
       if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
       const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
@@ -6038,6 +6088,7 @@
   // コイン強化を1レベル上げる。成功したら true
   function levelUpUpgrade(id, x, y) {
     if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
+    if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', x, y); return false; }
     const cost = getUpgradeCost(id);
     if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
     spendCoins(cost);
@@ -6800,7 +6851,9 @@
   delete game.artifactSlots; delete game.extraArtifactSlots;
   if (game.evolutions) delete game.evolutions.swift;
   if (game.gachaShards) delete game.gachaShards.swift;
-  if (game.upgrades && typeof game.upgrades.clash !== 'number') game.upgrades.clash = 0; // 迫り合いは後から追加
+  // 後から追加した強化項目が古いセーブに無い場合は 0 で補完
+  if (!game.upgrades) game.upgrades = newUpgradeLevels();
+  for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0;
   // 古いセーブに後から追加したガチャ欠片が無い場合は 0 で補完（NaN 防止）
   for (const id in GACHA_POOL) {
     if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
