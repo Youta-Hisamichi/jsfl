@@ -4027,7 +4027,7 @@
       const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
       return {
         isPlayer: false,
-        x: arena.x + arena.radius * 0.3, y: arena.y,
+        ...farSpawnPoint(0.72),
         vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
         maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss,
         radius: es.isBoss ? 34 : 16,
@@ -4044,13 +4044,27 @@
       };
     }
   }
+  // 自機からできるだけ離れた出現位置（サークル内のランダムな候補から一番遠いもの）
+  function farSpawnPoint(maxR) {
+    const pl = balls.find(x => isMainPlayerBall(x));
+    const px = pl ? pl.x : arena.x - arena.radius * 0.3, py = pl ? pl.y : arena.y;
+    let best = { x: arena.x, y: arena.y }, bd = -1;
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2, r = arena.radius * maxR * Math.sqrt(0.35 + Math.random() * 0.65);
+      const x = arena.x + Math.cos(a) * r, y = arena.y + Math.sin(a) * r;
+      const d = (x - px) ** 2 + (y - py) ** 2;
+      if (d > bd) { bd = d; best = { x, y }; }
+    }
+    return best;
+  }
   function makeAddEnemy(mainEnemy) {
     const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * arena.radius * 0.6;
     const emoji = EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)];
+    // 自機から離れた場所に出現（ただし毎回同じ場所に固まらないよう、遠い候補からランダムに選ぶ）
+    const spot = farSpawnPoint(0.75);
     return {
       isPlayer: false, isAdd: true,
-      x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
+      x: spot.x + (Math.random() - 0.5) * 30, y: spot.y + (Math.random() - 0.5) * 30,
       vx: Math.cos(angle) * 3.4, vy: Math.sin(angle) * 3.4,
       radius: 11, maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
       atk: Math.max(1, Math.round(mainEnemy.atk * 0.4)),
