@@ -2663,7 +2663,7 @@
         } else if (e.traitState === 'windup' && e.traitTimer <= 0) {
           e.traitState = 'dash'; e.traitTimer = 30; e.traitFreeze = false; e.dashing = true;
           const ang = Math.atan2(a.y - e.y, a.x - e.x);
-          e.vx = Math.cos(ang) * 11; e.vy = Math.sin(ang) * 11;
+          e.vx = Math.cos(ang) * 7; e.vy = Math.sin(ang) * 7;
           playTone(180, 0.25, 'sawtooth', 0.14, 90);
         } else if (e.traitState === 'dash' && e.traitTimer <= 0) {
           e.traitState = null; e.dashing = false; e.traitCd = randTraitCd(trait);
@@ -4110,8 +4110,8 @@
   function moveCompanionCustom(ball, speedMult, player, enemy) {
     const style = ball.movementStyle;
     if (!CUSTOM_COMPANION_STYLES[style]) return false;
-    const base = 3.2 * (ball.speedFactor || 1);
-    const turn = Math.min(1, 0.12 * speedMult);
+    const base = WALK_SPEED * 1.1 * (ball.speedFactor || 1);
+    const turn = Math.min(1, WALK_TURN * 1.2 * speedMult);
     ball.moveT = (ball.moveT || Math.random() * 300) + speedMult;
     const t = ball.moveT;
     const hasEnemy = enemy && !enemy.isDying;
@@ -4172,6 +4172,7 @@
         steerToward(ball, arena.x + Math.cos(ang) * R, arena.y + Math.sin(ang) * R, base, turn);
       }
     }
+    applySeparation(ball, speedMult);
     ball.x += ball.vx * speedMult;
     ball.y += ball.vy * speedMult;
     wallBounce(ball);
@@ -4478,44 +4479,96 @@
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
-      if (ball.movementStyle === 'orbit') {
-        ball.orbitAngle += ball.orbitSpeed * speedMult;
-        ball.x = arena.x + Math.cos(ball.orbitAngle) * ball.orbitRadius;
-        ball.y = arena.y + Math.sin(ball.orbitAngle) * ball.orbitRadius;
-        ball.vx = -Math.sin(ball.orbitAngle) * ball.orbitRadius * ball.orbitSpeed;
-        ball.vy = Math.cos(ball.orbitAngle) * ball.orbitRadius * ball.orbitSpeed;
-      } else {
-        ball.x += ball.vx * speedMult;
-        ball.y += ball.vy * speedMult;
-        wallBounce(ball);
-      }
-
-      if (ball.movementStyle === 'gravity') {
-        ball.vy += 0.18 * speedMult;
-        const maxV = 11;
-        const mag = Math.hypot(ball.vx, ball.vy);
-        if (mag > maxV) { ball.vx = ball.vx / mag * maxV; ball.vy = ball.vy / mag * maxV; }
-      } else if (ball.movementStyle === 'zigzag') {
-        ball.zigzagTimer = (ball.zigzagTimer || 0) + speedMult;
-        if (ball.zigzagTimer > 40) {
-          ball.zigzagTimer = 0;
-          const curAngle = Math.atan2(ball.vy, ball.vx) + (Math.random() * 1.3 - 0.65);
-          const speedNow = Math.hypot(ball.vx, ball.vy) || 3.2;
-          ball.vx = Math.cos(curAngle) * speedNow;
-          ball.vy = Math.sin(curAngle) * speedNow;
-        }
-        const baseSpeed = (ball.isPlayer ? 3.2 * (ball.speedFactor || 1) : 3.2);
-        normalizeSpeed(ball, baseSpeed);
-      } else if (ball.isPlayer && !ball.isClone && !ball.isCompanion && isTackling()) {
+      if (isMainPlayerBall(ball) && isTackling()) { // タメ体当たり中は敵へ一直線
         steerTackle(ball);
-      } else if (ball.movementStyle !== 'orbit') {
-        const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
-        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult * (ball.tapSpeedMult || 1)) : 3.2;
-        const targetSpeed = baseSpeed * (boosted ? BOOST_MULT : 1);
-        normalizeSpeed(ball, targetSpeed);
+        ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+        wallBounce(ball);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
       }
+      walkBall(ball, speedMult, b);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
     }
+  }
+  // ---------- 人間らしい歩き移動 ----------
+  // 目標（味方なら最寄りの敵、敵なら最寄りの味方）へ歩いて近づく。加減速はなめらかで、ときどき立ち止まる
+  const WALK_SPEED = 1.5;   // 基本の歩く速さ（px/フレーム・ゲーム速度1倍）
+  const WALK_TURN = 0.06;   // 向き・速さの変わりやすさ（小さいほどゆったり）
+  function nearestOf(ball, list) {
+    let best = null, bd = Infinity;
+    for (const c of list) { const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2; if (d < bd) { bd = d; best = c; } }
+    return best;
+  }
+  // 同じ陣営どうしで重なりすぎないよう、近すぎる相手から少し離れる（人混みを避ける）
+  function applySeparation(ball, speedMult) {
+    const group = ball.isPlayer ? balls : [...balls, ...adds];
+    for (const o of group) {
+      if (o === ball || o.isPlayer !== ball.isPlayer || o.isDying) continue;
+      const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 0.01;
+      const space = ball.radius + o.radius + 14;
+      if (d < space) {
+        const push = (space - d) / space * 0.5 * speedMult;
+        ball.vx += dx / d * push; ball.vy += dy / d * push;
+      }
+    }
+  }
+  function walkBall(ball, speedMult, b) {
+    const w = ball.walk || (ball.walk = { pause: 0, next: 60 + Math.random() * 200 });
+    ball.moveT = (ball.moveT || Math.random() * 300) + speedMult;
+    const t = ball.moveT;
+    const isMain = isMainPlayerBall(ball);
+    // ときどき立ち止まる（タップで加速中の自機は止まらない）
+    w.next -= speedMult;
+    if (w.pause > 0) w.pause -= speedMult;
+    else if (w.next <= 0) { w.pause = 18 + Math.random() * 36; w.next = 160 + Math.random() * 220; }
+    let target, speed;
+    if (ball.isPlayer) {
+      target = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
+      const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
+      speed = WALK_SPEED * (isMain ? b.speedMult * (ball.tapSpeedMult || 1) : (ball.speedFactor || 1)) * (boosted ? BOOST_MULT : 1);
+      if (isMain && (ball.tapSpeedMult || 1) > 1) w.pause = 0;
+    } else {
+      target = nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0));
+      speed = WALK_SPEED * (ball.isAdd ? 1.1 : ball.isBoss ? 0.85 : 1);
+    }
+    let dvx = 0, dvy = 0;
+    if (target) {
+      const dx = target.x - ball.x, dy = target.y - ball.y, d = Math.hypot(dx, dy) || 1;
+      const nx = dx / d, ny = dy / d;
+      const style = ball.isPlayer ? 'normal' : ball.movementStyle;
+      if (style === 'orbit') {
+        // 相手のまわりを様子見しながら回り、ときどき踏み込む
+        const lunge = (t % 240) < 50;
+        const want = lunge ? 0 : 75;
+        const radial = Math.max(-1, Math.min(1, (d - want) / 60));
+        const side = ball.orbitSpeed > 0 ? 1 : -1;
+        dvx = (nx * radial - ny * side * 0.8) * speed; dvy = (ny * radial + nx * side * 0.8) * speed;
+      } else if (style === 'gravity') {
+        // ぴょんぴょん跳ねるように、止まっては踏み出す
+        const hop = (t % 70) < 22 ? 2.2 : 0.15;
+        dvx = nx * speed * hop; dvy = ny * speed * hop;
+      } else if (style === 'zigzag') {
+        // 左右にふらつきながら近づく
+        const sway = Math.sin(t / 22) * 0.9;
+        dvx = (nx - ny * sway) * speed; dvy = (ny + nx * sway) * speed;
+      } else {
+        // まっすぐ歩いて近づく（少しだけ揺らぎ）
+        const sway = Math.sin(t / 50 + (ball.walkSeed ??= Math.random() * 6)) * 0.25;
+        dvx = (nx - ny * sway) * speed; dvy = (ny + nx * sway) * speed;
+      }
+      if (w.pause > 0 && d > 50) { dvx *= 0.05; dvy *= 0.05; } // 立ち止まり
+    } else {
+      // 相手がいないときはゆっくりうろうろ
+      const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
+      dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
+    }
+    const turn = Math.min(1, WALK_TURN * speedMult);
+    ball.vx += (dvx - ball.vx) * turn;
+    ball.vy += (dvy - ball.vy) * turn;
+    applySeparation(ball, speedMult);
+    ball.x += ball.vx * speedMult;
+    ball.y += ball.vy * speedMult;
+    wallBounce(ball);
   }
 
   function updateBarrierOrbs(player, enemy, speedMult, b) {
@@ -5694,6 +5747,12 @@
   };
   // 味方・敵とも最も近い相手の方を向くように左右反転して描く（真上・真下付近では向きを保つ）
   function drawFacingSprite(img, ball, key, cx, cy, sz) {
+    // 歩いている間は上下に小さく弾む（歩行感）
+    if (!ball.isDying) {
+      const sp = Math.hypot(ball.vx || 0, ball.vy || 0);
+      ball.walkPhase = (ball.walkPhase || 0) + Math.min(sp, 4) * 0.16;
+      cy -= Math.abs(Math.sin(ball.walkPhase)) * Math.min(3, sp * 1.4);
+    }
     const base = SPRITE_FACING[key] || 0;
     let flip = false;
     if (base !== 0) {
