@@ -553,7 +553,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
-      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button>
     </div>
 
     <div class="speed-control">
@@ -5271,6 +5271,16 @@
       player.hp = 0;
       updateHPUI();
       onPlayerDeath();
+      return;
+    }
+    if (action === 'playerHp1' || action === 'enemyHp1') {
+      const target = action === 'playerHp1'
+        ? balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion)
+        : balls.find(ball => !ball.isPlayer && !ball.isDying);
+      if (phase !== 'battle' || !target) { showNotice('DEBUG: 戦闘中のみ使えます', true); return; }
+      target.hp = 1;
+      updateHPUI();
+      showNotice(action === 'playerHp1' ? 'DEBUG: 自分のHPを1にしました' : 'DEBUG: 敵のHPを1にしました');
       return;
     }
     if (action === 'slots') { openDebugSlots(); return; }
