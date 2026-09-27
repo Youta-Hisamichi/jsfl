@@ -1344,6 +1344,8 @@
     { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +40%（最大3個）', rarity: 'epic' },
     { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
   ];
+  const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
+  const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 猛攻の心臓・賢者の書・鉄壁の鎧
   const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
@@ -5116,7 +5118,10 @@
     game.skipChallenge = null;
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
-    const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
+    // 序盤（最初の数回の転生）は攻撃力・HPを上げる遺物だけが出る
+    const earlyRebirth = game.reincarnations < EARLY_REBIRTH_COUNT;
+    const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
+    const pick = rebirthPool[Math.floor(Math.random() * rebirthPool.length)];
     gainArtifact(pick.id);
     game.coins = 0; game.stage = 1;
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
