@@ -854,7 +854,7 @@
 
 <!-- 擬似インタースティシャル広告（ゲームオーバー後、リトライしなかった場合に表示） -->
 <div class="interstitial-ad" id="interstitialAd">
-  <div class="ia-top"><span class="ia-label">広告</span><button class="ia-close" id="interstitialCloseBtn" disabled>3</button></div>
+  <div class="ia-top"><span class="ia-label">広告</span><button class="ia-close" id="interstitialCloseBtn">✕</button></div>
   <div class="ia-body">
     <div class="ia-icon" id="interstitialIcon">🎮</div>
     <div class="ia-title" id="interstitialTitle">新作ゲーム配信中！</div>
@@ -5152,7 +5152,7 @@
   }
 
   // ---------- 擬似インタースティシャル広告 ----------
-  const INTERSTITIAL_WAIT_SEC = 3; // この秒数が経つと閉じるボタンが押せる
+  const INTERSTITIAL_WAIT_SEC = 0; // この秒数が経つと閉じるボタンが押せる（0ならすぐ閉じられる）
   const INTERSTITIAL_ADS = [
     { icon: '🎮', title: '新作ゲーム配信中！', text: '今すぐダウンロードして遊ぼう' },
     { icon: '🍜', title: 'あったか新メニュー登場', text: 'お近くの店舗でお試しください' },
@@ -5168,11 +5168,11 @@
     const box = document.getElementById('interstitialAd');
     const closeBtn = document.getElementById('interstitialCloseBtn');
     let left = INTERSTITIAL_WAIT_SEC;
-    closeBtn.disabled = true;
-    closeBtn.textContent = left;
+    closeBtn.disabled = left > 0;
+    closeBtn.textContent = left > 0 ? left : '✕';
     box.classList.add('show');
     clearInterval(interstitialTimer);
-    interstitialTimer = setInterval(() => {
+    if (left > 0) interstitialTimer = setInterval(() => {
       left--;
       if (left > 0) { closeBtn.textContent = left; return; }
       clearInterval(interstitialTimer);
