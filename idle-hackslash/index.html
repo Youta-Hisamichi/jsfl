@@ -3125,6 +3125,7 @@
   }
   // 味方の攻撃が敵に当たった直後に呼ぶ：寝込み攻撃の追加ダメージ＋毒付与
   function onPlayerHitEnemy(enemy, dmg) {
+    focusHpEnemy(enemy);
     if (isAsleep(enemy)) {
       enemy.asleepUntil = 0;
       const bonus = Math.max(1, Math.round(dmg * SLEEP_WAKE_BONUS));
@@ -4968,6 +4969,8 @@
             const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1))));
             add.hp -= dmg;
             trackDamage(dmg);
+            focusHpEnemy(add);
+            updateHPUI();
             spawnHitParticles(add.x, add.y, '#ffb35c');
             spawnAttackDamageText(add, dmg, crit, '#ffd9a0', 6);
             playEnemyHitSound();
@@ -4984,6 +4987,7 @@
         }
       }
       adds = adds.filter(add => add.hp > 0);
+      if (hpFocusEnemy && hpFocusEnemy.hp <= 0) updateHPUI(); // 表示中の敵を倒したら次の敵に切り替え
     }
   }
   // パーティクル・ダメージ等のテキスト演出を進める（ボスのWARNING中や撃破演出中も止めない）
@@ -4994,9 +4998,23 @@
     damageTexts = damageTexts.filter(d => d.life > 0);
   }
 
+  // 大群ステージでは、最後に攻撃した敵（本体または雑魚）のHPを表示する
+  let hpFocusEnemy = null;
+  function getHpDisplayEnemy() {
+    const main = balls.find(b => !b.isPlayer);
+    if (!main || main.isBoss || !isSwarmStage(game.stage)) return main;
+    const alive = e => e && e.hp > 0 && !e.isDying && (e === main || adds.includes(e));
+    if (alive(hpFocusEnemy)) return hpFocusEnemy;
+    if (main.isDying) return adds.find(ad => ad.hp > 0) || main; // 本体を倒した後は残りの雑魚を表示
+    return main;
+  }
+  function focusHpEnemy(enemy) {
+    if (!isSwarmStage(game.stage)) return;
+    if (hpFocusEnemy !== enemy) { hpFocusEnemy = enemy; updateHPUI(); }
+  }
   function updateHPUI() {
     const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
-    const en = balls.find(b => !b.isPlayer);
+    const en = getHpDisplayEnemy();
     if (!p || !en) return;
     playerHPFill.style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
     enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
