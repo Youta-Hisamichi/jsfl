@@ -5368,11 +5368,13 @@
       onClose();
     };
   }
-  // ゲームオーバー後にリトライしなかった：広告を表示し、閉じたら転生処理を開始
+  // ゲームオーバー後にリトライしなかった：（広告が有効なら表示し、閉じたら）転生処理を開始
+  const INTERSTITIAL_ENABLED = false; // 一旦停止中。true に戻すとゲームオーバー時の広告が復活する
   function reincarnateAfterAd() {
     clearInterval(continueTimer);
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
+    if (!INTERSTITIAL_ENABLED) { completeReincarnation(); return; }
     showInterstitialAd(() => completeReincarnation());
   }
 
