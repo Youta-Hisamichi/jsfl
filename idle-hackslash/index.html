@@ -249,6 +249,9 @@
 
   .record-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ring); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
   .record-panel.two { grid-template-columns: repeat(2, 1fr); }
+  .record-panel.one { grid-template-columns: 1fr; }
+  .artifact-progress { margin-bottom: 8px; padding: 8px; text-align: center; font-size: 0.75rem; color: var(--text-dim); background: var(--panel); border: 1px solid var(--ring); border-radius: 10px; }
+  .artifact-progress strong { color: var(--gold); font-size: 0.9rem; }
   .bestiary-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
   .bst-card { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; background: var(--bg-soft); border: 1px solid var(--ring); text-align: center; }
   .bst-card.boss { border-color: #ba6cff; box-shadow: 0 0 8px rgba(186,108,255,0.35) inset; }
@@ -577,6 +580,7 @@
   <div class="tab-page" data-tab="artifact">
     <div class="artifact-panel">
       <div class="title">所持アーティファクト（転生で入手・永続・所持している遺物はすべて効果を発揮）</div>
+      <div class="artifact-progress" id="artifactProgress">取得数 <strong>0 / 0</strong>　取得率 <strong>0%</strong></div>
       <div class="artifact-list" id="artifactList">
         <span class="artifact-empty">まだ何も持っていません</span>
       </div>
@@ -629,7 +633,7 @@
           <button class="modal-shop-btn" id="usernameSaveBtn" style="width:auto; padding:8px 14px;">保存</button>
         </div>
       </div>
-      <div class="record-panel two">
+      <div class="record-panel one">
         <div class="record">BEST<strong id="bestStageNum">1</strong>到達ステージ</div>
         <div class="record">BEST<strong id="bestCoinsNum">0</strong>コイン所持数</div>
         <div class="record">TOTAL<strong id="totalKillsNum">0</strong>キル</div>
@@ -930,6 +934,7 @@
   const dialogCloseBtn = document.getElementById('dialogCloseBtn');
 
   const artifactListEl = document.getElementById('artifactList');
+  const artifactProgressEl = document.getElementById('artifactProgress');
   const rankingList = document.getElementById('rankingList');
   const totalUserCountEl = document.getElementById('totalUserCount');
   const resetBtn = document.getElementById('resetBtn');
@@ -1796,6 +1801,10 @@
     game.ownedArtifacts[id] = (game.ownedArtifacts[id] || 0) + 1;
   }
   function renderArtifactList() {
+    const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
+    const total = ARTIFACT_POOL.length;
+    const rate = total ? Math.floor(ownedKinds / total * 100) : 0;
+    artifactProgressEl.innerHTML = `取得数 <strong>${ownedKinds} / ${total}</strong>　取得率 <strong>${rate}%</strong>`;
     artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
       const count = game.ownedArtifacts[a.id] || 0;
       const owned = count > 0;
