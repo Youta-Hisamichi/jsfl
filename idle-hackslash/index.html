@@ -3677,9 +3677,16 @@
   // 壁反射音：プレイヤー側／敵側で変える
   function playPlayerWallSound() { playTone(560, 0.07, 'sine', 0.07, 760); }
   function playEnemyWallSound() { playTone(320, 0.07, 'triangle', 0.07, 200); }
+  // 連鎖音：コンボが続くほど音階を1段ずつ上がり（ペンタトニック）、音量・厚みも増して高まっていく
+  const CHAIN_SCALE = [0, 2, 4, 7, 9];
   function playChainSound(n) {
-    const freq = Math.min(1600, 480 + n * 55);
-    playTone(freq, 0.07, 'triangle', 0.15, freq * 1.3);
+    const step = Math.min(n - 2, 14); // 2コンボ目から始めて最大15段
+    const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
+    const freq = 523.25 * Math.pow(2, semis / 12); // C5 から上昇
+    const heat = Math.min(1, step / 14);
+    playTone(freq, 0.08 + heat * 0.06, 'triangle', 0.12 + heat * 0.08, freq * 1.06);
+    if (step >= 4) playTone(freq * 1.5, 0.07 + heat * 0.05, 'sine', 0.05 + heat * 0.05);           // 5度上の和音
+    if (step >= 9) setTimeout(() => playTone(freq * 2, 0.06, 'square', 0.04 + heat * 0.03), 40); // きらめき
   }
   function playStageClearSound() {
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.16), i * 110));
