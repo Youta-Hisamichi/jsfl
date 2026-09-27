@@ -3990,7 +3990,9 @@
       }
       adds = adds.filter(add => add.hp > 0);
     }
-
+  }
+  // パーティクル・ダメージ等のテキスト演出を進める（ボスのWARNING中や撃破演出中も止めない）
+  function updateBattleFx() {
     for (const p of particles) { p.x += p.vx; p.y += p.vy; p.life -= (p.decay || 0.04); }
     particles = particles.filter(p => p.life > 0);
     for (const d of damageTexts) { d.y += d.vy; d.life -= (d.decay || 0.018); }
@@ -5004,7 +5006,7 @@
     try {
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
-        if (phase === 'battle') { updateRegen(); step(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
+        if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
         else updateDeathFx();
       } else {
         hitStopFrames--;
