@@ -250,8 +250,8 @@
   .record-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ring); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
   .record-panel.two { grid-template-columns: repeat(2, 1fr); }
   .record-panel.one { grid-template-columns: 1fr; }
-  .record-panel.one .record { display: flex; align-items: center; gap: 6px; padding: 8px 12px; text-align: left; }
-  .record-panel.one .record strong { display: inline; order: 1; margin-left: 4px; }
+  .record-panel.one .record { display: grid; grid-template-columns: 5em 9em 1fr; align-items: center; column-gap: 6px; padding: 8px 12px; text-align: left; }
+  .record-panel.one .record strong { display: block; order: 1; }
   .artifact-progress { margin-bottom: 8px; padding: 8px; text-align: center; font-size: 0.75rem; color: var(--text-dim); background: var(--panel); border: 1px solid var(--ring); border-radius: 10px; }
   .artifact-progress strong { color: var(--gold); font-size: 0.9rem; }
   .bestiary-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
