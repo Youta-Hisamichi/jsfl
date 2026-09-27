@@ -2115,6 +2115,18 @@
     if (t.full) shakeScreenLight(); // 控えめな揺れのみ（円周を赤く光らせる演出はしない）
     updateHPUI();
   }
+  // 相打ち：タックルを当てた直後、ボスのトゲで自機もダメージを受ける（回避不可・バリアでは防げる）
+  function tackleTrade(a, e) {
+    spawnDamageText((a.x + e.x) / 2, Math.min(a.y, e.y) - 40, '相打ち！', '#ff6b6b', 0.014, true);
+    spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ff6b6b');
+    shakeScreenLight();
+    if (absorbWithBarrier(a)) { updateHPUI(); return; }
+    const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * TACKLE_TRADE_DMG_MULT)));
+    a.hp -= dmg;
+    spawnReceivedDamageText(a, dmg, crit, e);
+    playPlayerHitSound();
+    updateHPUI();
+  }
   function drawTackleEffects() {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (!player) return;
@@ -3253,12 +3265,16 @@
 
   // ---------- ボール生成 ----------
   const EMOJI_ENEMIES = ['👹', '👺', '💀', '👻', '🎃', '🐉', '🦂', '🕷️', '🦇', '👾', '🧟', '🐺', '🦖', '🐲'];
-  const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲'];
+  const BOSS_EMOJIS = ['👹', '🐉', '💀', '🦖', '👺', '🐲', '🦔'];
+  // 針鎧の王：タメ体当たりを受けると、一定確率でトゲで反撃して相打ちになる
+  const TACKLE_TRADE_BOSS = '🦔';
+  const TACKLE_TRADE_CHANCE = 0.4;
+  const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）
   // ---------- 敵図鑑 ----------
   const SHAPE_ENEMY_NAMES = { spike: 'レッドスパイク', diamond: 'フレイムクリスタル', hex: 'グリーンヘキサ', square: 'ピンクキューブ' };
   const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
   const EMOJI_ENEMY_NAMES = { '👹': '赤鬼', '👺': '天狗', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'パンプキン', '🐉': 'ドラゴン', '🦂': '毒サソリ', '🕷️': '大蜘蛛', '🦇': '吸血コウモリ', '👾': 'インベーダー', '🧟': 'ゾンビ', '🐺': 'ウルフ', '🦖': 'ティラノ', '🐲': '竜の子' };
-  const BOSS_ENEMY_NAMES = { '👹': '鬼王', '🐉': '古代竜', '💀': '死霊王', '🦖': '暴君竜', '👺': '大天狗', '🐲': '竜帝' };
+  const BOSS_ENEMY_NAMES = { '👹': '鬼王', '🐉': '古代竜', '💀': '死霊王', '🦖': '暴君竜', '👺': '大天狗', '🐲': '竜帝', '🦔': '針鎧の王' };
   const ENEMY_BOOK = [
     ...Object.keys(SHAPE_ENEMY_NAMES).map(shape => ({ key: 'shape:' + shape, kind: 'normal', name: SHAPE_ENEMY_NAMES[shape], shape, color: SHAPE_ENEMY_COLORS[shape] })),
     ...EMOJI_ENEMIES.map(em => ({ key: 'emoji:' + em, kind: 'normal', name: EMOJI_ENEMY_NAMES[em], icon: em })),
@@ -3810,7 +3826,9 @@
     if (collided && isTackling()) {
       // タメ打ちの体当たり：迫り合い・命中判定なしで必ず当たり、敵は反撃できない
       performTackleHit(a, e, b);
-      if (e.hp <= 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
+      if (e.isBoss && e.emoji === TACKLE_TRADE_BOSS && Math.random() < TACKLE_TRADE_CHANCE) tackleTrade(a, e);
+      if (e.hp <= 0 && a.hp > 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
+      else if (a.hp <= 0) { onPlayerDeath(); return; }
     } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
       a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
       const combo = registerHit();
