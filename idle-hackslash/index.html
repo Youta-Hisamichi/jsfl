@@ -282,10 +282,6 @@
   .battle-notice.show { opacity: 1; }
   .battle-notice.error { color: #ff9aa5; border: 1px solid #ff5c6c; }
   .battle-notice.at-tap { transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
-  .tap-boost { position: absolute; left: 2%; top: 2%; z-index: 2; color: #d2f7ff; background: rgba(8,11,18,.75); border: 1px solid rgba(100,232,255,.55); padding: 4px 8px; border-radius: 10px; font-size: .62rem; font-weight: 800; pointer-events: none; opacity: 0; transition: opacity .3s; min-width: 92px; }
-  .tap-boost.show { opacity: 1; }
-  .tap-boost-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-top: 3px; }
-  .tap-boost-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #64e8ff, #4f7bff); }
   .clone-counter { position: absolute; right: 2%; top: 2%; z-index: 2; color: #b9e0ff; background: rgba(8,11,18,.75); border: 1px solid rgba(134,197,255,.55); padding: 4px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; pointer-events: none; }
   .boss-warning {
     position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
@@ -503,7 +499,6 @@
     <div class="arena-wrap">
       <canvas id="arenaCanvas"></canvas>
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
-      <div class="tap-boost" id="tapBoost"><span>💨 タップ加速</span><div class="tap-boost-track"><div class="tap-boost-fill" id="tapBoostFill"></div></div></div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
       <div class="record-badge" id="recordBadge"></div>
       <div class="loot-popup" id="lootPopup"></div>
@@ -1189,8 +1184,8 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップすると、自機が敵に向かって進みます（敵をタップすると突進）。\n・サークルをタップするほど自機が速くなります（タップをやめると元に戻ります）。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap inside the arena to steer your ball toward the enemy (tap the enemy to charge at it).\nThe more you tap the arena, the faster your ball moves (it slows back down when you stop).\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップすると、自機が敵に向かって進みます。\n・サークルを長押ししてから離すと、敵を追尾する強力な体当たり（タメ打ち）を放ちます。長く押すほど強力です。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nTap inside the arena to steer your ball toward the enemy.\nPress and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets.\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
   const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -2117,7 +2112,6 @@
       if (Math.random() < 0.3) particles.push({ x: player.x, y: player.y, vx: -player.vx * 0.15 + (Math.random() - 0.5), vy: -player.vy * 0.15 + (Math.random() - 0.5), life: 0.7, color: '#ffb35c', decay: 0.05 });
     }
   }
-  const BOOST_DURATION = 2500;
   const BOOST_MULT = 1.9;
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
   const BARRIER_COOLDOWN = 4 * 60 * 1000;
@@ -3156,34 +3150,6 @@
   function playHomingHitSound() { playNoiseBurst(0.1, 0.18); playTone(260, 0.12, 'square', 0.12, 120); }
   function playBarrierBreakSound() { playNoiseBurst(0.18, 0.2); playTone(900, 0.25, 'square', 0.14, 180); }
 
-  // ---------- タップ加速 ----------
-  // ゲームサークルをタップするたびに自機（と分身）の移動速度が上がり、タップをやめると少しして元に戻る
-  const TAP_BOOST_PER_TAP = 0.08;   // 1タップあたり +8%
-  const TAP_BOOST_MAX = 1.0;        // 最大 +100%（2倍速）
-  const TAP_BOOST_HOLD_MS = 1500;   // 最後のタップからこの時間は維持
-  const TAP_BOOST_DECAY_PER_SEC = 0.5;
-  let tapBoost = 0;
-  let lastTapBoostAt = 0;
-  let lastTapBoostTick = Date.now();
-  const tapBoostEl = document.getElementById('tapBoost');
-  const tapBoostFill = document.getElementById('tapBoostFill');
-  function addTapBoost() {
-    tapBoost = Math.min(TAP_BOOST_MAX, tapBoost + TAP_BOOST_PER_TAP);
-    lastTapBoostAt = Date.now();
-  }
-  function updateTapBoost() {
-    const now = Date.now();
-    const dt = (now - lastTapBoostTick) / 1000;
-    lastTapBoostTick = now;
-    if (tapBoost > 0 && now - lastTapBoostAt > TAP_BOOST_HOLD_MS) tapBoost = Math.max(0, tapBoost - TAP_BOOST_DECAY_PER_SEC * dt);
-    tapBoostEl.classList.toggle('show', tapBoost > 0);
-    if (tapBoost > 0) {
-      tapBoostEl.firstElementChild.textContent = `💨 タップ加速 +${Math.round(tapBoost * 100)}%`;
-      tapBoostFill.style.width = (tapBoost / TAP_BOOST_MAX * 100) + '%';
-    }
-  }
-  function getTapBoostMult() { return 1 + tapBoost; }
-
   function getEffectiveSpeed() {
     return Date.now() < accelEndAt ? 2.5 : gameSpeed;
   }
@@ -3652,7 +3618,7 @@
         steerTackle(ball);
       } else if (ball.movementStyle !== 'orbit') {
         const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
-        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult * getTapBoostMult()) : 3.2;
+        const baseSpeed = ball.isPlayer ? 3.2 * (ball.isCompanion ? (ball.speedFactor || 1) : b.speedMult) : 3.2;
         const targetSpeed = baseSpeed * (boosted ? BOOST_MULT : 1);
         normalizeSpeed(ball, targetSpeed);
       }
@@ -4944,7 +4910,6 @@
       } else {
         hitStopFrames--;
       }
-      updateTapBoost();
       updateTackleHold();
       draw();
     } catch (err) {
@@ -5730,8 +5695,7 @@
     const y = (event.clientY - rect.top) * (size / rect.height);
     const dx = x - arena.x, dy = y - arena.y;
     if (Math.hypot(dx, dy) < arena.radius - 12) {
-      addTapBoost();
-      // 長押しでタメ開始（クールダウン中・体当たり中は不可）
+      // 長押しでタメ開始
       arenaHeld = true;
       updateTackleHold();
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -5748,13 +5712,6 @@
           player.vy = (tdy / tdist) * speed;
           spawnTapMarker(x, y);
         }
-      }
-      if (enemy && player && Math.hypot(x - enemy.x, y - enemy.y) < enemy.radius + 10) {
-        // 敵をタップ → 自機が敵に向かって突進（少しの間加速）
-        player.boostUntil = Date.now() + BOOST_DURATION;
-        spawnHitParticles(player.x, player.y, '#4fa8ff');
-        playAccelSound();
-        return;
       }
       game.totalTaps++;
       if (!CLONES_ENABLED) { updateStatsUI(); return; }
