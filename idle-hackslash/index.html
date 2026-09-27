@@ -598,6 +598,7 @@
     <div class="artifact-panel">
       <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button></div>
+      <div class="artifact-progress" id="companionProgress">仲間図鑑　取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
       <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
       <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
@@ -1448,6 +1449,7 @@
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
+    companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
     startedAt: Date.now(),
@@ -1647,6 +1649,13 @@
     return c.levelCostBase * (game.companions.level[id] + 1);
   }
   function renderCompanionList() {
+    // 仲間図鑑：一度でも仲間にした種類数（転生しても残る）。今の仲間も図鑑に登録しておく（古いセーブ対応）
+    if (!game.companionBook) game.companionBook = {};
+    for (const id in game.companions.recruited) if (game.companions.recruited[id] && COMPANIONS[id]) game.companionBook[id] = true;
+    const compIds = Object.keys(COMPANIONS);
+    const found = compIds.filter(id => game.companionBook[id]).length;
+    const compRate = (compIds.length ? Math.floor(found / compIds.length * 1000) / 10 : 0).toFixed(1);
+    document.getElementById('companionProgress').innerHTML = `仲間図鑑　取得数 <strong>${found} / ${compIds.length}</strong>　取得率 <strong>${compRate}%</strong>`;
     const pc = document.getElementById('partyCount');
     if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${COMPANION_PARTY_MAX}人`;
     companionList.innerHTML = Object.entries(COMPANIONS).map(([id, c]) => {
@@ -1693,6 +1702,8 @@
     if (getCompanionTotal() < COMPANION_PARTY_MAX) {
       const isNew = !cp.recruited[id];
       cp.recruited[id] = true;
+      if (!game.companionBook) game.companionBook = {};
+      game.companionBook[id] = true;
       cp.count[id] = getCompanionCount(id) + 1;
       if (!cp.hp) cp.hp = {};
       if (!cp.alive) cp.alive = {};
@@ -5045,7 +5056,7 @@
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
