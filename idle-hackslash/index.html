@@ -3978,7 +3978,7 @@
     const nextIsBoss = game.stage % 10 === 0;
     if (nextIsBoss) {
       // ボスはワーニング演出が消えた後に、それっぽく出現させる（この間も操作・自機の動きは止めない）
-      spawnBossWithWarning(false);
+      spawnBossWithWarning();
     } else {
       spawnNextEnemy();
       refreshPlayerBallStats(false); // 敵を倒しても自機のHPは回復しない
@@ -4216,14 +4216,14 @@
     }
     balls = [...allies, makeBall(false)];
   }
-  function spawnBossWithWarning(healFull = true) {
+  function spawnBossWithWarning() {
     showBossWarning();
     balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
     setTimeout(() => {
       spawnNextEnemy();
       const bossBall = balls.find(ball => ball.isBoss);
       if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
-      refreshPlayerBallStats(healFull);
+      refreshPlayerBallStats(false); // ボス出現時（スキップ挑戦含む）も自機のHPは回復しない
       updateHPUI();
       startBgm('boss');
     }, 1850);
