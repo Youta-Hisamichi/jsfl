@@ -121,6 +121,20 @@
   .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
   .upgrade-btn .upgrade-value { display: block; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
   .upgrade-btn .upgrade-value b { color: var(--gold); }
+  .interstitial-ad { position: fixed; inset: 0; z-index: 95; display: none; flex-direction: column; background: linear-gradient(160deg, #1b2a4a, #0b1020); color: #fff; padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); }
+  .interstitial-ad.show { display: flex; animation: iaFadeIn 0.25s ease-out; }
+  @keyframes iaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .ia-top { display: flex; justify-content: space-between; align-items: center; }
+  .ia-label { font-size: 0.7rem; font-weight: 800; background: rgba(255,255,255,0.18); border-radius: 4px; padding: 2px 8px; }
+  .ia-close { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.35); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; }
+  .ia-close:disabled { opacity: 0.6; cursor: default; }
+  .ia-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; }
+  .ia-icon { font-size: 5rem; animation: iaBounce 1.2s ease-in-out infinite; }
+  @keyframes iaBounce { 50% { transform: translateY(-10px) scale(1.05); } }
+  .ia-title { font-size: 1.5rem; font-weight: 900; }
+  .ia-text { font-size: 0.9rem; opacity: 0.85; }
+  .ia-cta { margin-top: 10px; padding: 12px 36px; border-radius: 999px; background: #ffd76b; color: #3a2a00; font-weight: 900; }
+  .ia-note { text-align: center; font-size: 0.65rem; opacity: 0.5; }
   .sub-tabs { display: flex; gap: 6px; margin: 0 0 10px; overflow-x: auto; flex-shrink: 0; }
   .sub-tab-btn { flex: 1 0 auto; padding: 7px 10px; border-radius: 999px; border: 1px solid var(--ring); background: var(--bg-soft); color: var(--text-dim); font-size: 0.74rem; font-weight: 800; cursor: pointer; white-space: nowrap; }
   .sub-tab-btn.active { background: var(--gold); border-color: var(--gold); color: #3a2a00; }
@@ -836,6 +850,18 @@
     <button class="modal-close-btn" id="rewardAdClaimBtn" style="display:none;"></button>
     <button class="modal-shop-btn" id="rewardAdCloseBtn" style="justify-content:center; margin-top:8px;"><span class="msb-name">閉じる（報酬なし）</span></button>
   </div>
+</div>
+
+<!-- 擬似インタースティシャル広告（ゲームオーバー後、リトライしなかった場合に表示） -->
+<div class="interstitial-ad" id="interstitialAd">
+  <div class="ia-top"><span class="ia-label">広告</span><button class="ia-close" id="interstitialCloseBtn" disabled>3</button></div>
+  <div class="ia-body">
+    <div class="ia-icon" id="interstitialIcon">🎮</div>
+    <div class="ia-title" id="interstitialTitle">新作ゲーム配信中！</div>
+    <div class="ia-text" id="interstitialText">今すぐダウンロードして遊ぼう</div>
+    <div class="ia-cta">詳しく見る</div>
+  </div>
+  <div class="ia-note">※これはダミーの広告表示です</div>
 </div>
 
 <div class="modal-overlay" id="debugSlotModal" style="z-index:72;">
@@ -5106,10 +5132,53 @@
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
       toastSub.textContent = `残り ${seconds} 秒　💎 3 で現在ステージをリトライ`;
-      if (seconds <= 0) { clearInterval(continueTimer); completeReincarnation(); }
+      if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
     };
     updateContinue();
     continueTimer = setInterval(updateContinue, 200);
+  }
+
+  // ---------- 擬似インタースティシャル広告 ----------
+  const INTERSTITIAL_WAIT_SEC = 3; // この秒数が経つと閉じるボタンが押せる
+  const INTERSTITIAL_ADS = [
+    { icon: '🎮', title: '新作ゲーム配信中！', text: '今すぐダウンロードして遊ぼう' },
+    { icon: '🍜', title: 'あったか新メニュー登場', text: 'お近くの店舗でお試しください' },
+    { icon: '📱', title: '最新スマホが今なら特価', text: '期間限定キャンペーン実施中' },
+    { icon: '✈️', title: '週末は旅に出よう', text: '人気ツアーが最大50%OFF' },
+  ];
+  let interstitialTimer = null;
+  function showInterstitialAd(onClose) {
+    const ad = INTERSTITIAL_ADS[Math.floor(Math.random() * INTERSTITIAL_ADS.length)];
+    document.getElementById('interstitialIcon').textContent = ad.icon;
+    document.getElementById('interstitialTitle').textContent = ad.title;
+    document.getElementById('interstitialText').textContent = ad.text;
+    const box = document.getElementById('interstitialAd');
+    const closeBtn = document.getElementById('interstitialCloseBtn');
+    let left = INTERSTITIAL_WAIT_SEC;
+    closeBtn.disabled = true;
+    closeBtn.textContent = left;
+    box.classList.add('show');
+    clearInterval(interstitialTimer);
+    interstitialTimer = setInterval(() => {
+      left--;
+      if (left > 0) { closeBtn.textContent = left; return; }
+      clearInterval(interstitialTimer);
+      closeBtn.disabled = false;
+      closeBtn.textContent = '✕';
+    }, 1000);
+    closeBtn.onclick = () => {
+      if (closeBtn.disabled) return;
+      closeBtn.onclick = null;
+      box.classList.remove('show');
+      onClose();
+    };
+  }
+  // ゲームオーバー後にリトライしなかった：広告を表示し、閉じたら転生処理を開始
+  function reincarnateAfterAd() {
+    clearInterval(continueTimer);
+    continueBtn.style.display = 'none';
+    giveUpBtn.style.display = 'none';
+    showInterstitialAd(() => completeReincarnation());
   }
 
   function completeReincarnation() {
@@ -6346,7 +6415,7 @@
     clearInterval(continueTimer);
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
-    completeReincarnation();
+    reincarnateAfterAd();
   });
 
   const DEBUG_ACTION_LABELS = {
