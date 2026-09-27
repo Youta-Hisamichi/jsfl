@@ -1467,6 +1467,7 @@
       effect: () => { gainArtifact(a.id); } };
   });
   function isRebirthItemMaxed(item) {
+    if (item.companionId) return isCompanionUnlocked(item.companionId);
     if (!item.artifactId) return false;
     const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
     return !!limit && (game.ownedArtifacts[item.artifactId] || 0) >= limit;
@@ -1519,6 +1520,15 @@
     return COMPANION_SPRITES[id] ? `<img class="comp-sprite" src="${COMPANION_SPRITES[id]}" alt="">` : COMPANIONS[id].icon;
   }
   const COMPANION_IDS = Object.keys(COMPANIONS);
+  // エピック以上の仲間は転生ショップで開放しないと仲間召喚に出ない（開放は転生しても永続）
+  const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
+  function companionNeedsUnlock(id) { return !!COMPANION_UNLOCK_COST[COMPANIONS[id].rarity]; }
+  function isCompanionUnlocked(id) { return !companionNeedsUnlock(id) || !!(game.companionUnlocks && game.companionUnlocks[id]); }
+  COMPANION_IDS.filter(companionNeedsUnlock).forEach(id => {
+    const c = COMPANIONS[id];
+    REBIRTH_SHOP_ITEMS['comp_' + id] = { icon: c.icon, name: c.name + ' 開放', desc: '仲間召喚で出るようになる（永続）', rarity: c.rarity, cost: COMPANION_UNLOCK_COST[c.rarity], companionId: id,
+      effect: () => { if (!game.companionUnlocks) game.companionUnlocks = {}; game.companionUnlocks[id] = true; renderCompanionList(); } };
+  });
   function companionMap(value) { const m = {}; COMPANION_IDS.forEach(id => m[id] = value); return m; }
   const GOLEM_HP_MULT = 2;
   const MONK_EXTRA_HIT_RATIO = 0.5;
@@ -1548,6 +1558,7 @@
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
+    companionUnlocks: {}, // 転生ショップで開放した仲間 { id: true }（転生しても残る）
     companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
@@ -1786,9 +1797,10 @@
       const short = !maxed && game.gems < item.cost;
       const count = game.ownedArtifacts[item.artifactId] || 0;
       const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
-      const owned = `所持 ${count}${limit ? ' / ' + limit : ''}`;
+      const owned = item.companionId ? (maxed ? '開放済み' : '未開放') : `所持 ${count}${limit ? ' / ' + limit : ''}`;
       const rar = RARITY_INFO[item.rarity];
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${item.icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? '上限' : '💎 ' + item.cost}</span></button>`;
+      const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)} ${rar.label}</span><span class="msb-desc">${item.desc}</span><span class="msb-desc">${owned}</span></span><span class="msb-cost">${maxed ? (item.companionId ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
 
@@ -1811,7 +1823,7 @@
       const rar = RARITY_INFO[c.rarity];
       const rarTag = `<span class="cc-rarity" style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>`;
       if (!recruited) {
-        return `<div class="companion-card not-owned"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag}<span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><span class="cc-locked">🔒 未入手（仲間召喚で入手）</span></div>`;
+        return `<div class="companion-card not-owned"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag}<span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><span class="cc-locked">${isCompanionUnlocked(id) ? '🔒 未入手（仲間召喚で入手）' : `🔒 未開放（転生ショップで開放：💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</span></div>`;
       }
       const aw = getCompanionAwaken(id);
       const awTag = `<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span> <span class="cc-count">×${getCompanionCount(id)}人</span>`;
@@ -1833,7 +1845,7 @@
   }
   const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
   function pickCompanionId() {
-    const entries = Object.entries(COMPANIONS);
+    const entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id)); // 未開放の仲間は出ない
     let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
     for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }
     return entries[0][0];
@@ -4880,7 +4892,7 @@
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
   function showRebirthPurchaseMessage(item) {
     const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
-    const owned = `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
+    const owned = item.companionId ? '' : `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
     rebirthShopMsg.innerHTML = `✅ ${item.icon} ${item.name} を購入！<br><span style="color:#2ea043;">${item.desc}${owned}</span>`;
     rebirthShopMsg.classList.remove('show');
     void rebirthShopMsg.offsetWidth; // 連続購入でもアニメーションを再生
@@ -5887,7 +5899,7 @@
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -6530,7 +6542,7 @@
     if (!button) return;
     const id = button.dataset.rebirthShop;
     const item = REBIRTH_SHOP_ITEMS[id];
-    if (isRebirthItemMaxed(item)) { showTapError('所持上限に達しています', event.clientX, event.clientY); return; }
+    if (isRebirthItemMaxed(item)) { showTapError(item.companionId ? 'すでに開放しています' : '所持上限に達しています', event.clientX, event.clientY); return; }
     if (game.gems < item.cost) { promptGemShortage(item.cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }); return; }
     game.gems -= item.cost;
     item.effect();
