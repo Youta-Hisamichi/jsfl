@@ -1136,7 +1136,12 @@
     const page = document.querySelector('.tab-page.active');
     return page ? page.dataset.tab : 'game';
   }
+  // 戦闘中の効果音は、ゲーム画面を開いているときだけ鳴らす
+  let battleSfx = false;
+  let activeTabCache = 'game';
+  function isBattleSfxMuted() { return battleSfx && activeTabCache !== 'game'; }
   function switchTab(name) {
+    activeTabCache = name;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
     if (name === 'records') renderBestiary();
@@ -3735,7 +3740,7 @@
     recordBadge.classList.remove('show');
     void recordBadge.offsetWidth; // アニメーションを最初から再生
     recordBadge.classList.add('show');
-    playTone(1318.5, 0.12, 'triangle', 0.12, 1760);
+    if (activeTabCache === 'game') playTone(1318.5, 0.12, 'triangle', 0.12, 1760);
   }, 250);
 
   function formatDuration(ms) {
@@ -3952,7 +3957,7 @@
     clearTimeout(bgmTimer);
   }
   function playTone(freq, duration, type, startGain, glideTo) {
-    if (!audioCtx) return;
+    if (!audioCtx || isBattleSfxMuted()) return;
     const t0 = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -3965,7 +3970,7 @@
     osc.start(t0); osc.stop(t0 + duration);
   }
   function playNoiseBurst(duration, startGain) {
-    if (!audioCtx) return;
+    if (!audioCtx || isBattleSfxMuted()) return;
     const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -3981,7 +3986,7 @@
   }
   // 足音：ローパスをかけた短いノイズで「トッ」という踏み込み音（pitch で高さ、gain で強さ）
   function playFootstep(pitch, gainAmt) {
-    if (!audioCtx) return;
+    if (!audioCtx || isBattleSfxMuted()) return;
     const dur = 0.05;
     const size = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
     const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
@@ -4005,7 +4010,7 @@
   // ---------- こちらの攻撃音（斬撃・打撃のバリエーション） ----------
   // フィルターをかけたノイズを周波数スイープさせて「シュッ」「ザシュ」などの音を作る
   function noiseSweep(dur, f0, f1, filterType, q, gainAmt, delay = 0) {
-    if (!audioCtx) return;
+    if (!audioCtx || isBattleSfxMuted()) return;
     const t0 = audioCtx.currentTime + delay;
     const size = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
     const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
@@ -4024,7 +4029,7 @@
   }
   // 「ドッ」という低い衝撃音
   function thump(f0, f1, dur, gainAmt, type = 'sine', delay = 0) {
-    if (!audioCtx) return;
+    if (!audioCtx || isBattleSfxMuted()) return;
     const t0 = audioCtx.currentTime + delay;
     const osc = audioCtx.createOscillator(); osc.type = type;
     osc.frequency.setValueAtTime(f0, t0);
@@ -4079,6 +4084,24 @@
     noiseSweep(0.12, 5000, 1500, 'bandpass', 1.2, 0.35);          // 打撃の破裂音
     playTone(330, 0.7, 'sawtooth', 0.16, 45);                     // 力が抜けて落ちる音
     setTimeout(() => thump(70, 30, 0.35, 0.5, 'triangle'), 180);  // 地面に落ちる
+  }
+  // コンテニューのカウントダウン音：1秒ごとに「ピッ」、残り3秒からは高く強く
+  function playCountdownTick(sec) {
+    const urgent = sec <= 3;
+    playTone(urgent ? 1320 : 880, urgent ? 0.14 : 0.09, 'square', urgent ? 0.13 : 0.08);
+    if (urgent) setTimeout(() => playTone(1760, 0.06, 'square', 0.06), 70);
+  }
+  // ボス撃破：豪華なファンファーレ（ジャーン！＋上昇アルペジオ＋和音＋シンバル）
+  function playBossClearSound() {
+    thump(110, 40, 0.5, 0.7);
+    noiseSweep(1.1, 9000, 2500, 'highpass', 0.6, 0.35);                 // シンバル
+    [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'square', 0.1), i * 70));
+    setTimeout(() => {
+      [523.25, 659.25, 783.99, 1046.5].forEach(f => playTone(f, 1.1, 'triangle', 0.1));   // ジャーン（和音）
+      playTone(261.63, 1.1, 'sawtooth', 0.06);
+      noiseSweep(0.8, 7000, 2000, 'highpass', 0.6, 0.25);
+    }, 460);
+    [1046.5, 1318.5, 1567.98, 2093].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'sine', 0.07), 1000 + i * 90)); // キラキラ
   }
   // 大群ステージ開始：「デデドン！」というやらかし系ジングル
   function playSwarmSound() {
@@ -5281,7 +5304,7 @@
     if (isMetal) spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
     game.coins += coinGain;
     if (isBossStage) game.gems += 5;
-    playStageClearSound();
+    if (isBossStage) playBossClearSound(); else playStageClearSound();
     spawnCoinBurst(arena.x, arena.y - 10, coinGain);
     if (isBossStage) spawnDamageText(arena.x, arena.y, '+5 💎', '#64e8ff');
     if (isBossStage && Math.random() < 0.35) {
@@ -5403,8 +5426,10 @@
   }
   function startContinueCountdown() {
     clearInterval(continueTimer);
+    let lastTickSec = null;
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
+      if (seconds !== lastTickSec && seconds > 0) { lastTickSec = seconds; playCountdownTick(seconds); }
       toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 3 で現在ステージをリトライ`;
       if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
     };
@@ -6570,6 +6595,7 @@
   }
 
   function loop() {
+    battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
     try {
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
@@ -6586,6 +6612,7 @@
       // 予期しないエラーが発生してもゲームループ自体は継続させる（フリーズ防止）
       console.error('ゲームループ内でエラーが発生しました:', err);
     }
+    battleSfx = false;
     animId = requestAnimationFrame(loop);
   }
 
