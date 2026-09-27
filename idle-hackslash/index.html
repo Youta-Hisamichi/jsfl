@@ -5707,9 +5707,8 @@
       const enemy = balls.find(ball => !ball.isPlayer);
       // サークルをタップ → 自機が加速（敵に衝突するまで持続）
       if (player) player.tapSpeedMult = Math.min(TAP_ACCEL_MAX, (player.tapSpeedMult || 1) + TAP_ACCEL_PER_TAP);
-      // 自機以外をタップしたときは敵の方へ向きを変える（自機をタップしたときは向きを変えない）
-      const tappedSelf = player && Math.hypot(x - player.x, y - player.y) < player.radius + 10;
-      if (player && enemy && !tappedSelf) {
+      // 敵の方へ向きを変える（自機をタップしたときも同様）
+      if (player && enemy) {
         const tdx = enemy.x - player.x, tdy = enemy.y - player.y;
         const tdist = Math.hypot(tdx, tdy);
         if (tdist > 4) {
