@@ -138,6 +138,11 @@
   .action-btn.silence { border-color: #9fa8ff; color: #d3d7ff; }
   .action-btn.silence.buffing { background: rgba(159,168,255,0.15); }
   .action-btn.sacrifice { border-color: #ff5c7a; color: #ffb3c1; }
+  .action-btn.death { border-color: #b48cff; color: #b48cff; }
+  .action-btn.coinstrike { border-color: #ffd76b; color: #ffd76b; }
+  .action-btn.zeni { border-color: #ffcf4a; color: #ffcf4a; }
+  .action-btn.mystery { border-color: #7fe0ff; color: #7fe0ff; }
+  .action-btn.coinstrike.buffing { background: rgba(255,215,107,0.15); }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
@@ -541,6 +546,10 @@
       <button class="action-btn regen" id="regenBtn">🔒 リジェネ</button>
       <button class="action-btn silence" id="silenceBtn">🔒 魔法封じ</button>
       <button class="action-btn sacrifice" id="sacrificeBtn">🔒 捨て身</button>
+      <button class="action-btn death" id="deathBtn">🔒 即死魔法</button>
+      <button class="action-btn coinstrike" id="coinStrikeBtn">🔒 コイン攻撃</button>
+      <button class="action-btn zeni" id="zeniBtn">🔒 ゼニ投げ</button>
+      <button class="action-btn mystery" id="mysteryBtn">🔒 謎魔法</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -930,6 +939,10 @@
   const regenBtn = document.getElementById('regenBtn');
   const silenceBtn = document.getElementById('silenceBtn');
   const sacrificeBtn = document.getElementById('sacrificeBtn');
+  const deathBtn = document.getElementById('deathBtn');
+  const coinStrikeBtn = document.getElementById('coinStrikeBtn');
+  const zeniBtn = document.getElementById('zeniBtn');
+  const mysteryBtn = document.getElementById('mysteryBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1388,7 +1401,11 @@
     skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '20秒間 攻撃力1.5倍' },
     skillRegen:    { icon: '🌿', name: 'リジェネ', desc: '20秒間 HPが少しずつ自動回復' },
     skillSilence:  { icon: '🔇', name: '魔法封じ', desc: '15秒間 敵の魔法・弾を封じる' },
-    skillSacrifice:{ icon: '🩸', name: '捨て身',   desc: 'HPを30%削って大ダメージ' }
+    skillSacrifice:{ icon: '🩸', name: '捨て身',   desc: 'HPを30%削って大ダメージ' },
+    skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
+    skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 タップでコイン獲得・討伐コイン1.5倍' },
+    skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
+    skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' }
   };
   const SKILL_MAX_LEVEL = 10;
   const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
@@ -2018,6 +2035,10 @@
     updateRegenButton();
     updateSilenceButton();
     updateSacrificeButton();
+    updateDeathButton();
+    updateCoinStrikeButton();
+    updateZeniButton();
+    updateMysteryButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -2341,6 +2362,32 @@
   const SACRIFICE_DMG_MULT = 8;    // 攻撃力の8倍ダメージ
   let lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
   const PINCH_HP_RATIO = 0.3;      // 背水：HPがこの割合以下で発動
+  // 即死魔法・コイン攻撃・ゼニ投げ・謎魔法
+  const SKILL_DEATH_COOLDOWN = 90 * 1000;
+  const DEATH_CHANCE = 0.3, DEATH_CHANCE_BOSS = 0.08; // 即死の成功率（通常／ボス）
+  const SKILL_COINSTRIKE_COOLDOWN = 120 * 1000;
+  const COIN_STRIKE_MS = 20 * 1000;
+  const COIN_STRIKE_KILL_MULT = 1.5; // コイン攻撃中の討伐コイン倍率
+  const SKILL_ZENI_COOLDOWN = 30 * 1000;
+  const ZENI_MIN_COINS = 10;
+  const ZENI_DMG_PER_COIN = 1.5;   // 投げたコイン1枚あたりのダメージ
+  const SKILL_MYSTERY_COOLDOWN = 60 * 1000;
+  let lastDeathAt = Date.now() - SKILL_DEATH_COOLDOWN;
+  let lastCoinStrikeAt = Date.now() - SKILL_COINSTRIKE_COOLDOWN;
+  let coinStrikeEndAt = 0;
+  let lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
+  let lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
+  function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
+  // スキルを使える状態か確認し、待機中ならジェムリセットを案内。使えるなら { player, enemy } を返す
+  function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {
+    if (!game.shopOwned[skillKey]) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return null; }
+    const player = balls.find(ball => isMainPlayerBall(ball));
+    const enemy = balls.find(ball => !ball.isPlayer && !ball.isDying);
+    if (phase !== 'battle' || !player || (needEnemy && (!enemy || enemy.spawnTimer > 0))) { showTapError('今は使えません', event.clientX, event.clientY); return null; }
+    if (Date.now() - lastAt < skillCd(skillKey, cooldown)) { tryGemResetSkill(resetKey, event, () => { setLast(Date.now() - cooldown); }, updateFn); return null; }
+    setLast(Date.now());
+    return { player, enemy };
+  }
 
   // ---------- 敵の特性（突進・回転ガード・分裂・巨大化・攻撃魔法・回復魔法・ホーミング弾・地雷） ----------
   const ENEMY_TRAITS = {
@@ -2352,15 +2399,17 @@
     'shape:hex': 'healMagic',
     'emoji:🐲': 'homing', 'boss:🐉': 'homing',
     'emoji:🎃': 'mines',
+    'emoji:🦂': 'deathMagic', 'boss:👺': 'deathMagic',
   };
-  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷' };
-  const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1 }; // 魔法封じで止まる特性
-  const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330] }; // 次の行動までのフレーム（ゲーム速度1倍）
+  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷', deathMagic: '即死魔法' };
+  const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
+  const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600] }; // 次の行動までのフレーム（ゲーム速度1倍）
   const SPLIT_TIMES = 2;         // 分裂できる回数
   const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
   const GROW_MAX = 1.8;
   const SPIN_GUARD_FRAMES = 120; // 回転ガードの長さ
   const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
+  const ENEMY_DEATH_CHANCE = 0.12; // 敵の即死魔法の成功率（バリアで防げる）
   let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
   let enemyMines = [];           // 敵の地雷
   function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
@@ -2473,8 +2522,8 @@
             spawnDamageText(e.x, e.y - e.radius - 18, '💣', '#ffb35c', 0.03);
             e.traitCd = randTraitCd(trait);
           } else {
-            e.traitState = 'cast'; e.traitTimer = trait === 'homing' ? 30 : 45; e.traitFreeze = trait !== 'homing';
-            const castName = trait === 'attackMagic' ? '🔥 ファイア' : trait === 'healMagic' ? '💚 ヒール' : '🎯 ロックオン';
+            e.traitState = 'cast'; e.traitTimer = trait === 'homing' ? 30 : trait === 'deathMagic' ? 70 : 45; e.traitFreeze = trait !== 'homing';
+            const castName = trait === 'attackMagic' ? '🔥 ファイア' : trait === 'healMagic' ? '💚 ヒール' : trait === 'deathMagic' ? '💀 デス' : '🎯 ロックオン';
             spawnDamageText(e.x, e.y - e.radius - 22, castName, trait === 'healMagic' ? '#7ee787' : '#ffb35c', 0.016);
           }
         } else if (e.traitState === 'cast' && e.traitTimer <= 0) {
@@ -2491,6 +2540,20 @@
               spawnHitParticles(e.x, e.y, '#7ee787');
               playHealSound();
               updateHPUI();
+            } else if (trait === 'deathMagic') {
+              playTone(110, 0.6, 'sawtooth', 0.16, 55);
+              if (a.hp > 0 && Math.random() < ENEMY_DEATH_CHANCE) {
+                if (absorbWithBarrier(a)) {
+                  spawnDamageText(a.x, a.y - a.radius - 22, 'バリアが即死を防いだ！', '#c7ecff', 0.014);
+                } else {
+                  a.hp = 0;
+                  spawnDamageText(a.x, a.y - a.radius - 22, '💀 即死…', '#b48cff', 0.012, true);
+                  updateHPUI();
+                  playerDown = true;
+                }
+              } else {
+                spawnDamageText(a.x, a.y - a.radius - 22, 'レジスト！', '#c7ecff', 0.016);
+              }
             } else if (trait === 'homing') {
               for (const off of [-0.5, 0.5]) {
                 const ang = Math.atan2(a.y - e.y, a.x - e.x) + off;
@@ -2566,7 +2629,7 @@
         ctx.beginPath(); ctx.arc(e.x, e.y, r + 3, 0, Math.PI * 2); ctx.stroke();
       }
       if (e.traitState === 'cast') { // 詠唱の魔法陣
-        ctx.strokeStyle = e.trait === 'healMagic' ? 'rgba(126,231,135,0.85)' : 'rgba(255,159,67,0.85)'; ctx.lineWidth = 2;
+        ctx.strokeStyle = e.trait === 'healMagic' ? 'rgba(126,231,135,0.85)' : e.trait === 'deathMagic' ? 'rgba(180,140,255,0.9)' : 'rgba(255,159,67,0.85)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(e.x, e.y, r + 6, t / 200, t / 200 + Math.PI * 1.6); ctx.stroke();
       }
       if (MAGIC_TRAITS[e.trait] && isSilenced()) {
@@ -2944,7 +3007,7 @@
   function saveGame() {
     if (suppressAutoSave) return;
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -2968,6 +3031,10 @@
       if (typeof data.lastRegenAt === 'number') lastRegenAt = data.lastRegenAt;
       if (typeof data.lastSilenceAt === 'number') lastSilenceAt = data.lastSilenceAt;
       if (typeof data.lastSacrificeAt === 'number') lastSacrificeAt = data.lastSacrificeAt;
+      if (typeof data.lastDeathAt === 'number') lastDeathAt = data.lastDeathAt;
+      if (typeof data.lastCoinStrikeAt === 'number') lastCoinStrikeAt = data.lastCoinStrikeAt;
+      if (typeof data.lastZeniAt === 'number') lastZeniAt = data.lastZeniAt;
+      if (typeof data.lastMysteryAt === 'number') lastMysteryAt = data.lastMysteryAt;
       return true;
     } catch (err) {
       return false;
@@ -4429,7 +4496,7 @@
   function onStageClear() {
     const b = computeBonuses();
     const isBossStage = game.stage % 10 === 0;
-    const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1));
+    const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1));
     game.coins += coinGain;
     if (isBossStage) game.gems += 5;
     playStageClearSound();
@@ -4876,7 +4943,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -5017,6 +5084,38 @@
     atkUpBtn.classList.toggle('is-disabled', !isSkillResetPending('atkup'));
     atkUpBtn.textContent = cooldownLabel('atkup', '💪 攻撃UP', remaining);
   }
+  // スキルボタンの共通表示（未解放／効果中／READY／待機中）
+  function renderSkillButton(btn, skillKey, resetKey, label, cooldown, lastAt, activeEndAt, activeLabel) {
+    btn.classList.remove('buffing');
+    if (!game.shopOwned[skillKey]) {
+      btn.disabled = false;
+      btn.classList.add('is-disabled');
+      btn.textContent = '🔒 ' + label.replace(/^\S+\s/, '');
+      return;
+    }
+    const now = Date.now();
+    if (activeEndAt && now < activeEndAt) {
+      btn.disabled = true;
+      btn.classList.remove('is-disabled');
+      btn.classList.add('buffing');
+      btn.textContent = `${activeLabel}\n${Math.ceil((activeEndAt - now) / 1000)}s`;
+      return;
+    }
+    const remaining = Math.max(0, skillCd(skillKey, cooldown) - (now - lastAt));
+    if (remaining === 0) {
+      btn.disabled = false;
+      btn.classList.toggle('is-disabled', phase !== 'battle');
+      btn.textContent = label + '\nREADY';
+      return;
+    }
+    btn.disabled = false;
+    btn.classList.toggle('is-disabled', !isSkillResetPending(resetKey));
+    btn.textContent = cooldownLabel(resetKey, label, remaining);
+  }
+  function updateDeathButton() { renderSkillButton(deathBtn, 'skillDeath', 'death', '💀 即死魔法', SKILL_DEATH_COOLDOWN, lastDeathAt); }
+  function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン攻撃', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン攻撃中'); }
+  function updateZeniButton() { renderSkillButton(zeniBtn, 'skillZeni', 'zeni', '💰 ゼニ投げ', SKILL_ZENI_COOLDOWN, lastZeniAt); }
+  function updateMysteryButton() { renderSkillButton(mysteryBtn, 'skillMystery', 'mystery', '❓ 謎魔法', SKILL_MYSTERY_COOLDOWN, lastMysteryAt); }
   function updateSilenceButton() {
     silenceBtn.classList.remove('buffing');
     if (!game.shopOwned.skillSilence) {
@@ -5629,6 +5728,11 @@
     lastSilenceAt = Date.now() - SILENCE_COOLDOWN;
     silenceEndAt = 0;
     lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
+    lastDeathAt = Date.now() - SKILL_DEATH_COOLDOWN;
+    lastCoinStrikeAt = Date.now() - SKILL_COINSTRIKE_COOLDOWN;
+    coinStrikeEndAt = 0;
+    lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
+    lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
     particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
@@ -5661,6 +5765,10 @@
     updateRegenButton();
     updateSilenceButton();
     updateSacrificeButton();
+    updateDeathButton();
+    updateCoinStrikeButton();
+    updateZeniButton();
+    updateMysteryButton();
     startBgm('normal');
     loop();
   }
@@ -5744,7 +5852,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -5810,6 +5918,15 @@
       updateSilenceButton();
       lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
       updateSacrificeButton();
+      lastDeathAt = Date.now() - SKILL_DEATH_COOLDOWN;
+      lastCoinStrikeAt = Date.now() - SKILL_COINSTRIKE_COOLDOWN;
+      coinStrikeEndAt = 0;
+      lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
+      lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
+      updateDeathButton();
+      updateCoinStrikeButton();
+      updateZeniButton();
+      updateMysteryButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -6379,6 +6496,96 @@
     updateHPUI();
   });
 
+  // 即死魔法：一定確率で敵を即死（ボスは低確率）
+  deathBtn.addEventListener('click', event => {
+    const ctxs = beginSkill(event, 'skillDeath', 'death', SKILL_DEATH_COOLDOWN, lastDeathAt, v => { lastDeathAt = v; }, updateDeathButton);
+    if (!ctxs) return;
+    const { player, enemy } = ctxs;
+    const chance = enemy.isBoss ? DEATH_CHANCE_BOSS : DEATH_CHANCE;
+    for (let i = 0; i < 14; i++) particles.push({ x: enemy.x + (Math.random() - 0.5) * 40, y: enemy.y + (Math.random() - 0.5) * 40, vx: 0, vy: -0.8, life: 1, color: '#b48cff', decay: 0.025 });
+    playTone(110, 0.6, 'sawtooth', 0.16, 55);
+    if (Math.random() < chance) {
+      spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, '💀 即死！', '#b48cff', 0.012, true);
+      trackDamage(enemy.hp);
+      enemy.hp = 0;
+      triggerEnemyDefeat(enemy, player.x, player.y);
+      shakeScreenLight();
+    } else {
+      spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, '即死魔法… 効かなかった', '#9aa3b8', 0.014);
+    }
+    updateDeathButton();
+    updateHPUI();
+  });
+  // コイン攻撃：一定時間、タップでコイン獲得・討伐コイン増加
+  coinStrikeBtn.addEventListener('click', event => {
+    if (Date.now() < coinStrikeEndAt) return;
+    const ctxs = beginSkill(event, 'skillCoinStrike', 'coinStrike', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, v => { lastCoinStrikeAt = v; }, updateCoinStrikeButton, false);
+    if (!ctxs) return;
+    coinStrikeEndAt = Date.now() + COIN_STRIKE_MS;
+    spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン攻撃', '#ffd76b', 0.012);
+    showNotice(`🪙 コイン攻撃！ ${COIN_STRIKE_MS / 1000}秒間 タップでコイン獲得・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
+    playTone(988, 0.12, 'square', 0.12, 1318);
+    updateCoinStrikeButton();
+  });
+  function onCoinStrikeTap(x, y) {
+    if (!isCoinStrike()) return;
+    const gain = Math.max(1, Math.round((3 + game.stage) * 0.5 * computeBonuses().coinMult));
+    game.coins += gain;
+    spawnDamageText(x, y - 10, '+' + gain + ' 🟡', '#ffd76b', 0.03);
+    playTone(1568, 0.05, 'square', 0.06);
+    updateStatsUI();
+  }
+  // ゼニ投げ：手持ちコインの半分を投げ、コイン数に応じたダメージ
+  zeniBtn.addEventListener('click', event => {
+    if (game.shopOwned.skillZeni && game.coins < ZENI_MIN_COINS && Date.now() - lastZeniAt >= skillCd('skillZeni', SKILL_ZENI_COOLDOWN)) { showTapError(`コインが${ZENI_MIN_COINS}枚以上必要です`, event.clientX, event.clientY); return; }
+    const ctxs = beginSkill(event, 'skillZeni', 'zeni', SKILL_ZENI_COOLDOWN, lastZeniAt, v => { lastZeniAt = v; }, updateZeniButton);
+    if (!ctxs) return;
+    const { player, enemy } = ctxs;
+    const thrown = Math.floor(game.coins / 2);
+    spendCoins(thrown);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN + player.atk)), enemy);
+    enemy.hp -= dmg;
+    trackDamage(dmg);
+    for (let i = 0; i < 16; i++) particles.push({ x: player.x, y: player.y, vx: (enemy.x - player.x) / 20 + (Math.random() - 0.5) * 3, vy: (enemy.y - player.y) / 20 + (Math.random() - 0.5) * 3, life: 1, color: '#ffd76b', decay: 0.03, isCoin: true });
+    spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
+    spawnAttackDamageText(enemy, dmg, crit, '#ffe9a8');
+    onPlayerHitEnemy(enemy, dmg);
+    playNoiseBurst(0.2, 0.2);
+    [1318, 1568, 1976].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.08), i * 60));
+    if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
+    updateZeniButton();
+    updateStatsUI();
+    updateHPUI();
+  });
+  // 謎魔法：ランダムでいろいろな現象が起きる（良いことも悪いことも）
+  const MYSTERY_EFFECTS = [
+    { w: 14, name: '💥 大爆発！', color: '#ff9f43', fn: ({ player, enemy }) => { const { dmg, crit } = rollCrit(Math.round(player.atk * 10), enemy); enemy.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(enemy, dmg, crit, '#ffcf8a'); onPlayerHitEnemy(enemy, dmg); shakeScreenLight(); if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y); } },
+    { w: 12, name: '💖 全回復！', color: '#7ee787', fn: ({ player }) => { player.hp = player.maxHp; playHealSound(); } },
+    { w: 10, name: '💎 ジェムが降ってきた！ +3', color: '#64e8ff', fn: () => { game.gems += 3; } },
+    { w: 12, name: '🟡 コインの雨！', color: '#ffd76b', fn: ({ player }) => { const g = Math.round(game.stage * 40 * computeBonuses().coinMult); game.coins += g; spawnCoinBurst(player.x, player.y, g); } },
+    { w: 12, name: '⏸ 時間停止！（敵が3秒止まる）', color: '#a5a8ff', fn: ({ enemy }) => { enemy.stunnedUntil = Date.now() + 3000; } },
+    { w: 8,  name: '🔻 敵が縮んだ！', color: '#7fd6ff', fn: ({ enemy }) => { enemy.radius = Math.max(8, enemy.radius * 0.7); enemy.traitBaseRadius = enemy.radius; } },
+    { w: 8,  name: '🤔 何も起きなかった…', color: '#9aa3b8', fn: () => {} },
+    { w: 8,  name: '😱 敵が回復してしまった！', color: '#ff6b6b', fn: ({ enemy }) => { enemy.hp = Math.min(enemy.maxHp, enemy.hp + Math.round(enemy.maxHp * 0.3)); } },
+    { w: 8,  name: '💫 自分にダメージ！', color: '#ff6b6b', fn: ({ player }) => { const d = Math.min(player.hp - 1, Math.round(player.maxHp * 0.2)); if (d > 0) { player.hp -= d; spawnDamageText(player.x, player.y - player.radius - 14, '-' + d, '#ff6b6b', 0.02); } } },
+    { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = 0; updateStatsUI(); } },
+  ];
+  mysteryBtn.addEventListener('click', event => {
+    const ctxs = beginSkill(event, 'skillMystery', 'mystery', SKILL_MYSTERY_COOLDOWN, lastMysteryAt, v => { lastMysteryAt = v; }, updateMysteryButton);
+    if (!ctxs) return;
+    const total = MYSTERY_EFFECTS.reduce((sum, ef) => sum + ef.w, 0);
+    let roll = Math.random() * total;
+    const ef = MYSTERY_EFFECTS.find(x => (roll -= x.w) < 0) || MYSTERY_EFFECTS[0];
+    [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f * (0.9 + Math.random() * 0.2), 0.1, 'triangle', 0.1), i * 70));
+    spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 18, '❓ 謎魔法…', '#7fe0ff', 0.02);
+    ef.fn(ctxs);
+    showNotice('❓ 謎魔法 → ' + ef.name);
+    spawnDamageText(arena.x, arena.y - 40, ef.name, ef.color, 0.01, true);
+    updateMysteryButton();
+    updateStatsUI();
+    updateHPUI();
+  });
+
   regenBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillRegen) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はリジェネを使えません', event.clientX, event.clientY); return; }
@@ -6492,6 +6699,7 @@
           spawnTapMarker(x, y);
         }
       }
+      onCoinStrikeTap(x, y); // コイン攻撃中はタップでコイン
       game.totalTaps++;
       if (!CLONES_ENABLED) { updateStatsUI(); return; }
       const limit = getCloneLimit();
@@ -6530,6 +6738,10 @@
   setInterval(updateRegenButton, 500);
   setInterval(updateSilenceButton, 500);
   setInterval(updateSacrificeButton, 1000);
+  setInterval(updateDeathButton, 1000);
+  setInterval(updateCoinStrikeButton, 500);
+  setInterval(updateZeniButton, 1000);
+  setInterval(updateMysteryButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -6606,6 +6818,10 @@
   updateRegenButton();
   updateSilenceButton();
   updateSacrificeButton();
+  updateDeathButton();
+  updateCoinStrikeButton();
+  updateZeniButton();
+  updateMysteryButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
