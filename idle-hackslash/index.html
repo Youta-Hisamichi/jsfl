@@ -1440,6 +1440,7 @@
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
     companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
     startedAt: Date.now(),
+    playTimeMs: 0, // 実プレイ時間（ゲーム画面が表示されている間だけ加算）
     lastLoginDate: null,
     loginStreak: 0,
     maxDamage: 0,
@@ -1905,7 +1906,7 @@
     headerCoinsEl.textContent = formatCoinNumber(game.coins);
     headerGemsEl.textContent = Math.floor(game.gems);
     startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
-    playTimeText.textContent = formatDuration(Date.now() - game.startedAt);
+    playTimeText.textContent = formatDuration(game.playTimeMs || 0);
 
     const stageInCycle = ((game.stage - 1) % 10) + 1;
     stageProgressText.textContent = stageInCycle + ' / 10';
@@ -2773,6 +2774,17 @@
     }
     dpsAccum = 0;
   }, 1000);
+
+  // 実プレイ時間：画面が表示されている間だけ加算（非表示・スリープ中の経過は含めない）
+  let lastPlayTickAt = Date.now();
+  setInterval(() => {
+    const now = Date.now();
+    const delta = now - lastPlayTickAt;
+    lastPlayTickAt = now;
+    if (document.hidden || delta > 5000) return;
+    game.playTimeMs = (game.playTimeMs || 0) + delta;
+  }, 1000);
+  document.addEventListener('visibilitychange', () => { lastPlayTickAt = Date.now(); });
 
   // ---------- 記録更新の通知（ゲーム画面に表示） ----------
   // 序盤は頻繁に更新されるので、表示は一定間隔ごとにまとめて最新値だけを出す
@@ -4918,6 +4930,7 @@
     lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
     atkUpEndAt = 0;
     game.startedAt = Date.now();
+    game.playTimeMs = 0;
     particles = []; damageTexts = []; meteors = []; adds = [];
     stageAnnounceTimer = 0;
     hitStopFrames = 0; // ヒットストップをリセット
