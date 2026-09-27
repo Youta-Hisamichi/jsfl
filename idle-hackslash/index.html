@@ -3441,6 +3441,7 @@
     dragon: { style: 'normal', speedFactor: 0.9 }
   };
   const COMPANION_RADIUS = { golem: 16, dragon: 15 };
+  const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下限（自機と同じ）
   const COMPANION_AWAKEN_MAX = 5;
   const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
   function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
@@ -4932,7 +4933,7 @@
       const img = companionSpriteImgs[ball.companionId];
       ctx.save();
       if (img && img.complete && img.naturalWidth) {
-        const sz = ball.radius * 2.9; // 丸より少し大きめにドット絵を描く
+        const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 2.9; // 丸より少し大きめに。小さい仲間も自機と同じ大きさで描く
         ctx.drawImage(img, ball.x - sz / 2, ball.y - sz / 2 - ball.radius * 0.15, sz, sz);
       } else {
         ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
@@ -4960,10 +4961,11 @@
 
     // 仲間のHP バーを描画
     if (ball.isCompanion && ball.maxHp) {
-      const barWidth = ball.radius * 2;
+      const drawR = COMPANION_SPRITES[ball.companionId] ? Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) : ball.radius; // ドット絵の大きさに合わせる
+      const barWidth = drawR * 2;
       const barHeight = 4;
-      const barX = ball.x - ball.radius;
-      const barY = ball.y - ball.radius - 8;
+      const barX = ball.x - drawR;
+      const barY = ball.y - drawR - 10;
       ctx.fillStyle = '#080b12';
       ctx.fillRect(barX, barY, barWidth, barHeight);
       ctx.strokeStyle = 'rgba(200,200,200,0.5)';
