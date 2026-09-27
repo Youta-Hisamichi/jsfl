@@ -1807,7 +1807,7 @@
   function renderArtifactList() {
     const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
     const total = ARTIFACT_POOL.length;
-    const rate = total ? Math.floor(ownedKinds / total * 100) : 0;
+    const rate = (total ? Math.floor(ownedKinds / total * 1000) / 10 : 0).toFixed(1);
     artifactProgressEl.innerHTML = `取得数 <strong>${ownedKinds} / ${total}</strong>　取得率 <strong>${rate}%</strong>`;
     artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
       const count = game.ownedArtifacts[a.id] || 0;
@@ -3177,7 +3177,7 @@
     if (!list) return;
     const book = game.bestiary || {};
     const found = ENEMY_BOOK.filter(entry => book[entry.key]).length;
-    document.getElementById('bestiaryCount').textContent = `${found} / ${ENEMY_BOOK.length}（${Math.floor(found / ENEMY_BOOK.length * 100)}%）`;
+    document.getElementById('bestiaryCount').textContent = `${found} / ${ENEMY_BOOK.length}（${(Math.floor(found / ENEMY_BOOK.length * 1000) / 10).toFixed(1)}%）`;
     list.innerHTML = ENEMY_BOOK.map(entry => {
       const rec = book[entry.key];
       const face = entry.icon
@@ -5473,7 +5473,7 @@
   function buildShareText(kind) {
     const b = computeBonuses();
     const found = ENEMY_BOOK.filter(entry => (game.bestiary || {})[entry.key]).length;
-    const comp = Math.floor(found / ENEMY_BOOK.length * 100);
+    const comp = (Math.floor(found / ENEMY_BOOK.length * 1000) / 10).toFixed(1);
     if (kind === 'records') {
       return `【放置系ハクスラ無限反射 戦績】\n🏔 最高到達ステージ ${game.bestStage}\n⚔️ 累計キル ${game.totalKills.toLocaleString('ja-JP')}\n💥 最大ダメージ ${Math.floor(game.maxDamage || 0).toLocaleString('ja-JP')}\n🌌 転生 ${game.reincarnations}回\n📖 敵図鑑 ${found}/${ENEMY_BOOK.length}（${comp}%）\n${SHARE_HASHTAG}`;
     }
