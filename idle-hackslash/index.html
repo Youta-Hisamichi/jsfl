@@ -171,6 +171,7 @@
   .action-btn.zeni { border-color: #ffcf4a; color: #ffcf4a; }
   .action-btn.mystery { border-color: #7fe0ff; color: #7fe0ff; }
   .action-btn.comprush { border-color: #8fe3a0; color: #b8f5c6; }
+  .action-btn.nova { border-color: #ff9f43; color: #ffc98a; }
   .action-btn.coinstrike.buffing { background: rgba(255,215,107,0.15); }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
@@ -597,6 +598,7 @@
       <button class="action-btn zeni" id="zeniBtn">🔒 ゼニ投げ</button>
       <button class="action-btn mystery" id="mysteryBtn">🔒 謎魔法</button>
       <button class="action-btn comprush" id="compRushBtn">🔒 仲間特攻</button>
+      <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -1005,6 +1007,7 @@
   const zeniBtn = document.getElementById('zeniBtn');
   const mysteryBtn = document.getElementById('mysteryBtn');
   const compRushBtn = document.getElementById('compRushBtn');
+  const novaBtn = document.getElementById('novaBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1488,7 +1491,8 @@
     skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 タップでコイン獲得・討伐コイン1.5倍' },
     skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
     skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
-    skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' }
+    skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
+    skillNova:     { icon: '💥', name: '全体攻撃', desc: 'サークル内の敵すべてに大ダメージ（大群向き）' }
   };
   const SKILL_MAX_LEVEL = 10;
   const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
@@ -2283,6 +2287,7 @@
     updateZeniButton();
     updateMysteryButton();
     updateCompRushButton();
+    updateNovaButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -2642,6 +2647,10 @@
   const SKILL_COMPRUSH_COOLDOWN = 60 * 1000;
   const COMP_RUSH_DMG_MULT = 4; // 仲間1体（人数込みの攻撃力）あたりのダメージ倍率
   let lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
+  const SKILL_NOVA_COOLDOWN = 40 * 1000;
+  const NOVA_DMG_MULT = 4; // 敵1体あたり攻撃力の何倍か
+  let lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
+  let novaFx = null; // 全体攻撃の衝撃波 { start }
   function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
   // スキルを使える状態か確認し、待機中ならジェムリセットを案内。使えるなら { player, enemy } を返す
   function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {
@@ -3366,7 +3375,7 @@
   function saveGame() {
     if (suppressAutoSave) return;
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -3395,6 +3404,7 @@
       if (typeof data.lastZeniAt === 'number') lastZeniAt = data.lastZeniAt;
       if (typeof data.lastMysteryAt === 'number') lastMysteryAt = data.lastMysteryAt;
       if (typeof data.lastCompRushAt === 'number') lastCompRushAt = data.lastCompRushAt;
+      if (typeof data.lastNovaAt === 'number') lastNovaAt = data.lastNovaAt;
       return true;
     } catch (err) {
       return false;
@@ -5686,7 +5696,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3, compRush: 3 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3, compRush: 3, nova: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -5858,6 +5868,7 @@
   function updateDeathButton() { renderSkillButton(deathBtn, 'skillDeath', 'death', '💀 即死魔法', SKILL_DEATH_COOLDOWN, lastDeathAt); }
   function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン攻撃', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン攻撃中'); }
   function updateZeniButton() { renderSkillButton(zeniBtn, 'skillZeni', 'zeni', '💰 ゼニ投げ', SKILL_ZENI_COOLDOWN, lastZeniAt); }
+  function updateNovaButton() { renderSkillButton(novaBtn, 'skillNova', 'nova', '💥 全体攻撃', SKILL_NOVA_COOLDOWN, lastNovaAt); }
   function updateCompRushButton() { renderSkillButton(compRushBtn, 'skillCompRush', 'compRush', '🐾 仲間特攻', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt); }
   function updateMysteryButton() { renderSkillButton(mysteryBtn, 'skillMystery', 'mystery', '❓ 謎魔法', SKILL_MYSTERY_COOLDOWN, lastMysteryAt); }
   function updateSilenceButton() {
@@ -6367,6 +6378,7 @@
     drawRegenEffects();
     drawTackleEffects();
     drawEnemyTraitEffects();
+    drawNovaFx();
 
     for (const meteor of meteors) {
       ctx.save();
@@ -6484,6 +6496,7 @@
     lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
     lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
     lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
+    lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
     particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
@@ -6521,6 +6534,7 @@
     updateZeniButton();
     updateMysteryButton();
     updateCompRushButton();
+    updateNovaButton();
     startBgm('normal');
     loop();
   }
@@ -6604,7 +6618,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -6695,6 +6709,8 @@
       lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
       lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
       updateCompRushButton();
+      lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
+      updateNovaButton();
       updateDeathButton();
       updateCoinStrikeButton();
       updateZeniButton();
@@ -7379,8 +7395,56 @@
     { w: 8,  name: '🤔 何も起きなかった…', color: '#9aa3b8', fn: () => {} },
     { w: 8,  name: '😱 敵が回復してしまった！', color: '#ff6b6b', fn: ({ enemy }) => { enemy.hp = Math.min(enemy.maxHp, enemy.hp + Math.round(enemy.maxHp * 0.3)); } },
     { w: 8,  name: '💫 自分にダメージ！', color: '#ff6b6b', fn: ({ player }) => { const d = Math.min(player.hp - 1, Math.round(player.maxHp * 0.2)); if (d > 0) { player.hp -= d; spawnDamageText(player.x, player.y - player.radius - 14, '-' + d, '#ff6b6b', 0.02); } } },
-    { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = lastCompRushAt = 0; updateStatsUI(); } },
+    { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = lastCompRushAt = lastNovaAt = 0; updateStatsUI(); } },
   ];
+  // 全体攻撃：サークル内の敵すべて（本体・雑魚）に大ダメージ
+  novaBtn.addEventListener('click', event => {
+    const targets = () => [...balls.filter(x => !x.isPlayer && !x.isDying && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
+    if (game.shopOwned.skillNova && !targets().length && Date.now() - lastNovaAt >= skillCd('skillNova', SKILL_NOVA_COOLDOWN)) { showTapError('敵がいません', event.clientX, event.clientY); return; }
+    const ctxs = beginSkill(event, 'skillNova', 'nova', SKILL_NOVA_COOLDOWN, lastNovaAt, v => { lastNovaAt = v; }, updateNovaButton, false);
+    if (!ctxs) return;
+    const { player } = ctxs;
+    novaFx = { start: Date.now() };
+    shakeScreenLight();
+    thump(90, 30, 0.6, 0.8); noiseSweep(0.5, 3000, 120, 'lowpass', 0.8, 0.6);
+    let hitCount = 0;
+    for (const en of targets()) {
+      const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * NOVA_DMG_MULT)), en);
+      en.hp -= dmg;
+      trackDamage(dmg);
+      hitCount++;
+      spawnAttackDamageText(en, dmg, crit, '#ffc98a', en.isAdd ? 6 : undefined);
+      spawnHitParticles(en.x, en.y, '#ff9f43');
+      if (en.isAdd) {
+        if (en.hp <= 0) {
+          recordBestiaryKill(en);
+          const coinGain = 5 + Math.floor(Math.random() * 8);
+          game.coins += coinGain;
+          spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
+        }
+      } else {
+        onPlayerHitEnemy(en, dmg);
+        if (en.hp <= 0) triggerEnemyDefeat(en, player.x, player.y);
+      }
+    }
+    adds = adds.filter(ad => ad.hp > 0);
+    spawnDamageText(arena.x, arena.y - 30, `💥 全体攻撃！（${hitCount}体）`, '#ff9f43', 0.012, true);
+    updateNovaButton();
+    updateStatsUI();
+    updateHPUI();
+  });
+  function drawNovaFx() {
+    if (!novaFx) return;
+    const t = (Date.now() - novaFx.start) / 600;
+    if (t >= 1) { novaFx = null; return; }
+    ctx.save();
+    ctx.globalAlpha = 1 - t;
+    ctx.strokeStyle = '#ff9f43'; ctx.shadowColor = '#ff9f43'; ctx.shadowBlur = 20; ctx.lineWidth = 10 * (1 - t) + 2;
+    ctx.beginPath(); ctx.arc(arena.x, arena.y, arena.radius * t, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = (1 - t) * 0.25; ctx.fillStyle = '#ffd76b';
+    ctx.beginPath(); ctx.arc(arena.x, arena.y, arena.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
   // 仲間特攻：生きている仲間全員が敵へ突撃し、それぞれ大ダメージ
   compRushBtn.addEventListener('click', event => {
     const comps = balls.filter(ball => ball.isCompanion && ball.hp > 0);
@@ -7585,6 +7649,7 @@
   setInterval(updateZeniButton, 1000);
   setInterval(updateMysteryButton, 1000);
   setInterval(updateCompRushButton, 1000);
+  setInterval(updateNovaButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -7668,6 +7733,7 @@
   updateZeniButton();
   updateMysteryButton();
   updateCompRushButton();
+  updateNovaButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
