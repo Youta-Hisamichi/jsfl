@@ -1127,6 +1127,7 @@
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
     if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
     if (name === 'game' && rebirthShopPending) { rebirthShopPending = false; openRebirthShop(true); }
+    refreshBgm();
   }
   tabBar.addEventListener('click', event => {
     const btn = event.target.closest('.tab-btn');
@@ -3846,9 +3847,55 @@
       { freq: 196.00, dur: 0.2, type: 'sawtooth', gain: 0.07 },
     ]
   };
+  // 画面・場面ごとの専用BGM（音名で書いたメロディを1音ずつループ再生。'-' は休符）
+  const NOTE_FREQ = (() => {
+    const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const m = {};
+    for (let o = 2; o <= 7; o++) names.forEach((n, i) => { m[n + o] = 440 * Math.pow(2, (i - 9) / 12 + (o - 4)); });
+    return m;
+  })();
+  function melody(str, dur, type, gain) {
+    return str.split(' ').map(n => ({ freq: n === '-' ? 0 : NOTE_FREQ[n], dur, type, gain }));
+  }
+  Object.assign(BGM_PATTERNS, {
+    // 強化：工房で槌を打つような弾むメロディ
+    upgrade: melody('C5 E5 G5 E5 F5 A5 G5 E5 D5 F5 E5 C5 D5 B4 C5 -', 0.2, 'triangle', 0.05),
+    // 仲間：酒場のワルツ
+    companion: melody('G4 B4 D5 C5 E5 G5 B4 D5 G5 A4 C5 E5 D5 F#5 A5 G5 - -', 0.26, 'square', 0.03),
+    // コインショップ：にぎやかな商店
+    coinshop: melody('E5 G5 C6 G5 A5 F5 D5 G5 E5 C5 D5 E5 C5 - C5 -', 0.18, 'square', 0.035),
+    // 遺物：神秘的なマイナーのアルペジオ
+    artifact: melody('A4 C5 E5 A5 G5 E5 C5 B4 F4 A4 C5 F5 E5 C5 A4 G#4', 0.42, 'sine', 0.06),
+    // ジェムショップ：きらきらした高音
+    gemshop: melody('C6 E6 G6 E6 D6 F6 A6 F6 E6 G6 C7 G6 D6 B5 C6 -', 0.2, 'sine', 0.045),
+    // ガチャ：ワクワクする上昇フレーズ
+    gacha: melody('C5 D5 E5 G5 C6 G5 E5 D5 D5 E5 F#5 A5 D6 A5 F#5 E5', 0.16, 'sawtooth', 0.03),
+    // 戦績：落ち着いた回想
+    records: melody('C5 G4 A4 E4 F4 C4 F4 G4 E5 D5 C5 B4 A4 G4 A4 B4', 0.5, 'triangle', 0.05),
+    // ランキング：ファンファーレ
+    ranking: melody('C5 C5 C5 G5 - E5 G5 C6 - A5 F5 A5 G5 - - -', 0.2, 'square', 0.035),
+    // ゲームオーバー：悲しい下降メロディ
+    gameover: melody('A4 - G4 F4 E4 - D4 C4 B3 - C4 D4 A3 - - -', 0.55, 'sine', 0.07),
+    // 転生ショップ：荘厳で幻想的なアルペジオ
+    rebirth: melody('C5 G5 E6 G5 A4 E5 C6 E5 F4 C5 A5 C5 G4 D5 B5 D5', 0.34, 'sine', 0.05),
+  });
   let bgmTimer = null;
   let bgmToken = 0;
   let currentBgmType = null;
+  let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
+  let gameOverBgm = false;      // コンテニュー確認中
+  // 今の場面に合うBGMを選んで流す（転生ショップ＞ゲームオーバー＞開いているタブ＞戦闘）
+  function refreshBgm() {
+    if (!audioCtx) return;
+    let type = battleBgmType;
+    if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
+    else if (gameOverBgm) type = 'gameover';
+    else {
+      const tab = getActiveTab();
+      if (tab !== 'game' && BGM_PATTERNS[tab]) type = tab;
+    }
+    playBgmTrack(type);
+  }
 
   function playBgmNote(note) {
     if (!audioCtx) return;
@@ -3867,10 +3914,15 @@
     if (token !== bgmToken || currentBgmType !== type) return;
     const pattern = BGM_PATTERNS[type];
     const note = pattern[index % pattern.length];
-    playBgmNote(note);
+    if (note.freq) playBgmNote(note);
     bgmTimer = setTimeout(() => scheduleBgmStep(type, index + 1, token), note.dur * 1000);
   }
+  // 戦闘BGMを指定（実際に流すかは場面で決まる）
   function startBgm(type) {
+    battleBgmType = type;
+    refreshBgm();
+  }
+  function playBgmTrack(type) {
     if (currentBgmType === type) return;
     bgmToken++;
     currentBgmType = type;
@@ -5320,6 +5372,8 @@
   }
   function showContinuePrompt() {
     if (phase !== 'paused') return;
+    gameOverBgm = true;
+    refreshBgm();
     continueDeadline = Date.now() + 10000;
     continueBtn.style.display = 'block';
     giveUpBtn.style.display = 'block';
@@ -5387,6 +5441,7 @@
   }
 
   function completeReincarnation() {
+    gameOverBgm = false;
     endDeathFx();
     clearInterval(continueTimer);
     game.skipChallenge = null;
@@ -5511,6 +5566,7 @@
     if (fresh) rebirthShopMsg.classList.remove('show');
     renderRebirthShopList();
     rebirthShopModal.classList.add('show');
+    refreshBgm();
     clearInterval(rebirthAutoSkipTimer);
     if (fresh) rebirthAutoSkipCancelled = false;
     if (rebirthAutoSkipCancelled) { rebirthAutoSkipWrap.style.display = 'none'; return; }
@@ -5522,6 +5578,9 @@
   function closeRebirthShop() {
     clearInterval(rebirthAutoSkipTimer);
     rebirthShopModal.classList.remove('show');
+    gameOverBgm = false;
+    battleBgmType = game.stage % 10 === 0 ? 'boss' : 'normal';
+    refreshBgm();
     playRunStartSound();
     balls = spawnBattleBalls();
     refreshPlayerBallStats(true);
@@ -5631,6 +5690,8 @@
   // リトライ：敵（ボス）はそのままの状態で残し、自機だけHP全快で復活させて戦闘を続ける
   const REVIVE_INVINCIBLE_FRAMES = 90; // 復活直後の無敵時間（即死防止）
   function revivePlayerInPlace() {
+    gameOverBgm = false;
+    refreshBgm();
     endDeathFx();
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     const enemy = balls.find(ball => !ball.isPlayer);
@@ -6563,6 +6624,7 @@
     toast.classList.remove('show');
     rebirthShopModal.classList.remove('show');
     rebirthShopPending = false;
+    gameOverBgm = false;
     renderArtifactList();
     updateStatsUI();
     balls = spawnBattleBalls();
