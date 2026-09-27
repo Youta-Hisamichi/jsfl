@@ -447,6 +447,7 @@
   .modal-overlay.fullscreen .modal-panel { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; border: none; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
   /* 全画面のときはリストが残りの高さいっぱいに広がってスクロール */
   .modal-overlay.fullscreen .modal-shop-list.two { flex: 1 1 auto; min-height: 0; max-height: none; align-content: start; }
+  #rebirthShopList { grid-template-columns: 1fr; } /* 転生ショップは1列 */
   .modal-overlay.fullscreen .modal-panel > :not(.modal-shop-list) { flex-shrink: 0; }
   .modal-panel { background: var(--panel); border: 1px solid var(--ring); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; max-height: 82vh; overflow-y: auto; }
   @keyframes loginGiftPop { 0% { transform: scale(0.3) rotate(-15deg); opacity: 0; } 55% { transform: scale(1.25) rotate(8deg); opacity: 1; } 75% { transform: scale(0.95) rotate(-4deg); } 100% { transform: scale(1) rotate(0deg); } }
