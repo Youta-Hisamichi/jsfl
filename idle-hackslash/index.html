@@ -364,7 +364,7 @@
   .toast .big { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
   .toast .big.stage-clear { color: #7ee787; }
   .toast .big.reborn { color: #c792ea; }
-  .toast .sub { color: #d0d3e0; font-size: 0.85rem; }
+  .toast .sub { color: #d0d3e0; font-size: 0.85rem; white-space: pre-line; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
 
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
@@ -4126,7 +4126,7 @@
     toastIcon.textContent = pick.icon;
     toastBig.textContent = '輪廻転生……';
     toastBig.className = 'big reborn';
-    toastSub.textContent = `転生 ${game.reincarnations}回目！　` + pick.name + ' を獲得！（' + pick.desc + '）　+2 💎';
+    toastSub.textContent = `転生 ${game.reincarnations}回目！\n` + pick.name + ' を獲得！（' + pick.desc + '）\n+2 💎';
     toast.classList.add('show');
     rebirthSkippable = true;
     clearTimeout(rebirthTimer);
