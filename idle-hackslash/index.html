@@ -2012,12 +2012,17 @@
     box.style.display = 'block';
     box.style.background = '';
     box.className = 'gacha-result gacha-summoning rarity-bg-' + bestRarity;
-    box.innerHTML = `<div class="gr-icon">🐾</div><div class="gr-title">召喚中……</div>`;
+    box.innerHTML = `<div class="gr-icon">🐾</div><div class="gr-title">召喚中……</div><div class="gr-sub">タップですぐ開封</div>`;
     playGachaSummonSound();
-    setTimeout(() => {
+    const reveal = () => {
+      if (!compSummoning) return;
       compSummoning = false;
+      clearTimeout(revealTimer);
+      box.onclick = null;
       showCompanionGachaResult(box, results, count, bestRarity);
-    }, COMP_SUMMON_LOADING_MS);
+    };
+    const revealTimer = setTimeout(reveal, COMP_SUMMON_LOADING_MS);
+    box.onclick = reveal; // 演出中にタップしたらすぐ開封
   }
   function showCompanionGachaResult(box, results, count, bestRarity) {
     box.style.display = 'block';
