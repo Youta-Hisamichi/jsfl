@@ -2794,13 +2794,15 @@
   // 連鎖(コンボ)
   let comboCount = 0;
   let lastHitAt = 0;
-  const COMBO_WINDOW_MS = 300; // 前のヒットからこの時間以内に再ヒットしたらコンボ
+  const COMBO_WINDOW_MS = 500; // 前のヒットからこの時間以内に再ヒットしたらコンボ（ゲーム速度1倍のときの値）
+  // ゲーム速度が遅いほど再ヒットまでの実時間も伸びるので、猶予もゲーム速度に合わせて伸縮する
+  function getComboWindowMs() { return COMBO_WINDOW_MS / getEffectiveSpeed(); }
   const COMBO_STEP = 0.08;
   const COMBO_MAX_STACKS = 12;
 
   function registerHit() {
     const now = Date.now();
-    if (now - lastHitAt <= COMBO_WINDOW_MS) comboCount++;
+    if (now - lastHitAt <= getComboWindowMs()) comboCount++;
     else comboCount = 1;
     lastHitAt = now;
     if (comboCount > (game.maxCombo || 0)) game.maxCombo = comboCount;
@@ -2815,7 +2817,7 @@
     comboBadge.classList.add('show');
     comboBadge.classList.remove('pop'); void comboBadge.offsetWidth; comboBadge.classList.add('pop');
     clearTimeout(comboBadgeTimer);
-    comboBadgeTimer = setTimeout(() => comboBadge.classList.remove('show'), COMBO_WINDOW_MS + 500);
+    comboBadgeTimer = setTimeout(() => comboBadge.classList.remove('show'), getComboWindowMs() + 500);
   }
   function getComboMultiplier(comboGrowthBonus) {
     const stacks = Math.min(comboCount - 1, COMBO_MAX_STACKS);
