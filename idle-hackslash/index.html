@@ -4876,14 +4876,20 @@
     worm: 1, cobra: 1, salamander: 1, flameWisp: 0, windSpirit: 0, lich: -1, bigSpider: 0, cerberus: 0,
     redDragon: 0, blueDragon: 0, blackDragon: 1, wyvern: 1, archDemon: 0, ogre: 0,
   };
-  // 味方は敵の方、敵は自機の方を向くように左右反転して描く（真上・真下付近では向きを保つ）
+  // 味方・敵とも最も近い相手の方を向くように左右反転して描く（真上・真下付近では向きを保つ）
   function drawFacingSprite(img, ball, key, cx, cy, sz) {
     const base = SPRITE_FACING[key] || 0;
     let flip = false;
     if (base !== 0) {
-      const target = ball.isPlayer
-        ? balls.find(b => !b.isPlayer && !b.isDying)
-        : balls.find(b => isMainPlayerBall(b));
+      // 最も近い相手（味方なら敵・雑魚敵、敵なら自機・仲間・分身）の方を向く
+      const candidates = ball.isPlayer
+        ? [...balls, ...adds].filter(b => !b.isPlayer && !b.isDying && b.hp > 0)
+        : balls.filter(b => b.isPlayer && b.hp > 0);
+      let target = null, best = Infinity;
+      for (const c of candidates) {
+        const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2;
+        if (d < best) { best = d; target = c; }
+      }
       if (target) {
         const dx = target.x - ball.x;
         if (Math.abs(dx) > 6) ball.faceDir = dx > 0 ? 1 : -1;
