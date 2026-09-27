@@ -4866,6 +4866,34 @@
   }
 
   // ---------- 描画 ----------
+  // ドット絵のもともとの向き（1=右向き、-1=左向き、0=正面なので反転しない）
+  const SPRITE_FACING = {
+    hero: 1, knight: 1, archer: 1, witch: 1, sprite: 0, golem: 1, monk: -1, bard: -1, ninja: -1, priest: -1, dragon: 0,
+    slime: 0, metalSlime: 0, goblin: -1, skeleton: 1, zombie: -1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
+    worm: 1, cobra: 1, salamander: 1, flameWisp: 0, windSpirit: 0, lich: -1, bigSpider: 0, cerberus: 0,
+    redDragon: 0, blueDragon: 0, blackDragon: 1, wyvern: 1, archDemon: 0, ogre: 0,
+  };
+  // 味方は敵の方、敵は自機の方を向くように左右反転して描く（真上・真下付近では向きを保つ）
+  function drawFacingSprite(img, ball, key, cx, cy, sz) {
+    const base = SPRITE_FACING[key] || 0;
+    let flip = false;
+    if (base !== 0) {
+      const target = ball.isPlayer
+        ? balls.find(b => !b.isPlayer && !b.isDying)
+        : balls.find(b => isMainPlayerBall(b));
+      if (target) {
+        const dx = target.x - ball.x;
+        if (Math.abs(dx) > 6) ball.faceDir = dx > 0 ? 1 : -1;
+      }
+      flip = (ball.faceDir || base) !== base;
+    }
+    if (!flip) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); return; }
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(-1, 1);
+    ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
+    ctx.restore();
+  }
   function isMainPlayerBall(ball) { return ball.isPlayer && !ball.isClone && !ball.isCompanion; }
   // 1体ぶんの描画（自機・仲間・分身・敵）
   function drawBall(ball) {
@@ -4969,7 +4997,7 @@
 
     if (enemySprite) {
       const sz = ball.radius * ENEMY_SPRITE_SCALE;
-      ctx.drawImage(enemySprite, ball.x - sz / 2, ball.y - sz / 2, sz, sz);
+      drawFacingSprite(enemySprite, ball, getEnemySpriteKey(ball), ball.x, ball.y, sz);
     } else if (shape === 'emoji') {
       ctx.save();
       ctx.font = `${Math.round(ball.radius * 1.5)}px sans-serif`;
@@ -4981,7 +5009,7 @@
 
     if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
       const sz = ball.radius * 2.9;
-      ctx.drawImage(playerSpriteImg, ball.x - sz / 2, ball.y - sz / 2 - ball.radius * 0.15, sz, sz);
+      drawFacingSprite(playerSpriteImg, ball, 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
     }
 
     if (ball.isCompanion) {
@@ -4989,7 +5017,7 @@
       ctx.save();
       if (img && img.complete && img.naturalWidth) {
         const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 2.9; // 丸より少し大きめに。小さい仲間も自機と同じ大きさで描く
-        ctx.drawImage(img, ball.x - sz / 2, ball.y - sz / 2 - ball.radius * 0.15, sz, sz);
+        drawFacingSprite(img, ball, ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
       } else {
         ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
         ctx.textAlign = 'center';
