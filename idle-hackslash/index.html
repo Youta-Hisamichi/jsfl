@@ -1841,7 +1841,9 @@
     document.getElementById('companionProgress').innerHTML = `仲間図鑑　取得数 <strong>${found} / ${compIds.length}</strong>　取得率 <strong>${compRate}%</strong>`;
     const pc = document.getElementById('partyCount');
     if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${COMPANION_PARTY_MAX}人`;
-    companionList.innerHTML = Object.entries(COMPANIONS).map(([id, c]) => {
+    const RARITY_ORDER = { legendary: 4, epic: 3, rare: 2, common: 1 };
+    // レア度の高い順（同じレア度は定義順のまま）
+    companionList.innerHTML = Object.entries(COMPANIONS).sort((x, y) => RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]).map(([id, c]) => {
       const recruited = !!game.companions.recruited[id];
       const rar = RARITY_INFO[c.rarity];
       const rarTag = `<span class="cc-rarity" style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>`;
