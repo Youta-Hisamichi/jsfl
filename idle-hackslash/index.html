@@ -2065,7 +2065,7 @@
   function performTackleHit(a, e, b) {
     const t = tackle;
     tackle = null;
-    a.hitCooldown = 20; e.hitCooldown = 20;
+    a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
     registerHit();
     const comboMult = getComboMultiplier(b.comboGrowth);
     const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * t.mult * b.tackleMult * comboMult)), e);
@@ -2794,9 +2794,9 @@
   // 連鎖(コンボ)
   let comboCount = 0;
   let lastHitAt = 0;
-  const COMBO_WINDOW_MS = 500; // 前のヒットからこの時間以内に再ヒットしたらコンボ（ゲーム速度1倍のときの値）
-  // ゲーム速度が遅いほど再ヒットまでの実時間も伸びるので、猶予もゲーム速度に合わせて伸縮する
-  function getComboWindowMs() { return COMBO_WINDOW_MS / getEffectiveSpeed(); }
+  const COMBO_WINDOW_MS = 500; // 再ヒットできるようになってから、この時間以内に再ヒットしたらコンボ
+  const HIT_LOCK_FRAMES = 20;  // 1回当たった後、次に当たれるまでのフレーム数（ゲーム速度で実時間が変わる）
+  function getComboWindowMs() { return HIT_LOCK_FRAMES / 60 * 1000 / getEffectiveSpeed() + COMBO_WINDOW_MS; }
   const COMBO_STEP = 0.08;
   const COMBO_MAX_STACKS = 12;
 
@@ -3736,7 +3736,7 @@
       performTackleHit(a, e, b);
       if (e.hp <= 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
     } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
-      a.hitCooldown = 20; e.hitCooldown = 20;
+      a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
       const combo = registerHit();
       const comboMult = getComboMultiplier(b.comboGrowth);
       if (combo >= 2) playChainSound(combo);
