@@ -121,6 +121,13 @@
   .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
   .upgrade-btn .upgrade-value { display: block; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
   .upgrade-btn .upgrade-value b { color: var(--gold); }
+  .levelup-pop { position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 0.9s ease-out forwards; }
+  @keyframes levelUpPop {
+    0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
+    18% { opacity: 1; transform: translate(-50%, -80%) scale(1.25); }
+    35% { transform: translate(-50%, -95%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -190%) scale(1); }
+  }
   .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
   .comp-sprite { width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; }
   .bst-sprite { width: 2.2rem; height: 2.2rem; object-fit: contain; }
@@ -6008,6 +6015,7 @@
       refreshPlayerBallStats(false);
       playUpgradeSound();
       showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
+      showLevelUpPop(event.clientX, event.clientY, `レベルアップ！ +${count}Lv`);
       updateStatsUI();
       updateHPUI();
       return;
@@ -6017,6 +6025,16 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
     levelUpUpgrade(button.dataset.upgrade, event.clientX, event.clientY);
   });
+  // 強化成功時の「レベルアップ！」テキストアニメ（タップした位置から浮かび上がる）
+  function showLevelUpPop(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'levelup-pop';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
   // コイン強化を1レベル上げる。成功したら true
   function levelUpUpgrade(id, x, y) {
     if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
@@ -6026,6 +6044,7 @@
     game.upgrades[id]++;
     refreshPlayerBallStats(false);
     playUpgradeSound();
+    showLevelUpPop(x, y, `レベルアップ！ Lv.${game.upgrades[id]}`);
     updateStatsUI();
     updateHPUI();
     return true;
