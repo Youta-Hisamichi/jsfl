@@ -409,6 +409,8 @@
   .toast .big.stage-clear { color: #7ee787; }
   .toast .big.reborn { color: #c792ea; }
   .toast .sub { color: #d0d3e0; font-size: 0.85rem; white-space: pre-line; }
+  .toast .sub .continue-count { font-size: 1.3rem; font-weight: 800; color: #fff; }
+  .toast .sub .continue-count b { font-size: 1.9rem; color: #ffd76b; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
 
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
@@ -5289,7 +5291,7 @@
     clearInterval(continueTimer);
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
-      toastSub.textContent = `残り ${seconds} 秒　💎 3 で現在ステージをリトライ`;
+      toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 3 で現在ステージをリトライ`;
       if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
     };
     updateContinue();
