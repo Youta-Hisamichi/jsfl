@@ -1909,7 +1909,10 @@
     game.coins += COMP_AWAKEN_MAX_REFUND;
     return { id, label: `覚醒MAX → 🟡${COMP_AWAKEN_MAX_REFUND}` };
   }
+  let compSummoning = false; // 召喚演出中は連打できない
+  const COMP_SUMMON_LOADING_MS = 1000;
   function runCompanionGacha(count, cost, event) {
+    if (compSummoning) return;
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
     spendCoins(cost);
     game.companionSummons = (game.companionSummons || 0) + count;
@@ -1919,6 +1922,21 @@
     refreshCompanionBalls();
     const box = document.getElementById('compGachaResult');
     const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
+    updateStatsUI();
+    saveGame();
+    // 約1秒のロード演出（レア度に応じて背景が光る）→ 結果表示
+    compSummoning = true;
+    box.style.display = 'block';
+    box.style.background = '';
+    box.className = 'gacha-result gacha-summoning rarity-bg-' + bestRarity;
+    box.innerHTML = `<div class="gr-icon">🐾</div><div class="gr-title">召喚中……</div>`;
+    playGachaSummonSound();
+    setTimeout(() => {
+      compSummoning = false;
+      showCompanionGachaResult(box, results, count, bestRarity);
+    }, COMP_SUMMON_LOADING_MS);
+  }
+  function showCompanionGachaResult(box, results, count, bestRarity) {
     box.style.display = 'block';
     box.className = 'gacha-result rarity-' + bestRarity;
     box.style.background = rarityBackground(bestRarity);
@@ -1933,7 +1951,6 @@
     playGachaSound(bestRarity);
     updateStatsUI();
     updateHPUI();
-    saveGame();
   }
   document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
 
