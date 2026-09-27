@@ -130,6 +130,8 @@
   .action-row.four.six { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .action-btn.atkup { border-color: #ff6b6b; color: #ffb3b3; }
   .action-btn.atkup.buffing { background: rgba(255,107,107,0.15); }
+  .action-btn.regen { border-color: #5fe0a8; color: #b8f5da; }
+  .action-btn.regen.buffing { background: rgba(95,224,168,0.15); }
   .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
   .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
   .action-btn.poison { border-color: #7ee787; color: #b6f5c0; }
@@ -527,6 +529,7 @@
       <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
       <button class="action-btn sleep" id="sleepBtn">🔒 眠り</button>
       <button class="action-btn atkup" id="atkUpBtn">🔒 攻撃UP</button>
+      <button class="action-btn regen" id="regenBtn">🔒 リジェネ</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">⏭️ ステージスキップ（強ボスに挑戦）</button>
@@ -911,6 +914,7 @@
   const paralyzeBtn = document.getElementById('paralyzeBtn');
   const sleepBtn = document.getElementById('sleepBtn');
   const atkUpBtn = document.getElementById('atkUpBtn');
+  const regenBtn = document.getElementById('regenBtn');
   const rebornBtn = document.getElementById('rebornBtn');
   const shopList = document.getElementById('shopList');
   const coinShopList = document.getElementById('coinShopList');
@@ -1355,7 +1359,8 @@
     skillPoison:   { icon: '☠️', name: '毒',       desc: '当てた敵を毒状態に' },
     skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
     skillSleep:    { icon: '💤', name: '眠り',     desc: '敵を眠らせる（起こす一撃は大ダメージ）' },
-    skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '20秒間 攻撃力1.5倍' }
+    skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '20秒間 攻撃力1.5倍' },
+    skillRegen:    { icon: '🌿', name: 'リジェネ', desc: '20秒間 HPが少しずつ自動回復' }
   };
   const SKILL_MAX_LEVEL = 10;
   const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
@@ -1934,6 +1939,7 @@
     updateParalyzeButton();
     updateSleepButton();
     updateAtkUpButton();
+    updateRegenButton();
   }
 
   // ---------- Canvas / 物理 ----------
@@ -2192,6 +2198,48 @@
     }
     homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
   }
+  // ---------- リジェネスキル：一定時間、HPが少しずつ自動回復 ----------
+  const REGEN_COOLDOWN = 150 * 1000;
+  const REGEN_MS = 20 * 1000;
+  const REGEN_RATIO_PER_SEC = 0.02; // 毎秒 最大HPの2%（20秒で合計40%）
+  let lastRegenAt = Date.now() - REGEN_COOLDOWN;
+  let regenEndAt = 0;
+  let lastRegenTickAt = 0;
+  let regenHealAccum = 0; // 回復量の表示用（1秒ごとにまとめて表示）
+  function updateRegen() {
+    const now = Date.now();
+    if (now >= regenEndAt) return;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    const dt = Math.min(0.1, (now - (lastRegenTickAt || now)) / 1000);
+    lastRegenTickAt = now;
+    if (!player || player.hp <= 0 || player.hp >= player.maxHp) return;
+    const heal = player.maxHp * REGEN_RATIO_PER_SEC * dt;
+    player.hp = Math.min(player.maxHp, player.hp + heal);
+    regenHealAccum += heal;
+    if (regenHealAccum >= Math.max(1, player.maxHp * REGEN_RATIO_PER_SEC)) {
+      spawnDamageText(player.x, player.y - player.radius - 14, '+' + Math.round(regenHealAccum) + ' HP', '#5fe0a8', 0.03);
+      regenHealAccum = 0;
+    }
+    updateHPUI();
+  }
+  function drawRegenEffects() {
+    if (Date.now() >= regenEndAt) return;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (!player) return;
+    // 緑の光の粒が自機のまわりから立ちのぼる
+    if (Math.random() < 0.25) {
+      const a = Math.random() * Math.PI * 2;
+      particles.push({ x: player.x + Math.cos(a) * player.radius, y: player.y + Math.sin(a) * player.radius, vx: 0, vy: -0.6, life: 0.8, color: '#5fe0a8', decay: 0.03 });
+    }
+    ctx.save();
+    ctx.strokeStyle = 'rgba(95,224,168,0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius + 4 + Math.sin(Date.now() / 200) * 1.5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // ---------- 攻撃力UPスキル ----------
   const ATK_UP_COOLDOWN = 180 * 1000;
   const ATK_UP_MS = 20 * 1000;
@@ -2559,7 +2607,7 @@
   function saveGame() {
     if (suppressAutoSave) return;
     try {
-      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, savedAt: Date.now() };
+      const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, savedAt: Date.now() };
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     } catch (err) { /* 保存できない環境では無視 */ }
   }
@@ -2580,6 +2628,7 @@
       if (typeof data.lastParalyzeAt === 'number') lastParalyzeAt = data.lastParalyzeAt;
       if (typeof data.lastSleepAt === 'number') lastSleepAt = data.lastSleepAt;
       if (typeof data.lastAtkUpAt === 'number') lastAtkUpAt = data.lastAtkUpAt;
+      if (typeof data.lastRegenAt === 'number') lastRegenAt = data.lastRegenAt;
       return true;
     } catch (err) {
       return false;
@@ -4420,7 +4469,7 @@
   stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
   // ---------- ジェムでスキルのクールダウンをリセット ----------
-  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4 };
+  const SKILL_RESET_COST = { special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3 };
   const SKILL_RESET_CONFIRM_MS = 3000;
   let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
   let pendingSkillResetUntil = 0;
@@ -4560,6 +4609,33 @@
     atkUpBtn.disabled = false;
     atkUpBtn.classList.toggle('is-disabled', !isSkillResetPending('atkup'));
     atkUpBtn.textContent = cooldownLabel('atkup', '💪 攻撃UP', remaining);
+  }
+  function updateRegenButton() {
+    regenBtn.classList.remove('buffing');
+    if (!game.shopOwned.skillRegen) {
+      regenBtn.disabled = false;
+      regenBtn.classList.add('is-disabled');
+      regenBtn.textContent = '🔒 リジェネ';
+      return;
+    }
+    const now = Date.now();
+    if (now < regenEndAt) {
+      regenBtn.disabled = true;
+      regenBtn.classList.remove('is-disabled');
+      regenBtn.classList.add('buffing');
+      regenBtn.textContent = `🌿 リジェネ中\n${Math.ceil((regenEndAt - now) / 1000)}s`;
+      return;
+    }
+    const remaining = Math.max(0, skillCd('skillRegen', REGEN_COOLDOWN) - (now - lastRegenAt));
+    if (remaining === 0) {
+      regenBtn.disabled = false;
+      regenBtn.classList.toggle('is-disabled', phase !== 'battle');
+      regenBtn.textContent = '🌿 リジェネ\nREADY';
+      return;
+    }
+    regenBtn.disabled = false;
+    regenBtn.classList.toggle('is-disabled', !isSkillResetPending('regen'));
+    regenBtn.textContent = cooldownLabel('regen', '🌿 リジェネ', remaining);
   }
   function updateSleepButton() {
     if (!game.shopOwned.skillSleep) {
@@ -4862,6 +4938,7 @@
     drawParalyzeEffects();
     drawSleepEffects();
     drawAtkUpEffects();
+    drawRegenEffects();
     drawTackleEffects();
 
     for (const meteor of meteors) {
@@ -4927,7 +5004,7 @@
     try {
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
-        if (phase === 'battle') { step(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
+        if (phase === 'battle') { updateRegen(); step(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
         else updateDeathFx();
       } else {
         hitStopFrames--;
@@ -4967,6 +5044,8 @@
     lastSleepAt = Date.now() - SLEEP_COOLDOWN;
     lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
     atkUpEndAt = 0;
+    lastRegenAt = Date.now() - REGEN_COOLDOWN;
+    regenEndAt = 0;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
     particles = []; damageTexts = []; meteors = []; adds = [];
@@ -4996,6 +5075,7 @@
     updateParalyzeButton();
     updateSleepButton();
     updateAtkUpButton();
+    updateRegenButton();
     startBgm('normal');
     loop();
   }
@@ -5079,7 +5159,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UPのクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネのクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -5126,6 +5206,9 @@
       lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
       atkUpEndAt = 0;
       updateAtkUpButton();
+      lastRegenAt = Date.now() - REGEN_COOLDOWN;
+      regenEndAt = 0;
+      updateRegenButton();
       updateSpecialButton();
       updateAccelButton();
       updateHealButton();
@@ -5642,6 +5725,25 @@
     updateHPUI();
   });
 
+  regenBtn.addEventListener('click', event => {
+    if (!game.shopOwned.skillRegen) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今はリジェネを使えません', event.clientX, event.clientY); return; }
+    if (Date.now() < regenEndAt) return;
+    if (Date.now() - lastRegenAt < skillCd('skillRegen', REGEN_COOLDOWN)) { tryGemResetSkill('regen', event, () => { lastRegenAt = Date.now() - REGEN_COOLDOWN; }, updateRegenButton); return; }
+    lastRegenAt = Date.now();
+    regenEndAt = Date.now() + REGEN_MS;
+    lastRegenTickAt = Date.now();
+    regenHealAccum = 0;
+    const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+    if (player) {
+      spawnDamageText(player.x, player.y - player.radius - 14, '🌿 リジェネ', '#5fe0a8', 0.012);
+      spawnHitParticles(player.x, player.y, '#5fe0a8');
+    }
+    playHealSound();
+    showNotice(`🌿 リジェネ！ ${REGEN_MS / 1000}秒間 HPが少しずつ回復`);
+    updateRegenButton();
+  });
+
   sleepBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillSleep) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は眠りを使えません', event.clientX, event.clientY); return; }
@@ -5771,6 +5873,7 @@
   setInterval(updateParalyzeButton, 1000);
   setInterval(updateSleepButton, 1000);
   setInterval(updateAtkUpButton, 500);
+  setInterval(updateRegenButton, 500);
   setInterval(updateRewardAdButtons, 1000);
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
@@ -5844,6 +5947,7 @@
   updateParalyzeButton();
   updateSleepButton();
   updateAtkUpButton();
+  updateRegenButton();
   currentLang = game.language || 'ja';
   applyLanguage(currentLang);
   checkLoginBonus();
