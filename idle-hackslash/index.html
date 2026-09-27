@@ -653,7 +653,7 @@
     <div class="debug-row">
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
-      <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
+      <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
       <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="rebirthShop">🌌 転生ショップ表示</button>
     </div>
 
@@ -2055,8 +2055,9 @@
   }
   let compSummoning = false; // 召喚演出中は連打できない
   const COMP_SUMMON_LOADING_MS = 1000;
+  let compSummonReveal = null; // ロード中の結果をすぐ出す関数
   function runCompanionGacha(count, cost, event) {
-    if (compSummoning) return;
+    if (compSummoning) { if (compSummonReveal) compSummonReveal(); return; } // ロード中にもう一度押したら結果をすぐ表示
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
     spendCoins(cost);
     game.companionSummons = (game.companionSummons || 0) + count;
@@ -2078,12 +2079,14 @@
     const reveal = () => {
       if (!compSummoning) return;
       compSummoning = false;
+      compSummonReveal = null;
       clearTimeout(revealTimer);
       box.onclick = null;
       showCompanionGachaResult(box, results, count, bestRarity);
     };
     const revealTimer = setTimeout(reveal, COMP_SUMMON_LOADING_MS);
     box.onclick = reveal; // 演出中にタップしたらすぐ開封
+    compSummonReveal = reveal;
   }
   function showCompanionGachaResult(box, results, count, bestRarity) {
     box.style.display = 'block';
@@ -4207,6 +4210,12 @@
   // 針鎧の王：タメ体当たりを受けると、一定確率でトゲで反撃して相打ちになる
   const TACKLE_TRADE_BOSS = '🦔';
   let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
+  const GIANT_BOSS_CHANCE = 0.25;   // ボスが激デカになる確率
+  const GIANT_BOSS_RADIUS = 60;
+  const GIANT_BOSS_HP_MULT = 3;
+  const GIANT_BOSS_ATK_MULT = 1.4;
+  const GIANT_BOSS_REWARD_MULT = 3; // 撃破コイン・ジェムの倍率
+  let forcedGiantBoss = false;      // デバッグ：次のボスを激デカに
   const TACKLE_TRADE_CHANCE = 0.4;
   const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）
   // ---------- 敵図鑑 ----------
@@ -4331,6 +4340,10 @@
         { color: '#f46bd4', glow: 'rgba(244,107,212,0.55)', shape: 'square' }
       ];
       const style = enemyStyles[(game.stage - 1) % enemyStyles.length];
+      // 激デカボス：ボスのうち時々、体が大きくHP・攻撃力が高い（倒すと報酬アップ）
+      const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || Math.random() < GIANT_BOSS_CHANCE);
+      forcedGiantBoss = false;
+      if (isGiant) { es.hp = Math.round(es.hp * GIANT_BOSS_HP_MULT); es.atk = Math.round(es.atk * GIANT_BOSS_ATK_MULT); }
       const isEmoji = !es.isBoss && Math.random() < 0.45;
       const emoji = es.isBoss
         ? (forcedBossEmoji || BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)])
@@ -4341,8 +4354,8 @@
         isPlayer: false,
         ...farSpawnPoint(0.72),
         vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
-        maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss,
-        radius: es.isBoss ? 34 : 16,
+        maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
+        radius: isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? 34 : 16,
         color: es.isBoss ? '#ba6cff' : style.color,
         glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
         shape: es.isBoss ? 'emoji' : (isEmoji ? 'emoji' : style.shape),
@@ -5290,7 +5303,7 @@
     const enName = bookEntry ? bookEntry.name : '敵';
     const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
     const enTrait = getEnemyTrait(en);
-    const traitTag = enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '';
+    const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
     enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（スキップ挑戦）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
   }
 
@@ -5303,7 +5316,12 @@
     const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
     if (isMetal) spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
     game.coins += coinGain;
-    if (isBossStage) game.gems += 5;
+    const giantKill = !!(defeated && defeated.isGiant);
+    if (isBossStage) game.gems += giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5;
+    if (giantKill) {
+      game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
+      spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
+    }
     if (isBossStage) playBossClearSound(); else playStageClearSound();
     spawnCoinBurst(arena.x, arena.y - 10, coinGain);
     if (isBossStage) spawnDamageText(arena.x, arena.y, '+5 💎', '#64e8ff');
@@ -6783,6 +6801,7 @@
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
     tradeBoss: 'DEBUG: 針鎧の王を出現させました',
     swarmStage: 'DEBUG: 次の大群ステージへ移動しました',
+    giantBoss: 'DEBUG: 激デカボスを出現させました',
     unlockSkills: 'DEBUG: すべてのスキルを解放しました',
     rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
   };
@@ -6892,6 +6911,17 @@
       game.stage = Math.ceil((game.stage + 1) / 10) * 10;
       game.bestStage = Math.max(game.bestStage, game.stage);
       balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
+      refreshPlayerBallStats(true); updateHPUI();
+      showBossWarning();
+      startBgm('boss');
+    }
+    if (action === 'giantBoss') {
+      if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10;
+      game.skipChallenge = null;
+      game.bestStage = Math.max(game.bestStage, game.stage);
+      forcedGiantBoss = true;
+      balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
+      forcedGiantBoss = false;
       refreshPlayerBallStats(true); updateHPUI();
       showBossWarning();
       startBgm('boss');
