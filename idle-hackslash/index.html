@@ -2031,10 +2031,11 @@
       osc.stop(t + 0.06); lfo.stop(t + 0.06);
     } catch (err) { /* 停止済みなら無視 */ }
   }
-  // 押しっぱなしのままクールダウン・体当たりが終わったら、その時点からタメを開始する
+  // 押したらすぐタメを開始（体当たり中・クールダウン中でもタメられる。発射はクールダウン明けのみ）
   function updateTackleHold() {
     if (!arenaHeld || tackleChargeStart || phase !== 'battle') return;
-    if (Date.now() >= tackleReadyAt && !isTackling()) { tackleChargeStart = Date.now(); startChargeSound(); }
+    tackleChargeStart = Date.now();
+    startChargeSound();
   }
   function releaseTackleCharge() {
     arenaHeld = false;
@@ -2045,6 +2046,10 @@
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     const enemy = balls.find(ball => !ball.isPlayer);
     if (!player || !enemy) return;
+    if (Date.now() < tackleReadyAt) { // クールダウンが明ける前に離したら不発
+      spawnDamageText(player.x, player.y - player.radius - 16, 'クールダウン中', '#9aa3b8', 0.025);
+      return;
+    }
     tackle = { until: Date.now() + TACKLE_DURATION_MS, mult: TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level, full: level >= 1 };
     tackleReadyAt = Date.now() + TACKLE_COOLDOWN_MS;
     const a = Math.atan2(enemy.y - player.y, enemy.x - player.x);
@@ -2096,7 +2101,7 @@
       ctx.lineWidth = 4;
       ctx.strokeStyle = 'rgba(255,255,255,0.18)';
       ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, 0, Math.PI * 2); ctx.stroke();
-      ctx.strokeStyle = full ? '#ff6b3d' : '#ffb35c';
+      ctx.strokeStyle = Date.now() < tackleReadyAt ? '#9aa3b8' : full ? '#ff6b3d' : '#ffb35c'; // クールダウン中は灰色
       ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = full ? 10 : 4;
       ctx.beginPath(); ctx.arc(player.x, player.y, (player.radius + 9) * pulse, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, level)); ctx.stroke();
       if (full) {
