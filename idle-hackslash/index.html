@@ -1113,6 +1113,7 @@
   const gemShortCancelBtn = document.getElementById('gemShortCancelBtn');
   const gemReturnBtn = document.getElementById('gemReturnBtn');
   let gemShortPending = null;  // 確認中の { onLeave, returnTo }
+  let gemShortBtnTimer = null;
   let gemShopReturn = null;    // ショップから戻る先 { fn, mustResume }
   // needed: 必要ジェム数 / returnTo: ショップから戻る処理 / mustResume: 戦闘停止中の画面から来た（戻らないと進行しない）
   // onLeave: ショップへ移動する直前に元の画面を片付ける処理
@@ -1121,6 +1122,10 @@
     gemShortText.textContent = `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
     gemShortPending = options;
     playErrorSound();
+    // 誤タップ防止：ボタンは1秒後に表示（レイアウトは保ったまま非表示にしておく）
+    [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'hidden'; });
+    clearTimeout(gemShortBtnTimer);
+    gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 1000);
     gemShortModal.classList.add('show');
   }
   function runGemShopReturn() {
