@@ -140,6 +140,8 @@
   .sub-tab-btn.active { background: var(--gold); border-color: var(--gold); color: #3a2a00; }
   .upgrade-group-title { font-size: 0.78rem; font-weight: 800; color: var(--text); margin: 10px 2px 4px; padding-bottom: 3px; border-bottom: 1px solid var(--ring); }
   .upgrade-group-title:first-child { margin-top: 0; }
+  .purchase-pop { z-index: 96; text-align: center; line-height: 1.2; }
+  .purchase-pop small { display: block; font-size: 0.72rem; font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
   .levelup-pop { position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 0.9s ease-out forwards; }
   @keyframes levelUpPop {
     0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
@@ -792,7 +794,7 @@
     </div>
     <div class="rs-header"><h2>🌌 転生ショップ</h2><span class="rs-gems">💎 <span id="rebirthShopGems">0</span></span></div>
     <div class="rs-note">効果は転生しても永続・長押しで連続購入</div>
-    <div class="purchase-msg" id="rebirthShopMsg"></div>
+    <div class="purchase-msg" id="rebirthShopMsg" style="display:none"></div>
     <div class="sub-tabs" id="rebirthShopTabs"></div>
     <div class="modal-shop-list two" id="rebirthShopList"></div>
     <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
@@ -5484,6 +5486,19 @@
   // fresh: 転生直後に開いた場合 true（ジェムショップから戻ったときは、タップ済みならゲージを出さない）
   const rebirthShopMsg = document.getElementById('rebirthShopMsg');
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
+  // 購入結果はタップした位置からテキストアニメで表示（リスト上部の枠は使わない）
+  function showRebirthPurchasePop(item, x, y) {
+    const icon = item.companionId ? COMPANIONS[item.companionId].icon : item.icon;
+    const cur = item.artifactId ? getArtifactCurrentText(item.artifactId) : '';
+    const el = document.createElement('div');
+    el.className = 'levelup-pop purchase-pop';
+    el.innerHTML = `${icon} ${item.companionId || item.unlockKey ? '開放！' : '購入！'}${cur ? `<small>${cur}</small>` : ''}`;
+    el.style.left = (x || window.innerWidth / 2) + 'px';
+    el.style.top = (y || window.innerHeight / 2) + 'px';
+    if (RARITY_INFO[item.rarity]) el.style.textShadow = `0 0 8px ${RARITY_INFO[item.rarity].color}, 0 2px 0 #5a3a00, 0 0 2px #000`; // レア度の色で光らせる
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
   function showRebirthPurchaseMessage(item) {
     const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
     const owned = item.companionId || item.unlockKey ? '' : `（所持 ${game.ownedArtifacts[item.artifactId]}${limit ? ' / ' + limit : ''}）`;
@@ -7169,7 +7184,7 @@
     game.gems -= item.cost;
     item.effect();
     renderArtifactList();
-    showRebirthPurchaseMessage(item);
+    showRebirthPurchasePop(item, x, y);
     playUpgradeSound();
     updateStatsUI();
     renderRebirthShopList();
