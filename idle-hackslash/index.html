@@ -4075,25 +4075,108 @@
   }
 
   const COMPANION_COLORS = { knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', lumber: '#c98b4f', cook: '#ffe4b5', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
+  // 仲間ごとの動き方（個性）
+  //  guard: 自機と敵の間に立ちふさがる／hunter: 敵を追いかけ時々ダッシュ／kite: 敵と距離を取りつつ回り込む
+  //  hop: 溜めてから跳びかかる／flutter: ふわふわ揺れながら飛ぶ／escort: 自機のまわりを回る／swoop: 大きく旋回して急降下
+  //  zigzag: 素早くジグザグ
   const COMPANION_MOVEMENT = {
-    knight: { style: 'normal', speedFactor: 0.6 },
-    archer: { style: 'zigzag', speedFactor: 1.15 },
-    witch:  { style: 'orbit', speedFactor: 1 },
-    sprite: { style: 'zigzag', speedFactor: 1.4 },
-    golem:  { style: 'normal', speedFactor: 0.5 },
-    monk:   { style: 'normal', speedFactor: 1.2 },
-    bard:   { style: 'orbit', speedFactor: 1 },
-    ninja:  { style: 'zigzag', speedFactor: 1.6 },
-    priest: { style: 'orbit', speedFactor: 0.9 },
-    dragon: { style: 'normal', speedFactor: 0.9 },
-    lumber: { style: 'normal', speedFactor: 0.8 },
-    cook:   { style: 'orbit', speedFactor: 0.9 },
-    thief:  { style: 'zigzag', speedFactor: 1.5 },
-    lancer: { style: 'normal', speedFactor: 1.1 },
-    samurai:{ style: 'normal', speedFactor: 1.3 },
-    sage:   { style: 'orbit', speedFactor: 0.9 },
-    angel:  { style: 'orbit', speedFactor: 1 }
+    knight: { style: 'guard', speedFactor: 0.8 },
+    archer: { style: 'kite', speedFactor: 1.1 },
+    witch:  { style: 'flutter', speedFactor: 0.9 },
+    sprite: { style: 'flutter', speedFactor: 1.5 },
+    golem:  { style: 'guard', speedFactor: 0.55 },
+    monk:   { style: 'hop', speedFactor: 1.3 },
+    bard:   { style: 'escort', speedFactor: 1 },
+    ninja:  { style: 'hunter', speedFactor: 1.6 },
+    priest: { style: 'escort', speedFactor: 0.8 },
+    dragon: { style: 'swoop', speedFactor: 1.2 },
+    lumber: { style: 'hop', speedFactor: 0.8 },
+    cook:   { style: 'escort', speedFactor: 0.7 },
+    thief:  { style: 'zigzag', speedFactor: 1.7 },
+    lancer: { style: 'hunter', speedFactor: 1.1 },
+    samurai:{ style: 'hunter', speedFactor: 1.3 },
+    sage:   { style: 'kite', speedFactor: 0.9 },
+    angel:  { style: 'escort', speedFactor: 1.1 }
   };
+  const CUSTOM_COMPANION_STYLES = { guard: 1, hunter: 1, kite: 1, hop: 1, flutter: 1, escort: 1, swoop: 1 };
+  // 目標速度ベクトルへ少しずつ向きを変える
+  function steerBall(ball, dvx, dvy, turn) { ball.vx += (dvx - ball.vx) * turn; ball.vy += (dvy - ball.vy) * turn; }
+  function steerToward(ball, tx, ty, speed, turn) {
+    const dx = tx - ball.x, dy = ty - ball.y, d = Math.hypot(dx, dy) || 1;
+    steerBall(ball, dx / d * speed, dy / d * speed, turn);
+    return d;
+  }
+  // 仲間の個性的な動き。処理したら true
+  function moveCompanionCustom(ball, speedMult, player, enemy) {
+    const style = ball.movementStyle;
+    if (!CUSTOM_COMPANION_STYLES[style]) return false;
+    const base = 3.2 * (ball.speedFactor || 1);
+    const turn = Math.min(1, 0.12 * speedMult);
+    ball.moveT = (ball.moveT || Math.random() * 300) + speedMult;
+    const t = ball.moveT;
+    const hasEnemy = enemy && !enemy.isDying;
+    if (style === 'guard') {
+      // 自機と敵の間（自機寄り）に立ちふさがる。近づいた敵には体当たり
+      if (player && hasEnemy) {
+        const tx = player.x + (enemy.x - player.x) * 0.45, ty = player.y + (enemy.y - player.y) * 0.45;
+        const d = steerToward(ball, tx, ty, base, turn);
+        if (d < 12) steerToward(ball, enemy.x, enemy.y, base * 0.8, turn * 0.5);
+      } else if (player) steerToward(ball, player.x, player.y, base * 0.6, turn);
+    } else if (style === 'hunter') {
+      // 敵を執拗に追いかけ、一定間隔でダッシュ
+      const dashing = (t % 140) < 22;
+      if (hasEnemy) steerToward(ball, enemy.x, enemy.y, base * (dashing ? 2.4 : 1), dashing ? turn * 2 : turn);
+    } else if (style === 'kite') {
+      // 敵と一定の距離を保ちながら横に回り込む
+      if (hasEnemy) {
+        const dx = ball.x - enemy.x, dy = ball.y - enemy.y, d = Math.hypot(dx, dy) || 1;
+        const want = arena.radius * 0.55;
+        const radial = (want - d) / want; // 近すぎれば離れ、遠すぎれば近づく
+        const side = Math.sin(t / 90) > 0 ? 1 : -1;
+        steerBall(ball, (dx / d * radial * 1.6 - dy / d * side) * base, (dy / d * radial * 1.6 + dx / d * side) * base, turn);
+      }
+    } else if (style === 'hop') {
+      // 溜め（ほぼ停止）→ 敵へ跳びかかる、を繰り返す
+      const phase = t % 80;
+      if (phase < 18 && hasEnemy) {
+        if (phase < speedMult + 0.01 || !ball.hopAimed) {
+          const dx = enemy.x - ball.x, dy = enemy.y - ball.y, d = Math.hypot(dx, dy) || 1;
+          ball.vx = dx / d * base * 2.6; ball.vy = dy / d * base * 2.6; ball.hopAimed = true;
+        }
+      } else {
+        ball.hopAimed = false;
+        ball.vx *= Math.pow(0.9, speedMult); ball.vy *= Math.pow(0.9, speedMult);
+      }
+    } else if (style === 'flutter') {
+      // 進行方向に対して横にふわふわ揺れる（ゆるく敵の方へ）
+      if (hasEnemy && Math.random() < 0.02 * speedMult) steerToward(ball, enemy.x, enemy.y, base, 0.5);
+      const sp = Math.hypot(ball.vx, ball.vy) || 1;
+      const nx = ball.vx / sp, ny = ball.vy / sp;
+      const wob = Math.cos(t / 9) * 1.8;
+      ball.x += -ny * wob * speedMult; ball.y += nx * wob * speedMult;
+      normalizeSpeed(ball, base);
+    } else if (style === 'escort') {
+      // 自機のまわりを回って護衛
+      if (player) {
+        const ang = t * 0.035 * (ball.speedFactor || 1) + (ball.escortOffset ??= Math.random() * Math.PI * 2);
+        const R = player.radius + 38;
+        steerToward(ball, player.x + Math.cos(ang) * R, player.y + Math.sin(ang) * R, base * 1.4, turn * 1.5);
+      }
+    } else if (style === 'swoop') {
+      // 大きく旋回し、時々敵へ急降下
+      const diving = (t % 260) < 45;
+      if (diving && hasEnemy) steerToward(ball, enemy.x, enemy.y, base * 2.2, turn * 1.5);
+      else {
+        const ang = t * 0.02;
+        const R = arena.radius * 0.6;
+        steerToward(ball, arena.x + Math.cos(ang) * R, arena.y + Math.sin(ang) * R, base, turn);
+      }
+    }
+    ball.x += ball.vx * speedMult;
+    ball.y += ball.vy * speedMult;
+    wallBounce(ball);
+    return true;
+  }
   const COMPANION_RADIUS = { golem: 16, dragon: 15 };
   const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下限（自機と同じ）
   const COMPANION_AWAKEN_MAX = 5;
@@ -4377,6 +4460,8 @@
   }
 
   function movePlayerSideBalls(list, speedMult, b) {
+    const moveCtxPlayer = balls.find(x => isMainPlayerBall(x));
+    const moveCtxEnemy = balls.find(x => !x.isPlayer && !x.isDying);
     for (const ball of list) {
       if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
       if (!ball.isPlayer && (isDisabled(ball) || ball.traitFreeze)) { // 麻痺・眠り中・溜め／詠唱中の敵はその場で動けない
@@ -4386,6 +4471,10 @@
       if (ball.dashing) { // 突進中はまっすぐ高速で進む
         ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
         wallBounce(ball);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
+      if (ball.isCompanion && moveCompanionCustom(ball, speedMult, moveCtxPlayer, moveCtxEnemy)) {
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
