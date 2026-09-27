@@ -548,7 +548,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
-      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button>
     </div>
 
     <div class="speed-control">
@@ -5089,6 +5089,7 @@
     const button = event.target.closest('[data-debug]');
     if (!button) return;
     const action = button.dataset.debug;
+    if (action === 'reload') { saveGame(); location.reload(); return; } // セーブしてからページを再読み込み
     if (action === 'coins') game.coins += 100;
     if (action === 'gems') game.gems += 10;
     if (action === 'gems1000') game.gems += 1000;
