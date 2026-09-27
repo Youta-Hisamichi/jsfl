@@ -1737,7 +1737,11 @@
       if (!cp.alive) cp.alive = {};
       cp.alive[id] = true;
       cp.hp[id] = getCompanionMaxHP(id);
-      if (phase === 'battle') balls.push(makeCompanionBall(id));
+      if (phase === 'battle') {
+        // すでに同じ仲間がいれば1体のまま強化、いなければ出撃
+        if (balls.some(ball => ball.isCompanion && ball.companionId === id)) refreshCompanionBalls();
+        else balls.push(makeCompanionBall(id));
+      }
       return { id, label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）` };
     }
     if (getCompanionAwaken(id) < COMPANION_AWAKEN_MAX) {
@@ -3525,12 +3529,12 @@
     const dist = Math.random() * arena.radius * 0.5;
     const move = COMPANION_MOVEMENT[id] || { style: 'normal', speedFactor: 1 };
     const speed = 3.2 * move.speedFactor;
-    const maxHP = getCompanionMaxHP(id);
+    const maxHP = getCompanionBallMaxHP(id);
     return {
       isPlayer: true, isCompanion: true, companionId: id,
       x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
       vx: Math.cos(angle + 1.4) * speed, vy: Math.sin(angle + 1.4) * speed,
-      radius: COMPANION_RADIUS[id] || 11, atk: getCompanionAtk(id),
+      radius: COMPANION_RADIUS[id] || 11, atk: getCompanionBallAtk(id),
       hp: maxHP, maxHp: maxHP,
       color: COMPANION_COLORS[id] || '#ffffff', glow: (COMPANION_COLORS[id] || '#ffffff') + '88',
       icon: c.icon, hitCooldown: 0,
@@ -3540,12 +3544,11 @@
       orbitSpeed: (0.03 + Math.random() * 0.015) * (Math.random() < 0.5 ? 1 : -1)
     };
   }
+  // 同じ仲間は1体にまとめて表示し、人数ぶん攻撃力・HPを掛ける
+  function getCompanionBallAtk(id) { return getCompanionAtk(id) * Math.max(1, getCompanionCount(id)); }
+  function getCompanionBallMaxHP(id) { return getCompanionMaxHP(id) * Math.max(1, getCompanionCount(id)); }
   function makeCompanionBalls() {
-    const list = [];
-    for (const id of Object.keys(COMPANIONS)) {
-      for (let i = 0; i < getCompanionCount(id); i++) list.push(makeCompanionBall(id));
-    }
-    return list;
+    return Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => makeCompanionBall(id));
   }
   function spawnBattleBalls() {
     return [makeBall(true), makeBall(false), ...makeCompanionBalls()];
@@ -3553,9 +3556,9 @@
   function refreshCompanionBalls() {
     for (const ball of balls) {
       if (!ball.isCompanion) continue;
-      ball.atk = getCompanionAtk(ball.companionId);
+      ball.atk = getCompanionBallAtk(ball.companionId);
       // 仲間のHP を更新
-      const maxHP = getCompanionMaxHP(ball.companionId);
+      const maxHP = getCompanionBallMaxHP(ball.companionId);
       ball.maxHp = maxHP;
       // 生きている仲間は HP を満タンに回復
       if (game.companions.alive[ball.companionId]) {
@@ -4418,7 +4421,7 @@
     const allies = balls.filter(ball => ball.isPlayer);
     for (const comp of allies) {
       if (!comp.isCompanion) continue;
-      comp.maxHp = getCompanionMaxHP(comp.companionId);
+      comp.maxHp = getCompanionBallMaxHP(comp.companionId);
       comp.hp = comp.maxHp;
     }
     balls = [...allies, makeBall(false)];
@@ -5018,6 +5021,17 @@
       if (img && img.complete && img.naturalWidth) {
         const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 2.9; // 丸より少し大きめに。小さい仲間も自機と同じ大きさで描く
         drawFacingSprite(img, ball, ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
+        const cnt = getCompanionCount(ball.companionId);
+        if (cnt >= 2) { // 人数バッジ
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+          ctx.strokeText('×' + cnt, ball.x + sz * 0.36, ball.y + sz * 0.3);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('×' + cnt, ball.x + sz * 0.36, ball.y + sz * 0.3);
+        }
       } else {
         ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
         ctx.textAlign = 'center';
