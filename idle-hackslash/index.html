@@ -335,6 +335,7 @@
     from { box-shadow: 0 0 0 rgba(199, 60, 100, 0); }
     to { box-shadow: 0 0 34px rgba(220, 70, 110, 0.55); }
   }
+  .flyout-canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; border-radius: 0 !important; pointer-events: none; z-index: 50; }
   canvas { width: 100%; height: 100%; display: block; border-radius: 50%; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   /* ボスのクリティカル被弾時の画面揺れ＋赤フラッシュ */
   .tab-page.screen-shake { animation: screenShake 0.45s cubic-bezier(.36,.07,.19,.97); }
@@ -466,6 +467,7 @@
 </style>
 </head>
 <body>
+<canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
 
 <h1 style="display:none;">⚔️ 放置系ハクスラ無限反射</h1>
 
@@ -867,7 +869,7 @@
 <script>
 (function () {
   const canvas = document.getElementById('arenaCanvas');
-  const ctx = canvas.getContext('2d');
+  let ctx = canvas.getContext('2d'); // 撃破時の吹っ飛び描画の間だけオーバーレイ用に差し替える
   const wrap = canvas.parentElement;
 
   const stageNumEl = document.getElementById('stageNum');
@@ -3675,10 +3677,12 @@
     enemy.vy = (dy / dist) * KNOCKBACK_SPEED;
     enemy.shakeTimer = KNOCKBACK_SHAKE_FRAMES;
     hitStopFrames = KILL_HITSTOP_DURATION;
+    startFlyout(enemy);
   }
 
   function movePlayerSideBalls(list, speedMult, b) {
     for (const ball of list) {
+      if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
       if (!ball.isPlayer && isDisabled(ball)) { // 麻痺・眠り中の敵はその場で動けない
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
@@ -3779,11 +3783,7 @@
 
     // 撃破後：震えながら吹っ飛ぶ演出。終わったら次ステージへ
     if (e.isDying) {
-      e.shakeTimer = Math.max(0, e.shakeTimer - speedMult);
-      e.x += e.vx * speedMult;
-      e.y += e.vy * speedMult;
-      e.vx *= KNOCKBACK_DECEL;
-      e.vy *= KNOCKBACK_DECEL;
+      e.shakeTimer = Math.max(0, e.shakeTimer - speedMult); // 吹っ飛びの移動は updateFlyouts で行う
       movePlayerSideBalls(balls, speedMult, b); // 演出中も自機側は動かし続ける
       if (e.shakeTimer <= 0) onStageClear();
       return;
@@ -4774,6 +4774,208 @@
   }
 
   // ---------- 描画 ----------
+  // 1体ぶんの描画（自機・仲間・分身・敵）
+  function drawBall(ball) {
+    ctx.save();
+    if (deathFx && ball === deathFx.ball) {
+      // やられ演出：震え → 赤く点滅 → 縮みながら消える
+      const t = getDeathFxProgress();
+      const shake = 6 * (1 - t);
+      ctx.translate((Math.random() - 0.5) * 2 * shake, (Math.random() - 0.5) * 2 * shake + t * 10);
+      const scale = Math.max(0.05, 1 - t * 0.9);
+      ctx.translate(ball.x, ball.y); ctx.scale(scale, scale); ctx.translate(-ball.x, -ball.y);
+      ctx.globalAlpha = Math.max(0, 1 - t * 0.95) * (Math.floor(Date.now() / 90) % 2 ? 1 : 0.55);
+      if (!ball.baseColor) ball.baseColor = ball.color;
+      ball.color = Math.floor(Date.now() / 90) % 2 ? '#ff4f6b' : ball.baseColor;
+    } else if (ball.baseColor) {
+      ball.color = ball.baseColor; delete ball.baseColor;
+    }
+    if (ball.isDying) {
+      const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
+      ctx.translate((Math.random() - 0.5) * 2 * intensity, (Math.random() - 0.5) * 2 * intensity);
+    }
+    ctx.save();
+    ctx.shadowColor = ball.glow;
+    ctx.shadowBlur = 14;
+    ctx.beginPath();
+    if (!ball.isPlayer && ball.shape === 'diamond') {
+      ctx.moveTo(ball.x, ball.y - ball.radius); ctx.lineTo(ball.x + ball.radius, ball.y); ctx.lineTo(ball.x, ball.y + ball.radius); ctx.lineTo(ball.x - ball.radius, ball.y); ctx.closePath();
+    } else if (!ball.isPlayer && ball.shape === 'square') {
+      ctx.rect(ball.x - ball.radius * .8, ball.y - ball.radius * .8, ball.radius * 1.6, ball.radius * 1.6);
+    } else if (!ball.isPlayer && (ball.shape === 'hex' || ball.shape === 'star')) {
+      const points = ball.shape === 'star' ? 10 : 6;
+      for (let i = 0; i < points; i++) {
+        const angle = -Math.PI / 2 + i * Math.PI * 2 / points;
+        const r = ball.shape === 'star' && i % 2 ? ball.radius * .48 : ball.radius;
+        const px = ball.x + Math.cos(angle) * r, py = ball.y + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else if (!ball.isPlayer && (ball.shape === 'spike' || ball.shape === 'emoji')) {
+      // 敵はトゲトゲの輪郭で、丸い自機・仲間と見分けやすく
+      const spikes = ball.shape === 'emoji' ? 12 : 8;
+      const rot = (ball.spinAngle = (ball.spinAngle || 0) + 0.01);
+      for (let i = 0; i < spikes * 2; i++) {
+        const angle = rot - Math.PI / 2 + i * Math.PI / spikes;
+        const rr = i % 2 === 0 ? ball.radius * (ball.shape === 'emoji' ? 1.18 : 1.12) : ball.radius * (ball.shape === 'emoji' ? 0.86 : 0.62);
+        const px = ball.x + Math.cos(angle) * rr, py = ball.y + Math.sin(angle) * rr;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else {
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    }
+    if (ball.shape === 'emoji') {
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = ball.color;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = ball.color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = ball.color;
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 図形の敵には怒った目を描いて「敵」だとひと目で分かるように
+    if (!ball.isPlayer && ball.shape !== 'emoji') {
+      const er = ball.radius;
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(ball.x + side * er * 0.3, ball.y - er * 0.02, er * 0.17, er * 0.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#1a1020';
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.arc(ball.x + side * er * 0.27, ball.y + er * 0.03, er * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // つり上がった眉
+      ctx.strokeStyle = '#1a1020';
+      ctx.lineWidth = Math.max(1.5, er * 0.1);
+      ctx.lineCap = 'round';
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(ball.x + side * er * 0.5, ball.y - er * 0.3);
+        ctx.lineTo(ball.x + side * er * 0.12, ball.y - er * 0.14);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if (ball.shape === 'emoji') {
+      ctx.save();
+      ctx.font = `${Math.round(ball.radius * 1.5)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ball.emoji, ball.x, ball.y + 1);
+      ctx.restore();
+    }
+
+    if (ball.isCompanion) {
+      ctx.save();
+      ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ball.icon, ball.x, ball.y + 1);
+      ctx.restore();
+    }
+
+    if (!ball.isClone && !ball.isCompanion && !ball.isDying) {
+      const barWidth = ball.radius * 2;
+      const barHeight = 5;
+      const barX = ball.x - ball.radius;
+      const barY = ball.y - ball.radius - 10;
+      ctx.fillStyle = '#080b12';
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX, barY, barWidth, barHeight);
+      ctx.fillStyle = ball.isPlayer ? '#7ed0ff' : (ball.isBoss ? '#d39cff' : '#ff7b87');
+      ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+
+    }
+
+    // 仲間のHP バーを描画
+    if (ball.isCompanion && ball.maxHp) {
+      const barWidth = ball.radius * 2;
+      const barHeight = 4;
+      const barX = ball.x - ball.radius;
+      const barY = ball.y - ball.radius - 8;
+      ctx.fillStyle = '#080b12';
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+      ctx.strokeStyle = 'rgba(200,200,200,0.5)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(barX, barY, barWidth, barHeight);
+      // 倒れた仲間はグレーアウト、生きている仲間はカラフル
+      if (ball.hp <= 0) {
+        ctx.fillStyle = '#666666';
+      } else {
+        ctx.fillStyle = COMPANION_COLORS[ball.companionId] || '#ffffff';
+      }
+      ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+    }
+    ctx.restore(); // 震えtranslate用
+  }
+
+  // ---------- 撃破時の吹っ飛び：サークルの外まで見えるよう、画面全体のオーバーレイに描画 ----------
+  const flyoutCanvas = document.getElementById('flyoutCanvas');
+  const flyoutCtx = flyoutCanvas.getContext('2d');
+  let flyouts = [];
+  const FLYOUT_FRAMES = 60;
+  function startFlyout(enemy) {
+    if (flyouts.includes(enemy)) return;
+    enemy.flyLife = FLYOUT_FRAMES;
+    enemy.flySpin = 0;
+    enemy.flySpinSpeed = (Math.random() < 0.5 ? -1 : 1) * (0.25 + Math.random() * 0.2);
+    flyouts.push(enemy);
+  }
+  function updateFlyouts() {
+    if (!flyouts.length || hitStopFrames > 0) return;
+    const speedMult = getEffectiveSpeed();
+    for (const f of flyouts) {
+      f.x += f.vx * speedMult;
+      f.y += f.vy * speedMult;
+      f.vx *= KNOCKBACK_DECEL;
+      f.vy *= KNOCKBACK_DECEL;
+      f.flySpin += f.flySpinSpeed * speedMult;
+      f.flyLife -= speedMult;
+    }
+    const far = Math.max(window.innerWidth, window.innerHeight) * 1.5;
+    flyouts = flyouts.filter(f => f.flyLife > 0 && Math.hypot(f.x - arena.x, f.y - arena.y) < far);
+  }
+  function drawFlyouts() {
+    const dprNow = Math.max(1, window.devicePixelRatio || 1);
+    const w = Math.round(window.innerWidth * dprNow), h = Math.round(window.innerHeight * dprNow);
+    if (flyoutCanvas.width !== w || flyoutCanvas.height !== h) { flyoutCanvas.width = w; flyoutCanvas.height = h; }
+    flyoutCtx.setTransform(1, 0, 0, 1, 0, 0);
+    flyoutCtx.clearRect(0, 0, w, h);
+    if (!flyouts.length) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 10 || !size) return; // ゲームタブが非表示のときは描かない
+    const k = rect.width / size;
+    flyoutCtx.setTransform(dprNow * k, 0, 0, dprNow * k, rect.left * dprNow, rect.top * dprNow);
+    const mainCtx = ctx;
+    ctx = flyoutCtx;
+    try {
+      for (const f of flyouts) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, f.flyLife / 15);
+        ctx.translate(f.x, f.y); ctx.rotate(f.flySpin); ctx.translate(-f.x, -f.y);
+        drawBall(f);
+        ctx.restore();
+      }
+    } finally {
+      ctx = mainCtx;
+    }
+  }
+
   function draw() {
     cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
     wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
@@ -4814,152 +5016,8 @@
 
     drawDeathDim();
     for (const ball of [...balls, ...adds]) {
-      ctx.save();
-      if (deathFx && ball === deathFx.ball) {
-        // やられ演出：震え → 赤く点滅 → 縮みながら消える
-        const t = getDeathFxProgress();
-        const shake = 6 * (1 - t);
-        ctx.translate((Math.random() - 0.5) * 2 * shake, (Math.random() - 0.5) * 2 * shake + t * 10);
-        const scale = Math.max(0.05, 1 - t * 0.9);
-        ctx.translate(ball.x, ball.y); ctx.scale(scale, scale); ctx.translate(-ball.x, -ball.y);
-        ctx.globalAlpha = Math.max(0, 1 - t * 0.95) * (Math.floor(Date.now() / 90) % 2 ? 1 : 0.55);
-        if (!ball.baseColor) ball.baseColor = ball.color;
-        ball.color = Math.floor(Date.now() / 90) % 2 ? '#ff4f6b' : ball.baseColor;
-      } else if (ball.baseColor) {
-        ball.color = ball.baseColor; delete ball.baseColor;
-      }
-      if (ball.isDying) {
-        const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
-        ctx.translate((Math.random() - 0.5) * 2 * intensity, (Math.random() - 0.5) * 2 * intensity);
-      }
-      ctx.save();
-      ctx.shadowColor = ball.glow;
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      if (!ball.isPlayer && ball.shape === 'diamond') {
-        ctx.moveTo(ball.x, ball.y - ball.radius); ctx.lineTo(ball.x + ball.radius, ball.y); ctx.lineTo(ball.x, ball.y + ball.radius); ctx.lineTo(ball.x - ball.radius, ball.y); ctx.closePath();
-      } else if (!ball.isPlayer && ball.shape === 'square') {
-        ctx.rect(ball.x - ball.radius * .8, ball.y - ball.radius * .8, ball.radius * 1.6, ball.radius * 1.6);
-      } else if (!ball.isPlayer && (ball.shape === 'hex' || ball.shape === 'star')) {
-        const points = ball.shape === 'star' ? 10 : 6;
-        for (let i = 0; i < points; i++) {
-          const angle = -Math.PI / 2 + i * Math.PI * 2 / points;
-          const r = ball.shape === 'star' && i % 2 ? ball.radius * .48 : ball.radius;
-          const px = ball.x + Math.cos(angle) * r, py = ball.y + Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-      } else if (!ball.isPlayer && (ball.shape === 'spike' || ball.shape === 'emoji')) {
-        // 敵はトゲトゲの輪郭で、丸い自機・仲間と見分けやすく
-        const spikes = ball.shape === 'emoji' ? 12 : 8;
-        const rot = (ball.spinAngle = (ball.spinAngle || 0) + 0.01);
-        for (let i = 0; i < spikes * 2; i++) {
-          const angle = rot - Math.PI / 2 + i * Math.PI / spikes;
-          const rr = i % 2 === 0 ? ball.radius * (ball.shape === 'emoji' ? 1.18 : 1.12) : ball.radius * (ball.shape === 'emoji' ? 0.86 : 0.62);
-          const px = ball.x + Math.cos(angle) * rr, py = ball.y + Math.sin(angle) * rr;
-          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-      } else {
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-      }
-      if (ball.shape === 'emoji') {
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = ball.color;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = ball.color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = ball.color;
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // 図形の敵には怒った目を描いて「敵」だとひと目で分かるように
-      if (!ball.isPlayer && ball.shape !== 'emoji') {
-        const er = ball.radius;
-        ctx.save();
-        ctx.fillStyle = '#ffffff';
-        for (const side of [-1, 1]) {
-          ctx.beginPath();
-          ctx.ellipse(ball.x + side * er * 0.3, ball.y - er * 0.02, er * 0.17, er * 0.2, 0, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.fillStyle = '#1a1020';
-        for (const side of [-1, 1]) {
-          ctx.beginPath();
-          ctx.arc(ball.x + side * er * 0.27, ball.y + er * 0.03, er * 0.09, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        // つり上がった眉
-        ctx.strokeStyle = '#1a1020';
-        ctx.lineWidth = Math.max(1.5, er * 0.1);
-        ctx.lineCap = 'round';
-        for (const side of [-1, 1]) {
-          ctx.beginPath();
-          ctx.moveTo(ball.x + side * er * 0.5, ball.y - er * 0.3);
-          ctx.lineTo(ball.x + side * er * 0.12, ball.y - er * 0.14);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      if (ball.shape === 'emoji') {
-        ctx.save();
-        ctx.font = `${Math.round(ball.radius * 1.5)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ball.emoji, ball.x, ball.y + 1);
-        ctx.restore();
-      }
-
-      if (ball.isCompanion) {
-        ctx.save();
-        ctx.font = `${Math.round(ball.radius * 1.3)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ball.icon, ball.x, ball.y + 1);
-        ctx.restore();
-      }
-
-      if (!ball.isClone && !ball.isCompanion && !ball.isDying) {
-        const barWidth = ball.radius * 2;
-        const barHeight = 5;
-        const barX = ball.x - ball.radius;
-        const barY = ball.y - ball.radius - 10;
-        ctx.fillStyle = '#080b12';
-        ctx.fillRect(barX, barY, barWidth, barHeight);
-        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(barX, barY, barWidth, barHeight);
-        ctx.fillStyle = ball.isPlayer ? '#7ed0ff' : (ball.isBoss ? '#d39cff' : '#ff7b87');
-        ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
-
-      }
-
-      // 仲間のHP バーを描画
-      if (ball.isCompanion && ball.maxHp) {
-        const barWidth = ball.radius * 2;
-        const barHeight = 4;
-        const barX = ball.x - ball.radius;
-        const barY = ball.y - ball.radius - 8;
-        ctx.fillStyle = '#080b12';
-        ctx.fillRect(barX, barY, barWidth, barHeight);
-        ctx.strokeStyle = 'rgba(200,200,200,0.5)';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(barX, barY, barWidth, barHeight);
-        // 倒れた仲間はグレーアウト、生きている仲間はカラフル
-        if (ball.hp <= 0) {
-          ctx.fillStyle = '#666666';
-        } else {
-          ctx.fillStyle = COMPANION_COLORS[ball.companionId] || '#ffffff';
-        }
-        ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
-      }
-      ctx.restore(); // 震えtranslate用
+      if (flyouts.includes(ball)) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
+      drawBall(ball);
     }
 
     drawHomingMissiles();
@@ -5038,8 +5096,10 @@
       } else {
         hitStopFrames--;
       }
+      updateFlyouts();
       updateTackleHold();
       draw();
+      drawFlyouts();
     } catch (err) {
       // 予期しないエラーが発生してもゲームループ自体は継続させる（フリーズ防止）
       console.error('ゲームループ内でエラーが発生しました:', err);
@@ -5077,7 +5137,7 @@
     regenEndAt = 0;
     game.startedAt = Date.now();
     game.playTimeMs = 0;
-    particles = []; damageTexts = []; meteors = []; adds = [];
+    particles = []; damageTexts = []; meteors = []; adds = []; flyouts = [];
     stageAnnounceTimer = 0;
     hitStopFrames = 0; // ヒットストップをリセット
     resetCombo();
