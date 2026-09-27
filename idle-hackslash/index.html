@@ -1283,8 +1283,9 @@
     { id: 'gauntletCounter', icon: '🔄', name: '反撃の籠手', desc: 'カウンター率 +10%（最大4個）', rarity: 'epic' },
     { id: 'horn', icon: '🦏', name: '突撃の角', desc: 'タメ体当たりダメージ +30%（最大5個）', rarity: 'epic' },
     { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +25%（最大5個）', rarity: 'epic' },
+    { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +25%（最大5個）', rarity: 'epic' },
   ];
-  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5 };
+  const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5 };
   const ARTIFACT_BY_ID = {};
   ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -1317,6 +1318,7 @@
     counter:  { icon: '🔁', name: '反撃の欠片',   rarity: 'rare',      desc: 'カウンター率 +2%/Lv',   bonus: { counter: 0.02 },           weight: 7 },
     rush:     { icon: '🐗', name: '猛進の欠片',   rarity: 'rare',      desc: 'タメ体当たりダメージ +10%/Lv', bonus: { tackle: 0.10 },   weight: 7 },
     bond:     { icon: '🤝', name: '絆の欠片',     rarity: 'rare',      desc: '仲間の攻撃力 +10%/Lv',  bonus: { companionAtk: 0.10 },      weight: 7 },
+    guard:    { icon: '🫶', name: '守護の欠片',   rarity: 'rare',      desc: '仲間の最大HP +10%/Lv',  bonus: { companionHp: 0.10 },       weight: 7 },
     phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
   };
   function pickGachaId() {
@@ -1438,8 +1440,8 @@
     upgrades: { atk: 0, hp: 0, clash: 0 },
     coinCloneSlots: 0,
     shopOwned: {},
-    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, phoenix: 0 },
-    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, phoenix: 0 },
+    gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 },
+    evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 },
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
@@ -1465,7 +1467,7 @@
 
 
   function computeBonuses() {
-    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1 };
+    const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1 };
     for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
       if (!ARTIFACT_BY_ID[id]) continue;
       const count = game.ownedArtifacts[id] || 0;
@@ -1487,6 +1489,7 @@
       if (id === 'gauntletCounter') b.counter += 0.10 * cap;
       if (id === 'horn') b.tackleMult += 0.30 * cap;
       if (id === 'banner') b.companionAtkMult += 0.25 * cap;
+      if (id === 'amulet') b.companionHpMult += 0.25 * cap;
     }
     b.atkMult += game.upgrades.atk * 0.15;
     b.hpMult += game.upgrades.hp * 0.20;
@@ -1511,6 +1514,7 @@
       if (bonus.counter) b.counter += bonus.counter * level;
       if (bonus.tackle) b.tackleMult += bonus.tackle * level;
       if (bonus.companionAtk) b.companionAtkMult += bonus.companionAtk * level;
+      if (bonus.companionHp) b.companionHpMult += bonus.companionHp * level;
     }
 
     for (const id in COMPANIONS) {
@@ -3387,7 +3391,8 @@
     const level = game.companions.level[id] || 0;
     const baseBonus = c.baseBonus + level * c.perLevel;
     const playerMaxHP = getPlayerMaxHP();
-    return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (id === 'golem' ? GOLEM_HP_MULT : 1));
+    const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
+    return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (id === 'golem' ? GOLEM_HP_MULT : 1) * boost);
   }
   // 仲間1人ぶんの攻撃力（吟遊詩人の鼓舞・仲間攻撃力ボーナスを含む）。覇竜は仲間全員の攻撃力を合計した値
   function getCompanionBaseAtk(id) {
@@ -5032,8 +5037,8 @@
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
     game.upgrades = { atk: 0, hp: 0, clash: 0 }; game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
-    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, phoenix: 0 };
-    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, phoenix: 0 };
+    game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
+    game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.bestiary = {}; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
