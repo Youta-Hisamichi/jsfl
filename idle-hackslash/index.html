@@ -4135,6 +4135,12 @@
     if (remaining <= 0) closeRebirthShop();
   }
   rebirthShopModal.addEventListener('pointerdown', cancelRebirthAutoSkip);
+  // カーソルが少しでも動いたらタイムアウトをキャンセル
+  window.addEventListener('pointermove', event => {
+    if (rebirthAutoSkipCancelled || !rebirthShopModal.classList.contains('show')) return;
+    if (event.movementX === 0 && event.movementY === 0) return;
+    cancelRebirthAutoSkip();
+  });
   // fresh: 転生直後に開いた場合 true（ジェムショップから戻ったときは、タップ済みならゲージを出さない）
   const rebirthShopMsg = document.getElementById('rebirthShopMsg');
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
