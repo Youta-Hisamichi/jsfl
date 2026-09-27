@@ -5736,20 +5736,10 @@
       updateTackleHold();
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
       const enemy = balls.find(ball => !ball.isPlayer);
-      if (player && Math.hypot(x - player.x, y - player.y) < player.radius + 10 && enemy) {
-        // 自機をタップ → 敵に向かって突進しつつ加速
-        const edx = enemy.x - player.x, edy = enemy.y - player.y;
-        const dist = Math.hypot(edx, edy) || 1;
-        const speed = Math.hypot(player.vx, player.vy) || 3.2;
-        player.vx = (edx / dist) * speed;
-        player.vy = (edy / dist) * speed;
-        player.boostUntil = Date.now() + BOOST_DURATION;
-        spawnHitParticles(player.x, player.y, '#4fa8ff');
-        playAccelSound();
-        return;
-      }
+      // 自機をタップしたときは向きを変えない（敵に突撃させない）
+      const tappedSelf = player && Math.hypot(x - player.x, y - player.y) < player.radius + 10;
       // サークルをタップ → 自機の進行方向を敵に向ける（速さはそのまま）
-      if (player && enemy) {
+      if (player && enemy && !tappedSelf) {
         const tdx = enemy.x - player.x, tdy = enemy.y - player.y;
         const tdist = Math.hypot(tdx, tdy);
         if (tdist > 4) {
