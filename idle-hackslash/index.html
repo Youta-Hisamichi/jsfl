@@ -119,6 +119,8 @@
   .upgrade-max-btn.is-disabled { opacity: 0.4; cursor: default; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
   .upgrade-btn, .companion-card button { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
   .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
+  .upgrade-btn .upgrade-value { display: block; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+  .upgrade-btn .upgrade-value b { color: var(--gold); }
   .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
   .comp-sprite { width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; }
   .bst-sprite { width: 2.2rem; height: 2.2rem; object-fit: contain; }
@@ -1619,13 +1621,28 @@
     return count;
   }
 
+  function getUpgradeStatValue(id) {
+    if (id === 'atk') return getPlayerAtk();
+    if (id === 'hp') return getPlayerMaxHP();
+    if (id === 'clash') return getPlayerClash();
+    return 0;
+  }
+  function formatUpgradeStat(id, v) {
+    if (id === 'clash') return +v.toFixed(1);
+    return formatCoinNumber(Math.round(v));
+  }
   function renderUpgradeList() {
     upgradeList.innerHTML = Object.entries(UPGRADES).map(([id, upgrade]) => {
       const level = game.upgrades[id];
       const cost = getUpgradeCost(id);
       const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
+      // 実際の値（現在 → 強化後）
+      const now = getUpgradeStatValue(id);
+      game.upgrades[id] = level + 1;
+      const next = getUpgradeStatValue(id);
+      game.upgrades[id] = level;
       return `<div class="upgrade-row">
-        <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${upgrade.icon}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
+        <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${upgrade.icon}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
         <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
       </div>`;
     }).join('');
