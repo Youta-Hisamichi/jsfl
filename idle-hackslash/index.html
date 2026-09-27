@@ -2792,6 +2792,7 @@
   const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
   const ENEMY_DEATH_CHANCE = 0.12;
   const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
+  const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
   const MERGE_MINIONS = 4;          // 手下がこの数集まると合体
   const MERGE_MAX = 6;              // 合体の上限回数
   const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
@@ -5377,7 +5378,13 @@
     const defeated = balls.find(ball => !ball.isPlayer);
     const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
     const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
-    if (isMetal) spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
+    if (isMetal) {
+      // メタルスライムは少量のジェムも落とす
+      const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
+      game.gems += metalGems;
+      spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
+      spawnDamageText(arena.x, arena.y - 12, '+' + metalGems + ' 💎', '#64e8ff', 0.01, true);
+    }
     game.coins += coinGain;
     const giantKill = !!(defeated && defeated.isGiant);
     if (isBossStage) game.gems += giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5;
