@@ -1985,7 +1985,53 @@
     if (held < TACKLE_CHARGE_MIN_MS) return -1;
     return Math.min(1, (held - TACKLE_CHARGE_MIN_MS) / (TACKLE_CHARGE_FULL_MS - TACKLE_CHARGE_MIN_MS));
   }
+  // タメ中のチャージ音：タメ開始後に音程が上がっていき、フルチャージで「キーン」と鳴って揺れる音で維持
+  let chargeSound = null; // { osc, lfo, gain, fullTimer }
+  function startChargeSound() {
+    stopChargeSound();
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const tMin = t0 + TACKLE_CHARGE_MIN_MS / 1000;
+    const tFull = t0 + TACKLE_CHARGE_FULL_MS / 1000;
+    const vol = 0.07 * game.sfxVolume;
+    const osc = audioCtx.createOscillator();
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, t0);
+    osc.frequency.setValueAtTime(180, tMin);
+    osc.frequency.exponentialRampToValueAtTime(720, tFull);
+    lfo.frequency.setValueAtTime(8, t0);
+    lfo.frequency.setValueAtTime(8, tMin);
+    lfo.frequency.linearRampToValueAtTime(22, tFull);
+    lfoGain.gain.setValueAtTime(0, t0);
+    lfoGain.gain.setValueAtTime(0, tMin);
+    lfoGain.gain.linearRampToValueAtTime(18, tFull);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.setValueAtTime(0.0001, tMin);
+    gain.gain.linearRampToValueAtTime(vol, tFull);
+    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); lfo.start(t0);
+    const fullTimer = setTimeout(() => { playTone(1318.5, 0.25, 'triangle', 0.14, 1760); }, TACKLE_CHARGE_FULL_MS);
+    chargeSound = { osc, lfo, gain, fullTimer };
+  }
+  function stopChargeSound() {
+    if (!chargeSound) return;
+    const { osc, lfo, gain, fullTimer } = chargeSound;
+    chargeSound = null;
+    clearTimeout(fullTimer);
+    try {
+      const t = audioCtx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t);
+      gain.gain.linearRampToValueAtTime(0.0001, t + 0.05);
+      osc.stop(t + 0.06); lfo.stop(t + 0.06);
+    } catch (err) { /* 停止済みなら無視 */ }
+  }
   function releaseTackleCharge() {
+    stopChargeSound();
     const level = getTackleChargeLevel();
     tackleChargeStart = 0;
     if (level < 0 || phase !== 'battle') return;
@@ -5687,7 +5733,7 @@
     if (Math.hypot(dx, dy) < arena.radius - 12) {
       addTapBoost();
       // 長押しでタメ開始（クールダウン中・体当たり中は不可）
-      if (Date.now() >= tackleReadyAt && !isTackling()) tackleChargeStart = Date.now();
+      if (Date.now() >= tackleReadyAt && !isTackling()) { tackleChargeStart = Date.now(); startChargeSound(); }
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
       const enemy = balls.find(ball => !ball.isPlayer);
       if (player && Math.hypot(x - player.x, y - player.y) < player.radius + 10 && enemy) {
