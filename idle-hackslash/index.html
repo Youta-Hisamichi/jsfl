@@ -582,7 +582,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
-      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button>
+      <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="unlockSkills">🔓 全スキル解放</button>
     </div>
 
     <div class="speed-control">
@@ -5930,6 +5930,7 @@
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
     tradeBoss: 'DEBUG: 針鎧の王を出現させました',
+    unlockSkills: 'DEBUG: すべてのスキルを解放しました',
     rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
   };
   debugRow.addEventListener('click', event => {
@@ -5960,6 +5961,16 @@
       updateHPUI();
       showNotice(action === 'playerHp1' ? 'DEBUG: 自分のHPを1にしました' : 'DEBUG: 敵のHPを1にしました');
       return;
+    }
+    if (action === 'unlockSkills') {
+      for (const id in SKILL_GACHA_SKILLS) {
+        game.shopOwned[id] = true;
+        if (!game.skillLevels) game.skillLevels = {};
+        if (!game.skillLevels[id]) game.skillLevels[id] = 1;
+      }
+      game.skillGachaOffer = null;
+      renderSkillGacha();
+      saveGame();
     }
     if (action === 'slots') { openDebugSlots(); return; }
     if (action === 'rewardAdReset') { game.lastRewardAdAt = 0; updateRewardAdButtons(); saveGame(); }
