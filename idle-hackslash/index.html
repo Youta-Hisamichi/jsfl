@@ -1700,9 +1700,9 @@
     if (!Array.isArray(game.rebirthShopNew)) game.rebirthShopNew = [];
     ids.forEach(id => { if (!game.rebirthSeenItems[id]) { game.rebirthSeenItems[id] = true; game.rebirthShopNew.push(id); } });
   }
-  // ジェムでラインナップを引き直す（今回の転生ショップ内で引き直すごとに値上がり）
-  const REBIRTH_REROLL_BASE_COST = 3;
-  function getRebirthRerollCost() { return REBIRTH_REROLL_BASE_COST * Math.pow(2, game.rebirthRerolls || 0); }
+  // ジェムでラインナップを引き直す（何度でも同じ値段）
+  const REBIRTH_REROLL_COST = 3;
+  function getRebirthRerollCost() { return REBIRTH_REROLL_COST; }
   function rollRebirthOffer(stage, count = getRebirthOfferSlots(), exclude = []) {
     const weights = getRebirthOfferWeights(stage);
     let pool = Object.keys(REBIRTH_SHOP_ITEMS).filter(id => {
