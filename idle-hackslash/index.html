@@ -5037,6 +5037,10 @@
     const moveCtxEnemy = balls.find(x => !x.isPlayer && !x.isDying);
     for (const ball of list) {
       if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
+      if (ball.isCompanion && ball.hp <= 0) { // 倒れた仲間は動かない（画面からも消える。蘇生されたら復帰）
+        if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
+        continue;
+      }
       if (!ball.isPlayer && (isDisabled(ball) || ball.traitFreeze)) { // 麻痺・眠り中・溜め／詠唱中の敵はその場で動けない
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
@@ -5075,7 +5079,7 @@
   function applySeparation(ball, speedMult) {
     const group = ball.isPlayer ? balls : [...balls, ...adds];
     for (const o of group) {
-      if (o === ball || o.isPlayer !== ball.isPlayer || o.isDying) continue;
+      if (o === ball || o.isPlayer !== ball.isPlayer || o.isDying || (o.isCompanion && o.hp <= 0)) continue;
       const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 0.01;
       const space = ball.radius + o.radius + 14;
       if (d < space) {
@@ -5501,7 +5505,7 @@
   // 雑魚敵(adds)：自機・分身・仲間のいずれかが当たるとダメージ、倒すと少量のコイン/ジェムを獲得
   function processAdds(a) {
     if (adds.length) {
-      const attackers = balls.filter(ball => ball.isPlayer);
+      const attackers = balls.filter(ball => ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)); // 倒れた仲間は攻撃しない
       for (const add of adds) {
         if (add.hp <= 0) continue;
         for (const atk of attackers) {
@@ -6831,6 +6835,21 @@
     drawDeathDim();
     for (const ball of [...balls, ...adds]) {
       if (flyouts.includes(ball) || ball.isDying) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
+      if (ball.isCompanion) {
+        // 倒れた仲間は0.6秒かけて薄くなりながら沈んで消える（蘇生されたら再び表示）
+        if (ball.hp <= 0) {
+          if (!ball.fallenAt) ball.fallenAt = Date.now();
+          const t = (Date.now() - ball.fallenAt) / 600;
+          if (t >= 1) continue;
+          ctx.save();
+          ctx.globalAlpha = 1 - t;
+          ctx.translate(0, t * 12);
+          drawBall(ball);
+          ctx.restore();
+          continue;
+        }
+        ball.fallenAt = 0;
+      }
       drawBall(ball);
     }
 
