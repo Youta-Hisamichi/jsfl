@@ -358,6 +358,7 @@
   .companion-card .cc-desc { color: var(--text-dim); display: block; margin: 2px 0 5px; }
   .companion-card .cc-rarity { font-size: 0.6rem; font-weight: 800; margin-left: 4px; }
   .party-count { text-align: center; font-size: 0.8rem; font-weight: 800; margin: 8px 0 2px; }
+  .comp-full-note { text-align: center; font-size: 0.74rem; font-weight: 700; color: var(--text-dim); background: var(--bg-soft); border: 1px dashed var(--ring); border-radius: 9px; padding: 8px; margin: 4px 0; }
   .party-slot-btn { width: 100%; justify-content: space-between; margin: 4px 0 6px; border-style: dashed; }
   .companion-card .cc-count { font-size: 0.66rem; font-weight: 900; color: #64e8ff; }
   .companion-card .cc-awaken { font-size: 0.6rem; font-weight: 800; color: #ffb14f; }
@@ -778,6 +779,7 @@
       <div class="shopkeeper" data-npc-tab="companion"></div>
       <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button></div>
+      <div class="comp-full-note" id="compFullNote" style="display:none;">🐾 パーティが満員です（下の「パーティ枠を増やす」で召喚できるようになります）</div>
       <div class="artifact-progress" id="companionProgress">仲間図鑑　取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
       <div class="party-count" id="partyCount">パーティ 0 / 1人</div>
       <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
@@ -2193,6 +2195,16 @@
     const cgb = document.getElementById('compGachaBtn');
     const cost1 = getCompSummonCost(1);
     if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `🐾 仲間召喚<br>🟡 ${formatCoinNumber(cost1)}`; }
+    updateCompSummonVisibility();
+  }
+  // パーティが満員のときは仲間召喚ボタンを隠す（枠を増やすと再び表示）
+  function updateCompSummonVisibility() {
+    const cgb = document.getElementById('compGachaBtn');
+    if (!cgb) return;
+    const full = getCompanionTotal() >= getPartyLimit();
+    cgb.parentElement.style.display = full ? 'none' : '';
+    const note = document.getElementById('compFullNote');
+    if (note) note.style.display = full ? '' : 'none';
   }
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
@@ -2246,6 +2258,7 @@
     document.getElementById('companionProgress').innerHTML = `仲間図鑑　取得数 <strong>${found} / ${compIds.length}</strong>　取得率 <strong>${compRate}%</strong>`;
     const pc = document.getElementById('partyCount');
     if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${getPartyLimit()}人`;
+    updateCompSummonVisibility();
     const psb = document.getElementById('partySlotBtn');
     if (psb) {
       const lim = getPartyLimit();
