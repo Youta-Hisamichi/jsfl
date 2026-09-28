@@ -224,6 +224,22 @@
   .sg-new { font-size: 0.64rem; font-weight: 800; color: #d19a00; }
   .sg-up { font-size: 0.64rem; font-weight: 800; color: #2ea043; }
   .sg-desc { font-size: 0.6rem; color: var(--text-dim); }
+  .skill-slot-head { text-align: center; font-weight: 800; font-size: 0.82rem; margin: 2px 0 4px; }
+  .skill-slot-btn { width: 100%; justify-content: space-between; margin: 0 0 8px; border-style: dashed; }
+  .skill-buy-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
+  .sk-card { display: flex; flex-direction: column; gap: 3px; padding: 7px; border-radius: 10px; background: var(--bg-soft); border: 1px solid var(--ring); font-size: 0.66rem; color: var(--text); }
+  .sk-card.equipped { border: 2px solid #2ea043; box-shadow: 0 0 8px rgba(46,160,67,0.25); }
+  .sk-card.locked { opacity: 0.75; }
+  .sk-top { display: flex; align-items: center; gap: 6px; }
+  .sk-top .ico-img { width: 2.2rem; height: 2.2rem; border-radius: 6px; flex: 0 0 auto; }
+  .sk-name { font-weight: 900; font-size: 0.78rem; line-height: 1.2; }
+  .sk-lv { font-weight: 800; color: var(--accent-player); font-size: 0.66rem; }
+  .sk-desc { color: var(--text-dim); font-size: 0.6rem; min-height: 2.4em; }
+  .sk-btns { display: flex; gap: 4px; }
+  .sk-btns button { flex: 1; border-radius: 7px; padding: 5px 2px; font-size: 0.62rem; font-weight: 800; cursor: pointer; border: 1px solid var(--gold); background: linear-gradient(160deg, #ffe08a, #ffb84d); color: #1a1408; }
+  .sk-btns button.sk-equip { background: rgba(46,160,67,0.12); border-color: #2ea043; color: #1f7a33; }
+  .sk-btns button.sk-equip.on { background: #2ea043; color: #fff; }
+  .sk-btns button.is-disabled { opacity: 0.4; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
   .skill-level-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-bottom: 6px; }
   .sl-item { display: flex; flex-direction: column; align-items: center; padding: 5px 2px; border-radius: 8px; background: var(--bg-soft); border: 1px solid var(--ring); font-size: 0.66rem; }
   .sl-item b { font-size: 0.7rem; color: var(--accent-player); }
@@ -760,10 +776,11 @@
   <div class="tab-page" data-tab="coinshop">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="coinshop"></div>
-      <div class="title">🎲 スキルガチャ（3つの候補から1つ選択。ダブったらスキルLvアップ＝待機時間短縮）</div>
-      <div class="skill-gacha-box" id="skillGachaBox"></div>
-      <div class="skill-level-list" id="skillLevelList"></div>
-      <div class="supergem-note">ガチャの値段は引くたびに上がります（転生でリセット）。スキルとLvは転生後も継続。</div>
+      <div class="title">✨ スキル（コインで好きなスキルを解放・Lvアップ＝待機時間短縮。装備したスキルだけ戦闘で使えます）</div>
+      <div class="skill-slot-head" id="skillSlotHead"></div>
+      <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn"></button>
+      <div class="skill-buy-list" id="skillLevelList"></div>
+      <div class="supergem-note">スキルとLv・スキル枠は転生後も継続。スキル枠はジェムで最大7つまで増やせます。</div>
       <div class="title" style="margin-top:12px;">🟡 コインショップ（転生でリセット・戦闘中のみ使用可）</div>
       <div class="shop-list" id="coinShopList"></div>
     </div>
@@ -1250,7 +1267,7 @@
   const SHOPKEEPERS = {
     upgrade:   { npc: 'smith',     name: '鍛冶屋のガンツ', lines: ['いらっしゃい！ 腕も体も鍛えていきな！', 'コインがあるなら、ガンガン強化だ！', '長押しすりゃ一気に鍛えてやるぜ。', '転生したら鍛え直しだ。気にすんな！'] },
     companion: { npc: 'guild',     name: 'ギルドマスター', lines: ['頼れる仲間を紹介しよう。', '仲間が揃えば、どんな敵も怖くないぞ。', '同じ仲間を呼べば、パーティが厚くなる。', 'レアな仲間は転生ショップで開放できるぞ。'] },
-    coinshop:  { npc: 'merchant',  name: '行商人のマルコ', lines: ['へいらっしゃい！ 掘り出し物あるよ！', 'スキルガチャ、今日は当たりが出そうだ！', 'お代はコインで結構ですよ〜。', '戦闘中しか使えない品もあるから気をつけて！'] },
+    coinshop:  { npc: 'merchant',  name: '行商人のマルコ', lines: ['へいらっしゃい！ 掘り出し物あるよ！', '好きなスキルを選んで鍛えな！', 'お代はコインで結構ですよ〜。', '戦闘中しか使えない品もあるから気をつけて！'] },
     artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
     gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
     gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの運命を占ってあげる。', '水晶玉が…光っているわ…！', '10連なら、運命が動くかもしれないわね。', '欠片を集めれば、力は進化するのよ。'] },
@@ -1672,7 +1689,7 @@
     potion: { icon: '🧪', name: '回復ポーション', desc: 'HPを最大値の45%回復', cost: 35 },
     cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
   };
-  // ---------- スキルガチャ：3つの候補から1つ選ぶ。未所持なら解放、所持済みならLvアップ ----------
+  // ---------- スキル一覧（スキルページでコインで解放・Lvアップ） ----------
   const SKILL_GACHA_SKILLS = {
     skillSpecial:  { icon: '✨', name: '必殺技',   desc: '隕石を落とす必殺技' },
     skillAccel:    { icon: '⏩', name: '加速',     desc: 'しばらく2.5倍速' },
@@ -1958,6 +1975,7 @@
     ownedArtifacts: {},
     rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
     totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
+    skillSlots: 1, equippedSkills: [], // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
@@ -2152,33 +2170,48 @@
       return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : item.stackKey ? `最大（+${(item.maxStack * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒）` : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc + stackNote}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : item.stackKey ? '✓ 最大' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
     }).join('');
   }
+  // ---------- スキル：コインで好きなスキルを購入（解放・Lvアップ）。装備枠に入れたスキルだけ戦闘で使える ----------
+  const SKILL_SLOT_MAX = 7;
+  function getSkillSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
+  function getSkillSlotCost() { return gemPrice(20 * Math.pow(2, getSkillSlots() - 1)); } // 20→40→80→160→320→640
+  function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equippedSkills = []; return game.equippedSkills; }
+  function isSkillEquipped(id) { return getEquippedSkills().includes(id); }
+  function getSkillBuyCost(id) { return coinPrice(Math.round(100 * Math.pow(2.5, getSkillLevel(id) > 1 || game.shopOwned[id] ? getSkillLevel(id) : 0))); } // 解放100 → Lv2 250 → Lv3 625 …
   function renderSkillGacha() {
-    const box = document.getElementById('skillGachaBox');
-    if (!box) return;
-    const offer = game.skillGachaOffer;
-    let html;
-    if (offer && offer.length) {
-      html = `<div class="sg-title">🎲 1つ選んでください</div><div class="sg-choices">${offer.map(id => {
-        const sk = SKILL_GACHA_SKILLS[id];
-        const lv = getSkillLevel(id);
-        const tag = lv === 0 ? '<span class="sg-new">NEW! 解放</span>' : `<span class="sg-up">Lv${lv} → Lv${lv + 1}</span>`;
-        return `<button class="sg-card ${lv === 0 ? 'is-new' : ''}" data-skill-pick="${id}"><span class="sg-icon">${ico(sk)}</span><span class="sg-name">${sk.name}</span>${tag}<span class="sg-desc">${sk.desc}</span></button>`;
-      }).join('')}</div>`;
-    } else {
-      const pool = getSkillGachaPool();
-      const cost = getSkillGachaCost();
-      html = pool.length
-        ? `<button class="gacha-pull sg-pull ${game.coins < cost ? 'is-disabled' : ''}" id="skillGachaBtn">🎲 スキルガチャ<br>🟡 ${formatCoinNumber(cost)}</button>`
-        : `<button class="gacha-pull sg-pull is-disabled" id="skillGachaBtn">🎉 全スキル Lv MAX</button>`;
+    const head = document.getElementById('skillSlotHead');
+    const slots = getSkillSlots();
+    const eq = getEquippedSkills();
+    if (head) head.textContent = `🎒 装備中のスキル ${eq.length} / ${slots}`;
+    const sb = document.getElementById('skillSlotBtn');
+    if (sb) {
+      const html = slots >= SKILL_SLOT_MAX
+        ? `<span class="msb-name">🎒 スキル枠 ${slots} / ${SKILL_SLOT_MAX}（最大）</span>`
+        : `<span class="msb-name">➕ スキル枠を増やす（${slots} → ${slots + 1}）</span><span class="msb-cost">💎 ${getSkillSlotCost()}</span>`;
+      if (sb.dataset.html !== html) { sb.innerHTML = html; sb.dataset.html = html; }
+      sb.classList.toggle('is-disabled', slots >= SKILL_SLOT_MAX || game.gems < getSkillSlotCost());
     }
-    // 頻繁に呼ばれるので、内容が変わったときだけ書き換える（アニメーションやタップが途切れないように）
-    if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
     const lvList = document.getElementById('skillLevelList');
     const lvHtml = Object.entries(SKILL_GACHA_SKILLS).map(([id, sk]) => {
-      const lv = getSkillLevel(id);
-      return `<div class="sl-item ${lv ? '' : 'locked'}"><span class="sl-ico">${ico(sk)}</span><span>${sk.name}</span><b>${lv ? (lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv) : '未解放'}</b>${lv ? `<span class="sl-cd">待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%</span>` : ''}</div>`;
+      const owned = !!game.shopOwned[id];
+      const lv = owned ? getSkillLevel(id) : 0;
+      const maxed = lv >= SKILL_MAX_LEVEL;
+      const cost = getSkillBuyCost(id);
+      const on = isSkillEquipped(id);
+      const buyLabel = !owned ? `解放 🟡${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`;
+      const equipBtn = owned ? `<button class="sk-equip ${on ? 'on' : ''} ${!on && eq.length >= slots ? 'is-disabled' : ''}" data-skill-equip="${id}">${on ? '✓ 装備中' : '装備する'}</button>` : '';
+      return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
     }).join('');
     if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
+    updateSkillButtonVisibility();
+  }
+  // ゲーム画面のスキルボタンは、装備中のスキルだけ表示
+  function updateSkillButtonVisibility() {
+    let keys;
+    try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
+    for (const btnId in keys) {
+      const btn = document.getElementById(btnId);
+      if (btn) btn.style.display = isSkillEquipped(keys[btnId]) ? '' : 'none';
+    }
   }
   function renderCoinShopList() {
     renderSkillGacha();
@@ -3020,7 +3053,7 @@
   function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
   // スキルを使える状態か確認し、待機中ならジェムリセットを案内。使えるなら { player, enemy } を返す
   function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {
-    if (!game.shopOwned[skillKey]) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return null; }
+    if (!game.shopOwned[skillKey]) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return null; }
     const player = balls.find(ball => isMainPlayerBall(ball));
     const enemy = balls.find(ball => !ball.isPlayer && !ball.isDying);
     if (phase !== 'battle' || !player || (needEnemy && (!enemy || enemy.spawnTimer > 0))) { showTapError('今は使えません', event.clientX, event.clientY); return null; }
@@ -3753,6 +3786,10 @@
       const data = JSON.parse(raw);
       if (!data || !data.game) return false;
       Object.assign(game, data.game);
+      // 旧セーブ（スキル装備の仕組みより前）：解放済みのスキルを枠の数まで自動で装備
+      if (!Array.isArray(data.game.equippedSkills)) {
+        game.equippedSkills = Object.keys(SKILL_GACHA_SKILLS).filter(id => game.shopOwned && game.shopOwned[id]).slice(0, game.skillSlots || 1);
+      }
       if (typeof data.lastSpecialAt === 'number') lastSpecialAt = data.lastSpecialAt;
       if (typeof data.lastAccelAt === 'number') lastAccelAt = data.lastAccelAt;
       if (typeof data.accelEndAt === 'number') accelEndAt = data.accelEndAt;
@@ -7069,7 +7106,7 @@
     clearSave();
     game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
     game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
-    game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
+    game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.equippedSkills = [];
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -7278,6 +7315,8 @@
         if (!game.skillLevels[id]) game.skillLevels[id] = 1;
       }
       game.skillGachaOffer = null;
+      const eq = getEquippedSkills();
+      for (const id in SKILL_GACHA_SKILLS) if (eq.length < getSkillSlots() && !eq.includes(id)) eq.push(id);
       renderSkillGacha();
       saveGame();
     }
@@ -7524,38 +7563,51 @@
     updateHPUI();
   });
 
-  document.getElementById('skillGachaBox').addEventListener('click', event => {
-    const pick = event.target.closest('[data-skill-pick]');
-    if (pick) {
-      const id = pick.dataset.skillPick;
-      if (!game.skillGachaOffer || !game.skillGachaOffer.includes(id)) return;
+  document.getElementById('skillLevelList').addEventListener('click', event => {
+    const buy = event.target.closest('[data-skill-buy]');
+    const equip = event.target.closest('[data-skill-equip]');
+    if (buy) {
+      const id = buy.dataset.skillBuy;
       const sk = SKILL_GACHA_SKILLS[id];
-      const before = getSkillLevel(id);
+      const owned = !!game.shopOwned[id];
+      if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) { showTapError('Lv MAX です', event.clientX, event.clientY); return; }
+      const cost = getSkillBuyCost(id);
+      if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+      spendCoins(cost);
       if (!game.skillLevels) game.skillLevels = {};
-      if (before === 0) { game.shopOwned[id] = true; game.skillLevels[id] = 1; }
-      else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, before + 1);
-      game.skillGachaOffer = null;
-      showNotice(before === 0 ? `${sk.icon} ${sk.name} スキルを解放！` : `${sk.icon} ${sk.name} スキルが Lv${game.skillLevels[id]} に！`);
+      if (!owned) {
+        game.shopOwned[id] = true; game.skillLevels[id] = 1;
+        const eq = getEquippedSkills();
+        if (eq.length < getSkillSlots()) eq.push(id); // 空き枠があれば自動で装備
+      } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
+      showNotice(!owned ? `${sk.icon} ${sk.name} スキルを解放！` : `${sk.icon} ${sk.name} スキルが Lv${game.skillLevels[id]} に！`);
+      showLevelUpPop(event.clientX, event.clientY, !owned ? '解放！' : `Lv${game.skillLevels[id]}！`);
       playUpgradeSound();
       updateStatsUI();
       renderCoinShopList();
       saveGame();
       return;
     }
-    const btn = event.target.closest('#skillGachaBtn');
-    if (!btn) return;
-    const pool = getSkillGachaPool();
-    if (!pool.length) { showTapError('全スキルが Lv MAX です', event.clientX, event.clientY); return; }
-    const cost = getSkillGachaCost();
-    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-    spendCoins(cost);
-    game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
-    // 重複しない3候補（残りが3つ未満ならその数だけ）
-    const bag = pool.slice();
-    const offer = [];
-    while (offer.length < 3 && bag.length) offer.push(bag.splice(Math.floor(Math.random() * bag.length), 1)[0]);
-    game.skillGachaOffer = offer;
-    playGachaSummonSound();
+    if (equip) {
+      const id = equip.dataset.skillEquip;
+      const eq = getEquippedSkills();
+      if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
+      else if (eq.length >= getSkillSlots()) { showTapError('スキル枠がいっぱいです（外すか枠を増やしてください）', event.clientX, event.clientY); return; }
+      else eq.push(id);
+      playTone(880, 0.06, 'triangle', 0.1);
+      renderCoinShopList();
+      saveGame();
+    }
+  });
+  document.getElementById('skillSlotBtn').addEventListener('click', event => {
+    const slots = getSkillSlots();
+    if (slots >= SKILL_SLOT_MAX) { showTapError('スキル枠は最大です', event.clientX, event.clientY); return; }
+    const cost = getSkillSlotCost();
+    if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('coinshop') }); return; }
+    game.gems -= cost;
+    game.skillSlots = slots + 1;
+    showNotice(`🎒 スキル枠が ${game.skillSlots} つになりました`);
+    playUpgradeSound();
     updateStatsUI();
     renderCoinShopList();
     saveGame();
@@ -8061,7 +8113,7 @@
   });
 
   specialBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillSpecial) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillSpecial) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は必殺技を使えません', event.clientX, event.clientY); return; }
     if (Date.now() - lastSpecialAt < getSpecialCooldown()) { tryGemResetSkill('special', event, () => { lastSpecialAt = Date.now() - SPECIAL_COOLDOWN; }, updateSpecialButton); return; }
     const enemy = balls.find(ball => !ball.isPlayer);
@@ -8080,7 +8132,7 @@
   });
 
   accelBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillAccel) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillAccel) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は加速できません', event.clientX, event.clientY); return; }
     if (Date.now() - lastAccelAt < skillCd('skillAccel', ACCEL_COOLDOWN)) { tryGemResetSkill('accel', event, () => { lastAccelAt = Date.now() - ACCEL_COOLDOWN; }, updateAccelButton); return; }
     lastAccelAt = Date.now();
@@ -8090,7 +8142,7 @@
   });
 
   healBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillHeal) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillHeal) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は回復できません', event.clientX, event.clientY); return; }
     if (Date.now() - lastHealAt < skillCd('skillHeal', HEAL_COOLDOWN)) { tryGemResetSkill('heal', event, () => { lastHealAt = Date.now() - HEAL_COOLDOWN; }, updateHealButton); return; }
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -8106,7 +8158,7 @@
   });
 
   atkUpBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillAtkUp) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillAtkUp) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は攻撃UPを使えません', event.clientX, event.clientY); return; }
     if (Date.now() < atkUpEndAt) return;
     if (Date.now() - lastAtkUpAt < skillCd('skillAtkUp', ATK_UP_COOLDOWN)) { tryGemResetSkill('atkup', event, () => { lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN; }, updateAtkUpButton); return; }
@@ -8125,7 +8177,7 @@
   });
 
   silenceBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillSilence) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillSilence) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は魔法封じを使えません', event.clientX, event.clientY); return; }
     if (Date.now() < silenceEndAt) return;
     if (Date.now() - lastSilenceAt < skillCd('skillSilence', SILENCE_COOLDOWN)) { tryGemResetSkill('silence', event, () => { lastSilenceAt = Date.now() - SILENCE_COOLDOWN; }, updateSilenceButton); return; }
@@ -8143,7 +8195,7 @@
     updateSilenceButton();
   });
   sacrificeBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillSacrifice) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillSacrifice) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     const player = balls.find(ball => isMainPlayerBall(ball));
     const enemy = balls.find(ball => !ball.isPlayer && !ball.isDying);
     if (phase !== 'battle' || !player || !enemy || enemy.spawnTimer > 0) { showTapError('今は捨て身を使えません', event.clientX, event.clientY); return; }
@@ -8333,7 +8385,7 @@
   });
 
   regenBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillRegen) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillRegen) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はリヒールを使えません', event.clientX, event.clientY); return; }
     if (Date.now() < regenEndAt) return;
     if (Date.now() - lastRegenAt < skillCd('skillRegen', REGEN_COOLDOWN)) { tryGemResetSkill('regen', event, () => { lastRegenAt = Date.now() - REGEN_COOLDOWN; }, updateRegenButton); return; }
@@ -8352,7 +8404,7 @@
   });
 
   sleepBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillSleep) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillSleep) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は眠りを使えません', event.clientX, event.clientY); return; }
     if (Date.now() - lastSleepAt < skillCd('skillSleep', SLEEP_COOLDOWN)) { tryGemResetSkill('sleep', event, () => { lastSleepAt = Date.now() - SLEEP_COOLDOWN; }, updateSleepButton); return; }
     const enemy = balls.find(ball => !ball.isPlayer);
@@ -8363,7 +8415,7 @@
   });
 
   paralyzeBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillParalyze) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillParalyze) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は麻痺を使えません', event.clientX, event.clientY); return; }
     if (Date.now() - lastParalyzeAt < skillCd('skillParalyze', PARALYZE_COOLDOWN)) { tryGemResetSkill('paralyze', event, () => { lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN; }, updateParalyzeButton); return; }
     const enemy = balls.find(ball => !ball.isPlayer);
@@ -8374,7 +8426,7 @@
   });
 
   poisonBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillPoison) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillPoison) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今は毒を付与できません', event.clientX, event.clientY); return; }
     if (isPoisonBuffActive()) return;
     if (Date.now() - lastPoisonAt < skillCd('skillPoison', POISON_COOLDOWN)) { tryGemResetSkill('poison', event, () => { lastPoisonAt = Date.now() - POISON_COOLDOWN; }, updatePoisonButton); return; }
@@ -8386,7 +8438,7 @@
   });
 
   homingBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillHoming) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillHoming) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はホーミングを撃てません', event.clientX, event.clientY); return; }
     if (Date.now() - lastHomingAt < skillCd('skillHoming', HOMING_COOLDOWN)) { tryGemResetSkill('homing', event, () => { lastHomingAt = Date.now() - HOMING_COOLDOWN; }, updateHomingButton); return; }
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -8398,7 +8450,7 @@
   });
 
   barrierBtn.addEventListener('click', event => {
-    if (!game.shopOwned.skillBarrier) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
+    if (!game.shopOwned.skillBarrier) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
     if (phase !== 'battle') { showTapError('今はバリアを展開できません', event.clientX, event.clientY); return; }
     if (barrierHits > 0) { showTapError('バリアは展開中です', event.clientX, event.clientY); return; }
     if (Date.now() - lastBarrierAt < skillCd('skillBarrier', BARRIER_COOLDOWN)) { tryGemResetSkill('barrier', event, () => { lastBarrierAt = Date.now() - BARRIER_COOLDOWN; }, updateBarrierButton); return; }
@@ -8521,6 +8573,7 @@
     new MutationObserver(() => decorateSkillButton(btn)).observe(btn, { childList: true, characterData: true, subtree: true });
     decorateSkillButton(btn);
   });
+  updateSkillButtonVisibility();
   setInterval(saveGame, 8000);
   window.addEventListener('beforeunload', saveGame);
   window.addEventListener('pagehide', saveGame);
