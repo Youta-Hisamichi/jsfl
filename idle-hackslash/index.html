@@ -2255,8 +2255,9 @@
       psb.classList.toggle('is-disabled', lim >= COMPANION_PARTY_MAX || game.gems < getPartySlotCost());
     }
     const RARITY_ORDER = { legendary: 4, epic: 3, rare: 2, common: 1 };
-    // レア度の高い順（同じレア度は定義順のまま）
-    companionList.innerHTML = Object.entries(COMPANIONS).sort((x, y) => RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]).map(([id, c]) => {
+    // 取得済み（パーティにいる）仲間を上に、その中でレア度の高い順（同じレア度は定義順のまま）
+    const owned = id => game.companions.recruited[id] ? 1 : 0;
+    companionList.innerHTML = Object.entries(COMPANIONS).sort((x, y) => (owned(y[0]) - owned(x[0])) || (RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity])).map(([id, c]) => {
       const recruited = !!game.companions.recruited[id];
       const rar = RARITY_INFO[c.rarity];
       const rarTag = `<span class="cc-rarity" style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>`;
