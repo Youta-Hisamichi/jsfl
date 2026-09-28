@@ -636,7 +636,7 @@
       <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
       <button class="action-btn sleep" id="sleepBtn">🔒 眠り</button>
       <button class="action-btn atkup" id="atkUpBtn">🔒 攻撃UP</button>
-      <button class="action-btn regen" id="regenBtn">🔒 リジェネ</button>
+      <button class="action-btn regen" id="regenBtn">🔒 リヒール</button>
       <button class="action-btn silence" id="silenceBtn">🔒 魔法封じ</button>
       <button class="action-btn sacrifice" id="sacrificeBtn">🔒 捨て身</button>
       <button class="action-btn death" id="deathBtn">🔒 即死魔法</button>
@@ -1587,7 +1587,7 @@
     skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
     skillSleep:    { icon: '💤', name: '眠り',     desc: '敵を眠らせる（起こす一撃は大ダメージ）' },
     skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '20秒間 攻撃力1.5倍' },
-    skillRegen:    { icon: '🌿', name: 'リジェネ', desc: '20秒間 HPが少しずつ自動回復' },
+    skillRegen:    { icon: '🌿', name: 'リヒール', desc: '20秒間 HPが少しずつ自動回復' },
     skillSilence:  { icon: '🔇', name: '魔法封じ', desc: '15秒間 敵の魔法・弾を封じる' },
     skillSacrifice:{ icon: '🩸', name: '捨て身',   desc: 'HPを30%削って大ダメージ' },
     skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
@@ -2692,7 +2692,7 @@
     }
     homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
   }
-  // ---------- リジェネスキル：一定時間、HPが少しずつ自動回復 ----------
+  // ---------- リヒールスキル：一定時間、HPが少しずつ自動回復 ----------
   const REGEN_COOLDOWN = 150 * 1000;
   const REGEN_MS = 20 * 1000;
   const REGEN_RATIO_PER_SEC = 0.02; // 毎秒 最大HPの2%（20秒で合計40%）
@@ -6179,7 +6179,7 @@
     if (!game.shopOwned.skillRegen) {
       regenBtn.disabled = false;
       regenBtn.classList.add('is-disabled');
-      regenBtn.textContent = '🔒 リジェネ';
+      regenBtn.textContent = '🔒 リヒール';
       return;
     }
     const now = Date.now();
@@ -6187,19 +6187,19 @@
       regenBtn.disabled = true;
       regenBtn.classList.remove('is-disabled');
       regenBtn.classList.add('buffing');
-      regenBtn.textContent = `🌿 リジェネ中\n${Math.ceil((regenEndAt - now) / 1000)}s`;
+      regenBtn.textContent = `🌿 リヒール中\n${Math.ceil((regenEndAt - now) / 1000)}s`;
       return;
     }
     const remaining = Math.max(0, skillCd('skillRegen', REGEN_COOLDOWN) - (now - lastRegenAt));
     if (remaining === 0) {
       regenBtn.disabled = false;
       regenBtn.classList.toggle('is-disabled', phase !== 'battle');
-      regenBtn.textContent = '🌿 リジェネ\nREADY';
+      regenBtn.textContent = '🌿 リヒール\nREADY';
       return;
     }
     regenBtn.disabled = false;
     regenBtn.classList.toggle('is-disabled', !isSkillResetPending('regen'));
-    regenBtn.textContent = cooldownLabel('regen', '🌿 リジェネ', remaining);
+    regenBtn.textContent = cooldownLabel('regen', '🌿 リヒール', remaining);
   }
   function updateSleepButton() {
     if (!game.shopOwned.skillSleep) {
@@ -6880,7 +6880,7 @@
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
     supergems: 'DEBUG: スーパージェム +5 を付与しました',
-    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リジェネ・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
+    special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
     nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -7786,7 +7786,7 @@
 
   regenBtn.addEventListener('click', event => {
     if (!game.shopOwned.skillRegen) { showTapError('スキルガチャで解放してください', event.clientX, event.clientY); return; }
-    if (phase !== 'battle') { showTapError('今はリジェネを使えません', event.clientX, event.clientY); return; }
+    if (phase !== 'battle') { showTapError('今はリヒールを使えません', event.clientX, event.clientY); return; }
     if (Date.now() < regenEndAt) return;
     if (Date.now() - lastRegenAt < skillCd('skillRegen', REGEN_COOLDOWN)) { tryGemResetSkill('regen', event, () => { lastRegenAt = Date.now() - REGEN_COOLDOWN; }, updateRegenButton); return; }
     lastRegenAt = Date.now();
@@ -7795,11 +7795,11 @@
     regenHealAccum = 0;
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (player) {
-      spawnDamageText(player.x, player.y - player.radius - 14, '🌿 リジェネ', '#5fe0a8', 0.012);
+      spawnDamageText(player.x, player.y - player.radius - 14, '🌿 リヒール', '#5fe0a8', 0.012);
       spawnHitParticles(player.x, player.y, '#5fe0a8');
     }
     playHealSound();
-    showNotice(`🌿 リジェネ！ ${REGEN_MS / 1000}秒間 HPが少しずつ回復`);
+    showNotice(`🌿 リヒール！ ${REGEN_MS / 1000}秒間 HPが少しずつ回復`);
     updateRegenButton();
   });
 
