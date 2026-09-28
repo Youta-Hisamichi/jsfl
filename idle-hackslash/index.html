@@ -358,6 +358,7 @@
   .companion-card .cc-desc { color: var(--text-dim); display: block; margin: 2px 0 5px; }
   .companion-card .cc-rarity { font-size: 0.6rem; font-weight: 800; margin-left: 4px; }
   .party-count { text-align: center; font-size: 0.8rem; font-weight: 800; margin: 8px 0 2px; }
+  .party-slot-btn { width: 100%; justify-content: space-between; margin: 4px 0 6px; border-style: dashed; }
   .companion-card .cc-count { font-size: 0.66rem; font-weight: 900; color: #64e8ff; }
   .companion-card .cc-awaken { font-size: 0.6rem; font-weight: 800; color: #ffb14f; }
   .companion-card .cc-locked { display: block; text-align: center; font-size: 0.66rem; color: var(--text-dim); border: 1px dashed var(--ring); border-radius: 6px; padding: 5px; }
@@ -778,8 +779,9 @@
       <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
       <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button></div>
       <div class="artifact-progress" id="companionProgress">仲間図鑑　取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
-      <div class="party-count" id="partyCount">パーティ 0 / 8人</div>
-      <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（最大8人）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
+      <div class="party-count" id="partyCount">パーティ 0 / 1人</div>
+      <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
+      <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
@@ -1941,6 +1943,7 @@
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
+    companionSlots: 1, // 仲間のパーティ枠（ジェムで最大8まで。転生しても残る）
     subscriptions: {}, // サブスク（紋章）の有効期限 { hero: 時刻, veteran: 時刻 }
     rebirthOfferSlots: 3, // 転生ショップの商品枠（ジェムで最大10まで増やせる。転生しても残る）
     rebirthSeenItems: {}, rebirthShopNew: [], rebirthRerolls: 0, // 転生ショップ：一度並んだ商品 / 今回のNEW / 今回の引き直し回数
@@ -2242,7 +2245,15 @@
     const compRate = (compIds.length ? Math.floor(found / compIds.length * 1000) / 10 : 0).toFixed(1);
     document.getElementById('companionProgress').innerHTML = `仲間図鑑　取得数 <strong>${found} / ${compIds.length}</strong>　取得率 <strong>${compRate}%</strong>`;
     const pc = document.getElementById('partyCount');
-    if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${COMPANION_PARTY_MAX}人`;
+    if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${getPartyLimit()}人`;
+    const psb = document.getElementById('partySlotBtn');
+    if (psb) {
+      const lim = getPartyLimit();
+      psb.innerHTML = lim >= COMPANION_PARTY_MAX
+        ? `<span class="msb-name">🧑‍🤝‍🧑 パーティ枠 ${lim} / ${COMPANION_PARTY_MAX}人（最大）</span>`
+        : `<span class="msb-name">➕ パーティ枠を増やす（${lim} → ${lim + 1}人）</span><span class="msb-cost">💎 ${getPartySlotCost()}</span>`;
+      psb.classList.toggle('is-disabled', lim >= COMPANION_PARTY_MAX || game.gems < getPartySlotCost());
+    }
     const RARITY_ORDER = { legendary: 4, epic: 3, rare: 2, common: 1 };
     // レア度の高い順（同じレア度は定義順のまま）
     companionList.innerHTML = Object.entries(COMPANIONS).sort((x, y) => RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]).map(([id, c]) => {
@@ -2279,14 +2290,17 @@
   }
   // 1体分の結果を反映し、表示用の情報を返す
   // 同じ仲間が出ても人数が増える（パーティ上限まで）。満員なら覚醒、覚醒MAXならコイン
-  const COMPANION_PARTY_MAX = 8;
+  const COMPANION_PARTY_MAX = 8; // パーティ枠の最大（ジェムで拡張できる上限）
+  // パーティ枠は最初1人。ジェムで1枠ずつ増やせる（増やすごとに値上がり・転生しても残る）
+  function getPartyLimit() { return Math.max(1, Math.min(COMPANION_PARTY_MAX, game.companionSlots || 1)); }
+  function getPartySlotCost() { return gemPrice(10 * Math.pow(2, getPartyLimit() - 1)); } // 10→20→40→80→160→320→640
   function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
   function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
   function grantCompanion(id) {
     const cp = game.companions;
     if (!cp.awaken) cp.awaken = {};
     if (!cp.count) cp.count = {};
-    if (getCompanionTotal() < COMPANION_PARTY_MAX) {
+    if (getCompanionTotal() < getPartyLimit()) {
       const isNew = !cp.recruited[id];
       cp.recruited[id] = true;
       if (!game.companionBook) game.companionBook = {};
@@ -7002,7 +7016,7 @@
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.rebirthShopOffer = null; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -7505,6 +7519,19 @@
     saveGame();
   });
 
+  document.getElementById('partySlotBtn').addEventListener('click', event => {
+    const lim = getPartyLimit();
+    if (lim >= COMPANION_PARTY_MAX) { showTapError('パーティ枠は最大です', event.clientX, event.clientY); return; }
+    const cost = getPartySlotCost();
+    if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('companion') }); return; }
+    game.gems -= cost;
+    game.companionSlots = lim + 1;
+    showNotice(`🐾 パーティ枠が ${game.companionSlots} 人になりました`);
+    playUpgradeSound();
+    updateStatsUI();
+    renderCompanionList();
+    saveGame();
+  });
   function buySubscription(id, event) {
     const sub = SUBSCRIPTIONS[id];
     const active = getActiveSub();
