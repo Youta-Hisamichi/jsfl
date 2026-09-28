@@ -2101,7 +2101,7 @@
     const entries = offerMode
       ? game.rebirthShopOffer.filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => [id, REBIRTH_SHOP_ITEMS[id]])
       : Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory);
-    rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note">🎲 今回のラインナップ（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</div>` : '') + entries.map(([id, item]) => {
+    rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note">🎲 今回のラインナップ<br>（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</div>` : '') + entries.map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
       const cost = getRebirthItemCost(id);
