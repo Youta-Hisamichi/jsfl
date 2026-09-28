@@ -7613,7 +7613,7 @@
       refreshPlayerBallStats(false);
       playUpgradeSound();
       showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
-      showLevelUpPop(event.clientX, event.clientY, `レベルアップ！ +${count}Lv`);
+      showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${count}Lv`);
       updateStatsUI();
       updateHPUI();
       return;
@@ -7633,6 +7633,12 @@
     document.body.appendChild(el);
     el.addEventListener('animationend', () => el.remove());
   }
+  // 強化のレベルアップ表示は、タップ位置ではなく強化項目（アイテム欄）の中央に出す
+  function showUpgradeLevelUpPop(id, x, y, text) {
+    const item = upgradeList.querySelector(`[data-upgrade="${id}"]`);
+    if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    showLevelUpPop(x, y, text);
+  }
   // コイン強化を1レベル上げる。成功したら true
   function levelUpUpgrade(id, x, y) {
     if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
@@ -7643,7 +7649,7 @@
     game.upgrades[id]++;
     refreshPlayerBallStats(false);
     playUpgradeSound();
-    showLevelUpPop(x, y, `レベルアップ！ Lv.${game.upgrades[id]}`);
+    showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${game.upgrades[id]}`);
     updateStatsUI();
     updateHPUI();
     return true;
