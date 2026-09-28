@@ -304,6 +304,12 @@
   .gacha-result.rarity-legendary .gr-icon.gr-pop { display: inline-block; animation: gachaPop 0.45s cubic-bezier(.34,1.56,.64,1), legendaryPulse 0.28s ease-in-out 0.45s infinite alternate; }
   @keyframes gmFlip { 0% { transform: rotateY(90deg) scale(0.8); } 100% { transform: rotateY(0) scale(1); } }
   .gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.5rem; color: var(--text-dim); margin-top: 2px; }
+  .sub-btn { border-width: 2px; }
+  .sub-btn.sub-hero { border-color: #ffc94f; background: linear-gradient(135deg, rgba(255,201,79,0.16), rgba(255,95,210,0.12)); }
+  .sub-btn.sub-veteran { border-color: #b07cff; background: linear-gradient(135deg, rgba(176,124,255,0.14), rgba(100,200,255,0.1)); }
+  .sub-btn.is-active { box-shadow: 0 0 0 2px #2ea043 inset; }
+  .sub-btn .sub-status { color: #2ea043; font-weight: 800; }
+  .gcel-subname { font-size: 1.4rem; color: #fff; }
   /* ジェム袋購入のお祝い演出 */
   .gem-celebrate { position: fixed; inset: 0; z-index: 120; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; animation: gcelIn 0.3s ease-out; }
   .gem-celebrate.closing { animation: gcelOut 0.35s ease-in forwards; }
@@ -1295,7 +1301,7 @@
         const sec = Math.ceil(remaining / 1000);
         btn.textContent = `🎬 次の動画まで ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
       } else {
-        btn.textContent = `🎬 動画を見て 💎${REWARD_AD_GEMS} GET`;
+        btn.textContent = isAdFree() ? `🎁 広告なしで 💎${REWARD_AD_GEMS} GET` : `🎬 動画を見て 💎${REWARD_AD_GEMS} GET`;
       }
     });
   }
@@ -1324,6 +1330,7 @@
     const btn = event.target.closest('[data-reward-ad]');
     if (!btn) return;
     if (getRewardAdRemaining() > 0) { showTapError('次の動画はまだ見られません', event.clientX, event.clientY); return; }
+    if (isAdFree()) { rewardAdClaimBtn.click(); return; } // 紋章（サブスク）加入中は動画なしで即受け取り
     playRewardedVideo(() => {
       rewardAdClaimBtn.textContent = `💎${REWARD_AD_GEMS} を受け取る`;
       rewardAdClaimBtn.style.display = 'block';
@@ -1674,7 +1681,7 @@
     return Math.max(1, Math.min(SKILL_MAX_LEVEL, (game.skillLevels && game.skillLevels[id]) || 1));
   }
   function skillCd(id, base) { return Math.round(base * (1 - SKILL_CD_CUT_PER_LV * (Math.max(1, getSkillLevel(id)) - 1))); }
-  function getSkillGachaCost() { return Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0)); }
+  function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
   function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
   const SUPERGEM_SHOP_ITEMS = {
     small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 198 },
@@ -1682,6 +1689,18 @@
     large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +256', cost: 4800 },
     huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1024', cost: 9980 }
   };
+  // ---------- サブスク（紋章）：30日間有効。上位の「伝説の勇者の紋章」が優先 ----------
+  const SUBSCRIPTIONS = {
+    hero: { icon: '👑', name: '伝説の勇者の紋章', desc: '広告オフ＆全能力3倍＆全ショップ半額', cost: 2980, statMult: 3, coinPriceMult: 0.5, gemPriceMult: 0.5, rank: 2 },
+    veteran: { icon: '🎖️', name: '熟練者の紋章', desc: '広告オフ＆全能力2倍＆コイン系ショップ3割引', cost: 980, statMult: 2, coinPriceMult: 0.7, gemPriceMult: 1, rank: 1 },
+  };
+  const SUBSCRIPTION_DAYS = 30;
+  function isSubActive(id) { return !!(game.subscriptions && game.subscriptions[id] > Date.now()); }
+  function getActiveSub() { return isSubActive('hero') ? SUBSCRIPTIONS.hero : isSubActive('veteran') ? SUBSCRIPTIONS.veteran : null; }
+  function isAdFree() { return !!getActiveSub(); }
+  function getSubStatMult() { const s = getActiveSub(); return s ? s.statMult : 1; }
+  function coinPrice(cost) { const s = getActiveSub(); return s ? Math.max(1, Math.ceil(cost * s.coinPriceMult)) : cost; }
+  function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult < 1 ? Math.max(1, Math.ceil(cost * s.gemPriceMult)) : cost; }
   // 転生直後のみ開く、ジェム消費専用ショップ。効果が永続の遺物（アーティファクト）だけを販売
   ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
   Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
@@ -1705,7 +1724,7 @@
   function getRebirthItemCost(id) {
     const item = REBIRTH_SHOP_ITEMS[id];
     const n = (game.rebirthShopBuys && game.rebirthShopBuys[id]) || 0;
-    return Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n)));
+    return gemPrice(Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n))));
   }
   // 今の所持ジェムでまとめて買える個数（値上がり・所持上限を考慮）
   function getRebirthMaxCount(id) {
@@ -1718,7 +1737,7 @@
     let gems = game.gems, count = 0;
     while (count < room && count < 999) {
       const n = base + count;
-      const cost = Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n)));
+      const cost = gemPrice(Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n))));
       if (gems < cost) break;
       gems -= cost; count++;
     }
@@ -1732,7 +1751,7 @@
   function getRebirthOfferSlots() { return Math.min(REBIRTH_OFFER_MAX_SLOTS, game.rebirthOfferSlots || REBIRTH_OFFER_COUNT); }
   function getRebirthSlotCost() {
     const n = getRebirthOfferSlots() - REBIRTH_OFFER_COUNT; // これまでに増やした枠数
-    return Math.round(20 * Math.pow(2.5, n) / 5) * 5; // 20→50→125→310→780→1955→4885
+    return gemPrice(Math.round(20 * Math.pow(2.5, n) / 5) * 5); // 20→50→125→310→780→1955→4885
   }
   // 到達ステージが高いほどレア度の高い商品が出やすい（150ステージで最大）
   function getRebirthOfferWeights(stage) {
@@ -1747,7 +1766,7 @@
   }
   // ジェムでラインナップを引き直す（何度でも同じ値段）
   const REBIRTH_REROLL_COST = 3;
-  function getRebirthRerollCost() { return REBIRTH_REROLL_COST; }
+  function getRebirthRerollCost() { return gemPrice(REBIRTH_REROLL_COST); }
   function rollRebirthOffer(stage, count = getRebirthOfferSlots(), exclude = []) {
     const weights = getRebirthOfferWeights(stage);
     let pool = Object.keys(REBIRTH_SHOP_ITEMS).filter(id => {
@@ -1922,6 +1941,7 @@
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
+    subscriptions: {}, // サブスク（紋章）の有効期限 { hero: 時刻, veteran: 時刻 }
     rebirthOfferSlots: 3, // 転生ショップの商品枠（ジェムで最大10まで増やせる。転生しても残る）
     rebirthSeenItems: {}, rebirthShopNew: [], rebirthRerolls: 0, // 転生ショップ：一度並んだ商品 / 今回のNEW / 今回の引き直し回数
     rebirthShopOffer: null, rebirthOfferStage: 1, // 今のラインナップを決めたときの到達ステージ（枠追加時の抽選に使う） // 転生ショップのランダム3択（今回のラインナップのID）
@@ -2029,15 +2049,18 @@
   function getCloneLimit() {
     return 3 + game.coinCloneSlots + (game.shopOwned.summoner ? 2 : 0) + game.rebirthBonus.cloneSlots;
   }
-  function getUpgradeCost(id) { return UPGRADES[id].baseCost * (game.upgrades[id] + 1); }
+  function getUpgradeCost(id) { return coinPrice(UPGRADES[id].baseCost * (game.upgrades[id] + 1)); }
   function sumUpgradeCost(id, fromLevel, count) {
     const base = UPGRADES[id].baseCost;
-    return base * count * (2 * fromLevel + count + 1) / 2;
+    const s = getActiveSub();
+    const total = base * count * (2 * fromLevel + count + 1) / 2;
+    return s ? Math.ceil(total * s.coinPriceMult) : total;
   }
   function getMaxAffordableUpgradeLevels(id, coins) {
     const base = UPGRADES[id].baseCost;
     const L = game.upgrades[id];
-    const A = base, B = base * (2 * L + 1), C = -2 * coins;
+    const sub = getActiveSub();
+    const A = base, B = base * (2 * L + 1), C = -2 * (coins / (sub ? sub.coinPriceMult : 1)) - 2 * base; // 割引分だけ多めに見積もり、下で実際の合計で調整
     let count = Math.floor((-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A));
     if (!isFinite(count) || count < 0) count = 0;
     while (count > 0 && sumUpgradeCost(id, L, count) > coins) count--;
@@ -2098,7 +2121,8 @@
     shopList.innerHTML = Object.entries(SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
       const owned = isShopItemOwned(id);
       const locked = !owned && item.requires && !game[item.requires];
-      return `<button class="shop-btn ${owned || locked || game.gems < item.cost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : '✓ 所持中') : '💎 ' + item.cost}</span></button>`;
+      const gcost = gemPrice(item.cost);
+      return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
     }).join('');
   }
   function renderSkillGacha() {
@@ -2132,13 +2156,21 @@
   function renderCoinShopList() {
     renderSkillGacha();
     coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
-      const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
+      const cost = coinPrice(id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost);
       const suffix = id === 'cloneSlot' ? `（上限 ${getCloneLimit()}）` : '';
       return `<button class="shop-btn coin-shop-btn ${game.coins < cost ? 'is-disabled' : ''}" data-coin-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}${suffix}</span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>`;
     }).join('');
   }
   function renderSupergemShopList() {
-    supergemShopList.innerHTML = Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item]) => {
+    const active = getActiveSub();
+    const subHtml = Object.entries(SUBSCRIPTIONS).map(([id, sub]) => {
+      const on = isSubActive(id);
+      const covered = !on && active && active.rank > sub.rank; // 上位プラン加入中
+      const days = on ? Math.ceil((game.subscriptions[id] - Date.now()) / 86400000) : 0;
+      const status = on ? `✅ 加入中（残り${days}日）・タップで30日延長` : covered ? '上位の紋章で有効中' : `サブスク（${SUBSCRIPTION_DAYS}日間）`;
+      return `<button class="shop-btn sub-btn sub-${id} ${covered || game.superGems < sub.cost ? 'is-disabled' : ''} ${on ? 'is-active' : ''}" data-sub-shop="${id}"><span class="item-icon">${sub.icon}</span> ${sub.name}<span class="shop-desc">${sub.desc}</span><span class="shop-desc sub-status">${status}</span><span class="cost">${sub.cost.toLocaleString('ja-JP')}円 / 月</span></button>`;
+    }).join('');
+    supergemShopList.innerHTML = subHtml + Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item]) => {
       return `<button class="shop-btn ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}</span><span class="cost">${item.cost.toLocaleString('ja-JP')}円</span></button>`;
     }).join('');
   }
@@ -2199,7 +2231,7 @@
 
   function getCompanionLevelCost(id) {
     const c = COMPANIONS[id];
-    return c.levelCostBase * (game.companions.level[id] + 1);
+    return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
   }
   function renderCompanionList() {
     // 仲間図鑑：一度でも仲間にした種類数（転生しても残る）。今の仲間も図鑑に登録しておく（古いセーブ対応）
@@ -2236,7 +2268,7 @@
     const done = game.companionSummons || 0;
     let total = 0;
     for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
-    return total;
+    return coinPrice(total);
   }
   const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
   function pickCompanionId() {
@@ -2337,12 +2369,12 @@
     const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
     const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
     const atkUpBonus = (Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル
-    return Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus));
+    return Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult()));
   }
   function getPlayerMaxHP() {
     const b = computeBonuses();
     const base = 100;
-    return Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage)));
+    return Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult()));
   }
   // 序盤は自機のHPも低め：ステージ1で40%、ステージ20で100%（以降は通常）まで直線的に戻す
   const EARLY_PLAYER_HP_MIN_RATE = 0.4;
@@ -5790,7 +5822,7 @@
     clearInterval(continueTimer);
     continueBtn.style.display = 'none';
     giveUpBtn.style.display = 'none';
-    if (!INTERSTITIAL_ENABLED) { completeReincarnation(); return; }
+    if (!INTERSTITIAL_ENABLED || isAdFree()) { completeReincarnation(); return; }
     showInterstitialAd(() => completeReincarnation());
   }
 
@@ -7379,8 +7411,9 @@
     const item = SHOP_ITEMS[id];
     if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : 'すでに所持しています', event.clientX, event.clientY); return; }
     if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
-    if (game.gems < item.cost) { promptGemShortage(item.cost); return; }
-    game.gems -= item.cost;
+    const gcost = gemPrice(item.cost);
+    if (game.gems < gcost) { promptGemShortage(gcost); return; }
+    game.gems -= gcost;
     if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
     renderShopList();
     refreshPlayerBallStats(false);
@@ -7394,7 +7427,7 @@
     if (!button || phase !== 'battle') { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     const id = button.dataset.coinShop;
     const item = COIN_SHOP_ITEMS[id];
-    const cost = id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost;
+    const cost = coinPrice(id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost);
     if (game.coins < cost) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
     if (id === 'potion') {
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -7448,6 +7481,8 @@
   });
 
   supergemShopList.addEventListener('click', event => {
+    const subBtn = event.target.closest('[data-sub-shop]');
+    if (subBtn) { buySubscription(subBtn.dataset.subShop, event); return; }
     const button = event.target.closest('[data-supergem-shop]');
     if (!button) return;
     const id = button.dataset.supergemShop;
@@ -7461,6 +7496,24 @@
     saveGame();
   });
 
+  function buySubscription(id, event) {
+    const sub = SUBSCRIPTIONS[id];
+    const active = getActiveSub();
+    if (!isSubActive(id) && active && active.rank > sub.rank) { showTapError('上位の紋章が有効です', event.clientX, event.clientY); return; }
+    if (game.superGems < sub.cost) { showTapError('スーパージェムが足りません', event.clientX, event.clientY); return; }
+    game.superGems -= sub.cost;
+    if (!game.subscriptions) game.subscriptions = {};
+    const from = Math.max(Date.now(), game.subscriptions[id] || 0); // 加入中なら残り期間に上乗せ
+    game.subscriptions[id] = from + SUBSCRIPTION_DAYS * 86400000;
+    refreshPlayerBallStats(false);
+    if (typeof refreshCompanionBalls === 'function' && phase === 'battle') refreshCompanionBalls();
+    updateStatsUI();
+    updateHPUI();
+    updateRewardAdButtons();
+    renderShopList(); renderSupergemShopList(); renderUpgradeList(); renderCoinShopList(); renderCompanionList();
+    celebrateGemPurchase(id === 'hero' ? 4 : 3, 0, { title: id === 'hero' ? '勇者の証、授かる！' : '熟練者の証、授かる！', countText: `${sub.icon} ${sub.name}` });
+    saveGame();
+  }
   // ---------- ジェム袋購入のお祝い演出（高い袋ほど盛大に） ----------
   const GEM_CELEBRATE = {
     1: { title: 'ありがとう！', color: '#64c8ff', gems: 18, ms: 2600 },
@@ -7468,8 +7521,8 @@
     3: { title: '超・大感謝！！！', color: '#ffc94f', gems: 90, ms: 4300 },
     4: { title: '神・降・臨！！！！', color: '#ff5fd2', gems: 160, ms: 5500 },
   };
-  function celebrateGemPurchase(tier, gain) {
-    const cfg = GEM_CELEBRATE[tier];
+  function celebrateGemPurchase(tier, gain, opts = {}) {
+    const cfg = { ...GEM_CELEBRATE[tier], ...(opts.title ? { title: opts.title } : {}) };
     const ov = document.createElement('div');
     ov.className = `gem-celebrate tier-${tier}`;
     ov.style.setProperty('--gc-color', cfg.color);
@@ -7479,12 +7532,12 @@
       const size = 14 + Math.random() * (10 + tier * 8);
       html += `<span class="gcel-gem" style="left:${Math.random() * 100}%;font-size:${size}px;animation-delay:${(Math.random() * cfg.ms * 0.6) | 0}ms;animation-duration:${1200 + Math.random() * 1400}ms">${Math.random() < 0.15 * tier ? '✨' : '💎'}</span>`;
     }
-    html += `<div class="gcel-center"><div class="gcel-title">${cfg.title}</div><div class="gcel-bag">💰</div><div class="gcel-count">💎 +<span>0</span></div><div class="gcel-sub">タップで閉じる</div></div>`;
+    html += `<div class="gcel-center"><div class="gcel-title">${cfg.title}</div><div class="gcel-bag">💰</div><div class="gcel-count">${opts.countText ? `<b class="gcel-subname">${opts.countText}</b>` : '💎 +<span>0</span>'}</div><div class="gcel-sub">タップで閉じる</div></div>`;
     ov.innerHTML = html;
     document.body.appendChild(ov);
     if (tier >= 2) document.body.classList.add('gcel-shake-' + tier);
     // 獲得数をカウントアップ
-    const countEl = ov.querySelector('.gcel-count span');
+    const countEl = ov.querySelector('.gcel-count span') || { set textContent(v) {} };
     const start = performance.now(), countMs = 700 + tier * 350;
     const tick = now => {
       const t = Math.min(1, (now - start) / countMs);
