@@ -498,6 +498,9 @@
   #rebirthShopModal .sub-tabs { margin: 0 0 14px; } /* 下の商品ボタンへの誤タップ防止に離す */
   #rebirthShopModal .sub-tab-btn { padding: 5px 8px; }
   /* 転生ショップの商品はなるべく改行せず、横1行＋説明1行にまとめる */
+  #rebirthShopList .upgrade-row .modal-shop-btn { flex: 1; min-width: 0; width: auto; }
+  #rebirthShopList .upgrade-row { min-width: 0; }
+  #rebirthShopList .upgrade-max-btn { flex-basis: 54px; }
   #rebirthShopList .modal-shop-btn { flex-direction: row; align-items: center; gap: 8px; padding: 7px 10px; }
   #rebirthShopList .rs-main { flex: 1; min-width: 0; }
   #rebirthShopList .rs-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1633,6 +1636,23 @@
     const n = (game.rebirthShopBuys && game.rebirthShopBuys[id]) || 0;
     return Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n)));
   }
+  // 今の所持ジェムでまとめて買える個数（値上がり・所持上限を考慮）
+  function getRebirthMaxCount(id) {
+    const item = REBIRTH_SHOP_ITEMS[id];
+    if (isRebirthItemMaxed(item) || isRebirthItemLocked(item)) return 0;
+    if (item.companionId || item.unlockKey) return game.gems >= getRebirthItemCost(id) ? 1 : 0;
+    const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
+    const room = limit ? limit - (game.ownedArtifacts[item.artifactId] || 0) : Infinity;
+    const base = (game.rebirthShopBuys && game.rebirthShopBuys[id]) || 0;
+    let gems = game.gems, count = 0;
+    while (count < room && count < 999) {
+      const n = base + count;
+      const cost = Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n)));
+      if (gems < cost) break;
+      gems -= cost; count++;
+    }
+    return count;
+  }
   const REBIRTH_SHOP_CATEGORIES = [
     { id: 'attack', label: '⚔️ 攻撃' },
     { id: 'defense', label: '🛡️ 防御' },
@@ -2040,7 +2060,8 @@
       const rar = RARITY_INFO[item.rarity];
       const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
       const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button>`;
+      const maxCount = maxed ? 0 : getRebirthMaxCount(id);
+      return `<div class="upgrade-row"><button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button><button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-rebirth-max="${id}">MAX<span>${maxCount ? '×' + maxCount : '—'}</span></button></div>`;
     }).join('');
   }
 
@@ -5686,12 +5707,12 @@
   const rebirthShopMsg = document.getElementById('rebirthShopMsg');
   // 購入した瞬間に、買った内容をショップ内に表示（モーダルの上なので通常の通知は見えないため）
   // 購入結果はタップした位置からテキストアニメで表示（リスト上部の枠は使わない）
-  function showRebirthPurchasePop(item, x, y) {
+  function showRebirthPurchasePop(item, x, y, count = 1) {
     const icon = item.companionId ? COMPANIONS[item.companionId].icon : item.icon;
     const cur = item.artifactId ? getArtifactCurrentText(item.artifactId) : '';
     const el = document.createElement('div');
     el.className = 'levelup-pop purchase-pop';
-    el.innerHTML = `${icon} ${item.companionId || item.unlockKey ? '開放！' : '購入！'}${cur ? `<small>${cur}</small>` : ''}`;
+    el.innerHTML = `${icon} ${item.companionId || item.unlockKey ? '開放！' : (count > 1 ? `×${count} 購入！` : '購入！')}${cur ? `<small>${cur}</small>` : ''}`;
     el.style.left = (x || window.innerWidth / 2) + 'px';
     el.style.top = (y || window.innerHeight / 2) + 'px';
     if (RARITY_INFO[item.rarity]) el.style.textShadow = `0 0 8px ${RARITY_INFO[item.rarity].color}, 0 2px 0 #5a3a00, 0 0 2px #000`; // レア度の色で光らせる
@@ -7409,6 +7430,24 @@
   ['pointerup', 'pointercancel'].forEach(type => document.addEventListener(type, stopHold));
   window.addEventListener('blur', stopHold);
 
+  // 転生ショップで買えるだけまとめて購入する（MAXボタン）
+  function buyRebirthItemMax(id, x, y) {
+    const item = REBIRTH_SHOP_ITEMS[id];
+    if (!item) return;
+    const count = getRebirthMaxCount(id);
+    if (count < 1) { buyRebirthItem(id, x, y, false); return; } // 買えない理由の表示は通常購入に任せる
+    if (!game.rebirthShopBuys) game.rebirthShopBuys = {};
+    for (let i = 0; i < count; i++) {
+      game.gems -= getRebirthItemCost(id);
+      game.rebirthShopBuys[id] = (game.rebirthShopBuys[id] || 0) + 1;
+      item.effect();
+    }
+    renderArtifactList();
+    showRebirthPurchasePop(item, x, y, count);
+    playUpgradeSound();
+    updateStatsUI();
+    renderRebirthShopList();
+  }
   // 転生ショップで1つ購入する。成功したら true（長押しの連続購入からも呼ばれる）
   function buyRebirthItem(id, x, y, fromHold) {
     const item = REBIRTH_SHOP_ITEMS[id];
@@ -7433,6 +7472,8 @@
     return true;
   }
   rebirthShopList.addEventListener('click', event => {
+    const maxBtn = event.target.closest('[data-rebirth-max]');
+    if (maxBtn) { buyRebirthItemMax(maxBtn.dataset.rebirthMax, event.clientX, event.clientY); return; }
     const button = event.target.closest('[data-rebirth-shop]');
     if (!button) return;
     if (consumeHoldClick()) return; // 長押しで連続購入した直後のクリックは無視
