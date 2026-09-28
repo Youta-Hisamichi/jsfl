@@ -230,7 +230,9 @@
   .deck-card .ico-img { width: 2.3rem; height: 2.3rem; border-radius: 6px; }
   .deck-card .dc-name { font-weight: 900; font-size: 0.64rem; line-height: 1.15; text-align: center; }
   .deck-card .dc-lv { font-weight: 800; font-size: 0.58rem; color: var(--accent-player); }
-  .deck-card.empty { border: 2px dashed var(--ring); background: var(--bg-soft); box-shadow: none; cursor: default; color: var(--text-dim); animation: none; }
+  .sk-card.sk-flash { animation: skFlash 1.2s ease-out; }
+  @keyframes skFlash { 0%, 40% { box-shadow: 0 0 0 3px #ffb84d, 0 0 16px rgba(255,184,77,0.8); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .deck-card.empty { border: 2px dashed var(--ring); background: var(--bg-soft); box-shadow: none; cursor: pointer; color: var(--text-dim); animation: none; }
   .deck-card.locked { border: 1px dashed var(--ring); background: transparent; box-shadow: none; cursor: default; color: var(--text-dim); opacity: 0.5; animation: none; }
   .deck-card .dc-plus { font-size: 1.3rem; font-weight: 900; line-height: 1; }
   .skill-slot-btn { width: 100%; justify-content: space-between; margin: 0 0 8px; border-style: dashed; }
@@ -7638,6 +7640,18 @@
     }
   });
   document.getElementById('skillDeck').addEventListener('click', event => {
+    // 空き枠をタップ → 装備できるスキル（解放済み・未装備）まで自動スクロール。なければ解放できるスキルへ
+    if (event.target.closest('.deck-card.empty')) {
+      const list = document.getElementById('skillLevelList');
+      const target = list.querySelector('[data-skill-equip]:not(.on)') || list.querySelector('[data-skill-buy]:not(.is-disabled)') || list.querySelector('.sk-card');
+      const cardEl = target && target.closest('.sk-card');
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cardEl.classList.remove('sk-flash'); void cardEl.offsetWidth; cardEl.classList.add('sk-flash');
+        if (!list.querySelector('[data-skill-equip]:not(.on)')) showNotice('装備できるスキルがありません。まずスキルを解放しましょう');
+      }
+      return;
+    }
     const card = event.target.closest('[data-skill-equip]');
     if (!card) return;
     const eq = getEquippedSkills();
