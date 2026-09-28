@@ -302,6 +302,36 @@
   .gacha-result.rarity-legendary .gr-icon.gr-pop { display: inline-block; animation: gachaPop 0.45s cubic-bezier(.34,1.56,.64,1), legendaryPulse 0.28s ease-in-out 0.45s infinite alternate; }
   @keyframes gmFlip { 0% { transform: rotateY(90deg) scale(0.8); } 100% { transform: rotateY(0) scale(1); } }
   .gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.5rem; color: var(--text-dim); margin-top: 2px; }
+  /* ジェム袋購入のお祝い演出 */
+  .gem-celebrate { position: fixed; inset: 0; z-index: 120; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; animation: gcelIn 0.3s ease-out; }
+  .gem-celebrate.closing { animation: gcelOut 0.35s ease-in forwards; }
+  .gcel-bg { position: absolute; inset: 0; background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--gc-color) 55%, transparent), rgba(6,8,20,0.9) 70%); }
+  .tier-4 .gcel-bg { animation: gcelHue 1.6s linear infinite; }
+  .gcel-rays { position: absolute; left: 50%; top: 45%; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; background: repeating-conic-gradient(color-mix(in srgb, var(--gc-color) 45%, transparent) 0 8deg, transparent 8deg 20deg); animation: gcelSpin 6s linear infinite; opacity: 0.7; }
+  .tier-4 .gcel-rays { animation-duration: 2.5s; opacity: 0.9; }
+  .gcel-gem { position: absolute; top: -40px; animation: gcelFall linear infinite both; filter: drop-shadow(0 0 6px var(--gc-color)); pointer-events: none; }
+  .gcel-center { position: relative; text-align: center; color: #fff; }
+  .gcel-title { font-size: 1.9rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 12px var(--gc-color), 0 3px 0 #000; animation: gachaPop 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .tier-3 .gcel-title { font-size: min(2.3rem, 10vw); }
+  .gcel-title { white-space: nowrap; }
+  .tier-4 .gcel-title { font-size: min(2.7rem, 10.5vw); letter-spacing: 0; background: linear-gradient(90deg, #ff5f6d, #ffc371, #7cff9b, #5fc8ff, #d97cff, #ff5f6d); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: gachaPop 0.5s cubic-bezier(.34,1.56,.64,1), gcelRainbow 1.2s linear infinite; text-shadow: none; filter: drop-shadow(0 3px 0 #000) drop-shadow(0 0 10px #fff); }
+  .gcel-bag { font-size: 4rem; margin: 6px 0; animation: gcelBounce 0.7s ease-in-out infinite alternate; filter: drop-shadow(0 0 18px var(--gc-color)); }
+  .tier-3 .gcel-bag { font-size: 5rem; }
+  .tier-4 .gcel-bag { font-size: 6rem; }
+  .gcel-count { font-size: 2rem; font-weight: 900; color: #b4f6ff; text-shadow: 0 0 10px #64e8ff, 0 3px 0 #000; }
+  .tier-4 .gcel-count { font-size: 2.6rem; }
+  .gcel-sub { margin-top: 10px; font-size: 0.72rem; color: #d0d3e0; opacity: 0.8; }
+  body.gcel-shake-2 .tab-page.active, body.gcel-shake-3 .tab-page.active, body.gcel-shake-4 .tab-page.active, body.gcel-shake-3 .gcel-center, body.gcel-shake-4 .gcel-center { animation: gcelShake 0.12s linear 4; }
+  body.gcel-shake-3 .tab-page.active, body.gcel-shake-3 .gcel-center { animation-iteration-count: 8; }
+  body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-iteration-count: 16; }
+  @keyframes gcelIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes gcelOut { to { opacity: 0; transform: scale(1.08); } }
+  @keyframes gcelFall { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(115vh) rotate(540deg); opacity: 0.9; } }
+  @keyframes gcelSpin { to { transform: rotate(360deg); } }
+  @keyframes gcelHue { to { filter: hue-rotate(360deg); } }
+  @keyframes gcelRainbow { to { background-position: 200% 0; } }
+  @keyframes gcelBounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.08); } }
+  @keyframes gcelShake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-4px, 2px); } 50% { transform: translate(3px, -3px); } 75% { transform: translate(-2px, -2px); } }
   @keyframes gachaPop { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
   @keyframes sparkleMove { 0%, 100% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
   @keyframes legendaryGlow { from { box-shadow: 0 0 16px rgba(255,215,107,0.5); } to { box-shadow: 0 0 34px rgba(255,215,107,0.95); } }
@@ -7373,9 +7403,58 @@
     game.superGems -= item.cost;
     const gain = { small: 5, medium: 100, large: 256, huge: 1024 }[id] || 0;
     game.gems += gain;
-    playUpgradeSound();
     updateStatsUI();
+    celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, gain);
+    saveGame();
   });
+
+  // ---------- ジェム袋購入のお祝い演出（高い袋ほど盛大に） ----------
+  const GEM_CELEBRATE = {
+    1: { title: 'ありがとう！', color: '#64c8ff', gems: 18, ms: 2600 },
+    2: { title: '大感謝！！', color: '#b07cff', gems: 45, ms: 3400 },
+    3: { title: '超・大感謝！！！', color: '#ffc94f', gems: 90, ms: 4300 },
+    4: { title: '神・降・臨！！！！', color: '#ff5fd2', gems: 160, ms: 5500 },
+  };
+  function celebrateGemPurchase(tier, gain) {
+    const cfg = GEM_CELEBRATE[tier];
+    const ov = document.createElement('div');
+    ov.className = `gem-celebrate tier-${tier}`;
+    ov.style.setProperty('--gc-color', cfg.color);
+    let html = '<div class="gcel-bg"></div>';
+    if (tier >= 3) html += '<div class="gcel-rays"></div>';
+    for (let i = 0; i < cfg.gems; i++) {
+      const size = 14 + Math.random() * (10 + tier * 8);
+      html += `<span class="gcel-gem" style="left:${Math.random() * 100}%;font-size:${size}px;animation-delay:${(Math.random() * cfg.ms * 0.6) | 0}ms;animation-duration:${1200 + Math.random() * 1400}ms">${Math.random() < 0.15 * tier ? '✨' : '💎'}</span>`;
+    }
+    html += `<div class="gcel-center"><div class="gcel-title">${cfg.title}</div><div class="gcel-bag">💰</div><div class="gcel-count">💎 +<span>0</span></div><div class="gcel-sub">タップで閉じる</div></div>`;
+    ov.innerHTML = html;
+    document.body.appendChild(ov);
+    if (tier >= 2) document.body.classList.add('gcel-shake-' + tier);
+    // 獲得数をカウントアップ
+    const countEl = ov.querySelector('.gcel-count span');
+    const start = performance.now(), countMs = 700 + tier * 350;
+    const tick = now => {
+      const t = Math.min(1, (now - start) / countMs);
+      countEl.textContent = Math.round(gain * (1 - Math.pow(1 - t, 3))).toLocaleString('ja-JP');
+      if (t < 1 && ov.isConnected) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    // 効果音：段階ごとにファンファーレを重ねる
+    playLoginBonusSound();
+    if (tier >= 2) setTimeout(() => playGachaSound('epic'), 450);
+    if (tier >= 3) { setTimeout(() => playGachaSound('legendary'), 900); setTimeout(() => playNoiseBurst(0.5, 0.18), 900); }
+    if (tier >= 4) { setTimeout(() => playGachaSound('legendary'), 1500); setTimeout(() => playLoginBonusSound(), 2000); setTimeout(() => playGachaSound('legendary'), 2500); }
+    let closed = false;
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      document.body.classList.remove('gcel-shake-2', 'gcel-shake-3', 'gcel-shake-4');
+      ov.classList.add('closing');
+      setTimeout(() => ov.remove(), 350);
+    };
+    setTimeout(() => ov.addEventListener('click', close), 600);
+    setTimeout(close, cfg.ms);
+  }
 
   function playGachaSound(rarity) {
     const tablesByRarity = {
