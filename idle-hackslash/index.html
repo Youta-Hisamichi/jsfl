@@ -1657,7 +1657,7 @@
     summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
     tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり', cost: 30, unlockKey: 'tackleUnlocked' },
     superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' },
-    tacklePierce: { icon: '🐂', name: '貫きの蹄鉄', desc: 'タックルが敵にヒットしても消えず持続（購入ごとに +0.1秒）', cost: 20, stackKey: 'tacklePierceLv', maxStack: 10, requires: 'tackleUnlocked' }
+    tacklePierce: { icon: '🐂', name: '貫きの蹄鉄', desc: 'タックルが敵にヒットしても反射せず貫通して進む（購入ごとに +0.1秒）', cost: 20, stackKey: 'tacklePierceLv', maxStack: 10, requires: 'tackleUnlocked' }
   };
   const TACKLE_PIERCE_MS_PER_LV = 100;
   function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
@@ -2783,7 +2783,7 @@
   ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, releaseTackleCharge));
   function steerTackle(ball) {
     const enemy = balls.find(x => !x.isPlayer);
-    if (enemy && !enemy.isDying) {
+    if (enemy && !enemy.isDying && !(tackle && tackle.hits)) { // 貫通中はヒットした向きのまままっすぐ突き抜ける
       const dx = enemy.x - ball.x, dy = enemy.y - ball.y;
       const dist = Math.hypot(dx, dy) || 1;
       ball.vx += ((dx / dist) * TACKLE_SPEED - ball.vx) * TACKLE_TURN_RATE;
@@ -5415,8 +5415,10 @@
     movePlayerSideBalls([...balls, ...adds], speedMult, b);
     if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
 
-    const collided = resolveBallCollision(a, e);
-    if (collided) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
+    // 「貫きの蹄鉄」を持っていればタックル中は敵で反射せず、重なってもそのまま貫通する（当たり判定だけ取る）
+    const piercing = isTackling() && getTacklePierceMs() > 0;
+    const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
+    if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
     if (collided && isTackling()) {
       // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
       if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
