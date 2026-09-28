@@ -4977,6 +4977,9 @@
       a.vx += velAlongNormal * nx; a.vy += velAlongNormal * ny;
       b.vx -= velAlongNormal * nx; b.vy -= velAlongNormal * ny;
     }
+    // 反射モードの自機は、相手が止まっていても必ず跳ね返る
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
     return true;
   }
 
@@ -5047,7 +5050,32 @@
       }
     }
   }
+  // お試し：自キャラは敵を追いかけず、まっすぐ進んで壁や敵で物理反射する（タップで敵の方へ向き直る）
+  const PLAYER_BOUNCE_MODE = true;
+  const BOUNCE_SPEED = 2.4; // 反射移動の基本の速さ（px/フレーム・ゲーム速度1倍）
+  function bounceMainPlayer(ball, speedMult, b) {
+    const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
+    const tap = ball.tapSpeedMult || 1;
+    const speed = BOUNCE_SPEED * b.speedMult * tap * (boosted ? BOOST_MULT : 1);
+    let cur = Math.hypot(ball.vx, ball.vy);
+    if (cur < 0.01) { const ang = Math.random() * Math.PI * 2; ball.vx = Math.cos(ang); ball.vy = Math.sin(ang); cur = 1; }
+    // 向きはそのまま、速さだけ目標値へなめらかに揃える（ぶつかって減速しても元の速さに戻る）
+    const next = cur + (speed - cur) * Math.min(1, 0.08 * speedMult);
+    ball.vx = ball.vx / cur * next; ball.vy = ball.vy / cur * next;
+    if (tap > 1.2) {
+      ball.stepDist = (ball.stepDist || 0) + next * speedMult;
+      if (ball.stepDist > 26) {
+        ball.stepDist = 0;
+        const lv = Math.min(1, (tap - 1) / (TAP_ACCEL_MAX - 1));
+        playFootstep(0.2 + lv * 0.6, 0.08 + lv * 0.1);
+      }
+    }
+    ball.x += ball.vx * speedMult;
+    ball.y += ball.vy * speedMult;
+    wallBounce(ball);
+  }
   function walkBall(ball, speedMult, b) {
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(ball)) { bounceMainPlayer(ball, speedMult, b); return; }
     const w = ball.walk || (ball.walk = { pause: 0, next: 60 + Math.random() * 200 });
     ball.moveT = (ball.moveT || Math.random() * 300) + speedMult;
     const t = ball.moveT;
