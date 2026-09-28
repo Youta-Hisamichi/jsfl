@@ -225,6 +225,14 @@
   .sg-up { font-size: 0.64rem; font-weight: 800; color: #2ea043; }
   .sg-desc { font-size: 0.6rem; color: var(--text-dim); }
   .skill-slot-head { text-align: center; font-weight: 800; font-size: 0.82rem; margin: 2px 0 4px; }
+  .skill-deck { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }
+  .deck-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 82px; padding: 6px 3px; border-radius: 10px; border: 2px solid #2ea043; background: linear-gradient(160deg, rgba(46,160,67,0.12), rgba(100,200,255,0.1)); color: var(--text); cursor: pointer; font-size: 0.62rem; box-shadow: 0 2px 6px rgba(0,0,0,0.12); animation: sgPop 0.3s ease-out both; }
+  .deck-card .ico-img { width: 2.3rem; height: 2.3rem; border-radius: 6px; }
+  .deck-card .dc-name { font-weight: 900; font-size: 0.64rem; line-height: 1.15; text-align: center; }
+  .deck-card .dc-lv { font-weight: 800; font-size: 0.58rem; color: var(--accent-player); }
+  .deck-card.empty { border: 2px dashed var(--ring); background: var(--bg-soft); box-shadow: none; cursor: default; color: var(--text-dim); animation: none; }
+  .deck-card.locked { border: 1px dashed var(--ring); background: transparent; box-shadow: none; cursor: default; color: var(--text-dim); opacity: 0.5; animation: none; }
+  .deck-card .dc-plus { font-size: 1.3rem; font-weight: 900; line-height: 1; }
   .skill-slot-btn { width: 100%; justify-content: space-between; margin: 0 0 8px; border-style: dashed; }
   .skill-buy-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
   .sk-card { display: flex; flex-direction: column; gap: 3px; padding: 7px; border-radius: 10px; background: var(--bg-soft); border: 1px solid var(--ring); font-size: 0.66rem; color: var(--text); }
@@ -779,6 +787,7 @@
       <div class="shopkeeper" data-npc-tab="coinshop"></div>
       <div class="title">✨ スキル（コインで好きなスキルを解放・Lvアップ＝待機時間短縮。装備したスキルだけ戦闘で使えます）</div>
       <div class="skill-slot-head" id="skillSlotHead"></div>
+      <div class="skill-deck" id="skillDeck"></div>
       <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn"></button>
       <div class="skill-buy-list" id="skillLevelList"></div>
       <div class="supergem-note">スキルとLv・スキル枠は転生後も継続。スキル枠はジェムで最大7つまで増やせます。</div>
@@ -2196,6 +2205,21 @@
     const slots = getSkillSlots();
     const eq = getEquippedSkills();
     if (head) head.textContent = `🎒 装備中のスキル ${eq.length} / ${slots}`;
+    // 装備中のスキルをカードで並べる（空き枠・未開放の枠も表示。カードをタップで外す）
+    const deck = document.getElementById('skillDeck');
+    if (deck) {
+      let dh = '';
+      for (let i = 0; i < SKILL_SLOT_MAX; i++) {
+        const id = eq[i];
+        if (id && SKILL_GACHA_SKILLS[id]) {
+          const sk = SKILL_GACHA_SKILLS[id];
+          const lv = getSkillLevel(id);
+          dh += `<button class="deck-card" data-skill-equip="${id}" title="タップで外す">${ico(sk)}<span class="dc-name">${sk.name}</span><span class="dc-lv">${lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv}</span></button>`;
+        } else if (i < slots) dh += `<div class="deck-card empty"><span class="dc-plus">＋</span><span class="dc-name">空き枠</span></div>`;
+        else dh += `<div class="deck-card locked"><span class="dc-plus">🔒</span><span class="dc-name">未開放</span></div>`;
+      }
+      if (deck.dataset.html !== dh) { deck.innerHTML = dh; deck.dataset.html = dh; }
+    }
     const sb = document.getElementById('skillSlotBtn');
     if (sb) {
       const html = slots >= SKILL_SLOT_MAX
@@ -7612,6 +7636,16 @@
       renderCoinShopList();
       saveGame();
     }
+  });
+  document.getElementById('skillDeck').addEventListener('click', event => {
+    const card = event.target.closest('[data-skill-equip]');
+    if (!card) return;
+    const eq = getEquippedSkills();
+    const i = eq.indexOf(card.dataset.skillEquip);
+    if (i >= 0) eq.splice(i, 1);
+    playTone(660, 0.06, 'triangle', 0.1);
+    renderCoinShopList();
+    saveGame();
   });
   document.getElementById('skillSlotBtn').addEventListener('click', event => {
     const slots = getSkillSlots();
