@@ -164,6 +164,11 @@
   .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
   .ico-img { width: 1.2em; height: 1.2em; vertical-align: middle; border-radius: 3px; object-fit: cover; }
   .tab-btn .tab-icon .ico-img { width: 1.7rem; height: 1.7rem; border-radius: 5px; display: block; margin: 0 auto; }
+  .upgrade-btn .item-icon .ico-img { width: 2.1rem; height: 2.1rem; border-radius: 6px; }
+  .sl-ico .ico-img { width: 2.2rem; height: 2.2rem; border-radius: 6px; display: block; margin: 2px auto; }
+  .sg-icon .ico-img { width: 2.8rem; height: 2.8rem; border-radius: 8px; }
+  #rebirthShopList .rs-icon { flex: 0 0 auto; font-size: 1.9rem; line-height: 1; }
+  #rebirthShopList .rs-icon .ico-img, #rebirthShopList .rs-icon .comp-sprite { width: 2.4rem; height: 2.4rem; border-radius: 6px; display: block; }
   .action-btn .ico-img { width: 1.5em; height: 1.5em; margin-right: 2px; }
   .comp-sprite { width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; }
   .bst-sprite { width: 2.2rem; height: 2.2rem; object-fit: contain; }
@@ -2019,7 +2024,7 @@
     const lvList = document.getElementById('skillLevelList');
     const lvHtml = Object.entries(SKILL_GACHA_SKILLS).map(([id, sk]) => {
       const lv = getSkillLevel(id);
-      return `<div class="sl-item ${lv ? '' : 'locked'}"><span>${ico(sk)} ${sk.name}</span><b>${lv ? (lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv) : '未解放'}</b>${lv ? `<span class="sl-cd">待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%</span>` : ''}</div>`;
+      return `<div class="sl-item ${lv ? '' : 'locked'}"><span class="sl-ico">${ico(sk)}</span><span>${sk.name}</span><b>${lv ? (lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv) : '未解放'}</b>${lv ? `<span class="sl-cd">待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%</span>` : ''}</div>`;
     }).join('');
     if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   }
@@ -2075,7 +2080,7 @@
       const icon = item.companionId ? companionIconHtml(item.companionId) : ico(item);
       const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
       const maxCount = maxed ? 0 : getRebirthMaxCount(id);
-      return `<div class="upgrade-row"><button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button><button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-rebirth-max="${id}">MAX<span>${maxCount ? '×' + maxCount : '—'}</span></button></div>`;
+      return `<div class="upgrade-row"><button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-icon">${icon}</span><span class="rs-main"><span class="rs-line"><span class="msb-name">${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button><button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-rebirth-max="${id}">MAX<span>${maxCount ? '×' + maxCount : '—'}</span></button></div>`;
     }).join('');
   }
 
