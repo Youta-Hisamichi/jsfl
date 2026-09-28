@@ -681,7 +681,7 @@
     </div>
 
     <div class="debug-row">
-      <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+5 🌟</button>
+      <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
       <button data-debug="rewardAdReset">🎬 動画CTリセット</button><button data-debug="die">💀 死亡確認</button><button data-debug="gems1000">+1000 💎</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="rebirthShop">🌌 転生ショップ表示</button>
@@ -751,7 +751,7 @@
       <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
       <div class="title">💎 ジェムショップ（購入効果は転生後も継続）</div>
       <div class="shop-list" id="shopList"></div>
-      <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span></div>
+      <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span>円</div>
       <button class="modal-shop-btn" id="gemReturnBtn" style="display:none; justify-content:center; margin-bottom:8px; border-color:var(--gold); color:var(--gold);"><span class="msb-name">↩️ 元の画面に戻る</span></button>
       <div class="shop-list" id="supergemShopList"></div>
     </div>
@@ -1632,10 +1632,10 @@
   function getSkillGachaCost() { return Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0)); }
   function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
   const SUPERGEM_SHOP_ITEMS = {
-    small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 1 },
-    medium: { icon: '💎', name: 'ジェム中袋', desc: 'ジェム +100', cost: 3 },
-    large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +256', cost: 8 },
-    huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1024', cost: 25 }
+    small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 198 },
+    medium: { icon: '💎', name: 'ジェム中袋', desc: 'ジェム +100', cost: 980 },
+    large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +256', cost: 4800 },
+    huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1024', cost: 9980 }
   };
   // 転生直後のみ開く、ジェム消費専用ショップ。効果が永続の遺物（アーティファクト）だけを販売
   ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
@@ -2093,7 +2093,7 @@
   }
   function renderSupergemShopList() {
     supergemShopList.innerHTML = Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item]) => {
-      return `<button class="shop-btn ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}</span><span class="cost">🌟 ${item.cost}</span></button>`;
+      return `<button class="shop-btn ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}</span><span class="cost">${item.cost.toLocaleString('ja-JP')}円</span></button>`;
     }).join('');
   }
   function renderEvolutionList() {
@@ -2453,7 +2453,7 @@
   }
   function updateStatsUI() {
     stageNumEl.textContent = game.stage;
-    superGemsNumEl.textContent = Math.floor(game.superGems);
+    superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
     rebornNumEl.textContent = game.reincarnations;
     bestStageNumEl.textContent = game.bestStage;
     totalKillsNumEl.textContent = game.totalKills;
@@ -7028,7 +7028,7 @@
     gems: 'DEBUG: ジェム +10 を付与しました',
     gems1000: 'DEBUG: ジェム +1000 を付与しました',
     coins1000: 'DEBUG: コイン +1000 を付与しました',
-    supergems: 'DEBUG: スーパージェム +5 を付与しました',
+    supergems: 'DEBUG: スーパージェム +10000円 を付与しました',
     special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
     prev: 'DEBUG: ステージを1つ戻しました',
     next: 'DEBUG: ステージを1つ進めました',
@@ -7048,7 +7048,7 @@
     if (action === 'gems') game.gems += 10;
     if (action === 'gems1000') game.gems += 1000;
     if (action === 'coins1000') game.coins += 1000;
-    if (action === 'supergems') game.superGems += 5;
+    if (action === 'supergems') game.superGems += 10000;
     if (action === 'die') {
       // 自機を即死させて死亡時の流れ（コンテニュー／スキップ失敗）を確認する
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
