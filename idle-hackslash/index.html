@@ -464,6 +464,8 @@
     80% { opacity: 1; }
     100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
   }
+  .debug-toggle { display: block; margin: 0 auto 8px; border: 1px dashed var(--ring); border-radius: 999px; color: var(--text-dim); background: transparent; padding: 5px 14px; font-size: 0.68rem; font-weight: 700; cursor: pointer; }
+  .debug-toggle.open { color: var(--text); border-style: solid; }
   .debug-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .debug-row button { border: 1px dashed var(--ring); border-radius: 8px; color: var(--text-dim); background: transparent; padding: 6px 3px; font-size: 0.63rem; cursor: pointer; }
 
@@ -747,7 +749,8 @@
       <button class="tiny" id="resetBtn">🔄 最初から全部やり直す</button>
     </div>
 
-    <div class="debug-row">
+    <button class="debug-toggle" id="debugToggleBtn">🛠️ デバッグ一覧</button>
+    <div class="debug-row" id="debugRow" style="display:none;">
       <button data-debug="coins">+100 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="special">スキルリセット</button>
       <button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="saveReset">🗑️ セーブリセット</button><button data-debug="loginBonus">🎰 復帰ガチャ表示</button>
@@ -1184,6 +1187,16 @@
   const totalUserCountEl = document.getElementById('totalUserCount');
   const resetBtn = document.getElementById('resetBtn');
   const debugRow = document.querySelector('.debug-row');
+  // デバッグボタン一式は「デバッグ一覧」ボタンで開閉（開閉状態はこの端末に記憶）
+  const debugToggleBtn = document.getElementById('debugToggleBtn');
+  function setDebugOpen(open) {
+    debugRow.style.display = open ? '' : 'none';
+    debugToggleBtn.classList.toggle('open', open);
+    debugToggleBtn.textContent = open ? '🛠️ デバッグ一覧を閉じる' : '🛠️ デバッグ一覧';
+    try { localStorage.setItem('circle-battle-idle-debug-open', open ? '1' : '0'); } catch (err) { /* 保存できなくても動作は続ける */ }
+  }
+  debugToggleBtn.addEventListener('click', () => setDebugOpen(debugRow.style.display === 'none'));
+  try { if (localStorage.getItem('circle-battle-idle-debug-open') === '1') setDebugOpen(true); } catch (err) { /* 読めなければ閉じたまま */ }
 
   const tabBar = document.getElementById('tabBar');
   const tabPages = document.querySelectorAll('.tab-page');
