@@ -1619,12 +1619,20 @@
     REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
       effect: () => { gainArtifact(a.id); } };
   });
+  REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
   // タックル・超タックルの開放（転生しても永続）
   REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
     effect: () => { game.tackleUnlocked = true; } };
   REBIRTH_SHOP_ITEMS.unlockSuperTackle = { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル（永続）', rarity: 'epic', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked', category: 'attack',
     effect: () => { game.superTackleUnlocked = true; } };
   // 転生ショップのカテゴリ（上部タブ）
+  // 購入するたびに値段が上がる（購入回数は転生しても残る）
+  const REBIRTH_COST_GROWTH = 1.25;
+  function getRebirthItemCost(id) {
+    const item = REBIRTH_SHOP_ITEMS[id];
+    const n = (game.rebirthShopBuys && game.rebirthShopBuys[id]) || 0;
+    return Math.max(item.cost + n, Math.round(item.cost * Math.pow(REBIRTH_COST_GROWTH, n)));
+  }
   const REBIRTH_SHOP_CATEGORIES = [
     { id: 'attack', label: '⚔️ 攻撃' },
     { id: 'defense', label: '🛡️ 防御' },
@@ -1778,6 +1786,7 @@
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
+    rebirthShopBuys: {}, // 転生ショップの商品ごとの購入回数（値上がり用。転生しても残る）
     companionUnlocks: {}, // 転生ショップで開放した仲間 { id: true }（転生しても残る）
     companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
     companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
@@ -2020,7 +2029,8 @@
     rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory).map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
-      const short = !maxed && (game.gems < item.cost || isRebirthItemLocked(item));
+      const cost = getRebirthItemCost(id);
+      const short = !maxed && (game.gems < cost || isRebirthItemLocked(item));
       const count = game.ownedArtifacts[item.artifactId] || 0;
       const limit = ARTIFACT_STACK_LIMIT[item.artifactId];
       const isUnlockItem = item.companionId || item.unlockKey;
@@ -2030,7 +2040,7 @@
       const rar = RARITY_INFO[item.rarity];
       const icon = item.companionId ? companionIconHtml(item.companionId) : item.icon;
       const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + item.cost}</span></button>`;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-main"><span class="rs-line"><span class="msb-name"><span class="item-icon">${icon}</span> ${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button>`;
     }).join('');
   }
 
@@ -6718,7 +6728,7 @@
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null;
     game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
     game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+    game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
     lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -7405,12 +7415,15 @@
     if (!item) return false;
     if (isRebirthItemMaxed(item)) { showTapError(item.companionId || item.unlockKey ? 'すでに開放しています' : '所持上限に達しています', x, y); return false; }
     if (isRebirthItemLocked(item)) { showTapError('先にタックルを開放してください', x, y); return false; }
-    if (game.gems < item.cost) {
+    const cost = getRebirthItemCost(id);
+    if (game.gems < cost) {
       if (fromHold) showTapError('ジェムが足りません', x, y); // 連続購入中はダイアログを出さずに止める
-      else promptGemShortage(item.cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true });
+      else promptGemShortage(cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true });
       return false;
     }
-    game.gems -= item.cost;
+    game.gems -= cost;
+    if (!game.rebirthShopBuys) game.rebirthShopBuys = {};
+    game.rebirthShopBuys[id] = (game.rebirthShopBuys[id] || 0) + 1;
     item.effect();
     renderArtifactList();
     showRebirthPurchasePop(item, x, y);
