@@ -59,7 +59,9 @@
   }
   .top-header .th-right { display: flex; align-items: center; gap: 12px; }
   .top-header .th-item.coin { color: var(--gold); }
-  .top-header .th-item.gem { color: #64e8ff; }
+  .top-header .th-item.gem { color: #64e8ff; cursor: pointer; }
+  #rebirthShopModal .rs-gems { cursor: pointer; }
+  #gemShortText { white-space: pre-line; }
   .top-header .th-gear { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 2px 4px; color: var(--text); }
   .subtitle { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 14px; text-align: center; }
 
@@ -950,7 +952,7 @@
 <div class="modal-overlay" id="gemShortModal" style="z-index:70;">
   <div class="modal-panel" style="text-align:center;">
     <div style="font-size:2.4rem;">💎</div>
-    <h2>ジェムが足りません</h2>
+    <h2 id="gemShortTitle">ジェムが足りません</h2>
     <div class="modal-sub" id="gemShortText" style="color:var(--text); font-size:0.85rem;"></div>
     <div class="modal-shop-list">
       <button class="modal-close-btn" id="gemShortGoBtn">🛒 ジェム購入ショップへ</button>
@@ -1360,9 +1362,10 @@
   // onLeave: ショップへ移動する直前に元の画面を片付ける処理
   function promptGemShortage(needed, options = {}) {
     const lack = Math.max(1, Math.ceil(needed - game.gems));
-    gemShortText.textContent = `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
+    document.getElementById('gemShortTitle').textContent = options.title || 'ジェムが足りません';
+    gemShortText.textContent = options.text || `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
     gemShortPending = options;
-    playErrorSound();
+    if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();
     // 誤タップ防止：ボタンは0.6秒後に表示（レイアウトは保ったまま非表示にしておく）
     [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'hidden'; });
     clearTimeout(gemShortBtnTimer);
@@ -1393,6 +1396,12 @@
     if (opts.onCancel) opts.onCancel();
   });
   gemReturnBtn.addEventListener('click', runGemShopReturn);
+  // ヘッダー・転生ショップの所持ジェム表示をタップ → ジェム購入ショップへ行くか確認
+  function promptGemShop(options = {}) {
+    promptGemShortage(0, { title: 'ジェム購入ショップ', text: `所持ジェム 💎${Math.floor(game.gems).toLocaleString('ja-JP')}\nジェム購入ショップに行きますか？`, silent: true, ...options });
+  }
+  document.querySelector('.th-item.gem').addEventListener('click', () => promptGemShop());
+  document.querySelector('#rebirthShopModal .rs-gems').addEventListener('click', () => promptGemShop({ returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }));
 
   rankDailyBtn.addEventListener('click', () => {
     rankingMode = 'daily';
@@ -1627,8 +1636,11 @@
     shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
     meteor: { icon: '☄️', name: '流星術', desc: '必殺技ダメージ +50%', cost: 12 },
     fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
-    summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 }
+    summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
+    tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり', cost: 30, unlockKey: 'tackleUnlocked' },
+    superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' }
   };
+  function isShopItemOwned(id) { const item = SHOP_ITEMS[id]; return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id]; }
   const COIN_SHOP_ITEMS = {
     potion: { icon: '🧪', name: '回復ポーション', desc: 'HPを最大値の45%回復', cost: 35 },
     cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
@@ -2084,8 +2096,9 @@
   }
   function renderShopList() {
     shopList.innerHTML = Object.entries(SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
-      const owned = game.shopOwned[id];
-      return `<button class="shop-btn ${owned || game.gems < item.cost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? '購入済み' : item.desc}</span><span class="cost">${owned ? '✓ 所持中' : '💎 ' + item.cost}</span></button>`;
+      const owned = isShopItemOwned(id);
+      const locked = !owned && item.requires && !game[item.requires];
+      return `<button class="shop-btn ${owned || locked || game.gems < item.cost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : '✓ 所持中') : '💎 ' + item.cost}</span></button>`;
     }).join('');
   }
   function renderSkillGacha() {
@@ -7364,10 +7377,12 @@
     if (!button) return;
     const id = button.dataset.shop;
     const item = SHOP_ITEMS[id];
-    if (game.shopOwned[id]) { showTapError('すでに所持しています', event.clientX, event.clientY); return; }
+    if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : 'すでに所持しています', event.clientX, event.clientY); return; }
+    if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
     if (game.gems < item.cost) { promptGemShortage(item.cost); return; }
     game.gems -= item.cost;
-    game.shopOwned[id] = true;
+    if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
+    renderShopList();
     refreshPlayerBallStats(false);
     playUpgradeSound();
     updateStatsUI();
