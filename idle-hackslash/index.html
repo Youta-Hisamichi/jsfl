@@ -5008,8 +5008,9 @@
       b.vx -= velAlongNormal * nx; b.vy -= velAlongNormal * ny;
     }
     // 反射モードの自機は、相手が止まっていても必ず跳ね返る
-    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) a.seekPoint = null; // 敵に当たったら次に壁で跳ねるまでまっすぐ
-    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) b.seekPoint = null;
+    // 敵に当たったら次に壁で跳ねるまでまっすぐ（外れ反射の回数もリセット）
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { a.seekPoint = null; a.missBounces = 0; }
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { b.seekPoint = null; b.missBounces = 0; }
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
     return true;
@@ -5085,6 +5086,7 @@
   // お試し：自キャラは敵を追いかけず、まっすぐ進んで壁や敵で物理反射する（タップで敵の方へ向き直る）
   const PLAYER_BOUNCE_MODE = true;
   const BOUNCE_SPEED = 2.4; // 反射移動の基本の速さ（px/フレーム・ゲーム速度1倍）
+  const BOUNCE_MISS_LIMIT = 5; // この回数反射しても敵に当たらなければ追尾に切り替える
   function bounceMainPlayer(ball, speedMult, b) {
     const boosted = ball.boostUntil && Date.now() < ball.boostUntil;
     const tap = ball.tapSpeedMult || 1;
@@ -5096,6 +5098,11 @@
     ball.vx = ball.vx / cur * next; ball.vy = ball.vy / cur * next;
     // 壁で反射したあとは、反射した瞬間に敵がいた場所へ向きを曲げ、向き終わったらまっすぐ進む
     // （追尾はしないので、敵が動いていれば外れることもある）
+    // 5回反射しても敵に当たらなければ、当たるまで最寄りの敵を追尾する
+    if ((ball.missBounces || 0) >= BOUNCE_MISS_LIMIT) {
+      const target = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
+      ball.seekPoint = target ? { x: target.x, y: target.y } : null;
+    }
     if (ball.seekPoint) {
       const dx = ball.seekPoint.x - ball.x, dy = ball.seekPoint.y - ball.y, d = Math.hypot(dx, dy) || 1;
       const k = Math.min(1, 0.18 * speedMult);
@@ -5118,6 +5125,7 @@
     const pvx = ball.vx, pvy = ball.vy;
     wallBounce(ball);
     if (ball.vx !== pvx || ball.vy !== pvy) {
+      ball.missBounces = (ball.missBounces || 0) + 1;
       const target = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
       ball.seekPoint = target ? { x: target.x, y: target.y } : null;
     }
