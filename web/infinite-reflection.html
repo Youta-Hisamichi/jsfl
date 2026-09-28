@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無限反射 - Idle Hack & Slash</title>
+<style>
+  :root {
+    --bg: #0b0d16;
+    --panel: #161a2b;
+    --panel-border: #2a3050;
+    --accent: #6ee7ff;
+    --accent2: #ffd166;
+    --danger: #ff5d7a;
+    --text: #e8ecff;
+    --text-dim: #8a90b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    overflow: hidden;
+  }
+  #app {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+  }
+  #stage-wrap {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 0;
+  }
+  #game {
+    background: radial-gradient(circle at 50% 20%, #131730 0%, #0a0c16 70%);
+    border: 2px solid var(--panel-border);
+    border-radius: 8px;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  #hud-top {
+    position: absolute;
+    top: 10px; left: 10px; right: 10px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-shadow: 0 1px 2px #000;
+  }
+  #panel {
+    width: 320px;
+    flex: 0 0 320px;
+    background: var(--panel);
+    border-left: 1px solid var(--panel-border);
+    padding: 14px;
+    overflow-y: auto;
+  }
+  h1 {
+    font-size: 18px;
+    margin: 0 0 4px 0;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .sub {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin-bottom: 14px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin: 4px 0;
+  }
+  .stat-row .v { color: var(--accent2); font-weight: 600; }
+  .bar-bg {
+    background: #0e1122;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+    margin: 6px 0 12px 0;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #4ade80);
+    transition: width 0.2s;
+  }
+  .divider {
+    border-top: 1px solid var(--panel-border);
+    margin: 12px 0;
+  }
+  .upgrade {
+    background: #10142400;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .upgrade:hover { background: #1e2340; border-color: var(--accent); }
+  .upgrade.disabled { opacity: 0.4; cursor: not-allowed; }
+  .upgrade.disabled:hover { background: transparent; border-color: var(--panel-border); }
+  .upgrade-title {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .upgrade-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .upgrade-cost {
+    font-size: 11px;
+    color: var(--accent2);
+    margin-top: 4px;
+  }
+  #log {
+    font-size: 11px;
+    color: var(--text-dim);
+    height: 90px;
+    overflow-y: auto;
+    background: #0e1122;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    line-height: 1.5;
+  }
+  #offline-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  #offline-modal.show { display: flex; }
+  #offline-box {
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 24px 28px;
+    text-align: center;
+    max-width: 320px;
+  }
+  #offline-box h2 { color: var(--accent); margin-top: 0; }
+  #offline-box button {
+    margin-top: 16px;
+    background: var(--accent);
+    color: #0a0c16;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.reset-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  button.reset-btn:hover { background: rgba(255,93,122,0.1); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage-wrap">
+    <div id="hud-top">
+      <div id="hud-stage">Stage 1</div>
+      <div id="hud-kills">Kills: 0</div>
+    </div>
+    <canvas id="game" width="720" height="640"></canvas>
+  </div>
+  <div id="panel">
+    <h1>無限反射</h1>
+    <div class="sub">Idle Hack &amp; Slash — Infinite Reflection</div>
+
+    <div class="stat-row"><span>Gold</span><span class="v" id="s-gold">0</span></div>
+    <div class="stat-row"><span>Level</span><span class="v" id="s-level">1</span></div>
+    <div class="bar-bg"><div class="bar-fill" id="s-exp-bar" style="width:0%"></div></div>
+    <div class="stat-row"><span>Gold / sec (est.)</span><span class="v" id="s-gps">0</span></div>
+
+    <div class="divider"></div>
+
+    <div class="upgrade" data-up="damage">
+      <div class="upgrade-title"><span>⚔️ 反射ダメージ</span><span id="up-damage-lv">Lv.0</span></div>
+      <div class="upgrade-desc">ボールの攻撃力 +1</div>
+      <div class="upgrade-cost" id="up-damage-cost">Cost: 10</div>
+    </div>
+    <div class="upgrade" data-up="ball">
+      <div class="upgrade-title"><span>🔵 ボール追加</span><span id="up-ball-lv">Lv.0</span></div>
+      <div class="upgrade-desc">反射するボールを1つ増やす</div>
+      <div class="upgrade-cost" id="up-ball-cost">Cost: 50</div>
+    </div>
+    <div class="upgrade" data-up="speed">
+      <div class="upgrade-title"><span>💨 反射速度</span><span id="up-speed-lv">Lv.0</span></div>
+      <div class="upgrade-desc">ボール速度 +5%</div>
+      <div class="upgrade-cost" id="up-speed-cost">Cost: 30</div>
+    </div>
+    <div class="upgrade" data-up="crit">
+      <div class="upgrade-title"><span>💥 会心率</span><span id="up-crit-lv">Lv.0</span></div>
+      <div class="upgrade-desc">クリティカル率 +2% (上限75%)</div>
+      <div class="upgrade-cost" id="up-crit-cost">Cost: 40</div>
+    </div>
+    <div class="upgrade" data-up="gold">
+      <div class="upgrade-title"><span>💰 黄金反射</span><span id="up-gold-lv">Lv.0</span></div>
+      <div class="upgrade-desc">獲得ゴールド +10%</div>
+      <div class="upgrade-cost" id="up-gold-cost">Cost: 80</div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">ログ</div>
+    <div id="log"></div>
+
+    <button class="reset-btn" id="reset-btn">セーブデータをリセット</button>
+  </div>
+</div>
+
+<div id="offline-modal">
+  <div id="offline-box">
+    <h2>おかえりなさい</h2>
+    <p id="offline-text">不在中も反射は続いていました。</p>
+    <button id="offline-close">受け取る</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SAVE_KEY = "infiniteReflectionSave_v1";
+  var canvas = document.getElementById("game");
+  var ctx = canvas.getContext("2d");
+  var W = canvas.width, H = canvas.height;
+
+  // ---------- state ----------
+  function defaultState() {
+    return {
+      gold: 0,
+      totalGoldEarned: 0,
+      exp: 0,
+      level: 1,
+      kills: 0,
+      stage: 1,
+      upgrades: { damage: 0, ball: 0, speed: 0, crit: 0, gold: 0 },
+      lastSave: Date.now(),
+      recentGps: 0
+    };
+  }
+
+  var state = loadState();
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      var d = defaultState();
+      for (var k in d) { if (parsed[k] === undefined) parsed[k] = d[k]; }
+      return parsed;
+    } catch (e) {
+      return defaultState();
+    }
+  }
+
+  function saveState() {
+    state.lastSave = Date.now();
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ---------- upgrade config ----------
+  var UPGRADE_DEFS = {
+    damage: { base: 10, mult: 1.15 },
+    ball:   { base: 50, mult: 1.9 },
+    speed:  { base: 30, mult: 1.18 },
+    crit:   { base: 40, mult: 1.22, max: 37 }, // 37 * 2% = 74% cap
+    gold:   { base: 80, mult: 1.3 }
+  };
+
+  function upgradeCost(id) {
+    var def = UPGRADE_DEFS[id];
+    var lv = state.upgrades[id];
+    return Math.floor(def.base * Math.pow(def.mult, lv));
+  }
+
+  function buyUpgrade(id) {
+    var def = UPGRADE_DEFS[id];
+    if (def.max !== undefined && state.upgrades[id] >= def.max) return;
+    var cost = upgradeCost(id);
+    if (state.gold < cost) return;
+    state.gold -= cost;
+    state.upgrades[id]++;
+    if (id === "ball") addBall();
+    log("アップグレード購入: " + id + " Lv." + state.upgrades[id]);
+    renderPanel();
+  }
+
+  function ballDamage() { return 2 + state.upgrades.damage * 1; }
+  function ballCount() { return 1 + state.upgrades.ball; }
+  function ballSpeedMult() { return 1 + state.upgrades.speed * 0.05; }
+  function critChance() { return Math.min(0.75, state.upgrades.crit * 0.02); }
+  function goldMult() { return 1 + state.upgrades.gold * 0.1; }
+
+  // ---------- exp / level ----------
+  function expToNext(level) { return Math.floor(20 * Math.pow(1.25, level - 1)); }
+
+  function gainExp(amount) {
+    state.exp += amount;
+    while (state.exp >= expToNext(state.level)) {
+      state.exp -= expToNext(state.level);
+      state.level++;
+      log("レベルアップ！ Lv." + state.level);
+    }
+  }
+
+  // ---------- enemy grid ----------
+  var ENEMY_COLS = 5, ENEMY_ROWS = 3;
+  var ENEMY_R = 26;
+  var GRID_TOP = 60, GRID_BOTTOM = 300;
+  var enemies = [];
+
+  function stageHp(stage, rowIndex) {
+    var rowMult = 1 + rowIndex * 0.4;
+    return Math.floor(8 * Math.pow(1.16, stage - 1) * rowMult);
+  }
+  function stageGold(stage, rowIndex) {
+    var rowMult = 1 + rowIndex * 0.3;
+    return Math.max(1, Math.floor(4 * Math.pow(1.13, stage - 1) * rowMult));
+  }
+  function stageExp(stage, rowIndex) {
+    var rowMult = 1 + rowIndex * 0.2;
+    return Math.max(1, Math.floor(2 * Math.pow(1.1, stage - 1) * rowMult));
+  }
+
+  function makeEnemy(col, row) {
+    var marginX = 70;
+    var spacingX = (W - marginX * 2) / (ENEMY_COLS - 1);
+    var spacingY = (GRID_BOTTOM - GRID_TOP) / (ENEMY_ROWS - 1);
+    var hp = stageHp(state.stage, row);
+    return {
+      x: marginX + col * spacingX,
+      y: GRID_TOP + row * spacingY,
+      r: ENEMY_R,
+      row: row,
+      hp: hp,
+      maxHp: hp,
+      dead: false,
+      respawnAt: 0,
+      hitFlash: 0
+    };
+  }
+
+  function initEnemies() {
+    enemies = [];
+    for (var row = 0; row < ENEMY_ROWS; row++) {
+      for (var col = 0; col < ENEMY_COLS; col++) {
+        enemies.push(makeEnemy(col, row));
+      }
+    }
+  }
+
+  var KILLS_PER_STAGE = 40;
+
+  function onEnemyKilled(en) {
+    en.dead = true;
+    en.respawnAt = performance.now() + 900;
+    var g = stageGold(state.stage, en.row) * goldMult();
+    var x = stageExp(state.stage, en.row);
+    state.gold += g;
+    state.totalGoldEarned += g;
+    gainExp(x);
+    state.kills++;
+    if (state.kills % KILLS_PER_STAGE === 0) {
+      state.stage++;
+      log("ステージ上昇！ Stage " + state.stage);
+    }
+  }
+
+  // ---------- balls ----------
+  var BASE_BALL_SPEED = 5.2;
+  var BALL_R = 8;
+  var balls = [];
+
+  function randomVelocity(speed) {
+    var angle = (Math.random() * 0.6 + 0.2) * Math.PI + (Math.random() < 0.5 ? Math.PI : 0);
+    return { vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed };
+  }
+
+  function addBall() {
+    var speed = BASE_BALL_SPEED * ballSpeedMult();
+    var v = randomVelocity(speed);
+    balls.push({
+      x: W / 2 + (Math.random() - 0.5) * 100,
+      y: H - 60,
+      vx: v.vx,
+      vy: -Math.abs(v.vy),
+      r: BALL_R,
+      trail: []
+    });
+  }
+
+  function syncBallCount() {
+    var target = ballCount();
+    while (balls.length < target) addBall();
+  }
+
+  // ---------- collision ----------
+  function resolveWallCollision(b) {
+    var hit = false;
+    if (b.x - b.r < 0) { b.x = b.r; b.vx = Math.abs(b.vx); hit = true; }
+    if (b.x + b.r > W) { b.x = W - b.r; b.vx = -Math.abs(b.vx); hit = true; }
+    if (b.y - b.r < 0) { b.y = b.r; b.vy = Math.abs(b.vy); hit = true; }
+    if (b.y + b.r > H) { b.y = H - b.r; b.vy = -Math.abs(b.vy); hit = true; }
+    if (hit) enforceMinAngle(b);
+  }
+
+  function jitter(v, amount) {
+    var angle = (Math.random() - 0.5) * amount;
+    var cos = Math.cos(angle), sin = Math.sin(angle);
+    return { vx: v.vx * cos - v.vy * sin, vy: v.vx * sin + v.vy * cos };
+  }
+
+  // Prevents balls from settling into a perfectly vertical/horizontal
+  // bounce loop (e.g. trapped between two vertically-aligned enemies)
+  // by enforcing a minimum component ratio while conserving speed.
+  var MIN_COMPONENT_RATIO = 0.25;
+  function enforceMinAngle(b) {
+    var speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    if (speed < 0.0001) return;
+    var minComp = speed * MIN_COMPONENT_RATIO;
+    var ax = Math.abs(b.vx), ay = Math.abs(b.vy);
+    if (ax < minComp) {
+      var sx = b.vx >= 0 ? 1 : -1;
+      if (b.vx === 0) sx = Math.random() < 0.5 ? -1 : 1;
+      b.vx = sx * minComp;
+      var sy = b.vy >= 0 ? 1 : -1;
+      b.vy = sy * Math.sqrt(Math.max(0, speed * speed - b.vx * b.vx));
+    } else if (ay < minComp) {
+      var sy2 = b.vy >= 0 ? 1 : -1;
+      if (b.vy === 0) sy2 = Math.random() < 0.5 ? -1 : 1;
+      b.vy = sy2 * minComp;
+      var sx2 = b.vx >= 0 ? 1 : -1;
+      b.vx = sx2 * Math.sqrt(Math.max(0, speed * speed - b.vy * b.vy));
+    }
+  }
+
+  function resolveEnemyCollisions(b) {
+    for (var i = 0; i < enemies.length; i++) {
+      var en = enemies[i];
+      if (en.dead) continue;
+      var dx = b.x - en.x, dy = b.y - en.y;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      var minDist = b.r + en.r;
+      if (dist < minDist && dist > 0.0001) {
+        var nx = dx / dist, ny = dy / dist;
+        var dot = b.vx * nx + b.vy * ny;
+        if (dot < 0) {
+          var speedBefore = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          b.vx -= 2 * dot * nx;
+          b.vy -= 2 * dot * ny;
+          var j = jitter({ vx: b.vx, vy: b.vy }, 0.35);
+          b.vx = j.vx; b.vy = j.vy;
+
+          // Guarantee a minimum outward speed along the collision normal so
+          // the ball can never "graze" along an enemy's surface in a
+          // near-tangent loop that barely separates each frame.
+          var tx = -ny, ty = nx;
+          var tangentComp = b.vx * tx + b.vy * ty;
+          var normalComp = b.vx * nx + b.vy * ny;
+          var minNormal = speedBefore * 0.4;
+          if (normalComp < minNormal) normalComp = minNormal;
+          b.vx = tx * tangentComp + nx * normalComp;
+          b.vy = ty * tangentComp + ny * normalComp;
+
+          enforceMinAngle(b);
+        }
+        var overlap = minDist - dist;
+        b.x += nx * overlap;
+        b.y += ny * overlap;
+
+        var isCrit = Math.random() < critChance();
+        var dmg = ballDamage() * (isCrit ? 2 : 1);
+        en.hp -= dmg;
+        en.hitFlash = 1;
+        spawnDamageText(en.x, en.y, dmg, isCrit);
+        if (en.hp <= 0) onEnemyKilled(en);
+      }
+    }
+  }
+
+  function updateRespawns(now) {
+    for (var i = 0; i < enemies.length; i++) {
+      var en = enemies[i];
+      if (en.dead && now >= en.respawnAt) {
+        var hp = stageHp(state.stage, en.row);
+        en.hp = hp; en.maxHp = hp; en.dead = false;
+      }
+    }
+  }
+
+  // ---------- floating damage text ----------
+  var floatTexts = [];
+  function spawnDamageText(x, y, dmg, crit) {
+    floatTexts.push({ x: x, y: y, dmg: Math.floor(dmg), crit: crit, life: 1 });
+  }
+  function updateFloatTexts(dt) {
+    for (var i = floatTexts.length - 1; i >= 0; i--) {
+      var f = floatTexts[i];
+      f.y -= 30 * dt;
+      f.life -= dt * 1.2;
+      if (f.life <= 0) floatTexts.splice(i, 1);
+    }
+  }
+
+  // ---------- log ----------
+  var logEl = document.getElementById("log");
+  function log(msg) {
+    var div = document.createElement("div");
+    div.textContent = msg;
+    logEl.insertBefore(div, logEl.firstChild);
+    while (logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
+  }
+
+  // ---------- rendering ----------
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // enemies
+    for (var i = 0; i < enemies.length; i++) {
+      var en = enemies[i];
+      if (en.dead) continue;
+      var hpRatio = en.hp / en.maxHp;
+      ctx.beginPath();
+      ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+      var flash = en.hitFlash > 0 ? en.hitFlash : 0;
+      var rr = Math.floor(120 + flash * 135);
+      ctx.fillStyle = "rgb(" + rr + ",70,90)";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#ff8fa3";
+      ctx.stroke();
+      en.hitFlash *= 0.85;
+
+      // hp bar
+      var barW = en.r * 1.8, barH = 5;
+      ctx.fillStyle = "#00000066";
+      ctx.fillRect(en.x - barW / 2, en.y - en.r - 12, barW, barH);
+      ctx.fillStyle = "#4ade80";
+      ctx.fillRect(en.x - barW / 2, en.y - en.r - 12, barW * Math.max(0, hpRatio), barH);
+    }
+
+    // balls
+    for (var j = 0; j < balls.length; j++) {
+      var b = balls[j];
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      var grad = ctx.createRadialGradient(b.x, b.y, 1, b.x, b.y, b.r);
+      grad.addColorStop(0, "#eafcff");
+      grad.addColorStop(1, "#6ee7ff");
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    // floating damage text
+    ctx.textAlign = "center";
+    for (var k = 0; k < floatTexts.length; k++) {
+      var f = floatTexts[k];
+      ctx.globalAlpha = Math.max(0, f.life);
+      ctx.fillStyle = f.crit ? "#ffd166" : "#e8ecff";
+      ctx.font = f.crit ? "bold 16px sans-serif" : "13px sans-serif";
+      ctx.fillText((f.crit ? "CRIT " : "") + f.dmg, f.x, f.y);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ---------- panel rendering ----------
+  var elGold = document.getElementById("s-gold");
+  var elLevel = document.getElementById("s-level");
+  var elExpBar = document.getElementById("s-exp-bar");
+  var elGps = document.getElementById("s-gps");
+  var elStage = document.getElementById("hud-stage");
+  var elKills = document.getElementById("hud-kills");
+
+  function fmt(n) {
+    n = Math.floor(n);
+    if (n < 1000) return String(n);
+    var units = ["K", "M", "B", "T", "Qa", "Qi"];
+    var u = -1;
+    while (n >= 1000 && u < units.length - 1) { n /= 1000; u++; }
+    return n.toFixed(2) + units[u];
+  }
+
+  function renderPanel() {
+    elGold.textContent = fmt(state.gold);
+    elLevel.textContent = state.level;
+    elExpBar.style.width = Math.min(100, (state.exp / expToNext(state.level)) * 100) + "%";
+    elGps.textContent = fmt(state.recentGps);
+    elStage.textContent = "Stage " + state.stage;
+    elKills.textContent = "Kills: " + state.kills;
+
+    for (var id in UPGRADE_DEFS) {
+      var def = UPGRADE_DEFS[id];
+      var lv = state.upgrades[id];
+      var cost = upgradeCost(id);
+      var maxed = def.max !== undefined && lv >= def.max;
+      document.getElementById("up-" + id + "-lv").textContent = maxed ? "MAX" : "Lv." + lv;
+      document.getElementById("up-" + id + "-cost").textContent = maxed ? "---" : "Cost: " + fmt(cost);
+      var elUp = document.querySelector('[data-up="' + id + '"]');
+      if (maxed || state.gold < cost) elUp.classList.add("disabled");
+      else elUp.classList.remove("disabled");
+    }
+  }
+
+  document.querySelectorAll(".upgrade").forEach(function (el) {
+    el.addEventListener("click", function () {
+      buyUpgrade(el.getAttribute("data-up"));
+    });
+  });
+
+  // ---------- offline progress ----------
+  function applyOfflineProgress() {
+    var now = Date.now();
+    var elapsedSec = (now - state.lastSave) / 1000;
+    if (elapsedSec < 30) return;
+    var cappedSec = Math.min(elapsedSec, 8 * 3600); // cap at 8h
+    var rate = state.recentGps > 0 ? state.recentGps : estimateInitialRate();
+    var earned = rate * cappedSec * 0.5; // offline efficiency 50%
+    if (earned > 0) {
+      state.gold += earned;
+      state.totalGoldEarned += earned;
+      var text = "不在中も反射は続いていました。\n経過時間: " +
+        formatDuration(elapsedSec) + "\n獲得ゴールド: " + fmt(earned);
+      document.getElementById("offline-text").textContent = text;
+      document.getElementById("offline-modal").classList.add("show");
+    }
+  }
+
+  function estimateInitialRate() {
+    return stageGold(state.stage, 1) * ballCount() * 0.3;
+  }
+
+  function formatDuration(sec) {
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    if (h > 0) return h + "時間" + m + "分";
+    return m + "分" + Math.floor(sec % 60) + "秒";
+  }
+
+  document.getElementById("offline-close").addEventListener("click", function () {
+    document.getElementById("offline-modal").classList.remove("show");
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("本当にセーブデータをリセットしますか？")) return;
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  });
+
+  // ---------- gold/sec tracking ----------
+  var goldWindowStart = Date.now();
+  var goldWindowBase = state.totalGoldEarned;
+  function updateGps(now) {
+    var elapsed = (now - goldWindowStart) / 1000;
+    if (elapsed >= 5) {
+      state.recentGps = (state.totalGoldEarned - goldWindowBase) / elapsed;
+      goldWindowStart = now;
+      goldWindowBase = state.totalGoldEarned;
+    }
+  }
+
+  // ---------- main loop ----------
+  var lastFrame = performance.now();
+  var panelTimer = 0;
+  var saveTimer = 0;
+
+  function loop(now) {
+    var dt = Math.min(0.05, (now - lastFrame) / 1000);
+    lastFrame = now;
+
+    for (var i = 0; i < balls.length; i++) {
+      var b = balls[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      resolveWallCollision(b);
+      resolveEnemyCollisions(b);
+    }
+    updateRespawns(now);
+    updateFloatTexts(dt);
+    updateGps(Date.now());
+
+    draw();
+
+    panelTimer += dt;
+    if (panelTimer > 0.2) { renderPanel(); panelTimer = 0; }
+
+    saveTimer += dt;
+    if (saveTimer > 5) { saveState(); saveTimer = 0; }
+
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- init ----------
+  initEnemies();
+  syncBallCount();
+  applyOfflineProgress();
+  renderPanel();
+  requestAnimationFrame(loop);
+
+  window.addEventListener("beforeunload", saveState);
+})();
+</script>
+</body>
+</html>
