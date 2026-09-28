@@ -225,6 +225,15 @@
   .sg-up { font-size: 0.64rem; font-weight: 800; color: #2ea043; }
   .sg-desc { font-size: 0.6rem; color: var(--text-dim); }
   .skill-slot-head { text-align: center; font-weight: 800; font-size: 0.82rem; margin: 2px 0 4px; }
+  .hp-row { position: relative; }
+  .stat-help-btn { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); z-index: 2; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--ring); background: var(--panel); color: var(--text-dim); font-size: 0.72rem; font-weight: 900; line-height: 1; padding: 0; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .stat-panel { max-width: 360px; }
+  .st-sec { font-weight: 900; font-size: 0.82rem; margin: 8px 0 4px; }
+  .st-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+  .st-row { display: flex; justify-content: space-between; font-size: 0.72rem; border-bottom: 1px dashed var(--ring); padding: 2px 0; color: var(--text-dim); }
+  .st-row b { color: var(--text); }
+  .st-trait { margin-top: 6px; font-size: 0.72rem; background: rgba(255,179,92,0.12); border: 1px solid rgba(255,179,92,0.4); border-radius: 8px; padding: 6px 8px; color: var(--text); }
+  .st-note { margin: 8px 0 4px; font-size: 0.62rem; color: var(--text-dim); }
   .skill-deck { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }
   .deck-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 82px; padding: 6px 3px; border-radius: 10px; border: 2px solid #2ea043; background: linear-gradient(160deg, rgba(46,160,67,0.12), rgba(100,200,255,0.1)); color: var(--text); cursor: pointer; font-size: 0.62rem; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
   .deck-card.just-set { animation: deckSet 0.26s ease-out; }
@@ -696,15 +705,16 @@
     </div>
 
     <div class="hp-row">
+      <button class="stat-help-btn" id="statHelpBtn" aria-label="詳しいステータス">？</button>
       <div class="hp-card player" style="flex:1;">
         <div class="label"><span class="name">🔵 プレイヤー</span><span id="playerHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span><span>迫り合い <span id="playerClashNum">10</span></span></div>
+        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
       </div>
       <div class="hp-card enemy" style="flex:1;">
         <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
         <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span><span>迫り合い <span id="enemyClashNum">10</span></span></div>
+        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
       </div>
     </div>
 
@@ -968,6 +978,14 @@
       <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
       <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="statModal" style="z-index:70;">
+  <div class="modal-panel stat-panel">
+    <h2>📋 詳しいステータス</h2>
+    <div id="statModalBody"></div>
+    <button class="modal-close-btn" id="statModalCloseBtn">閉じる</button>
   </div>
 </div>
 
@@ -3135,6 +3153,11 @@
     'emoji:🎃': 'mines',
     'emoji:🦂': 'deathMagic', 'boss:👺': 'deathMagic',
     'emoji:🦇': 'merge',
+  };
+  const ENEMY_TRAIT_DESCS = {
+    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', grow: '時間とともに巨大化して強くなる',
+    attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
+    mines: '地雷を設置する', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
   };
   const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷', deathMagic: '即死魔法', merge: '合体' };
   const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
@@ -5784,11 +5807,9 @@
     playerAtkNum.textContent = p.atk;
     playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
     playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
-    document.getElementById('playerClashNum').textContent = +getPlayerClash().toFixed(1);
     enemyAtkNum.textContent = en.atk;
     enemyAccNum.textContent = +(getEnemyAccuracy(en) * 100).toFixed(1) + '%';
     enemyEvaNum.textContent = +(getEnemyEvasion(en) * 100).toFixed(1) + '%';
-    document.getElementById('enemyClashNum').textContent = +getEnemyClash(en).toFixed(1);
     const bookEntry = ENEMY_BOOK_BY_KEY[getEnemyBookKey(en)];
     const enName = bookEntry ? bookEntry.name : '敵';
     const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
@@ -5796,6 +5817,41 @@
     const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
     enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（スキップ挑戦）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
   }
+
+  // ---------- 「？」ボタン：迫り合いを含む詳しいステータスと敵の特性をまとめて表示 ----------
+  const statModal = document.getElementById('statModal');
+  let statModalTimer = null;
+  function renderStatModal() {
+    const p = balls.find(b => isMainPlayerBall(b));
+    const en = getHpDisplayEnemy();
+    const b = computeBonuses();
+    const pct = v => +(v * 100).toFixed(1) + '%';
+    const row = (k, v) => `<div class="st-row"><span>${k}</span><b>${v}</b></div>`;
+    let html = '<div class="st-sec">🔵 プレイヤー</div><div class="st-grid">';
+    if (p) html += row('HP', `${Math.max(0, Math.round(p.hp))} / ${p.maxHp}`) + row('攻撃力', p.atk);
+    html += row('命中', pct(getPlayerAccuracy())) + row('回避', pct(getPlayerEvasion())) + row('迫り合い', +getPlayerClash().toFixed(1))
+      + row('会心率', pct(CRIT_CHANCE + b.critChance)) + row('会心ダメージ', '×' + +(CRIT_MULT + b.critMultBonus).toFixed(2))
+      + row('ボス特攻', '+' + pct(b.bossDmg)) + (game.tackleUnlocked ? row('タックル威力', '×' + +b.tackleMult.toFixed(2)) : '') + row('反撃率', pct(b.counter || 0)) + '</div>';
+    if (en) {
+      const bookEntry = ENEMY_BOOK_BY_KEY[getEnemyBookKey(en)];
+      const trait = getEnemyTrait(en);
+      html += `<div class="st-sec">🔴 ${bookEntry ? bookEntry.name : '敵'}${en.isBoss ? '（ボス）' : ''}${en.isGiant ? '［激デカ］' : ''}</div><div class="st-grid">`
+        + row('HP', `${Math.max(0, Math.round(en.hp))} / ${en.maxHp}`) + row('攻撃力', en.atk)
+        + row('命中', pct(getEnemyAccuracy(en))) + row('回避', pct(getEnemyEvasion(en))) + row('迫り合い', +getEnemyClash(en).toFixed(1))
+        + row('迫り合い勝率', pct(getClashWinChance(en))) + '</div>';
+      html += `<div class="st-trait">${trait ? `<b>特性：${ENEMY_TRAIT_LABELS[trait]}</b><br>${ENEMY_TRAIT_DESCS[trait] || ''}` : '特性なし'}</div>`;
+    }
+    html += '<div class="st-note">迫り合い：ぶつかったとき、どちらが攻撃できるかを決める強さ（強化タブで上昇）</div>';
+    document.getElementById('statModalBody').innerHTML = html;
+  }
+  document.getElementById('statHelpBtn').addEventListener('click', () => {
+    renderStatModal();
+    statModal.classList.add('show');
+    clearInterval(statModalTimer);
+    statModalTimer = setInterval(() => { if (statModal.classList.contains('show')) renderStatModal(); else clearInterval(statModalTimer); }, 500);
+  });
+  document.getElementById('statModalCloseBtn').addEventListener('click', () => { statModal.classList.remove('show'); clearInterval(statModalTimer); });
+  statModal.addEventListener('click', event => { if (event.target === statModal) { statModal.classList.remove('show'); clearInterval(statModalTimer); } });
 
   // ---------- ステージクリア ----------
   function onStageClear() {
