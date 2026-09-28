@@ -228,7 +228,7 @@
   .skill-deck { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 8px; }
   .deck-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 82px; padding: 6px 3px; border-radius: 10px; border: 2px solid #2ea043; background: linear-gradient(160deg, rgba(46,160,67,0.12), rgba(100,200,255,0.1)); color: var(--text); cursor: pointer; font-size: 0.62rem; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
   .deck-card.just-set { animation: deckSet 0.6s cubic-bezier(.34,1.56,.64,1); }
-  @keyframes deckSet { 0% { transform: scale(0.4) rotate(-8deg); opacity: 0; } 55% { transform: scale(1.15) rotate(3deg); opacity: 1; box-shadow: 0 0 0 3px #ffd76b, 0 0 18px rgba(255,215,107,0.9); } 100% { transform: scale(1) rotate(0); } }
+  @keyframes deckSet { 0% { transform: scale(0.4); opacity: 0; } 55% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 0 3px #ffd76b, 0 0 18px rgba(255,215,107,0.9); } 100% { transform: scale(1); } }
   .deck-card .ico-img { width: 2.3rem; height: 2.3rem; border-radius: 6px; }
   .deck-card .dc-name { font-weight: 900; font-size: 0.64rem; line-height: 1.15; text-align: center; }
   .deck-card .dc-lv { font-weight: 800; font-size: 0.58rem; color: var(--accent-player); }
