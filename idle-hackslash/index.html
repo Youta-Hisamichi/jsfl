@@ -233,7 +233,7 @@
   .sk-card.sk-flash { animation: skFlash 1.2s ease-out; }
   @keyframes skFlash { 0%, 40% { box-shadow: 0 0 0 3px #ffb84d, 0 0 16px rgba(255,184,77,0.8); } 100% { box-shadow: 0 0 0 0 transparent; } }
   .deck-card.empty { border: 2px dashed var(--ring); background: var(--bg-soft); box-shadow: none; cursor: pointer; color: var(--text-dim); animation: none; }
-  .deck-card.locked { border: 1px dashed var(--ring); background: transparent; box-shadow: none; cursor: default; color: var(--text-dim); opacity: 0.5; animation: none; }
+  .deck-card.locked { border: 1px dashed var(--ring); background: transparent; box-shadow: none; cursor: pointer; color: var(--text-dim); opacity: 0.5; animation: none; }
   .deck-card .dc-plus { font-size: 1.3rem; font-weight: 900; line-height: 1; }
   .skill-slot-btn { width: 100%; justify-content: space-between; margin: 0 0 8px; border-style: dashed; }
   .skill-buy-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
@@ -965,6 +965,18 @@
     <div class="modal-shop-list" id="skipRetryActions">
       <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
       <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="skillSlotModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;">🎒</div>
+    <h2>スキル枠を増やす</h2>
+    <div class="modal-sub" id="skillSlotModalText" style="color:var(--text); font-size:0.85rem; white-space:pre-line;"></div>
+    <div class="modal-shop-list">
+      <button class="modal-close-btn" id="skillSlotYesBtn"></button>
+      <button class="modal-shop-btn" id="skillSlotNoBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
     </div>
   </div>
 </div>
@@ -7650,6 +7662,7 @@
   });
   document.getElementById('skillDeck').addEventListener('click', event => {
     // 空き枠をタップ → 装備できるスキル（解放済み・未装備）まで自動スクロール。なければ解放できるスキルへ
+    if (event.target.closest('.deck-card.locked')) { openSkillSlotConfirm(); return; }
     if (event.target.closest('.deck-card.empty')) {
       const list = document.getElementById('skillLevelList');
       const target = list.querySelector('[data-skill-equip]:not(.on)') || list.querySelector('[data-skill-buy]:not(.is-disabled)') || list.querySelector('.sk-card');
@@ -7670,6 +7683,21 @@
     renderCoinShopList();
     saveGame();
   });
+  // 未開放の枠をタップ → ジェムでスキル枠を増やすか確認
+  const skillSlotModal = document.getElementById('skillSlotModal');
+  function openSkillSlotConfirm() {
+    const slots = getSkillSlots();
+    if (slots >= SKILL_SLOT_MAX) return;
+    const cost = getSkillSlotCost();
+    document.getElementById('skillSlotModalText').textContent = `💎${cost} 消費して、スキル枠を ${slots} → ${slots + 1} に増やしますか？\n（所持ジェム 💎${Math.floor(game.gems).toLocaleString('ja-JP')}）`;
+    document.getElementById('skillSlotYesBtn').textContent = `💎${cost} で枠を増やす`;
+    skillSlotModal.classList.add('show');
+  }
+  document.getElementById('skillSlotYesBtn').addEventListener('click', event => {
+    skillSlotModal.classList.remove('show');
+    document.getElementById('skillSlotBtn').dispatchEvent(new MouseEvent('click', { clientX: event.clientX, clientY: event.clientY, bubbles: true }));
+  });
+  document.getElementById('skillSlotNoBtn').addEventListener('click', () => skillSlotModal.classList.remove('show'));
   document.getElementById('skillSlotBtn').addEventListener('click', event => {
     const slots = getSkillSlots();
     if (slots >= SKILL_SLOT_MAX) { showTapError('スキル枠は最大です', event.clientX, event.clientY); return; }
