@@ -482,6 +482,7 @@
   .toast .sub .continue-count { font-size: 1.3rem; font-weight: 800; color: #fff; }
   .toast .sub .continue-count b { font-size: 1.9rem; color: #ffd76b; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
+  .toast .artifact-icon .ico-img { width: 1.9em; height: 1.9em; border-radius: 10px; }
   /* 転生報酬の宝箱演出 */
   .toast .sub .chest-rarity { font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 0 8px rgba(0,0,0,0.6); }
   .toast .artifact-icon.chest-shake { font-size: 3rem; animation: chestShake 0.5s ease-in-out infinite; }
@@ -5822,7 +5823,7 @@
     const { pick, rebirthGemGain } = rebirthChest;
     rebirthChest = null;
     clearTimeout(rebirthTimer);
-    toastIcon.textContent = pick.icon;
+    toastIcon.innerHTML = ico(pick);
     toastIcon.className = 'artifact-icon chest-open';
     toastIcon.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color);
     const rar = RARITY_INFO[pick.rarity];
@@ -7020,7 +7021,7 @@
     const artifact = ARTIFACT_BY_ID[chip.dataset.artifact];
     const count = game.ownedArtifacts[chip.dataset.artifact] || 0;
     toastIcon.style.display = 'block';
-    toastIcon.textContent = artifact.icon;
+    toastIcon.innerHTML = ico(artifact);
     toastBig.textContent = artifact.name;
     toastBig.className = 'big stage-clear';
     toastSub.textContent = artifact.desc + (count > 0 ? `　所持数 x${count}` : '　（未所持）');
