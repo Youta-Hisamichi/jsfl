@@ -5461,8 +5461,6 @@
       const skipped = game.skipChallenge.target - game.skipChallenge.origin;
       game.skipChallenge = null;
       setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
-    } else {
-      showNotice(`STAGE ${game.stage} CLEAR`);
     }
     game.stage++;
     game.bestStage = Math.max(game.bestStage, game.stage);
