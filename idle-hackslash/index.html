@@ -507,6 +507,8 @@
   #rebirthShopModal .sub-tabs { margin: 0 0 14px; } /* 下の商品ボタンへの誤タップ防止に離す */
   #rebirthShopModal .sub-tab-btn { padding: 5px 8px; }
   /* 転生ショップの商品はなるべく改行せず、横1行＋説明1行にまとめる */
+  #rebirthShopList .rs-offer-title { font-size: 1.05rem; font-weight: 900; }
+  #rebirthShopList .rs-offer-sub { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); }
   #rebirthShopList .rs-offer-note { font-size: 0.86rem; font-weight: 700; color: var(--text); text-align: center; line-height: 1.4; margin: 0 0 6px; }
   #rebirthShopList .upgrade-row .modal-shop-btn { flex: 1; min-width: 0; width: auto; }
   #rebirthShopList .upgrade-row { min-width: 0; }
@@ -2101,7 +2103,7 @@
     const entries = offerMode
       ? game.rebirthShopOffer.filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => [id, REBIRTH_SHOP_ITEMS[id]])
       : Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory);
-    rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note">🎲 今回のラインナップ<br>（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</div>` : '') + entries.map(([id, item]) => {
+    rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note"><span class="rs-offer-title">🎲 今回のラインナップ</span><br><span class="rs-offer-sub">（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</span></div>` : '') + entries.map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
       const cost = getRebirthItemCost(id);
