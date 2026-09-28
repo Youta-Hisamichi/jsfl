@@ -483,6 +483,7 @@
   .toast .sub .continue-count { font-size: 1.3rem; font-weight: 800; color: #fff; }
   .toast .sub .continue-count b { font-size: 1.9rem; color: #ffd76b; }
   .toast .artifact-icon { font-size: 2.3rem; margin: 6px 0; }
+  .toast .rebirth-tap-hint { color: #ffd76b; font-weight: 800; animation: rsNewBlink 0.7s ease-in-out infinite alternate; display: inline-block; }
   .toast .artifact-icon .ico-img { width: 1.9em; height: 1.9em; border-radius: 10px; }
   /* 転生報酬の宝箱演出 */
   .toast .sub .chest-rarity { font-size: 1.05rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 0 8px rgba(0,0,0,0.6); }
@@ -3870,6 +3871,7 @@
   let continueDeadline = 0;
   let rebirthTimer = null;
   let rebirthSkippable = false;
+  let rebirthResultTaps = 0; // 転生報酬の結果画面は2回タップで次へ（誤タップで読み飛ばさないように）
   let gachaDialogOpen = false;
 
   // 連鎖(コンボ)
@@ -5835,6 +5837,7 @@
     toastSub.innerHTML = `転生 ${game.reincarnations}回目！\n<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
     playGachaSound(pick.rarity);
     rebirthSkippable = true;
+    rebirthResultTaps = 0;
     rebirthTimer = setTimeout(finishRebirth, 6500);
   }
 
@@ -7054,7 +7057,13 @@
   toast.addEventListener('click', event => {
     if (event.target === continueBtn || event.target === dialogCloseBtn || event.target === giveUpBtn) return;
     if (rebirthChest) { openRebirthChest(); return; } // 宝箱演出中はタップで開封
-    if (rebirthSkippable) finishRebirth();
+    if (!rebirthSkippable) return;
+    rebirthResultTaps++;
+    if (rebirthResultTaps < 2) {
+      if (!toastSub.querySelector('.rebirth-tap-hint')) toastSub.insertAdjacentHTML('beforeend', '\n<span class="rebirth-tap-hint">もう一度タップで次へ</span>');
+      return;
+    }
+    finishRebirth();
   });
 
   dialogCloseBtn.addEventListener('click', () => {
