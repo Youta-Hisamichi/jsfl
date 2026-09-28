@@ -1656,9 +1656,17 @@
     fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
     summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
     tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり', cost: 30, unlockKey: 'tackleUnlocked' },
-    superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' }
+    superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' },
+    tacklePierce: { icon: '🐂', name: '貫きの蹄鉄', desc: 'タックルが敵にヒットしても消えず持続（購入ごとに +0.1秒）', cost: 20, stackKey: 'tacklePierceLv', maxStack: 10, requires: 'tackleUnlocked' }
   };
-  function isShopItemOwned(id) { const item = SHOP_ITEMS[id]; return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id]; }
+  const TACKLE_PIERCE_MS_PER_LV = 100;
+  function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
+  function isShopItemOwned(id) {
+    const item = SHOP_ITEMS[id];
+    if (item.stackKey) return (game[item.stackKey] || 0) >= item.maxStack; // 重ねがけ系は上限まで買えば「所持済み」
+    return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
+  }
+  function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
   const COIN_SHOP_ITEMS = {
     potion: { icon: '🧪', name: '回復ポーション', desc: 'HPを最大値の45%回復', cost: 35 },
     cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
@@ -1952,6 +1960,7 @@
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
+    tacklePierceLv: 0, // ジェムショップ「貫きの蹄鉄」の購入数（タックルのヒット後持続 +0.1秒ずつ）
     companionSlots: 1, // 仲間のパーティ枠（ジェムで最大8まで。転生しても残る）
     subscriptions: {}, // サブスク（紋章）の有効期限 { hero: 時刻, veteran: 時刻 }
     rebirthOfferSlots: 3, // 転生ショップの商品枠（ジェムで最大10まで増やせる。転生しても残る）
@@ -2137,8 +2146,9 @@
     shopList.innerHTML = Object.entries(SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
       const owned = isShopItemOwned(id);
       const locked = !owned && item.requires && !game[item.requires];
-      const gcost = gemPrice(item.cost);
-      return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
+      const gcost = gemPrice(getShopItemBaseCost(id));
+      const stackNote = item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
+      return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : item.stackKey ? `最大（+${(item.maxStack * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒）` : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc + stackNote}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : item.stackKey ? '✓ 最大' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
     }).join('');
   }
   function renderSkillGacha() {
@@ -2783,7 +2793,9 @@
   }
   function performTackleHit(a, e, b) {
     const t = tackle;
-    tackle = null;
+    // 「貫きの蹄鉄」：ヒットしてもタックルが消えず、ヒットのたびに一定時間だけ持続する
+    const pierceMs = getTacklePierceMs();
+    if (pierceMs > 0) { t.until = Date.now() + pierceMs; t.hits = (t.hits || 0) + 1; } else tackle = null;
     a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
     registerHit();
     const comboMult = getComboMultiplier(b.comboGrowth);
@@ -2796,7 +2808,7 @@
     onPlayerHitEnemy(e, dmg);
     if (!e.isDying && e.hp > 0) e.stunnedUntil = Date.now() + TACKLE_STUN_MS;
     applyHitKnockback(e, a, t.full ? 8 : 6);
-    applyHitKnockback(a, e, 3.5);
+    if (!pierceMs) applyHitKnockback(a, e, 3.5); // 持続中は自機は跳ね返らずに突き進む
     playEnemyHitSound();
     if (t.full2) { shakeScreenLight(); spawnHitParticles(e.x, e.y, '#d38cff'); spawnHitParticles(e.x, e.y, '#ffffff'); }
     else if (t.full) shakeScreenLight(); // 控えめな揺れのみ（円周を赤く光らせる演出はしない）
@@ -5406,11 +5418,14 @@
     const collided = resolveBallCollision(a, e);
     if (collided) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
     if (collided && isTackling()) {
+      // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
+      if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
       // タメ打ちの体当たり：迫り合い・命中判定なしで必ず当たり、敵は反撃できない
       performTackleHit(a, e, b);
       if (e.isBoss && e.emoji === TACKLE_TRADE_BOSS && Math.random() < TACKLE_TRADE_CHANCE) tackleTrade(a, e);
       if (e.hp <= 0 && a.hp > 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
       else if (a.hp <= 0) { onPlayerDeath(); return; }
+      }
     } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
       a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
       const combo = registerHit();
@@ -7471,12 +7486,13 @@
     if (!button) return;
     const id = button.dataset.shop;
     const item = SHOP_ITEMS[id];
-    if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : 'すでに所持しています', event.clientX, event.clientY); return; }
+    if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : item.stackKey ? 'これ以上強化できません' : 'すでに所持しています', event.clientX, event.clientY); return; }
     if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
-    const gcost = gemPrice(item.cost);
+    const gcost = gemPrice(getShopItemBaseCost(id));
     if (game.gems < gcost) { promptGemShortage(gcost); return; }
     game.gems -= gcost;
-    if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
+    if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
+    else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
     renderShopList();
     refreshPlayerBallStats(false);
     playUpgradeSound();
