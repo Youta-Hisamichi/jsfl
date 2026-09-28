@@ -511,11 +511,12 @@
 
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
   .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
-  .artifact-chip .chip-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px; }
+  .artifact-chip { color: var(--text); }
+  .artifact-chip .chip-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px; color: var(--text); font-weight: 800; }
   .artifact-chip .chip-rarity { font-size: 0.62rem; font-weight: 800; }
   .artifact-chip .chip-desc { color: var(--text-dim); font-size: 0.68rem; }
   .artifact-chip .count { background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 0.65rem; padding: 1px 6px; color: var(--text-dim); white-space: nowrap; }
-  .artifact-chip.not-owned { opacity: 0.42; filter: grayscale(0.6); }
+  .artifact-chip.not-owned { opacity: 0.62; filter: grayscale(0.6); }
   .artifact-chip.not-owned .count { color: #ff9aa5; }
   .artifact-empty { color: var(--text-dim); font-size: 0.75rem; }
 
