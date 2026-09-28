@@ -6970,7 +6970,7 @@
     if (flyoutCanvas.width !== w || flyoutCanvas.height !== h) { flyoutCanvas.width = w; flyoutCanvas.height = h; }
     flyoutCtx.setTransform(1, 0, 0, 1, 0, 0);
     flyoutCtx.clearRect(0, 0, w, h);
-    if (!flyouts.length) return;
+    if (!flyouts.length && !damageTexts.length) return;
     const rect = canvas.getBoundingClientRect();
     if (rect.width < 10 || !size) return; // ゲームタブが非表示のときは描かない
     const k = rect.width / size;
@@ -6985,6 +6985,7 @@
         drawBall(f);
         ctx.restore();
       }
+      drawDamageTexts();
     } finally {
       ctx = mainCtx;
     }
@@ -7074,6 +7075,10 @@
       ctx.restore();
     }
 
+    // ダメージ等のテキストアニメはサークルの外でも見えるよう、画面全体のオーバーレイ（drawFlyouts）で描く
+    drawArenaOverlays();
+  }
+  function drawDamageTexts() {
     ctx.save();
     ctx.textAlign = 'center';
     for (const d of damageTexts) {
@@ -7093,7 +7098,8 @@
     }
     ctx.globalAlpha = 1;
     ctx.restore();
-
+  }
+  function drawArenaOverlays() {
     // サークル中央：次のステージ数を大きく表示
     if (stageAnnounceTimer > 0) {
       const t = stageAnnounceTimer / STAGE_ANNOUNCE_DURATION;
