@@ -2250,7 +2250,7 @@
       const cost = getSkillBuyCost(id);
       const on = isSkillEquipped(id);
       const buyLabel = !owned ? `解放 🟡${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`;
-      const equipBtn = owned ? `<button class="sk-equip ${on ? 'on' : ''} ${!on && eq.length >= slots ? 'is-disabled' : ''}" data-skill-equip="${id}">${on ? '✓ 装備中' : '装備する'}</button>` : '';
+      const equipBtn = owned ? `<button class="sk-equip ${on ? 'on' : ''} " data-skill-equip="${id}">${on ? '✓ 装備中' : eq.length >= slots ? '入れ替え' : '装備する'}</button>` : '';
       return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
     }).join('');
     if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
@@ -7653,8 +7653,12 @@
       const id = equip.dataset.skillEquip;
       const eq = getEquippedSkills();
       if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
-      else if (eq.length >= getSkillSlots()) { showTapError('スキル枠がいっぱいです（外すか枠を増やしてください）', event.clientX, event.clientY); return; }
-      else eq.push(id);
+      else if (eq.length >= getSkillSlots()) {
+        // 枠がいっぱいなら、末尾のスキルと入れ替えてセット
+        const out = eq.pop();
+        eq.push(id);
+        showNotice(`${SKILL_GACHA_SKILLS[out].name} と入れ替えて ${SKILL_GACHA_SKILLS[id].name} をセット`);
+      } else eq.push(id);
       playTone(880, 0.06, 'triangle', 0.1);
       renderCoinShopList();
       saveGame();
