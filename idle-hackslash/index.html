@@ -367,6 +367,11 @@
   .companion-card .cc-trait { display: block; font-size: 0.64rem; color: var(--text); background: rgba(255,177,79,0.12); border-left: 3px solid #ffb14f; border-radius: 4px; padding: 3px 6px; margin-bottom: 4px; }
   .companion-card .cc-level { color: #ffd76b; font-size: 0.65rem; }
   .companion-card button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 5px; cursor: pointer; }
+  .companion-card .cc-level-row { display: flex; gap: 6px; align-items: stretch; }
+  .companion-card .cc-level-row button[data-companion-level] { flex: 1; }
+  .companion-card button.cc-max-btn { flex: 0 0 76px; width: auto; color: #1a1408; background: linear-gradient(160deg, #ffe08a, #ffb84d); border-color: var(--gold); font-weight: 900; }
+  .companion-card button.cc-max-btn span { font-size: 0.56rem; font-weight: 700; opacity: 0.85; }
+  .companion-card button.cc-max-btn.is-disabled { opacity: 0.4; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
   .companion-card button.recruit-btn { border-color: var(--gold); color: var(--gold); }
   .companion-card button:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -2244,6 +2249,17 @@
     }).join('') + rerollBtn + slotBtn;
   }
 
+  // 今のコインで上げられるだけのレベル数と、その合計コイン
+  function getCompanionMaxLevels(id) {
+    const c = COMPANIONS[id];
+    let level = game.companions.level[id] || 0, coins = game.coins, count = 0, total = 0;
+    while (count < 9999) {
+      const cost = coinPrice(c.levelCostBase * (level + 1));
+      if (coins < cost) break;
+      coins -= cost; total += cost; level++; count++;
+    }
+    return { count, total };
+  }
   function getCompanionLevelCost(id) {
     const c = COMPANIONS[id];
     return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
@@ -2282,7 +2298,8 @@
       const level = game.companions.level[id];
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
-      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button></div>`;
+      const maxLv = getCompanionMaxLevels(id).count;
+      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><div class="cc-level-row"><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
     }).join('');
   }
 
@@ -7770,6 +7787,23 @@
   });
 
   companionList.addEventListener('click', event => {
+    const maxBtn = event.target.closest('[data-companion-level-max]');
+    if (maxBtn) {
+      const id = maxBtn.dataset.companionLevelMax;
+      if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', event.clientX, event.clientY); return; }
+      const { count, total } = getCompanionMaxLevels(id);
+      if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      spendCoins(total);
+      game.companions.level[id] += count;
+      refreshPlayerBallStats(false);
+      refreshCompanionBalls();
+      playUpgradeSound();
+      showNotice(`${COMPANIONS[id].name} が Lv.${game.companions.level[id]} に！（+${count}）`);
+      updateStatsUI();
+      updateHPUI();
+      renderCompanionList();
+      return;
+    }
     const levelBtn = event.target.closest('[data-companion-level]');
     if (levelBtn) {
       if (consumeHoldClick()) return;
