@@ -117,6 +117,7 @@
   .upgrade-row { display: flex; gap: 6px; align-items: stretch; }
   .upgrade-row .upgrade-btn { flex: 1; }
   .upgrade-max-btn { flex: 0 0 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #1a1408; background: linear-gradient(160deg, #ffe08a, #ffb84d); border: 1px solid var(--gold); border-radius: 9px; padding: 6px 4px; font-size: 0.68rem; font-weight: 800; cursor: pointer; }
+  .upgrade-max-btn.pct-btn { flex-basis: 54px; background: linear-gradient(160deg, #c9f3ff, #7fd3ff); border-color: #64c8ff; }
   .upgrade-max-btn span { font-size: 0.56rem; font-weight: 700; opacity: 0.85; }
   .upgrade-max-btn.is-disabled { opacity: 0.4; cursor: default; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
   .upgrade-btn, .companion-card button { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
@@ -366,9 +367,10 @@
   .companion-card.not-owned { opacity: 0.6; }
   .companion-card .cc-trait { display: block; font-size: 0.64rem; color: var(--text); background: rgba(255,177,79,0.12); border-left: 3px solid #ffb14f; border-radius: 4px; padding: 3px 6px; margin-bottom: 4px; }
   .companion-card .cc-level { color: #ffd76b; font-size: 0.65rem; }
-  .companion-card button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 5px; cursor: pointer; }
+  .companion-card button { width: 100%; margin-top: 5px; border: 1px solid #64c8ff; border-radius: 6px; background: rgba(100,200,255,0.1); color: #1a7fb0; font-weight: 800; font-size: 0.63rem; padding: 5px; cursor: pointer; }
   .companion-card .cc-level-row { display: flex; gap: 6px; align-items: stretch; }
   .companion-card .cc-level-row button[data-companion-level] { flex: 1; }
+  .companion-card button.cc-max-btn.cc-pct-btn { flex-basis: 64px; background: linear-gradient(160deg, #c9f3ff, #7fd3ff); border-color: #64c8ff; }
   .companion-card button.cc-max-btn { flex: 0 0 76px; width: auto; color: #1a1408; background: linear-gradient(160deg, #ffe08a, #ffb84d); border-color: var(--gold); font-weight: 900; }
   .companion-card button.cc-max-btn span { font-size: 0.56rem; font-weight: 700; opacity: 0.85; }
   .companion-card button.cc-max-btn.is-disabled { opacity: 0.4; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
@@ -2059,6 +2061,7 @@
   function getCloneLimit() {
     return 3 + game.coinCloneSlots + (game.shopOwned.summoner ? 2 : 0) + game.rebirthBonus.cloneSlots;
   }
+  const PCT_BUDGET = 0.1; // 「10%」ボタン：手持ちコインの10%分だけまとめてレベルアップ
   function getUpgradeCost(id) { return coinPrice(UPGRADES[id].baseCost * (game.upgrades[id] + 1)); }
   function sumUpgradeCost(id, fromLevel, count) {
     const base = UPGRADES[id].baseCost;
@@ -2106,11 +2109,13 @@
       if (level >= getUpgradeLevelCap(id)) {
         return `<div class="upgrade-row">
         <button class="upgrade-btn is-disabled" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></button>
+        <button class="upgrade-max-btn pct-btn is-disabled" data-upgrade-pct="${id}">10%<span>—</span></button>
         <button class="upgrade-max-btn is-disabled" data-upgrade-max="${id}">MAX<span>—</span></button>
       </div>`;
       }
       const cost = getUpgradeCost(id);
       const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
+      const pctCount = getMaxAffordableUpgradeLevels(id, game.coins * PCT_BUDGET);
       // 実際の値（現在 → 強化後）
       const now = getUpgradeStatValue(id);
       game.upgrades[id] = level + 1;
@@ -2118,6 +2123,7 @@
       game.upgrades[id] = level;
       return `<div class="upgrade-row">
         <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
+        <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${pctCount} Lv.</span></button>
         <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
       </div>`;
     };
@@ -2250,9 +2256,9 @@
   }
 
   // 今のコインで上げられるだけのレベル数と、その合計コイン
-  function getCompanionMaxLevels(id) {
+  function getCompanionMaxLevels(id, budget = game.coins) {
     const c = COMPANIONS[id];
-    let level = game.companions.level[id] || 0, coins = game.coins, count = 0, total = 0;
+    let level = game.companions.level[id] || 0, coins = budget, count = 0, total = 0;
     while (count < 9999) {
       const cost = coinPrice(c.levelCostBase * (level + 1));
       if (coins < cost) break;
@@ -2299,7 +2305,8 @@
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
       const maxLv = getCompanionMaxLevels(id).count;
-      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><div class="cc-level-row"><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
+      const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
+      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><div class="cc-level-row"><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${pctLv} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
     }).join('');
   }
 
@@ -7409,13 +7416,14 @@
   });
 
   upgradeList.addEventListener('click', event => {
-    const maxButton = event.target.closest('[data-upgrade-max]');
+    const maxButton = event.target.closest('[data-upgrade-max], [data-upgrade-pct]');
     if (maxButton) {
       if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
-      const id = maxButton.dataset.upgradeMax;
+      const isPct = maxButton.dataset.upgradePct !== undefined;
+      const id = isPct ? maxButton.dataset.upgradePct : maxButton.dataset.upgradeMax;
       if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', event.clientX, event.clientY); return; }
-      const count = getMaxAffordableUpgradeLevels(id, game.coins);
-      if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      const count = getMaxAffordableUpgradeLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
+      if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
       const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
       spendCoins(totalCost);
       game.upgrades[id] += count;
@@ -7787,12 +7795,13 @@
   });
 
   companionList.addEventListener('click', event => {
-    const maxBtn = event.target.closest('[data-companion-level-max]');
+    const maxBtn = event.target.closest('[data-companion-level-max], [data-companion-level-pct]');
     if (maxBtn) {
-      const id = maxBtn.dataset.companionLevelMax;
+      const isPct = maxBtn.dataset.companionLevelPct !== undefined;
+      const id = isPct ? maxBtn.dataset.companionLevelPct : maxBtn.dataset.companionLevelMax;
       if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', event.clientX, event.clientY); return; }
-      const { count, total } = getCompanionMaxLevels(id);
-      if (count < 1) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+      const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
+      if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
       spendCoins(total);
       game.companions.level[id] += count;
       refreshPlayerBallStats(false);
