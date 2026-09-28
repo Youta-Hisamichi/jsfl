@@ -2230,7 +2230,7 @@
           const lv = getSkillLevel(id);
           dh += `<button class="deck-card" data-skill-equip="${id}" title="タップで外す">${ico(sk)}<span class="dc-name">${sk.name}</span><span class="dc-lv">${lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv}</span></button>`;
         } else if (i < slots) dh += `<div class="deck-card empty"><span class="dc-plus">＋</span><span class="dc-name">空き枠</span></div>`;
-        else dh += `<div class="deck-card locked"><span class="dc-plus">🔒</span><span class="dc-name">未開放</span></div>`;
+        else if (i === slots) dh += `<div class="deck-card locked"><span class="dc-plus">🔒</span><span class="dc-name">未開放</span><span class="dc-lv">💎${getSkillSlotCost()}</span></div>`; // 未開放は次の1枠だけ表示
       }
       if (deck.dataset.html !== dh) { deck.innerHTML = dh; deck.dataset.html = dh; }
     }
