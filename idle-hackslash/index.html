@@ -4978,8 +4978,8 @@
       b.vx -= velAlongNormal * nx; b.vy -= velAlongNormal * ny;
     }
     // 反射モードの自機は、相手が止まっていても必ず跳ね返る
-    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) a.seekAfterWall = false; // 敵に当たったら次に壁で跳ねるまでまっすぐ
-    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) b.seekAfterWall = false;
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) a.seekPoint = null; // 敵に当たったら次に壁で跳ねるまでまっすぐ
+    if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) b.seekPoint = null;
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
     return true;
@@ -5064,17 +5064,16 @@
     // 向きはそのまま、速さだけ目標値へなめらかに揃える（ぶつかって減速しても元の速さに戻る）
     const next = cur + (speed - cur) * Math.min(1, 0.08 * speedMult);
     ball.vx = ball.vx / cur * next; ball.vy = ball.vy / cur * next;
-    // 壁で反射したあとは、近くの敵の方へ向きを曲げていく（敵に当たるまで）
-    if (ball.seekAfterWall) {
-      const target = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
-      if (target) {
-        const dx = target.x - ball.x, dy = target.y - ball.y, d = Math.hypot(dx, dy) || 1;
-        const k = Math.min(1, 0.12 * speedMult);
-        ball.vx += (dx / d * next - ball.vx) * k;
-        ball.vy += (dy / d * next - ball.vy) * k;
-        const c = Math.hypot(ball.vx, ball.vy) || 1;
-        ball.vx = ball.vx / c * next; ball.vy = ball.vy / c * next;
-      }
+    // 壁で反射したあとは、反射した瞬間に敵がいた場所へ向きを曲げ、向き終わったらまっすぐ進む
+    // （追尾はしないので、敵が動いていれば外れることもある）
+    if (ball.seekPoint) {
+      const dx = ball.seekPoint.x - ball.x, dy = ball.seekPoint.y - ball.y, d = Math.hypot(dx, dy) || 1;
+      const k = Math.min(1, 0.18 * speedMult);
+      ball.vx += (dx / d * next - ball.vx) * k;
+      ball.vy += (dy / d * next - ball.vy) * k;
+      const c = Math.hypot(ball.vx, ball.vy) || 1;
+      ball.vx = ball.vx / c * next; ball.vy = ball.vy / c * next;
+      if ((ball.vx * dx + ball.vy * dy) / (next * d || 1) > 0.995 || d < ball.radius) ball.seekPoint = null;
     }
     if (tap > 1.2) {
       ball.stepDist = (ball.stepDist || 0) + next * speedMult;
@@ -5088,7 +5087,10 @@
     ball.y += ball.vy * speedMult;
     const pvx = ball.vx, pvy = ball.vy;
     wallBounce(ball);
-    if (ball.vx !== pvx || ball.vy !== pvy) ball.seekAfterWall = true;
+    if (ball.vx !== pvx || ball.vy !== pvy) {
+      const target = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
+      ball.seekPoint = target ? { x: target.x, y: target.y } : null;
+    }
   }
   function walkBall(ball, speedMult, b) {
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(ball)) { bounceMainPlayer(ball, speedMult, b); return; }
