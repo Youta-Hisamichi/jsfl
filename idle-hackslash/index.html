@@ -792,7 +792,7 @@
       <div class="skill-deck" id="skillDeck"></div>
       <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn"></button>
       <div class="skill-buy-list" id="skillLevelList"></div>
-      <div class="supergem-note">スキルとLv・スキル枠は転生後も継続。スキル枠はジェムで最大7つまで増やせます。</div>
+      <div class="supergem-note">スキル（解放・Lv・装備）は転生でリセット。ジェムで増やしたスキル枠は転生後も継続（最大7つ）。</div>
       <div class="title" style="margin-top:12px;">🟡 コインショップ（転生でリセット・戦闘中のみ使用可）</div>
       <div class="shop-list" id="coinShopList"></div>
     </div>
@@ -5991,6 +5991,9 @@
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
     game.companionSummons = 0;
     game.skillGachaPulls = 0;
+    // スキル（コインで購入）は転生でリセット：解放・Lv・装備を外す（ジェムで増やしたスキル枠は残る）
+    for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
+    game.skillLevels = {}; game.equippedSkills = [];
     barrierHits = 0; barrierOrbs = [];
     // 仲間もすべてリセット（加入・人数・覚醒・レベル）
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
