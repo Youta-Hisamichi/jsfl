@@ -507,6 +507,7 @@
   #rebirthShopModal .sub-tabs { margin: 0 0 14px; } /* 下の商品ボタンへの誤タップ防止に離す */
   #rebirthShopModal .sub-tab-btn { padding: 5px 8px; }
   /* 転生ショップの商品はなるべく改行せず、横1行＋説明1行にまとめる */
+  #rebirthShopList .rs-offer-note { font-size: 0.66rem; color: var(--text-dim); text-align: center; margin: 0 0 4px; }
   #rebirthShopList .upgrade-row .modal-shop-btn { flex: 1; min-width: 0; width: auto; }
   #rebirthShopList .upgrade-row { min-width: 0; }
   #rebirthShopList .upgrade-max-btn { flex-basis: 54px; }
@@ -1672,6 +1673,35 @@
     }
     return count;
   }
+  // お試し：転生ショップを毎回ランダム3択にする（false で全商品のカテゴリ表示に戻る）
+  const REBIRTH_OFFER_ENABLED = true;
+  const REBIRTH_OFFER_COUNT = 3;
+  // 到達ステージが高いほどレア度の高い商品が出やすい（150ステージで最大）
+  function getRebirthOfferWeights(stage) {
+    const t = Math.min(1, Math.max(0, stage) / 150);
+    return { common: 60 * (1 - t) + 10, rare: 30, epic: 8 + 32 * t, legendary: 2 + 25 * t };
+  }
+  function rollRebirthOffer(stage) {
+    const weights = getRebirthOfferWeights(stage);
+    let pool = Object.keys(REBIRTH_SHOP_ITEMS).filter(id => {
+      const item = REBIRTH_SHOP_ITEMS[id];
+      return !isRebirthItemMaxed(item) && !isRebirthItemLocked(item);
+    });
+    const picks = [];
+    while (picks.length < REBIRTH_OFFER_COUNT && pool.length) {
+      // レア度ごとの出やすさを、そのレア度の商品数で割る（商品数の多いレア度が出すぎないように）
+      const counts = {};
+      pool.forEach(id => { const r = REBIRTH_SHOP_ITEMS[id].rarity; counts[r] = (counts[r] || 0) + 1; });
+      const w = id => { const r = REBIRTH_SHOP_ITEMS[id].rarity; return (weights[r] || 1) / counts[r]; };
+      const total = pool.reduce((sum, id) => sum + w(id), 0);
+      let r = Math.random() * total;
+      let chosen = pool[pool.length - 1];
+      for (const id of pool) { r -= w(id); if (r <= 0) { chosen = id; break; } }
+      picks.push(chosen);
+      pool = pool.filter(id => id !== chosen);
+    }
+    return picks;
+  }
   const REBIRTH_SHOP_CATEGORIES = [
     { id: 'attack', label: '⚔️ 攻撃' },
     { id: 'defense', label: '🛡️ 防御' },
@@ -1825,6 +1855,7 @@
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
+    rebirthShopOffer: null, // 転生ショップのランダム3択（今回のラインナップのID）
     rebirthShopBuys: {}, // 転生ショップの商品ごとの購入回数（値上がり用。転生しても残る）
     companionUnlocks: {}, // 転生ショップで開放した仲間 { id: true }（転生しても残る）
     companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
@@ -2060,12 +2091,17 @@
   }
   function renderRebirthShopList() {
     rebirthShopGems.textContent = Math.floor(game.gems);
+    const offerMode = REBIRTH_OFFER_ENABLED && Array.isArray(game.rebirthShopOffer);
+    document.getElementById('rebirthShopTabs').style.display = offerMode ? 'none' : '';
     renderSubTabs(document.getElementById('rebirthShopTabs'), REBIRTH_SHOP_CATEGORIES, rebirthShopCategory, cat => {
       rebirthShopCategory = cat;
       renderRebirthShopList();
       rebirthShopList.scrollTop = 0;
     });
-    rebirthShopList.innerHTML = Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory).map(([id, item]) => {
+    const entries = offerMode
+      ? game.rebirthShopOffer.filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => [id, REBIRTH_SHOP_ITEMS[id]])
+      : Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory);
+    rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note">🎲 今回のラインナップ（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</div>` : '') + entries.map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
       const cost = getRebirthItemCost(id);
@@ -5634,6 +5670,7 @@
     const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
     const pick = rebirthPool[Math.floor(Math.random() * rebirthPool.length)];
     gainArtifact(pick.id);
+    rebirthOfferStage = game.stage;
     game.coins = 0; game.stage = 1;
     game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
     game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
@@ -5750,8 +5787,13 @@
     void rebirthShopMsg.offsetWidth; // 連続購入でもアニメーションを再生
     rebirthShopMsg.classList.add('show');
   }
+  let rebirthOfferStage = null; // 転生した時点の到達ステージ（ランダム3択のレア度に使う）
   function openRebirthShop(fresh = false) {
     if (fresh) rebirthShopMsg.classList.remove('show');
+    if (REBIRTH_OFFER_ENABLED && (fresh || !Array.isArray(game.rebirthShopOffer))) {
+      game.rebirthShopOffer = rollRebirthOffer(rebirthOfferStage ?? game.stage);
+      rebirthOfferStage = null;
+    }
     renderRebirthShopList();
     rebirthShopModal.classList.add('show');
     renderShopkeeper('rebirth');
