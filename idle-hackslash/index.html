@@ -7473,7 +7473,13 @@
   }
   rebirthShopList.addEventListener('click', event => {
     const maxBtn = event.target.closest('[data-rebirth-max]');
-    if (maxBtn) { buyRebirthItemMax(maxBtn.dataset.rebirthMax, event.clientX, event.clientY); return; }
+    if (maxBtn) {
+      // テキストアニメは右端のMAXボタンではなく、購入した商品項目の中央に出す
+      const itemBtn = maxBtn.parentElement.querySelector('[data-rebirth-shop]');
+      const r = (itemBtn || maxBtn).getBoundingClientRect();
+      buyRebirthItemMax(maxBtn.dataset.rebirthMax, r.left + r.width / 2, r.top + r.height / 2);
+      return;
+    }
     const button = event.target.closest('[data-rebirth-shop]');
     if (!button) return;
     if (consumeHoldClick()) return; // 長押しで連続購入した直後のクリックは無視
