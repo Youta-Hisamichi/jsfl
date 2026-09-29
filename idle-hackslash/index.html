@@ -1591,7 +1591,7 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
   const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
@@ -3081,6 +3081,8 @@
   // サークルをタップするたびに自機が加速（敵に衝突したら元の速さに戻る）
   const TAP_ACCEL_PER_TAP = 0.5;  // 1タップあたり +50%
   const TAP_ACCEL_MAX = 5;        // 最大5倍速
+  const TAP_DMG_PER_ACCEL = 0.5;  // 連打で加速した分だけ、次に敵にぶつかったときのダメージも上がる（1タップ +25%、最大 +200%）
+  function getTapDmgMult(tapMult) { return 1 + Math.max(0, (tapMult || 1) - 1) * TAP_DMG_PER_ACCEL; }
   let lastHealAt = Date.now() - HEAL_COOLDOWN;
   const BARRIER_COOLDOWN = 4 * 60 * 1000;
   const BARRIER_MAX_HITS = 5; // バリアが肩代わりできる被ダメージ回数
@@ -6306,6 +6308,7 @@
     // 「貫きの蹄鉄」を持っていればタックル中は敵で反射せず、重なってもそのまま貫通する（当たり判定だけ取る）
     const piercing = isTackling() && getTacklePierceMs() > 0;
     const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
+    const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
     if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
     if (collided && isTackling()) {
       // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
@@ -6327,11 +6330,12 @@
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult)), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
@@ -7880,6 +7884,22 @@
     }
   }
 
+  // 連打中：次に敵にぶつかったときのダメージ上昇率を自キャラの頭上に表示（上がるほど大きく・赤く）
+  function drawTapBonus() {
+    const pl = balls.find(ball => isMainPlayerBall(ball));
+    if (!pl || !(pl.tapSpeedMult > 1)) return;
+    const m = getTapDmgMult(pl.tapSpeedMult), lv = Math.min(1, (pl.tapSpeedMult - 1) / (TAP_ACCEL_MAX - 1));
+    const pulse = 1 + 0.08 * Math.sin(Date.now() / 70);
+    ctx.save();
+    ctx.font = `900 ${Math.round((12 + lv * 8) * pulse)}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillStyle = lv >= 1 ? '#ff3b4a' : lv > 0.5 ? '#ff7a2b' : '#ffb35c';
+    const txt = `ATK +${Math.round((m - 1) * 100)}%` + (lv >= 1 ? ' MAX' : '');
+    const y = pl.y - pl.radius * ENEMY_SPRITE_SCALE / 2 - 12; // HPバーの少し上
+    ctx.strokeText(txt, pl.x, y); ctx.fillText(txt, pl.x, y);
+    ctx.restore();
+  }
   function draw() {
     cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
     wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
@@ -7939,6 +7959,7 @@
     drawEnemyTraitEffects();
     drawNovaFx();
 
+    drawTapBonus();
     // ヒットエフェクト（パーティクル）はキャラ画像（ボスの大きな画像など）の手前に描く
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, p.life);
