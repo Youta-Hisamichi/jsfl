@@ -874,7 +874,7 @@
         <div class="sub" id="toastSub"></div>
         <div class="continue-actions">
           <button class="action-btn special" id="continueBtn" style="display:none;">💎 3 でリトライ</button>
-          <button class="action-btn" id="giveUpBtn" style="display:none;">🕊️ 諦めて転生ショップ</button>
+          <button class="action-btn" id="giveUpBtn" style="display:none;">🕊️ 転生</button>
         </div>
         <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
       </div>
@@ -5247,15 +5247,15 @@
       ],
       drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
     },
-    // 転生報酬：輪廻の宝箱（スマホゲームのプチガチャ演出系の作風×VRC6風チップチューン。ヘ長調。キラキラ駆け上がるアルペジオと弾むベースで「何が出るかな」のワクワク感）
+    // 転生報酬：輪廻の宝箱（国民的RPGのカジノ系の作風×VRC6風チップチューン。ハ長調。6th・7thコードの小粋なジャズ風、裏拍のコード刻みとウォーキングベースで華やかに）
     rebirthReward: {
-      bpm: 160,
+      bpm: 144,
       tracks: [
-        { type: 'vrc6pulse25', gain: 0.03, notes: 'C6 = A5 C6 F6 = C6 A5 | D6 = A5 D6 F6 = E6 D6 | D6 = = A#5 F5 = A#5 D6 | C6 = E6 = G6 = = = | A6 = G6 F6 C6 = F6 A6 | G6 = E6 C6 A5 = C6 E6 | F6 = D6 A#5 G5 = A#5 D6 | E6 F6 G6 A6 A#6 = C7 =' },
-        { type: 'vrc6pulse12', gain: 0.02, notes: 'F4 A4 C5 F5 A5 F5 C5 A4 | D4 F4 A4 D5 F5 D5 A4 F4 | A#3 D4 F4 A#4 D5 A#4 F4 D4 | C4 E4 G4 C5 E5 C5 G4 E4 | F4 A4 C5 F5 A5 F5 C5 A4 | A3 C4 E4 A4 C5 A4 E4 C4 | A#3 D4 F4 A#4 D5 A#4 F4 D4 | C4 E4 G4 A#4 C5 E5 G5 A#5' },
-        { type: 'vrc6saw', gain: 0.05, notes: 'F2 F3 F2 F3 F2 F3 F2 F3 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | F2 F3 F2 F3 F2 F3 F2 F3 | A1 A2 A1 A2 A1 A2 A1 A2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 E2 G2 A#2 C3' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = G5 A5 C6 = A5 G5 | E5 = G5 = C6 = B5 A5 | F5 = A5 C6 D6 = C6 A5 | B5 = = G5 F5 = D5 = | E5 = G5 A5 C6 = E6 D6 | C#6 = A5 G5 E5 = G5 A5 | D6 = C6 A5 B5 = G5 F5 | E5 = C5 = G5 E5 C6 =' },
+        { type: 'vrc6pulse12', gain: 0.016, notes: '- E4+G4+A4 - E4+G4+A4 - E4+G4+A4 - E4+G4+A4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+B4+D5 - F4+B4+D5 - F4+B4+D5 - F4+B4+D5 | - E4+G4+A4 - E4+G4+A4 - E4+A#4+C5 - E4+A#4+C5 | - E4+G4+C#5 - E4+G4+C#5 - E4+G4+C#5 - E4+G4+C#5 | - F4+A4+C5 - F4+A4+C5 - F4+B4+D5 - F4+B4+D5 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 E4+G4+C5 =' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'C2 = E2 = G2 = A2 = | A1 = C2 = E2 = G2 = | D2 = F2 = A2 = C3 = | G1 = B1 = D2 = F2 = | C2 = E2 = G2 = A#2 = | A1 = C#2 = E2 = G2 = | D2 = F2 = G1 = B1 = | C2 = G1 = C2 = G2 =' },
       ],
-      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s ks ks ks ks',
+      drums: 'k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s s ks ks',
     },
     // 転生ショップ：運命の選択（VRC6風の拡張音源チップチューン。イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
     rebirth: {
@@ -5454,7 +5454,7 @@
     { key: 'records', name: 'ページ 戦績 冒険の記録', desc: 'サガ系の作風。ヘ長調の穏やかで口ずさめる旋律・BPM112' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
-    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'キラキラ駆け上がるアルペジオと弾むベースで「何が出るかな」のワクワク感。VRC6風チップチューン。ヘ長調（スマホゲームのプチガチャ演出系の作風）・BPM160' },
+    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: '6th・7thコードの小粋なジャズ風。裏拍のコード刻みとウォーキングベースで華やかに。VRC6風チップチューン。ハ長調（国民的RPGのカジノ系の作風）・BPM144' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
@@ -7355,7 +7355,7 @@
     if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
     if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ジェムショップでタックルを開放しよう（長押し→離すで大ダメージ）');
     if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
-    if (game.stage >= 3) tips.push('🌌 諦めて転生ショップへ進むと遺物がもらえて、次の周回が楽になります');
+    if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
     if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
     return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 1).map(t => `<div>${t}</div>`).join('')}</div>`;
   }
