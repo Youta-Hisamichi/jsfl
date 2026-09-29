@@ -3335,7 +3335,7 @@
         const spd = 3.2 + Math.random() * 1.2;
         child.x = enemy.x + Math.cos(ang) * 6; child.y = enemy.y + Math.sin(ang) * 6;
         if (cfg.children > 1) { child.vx = Math.cos(ang) * spd; child.vy = Math.sin(ang) * spd; }
-        child.shape = enemy.shape; child.emoji = enemy.emoji;
+        child.shape = enemy.shape; child.emoji = enemy.emoji; child.isSplit = true;
         child.color = enemy.color; child.glow = enemy.glow;
         child.maxHp = child.hp = Math.max(4, Math.round(origMaxHp * cfg.hpRate));
         child.radius = Math.max(8, enemy.radius * (cfg.children > 1 ? 0.7 : 0.8));
@@ -6077,8 +6077,9 @@
     // 撃破後：震えながら吹っ飛ぶ演出。終わったら次ステージへ
     if (e.isDying) {
       e.shakeTimer = Math.max(0, e.shakeTimer - speedMult); // 吹っ飛びの移動は updateFlyouts で行う
-      // 大群ステージは、本体を倒しても雑魚が残っていれば全滅させるまで次に進まない
-      const swarmLeft = !e.isBoss && isSwarmStage(game.stage) ? adds.filter(ad => ad.hp > 0).length : 0;
+      // 大群ステージ・分裂した敵は、本体を倒しても雑魚（分裂した子）が残っていれば全滅させるまで次に進まない
+      const swarm = !e.isBoss && isSwarmStage(game.stage);
+      const swarmLeft = adds.filter(ad => ad.hp > 0 && (swarm || ad.isSplit)).length;
       if (swarmLeft > 0) {
         movePlayerSideBalls([...balls, ...adds], speedMult, b);
         if (!e.swarmNotified) { e.swarmNotified = true; showNotice(`残りの敵を全部倒せ！（あと ${swarmLeft} 体）`); }
@@ -6364,14 +6365,17 @@
   let hpFocusEnemy = null;
   function getHpDisplayEnemy() {
     const main = balls.find(b => !b.isPlayer);
-    if (!main || main.isBoss || !isSwarmStage(game.stage)) return main;
     const alive = e => e && e.hp > 0 && !e.isDying && (e === main || adds.includes(e));
+    // 分裂した敵：本体を倒した後は残りの分裂した子のHPを表示
+    if (main && main.isDying && !main.isBoss && adds.some(ad => ad.isSplit && ad.hp > 0)) return alive(hpFocusEnemy) ? hpFocusEnemy : adds.find(ad => ad.isSplit && ad.hp > 0);
+    if (!main || main.isBoss || !isSwarmStage(game.stage)) return main;
     if (alive(hpFocusEnemy)) return hpFocusEnemy;
     if (main.isDying) return adds.find(ad => ad.hp > 0) || main; // 本体を倒した後は残りの雑魚を表示
     return main;
   }
   function focusHpEnemy(enemy) {
-    if (!isSwarmStage(game.stage)) return;
+    const main = balls.find(b => !b.isPlayer);
+    if (!isSwarmStage(game.stage) && !(main && main.isDying && enemy.isSplit)) return;
     if (hpFocusEnemy !== enemy) { hpFocusEnemy = enemy; updateHPUI(); }
   }
   function updateHPUI() {
