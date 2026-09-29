@@ -4588,15 +4588,15 @@
       ],
       drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks ks ks ks',
     },
-    // コンテニュー：ぽよぽよカウントダウン（連鎖パズル系の作風。ハ長調の跳ねるスタッカートと、チクタク刻むリズム。C-Am-Dm-G）
+    // コンテニュー：ラストチャンス（ベルトスクロール格闘アクション系の作風。イ短調のチップチューンロック、ファンキーなオクターブベースと劇的な高音リード）
     gameover: {
-      bpm: 132,
+      bpm: 126,
       tracks: [
-        { type: 'square', gain: 0.034, notes: 'E5 - G5 - E5 - C5 - | D5 - C5 - A4 = = - | F5 - A5 - F5 - D5 - | E5 - D5 - B4 = = - | C5 E5 G5 C6 B5 - G5 - | A5 G5 E5 C5 D5 - - - | C5 - A4 - D5 - B4 - | C5 - - - G4 - - -' },
-        { type: 'square', gain: 0.042, notes: 'C3 - G3 - C3 - G3 - | A2 - E3 - A2 - E3 - | D3 - A3 - D3 - A3 - | G2 - D3 - G2 - D3 - | C3 - G3 - C3 - G3 - | A2 - E3 - A2 - E3 - | F2 - C3 - G2 - D3 - | C3 - G2 - C3 - - -' },
-        { type: 'triangle', gain: 0.03, notes: '- E4+G4 - E4+G4 - E4+G4 - E4+G4 | - C4+E4 - C4+E4 - C4+E4 - C4+E4 | - D4+F4 - D4+F4 - D4+F4 - D4+F4 | - B3+D4 - B3+D4 - B3+D4 - B3+D4 | - E4+G4 - E4+G4 - E4+G4 - E4+G4 | - C4+E4 - C4+E4 - C4+E4 - C4+E4 | - A3+C4 - A3+C4 - B3+D4 - B3+D4 | - E4+G4 - E4+G4 - - - -' },
+        { type: 'square', gain: 0.036, notes: 'A5 = = = E5 = A5 = | C6 = B5 = A5 = G5 = | A5 = = = F5 = C5 = | D5 = = = G5 = B5 = | A5 = = = E5 = A5 = | C6 = D6 = E6 = = = | F6 = E6 = D6 = B5 = | G#5 = = = = = - -' },
+        { type: 'square', gain: 0.045, notes: 'A2 A3 - A2 A3 - G3 A3 | A2 A3 - A2 A3 - C4 A3 | F2 F3 - F2 F3 - E3 F3 | G2 G3 - G2 G3 - F#3 G3 | A2 A3 - A2 A3 - G3 A3 | A2 A3 - A2 A3 - C4 A3 | F2 F3 F2 F3 E2 E3 E2 E3 | E2 E3 - E2 E3 - G#3 B3' },
+        { type: 'triangle', gain: 0.026, notes: 'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = = = = = | G3+B3+D4 = = = = = = = | A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = E3+G#3+B3 = = = | E3+G#3+B3 = = = = = = =' },
       ],
-      drums: 'kh - h - sh - h - | kh - h - sh - h - | kh - h - sh - h - | kh - h - sh - h - | kh - h - sh - h - | kh - h - sh - h - | kh - h - sh - h - | kh - h - s s s s',
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k h s h | k - s - ks ks ks ks',
     },
     // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
     boss: {
@@ -4791,7 +4791,7 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-    { key: 'gameover', name: 'コンテニュー ぽよぽよ', desc: 'ゲームオーバー時に流れる。跳ねるスタッカートとチクタク刻むリズムのコミカルな曲。ハ長調（連鎖パズル系の作風）・BPM132' },
+    { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
   // 今の場面に合うBGMを選んで流す（転生ショップ＞ゲームオーバー＞開いているタブ＞戦闘）
