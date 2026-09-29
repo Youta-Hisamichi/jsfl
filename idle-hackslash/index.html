@@ -4411,6 +4411,119 @@
     // 転生ショップ：荘厳で幻想的なアルペジオ
     rebirth: melody('C5 G5 E6 G5 A4 E5 C6 E5 F4 C5 A5 C5 G4 D5 B5 D5', 0.34, 'sine', 0.05),
   });
+  // ---------- 多重トラックの戦闘BGM（メロディ・ベース・和音・ドラム） ----------
+  // 1トークン＝8分音符。音名は '+' で和音、'=' は前の音を伸ばす、'-' は休符。ドラムは k=キック s=スネア h=ハイハット（組み合わせ可）
+  const BGM_SONGS = {
+    // 通常戦闘：勇ましいファンタジー（ハ長調・行進曲風。I-V-vi-IV-I-V-IV/V-I）
+    normal: {
+      bpm: 150,
+      tracks: [
+        { type: 'square', gain: 0.045, notes:
+          'G4 = C5 = E5 = G5 E5 | D5 = = B4 C5 D5 G5 = | E5 = C5 = A4 B4 C5 E5 | F5 = = E5 D5 = C5 D5 | ' +
+          'E5 = G5 = C6 = B5 A5 | G5 = D5 = B4 = G5 A5 | A5 G5 F5 A5 G5 = B5 = | C6 = = = - G4 A4 B4' },
+        { type: 'triangle', gain: 0.11, notes:
+          'C3 C4 C3 C4 C3 C4 C3 C4 | G2 G3 G2 G3 G2 G3 G2 G3 | A2 A3 A2 A3 A2 A3 A2 A3 | F2 F3 F2 F3 F2 F3 F2 F3 | ' +
+          'C3 C4 C3 C4 C3 C4 C3 C4 | G2 G3 G2 G3 G2 G3 G2 G3 | F2 F3 F2 F3 G2 G3 G2 G3 | C3 C4 C3 C4 G2 G3 B2 B3' },
+        { type: 'triangle', gain: 0.022, notes:
+          'C4+E4+G4 = = = = = = = | B3+D4+G4 = = = = = = = | A3+C4+E4 = = = = = = = | A3+C4+F4 = = = = = = = | ' +
+          'C4+E4+G4 = = = = = = = | B3+D4+G4 = = = = = = = | A3+C4+F4 = = = B3+D4+G4 = = = | C4+E4+G4 = = = = = = =' },
+      ],
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s kh | ' +
+             'k h s h k k s h | k h s h k k s h | k h s h k s s s | k s s s s s s s',
+    },
+    // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
+    boss: {
+      bpm: 164,
+      tracks: [
+        { type: 'sawtooth', gain: 0.032, notes:
+          'A4 = = = C5 = B4 = | A4 = E4 = F4 = E4 = | F4 = A4 = C5 = D5 = | E5 = = = G#4 = B4 = | ' +
+          'A5 = = G5 F5 = E5 = | F5 E5 D5 = C5 = B4 = | A#4 = D5 = F5 = A#5 = | G#5 = = = E5 = B4 =' },
+        { type: 'square', gain: 0.05, notes:
+          'A2 A2 A3 A2 C3 A2 E3 A2 | A2 A2 A3 A2 C3 A2 E3 A2 | F2 F2 F3 F2 A2 F2 C3 F2 | E2 E2 E3 E2 G#2 E2 B2 E2 | ' +
+          'A2 A2 A3 A2 C3 A2 E3 A2 | A2 A2 A3 A2 C3 A2 E3 A2 | A#2 A#2 A#3 A#2 D3 A#2 F3 A#2 | E2 E2 E3 E2 G#2 E2 B2 E2' },
+        { type: 'triangle', gain: 0.024, notes:
+          'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = = = = = | E3+G#3+B3 = = = = = = = | ' +
+          'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | A#3+D4+F4 = = = = = = = | E3+G#3+B3 = = = = = = =' },
+      ],
+      drums: 'k h k s k h k s | k h k s k h k s | k h k s k h k s | k k s h k k s s | ' +
+             'k h k s k h k s | k h k s k h k s | k h k s k h k s | s s s s ks ks ks ks',
+    },
+  };
+  // 楽譜を「何ステップ目から何ステップ鳴らすか」のイベント列にしておく
+  function parseSongTrack(str) {
+    const tokens = str.split(/\s+/).filter(t => t && t !== '|');
+    const events = [];
+    tokens.forEach((tok, i) => {
+      if (tok === '=') { if (events.length) events[events.length - 1].len++; return; }
+      if (tok === '-') return;
+      events.push({ step: i, len: 1, freqs: tok.split('+').map(n => NOTE_FREQ[n]).filter(Boolean) });
+    });
+    return { events, length: tokens.length };
+  }
+  Object.values(BGM_SONGS).forEach(song => {
+    song.parsed = song.tracks.map(t => ({ ...t, ...parseSongTrack(t.notes) }));
+    song.drumSteps = song.drums.split(/\s+/).filter(t => t && t !== '|');
+    song.length = Math.max(song.drumSteps.length, ...song.parsed.map(t => t.length));
+    song.byStep = Array.from({ length: song.length }, () => []);
+    song.parsed.forEach(t => t.events.forEach(ev => song.byStep[ev.step].push({ ...ev, type: t.type, gain: t.gain })));
+  });
+  function bgmVol() { return game.bgmVolume ?? 0.7; }
+  function playSongNote(time, freq, dur, type, gain) {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, time);
+    const vol = Math.max(0.0001, gain * bgmVol());
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(vol, time + 0.008);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol * 0.55), time + Math.min(dur * 0.5, 0.18));
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur * 0.97);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(time); osc.stop(time + dur);
+  }
+  function playSongDrum(time, kind) {
+    const v = bgmVol();
+    if (v <= 0) return;
+    if (kind === 'k') { // キック：低い音が急に下がる「ドン」
+      const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(140, time); osc.frequency.exponentialRampToValueAtTime(42, time + 0.12);
+      g.gain.setValueAtTime(0.28 * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
+      osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time + 0.17);
+      return;
+    }
+    const dur = kind === 's' ? 0.12 : 0.035;
+    const size = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+    const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) d[i] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = kind === 's' ? 1400 : 7000;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime((kind === 's' ? 0.13 : 0.045) * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(time);
+  }
+  let songTimer = null, songState = null;
+  function startSong(type) {
+    const song = BGM_SONGS[type];
+    stopSong();
+    songState = { song, step: 0, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2 };
+    // 少し先まで予約して鳴らす（タイマーのずれでリズムが崩れないように）
+    const tick = () => {
+      const s = songState;
+      if (!s) return;
+      while (s.next < audioCtx.currentTime + 0.15) {
+        for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain));
+        const dr = s.song.drumSteps[s.step];
+        if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch);
+        s.next += s.stepDur;
+        s.step = (s.step + 1) % s.song.length;
+      }
+    };
+    tick();
+    songTimer = setInterval(tick, 30);
+  }
+  function stopSong() { clearInterval(songTimer); songTimer = null; songState = null; }
   let bgmTimer = null;
   let bgmToken = 0;
   let currentBgmType = null;
@@ -4459,12 +4572,15 @@
     bgmToken++;
     currentBgmType = type;
     clearTimeout(bgmTimer);
-    scheduleBgmStep(type, 0, bgmToken);
+    stopSong();
+    if (BGM_SONGS[type]) startSong(type); // 通常戦闘・ボス戦は多重トラックの曲
+    else scheduleBgmStep(type, 0, bgmToken);
   }
   function stopBgm() {
     bgmToken++;
     currentBgmType = null;
     clearTimeout(bgmTimer);
+    stopSong();
   }
   function playTone(freq, duration, type, startGain, glideTo) {
     if (!audioCtx || isBattleSfxMuted()) return;
