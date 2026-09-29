@@ -4751,13 +4751,13 @@
       ],
       drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
     },
-    // 転生ショップ：運命の選択（イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
+    // 転生ショップ：運命の選択（VRC6風の拡張音源チップチューン。イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
     rebirth: {
       bpm: 150,
       tracks: [
-        { type: 'square', gain: 0.03, notes: 'E5 = A5 = B5 C6 B5 A5 | C6 = A5 = F5 = A5 C6 | D6 = B5 = G5 = B5 D6 | E6 = = = D#6 = E6 = | A5 = C6 = E6 = D6 C6 | C6 = A5 = F6 = E6 D6 | D6 = F6 = E6 = D6 C6 | B5 = G#5 = E5 = G#5 B5' },
-        { type: 'square', gain: 0.04, notes: 'A2 A2 A3 A2 A2 A2 A3 A2 | F2 F2 F3 F2 F2 F2 F3 F2 | G2 G2 G3 G2 G2 G2 G3 G2 | E2 E2 E3 E2 E2 E2 E3 E2 | A2 A2 A3 A2 A2 A2 A3 A2 | F2 F2 F3 F2 F2 F2 F3 F2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 G#2 G#2 B2 D3' },
-        { type: 'triangle', gain: 0.028, notes: 'A3 E4 A4 E4 A3 E4 A4 E4 | F3 C4 F4 C4 F3 C4 F4 C4 | G3 D4 G4 D4 G3 D4 G4 D4 | E3 B3 E4 G#4 E3 B3 E4 G#4 | A3 E4 A4 E4 A3 E4 A4 E4 | F3 C4 F4 C4 F3 C4 F4 C4 | D3 A3 D4 A3 D3 A3 D4 A3 | E3 B3 E4 G#4 B4 G#4 E4 B3' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = A5 = B5 C6 B5 A5 | C6 = A5 = F5 = A5 C6 | D6 = B5 = G5 = B5 D6 | E6 = = = D#6 = E6 = | A5 = C6 = E6 = D6 C6 | C6 = A5 = F6 = E6 D6 | D6 = F6 = E6 = D6 C6 | B5 = G#5 = E5 = G#5 B5' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'A2 A2 A3 A2 A2 A2 A3 A2 | F2 F2 F3 F2 F2 F2 F3 F2 | G2 G2 G3 G2 G2 G2 G3 G2 | E2 E2 E3 E2 E2 E2 E3 E2 | A2 A2 A3 A2 A2 A2 A3 A2 | F2 F2 F3 F2 F2 F2 F3 F2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 G#2 G#2 B2 D3' },
+        { type: 'vrc6pulse12', gain: 0.024, notes: 'A3 E4 A4 E4 A3 E4 A4 E4 | F3 C4 F4 C4 F3 C4 F4 C4 | G3 D4 G4 D4 G3 D4 G4 D4 | E3 B3 E4 G#4 E3 B3 E4 G#4 | A3 E4 A4 E4 A3 E4 A4 E4 | F3 C4 F4 C4 F3 C4 F4 C4 | D3 A3 D4 A3 D3 A3 D4 A3 | E3 B3 E4 G#4 B4 G#4 E4 B3' },
       ],
       kickBoost: 1.3, // 鼓動のように重く
       drums: 'k k - h s - k h | k k - h s - k h | k k - h s - k h | k k - h s - k h | k k - h s - k h | k k - h s - k h | k k - h s - k h | k k s s ks ks ks ks',
@@ -4794,13 +4794,17 @@
     pcelead:  i => i < 10 ? 31 : i < 18 ? 20 : i < 24 ? 8 : 0,          // 段々の矩形：鼻にかかった明るいリード
     pcebass:  i => Math.round(15.5 + 15.5 * Math.sin(Math.PI * 2 * i / 32) + 6 * Math.sin(Math.PI * 4 * i / 32)), // 太いベース
     pcebrass: i => 31 - i,                                               // のこぎり波：ギターのパワーコード代わり
+    // VRC6（コナミのファミコン拡張音源）風：デューティ比を細かく選べる矩形波と、7段の階段状のこぎり波
+    vrc6pulse25: i => i < 8 ? 31 : 0,                                     // デューティ4/16
+    vrc6pulse12: i => i < 4 ? 31 : 0,                                     // デューティ2/16：細く鋭い音
+    vrc6saw:     i => Math.floor(i * 7 / 32) * 5,                         // 7段の階段のこぎり波：太いベース
   };
   const pceWaveCache = new WeakMap();
   function getPceWave(type) {
     let m = pceWaveCache.get(audioCtx);
     if (!m) { m = {}; pceWaveCache.set(audioCtx, m); }
     if (!m[type]) {
-      const N = 32, H = 16, samples = Array.from({ length: N }, (_, i) => Math.max(0, Math.min(31, PCE_WAVETABLES[type](i))) / 15.5 - 1);
+      const N = 64, H = 32, samples = Array.from({ length: N }, (_, i) => Math.max(0, Math.min(31, PCE_WAVETABLES[type](i >> 1))) / 15.5 - 1); // 32段の波形を2倍で標本化（倍音を多めに）
       const real = new Float32Array(H + 1), imag = new Float32Array(H + 1);
       for (let h = 1; h <= H; h++) for (let n = 0; n < N; n++) { const a = Math.PI * 2 * h * n / N; real[h] += samples[n] * Math.cos(a) * 2 / N; imag[h] += samples[n] * Math.sin(a) * 2 / N; }
       m[type] = audioCtx.createPeriodicWave(real, imag, { disableNormalization: true });
@@ -4931,7 +4935,7 @@
     { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
     { key: 'records', name: 'ページ 戦績 冒険の記録', desc: 'サガ系の作風。ヘ長調の穏やかで口ずさめる旋律・BPM112' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
-    { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: '心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
+    { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
