@@ -453,7 +453,7 @@
   .bst-card.unknown .bst-face { color: var(--text-dim); font-weight: 900; }
   .bst-face { font-size: 1.6rem; line-height: 1.2; height: 2rem; display: flex; align-items: center; justify-content: center; }
   .bst-shape { display: inline-block; width: 22px; height: 22px; }
-  .bst-spike, .bst-slimeOrange, .bst-slimeGreen { clip-path: polygon(50% 0, 61% 30%, 93% 25%, 72% 50%, 93% 75%, 61% 70%, 50% 100%, 39% 70%, 7% 75%, 28% 50%, 7% 25%, 39% 30%); }
+  .bst-spike, .bst-slimeOrange, .bst-slimeGreen, .bst-slimeBlood { clip-path: polygon(50% 0, 61% 30%, 93% 25%, 72% 50%, 93% 75%, 61% 70%, 50% 100%, 39% 70%, 7% 75%, 28% 50%, 7% 25%, 39% 30%); }
   .bst-diamond { transform: rotate(45deg) scale(0.8); }
   .bst-square { border-radius: 3px; }
   .bst-hex { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
@@ -3242,7 +3242,7 @@
     'emoji:🐺': 'charge', 'emoji:👹': 'charge',
     'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
     'shape:spike': 'split',
-    'shape:slimeOrange': 'splitMany', 'shape:slimeGreen': 'splitMany',
+    'shape:slimeOrange': 'splitMany', 'shape:slimeGreen': 'splitMany', 'shape:slimeBlood': 'splitMany',
     'shape:square': 'grow',
     'emoji:👻': 'attackMagic', 'boss:💀': 'attackMagic',
     'shape:hex': 'healMagic',
@@ -3252,7 +3252,7 @@
     'emoji:🦇': 'merge',
   };
   const ENEMY_TRAIT_DESCS = {
-    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（グリーンはさらに大量）', grow: '時間とともに巨大化して強くなる',
+    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量）', grow: '時間とともに巨大化して強くなる',
     attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
     mines: '地雷を設置する', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
   };
@@ -3265,6 +3265,7 @@
     spike:       { times: 2, children: 1, hpRate: 0.18 },
     slimeOrange: { times: 2, children: 3, hpRate: 0.12 },
     slimeGreen:  { times: 2, children: 5, hpRate: 0.08 },
+    slimeBlood:  { times: 2, children: 7, hpRate: 0.06 },
   };
   function getSplitConfig(enemy) { return SPLIT_CONFIG[enemy.shape] || SPLIT_CONFIG.spike; }
   const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
@@ -5119,8 +5120,8 @@
   const TACKLE_TRADE_CHANCE = 0.4;
   const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）
   // ---------- 敵図鑑 ----------
-  const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', diamond: 'フレイムウィスプ', hex: '風の精霊', square: 'ワーム' };
-  const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
+  const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', slimeBlood: 'ブラッドスライム', diamond: 'フレイムウィスプ', hex: '風の精霊', square: 'ワーム' };
+  const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', slimeBlood: '#c8102e', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
   const EMOJI_ENEMY_NAMES = { '👹': 'オーガ', '👺': 'ゴブリン', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'カボチャヘッド', '🐉': 'ドラゴン', '🦂': 'コブラ', '🕷️': '巨大クモ', '🦇': 'コウモリ', '👾': 'メタルスライム', '🧟': 'ゾンビ', '🐺': 'ケルベロス', '🦖': 'サラマンダー', '🐲': 'ワイバーン' };
   const BOSS_ENEMY_NAMES = { '👹': 'デーモンロード', '🐉': '古代竜', '💀': '死霊王リッチ', '🦖': '暗黒竜', '👺': 'アークデーモン', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };
   // 敵のドット絵（64×64 PNG、背景透過）。内部キー（絵文字・図形）ごとに割り当て
@@ -5151,27 +5152,28 @@
     archDemon: 'data:image/webp;base64,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',
     ogre: 'data:image/webp;base64,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',
   };
-  const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', diamond: 'flameWisp', hex: 'windSpirit', square: 'worm' };
+  const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', diamond: 'flameWisp', hex: 'windSpirit', square: 'worm' };
   const EMOJI_ENEMY_SPRITE = { '👹': 'ogre', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🕷️': 'bigSpider', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🐺': 'cerberus', '🦖': 'salamander', '🐲': 'wyvern' };
   const BOSS_ENEMY_SPRITE = { '👹': 'demon', '🐉': 'redDragon', '💀': 'lich', '🦖': 'blackDragon', '👺': 'archDemon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
   const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
   const enemySpriteImgs = {};
   for (const k in ENEMY_SPRITES) { const img = new Image(); img.src = ENEMY_SPRITES[k]; enemySpriteImgs[k] = img; }
   // 色違いスライム：青いスライムの色相をずらして作る（画像を追加しないのでファイルサイズは増えない）
-  const SLIME_VARIANT_HUES = { slimeOrange: 32, slimeGreen: 118 };
+  const SLIME_VARIANT_HUES = { slimeOrange: 32, slimeGreen: 118, slimeBlood: 352 };
+  const SLIME_VARIANT_DARKEN = { slimeBlood: 0.78 }; // 血のような深い赤にするため少し暗く
   function buildSlimeVariants() {
     const src = enemySpriteImgs.slime;
     const w = src.naturalWidth, h = src.naturalHeight;
     for (const key in SLIME_VARIANT_HUES) {
       const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
       const c = cv.getContext('2d'); c.drawImage(src, 0, 0);
-      const d = c.getImageData(0, 0, w, h), px = d.data, target = SLIME_VARIANT_HUES[key] / 360;
+      const d = c.getImageData(0, 0, w, h), px = d.data, target = SLIME_VARIANT_HUES[key] / 360, dark = SLIME_VARIANT_DARKEN[key] || 1;
       for (let i = 0; i < px.length; i += 4) {
         if (!px[i + 3]) continue;
         const r = px[i] / 255, g = px[i + 1] / 255, b = px[i + 2] / 255;
-        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, dd = mx - mn;
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2 * dark, dd = mx - mn;
         if (dd < 0.08) continue; // 白・黒・灰色（目やハイライト）はそのまま
-        const sat = dd / (1 - Math.abs(2 * l - 1));
+        const sat = Math.min(1, dd / (1 - Math.abs((mx + mn) - 1)));
         const q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat, pp = 2 * l - q;
         const hue2 = t => { t = (t + 1) % 1; return t < 1 / 6 ? pp + (q - pp) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? pp + (q - pp) * (2 / 3 - t) * 6 : pp; };
         px[i] = hue2(target + 1 / 3) * 255; px[i + 1] = hue2(target) * 255; px[i + 2] = hue2(target - 1 / 3) * 255;
@@ -5266,10 +5268,11 @@
         { color: '#f46bd4', glow: 'rgba(244,107,212,0.55)', shape: 'square' }
       ];
       let style = enemyStyles[(game.stage - 1) % enemyStyles.length];
-      // スライムの色違い：先のステージほど出やすい（オレンジ＝4分裂、グリーン＝6分裂）
+      // スライムの色違い：先のステージほど出やすい（オレンジ＝4分裂、グリーン＝6分裂、ブラッド＝8分裂）
       if (style.shape === 'spike' && !es.isBoss) {
         const r = Math.random();
-        if (game.stage >= 11 && r < 0.25) style = { color: '#4fd35a', glow: 'rgba(79,211,90,0.55)', shape: 'slimeGreen' };
+        if (game.stage >= 21 && r < 0.18) style = { color: '#c8102e', glow: 'rgba(200,16,46,0.6)', shape: 'slimeBlood' };
+        else if (game.stage >= 11 && r < 0.4) style = { color: '#4fd35a', glow: 'rgba(79,211,90,0.55)', shape: 'slimeGreen' };
         else if (game.stage >= 5 && r < 0.6) style = { color: '#ff9a2e', glow: 'rgba(255,154,46,0.55)', shape: 'slimeOrange' };
       }
       // 激デカボス：ボスのうち時々、体が大きくHP・攻撃力が高い（倒すと報酬アップ）
