@@ -3252,7 +3252,7 @@
     'emoji:🦇': 'merge',
   };
   const ENEMY_TRAIT_DESCS = {
-    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量）', grow: '時間とともに巨大化して強くなる',
+    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
     attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
     mines: '地雷を設置する', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
   };
@@ -5645,7 +5645,19 @@
   }
   gameTabPage.addEventListener('animationend', ev => { if (ev.animationName === 'screenShakeLight') gameTabPage.classList.remove('screen-shake-light'); });
   wrap.addEventListener('animationend', ev => { if (ev.animationName === 'critFlash') wrap.classList.remove('crit-flash'); });
+  // ブラッドスライム（分裂した子も）は与えたダメージの一部を吸血してHP回復
+  const BLOOD_DRAIN_RATE = 0.5;
+  function bloodDrain(attacker, dmg) {
+    if (!attacker || attacker.shape !== 'slimeBlood' || attacker.isDying || attacker.hp <= 0 || !(dmg > 0)) return;
+    const heal = Math.min(attacker.maxHp - attacker.hp, Math.max(1, Math.round(dmg * BLOOD_DRAIN_RATE)));
+    if (heal <= 0) return;
+    attacker.hp += heal;
+    spawnDamageText(attacker.x, attacker.y - attacker.radius - 20, '🩸吸血 +' + heal, '#ff4d6d', 0.02);
+    spawnHitParticles(attacker.x, attacker.y, '#c8102e');
+    updateHPUI();
+  }
   function spawnReceivedDamageText(target, dmg, crit, attacker) {
+    bloodDrain(attacker, dmg);
     const y = target.y - target.radius - 8;
     if (!crit) { spawnDamageText(target.x, y, String(dmg), '#ffb3b3'); return; }
     spawnDamageText(target.x, y - 6, 'CRITICAL!\n' + dmg, '#ff3b4a', 0.014, true);
