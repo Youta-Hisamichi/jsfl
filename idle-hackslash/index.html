@@ -668,6 +668,42 @@
   .login-slot-box { font-size: 2.2rem; font-weight: 900; background: linear-gradient(160deg, rgba(255,215,107,0.15), rgba(20,26,40,0.9)); border: 2px solid var(--gold); border-radius: 12px; padding: 14px 8px; margin: 12px 0; letter-spacing: 1px; }
   .login-slot-box.spinning #loginSlotNum { display: inline-block; filter: blur(1px); }
   .login-slot-box.settled { animation: slotSettlePop 0.4s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 0 24px rgba(255,215,107,0.6) inset; }
+  /* ---- 復帰ガチャ（リッチ演出） ---- */
+  .lb-panel { position: relative; overflow: hidden; --lb: #ffd76b; transition: box-shadow 0.4s; }
+  .lb-panel.revealed { box-shadow: 0 0 0 2px var(--lb), 0 0 40px color-mix(in srgb, var(--lb) 55%, transparent); }
+  .lb-content { position: relative; z-index: 2; }
+  .lb-rays { position: absolute; left: 50%; top: 38%; width: 180%; aspect-ratio: 1; transform: translate(-50%, -50%); z-index: 0; opacity: 0; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--lb) 40%, transparent) 0deg 10deg, transparent 10deg 24deg); animation: lbSpin 9s linear infinite; transition: opacity 0.5s; }
+  .lb-panel.revealed .lb-rays { opacity: 0.55; }
+  .lb-panel.r-legendary .lb-rays { animation-duration: 4s; opacity: 0.8; }
+  @keyframes lbSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+  .lb-days { display: flex; justify-content: center; gap: 5px; margin: 8px 0 4px; }
+  .lb-day { width: 34px; padding: 3px 0 2px; border-radius: 8px; border: 1px solid var(--ring); background: var(--bg-soft); font-size: 0.56rem; font-weight: 800; color: var(--text-dim); line-height: 1.25; }
+  .lb-day b { display: block; font-size: 0.8rem; }
+  .lb-day.done { background: color-mix(in srgb, #7ee787 18%, var(--bg-soft)); color: #3fb950; border-color: #7ee78799; }
+  .lb-day.today { border: 2px solid var(--gold); color: var(--gold); transform: scale(1.12); box-shadow: 0 0 10px #ffd76b88; animation: lbToday 1s ease-in-out infinite alternate; }
+  .lb-day.big { background: linear-gradient(160deg, #ffd76b33, #c792ea33); }
+  @keyframes lbToday { from { box-shadow: 0 0 4px #ffd76b66; } to { box-shadow: 0 0 14px #ffd76bcc; } }
+  .lb-orb-wrap { height: 104px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
+  .lb-orb { width: 86px; height: 86px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.6rem;
+    background: radial-gradient(circle at 35% 30%, #ffffffcc, var(--orb, #ffd76b) 45%, color-mix(in srgb, var(--orb, #ffd76b) 55%, #000) 100%);
+    box-shadow: 0 0 22px var(--orb, #ffd76b); transition: background 0.12s, box-shadow 0.12s; }
+  .lb-orb .ico-img, .lb-orb img { width: 58px; height: 58px; }
+  .lb-orb.shaking { animation: lbShake 0.12s linear infinite; }
+  .lb-orb.burst { animation: lbBurst 0.55s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes lbShake { 0% { transform: rotate(-8deg) scale(1); } 50% { transform: rotate(8deg) scale(1.05); } 100% { transform: rotate(-8deg) scale(1); } }
+  @keyframes lbBurst { 0% { transform: scale(0.6); filter: brightness(3); } 50% { transform: scale(1.35); } 100% { transform: scale(1); filter: brightness(1); } }
+  .lb-rarity { min-height: 1.6em; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.06em; color: var(--lb); text-shadow: 0 0 10px color-mix(in srgb, var(--lb) 70%, transparent), 0 2px 0 rgba(0,0,0,0.35); }
+  .lb-rarity.pop { animation: lbRarityPop 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .lb-rarity .up { display: block; font-size: 0.7rem; color: #ff5c8a; animation: loginSparkle 0.5s infinite; }
+  @keyframes lbRarityPop { 0% { transform: scale(2.4); opacity: 0; } 60% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1); } }
+  .lb-extras { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0 14px; min-height: 1.6em; }
+  .lb-chip { padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 0.8rem; background: var(--bg-soft); border: 1px solid var(--lb); animation: lbChipIn 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+  .lb-chip.special { background: linear-gradient(90deg, #ffd76b33, #c792ea33); }
+  @keyframes lbChipIn { 0% { transform: translateY(12px) scale(0.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  .lb-confetti { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+  .lb-confetti i { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; animation: lbFall linear forwards; }
+  @keyframes lbFall { to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 0.2; } }
   @keyframes slotSettlePop { 0% { transform: scale(1.3); } 60% { transform: scale(0.92); } 100% { transform: scale(1); } }
   .modal-panel h2 { margin: 0 0 4px; font-size: 1.05rem; }
   .modal-sub { color: var(--text-dim); font-size: 0.75rem; margin-bottom: 12px; }
@@ -1132,13 +1168,19 @@
 </div>
 
 <div class="modal-overlay" id="loginBonusModal">
-  <div class="modal-panel" style="text-align:center;">
-    <div class="login-gift-icon" style="font-size:2.4rem;"><span data-xi="x_present" data-xi-big>🎰</span></div>
-    <h2>復帰ガチャ！</h2>
-    <div class="modal-sub login-bonus-sparkle" id="loginBonusStreak">連続ログイン 1日目</div>
-    <div id="loginSlotBox" class="login-slot-box">🟡 <span id="loginSlotNum">0</span></div>
-    <div id="loginBonusReward" style="font-weight:800; font-size:1.05rem; margin:10px 0 16px; min-height:1.4em;"></div>
-    <button class="modal-close-btn" id="loginBonusCloseBtn" disabled>抽選中……</button>
+  <div class="modal-panel lb-panel" id="lbPanel" style="text-align:center;">
+    <div class="lb-rays"></div>
+    <div class="lb-confetti" id="lbConfetti"></div>
+    <div class="lb-content">
+      <h2 class="lb-title">🎰 復帰ガチャ！</h2>
+      <div class="modal-sub login-bonus-sparkle" id="loginBonusStreak">連続ログイン 1日目</div>
+      <div class="lb-days" id="lbDays"></div>
+      <div class="lb-orb-wrap"><div class="lb-orb" id="lbOrb"><span data-xi="x_present" data-xi-big>🎁</span></div></div>
+      <div class="lb-rarity" id="lbRarity"></div>
+      <div id="loginSlotBox" class="login-slot-box">🟡 <span id="loginSlotNum">0</span></div>
+      <div class="lb-extras" id="loginBonusReward"></div>
+      <button class="modal-close-btn" id="loginBonusCloseBtn">抽選中……（タップでスキップ）</button>
+    </div>
   </div>
 </div>
 
@@ -4319,6 +4361,26 @@
     return 0;
   }
 
+  // 復帰ガチャ：玉が震えながらレア度の色を巡り、弾けてレア度が確定 → コインのスロット → おまけ報酬の順に演出
+  const LOGIN_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
+  const LOGIN_RARITY_TITLES = { common: 'NORMAL', rare: 'RARE!', epic: 'EPIC!!', legendary: 'LEGENDARY!!!' };
+  let loginGachaSkip = null; // 演出中にタップしたら最後まで早送り
+  function renderLoginDays(streak) {
+    const cycle = LOGIN_BONUS_TABLE.length, pos = (streak - 1) % cycle;
+    document.getElementById('lbDays').innerHTML = LOGIN_BONUS_TABLE.map((r, i) =>
+      `<div class="lb-day ${i < pos ? 'done' : ''} ${i === pos ? 'today' : ''} ${i === cycle - 1 ? 'big' : ''}"><b>${i < pos ? '✔' : i === cycle - 1 ? '🎁' : i + 1}</b>${i + 1}日目</div>`).join('');
+  }
+  function spawnLoginConfetti(rarity) {
+    const box = document.getElementById('lbConfetti');
+    const n = { common: 0, rare: 18, epic: 40, legendary: 80 }[rarity];
+    const cols = rarity === 'legendary' ? ['#ffd76b', '#ff5c8a', '#64e8ff', '#7ee787', '#c792ea', '#ffffff'] : [RARITY_INFO[rarity].color, '#ffffff', '#ffd76b'];
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      const dur = 1.6 + Math.random() * 1.8, delay = Math.random() * 0.6;
+      html += `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - 0.5) * 120}px;--rot:${Math.random() * 900 - 450}deg;animation-duration:${dur}s;animation-delay:${delay}s"></i>`;
+    }
+    box.innerHTML = html;
+  }
   function checkLoginBonus() {
     const today = dateKey(new Date());
     if (game.lastLoginDate === today) return;
@@ -4333,49 +4395,118 @@
     const b = computeBonuses();
     const bonusCoins = Math.round(reward.coins * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
     const bonusGems = reward.gems + LOGIN_RARITY_EXTRA_GEMS[rarity];
+    const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
+    // おまけ：エピック以上は回復ポーション、レジェンドは遺物も1つ
+    const bonusPotion = rIdx >= 2 ? 1 : 0;
+    const bonusArtifact = rarity === 'legendary' ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
+    // エピック以上は半分の確率で「一段下のレア度 → 昇格！」のあおり演出
+    const fakeOut = rIdx >= 2 && Math.random() < 0.5;
     game.loginStreak = newStreak;
     game.lastLoginDate = today;
+    // 報酬は先に確定して保存（演出の途中で閉じても受け取り済み）
+    game.coins += bonusCoins;
+    game.gems += bonusGems;
+    if (bonusPotion) game.potions = (game.potions || 0) + bonusPotion;
+    if (bonusArtifact) gainArtifact(bonusArtifact.id);
+    saveGame();
 
+    const panel = document.getElementById('lbPanel'), orb = document.getElementById('lbOrb'), rarityEl = document.getElementById('lbRarity');
+    panel.className = 'modal-panel lb-panel';
+    panel.style.setProperty('--lb', '#ffd76b');
+    orb.style.setProperty('--orb', '#ffd76b');
+    orb.className = 'lb-orb shaking';
+    rarityEl.className = 'lb-rarity'; rarityEl.innerHTML = '';
+    document.getElementById('lbConfetti').innerHTML = '';
     loginBonusStreak.textContent = '連続ログイン ' + newStreak + '日目';
-    loginBonusReward.textContent = '';
-    loginBonusCloseBtn.disabled = true;
-    loginBonusCloseBtn.textContent = '抽選中……';
+    renderLoginDays(newStreak);
+    loginBonusReward.innerHTML = '';
+    loginBonusCloseBtn.disabled = false; // 演出中に押すとスキップ、終わってから押すと閉じる
+    loginBonusCloseBtn.textContent = '抽選中……（タップでスキップ）';
     loginSlotBox.classList.remove('settled');
     loginSlotBox.classList.add('spinning');
+    loginSlotBox.style.borderColor = ''; loginSlotBox.style.boxShadow = '';
     loginSlotNum.textContent = '0';
     loginBonusModal.classList.add('show');
 
-    // スロットが回って徐々に減速しながらコイン数が確定する演出
+    const timers = [];
+    const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+    let done = false;
+    // 1) 玉が震えながら色が巡る（だんだんゆっくり）
+    let cyc = 0;
+    const cycle = () => {
+      if (done) return;
+      const c = RARITY_INFO[LOGIN_RARITY_ORDER[cyc++ % 4]].color;
+      orb.style.setProperty('--orb', c);
+      playSlotTickSound();
+      if (cyc < 14) later(cycle, 60 + cyc * 12);
+    };
+    later(cycle, 200);
+    const showRarity = (r, withUp) => {
+      const info = RARITY_INFO[r];
+      panel.style.setProperty('--lb', info.color);
+      orb.style.setProperty('--orb', info.color);
+      orb.className = 'lb-orb burst';
+      panel.classList.add('revealed');
+      panel.classList.remove('r-common', 'r-rare', 'r-epic', 'r-legendary'); panel.classList.add('r-' + r);
+      rarityEl.innerHTML = (withUp ? '<span class="up">⬆ 昇格！！</span>' : '') + `${rarityStars(r)} ${LOGIN_RARITY_TITLES[r]}`;
+      rarityEl.className = 'lb-rarity'; void rarityEl.offsetWidth; rarityEl.className = 'lb-rarity pop';
+      playGachaSound(r);
+    };
+    // 2) 玉が弾けてレア度が確定（あおりの時は一段下 → 昇格）
+    let t = 1500;
+    if (fakeOut) { later(() => showRarity(LOGIN_RARITY_ORDER[rIdx - 1], false), t); t += 900; later(() => { showRarity(rarity, true); shakeScreenLight(); }, t); }
+    else later(() => showRarity(rarity, false), t);
+    later(() => { spawnLoginConfetti(rarity); if (rIdx >= 2) playLoginBonusSound(); }, t + 100);
+    // 3) コインのスロットが回って確定
     let ticks = 0;
-    const totalTicks = 16;
     const spin = () => {
-      ticks++;
-      if (ticks < totalTicks) {
+      if (done) return;
+      if (++ticks < 14) {
         loginSlotNum.textContent = Math.round(Math.random() * bonusCoins * 1.4).toLocaleString('ja-JP');
         playSlotTickSound();
-        const delay = 40 + Math.pow(ticks / totalTicks, 2) * 180; // 徐々に間隔を伸ばして減速
-        setTimeout(spin, delay);
-      } else {
-        loginSlotNum.textContent = formatCoinNumber(bonusCoins);
-        loginSlotBox.classList.remove('spinning');
-        loginSlotBox.classList.add('settled');
-        loginSlotBox.style.borderColor = rarityInfo.color;
-        loginSlotBox.style.boxShadow = `0 0 24px ${rarityInfo.color}99 inset`;
-        playSlotSettleSound();
-        game.coins += bonusCoins;
-        game.gems += bonusGems;
-        saveGame();
-        loginBonusReward.innerHTML = `<span style="color:${rarityInfo.color}">${rarityStars(rarity)}</span>` + (bonusGems ? `　💎 +${bonusGems} ジェムもGET！` : '');
-        loginBonusCloseBtn.disabled = false;
-        loginBonusCloseBtn.textContent = '受け取る';
-        if (rarity === 'epic' || rarity === 'legendary') setTimeout(playLoginBonusSound, 150);
-        updateStatsUI();
-      }
+        later(spin, 40 + Math.pow(ticks / 14, 2) * 160);
+      } else settleCoins();
     };
-    setTimeout(spin, 300);
+    const settleCoins = () => {
+      loginSlotNum.textContent = formatCoinNumber(bonusCoins);
+      loginSlotBox.classList.remove('spinning');
+      loginSlotBox.classList.add('settled');
+      loginSlotBox.style.borderColor = rarityInfo.color;
+      loginSlotBox.style.boxShadow = `0 0 24px ${rarityInfo.color}99 inset`;
+      playSlotSettleSound();
+    };
+    later(spin, t + 350);
+    // 4) おまけ報酬のチップが順に出る
+    const chips = [];
+    if (bonusGems) chips.push(`💎 +${bonusGems} ジェム`);
+    if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
+    if (bonusArtifact) chips.push({ special: true, html: `${ico(bonusArtifact)} 遺物「${bonusArtifact.name}」` });
+    if (LOGIN_RARITY_MULT[rarity] > 1) chips.push(`🟡 コイン ×${LOGIN_RARITY_MULT[rarity]}`);
+    const showChips = () => {
+      loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
+    };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
+      loginGachaSkip = null;
+      if (!panel.classList.contains('revealed')) { showRarity(rarity, false); spawnLoginConfetti(rarity); }
+      else if (!rarityEl.textContent.includes(LOGIN_RARITY_TITLES[rarity])) showRarity(rarity, fakeOut);
+      if (!loginSlotBox.classList.contains('settled')) settleCoins();
+      showChips();
+      loginBonusCloseBtn.disabled = false;
+      loginBonusCloseBtn.textContent = '受け取る';
+      updateStatsUI(); updatePotionButton(); renderArtifactList();
+    };
+    later(finish, t + 350 + 1500);
+    loginGachaSkip = finish;
   }
+  // 演出中にパネルをタップしたら早送り
+  document.getElementById('lbPanel').addEventListener('click', ev => {
+    if (loginGachaSkip) { ev.stopPropagation(); loginGachaSkip(); }
+  }, true);
   loginBonusCloseBtn.addEventListener('click', () => {
-    if (loginBonusCloseBtn.disabled) return;
+    if (loginBonusCloseBtn.disabled || loginGachaSkip) return;
     loginBonusModal.classList.remove('show');
   });
 
