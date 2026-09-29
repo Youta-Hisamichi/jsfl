@@ -1199,7 +1199,7 @@
 
 <div class="modal-overlay" id="gemShortModal" style="z-index:70;">
   <div class="modal-panel" style="text-align:center;">
-    <div style="font-size:2.4rem;">💎</div>
+    <div style="font-size:2.4rem;" id="gemShortIcon">💎</div>
     <h2 id="gemShortTitle">ジェムが足りません</h2>
     <div class="modal-sub" id="gemShortText" style="color:var(--text); font-size:0.85rem;"></div>
     <div class="modal-shop-list">
@@ -1684,6 +1684,7 @@
   function promptGemShortage(needed, options = {}) {
     const lack = Math.max(1, Math.ceil(needed - game.gems));
     document.getElementById('gemShortTitle').textContent = options.title || 'ジェムが足りません';
+    document.getElementById('gemShortIcon').textContent = options.icon || '💎'; // 絵文字は自動でアイコン画像に置き換わる
     gemShortText.textContent = options.text || `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
     gemShortPending = options;
     if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();
@@ -9178,7 +9179,7 @@
     potionBtn.classList.toggle('is-disabled', n <= 0);
   }
   potionBtn.addEventListener('click', event => {
-    if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ジェムショップで回復ポーションを買いますか？', silent: true }); return; }
+    if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ジェムショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
     const player = balls.find(ball => isMainPlayerBall(ball));
     if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
     if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
