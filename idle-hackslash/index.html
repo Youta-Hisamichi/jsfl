@@ -8012,9 +8012,9 @@
   // ドット絵のもともとの向き（1=右向き、-1=左向き、0=正面なので反転しない）
   const SPRITE_FACING = {
     hero: 1, knight: 1, archer: 1, witch: 1, sprite: 1, golem: 1, monk: -1, bard: -1, ninja: -1, priest: -1, dragon: 1, lumber: -1, cook: 1, thief: 1, lancer: 1, samurai: -1, sage: 1, angel: 1,
-    slime: 0, metalSlime: 0, goblin: -1, skeleton: 1, zombie: 1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
-    worm: 1, cobra: 1, salamander: 1, flameWisp: 0, windSpirit: 0, lich: -1, bigSpider: 0, cerberus: 0,
-    redDragon: 0, blueDragon: 0, blackDragon: 1, wyvern: 1, archDemon: 0, ogre: 0,
+    slime: 0, metalSlime: 0, goblin: -1, skeleton: 1, zombie: 1, livingArmor: -1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
+    worm: 1, cobra: 1, salamander: 1, flameWisp: 0, windSpirit: 0, lich: 1, bigSpider: 0, cerberus: 0,
+    redDragon: 1, blueDragon: 1, blackDragon: 1, wyvern: 1, archDemon: 1, ogre: 0,
   };
   // 味方・敵とも最も近い相手の方を向くように左右反転して描く（真上・真下付近では向きを保つ）
   function drawFacingSprite(img, ball, key, cx, cy, sz) {
