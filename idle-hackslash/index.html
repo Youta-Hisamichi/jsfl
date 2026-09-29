@@ -816,6 +816,7 @@
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button>
+      <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
       <div class="debug-cat">🔓 解放・付与</div>
@@ -5111,6 +5112,7 @@
   // 針鎧の王：タメ体当たりを受けると、一定確率でトゲで反撃して相打ちになる
   const TACKLE_TRADE_BOSS = '🦔';
   let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
+  let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定
   const GIANT_BOSS_CHANCE = 0.25;   // ボスが激デカになる確率
   const GIANT_BOSS_RADIUS = 60;
   const GIANT_BOSS_HP_MULT = 3;
@@ -5279,10 +5281,16 @@
       const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || Math.random() < GIANT_BOSS_CHANCE);
       forcedGiantBoss = false;
       if (isGiant) { es.hp = Math.round(es.hp * GIANT_BOSS_HP_MULT); es.atk = Math.round(es.atk * GIANT_BOSS_ATK_MULT); }
-      const isEmoji = !es.isBoss && Math.random() < 0.45;
-      const emoji = es.isBoss
+      let isEmoji = !es.isBoss && Math.random() < 0.45;
+      let emoji = es.isBoss
         ? (forcedBossEmoji || BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)])
         : (isEmoji ? EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)] : null);
+      if (forcedEnemyKey && !es.isBoss) {
+        // デバッグ：指定した種類の敵を出す
+        const [kind, val] = forcedEnemyKey.split(':');
+        if (kind === 'shape') { isEmoji = false; emoji = null; const c = SHAPE_ENEMY_COLORS[val] || '#ff5c6c'; style = { color: c, glow: c + '8c', shape: val }; }
+        else { isEmoji = true; emoji = val; }
+      }
       const movementStyle = es.isBoss ? 'normal' : pickEnemyMovementStyle(game.stage);
       const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
       return {
@@ -8106,6 +8114,23 @@
       renderSkillGacha();
       saveGame();
     }
+    if (action.startsWith('enemy:')) {
+      // 特殊な敵の確認：指定した敵をすぐ出現させる（ボスは次のボスステージで出す）
+      const key = action.slice(6);
+      const [kind, val] = key.split(':');
+      game.skipChallenge = null;
+      if (kind === 'boss') { if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10; forcedBossEmoji = val; }
+      else { if (game.stage % 10 === 0) game.stage++; forcedEnemyKey = key; }
+      game.bestStage = Math.max(game.bestStage, game.stage);
+      balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
+      forcedBossEmoji = null; forcedEnemyKey = null;
+      refreshPlayerBallStats(true); updateStatsUI(); updateHPUI();
+      if (kind === 'boss') showBossWarning();
+      startBgm(kind === 'boss' ? 'boss' : 'normal');
+      switchTab('game');
+      showNotice(`DEBUG: ${button.textContent} を出現`);
+      return;
+    }
     if (action.startsWith('bgm:')) {
       // BGMチェック：指定した曲を戦闘BGMとして流す（ゲーム画面で聴ける）
       const key = action.slice(4);
@@ -9489,6 +9514,9 @@
   });
   updateSkillButtonVisibility();
   updatePotionButton();
+  // 特殊な敵（特性持ち）の出現ボタンを図鑑から作る
+  document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
+    .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
   // BGMのチェックボタンと概要一覧を BGM_INFO から作る
   document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
   function renderBgmInfo() { // （関数宣言なので上のデバッグ処理からも呼べる）
