@@ -644,6 +644,17 @@
   .funds-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; white-space: normal; }
   .funds-table th, .funds-table td { border: 1px solid var(--ring); padding: 6px 8px; text-align: left; vertical-align: top; line-height: 1.5; }
   .funds-table th { width: 34%; background: var(--bg-soft); font-weight: 800; }
+  /* BGM図鑑 */
+  .bgm-book-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .bgm-book-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--ring); border-radius: 10px; background: var(--bg-soft); }
+  .bgm-book-row .bb-info { flex: 1; min-width: 0; }
+  .bgm-book-row .bb-name { font-weight: 800; font-size: 0.8rem; }
+  .bgm-book-row .bb-desc { font-size: 0.66rem; color: var(--text-dim); line-height: 1.45; margin-top: 2px; }
+  .bgm-book-row.locked { opacity: 0.55; }
+  .bgm-book-row.locked .bb-name { letter-spacing: 0.2em; }
+  .bgm-book-row.playing { border-color: var(--gold); box-shadow: 0 0 10px #ffd76b55; }
+  .bgm-book-row .bb-play { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--gold); background: transparent; color: var(--gold); font-size: 0.95rem; font-weight: 900; cursor: pointer; }
+  .bgm-book-row.playing .bb-play { background: var(--gold); color: #1a1408; }
   .tab-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: flex; background: var(--panel); border-top: 1px solid var(--ring);
@@ -1021,6 +1032,9 @@
       </div>
       <div class="title" style="margin-top:14px;"><span data-xi="x_book">📖</span> 敵図鑑 <span id="bestiaryCount" style="color:var(--gold);">0 / 0</span></div>
       <div class="bestiary-list" id="bestiaryList"></div>
+      <div class="title" style="margin-top:14px;">🎵 BGM図鑑 <span id="bgmBookCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="modal-sub" style="margin:-4px 0 6px;">戦闘の曲は、その曲が流れているステージをクリアすると登録。ページの曲は一度聴くと登録されます。</div>
+      <div class="bgm-book-list" id="bgmBookList"></div>
       <button class="share-btn" data-share="records" style="margin-bottom:8px;">📤 戦績をシェア</button>
     </div>
   </div>
@@ -1529,7 +1543,8 @@
     renderDirtyTabList(name);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
-    if (name === 'records') renderBestiary();
+    if (name === 'records') { renderBestiary(); renderBgmBook(); }
+    else if (bgmBookPreview) bgmBookPreview = null; // 戦績ページを離れたら試聴をやめる
     if (name === 'game') resizeCanvas();
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
     if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
@@ -2290,6 +2305,7 @@
     skillSlots: 1, equippedSkills: [], // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
     skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
     bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
+    bgmBook: {}, // BGM図鑑 { 曲キー: 登録したステージ }（転生しても残る）
     tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
     tacklePierceLv: 0, // ジェムショップ「貫きの蹄鉄」の購入数（タックルのヒット後持続 +0.1秒ずつ）
     companionSlots: 1, // 仲間のパーティ枠（ジェムで最大8まで。転生しても残る）
@@ -5365,6 +5381,38 @@
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
+  // ---------- BGM図鑑 ----------
+  let bgmBookPreview = null;    // 図鑑で試聴中の曲
+  const BATTLE_BGM_KEYS = {};   // 戦闘の曲（ステージをクリアして登録）
+  [...NORMAL_BATTLE_SONGS, ...BOSS_BATTLE_SONGS].forEach(k => BATTLE_BGM_KEYS[k] = true);
+  function unlockBgmBook(key) {
+    if (!BGM_INFO.some(b => b.key === key)) return;
+    if (!game.bgmBook) game.bgmBook = {};
+    if (game.bgmBook[key]) return;
+    game.bgmBook[key] = game.stage;
+    if (BATTLE_BGM_KEYS[key]) { const info = BGM_INFO.find(b => b.key === key); showNotice(`🎵 BGM図鑑に登録：${info.name}`, false, 2500); }
+    if (getActiveTab() === 'records') renderBgmBook();
+  }
+  function renderBgmBook() {
+    const list = document.getElementById('bgmBookList');
+    if (!list) return;
+    const book = game.bgmBook || {};
+    document.getElementById('bgmBookCount').textContent = `${BGM_INFO.filter(b => book[b.key]).length} / ${BGM_INFO.length}`;
+    list.innerHTML = BGM_INFO.map(b => {
+      const got = book[b.key];
+      if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れるステージをクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
+      const playing = bgmBookPreview === b.key;
+      return `<div class="bgm-book-row ${playing ? 'playing' : ''}"><button class="bb-play" data-bgm-book="${b.key}">${playing ? '■' : '▶'}</button><div class="bb-info"><div class="bb-name">${b.name}</div><div class="bb-desc">${b.desc}</div></div></div>`;
+    }).join('');
+  }
+  document.getElementById('bgmBookList').addEventListener('click', ev => {
+    const btn = ev.target.closest('[data-bgm-book]');
+    if (!btn) return;
+    ensureAudio();
+    bgmBookPreview = bgmBookPreview === btn.dataset.bgmBook ? null : btn.dataset.bgmBook;
+    refreshBgm();
+    renderBgmBook();
+  });
   let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
   // ゲームオーバー（コンテニュー確認）中と転生中はチャレンジ（ステージスキップ）ボタンを隠す
   function updateSkipBtnVisibility() {
@@ -5381,6 +5429,7 @@
     let type = battleBgmType;
     if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
     else if (gameOverBgm) type = 'gameover';
+    else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
     else {
       const tab = getActiveTab();
       if (tab !== 'game' && (BGM_SONGS[tab] || BGM_PATTERNS[tab])) type = tab; // 各ページ専用の曲
@@ -5416,6 +5465,7 @@
   }
   function playBgmTrack(type) {
     if (currentBgmType === type) return;
+    if (type && !BATTLE_BGM_KEYS[type]) unlockBgmBook(type); // ページ・コンテニューの曲は聴いたら図鑑に登録
     bgmToken++;
     currentBgmType = type;
     clearTimeout(bgmTimer);
@@ -7041,6 +7091,7 @@
 
   // ---------- ステージクリア ----------
   function onStageClear() {
+    if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
     const b = computeBonuses();
     const isBossStage = game.stage % 10 === 0;
     const defeated = balls.find(ball => !ball.isPlayer);
