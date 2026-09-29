@@ -453,7 +453,7 @@
   .bst-card.unknown .bst-face { color: var(--text-dim); font-weight: 900; }
   .bst-face { font-size: 1.6rem; line-height: 1.2; height: 2rem; display: flex; align-items: center; justify-content: center; }
   .bst-shape { display: inline-block; width: 22px; height: 22px; }
-  .bst-spike, .bst-slimeOrange, .bst-slimeGreen, .bst-slimeBlood { clip-path: polygon(50% 0, 61% 30%, 93% 25%, 72% 50%, 93% 75%, 61% 70%, 50% 100%, 39% 70%, 7% 75%, 28% 50%, 7% 25%, 39% 30%); }
+  .bst-spike, .bst-slimeOrange, .bst-slimeGreen, .bst-slimeBlood, .bst-slimeChibi, .bst-slimeJumbo { clip-path: polygon(50% 0, 61% 30%, 93% 25%, 72% 50%, 93% 75%, 61% 70%, 50% 100%, 39% 70%, 7% 75%, 28% 50%, 7% 25%, 39% 30%); }
   .bst-diamond { transform: rotate(45deg) scale(0.8); }
   .bst-square { border-radius: 3px; }
   .bst-hex { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
@@ -3291,6 +3291,7 @@
     'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
     'shape:spike': 'split',
     'shape:slimeOrange': 'splitMany', 'shape:slimeGreen': 'splitMany', 'shape:slimeBlood': 'splitMany',
+    'shape:slimeChibi': 'jumbo', 'shape:slimeJumbo': 'jumbo',
     'shape:square': 'grow',
     'emoji:👻': 'attackMagic', 'boss:💀': 'attackMagic',
     'shape:hex': 'healMagic',
@@ -3302,9 +3303,9 @@
   const ENEMY_TRAIT_DESCS = {
     charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
     attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
-    mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
+    mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
   };
-  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
+  const ENEMY_TRAIT_LABELS = { jumbo: 'ジャンボ合体', charge: '突進', spinGuard: '回転ガード', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
   const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
   const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
   const SPLIT_TIMES = 2;         // 分裂できる回数
@@ -3329,6 +3330,66 @@
   const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
   const MERGE_MINIONS = 4;          // 手下がこの数集まると合体
   const MERGE_MAX = 6;              // 合体の上限回数
+  // チビスライム → ジャンボスライム
+  const JUMBO_CHIBIS = 8;           // 一緒に現れるチビスライムの数
+  const JUMBO_GATHER_FRAMES = 300;  // 現れてからこの時間（ゲーム速度1倍のフレーム）で集まり始める
+  const JUMBO_HP_PER_CHIBI = 0.45;  // チビ1体を取り込むごとに増える最大HP（元の最大HP比）
+  const JUMBO_ATK_PER_CHIBI = 0.12; // チビ1体を取り込むごとに増える攻撃力
+  function updateJumboSlime(e, speedMult) {
+    if (!e.jumboInit) {
+      e.jumboInit = true; e.jumboTimer = 0; e.jumboCount = 0; e.jumboBaseHp = e.maxHp; e.jumboBaseAtk = e.atk;
+      if (e.shape === 'slimeJumbo') { e.jumboDone = true; return; } // 最初からジャンボ（デバッグ用）
+      e.traitBaseRadius = 12; e.radius = 12;
+      for (let i = 0; i < JUMBO_CHIBIS; i++) {
+        const c = makeAddEnemy(e);
+        const a = Math.PI * 2 * i / JUMBO_CHIBIS, r = arena.radius * (0.35 + Math.random() * 0.35);
+        c.x = arena.x + Math.cos(a) * r; c.y = arena.y + Math.sin(a) * r;
+        c.shape = 'slimeChibi'; c.emoji = null; c.color = e.color; c.glow = e.glow;
+        c.radius = 9; c.maxHp = c.hp = Math.max(4, Math.round(e.maxHp * 0.12));
+        c.chibiOwner = e; c.isSplit = true; // 残っている間は次のステージに進まない
+        adds.push(c);
+      }
+      spawnDamageText(arena.x, arena.y - 50, 'チビスライムの群れだ！', '#7fd6ff', 0.012, true);
+      return;
+    }
+    if (e.jumboDone) return;
+    const chibis = adds.filter(ad => ad.chibiOwner === e && ad.hp > 0);
+    e.jumboTimer += speedMult;
+    if (!e.jumboGathering && e.jumboTimer >= JUMBO_GATHER_FRAMES && chibis.length) {
+      e.jumboGathering = true;
+      chibis.forEach(ad => { ad.merging = true; ad.traitFreeze = true; });
+      spawnDamageText(e.x, e.y - e.radius - 24, '集まれ〜！', '#b46cff', 0.014, true);
+      playTone(520, 0.25, 'triangle', 0.12, 880);
+    }
+    for (const ad of chibis) {
+      if (!ad.merging) continue;
+      const dx = e.x - ad.x, dy = e.y - ad.y, dist = Math.hypot(dx, dy) || 1;
+      const step = Math.min(dist, 6 * speedMult);
+      ad.x += dx / dist * step; ad.y += dy / dist * step;
+      if (dist < e.radius + 2) {
+        ad.hp = 0; ad.chibiOwner = null;
+        e.jumboCount++;
+        const hpUp = Math.round(e.jumboBaseHp * JUMBO_HP_PER_CHIBI);
+        e.maxHp += hpUp; e.hp += hpUp; e.traitLastHp = e.hp;
+        e.atk = Math.round(e.jumboBaseAtk * (1 + JUMBO_ATK_PER_CHIBI * e.jumboCount));
+        e.traitBaseRadius = Math.min(46, 12 + e.jumboCount * 4); e.radius = e.traitBaseRadius;
+        spawnHitParticles(e.x, e.y, '#b46cff');
+        playTone(300 + e.jumboCount * 40, 0.12, 'square', 0.08, 600 + e.jumboCount * 60);
+        updateHPUI();
+      }
+    }
+    // 集まり終わったら（または全員倒されたら）ジャンボスライムに変身
+    if (e.jumboGathering && !adds.some(ad => ad.chibiOwner === e && ad.hp > 0)) {
+      e.jumboDone = true;
+      if (e.jumboCount > 0) {
+        e.shape = 'slimeJumbo'; e.color = '#b46cff'; e.glow = 'rgba(180,108,255,0.6)';
+        spawnDamageText(e.x, e.y - e.radius - 30, `合体！ジャンボスライム（×${e.jumboCount + 1}）`, '#b46cff', 0.01, true);
+        for (let i = 0; i < 3; i++) spawnHitParticles(e.x, e.y, i % 2 ? '#ffffff' : '#b46cff');
+        shakeScreenLight(); playNoiseBurst(0.35, 0.25);
+        updateHPUI();
+      }
+    }
+  }
   const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
   function isSwarmStage(stage) { return stage % 10 === 5; } // 大群ステージ（5, 15, 25…） // 敵の即死魔法の成功率（バリアで防げる）
   let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
@@ -3444,6 +3505,8 @@
         } else if (e.traitState === 'guard' && e.traitTimer <= 0) {
           e.traitState = null; e.guarding = false; e.traitCd = randTraitCd(trait);
         }
+      } else if (trait === 'jumbo') {
+        updateJumboSlime(e, speedMult);
       } else if (trait === 'merge') {
         // 手下を呼び、数が揃ったら本体に集まって合体（HP・攻撃力・大きさアップ）
         const mine = adds.filter(ad => ad.mergeOwner === e && ad.hp > 0);
@@ -5348,8 +5411,8 @@
   const TACKLE_TRADE_CHANCE = 0.4;
   const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）
   // ---------- 敵図鑑 ----------
-  const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', slimeBlood: 'ブラッドスライム', diamond: 'フレイムウィスプ', hex: '風の精霊', square: 'ワーム' };
-  const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', slimeBlood: '#c8102e', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
+  const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', slimeBlood: 'ブラッドスライム', slimeChibi: 'チビスライム', slimeJumbo: 'ジャンボスライム', diamond: 'フレイムウィスプ', hex: '風の精霊', square: 'ワーム' };
+  const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', slimeBlood: '#c8102e', slimeChibi: '#5cc8ff', slimeJumbo: '#b46cff', diamond: '#ff9d4f', hex: '#60d6a6', square: '#f46bd4' };
   const EMOJI_ENEMY_NAMES = { '👹': 'オーガ', '👺': 'ゴブリン', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'カボチャヘッド', '🐉': 'ドラゴン', '🦂': 'コブラ', '🕷️': '巨大クモ', '🦇': 'コウモリ', '👾': 'メタルスライム', '🧟': 'ゾンビ', '🐺': 'ケルベロス', '🦖': 'サラマンダー', '🐲': 'ワイバーン' };
   const BOSS_ENEMY_NAMES = { '👹': 'デーモンロード', '🐉': '古代竜', '💀': '死霊王リッチ', '🦖': '暗黒竜', '👺': 'アークデーモン', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };
   // 敵のドット絵（64×64 PNG、背景透過）。内部キー（絵文字・図形）ごとに割り当て
@@ -5380,7 +5443,7 @@
     archDemon: 'data:image/webp;base64,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',
     ogre: 'data:image/webp;base64,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',
   };
-  const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', diamond: 'flameWisp', hex: 'windSpirit', square: 'worm' };
+  const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', slimeChibi: 'slime', slimeJumbo: 'slimeJumbo', diamond: 'flameWisp', hex: 'windSpirit', square: 'worm' };
   const EMOJI_ENEMY_SPRITE = { '👹': 'ogre', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🕷️': 'bigSpider', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🐺': 'cerberus', '🦖': 'salamander', '🐲': 'wyvern' };
   const BOSS_ENEMY_SPRITE = { '👹': 'demon', '🐉': 'redDragon', '💀': 'lich', '🦖': 'blackDragon', '👺': 'archDemon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
   const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
@@ -5388,7 +5451,7 @@
   const enemySpriteImgs = {};
   for (const k in ENEMY_SPRITES) { const img = new Image(); img.src = ENEMY_SPRITES[k]; enemySpriteImgs[k] = img; }
   // 色違いスライム：青いスライムの色相をずらして作る（画像を追加しないのでファイルサイズは増えない）
-  const SLIME_VARIANT_HUES = { slimeOrange: 32, slimeGreen: 118, slimeBlood: 352 };
+  const SLIME_VARIANT_HUES = { slimeOrange: 32, slimeGreen: 118, slimeBlood: 352, slimeJumbo: 278 };
   const SLIME_VARIANT_DARKEN = { slimeBlood: 0.78 }; // 血のような深い赤にするため少し暗く
   function buildSlimeVariants() {
     const src = enemySpriteImgs.slime;
@@ -5506,6 +5569,7 @@
         if (game.stage >= 21 && r < 0.18) style = { color: '#c8102e', glow: 'rgba(200,16,46,0.6)', shape: 'slimeBlood' };
         else if (game.stage >= 11 && r < 0.4) style = { color: '#4fd35a', glow: 'rgba(79,211,90,0.55)', shape: 'slimeGreen' };
         else if (game.stage >= 5 && r < 0.6) style = { color: '#ff9a2e', glow: 'rgba(255,154,46,0.55)', shape: 'slimeOrange' };
+        else if (game.stage >= 8 && r < 0.78) style = { color: '#5cc8ff', glow: 'rgba(92,200,255,0.55)', shape: 'slimeChibi' }; // チビスライムの群れ → ジャンボ
       }
       // 激デカボス：ボスのうち時々、体が大きくHP・攻撃力が高い（倒すと報酬アップ）
       const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || Math.random() < GIANT_BOSS_CHANCE);
