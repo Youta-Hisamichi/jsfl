@@ -1569,6 +1569,8 @@
     TAB_LISTS[name].forEach(fn => fn());
   }
   function switchTab(name) {
+    // やられ演出〜コンテニュー確認の間はゲーム画面から離れられない（覆いの下で操作できなくなるのを防ぐ）
+    if (name !== 'game' && typeof gameOverBgm !== 'undefined' && (gameOverBgm || (phase === 'paused' && deathFx))) return;
     activeTabCache = name;
     document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
     if (name !== 'game' && typeof userPaused !== 'undefined' && userPaused) setUserPaused(false); // 他のページへ移ったら一時停止を解除
@@ -7279,6 +7281,7 @@
   }
   function showContinuePrompt() {
     if (phase !== 'paused') return;
+    if (getActiveTab() !== 'game') switchTab('game'); // 他のページを開いていたらゲーム画面に戻してからコンテニューを出す
     gameOverBgm = true; updateSkipBtnVisibility();
     refreshBgm();
     continueDeadline = Date.now() + 10000;
