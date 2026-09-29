@@ -603,6 +603,11 @@
   .tab-page { display: none; flex-direction: column; gap: 12px; }
   .tab-page.active { display: flex; }
 
+  /* ゲームオーバー中の覆い：パネル（サークル）とシェアボタンだけ手前に出して押せるようにする */
+  body.gameover-lock::before { content: ''; position: fixed; inset: 0; z-index: 48; background: rgba(6,8,14,0.55); }
+  body.gameover-lock .arena-wrap { z-index: 49; }
+  body.gameover-lock .share-btn[data-share="game"] { position: relative; z-index: 49; }
+  body.gameover-lock .potion-float { opacity: 0.35; pointer-events: none; }
   .tab-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: flex; background: var(--panel); border-top: 1px solid var(--ring);
@@ -4997,7 +5002,12 @@
   let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
   // ゲームオーバー（コンテニュー確認）中と転生中はチャレンジ（ステージスキップ）ボタンを隠す
   function updateSkipBtnVisibility() {
-    stageSkipBtn.style.display = gameOverBgm || rebirthFlow ? 'none' : '';
+    const hide = gameOverBgm || rebirthFlow;
+    stageSkipBtn.style.display = hide ? 'none' : '';
+    if (hide) rebornBtn.style.display = 'none'; // 転生するボタンもゲームオーバー・転生中は出さない
+    else rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
+    // ゲームオーバー中は画面全体を半透明で覆い、コンテニューのパネルとシェアボタン以外は押せないようにする
+    document.body.classList.toggle('gameover-lock', gameOverBgm);
   }
   // 今の場面に合うBGMを選んで流す（転生ショップ＞ゲームオーバー＞開いているタブ＞戦闘）
   function refreshBgm() {
