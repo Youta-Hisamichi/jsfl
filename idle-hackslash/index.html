@@ -4506,15 +4506,26 @@
   // ---------- 多重トラックの戦闘BGM（メロディ・ベース・和音・ドラム） ----------
   // 1トークン＝8分音符。音名は '+' で和音、'=' は前の音を伸ばす、'-' は休符。ドラムは k=キック s=スネア h=ハイハット（組み合わせ可）
   const BGM_SONGS = {
-    // 通常戦闘13：迷宮の足音（ダンジョン探索RPG系の作風。ト短調のバロック風5度進行を、分散和音と歩くベースで。中毒性のあるチップチューン）
+    // 通常戦闘13：星の海（SF系オンラインRPGの作風×VRC6風チップチューン。ニ短調の9th・maj7コードでSFらしい浮遊感と疾走感）
     battle13: {
-      bpm: 132,
+      bpm: 150,
       tracks: [
-        { type: 'square', gain: 0.03, notes: 'G5 = D5 = A#4 = D5 G5 | G5 = D#5 = C5 = D#5 G5 | F5 = C5 = A4 = C5 F5 | F5 = D5 = A#4 = D5 F5 | D#5 = G5 = A#5 = G5 D#5 | C5 = D#5 = G5 = F5 D#5 | D5 = F#5 = A5 = C6 A5 | F#5 = = = D5 = - -' },
-        { type: 'square', gain: 0.015, notes: 'D4 G4 A#4 G4 D4 G4 A#4 G4 | D#4 G4 C5 G4 D#4 G4 C5 G4 | C4 F4 A4 F4 C4 F4 A4 F4 | D4 F4 A#4 F4 D4 F4 A#4 F4 | D#4 G4 A#4 G4 D#4 G4 A#4 G4 | D#4 G4 C5 G4 D#4 G4 C5 G4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | C4 F#4 A4 F#4 D4 = = =' },
-        { type: 'triangle', gain: 0.1, notes: 'G2 = A2 = A#2 = G2 = | C3 = D3 = D#3 = C3 = | F2 = G2 = A2 = F2 = | A#2 = C3 = D3 = A#2 = | D#2 = F2 = G2 = D#2 = | C2 = D2 = D#2 = C2 = | D2 = E2 = F#2 = D2 = | D2 = C2 = A1 = D2 =' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'A5 = = G5 A5 = C6 = | D6 = = C6 A5 = F5 = | G5 = = F5 G5 = A#5 = | A5 = = = G5 = E5 = | A5 = = G5 A5 = E6 = | D6 = C6 = A5 = F6 = | E6 = = D6 C6 = G5 = | C#6 = = = E6 = A5 =' },
+        { type: 'vrc6pulse12', gain: 0.022, notes: 'D4 F4 A4 E5 D4 F4 A4 E5 | A#3 D4 F4 A4 A#3 D4 F4 A4 | G3 A#3 D4 A4 G3 A#3 D4 A4 | A3 D4 E4 G4 A3 C#4 E4 G4 | D4 F4 A4 E5 D4 F4 A4 E5 | A#3 D4 F4 A4 A#3 D4 F4 A4 | C4 E4 G4 D5 C4 E4 G4 D5 | A3 C#4 E4 G4 A3 C#4 E4 G4' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 D2 - D2 C3 D3 | A#1 = A#2 A#1 - A#1 A2 A#2 | G1 = G2 G1 - G1 F2 G2 | A1 = A2 A1 - A1 G2 A2 | D2 = D3 D2 - D2 C3 D3 | A#1 = A#2 A#1 - A#1 A2 A#2 | C2 = C3 C2 - C2 B2 C3 | A1 = A2 A1 - C#2 E2 G2' },
       ],
-      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s s s',
+      drums: 'k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h s s ks ks',
+    },
+    // 通常戦闘14：狩猟の鼓動（ハンティングアクション系の作風×VRC6風チップチューン。ホ短調の勇壮なファンファーレと、3-3-2で刻む民族調のリズム）
+    battle14: {
+      bpm: 160,
+      tracks: [
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = = B4 E5 = G5 = | F#5 = = E5 D5 = A4 = | G5 = = F#5 E5 = C5 = | D5 = = = F#5 = A5 = | B5 = = A5 G5 = E5 = | F#5 = = G5 A5 = D6 = | E6 = D6 C6 B5 = G5 = | F#5 = = = D#5 = B4 =' },
+        { type: 'vrc6pulse12', gain: 0.026, notes: 'E4+B4 - - E4+B4 - - E4+B4 - | D4+A4 - - D4+A4 - - D4+A4 - | C4+G4 - - C4+G4 - - C4+G4 - | D4+A4 - - D4+A4 - - D4+A4 - | E4+B4 - - E4+B4 - - E4+B4 - | D4+A4 - - D4+A4 - - D4+A4 - | C4+G4 - - C4+G4 - - C4+G4 - | B3+F#4 - - B3+F#4 - - B3+D#4 - ' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'E2 = = E2 = = E3 = | D2 = = D2 = = D3 = | C2 = = C2 = = C3 = | D2 = = D2 = = D3 = | E2 = = E2 = = E3 = | D2 = = D2 = = D3 = | C2 = = C2 = = C3 = | B1 = = B1 = = B2 =' },
+      ],
+      kickBoost: 1.4, // 太鼓のように重く
+      drums: 'k h h k h h s h | k h h k h h s h | k h h k h h s h | k h h k h h s h | k h h k h h s h | k h h k h h s h | k h h k h h s h | k k k k s s ks ks',
     },
     // 通常戦闘3：シンコペーションで刻むプログレ風ロック（ホ短調。Em-Em-C-D-Em-Em-C-B）
     battle3: {
@@ -4884,7 +4895,7 @@
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
   // 通常戦闘BGMは7曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle11', 'battle12', 'battle13'];
+  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle11', 'battle12', 'battle13', 'battle14'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -4920,7 +4931,8 @@
     { key: 'battle7', name: '戦闘7 冒険', desc: 'ニ長調の壮大なファンファーレ（アクションアドベンチャー系の作風）・BPM132' },
     { key: 'battle11', name: '戦闘11 古城', desc: 'オクターブで刻むベースとバロック風アルペジオ。ニ短調（悪魔城系の作風）・BPM168' },
     { key: 'battle12', name: '戦闘12 疾風ロック', desc: '2小節のリフを繰り返す中毒性のあるロック。PCエンジン風の波形メモリ音源。ホ短調・BPM164' },
-    { key: 'battle13', name: '戦闘13 迷宮の足音', desc: 'バロック風の5度進行と歩くベースの中毒性チップチューン。ト短調（ダンジョン探索RPG系の作風）・BPM132' },
+    { key: 'battle13', name: '戦闘13 星の海', desc: 'SFらしい浮遊感の9th・maj7コードと疾走感。VRC6風チップチューン。ニ短調（SF系オンラインRPGの作風）・BPM150' },
+    { key: 'battle14', name: '戦闘14 狩猟の鼓動', desc: '勇壮なファンファーレと3-3-2の民族調リズム。VRC6風チップチューン。ホ短調（ハンティングアクション系の作風）・BPM160' },
     { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
     { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
     { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
