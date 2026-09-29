@@ -6201,7 +6201,7 @@
     playMissSound();
   }
   function spawnEvadeText(target) {
-    spawnDamageText(target.x, target.y - target.radius - 8, 'EVADE!', '#7ee7ff');
+    spawnDamageText(target.x, target.y - target.radius - 8, currentLang === 'en' ? 'EVADE!' : '回避！', '#7ee7ff');
     spawnHitParticles(target.x, target.y, '#7ee7ff');
     playMissSound();
   }
