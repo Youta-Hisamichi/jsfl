@@ -3254,7 +3254,7 @@
     'emoji:🦇': 'merge',
   };
   const ENEMY_TRAIT_DESCS = {
-    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
+    charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
     attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
     mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
   };
@@ -3274,6 +3274,10 @@
   const GROW_MAX = 1.8;
   const SPIN_GUARD_FRAMES = 120; // 回転ガードの長さ
   const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
+  const METAL_DAMAGE_CUT = 0.75; // メタルスライムは常に硬い：被ダメージを75%カット（回転ガードとも重なる）
+  function isMetalEnemy(e) { return !!e && !e.isBoss && !e.isAdd && e.emoji === '👾'; }
+  // 受けたダメージのうち、防がれる割合（メタルの硬さ×回転ガード）
+  function enemyDamageCut(e) { return 1 - (isMetalEnemy(e) ? 1 - METAL_DAMAGE_CUT : 1) * (e.guarding ? 1 - SPIN_GUARD_CUT : 1); }
   const ENEMY_DEATH_CHANCE = 0.12;
   const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
   const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
@@ -3314,11 +3318,11 @@
   function enemySurvivesDefeat(enemy) {
     const trait = getEnemyTrait(enemy);
     if (!trait) return false;
-    if (enemy.guarding && enemy.traitLastHp > 0) {
+    if ((enemy.guarding || isMetalEnemy(enemy)) && enemy.traitLastHp > 0) {
       const lost = enemy.traitLastHp - enemy.hp;
-      enemy.hp = enemy.traitLastHp - lost * (1 - SPIN_GUARD_CUT);
+      enemy.hp = enemy.traitLastHp - lost * (1 - enemyDamageCut(enemy));
       enemy.traitLastHp = enemy.hp;
-      if (enemy.hp > 0) { spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, 'GUARD', '#c7ecff', 0.02); return true; }
+      if (enemy.hp > 0) { spawnDamageText(enemy.x, enemy.y - enemy.radius - 18, enemy.guarding ? 'GUARD' : 'カキン！', '#c7ecff', 0.02); return true; }
     }
     if ((trait === 'split' || trait === 'splitMany') && enemy.splitsLeft > 0) {
       enemy.splitsLeft--;
@@ -3357,10 +3361,11 @@
     if (trait && !e.isDying && !(e.spawnTimer > 0)) {
       // 被ダメージの検知（回転ガードの軽減・巨大化）
       if (e.hp < e.traitLastHp) {
-        if (e.guarding) {
+        if (e.guarding || isMetalEnemy(e)) {
           const lost = e.traitLastHp - e.hp;
-          e.hp += lost * SPIN_GUARD_CUT;
-          if (Math.random() < 0.5) spawnDamageText(e.x, e.y - e.radius - 18, 'GUARD', '#c7ecff', 0.03);
+          e.hp += lost * enemyDamageCut(e);
+          if (Math.random() < 0.5) spawnDamageText(e.x, e.y - e.radius - 18, e.guarding ? 'GUARD' : 'カキン！', '#c7ecff', 0.03);
+          updateHPUI();
         }
         if (trait === 'grow' && e.growScale < GROW_MAX) {
           e.growScale = Math.min(GROW_MAX, e.growScale + GROW_PER_HIT);
