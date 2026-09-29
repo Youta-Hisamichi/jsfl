@@ -4439,7 +4439,7 @@
   const NOTE_FREQ = (() => {
     const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const m = {};
-    for (let o = 2; o <= 7; o++) names.forEach((n, i) => { m[n + o] = 440 * Math.pow(2, (i - 9) / 12 + (o - 4)); });
+    for (let o = 1; o <= 7; o++) names.forEach((n, i) => { m[n + o] = 440 * Math.pow(2, (i - 9) / 12 + (o - 4)); });
     return m;
   })();
   function melody(str, dur, type, gain) {
@@ -4595,7 +4595,11 @@
         { type: 'square', gain: 0.036, notes: 'A5 = = = E5 = A5 = | C6 = B5 = A5 = G5 = | A5 = = = F5 = C5 = | D5 = = = G5 = B5 = | A5 = = = E5 = A5 = | C6 = D6 = E6 = = = | F6 = E6 = D6 = B5 = | G#5 = = = = = - -' },
         { type: 'square', gain: 0.045, notes: 'A2 A3 - A2 A3 - G3 A3 | A2 A3 - A2 A3 - C4 A3 | F2 F3 - F2 F3 - E3 F3 | G2 G3 - G2 G3 - F#3 G3 | A2 A3 - A2 A3 - G3 A3 | A2 A3 - A2 A3 - C4 A3 | F2 F3 F2 F3 E2 E3 E2 E3 | E2 E3 - E2 E3 - G#3 B3' },
         { type: 'triangle', gain: 0.026, notes: 'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = = = = = | G3+B3+D4 = = = = = = = | A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = E3+G#3+B3 = = = | E3+G#3+B3 = = = = = = =' },
+        // 腹に響く重低音（1オクターブ下でキックと一緒にうねる）
+        { type: 'triangle', gain: 0.2, notes: 'A1 = = A1 = = A1 = | A1 = = A1 = = A1 = | F1 = = F1 = = F1 = | G1 = = G1 = = G1 = | A1 = = A1 = = A1 = | A1 = = A1 = = A1 = | F1 = = = E1 = = = | E1 = = E1 = = E1 =' },
+        { type: 'sawtooth', gain: 0.022, notes: 'A1 = = A1 = = A1 = | A1 = = A1 = = A1 = | F1 = = F1 = = F1 = | G1 = = G1 = = G1 = | A1 = = A1 = = A1 = | A1 = = A1 = = A1 = | F1 = = = E1 = = = | E1 = = E1 = = E1 =' },
       ],
+      kickBoost: 1.7, // キックを太く長く
       drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k h s h | k - s - ks ks ks ks',
     },
     // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
@@ -4698,15 +4702,16 @@
     osc.connect(g); g.connect(audioCtx.destination);
     osc.start(time); osc.stop(time + dur);
   }
-  function playSongDrum(time, kind) {
+  function playSongDrum(time, kind, boost = 1) {
     const v = bgmVol();
     if (v <= 0) return;
-    if (kind === 'k') { // キック：低い音が急に下がる「ドン」
+    if (kind === 'k') { // キック：低い音が急に下がる「ドン」（boost で太く長く）
       const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+      const len = 0.16 * Math.sqrt(boost);
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(140, time); osc.frequency.exponentialRampToValueAtTime(42, time + 0.12);
-      g.gain.setValueAtTime(0.28 * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
-      osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time + 0.17);
+      osc.frequency.setValueAtTime(140, time); osc.frequency.exponentialRampToValueAtTime(boost > 1 ? 34 : 42, time + 0.12 * boost);
+      g.gain.setValueAtTime(Math.min(0.5, 0.28 * boost) * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + len);
+      osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time + len + 0.01);
       return;
     }
     const dur = kind === 's' ? 0.12 : 0.035;
@@ -4732,7 +4737,7 @@
       while (s.next < audioCtx.currentTime + 0.15) {
         for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain));
         const dr = s.song.drumSteps[s.step];
-        if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch);
+        if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost);
         s.next += s.stepDur;
         s.step = (s.step + 1) % s.song.length;
       }
