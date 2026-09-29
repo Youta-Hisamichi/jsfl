@@ -4558,16 +4558,6 @@
       ],
       drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k s s s | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s s s k s s s',
     },
-    // 通常戦闘8：モンスターバトル（育成RPGのバトル風。半音で駆け下りるベースが熱いト短調）
-    battle8: {
-      bpm: 180,
-      tracks: [
-        { type: 'square', gain: 0.042, notes: 'G5 = = D5 G5 A5 A#5 = | A5 = G5 = F#5 = D5 = | D#5 = G5 = A#5 = D#6 = | D6 = C6 = A5 = F5 = | G5 = = D5 G5 A5 A#5 = | C6 = A#5 = A5 = G5 = | D#6 = D6 = C6 = A#5 = | A5 = = = F#5 = A5 =' },
-        { type: 'triangle', gain: 0.11, notes: 'G2 G3 F#3 F3 E3 D#3 D3 A#2 | G2 G3 G2 G3 A#2 A#3 D3 D4 | D#2 D#3 D#2 D#3 G2 G3 A#2 A#3 | F2 F3 F2 F3 A2 A3 C3 C4 | G2 G3 F#3 F3 E3 D#3 D3 A#2 | G2 G3 G2 G3 A#2 A#3 D3 D4 | D#2 D#3 D#2 D#3 G2 G3 A#2 A#3 | D2 D3 D2 D3 F#2 F#3 A2 A3' },
-        { type: 'triangle', gain: 0.02, notes: 'G3+A#3+D4 = = = = = = = | G3+A#3+D4 = = = = = = = | D#3+G3+A#3 = = = = = = = | F3+A3+C4 = = = = = = = | G3+A#3+D4 = = = = = = = | G3+A#3+D4 = = = = = = = | D#3+G3+A#3 = = = = = = = | D4+F#4+A4 = = = = = = =' },
-      ],
-      drums: 'kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh kh sh sh | kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh h sh h | s s s s ks ks ks ks',
-    },
     // 通常戦闘10：弾け飛ぶハイテンションロック（引っぱりアクション風。ホ長調の爽快アップテンポ）
     battle10: {
       bpm: 176,
@@ -4669,6 +4659,96 @@
       ],
       drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
     },
+    // 強化ページ：鍛冶場（サガ系の作風。ニ短調ドリアの跳ねるシンコペーション）
+    upgrade: {
+      bpm: 140,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'D5 = F5 G5 A5 = G5 F5 | E5 = C5 = G4 = C5 = | D5 = F5 G5 A5 = C6 A5 | B5 = = = G5 = D5 = | D5 = F5 G5 A5 = G5 F5 | E5 = G5 = C6 = G5 = | A#5 = A5 G5 F5 = D5 = | E5 = C#5 = A4 = = =' },
+        { type: 'square', gain: 0.04, notes: 'D2 = D3 D2 = D3 C3 D3 | C2 = C3 C2 = C3 A#2 C3 | D2 = D3 D2 = D3 C3 D3 | G2 = G3 G2 = G3 F3 G3 | D2 = D3 D2 = D3 C3 D3 | C2 = C3 C2 = C3 A#2 C3 | A#2 = A#3 A#2 = A#3 A2 A#2 | A2 = A3 A2 = A3 C#3 E3' },
+        { type: 'triangle', gain: 0.028, notes: 'D4 A4 F4 A4 D4 A4 F4 A4 | C4 G4 E4 G4 C4 G4 E4 G4 | D4 A4 F4 A4 D4 A4 F4 A4 | G3 D4 B3 D4 G3 D4 B3 D4 | D4 A4 F4 A4 D4 A4 F4 A4 | C4 G4 E4 G4 C4 G4 E4 G4 | A#3 F4 D4 F4 A#3 F4 D4 F4 | A3 E4 C#4 E4 A3 E4 C#4 E4' },
+      ],
+      drums: 'k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k k s s k s s s',
+    },
+    // 仲間ページ：旅の仲間（サガ系の作風。ト長調ミクソリディアの明るい行進）
+    companion: {
+      bpm: 132,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'G5 = D5 = G5 A5 B5 = | A5 = F5 = C5 = F5 = | E5 = G5 = C6 = B5 A5 | B5 = = = D5 = G5 = | G5 A5 B5 = D6 = B5 = | C6 = A5 = F5 = A5 = | G5 = E5 = C5 = E5 G5 | F#5 = = = A5 = D5 =' },
+        { type: 'square', gain: 0.04, notes: 'G2 = D3 = G2 G2 D3 = | F2 = C3 = F2 F2 C3 = | C3 = G2 = C3 C3 G2 = | G2 = D3 = G2 G2 D3 = | G2 = D3 = G2 G2 D3 = | F2 = C3 = F2 F2 C3 = | C3 = G2 = C3 C3 G2 = | D3 = A2 = D3 D3 F#3 A3' },
+        { type: 'triangle', gain: 0.026, notes: '- G4+B4 - G4+B4 - G4+B4 - G4+B4 | - F4+A4 - F4+A4 - F4+A4 - F4+A4 | - E4+G4 - E4+G4 - E4+G4 - E4+G4 | - G4+B4 - G4+B4 - G4+B4 - G4+B4 | - G4+B4 - G4+B4 - G4+B4 - G4+B4 | - F4+A4 - F4+A4 - F4+A4 - F4+A4 | - E4+G4 - E4+G4 - E4+G4 - E4+G4 | - F#4+A4 - F#4+A4 - F#4+A4 - F#4+A4' },
+      ],
+      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s s s',
+    },
+    // スキルページ：秘術の書庫（サガ系の作風。イ短調の神秘的な分散和音）
+    coinshop: {
+      bpm: 120,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'A4 = C5 = E5 = A5 = | F5 = E5 D5 = = A4 = | G#4 = B4 = E5 = D5 = | C5 = B4 = A4 = = = | C5 = F5 = A5 = G5 F5 | E5 = D5 = F5 = A5 = | G#5 = F5 = E5 = D5 = | B4 = = = G#4 = E4 =' },
+        { type: 'triangle', gain: 0.1, notes: 'A2 E3 A3 E3 A2 E3 A3 E3 | D2 A2 D3 A2 D2 A2 D3 A2 | E2 B2 E3 B2 E2 B2 E3 B2 | A2 E3 A3 E3 A2 E3 A3 E3 | F2 C3 F3 C3 F2 C3 F3 C3 | D2 A2 D3 A2 D2 A2 D3 A2 | E2 B2 E3 B2 E2 B2 E3 B2 | E2 B2 E3 B2 E2 B2 E3 B2' },
+        { type: 'triangle', gain: 0.02, notes: 'A3+C4+E4 = = = = = = = | D4+F4+A4 = = = = = = = | E3+G#3+B3 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = = = = = | D4+F4+A4 = = = = = = = | E3+G#3+B3 = = = = = = = | E3+G#3+D4 = = = = = = =' },
+      ],
+      drums: 'k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s s s s',
+    },
+    // 遺物ページ：遺跡の宝物庫（サガ系の作風。ホ短調フリギアの怪しいループ）
+    artifact: {
+      bpm: 116,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'E5 = = F5 E5 = B4 = | C5 = = D5 C5 = A4 = | B4 = E5 = G5 = F5 E5 | D5 = = = F#5 = A5 = | G5 = = A5 G5 = E5 = | F5 = = G5 F5 = C5 = | D5 = G5 = B5 = A5 G5 | F5 = = = E5 = - -' },
+        { type: 'square', gain: 0.04, notes: 'E2 = E2 E3 = E2 B2 D3 | F2 = F2 F3 = F2 C3 E3 | E2 = E2 E3 = E2 B2 D3 | D2 = D2 D3 = D2 A2 C3 | E2 = E2 E3 = E2 B2 D3 | F2 = F2 F3 = F2 C3 E3 | G2 = G2 G3 = G2 D3 F3 | F2 = F2 F3 = F2 C3 E3' },
+        { type: 'triangle', gain: 0.026, notes: 'E4 G4 B4 G4 E4 G4 B4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | E4 G4 B4 G4 E4 G4 B4 G4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | E4 G4 B4 G4 E4 G4 B4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | G4 B4 D5 B4 G4 B4 D5 B4 | F4 A4 C5 A4 F4 A4 C5 A4' },
+      ],
+      drums: 'k h h s h k s h | k h h s h k s h | k h h s h k s h | k h h s h k s h | k h h s h k s h | k h h s h k s h | k h h s h k s h | k h h s s s s s',
+    },
+    // ジェムページ：宝石商（サガ系の作風。ハ長調リディアのきらきらした軽快な曲）
+    gemshop: {
+      bpm: 150,
+      tracks: [
+        { type: 'square', gain: 0.028, notes: 'C6 = G5 = E5 = G5 = | F#5 = A5 = D6 = A5 = | E6 = D6 C6 G5 = E5 = | F#5 = = = A5 = D5 = | E5 = A5 = C6 = B5 A5 | F#5 = A5 = D6 = C6 = | A5 = C6 = F6 = E6 D6 | D6 = B5 = G5 = = =' },
+        { type: 'square', gain: 0.04, notes: 'C3 C3 G2 G2 C3 C3 G2 G2 | D3 D3 A2 A2 D3 D3 A2 A2 | C3 C3 G2 G2 C3 C3 G2 G2 | D3 D3 A2 A2 D3 D3 A2 A2 | A2 A2 E3 E3 A2 A2 E3 E3 | D3 D3 A2 A2 D3 D3 A2 A2 | F2 F2 C3 C3 F2 F2 C3 C3 | G2 G2 D3 D3 G2 G2 B2 D3' },
+        { type: 'triangle', gain: 0.026, notes: 'C5 E5 G5 E5 C5 E5 G5 E5 | D5 F#5 A5 F#5 D5 F#5 A5 F#5 | C5 E5 G5 E5 C5 E5 G5 E5 | D5 F#5 A5 F#5 D5 F#5 A5 F#5 | A4 C5 E5 C5 A4 C5 E5 C5 | D5 F#5 A5 F#5 D5 F#5 A5 F#5 | F4 A4 C5 A4 F4 A4 C5 A4 | G4 B4 D5 B4 G4 B4 D5 B4' },
+      ],
+      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h ks s ks s',
+    },
+    // 進化ページ：覚醒の儀式（サガ系の作風。ロ短調の高揚する儀式ループ）
+    gacha: {
+      bpm: 144,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'B4 = D5 = F#5 = B5 = | B5 = A5 = G5 = D5 = | E5 = A5 = C#6 = A5 = | A#5 = = = F#5 = C#5 = | D5 = F#5 = B5 = D6 = | D6 = C#6 = B5 = G5 = | G5 = B5 = E6 = D6 C#6 | C#6 = = = A#5 = F#5 =' },
+        { type: 'square', gain: 0.04, notes: 'B2 = B3 B2 = B3 A3 B3 | G2 = G3 G2 = G3 F#3 G3 | A2 = A3 A2 = A3 G3 A3 | F#2 = F#3 F#2 = F#3 E3 F#3 | B2 = B3 B2 = B3 A3 B3 | G2 = G3 G2 = G3 F#3 G3 | E2 = E3 E2 = E3 D3 E3 | F#2 = F#3 F#2 = F#3 A#2 C#3' },
+        { type: 'triangle', gain: 0.022, notes: 'B3+D4+F#4 = = = = = = = | G3+B3+D4 = = = = = = = | A3+C#4+E4 = = = = = = = | F#3+A#3+C#4 = = = = = = = | B3+D4+F#4 = = = = = = = | G3+B3+D4 = = = = = = = | E3+G3+B3 = = = = = = = | F#3+A#3+C#4 = = = = = = =' },
+      ],
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+    },
+    // 戦績ページ：冒険の記録（サガ系の作風。ヘ長調の穏やかで口ずさめる旋律）
+    records: {
+      bpm: 112,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'A5 = G5 = F5 = C5 = | D5 = F5 = A5 = = = | A#5 = A5 = G5 = F5 = | G5 = = = C5 = = = | A5 = C6 = A5 = F5 = | D5 = F5 = A5 = G5 F5 | D5 = F5 = A#5 = A5 G5 | G5 = = = E5 = C5 =' },
+        { type: 'triangle', gain: 0.1, notes: 'F2 = C3 = F2 = C3 = | D2 = A2 = D2 = A2 = | A#2 = F2 = A#2 = F2 = | C3 = G2 = C3 = E3 = | F2 = C3 = F2 = C3 = | D2 = A2 = D2 = A2 = | A#2 = F2 = A#2 = F2 = | C3 = G2 = C3 = E3 =' },
+        { type: 'square', gain: 0.014, notes: 'F4 A4 C5 A4 F4 A4 C5 A4 | D4 F4 A4 F4 D4 F4 A4 F4 | A#3 D4 F4 D4 A#3 D4 F4 D4 | C4 E4 G4 E4 C4 E4 G4 E4 | F4 A4 C5 A4 F4 A4 C5 A4 | D4 F4 A4 F4 D4 F4 A4 F4 | A#3 D4 F4 D4 A#3 D4 F4 D4 | C4 E4 G4 E4 C4 E4 G4 E4' },
+      ],
+      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s h s s',
+    },
+    // ランキングページ：栄光の頂（サガ系の作風。ニ長調の勝利のファンファーレ）
+    ranking: {
+      bpm: 138,
+      tracks: [
+        { type: 'square', gain: 0.03, notes: 'D5 = F#5 = A5 = D6 = | C#6 = = = A5 = E5 = | F#5 = D5 = B4 = D5 F#5 | G5 = = = B5 = D6 = | A5 = F#5 = D5 = A5 = | E6 = C#6 = A5 = C#6 = | B5 = G5 = C#6 = A5 = | D6 = = = = = - -' },
+        { type: 'square', gain: 0.04, notes: 'D3 D3 A2 A2 D3 D3 A2 A2 | A2 A2 E3 E3 A2 A2 E3 E3 | B2 B2 F#3 F#3 B2 B2 F#3 F#3 | G2 G2 D3 D3 G2 G2 D3 D3 | D3 D3 A2 A2 D3 D3 A2 A2 | A2 A2 E3 E3 A2 A2 E3 E3 | G2 G2 D3 D3 A2 A2 E3 E3 | D3 D3 A2 A2 D3 = = =' },
+        { type: 'triangle', gain: 0.022, notes: 'D4+F#4+A4 = = = = = = = | C#4+E4+A4 = = = = = = = | B3+D4+F#4 = = = = = = = | B3+D4+G4 = = = = = = = | D4+F#4+A4 = = = = = = = | C#4+E4+A4 = = = = = = = | B3+D4+G4 = = = C#4+E4+A4 = = = | D4+F#4+A4 = = = = = = =' },
+      ],
+      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
+    },
+    // 転生ショップ：輪廻（サガ系の作風。イ短調の幻想的な分散和音）
+    rebirth: {
+      bpm: 100,
+      tracks: [
+        { type: 'square', gain: 0.028, notes: 'E5 = = = A5 = = = | G5 = F5 = E5 = D5 = | C5 = = = F5 = A5 = | G#5 = = = B5 = = = | A5 = C6 = B5 = A5 = | G5 = B5 = D6 = = = | C6 = A5 = F5 = A5 = | G#5 = E5 = B4 = = =' },
+        { type: 'triangle', gain: 0.03, notes: 'A3 C4 E4 A4 C5 A4 E4 C4 | G3 B3 D4 G4 B4 G4 D4 B3 | F3 A3 C4 F4 A4 F4 C4 A3 | E3 G#3 B3 E4 G#4 E4 B3 G#3 | A3 C4 E4 A4 C5 A4 E4 C4 | G3 B3 D4 G4 B4 G4 D4 B3 | F3 A3 C4 F4 A4 F4 C4 A3 | E3 G#3 B3 E4 G#4 E4 B3 G#3' },
+        { type: 'triangle', gain: 0.09, notes: 'A2 = = = = = = = | G2 = = = = = = = | F2 = = = = = = = | E2 = = = = = = = | A2 = = = = = = = | G2 = = = = = = = | F2 = = = = = = = | E2 = = = = = = =' },
+      ],
+      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s s s',
+    },
   };
   // 楽譜を「何ステップ目から何ステップ鳴らすか」のイベント列にしておく
   function parseSongTrack(str) {
@@ -4750,8 +4830,8 @@
   let bgmToken = 0;
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-  // 通常戦闘BGMは9曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle1', 'battle2', 'battle3', 'battle4', 'battle5', 'battle7', 'battle8', 'battle10', 'battle11'];
+  // 通常戦闘BGMは8曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
+  const NORMAL_BATTLE_SONGS = ['battle1', 'battle2', 'battle3', 'battle4', 'battle5', 'battle7', 'battle10', 'battle11'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -4787,7 +4867,6 @@
     { key: 'battle4', name: '戦闘4 爽快', desc: '爽快なセブンスコード。ヘ長調のジャズ寄り（クロノ系の作風）・BPM150' },
     { key: 'battle5', name: '戦闘5 落ち物', desc: 'イ短調の民謡っぽい中毒ループ（落ち物パズル系の作風）・BPM150' },
     { key: 'battle7', name: '戦闘7 冒険', desc: 'ニ長調の壮大なファンファーレ（アクションアドベンチャー系の作風）・BPM132' },
-    { key: 'battle8', name: '戦闘8 モンスター', desc: '半音で駆け下りるベースの熱いト短調（育成RPGバトル系の作風）・BPM180' },
     { key: 'battle10', name: '戦闘10 ロック', desc: 'ホ長調のハイテンションロック（引っぱりアクション系の作風）・BPM176' },
     { key: 'battle11', name: '戦闘11 古城', desc: 'オクターブで刻むベースとバロック風アルペジオ。ニ短調（悪魔城系の作風）・BPM168' },
     { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
@@ -4796,6 +4875,15 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
+    { key: 'upgrade', name: 'ページ 強化 鍛冶場', desc: 'サガ系の作風。ニ短調ドリアの跳ねるシンコペーション・BPM140' },
+    { key: 'companion', name: 'ページ 仲間 旅の仲間', desc: 'サガ系の作風。ト長調ミクソリディアの明るい行進・BPM132' },
+    { key: 'coinshop', name: 'ページ スキル 秘術の書庫', desc: 'サガ系の作風。イ短調の神秘的な分散和音・BPM120' },
+    { key: 'artifact', name: 'ページ 遺物 遺跡の宝物庫', desc: 'サガ系の作風。ホ短調フリギアの怪しいループ・BPM116' },
+    { key: 'gemshop', name: 'ページ ジェム 宝石商', desc: 'サガ系の作風。ハ長調リディアのきらきらした軽快な曲・BPM150' },
+    { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
+    { key: 'records', name: 'ページ 戦績 冒険の記録', desc: 'サガ系の作風。ヘ長調の穏やかで口ずさめる旋律・BPM112' },
+    { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
+    { key: 'rebirth', name: 'ページ 転生ショップ 輪廻', desc: 'サガ系の作風。イ短調の幻想的な分散和音・BPM100' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
@@ -4807,7 +4895,7 @@
     else if (gameOverBgm) type = 'gameover';
     else {
       const tab = getActiveTab();
-      if (tab !== 'game' && BGM_PATTERNS[tab]) type = tab;
+      if (tab !== 'game' && (BGM_SONGS[tab] || BGM_PATTERNS[tab])) type = tab; // 各ページ専用の曲
     }
     playBgmTrack(resolveBgmType(type));
   }
