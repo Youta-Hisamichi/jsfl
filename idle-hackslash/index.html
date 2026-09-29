@@ -288,7 +288,19 @@
   .share-link.more { background: #6b7085; }
   .action-btn.reborn-action { border-color: #c792ea; color: #dcbdff; }
   .action-btn.skip-action { border-color: #ffb14f; color: #ffd9a0; }
-  .action-btn.potion-action { border-color: #3fb96b; color: #1f8a4c; font-weight: 800; }
+  .artifact-summary { position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 90; width: min(340px, 90vw); background: var(--panel); border: 2px solid #b07cff; border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); cursor: pointer; animation: gachaPop 0.4s cubic-bezier(.34,1.56,.64,1); transition: opacity 0.4s; }
+  .artifact-summary.closing { opacity: 0; }
+  .artifact-summary .as-title { font-weight: 900; font-size: 0.9rem; text-align: center; margin-bottom: 6px; color: var(--text); }
+  .artifact-summary .as-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+  .artifact-summary .as-row { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); border-bottom: 1px dashed var(--ring); padding: 2px 0; }
+  .artifact-summary .as-row b { color: #9a5cff; }
+  .artifact-summary .as-note { font-size: 0.64rem; color: var(--text-dim); margin-top: 4px; }
+  .artifact-summary .as-hint { font-size: 0.6rem; color: var(--text-dim); text-align: center; margin-top: 6px; }
+  .gameover-tips { margin-top: 8px; padding: 6px 8px; border-radius: 8px; background: rgba(255,215,107,0.14); border: 1px solid rgba(255,215,107,0.45); font-size: 0.7rem; line-height: 1.45; text-align: left; white-space: normal; color: #fff; }
+  .gameover-tips b { display: block; color: #ffd76b; margin-bottom: 2px; }
+  .potion-float { position: absolute; top: 1%; left: 1%; z-index: 4; display: flex; align-items: center; gap: 1px; padding: 4px 8px; border-radius: 999px; border: 1.5px solid #3fb96b; background: var(--panel); color: #1f8a4c; font-size: 0.95rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .potion-float b { font-size: 0.72rem; font-weight: 900; }
+  .potion-float.is-disabled { opacity: 0.45; }
   .action-btn.skip-action.challenging { border-color: #ff5c6c; color: #ff9aa5; }
   .action-btn:disabled { opacity: 0.48; cursor: not-allowed; }
 
@@ -742,6 +754,7 @@
 
     <div class="arena-wrap">
       <canvas id="arenaCanvas"></canvas>
+      <button class="potion-float" id="potionBtn" title="回復ポーション">🧪×0</button>
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
       <div class="record-badge" id="recordBadge"></div>
@@ -776,9 +789,6 @@
       <button class="action-btn mystery" id="mysteryBtn">🔒 謎魔法</button>
       <button class="action-btn comprush" id="compRushBtn">🔒 仲間特攻</button>
       <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
-    </div>
-    <div class="action-row single">
-      <button class="action-btn potion-action" id="potionBtn">🧪 回復ポーション ×0</button>
     </div>
     <div class="action-row single">
       <button class="action-btn skip-action" id="stageSkipBtn">ステージスキップ（強ボスに挑戦）</button>
@@ -6253,13 +6263,34 @@
     toast.classList.add('show');
     startContinueCountdown();
   }
+  // ゲームオーバー時の「次のおすすめ」：今の状況から効きそうな攻略を2つまで提案
+  let gameOverTipsHtml = '';
+  function buildGameOverTips() {
+    const tips = [];
+    const eq = getEquippedSkills();
+    const ownedSkills = Object.keys(SKILL_GACHA_SKILLS).filter(id => game.shopOwned[id]);
+    const cheapestSkill = Object.keys(SKILL_GACHA_SKILLS).filter(id => !game.shopOwned[id]).map(getSkillBuyCost).sort((a, b) => a - b)[0];
+    const atkLv = getMaxAffordableUpgradeLevels('atk', game.coins), hpLv = getMaxAffordableUpgradeLevels('hp', game.coins);
+    if (!(game.potions > 0) && game.gems >= gemPrice(SHOP_ITEMS.potion.cost)) tips.push('🧪 ジェムショップで回復ポーションを買っておくと、ピンチをしのげます');
+    else if (game.potions > 0) tips.push('🧪 ピンチになったらサークル左上の回復ポーションを早めに使おう');
+    if (atkLv + hpLv >= 2) tips.push(`⚔️ 強化で攻撃力・HPを上げよう（今のコインで 攻撃力+${atkLv}Lv / HP+${hpLv}Lv）`);
+    if (ownedSkills.length > eq.length && eq.length < getSkillSlots()) tips.push('✨ 解放済みのスキルを装備しよう（スキルページ）');
+    else if (!ownedSkills.length && cheapestSkill && game.coins >= cheapestSkill) tips.push('✨ スキルを解放して装備しよう（回復やバリアがおすすめ）');
+    if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
+    if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ジェムショップでタックルを開放しよう（長押し→離すで大ダメージ）');
+    if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
+    if (game.stage >= 3) tips.push('🌌 あきらめて転生すると遺物がもらえて、次の周回が楽になります');
+    if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
+    return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 2).map(t => `<div>${t}</div>`).join('')}</div>`;
+  }
   function startContinueCountdown() {
     clearInterval(continueTimer);
+    gameOverTipsHtml = buildGameOverTips();
     let lastTickSec = null;
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
       if (seconds !== lastTickSec && seconds > 0) { lastTickSec = seconds; playCountdownTick(seconds); }
-      toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 3 で現在ステージをリトライ`;
+      toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 3 で現在ステージをリトライ${gameOverTipsHtml}`;
       if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
     };
     updateContinue();
@@ -6469,9 +6500,48 @@
     tickRebirthAutoSkip();
     rebirthAutoSkipTimer = setInterval(tickRebirthAutoSkip, 100);
   }
+  // 遺物の合計効果をまとめる（説明文の「〇〇 +N%」を所持数ぶん足し合わせる）
+  function summarizeArtifacts() {
+    const sums = {}, notes = [];
+    let total = 0;
+    for (const a of ARTIFACT_POOL) {
+      const count = game.ownedArtifacts[a.id] || 0;
+      if (!count) continue;
+      total += count;
+      const n = ARTIFACT_STACK_LIMIT[a.id] ? Math.min(count, ARTIFACT_STACK_LIMIT[a.id]) : count;
+      const desc = a.desc.replace(/（[^）]*）/g, '');
+      let found = false;
+      desc.split('・').forEach(part => {
+        const m = part.match(/^(.+?)\s*([+\-])\s*(\d+(?:\.\d+)?)(%?)$/);
+        if (!m) return;
+        found = true;
+        const key = m[1].trim() + (m[4] ? '%' : '');
+        sums[key] = (sums[key] || 0) + (m[2] === '-' ? -1 : 1) * parseFloat(m[3]) * n;
+      });
+      if (!found) notes.push(`${a.name} ×${count}：${a.desc}`);
+    }
+    return { total, sums, notes };
+  }
+  function showArtifactSummary() {
+    const { total, sums, notes } = summarizeArtifacts();
+    if (!total) return;
+    const rows = Object.entries(sums).map(([k, v]) => {
+      const pct = k.endsWith('%');
+      const name = pct ? k.slice(0, -1) : k;
+      const val = (v > 0 ? '+' : '') + +v.toFixed(1) + (pct ? '%' : '');
+      return `<div class="as-row"><span>${name}</span><b>${val}</b></div>`;
+    }).join('');
+    const el = document.createElement('div');
+    el.className = 'artifact-summary';
+    el.innerHTML = `<div class="as-title">🏺 遺物の合計効果（${total}個）</div><div class="as-grid">${rows}</div>${notes.map(n => `<div class="as-note">${n}</div>`).join('')}<div class="as-hint">タップで閉じる</div>`;
+    el.addEventListener('click', () => el.remove());
+    document.body.appendChild(el);
+    setTimeout(() => { el.classList.add('closing'); setTimeout(() => el.remove(), 400); }, 7000);
+  }
   function closeRebirthShop() {
     clearInterval(rebirthAutoSkipTimer);
     rebirthShopModal.classList.remove('show');
+    showArtifactSummary();
     gameOverBgm = false;
     battleBgmType = game.stage % 10 === 0 ? 'boss' : 'normal';
     refreshBgm();
@@ -7944,7 +8014,7 @@
   const potionBtn = document.getElementById('potionBtn');
   function updatePotionButton() {
     const n = game.potions || 0;
-    const html = `🧪 回復ポーション ×${n}`;
+    const html = `🧪<b>×${n}</b>`;
     if (potionBtn.dataset.html !== html) { potionBtn.innerHTML = html; potionBtn.dataset.html = html; }
     potionBtn.classList.toggle('is-disabled', n <= 0);
   }
