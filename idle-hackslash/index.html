@@ -765,7 +765,7 @@
         <div class="big" id="toastBig"></div>
         <div class="sub" id="toastSub"></div>
         <button class="action-btn special" id="continueBtn" style="display:none; margin-top:12px;">💎 3 でリトライ</button>
-        <button class="action-btn" id="giveUpBtn" style="display:none; margin-top:8px;">🕊️ あきらめて転生</button>
+        <button class="action-btn" id="giveUpBtn" style="display:none; margin-top:8px;">🕊️ 諦めて転生ショップ</button>
         <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
       </div>
     </div>
@@ -6808,7 +6808,7 @@
     if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
     if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ジェムショップでタックルを開放しよう（長押し→離すで大ダメージ）');
     if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
-    if (game.stage >= 3) tips.push('🌌 あきらめて転生すると遺物がもらえて、次の周回が楽になります');
+    if (game.stage >= 3) tips.push('🌌 諦めて転生ショップへ進むと遺物がもらえて、次の周回が楽になります');
     if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
     return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 2).map(t => `<div>${t}</div>`).join('')}</div>`;
   }
