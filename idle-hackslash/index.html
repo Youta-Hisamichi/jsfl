@@ -1865,8 +1865,8 @@
   function xi(key, cls = 'ico-img') { return ICON_IMAGES[key] ? `<img class="${cls}" src="${ICON_IMAGES[key]}" alt="">` : ''; }
   function ico(obj) { return obj && obj.img ? `<img class="ico-img" src="${obj.img}" alt="">` : (obj ? obj.icon : ''); }
   const ARTIFACT_POOL = [
-    { id: 'heart',  icon: '🗡️', name: '闘志の剣・小',   desc: '攻撃力 +20%', rarity: 'common' },
-    { id: 'swordM', icon: '🗡️', name: '闘志の剣・中',   desc: '攻撃力 +45%', rarity: 'rare' },
+    { id: 'heart',  icon: '🗡️', name: '闘志の剣・小',   desc: '攻撃力 +5%', rarity: 'common' },
+    { id: 'swordM', icon: '🗡️', name: '闘志の剣・中',   desc: '攻撃力 +30%', rarity: 'rare' },
     { id: 'swordL', icon: '🗡️', name: '闘志の剣・大',   desc: '攻撃力 +100%', rarity: 'epic' },
     { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
     { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
@@ -2160,7 +2160,7 @@
   }
   // 遺物の現在の効果（所持数ぶんの合計）
   const ARTIFACT_CURRENT = {
-    heart: n => `攻撃力 +${20 * n}%`, swordM: n => `攻撃力 +${45 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
+    heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
     compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `必殺技 +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
     turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
     feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
@@ -2325,8 +2325,8 @@
       if (!ARTIFACT_BY_ID[id]) continue;
       const count = game.ownedArtifacts[id] || 0;
       const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
-      if (id === 'heart') b.atkMult += 0.2 * count;     // 闘志の剣（小・中・大）
-      if (id === 'swordM') b.atkMult += 0.45 * count;
+      if (id === 'heart') b.atkMult += 0.05 * count;     // 闘志の剣（小・中・大）
+      if (id === 'swordM') b.atkMult += 0.3 * count;
       if (id === 'swordL') b.atkMult += 1.0 * count;
       if (id === 'ring') b.coinMult += 0.3 * count;
       if (id === 'book') { b.atkMult += 0.1 * count; b.hpMult += 0.1 * count; }
