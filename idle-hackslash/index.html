@@ -4642,16 +4642,16 @@
       ],
       drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
     },
-    // 強化ページ：怪しい鍛冶屋（悪魔城・ダンジョンRPG系の作風。ホ短調の不気味な旋律、低いうなりと金床を打つ音）
+    // 強化ページ：武器と防具の店（王道RPGのお店系の作風。ヘ長調の軽快な曲を、メガドライブ風のFM音源で）
     upgrade: {
-      bpm: 96,
+      bpm: 126,
       tracks: [
-        { type: 'square', gain: 0.03, notes: 'E4 = = = G4 = F#4 E4 | D#4 = = = E4 = B3 = | C4 = E4 = G4 = A#4 = | B4 = = = A4 G4 F#4 D#4 | E4 = G4 = B4 = E5 = | F5 = E5 = C5 = A4 = | G4 = F#4 = D#4 = C4 = | B3 = = = = = - -' },
-        { type: 'triangle', gain: 0.11, notes: 'E2 = = = B1 = = = | E2 = = = B1 = = = | C2 = = = G1 = = = | B1 = = = F#1 = = = | E2 = = = B1 = = = | F2 = = = C2 = = = | C2 = = = D#2 = = = | B1 = = = F#1 = = =' },
-        { type: 'sawtooth', gain: 0.016, notes: 'E3 = = = = = = = | E3 = = = = = = = | C3 = = = = = = = | B2 = = = = = = = | E3 = = = = = = = | F3 = = = = = = = | C3 = = = D#3 = = = | B2 = = = = = = =' },
-        { type: 'square', gain: 0.012, notes: 'B5 - - - - - - - | - - - - A#5 - - - | G5 - - - - - - - | - - - - F#5 - - - | B5 - - - - - - - | - - - - A5 - - - | G5 - - - - - - - | - - - - D#6 - - -' },
+        { type: 'fm', gain: 0.036, notes: 'A5 = C6 = A5 G5 F5 = | D5 = F5 = A5 = = = | A#5 = A5 = G5 = F5 = | E5 = G5 = C6 = A#5 = | A5 = C6 = F6 = E6 D6 | C#6 = A5 = E5 = G5 = | F5 = A5 = G5 = B5 = | C6 = = = A#5 = G5 =' },
+        { type: 'fmbass', gain: 0.09, notes: 'F2 = F3 = C3 = A2 = | D2 = D3 = A2 = F2 = | G2 = G3 = D3 = A#2 = | C2 = C3 = G2 = E2 = | F2 = F3 = C3 = A2 = | A2 = A3 = E3 = C#3 = | D2 = D3 = G2 = G3 = | C2 = C3 = G2 = A#2 =' },
+        { type: 'fmep', gain: 0.034, notes: '- - F4+A4+C5 - - - F4+A4+C5 - | - - D4+F4+A4 - - - D4+F4+A4 - | - - F4+A#4+D5 - - - F4+A#4+D5 - | - - E4+G4+A#4 - - - E4+G4+A#4 - | - - F4+A4+C5 - - - F4+A4+C5 - | - - C#4+E4+G4 - - - C#4+E4+G4 - | - - D4+F4+A4 - - - F4+B4+D5 - | - - E4+G4+A#4 - - - E4+G4+A#4 -' },
+        { type: 'fmbell', gain: 0.03, notes: 'F6 - - - - - - - | - - - - A6 - - - | D6 - - - - - - - | - - - - C6 - - - | F6 - - - - - - - | - - - - E6 - - - | D6 - - - - - - - | - - - - E6 - - -' },
       ],
-      drums: 'k - - - s h - - | k - - - s h - - | k - - - s h - - | k - - - s h - - | k - - - s h - - | k - - - s h - - | k - - - s h - - | k - s - s - s s',
+      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks s',
     },
     // 仲間ページ：旅の仲間（サガ系の作風。ト長調ミクソリディアの明るい行進）
     companion: {
@@ -4753,11 +4753,28 @@
     song.parsed.forEach(t => t.events.forEach(ev => song.byStep[ev.step].push({ ...ev, type: t.type, gain: t.gain })));
   });
   function bgmVol() { return game.bgmVolume ?? 0.7; }
+  // FM音源（メガドライブ風）：サイン波を別のサイン波で周波数変調。ratio=変調波の倍率、index=変調の深さ（最初→減衰後）、decay=明るさが落ちる時間
+  const FM_PRESETS = {
+    fm:     { ratio: 1, index: 3, indexEnd: 1, decay: 0.3 },     // ブラス寄りのリード
+    fmbass: { ratio: 1, index: 5, indexEnd: 0.6, decay: 0.08 },  // ベチッとしたスラップベース
+    fmep:   { ratio: 1, index: 1.8, indexEnd: 0.3, decay: 0.25 }, // エレピ風の和音
+    fmbell: { ratio: 3.5, index: 2.5, indexEnd: 0, decay: 0.4 },  // 鉄琴・ベル
+  };
   function playSongNote(time, freq, dur, type, gain) {
     const osc = audioCtx.createOscillator();
     const g = audioCtx.createGain();
-    osc.type = type;
+    const fm = FM_PRESETS[type];
+    osc.type = fm ? 'sine' : type;
     osc.frequency.setValueAtTime(freq, time);
+    if (fm) {
+      const mod = audioCtx.createOscillator(), mg = audioCtx.createGain();
+      const mf = freq * fm.ratio;
+      mod.frequency.setValueAtTime(mf, time);
+      mg.gain.setValueAtTime(fm.index * mf, time);
+      mg.gain.exponentialRampToValueAtTime(Math.max(0.01, fm.indexEnd * mf), time + Math.min(dur, fm.decay));
+      mod.connect(mg); mg.connect(osc.frequency);
+      mod.start(time); mod.stop(time + dur);
+    }
     const vol = Math.max(0.0001, gain * bgmVol());
     g.gain.setValueAtTime(0.0001, time);
     g.gain.linearRampToValueAtTime(vol, time + 0.008);
@@ -4858,7 +4875,7 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-    { key: 'upgrade', name: 'ページ 強化 怪しい鍛冶屋', desc: '低いうなりと金床を打つ音、不気味な旋律。ホ短調（悪魔城・ダンジョンRPG系の作風）・BPM96' },
+    { key: 'upgrade', name: 'ページ 強化 武器と防具の店', desc: '軽快なお店の曲をメガドライブ風のFM音源で。ヘ長調（王道RPGのお店系の作風）・BPM126' },
     { key: 'companion', name: 'ページ 仲間 旅の仲間', desc: 'サガ系の作風。ト長調ミクソリディアの明るい行進・BPM132' },
     { key: 'coinshop', name: 'ページ スキル 秘術の書庫', desc: 'サガ系の作風。イ短調の神秘的な分散和音・BPM120' },
     { key: 'artifact', name: 'ページ 遺物 遺跡の宝物庫', desc: 'サガ系の作風。ホ短調フリギアの怪しいループ・BPM116' },
