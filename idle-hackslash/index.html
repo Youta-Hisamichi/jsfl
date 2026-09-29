@@ -679,6 +679,11 @@
   .bcf-sub { margin-top: 6px; font-size: 0.9rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); animation: bcfPop 0.7s 0.25s cubic-bezier(.34,1.56,.64,1) both; }
   @keyframes bcfPop { 0% { transform: scale(2.6); opacity: 0; } 60% { transform: scale(0.92); opacity: 1; } 100% { transform: scale(1); } }
   .bcf-confetti i { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; animation: lbFall linear forwards; }
+  .debug-pause-btn { grid-column: 1 / -1; font-weight: 900; border-color: #ffb14f !important; }
+  /* 床タイルの背景の上でも読めるよう、デバッグ一覧に下地を敷く */
+  #debugRow { background: color-mix(in srgb, var(--panel) 92%, transparent); border-radius: 12px; padding: 8px; }
+  #debugRow button { background: var(--bg-soft); }
+  .debug-toggle { background: var(--panel) !important; }
   .tab-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: flex; background: var(--panel); border-top: 1px solid var(--ring);
@@ -923,6 +928,7 @@
     <button class="debug-toggle" id="debugToggleBtn">🛠️ デバッグ一覧</button>
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
+      <button data-debug="pause" id="debugPauseBtn" class="debug-pause-btn">⏸ 一時停止（T キー）</button>
       <div class="debug-cat">💰 通貨</div>
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
@@ -8658,6 +8664,8 @@
   function setUserPaused(on) {
     userPaused = on;
     document.body.classList.toggle('user-paused', on);
+    const dbtn = document.getElementById('debugPauseBtn');
+    if (dbtn) dbtn.textContent = on ? '▶ 再開（T キー）' : '⏸ 一時停止（T キー）';
     if (audioCtx) { if (on) audioCtx.suspend(); else audioCtx.resume(); } // BGM・効果音も止める
   }
   document.addEventListener('keydown', ev => {
@@ -8888,6 +8896,7 @@
       renderSkillGacha();
       saveGame();
     }
+    if (action === 'pause') { setUserPaused(!userPaused); return; }
     if (action.startsWith('enemy:')) {
       // 特殊な敵の確認：指定した敵をすぐ出現させる（ボスは次のボスステージで出す）
       const key = action.slice(6);
