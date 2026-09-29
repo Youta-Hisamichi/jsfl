@@ -492,7 +492,7 @@
   }
   .boss-warning.show { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: warnFlash 0.4s ease-in-out infinite alternate; }
   @keyframes warnFlash { from { opacity: 1; } to { opacity: 0.45; } }
-  .loot-popup { position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; text-align: center; min-width: 58%; max-width: 86%; padding: 10px 14px; border-radius: 14px; background: rgba(8,11,18,0.88); border: 2px solid #ffd76b; color: #fff; opacity: 0; }
+  .loot-popup { position: absolute; left: 50%; top: 24%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; text-align: center; min-width: 58%; max-width: 86%; padding: 10px 14px; border-radius: 14px; background: rgba(8,11,18,0.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); text-shadow: 0 1px 2px rgba(0,0,0,0.8); border: 2px solid #ffd76b; color: #fff; opacity: 0; }
   .loot-popup .lp-title { font-size: 0.7rem; font-weight: 800; color: #ffd76b; letter-spacing: 0.05em; }
   .loot-popup .lp-main { font-size: 1.05rem; font-weight: 900; margin-top: 3px; }
   .loot-popup .lp-main .ico-img { width: 1.8em; height: 1.8em; border-radius: 6px; }
@@ -4783,7 +4783,7 @@
     if (lootNoticeActive) { lootNoticeActive = false; noticeHoldUntil = 0; clearTimeout(noticeTimer); battleNotice.classList.remove('show'); }
   }, true);
   function dropTreasureChest() {
-    spawnDamageText(arena.x, arena.y - 40, '🎁 宝箱発見！', '#ffd76b', TREASURE_TEXT_DECAY);
+    spawnDamageText(arena.x, arena.y + 30, '🎁 宝箱発見！', '#ffd76b', TREASURE_TEXT_DECAY); // 中身の表示（上の方）と重ならないよう少し下に
     playLoginBonusSound();
     const isCoin = Math.random() < 0.6;
     if (isCoin) {
