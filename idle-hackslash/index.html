@@ -5981,6 +5981,11 @@
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
+      if (isMainPlayerBall(ball) && playerDrag) { // ドラッグ中は指（カーソル）の少し上を追いかける
+        dragMainPlayer(ball, speedMult, b);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
       if (isMainPlayerBall(ball) && isTackling()) { // タメ体当たり中は敵へ一直線
         steerTackle(ball);
         ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
@@ -9440,6 +9445,43 @@
     if (Date.now() >= accelEndAt) speedValue.textContent = gameSpeed.toFixed(1) + '×';
   });
 
+  // ---------- 自キャラのドラッグ移動：自キャラを押したまま動かすと、指（カーソル）の少し上を追いかける ----------
+  const DRAG_OFFSET_CSS = 44;    // 指で隠れないよう、この分だけ上を目標にする（画面上のpx）
+  const DRAG_GRAB_MARGIN = 18;   // 自キャラの周りこの距離までなら掴める（キャンバス上のpx）
+  let playerDrag = null;         // { id, x, y }：ドラッグ中の目標地点（キャンバス座標）
+  function dragTargetFromEvent(event) {
+    const rect = canvas.getBoundingClientRect();
+    const k = size / rect.width;
+    return { x: (event.clientX - rect.left) * k, y: (event.clientY - rect.top - DRAG_OFFSET_CSS) * k };
+  }
+  function dragMainPlayer(ball, speedMult, b) {
+    // 目標はサークルの内側に収める
+    let tx = playerDrag.x, ty = playerDrag.y;
+    const ox = tx - arena.x, oy = ty - arena.y, od = Math.hypot(ox, oy), lim = arena.radius - ball.radius - 2;
+    if (od > lim) { tx = arena.x + ox / od * lim; ty = arena.y + oy / od * lim; }
+    const dx = tx - ball.x, dy = ty - ball.y, d = Math.hypot(dx, dy);
+    const maxSpeed = BOUNCE_SPEED * b.speedMult * 4.5;
+    const sp = Math.min(maxSpeed, d * 0.25);
+    ball.vx = d > 0.5 ? dx / d * sp : 0; ball.vy = d > 0.5 ? dy / d * sp : 0;
+    ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+    wallBounce(ball);
+    ball.seekPoint = null; ball.missBounces = 0;
+  }
+  window.addEventListener('pointermove', event => {
+    if (!playerDrag || event.pointerId !== playerDrag.id) return;
+    Object.assign(playerDrag, dragTargetFromEvent(event));
+  });
+  ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
+    if (!playerDrag || event.pointerId !== playerDrag.id) return;
+    playerDrag = null;
+    // 離したら、そのままの向きで反射移動に戻る（止まっていれば一番近い敵の方へ）
+    const pl = balls.find(ball => isMainPlayerBall(ball));
+    if (pl && Math.hypot(pl.vx, pl.vy) < 0.5) {
+      const en = nearestOf(pl, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
+      if (en) { const a = Math.atan2(en.y - pl.y, en.x - pl.x); pl.vx = Math.cos(a); pl.vy = Math.sin(a); }
+    }
+  }));
+
   canvas.addEventListener('contextmenu', event => event.preventDefault()); // 長押しでメニューが出てタメが中断されないように
   canvas.addEventListener('pointerdown', event => {
     if (phase !== 'battle') return;
@@ -9449,6 +9491,13 @@
     const x = (event.clientX - rect.left) * (size / rect.width);
     const y = (event.clientY - rect.top) * (size / rect.height);
     const dx = x - arena.x, dy = y - arena.y;
+    // 自キャラを押したらドラッグ移動（タップ加速・タメは行わない）
+    const grabbed = balls.find(ball => isMainPlayerBall(ball));
+    if (grabbed && Math.hypot(x - grabbed.x, y - grabbed.y) < grabbed.radius + DRAG_GRAB_MARGIN) {
+      playerDrag = { id: event.pointerId, ...dragTargetFromEvent(event) };
+      canvas.setPointerCapture?.(event.pointerId);
+      return;
+    }
     if (Math.hypot(dx, dy) < arena.radius - 12) {
       // 長押しでタメ開始
       arenaHeld = true;
