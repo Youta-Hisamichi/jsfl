@@ -1193,6 +1193,14 @@
 </div>
 
 <script>
+  // 安全策：音量0などで「0に向けた指数カーブ」が指定されると例外でゲームループが止まるため、ごく小さい値に置き換える
+  if (window.AudioParam && AudioParam.prototype.exponentialRampToValueAtTime) {
+    const origExpRamp = AudioParam.prototype.exponentialRampToValueAtTime;
+    AudioParam.prototype.exponentialRampToValueAtTime = function (value, time) {
+      if (!(Math.abs(value) >= 0.0001)) value = value < 0 ? -0.0001 : 0.0001;
+      return origExpRamp.call(this, value, time);
+    };
+  }
 (function () {
   const canvas = document.getElementById('arenaCanvas');
   let ctx = canvas.getContext('2d'); // 撃破時の吹っ飛び描画の間だけオーバーレイ用に差し替える
@@ -5142,7 +5150,7 @@
     filter.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t0 + dur);
     const gain = audioCtx.createGain();
     gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(gainAmt * game.sfxVolume, t0 + dur * 0.15);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, gainAmt * game.sfxVolume), t0 + dur * 0.15); // 効果音の音量0でも落ちないように
     gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
     src.start(t0); src.stop(t0 + dur + 0.02);
