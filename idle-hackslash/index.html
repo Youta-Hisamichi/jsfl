@@ -1388,9 +1388,33 @@
       };
     });
   }
+  // ページごとの一覧：見えていないページの一覧は毎回描き直さず「要更新」にしておき、開いたときにまとめて描く
+  // （コインを拾うたびに全ページの一覧を作り直していたのをやめて、起動とプレイ中の処理を軽くする）
+  const TAB_LISTS = {
+    upgrade: [() => renderUpgradeList()],
+    coinshop: [() => renderCoinShopList()],
+    gemshop: [() => renderShopList(), () => renderSupergemShopList()],
+    gacha: [() => renderEvolutionList()],
+    companion: [() => renderCompanionList()],
+    ranking: [() => renderRanking()],
+  };
+  const dirtyTabLists = new Set(Object.keys(TAB_LISTS));
+  function renderTabLists() {
+    const active = getActiveTab();
+    for (const tab in TAB_LISTS) {
+      if (tab === active) { TAB_LISTS[tab].forEach(fn => fn()); dirtyTabLists.delete(tab); }
+      else dirtyTabLists.add(tab);
+    }
+  }
+  function renderDirtyTabList(name) {
+    if (!dirtyTabLists.has(name)) return;
+    dirtyTabLists.delete(name);
+    TAB_LISTS[name].forEach(fn => fn());
+  }
   function switchTab(name) {
     activeTabCache = name;
     renderShopkeeper(name);
+    renderDirtyTabList(name);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
     if (name === 'records') renderBestiary();
@@ -2822,13 +2846,7 @@
     stageProgressText.textContent = stageInCycle + ' / 10';
     stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
 
-    renderUpgradeList();
-    renderShopList();
-    renderCoinShopList();
-    renderSupergemShopList();
-    renderEvolutionList();
-    renderCompanionList();
-    renderRanking();
+    renderTabLists(); // 各ページの一覧は開いているページだけ描き直す（他は開いたときに描く）
     rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
     stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
     updateSkipBtnVisibility();
@@ -4801,13 +4819,16 @@
     });
     return { events, length: tokens.length };
   }
-  Object.values(BGM_SONGS).forEach(song => {
+  // 楽譜の解析は、その曲を初めて流すときに行う（起動時に全曲ぶん解析しないので起動が軽くなる）
+  function prepareSong(song) {
+    if (song.byStep) return song;
     song.parsed = song.tracks.map(t => ({ ...t, ...parseSongTrack(t.notes) }));
     song.drumSteps = song.drums.split(/\s+/).filter(t => t && t !== '|');
     song.length = Math.max(song.drumSteps.length, ...song.parsed.map(t => t.length));
     song.byStep = Array.from({ length: song.length }, () => []);
     song.parsed.forEach(t => t.events.forEach(ev => song.byStep[ev.step].push({ ...ev, type: t.type, gain: t.gain })));
-  });
+    return song;
+  }
   function bgmVol() { return game.bgmVolume ?? 0.7; }
   // FM音源（メガドライブ風）：サイン波を別のサイン波で周波数変調。ratio=変調波の倍率、index=変調の深さ（最初→減衰後）、decay=明るさが落ちる時間
   const FM_PRESETS = {
@@ -4891,7 +4912,7 @@
   }
   let songTimer = null, songState = null;
   function startSong(type) {
-    const song = BGM_SONGS[type];
+    const song = prepareSong(BGM_SONGS[type]);
     stopSong();
     songState = { song, step: 0, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2 };
     // 少し先まで予約して鳴らす（タイマーのずれでリズムが崩れないように）
@@ -5359,8 +5380,11 @@
       const img = new Image(); img.src = ENEMY_SPRITES[key]; enemySpriteImgs[key] = img;
     }
   }
-  if (enemySpriteImgs.slime.complete && enemySpriteImgs.slime.naturalWidth) buildSlimeVariants();
-  else enemySpriteImgs.slime.addEventListener('load', buildSlimeVariants, { once: true });
+  // 色違いスライムの画像づくりは起動直後の表示を邪魔しないよう、手が空いたときに行う（出来るまでは図形で表示）
+  const scheduleIdle = cb => (window.requestIdleCallback ? requestIdleCallback(cb, { timeout: 1500 }) : setTimeout(cb, 300));
+  const buildSlimeVariantsLater = () => scheduleIdle(buildSlimeVariants);
+  if (enemySpriteImgs.slime.complete && enemySpriteImgs.slime.naturalWidth) buildSlimeVariantsLater();
+  else enemySpriteImgs.slime.addEventListener('load', buildSlimeVariantsLater, { once: true });
   function getEnemySpriteKey(enemy) {
     if (enemy.isBoss) return BOSS_ENEMY_SPRITE[enemy.emoji];
     return enemy.emoji ? EMOJI_ENEMY_SPRITE[enemy.emoji] : SHAPE_ENEMY_SPRITE[enemy.shape];
