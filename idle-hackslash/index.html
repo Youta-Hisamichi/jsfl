@@ -664,6 +664,10 @@
   }
   body.floor-bg * { image-rendering: auto; }
   body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelated; }
+  /* 一時停止（Tキー） */
+  .pause-badge { position: absolute; inset: 0; z-index: 7; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 50%; background: rgba(6,8,14,0.55); color: #fff; font-size: 1.4rem; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 2px 6px rgba(0,0,0,0.8); cursor: pointer; }
+  .pause-badge small { font-size: 0.7rem; font-weight: 700; letter-spacing: 0; opacity: 0.85; }
+  body.user-paused .pause-badge { display: flex; }
   .tab-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: flex; background: var(--panel); border-top: 1px solid var(--ring);
@@ -861,6 +865,7 @@
       <div class="record-badge" id="recordBadge"></div>
       <div class="combo-badge" id="comboBadge"></div>
       <div class="loot-popup" id="lootPopup"></div>
+      <div class="pause-badge" id="pauseBadge">⏸ 一時停止中<small>T キー（またはここをタップ）で再開</small></div>
       <div class="toast" id="toast">
         <div class="artifact-icon" id="toastIcon" style="display:none;"></div>
         <div class="big" id="toastBig"></div>
@@ -1549,6 +1554,7 @@
   function switchTab(name) {
     activeTabCache = name;
     document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
+    if (name !== 'game' && typeof userPaused !== 'undefined' && userPaused) setUserPaused(false); // 他のページへ移ったら一時停止を解除
     renderShopkeeper(name);
     renderDirtyTabList(name);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -8575,6 +8581,8 @@
   function loop() {
     battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
     try {
+      // 一時停止中は描画だけ続けて、ゲームの進行は止める
+      if (userPaused) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; }
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
         if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
@@ -8594,6 +8602,21 @@
     battleSfx = false;
     animId = requestAnimationFrame(loop);
   }
+
+  // ---------- 一時停止：ゲーム画面で T キー ----------
+  let userPaused = false;
+  function setUserPaused(on) {
+    userPaused = on;
+    document.body.classList.toggle('user-paused', on);
+    if (audioCtx) { if (on) audioCtx.suspend(); else audioCtx.resume(); } // BGM・効果音も止める
+  }
+  document.addEventListener('keydown', ev => {
+    if (ev.key !== 't' && ev.key !== 'T') return;
+    if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return; // 文字入力中は無視
+    if (getActiveTab() !== 'game') return;
+    setUserPaused(!userPaused);
+  });
+  document.getElementById('pauseBadge').addEventListener('click', () => setUserPaused(false));
 
   // ---------- 初期化・フルリセット ----------
   function fullReset() {
