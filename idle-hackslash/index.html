@@ -94,6 +94,11 @@
   .exp-wrap { background: var(--panel); border: 1px solid var(--ring); border-radius: 14px; padding: 8px 14px; }
   .exp-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 4px; }
   .exp-track { background: var(--bg); border-radius: 999px; height: 8px; overflow: hidden; border: 1px solid var(--ring); }
+  /* ステージ進行ゲージ：現在地に自キャラ、ゴールにボスの小さなアイコン */
+  .stage-track-wrap { position: relative; margin: 8px 12px 4px 4px; }
+  .stage-mark { position: absolute; top: 50%; width: 24px; height: 24px; transform: translate(-50%, -58%); image-rendering: pixelated; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); transition: left 0.25s ease-out; }
+  .stage-mark-boss { left: 100%; width: 26px; height: 26px; }
+  .stage-mark-player { z-index: 1; }
   .exp-fill { height: 100%; background: linear-gradient(90deg, var(--exp), #4fd67e); border-radius: 999px; transition: width 0.2s ease-out; width: 0%; }
 
   .hp-row { display: flex; gap: 12px; }
@@ -741,7 +746,11 @@
 
     <div class="exp-wrap">
       <div class="exp-label" style="justify-content:flex-start; gap:6px;"><span>ステージ <b id="stageNum">1</b>　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
-      <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
+      <div class="stage-track-wrap">
+        <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
+        <img class="stage-mark stage-mark-boss" id="stageBossMark" alt="">
+        <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
+      </div>
     </div>
 
     <div class="hp-row">
@@ -1212,6 +1221,7 @@
   const headerGemsEl = document.getElementById('headerGems');
   const stageProgressText = document.getElementById('stageProgressText');
   const stageProgressFill = document.getElementById('stageProgressFill');
+  const stagePlayerMark = document.getElementById('stagePlayerMark');
   const startedAtText = document.getElementById('startedAtText');
 
   const playerHPFill = document.getElementById('playerHPFill');
@@ -2076,6 +2086,7 @@
   const PLAYER_SPRITE = 'data:image/webp;base64,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';
   const playerSpriteImg = new Image();
   playerSpriteImg.src = PLAYER_SPRITE;
+  stagePlayerMark.src = PLAYER_SPRITE; // ステージ進行ゲージの自キャラアイコン
   const companionSpriteImgs = {};
   for (const id in COMPANION_SPRITES) { const img = new Image(); img.src = COMPANION_SPRITES[id]; companionSpriteImgs[id] = img; }
   // 画面表示用の仲間アイコン（ドット絵があれば画像、なければ絵文字）
@@ -2851,6 +2862,7 @@
     const stageInCycle = ((game.stage - 1) % 10) + 1;
     stageProgressText.textContent = stageInCycle + ' / 10';
     stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
+    stagePlayerMark.style.left = (stageInCycle / 10 * 100) + '%';
 
     renderTabLists(); // 各ページの一覧は開いているページだけ描き直す（他は開いたときに描く）
     rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
@@ -5364,6 +5376,7 @@
   const EMOJI_ENEMY_SPRITE = { '👹': 'ogre', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🕷️': 'bigSpider', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🐺': 'cerberus', '🦖': 'salamander', '🐲': 'wyvern' };
   const BOSS_ENEMY_SPRITE = { '👹': 'demon', '🐉': 'redDragon', '💀': 'lich', '🦖': 'blackDragon', '👺': 'archDemon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
   const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
+  document.getElementById('stageBossMark').src = ENEMY_SPRITES.demon; // ステージ進行ゲージのゴール（ボス）アイコン
   const enemySpriteImgs = {};
   for (const k in ENEMY_SPRITES) { const img = new Image(); img.src = ENEMY_SPRITES[k]; enemySpriteImgs[k] = img; }
   // 色違いスライム：青いスライムの色相をずらして作る（画像を追加しないのでファイルサイズは増えない）
