@@ -4834,6 +4834,7 @@
   function scheduleBgmStep(type, index, token) {
     if (token !== bgmToken || currentBgmType !== type) return;
     const pattern = BGM_PATTERNS[type];
+    if (!pattern) return; // 曲が用意されていない場面（転生ショップ・ゲームオーバーなど）は無音
     const note = pattern[index % pattern.length];
     if (note.freq) playBgmNote(note);
     bgmTimer = setTimeout(() => scheduleBgmStep(type, index + 1, token), note.dur * 1000);
@@ -8131,6 +8132,16 @@
       showNotice(`DEBUG: ${button.textContent} を出現`);
       return;
     }
+    if (action === 'bgmNow') {
+      // 今流れている曲名を表示
+      const info = BGM_INFO.find(b => b.key === currentBgmType);
+      const scene = { rebirth: '転生ショップ', gameover: 'ゲームオーバー' }[currentBgmType];
+      const msg = !audioCtx || !currentBgmType ? '（まだ音が鳴っていません。画面をタップすると再生されます）'
+        : info ? `「${info.name}」 ${info.desc}`
+        : scene ? `（${scene}：BGMなし）` : `（${currentBgmType}）`;
+      showNotice(`🎶 再生中：${msg}`, false);
+      return;
+    }
     if (action.startsWith('bgm:')) {
       // BGMチェック：指定した曲を戦闘BGMとして流す（ゲーム画面で聴ける）
       const key = action.slice(4);
@@ -9518,7 +9529,7 @@
   document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
     .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
   // BGMのチェックボタンと概要一覧を BGM_INFO から作る
-  document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
+  document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', '<button data-debug="bgmNow">🎶 今の曲名</button>' + BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
   function renderBgmInfo() { // （関数宣言なので上のデバッグ処理からも呼べる）
     const cur = currentBgmType;
     document.getElementById('bgmInfoList').innerHTML = `<div class="bi-row">通常戦闘は${NORMAL_BATTLE_SONGS.length}曲・ボス戦は${BOSS_BATTLE_SONGS.length}曲をそれぞれシャッフルして流し、ボスを倒すたびに次の曲へ切り替わります。</div>` +
