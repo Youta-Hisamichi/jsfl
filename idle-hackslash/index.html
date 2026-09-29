@@ -2971,8 +2971,11 @@
     tackleChargeStart = 0;
     if (level < 0 || phase !== 'battle') return;
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-    const enemy = balls.find(ball => !ball.isPlayer);
+    const main = balls.find(ball => !ball.isPlayer);
+    // 本体が撃破されて吹っ飛び中なら、残っている一番近い敵へ向けて放つ
+    const enemy = main && !main.isDying ? main : player && nearestOf(player, adds.filter(x => !x.isDying && x.hp > 0));
     if (!player || !enemy) return;
+    player.seekPoint = null; player.missBounces = 0; // 古い目標に引っぱられないように
     const mult = level <= 1
       ? TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level
       : TACKLE_MAX_MULT + (TACKLE_MAX2_MULT - TACKLE_MAX_MULT) * (level - 1);
@@ -9412,7 +9415,10 @@
       arenaHeld = true;
       updateTackleHold();
       const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-      const enemy = balls.find(ball => !ball.isPlayer);
+      // 向かう先は生きている一番近い敵（撃破されて吹っ飛び中の敵や、出現前の敵には向かわない）
+      const enemy = player && nearestOf(player, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
+      // 壁反射後に向かっていた古い目標は捨てる（残っているとタップ後に元の場所＝壁の方へ曲がってしまう）
+      if (player) { player.seekPoint = null; player.missBounces = 0; }
       // サークルをタップ → 自機が加速（敵に衝突するまで持続）
       if (player) {
         player.tapSpeedMult = Math.min(TAP_ACCEL_MAX, (player.tapSpeedMult || 1) + TAP_ACCEL_PER_TAP);
