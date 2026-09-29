@@ -3621,6 +3621,7 @@
       }
     }
   }
+  const MAX_FREE_ADDS = 3;          // 通常ステージで同時に出る雑魚の最大数（本体は別）
   const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
   function isSwarmStage(stage) { return stage % 10 === 5; } // 大群ステージ（5, 15, 25…） // 敵の即死魔法の成功率（バリアで防げる）
   let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
@@ -6832,7 +6833,7 @@
       playSwarmSound();
     }
     const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
-    if (!e.isBoss && !swarm && freeAdds < 2 && Math.random() < 0.0009) { // 大群ステージは補充しない（全滅させたらクリア）
+    if (!e.isBoss && !swarm && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0009) { // 大群ステージは補充しない（全滅させたらクリア）
       adds.push(makeAddEnemy(e));
     }
 
