@@ -1591,7 +1591,7 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
   }
 
-  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力です（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+  const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速します（敵にぶつかると元の速さに戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
   const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
   const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
   const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
@@ -1774,8 +1774,8 @@
     meteor: { icon: '☄️', name: '流星術', desc: '必殺技ダメージ +50%', cost: 12 },
     fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
     summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
-    tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり', cost: 30, unlockKey: 'tackleUnlocked' },
-    superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' },
+    tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（壁で跳ねた瞬間に離すと威力2倍）', cost: 30, unlockKey: 'tackleUnlocked' },
+    superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力11倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' },
     tacklePierce: { icon: '🐂', name: '貫きの蹄鉄', desc: 'タックルが敵にヒットしても反射せず貫通して進む（購入ごとに +0.1秒）', cost: 20, stackKey: 'tacklePierceLv', maxStack: 10, requires: 'tackleUnlocked' }
   };
   const TACKLE_PIERCE_MS_PER_LV = 100;
@@ -1855,9 +1855,9 @@
   });
   REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
   // タックル・超タックルの開放（転生しても永続）
-  REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
+  REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（壁で跳ねた瞬間に離すと威力2倍・永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
     effect: () => { game.tackleUnlocked = true; } };
-  REBIRTH_SHOP_ITEMS.unlockSuperTackle = { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力18倍の超タックル（永続）', rarity: 'epic', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked', category: 'attack',
+  REBIRTH_SHOP_ITEMS.unlockSuperTackle = { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力11倍の超タックル（永続）', rarity: 'epic', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked', category: 'attack',
     effect: () => { game.superTackleUnlocked = true; } };
   // 転生ショップのカテゴリ（上部タブ）
   // 購入するたびに値段が上がる（購入回数は転生しても残る）
@@ -2887,10 +2887,12 @@
   // ---------- タメ打ち：ゲームサークルを長押し → 離すと敵を追尾する強力な体当たり ----------
   const TACKLE_CHARGE_MIN_MS = 350;   // これ以上押し続けるとタメ開始
   const TACKLE_CHARGE_FULL_MS = 1500; // フルチャージまでの時間
-  const TACKLE_MIN_MULT = 3;          // 最小タメのダメージ倍率（攻撃力比）
-  const TACKLE_MAX_MULT = 8;          // フルチャージのダメージ倍率
+  const TACKLE_MIN_MULT = 2;          // 最小タメのダメージ倍率（攻撃力比）
+  const TACKLE_MAX_MULT = 5;          // フルチャージのダメージ倍率
   const TACKLE_CHARGE_FULL2_MS = 3200; // 2段階目のフルチャージまでの時間
-  const TACKLE_MAX2_MULT = 18;         // 2段階目のダメージ倍率
+  const TACKLE_MAX2_MULT = 11;         // 2段階目のダメージ倍率
+  const WALL_TACKLE_WINDOW_MS = 300;  // 壁で跳ねてからこの時間内に離すと「壁蹴りタックル」
+  const WALL_TACKLE_MULT = 2;         // 壁蹴りタックルのダメージ倍率
   const TACKLE_DURATION_MS = 1600;    // 体当たりが続く時間（当たらなければ終了）
   const TACKLE_SPEED = 3.2 * 3.4;
   const TACKLE_TURN_RATE = 0.22;
@@ -2974,11 +2976,14 @@
     const mult = level <= 1
       ? TACKLE_MIN_MULT + (TACKLE_MAX_MULT - TACKLE_MIN_MULT) * level
       : TACKLE_MAX_MULT + (TACKLE_MAX2_MULT - TACKLE_MAX_MULT) * (level - 1);
-    tackle = { until: Date.now() + TACKLE_DURATION_MS, mult, full: level >= 1, full2: level >= 2 };
+    // 壁で跳ねた瞬間に離すと「壁蹴り」でさらに威力アップ
+    const wallKick = player.lastWallAt && Date.now() - player.lastWallAt <= WALL_TACKLE_WINDOW_MS;
+    tackle = { until: Date.now() + TACKLE_DURATION_MS, mult: mult * (wallKick ? WALL_TACKLE_MULT : 1), full: level >= 1, full2: level >= 2, wallKick };
     const a = Math.atan2(enemy.y - player.y, enemy.x - player.x);
     player.vx = Math.cos(a) * TACKLE_SPEED; player.vy = Math.sin(a) * TACKLE_SPEED;
     const lvl2 = level >= 2;
-    spawnDamageText(player.x, player.y - player.radius - 16, lvl2 ? '超タックル！！' : 'タックル！', lvl2 ? '#d38cff' : '#ffb35c', 0.025, lvl2);
+    spawnDamageText(player.x, player.y - player.radius - 16, (wallKick ? '壁蹴り' : '') + (lvl2 ? '超タックル！！' : 'タックル！'), wallKick ? '#ff5c8a' : lvl2 ? '#d38cff' : '#ffb35c', 0.025, lvl2 || wallKick);
+    if (wallKick) { spawnHitParticles(player.x, player.y, '#ff5c8a'); spawnHitParticles(player.x, player.y, '#ffffff'); shakeScreenLight(); }
     spawnHitParticles(player.x, player.y, lvl2 ? '#d38cff' : '#ffb35c');
     playAccelSound();
   }
@@ -3004,7 +3009,7 @@
     const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * t.mult * b.tackleMult * comboMult)), e);
     e.hp -= dmg;
     trackDamage(dmg);
-    spawnDamageText(e.x, e.y - e.radius - 30, 'タックル！', '#ffb35c', 0.02);
+    spawnDamageText(e.x, e.y - e.radius - 30, t.wallKick ? '壁蹴り ×' + WALL_TACKLE_MULT + '！' : 'タックル！', t.wallKick ? '#ff5c8a' : '#ffb35c', 0.02);
     spawnAttackDamageText(e, dmg, crit, '#ffcf8a');
     spawnHitParticles(e.x, e.y, '#ffb35c');
     onPlayerHitEnemy(e, dmg);
@@ -5859,7 +5864,7 @@
       ball.vx -= 2 * dot * nx;
       ball.vy -= 2 * dot * ny;
       if (ball.isPlayer) playPlayerWallSound(); else playEnemyWallSound();
-      if (ball.isPlayer && !ball.isClone && !ball.isCompanion) applyBounceReward();
+      if (ball.isPlayer && !ball.isClone && !ball.isCompanion) { ball.lastWallAt = Date.now(); applyBounceReward(); }
     }
   }
 
