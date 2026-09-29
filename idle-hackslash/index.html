@@ -2831,6 +2831,7 @@
     renderRanking();
     rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
     stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
+    updateSkipBtnVisibility();
     const skipHtml = game.skipChallenge
       ? `${xi('x_attack')} 挑戦中：STAGE ${game.skipChallenge.target}\n<small>負けたら STAGE ${game.skipChallenge.origin} へ</small>`
       : `${xi('x_skip')} ステージスキップ`;
@@ -4927,6 +4928,11 @@
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
+  let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
+  // ゲームオーバー（コンテニュー確認）中と転生中はステージスキップボタンを隠す
+  function updateSkipBtnVisibility() {
+    stageSkipBtn.style.display = gameOverBgm || rebirthFlow ? 'none' : '';
+  }
   // 今の場面に合うBGMを選んで流す（転生ショップ＞ゲームオーバー＞開いているタブ＞戦闘）
   function refreshBgm() {
     if (!audioCtx) return;
@@ -6702,7 +6708,7 @@
   }
   function showContinuePrompt() {
     if (phase !== 'paused') return;
-    gameOverBgm = true;
+    gameOverBgm = true; updateSkipBtnVisibility();
     refreshBgm();
     continueDeadline = Date.now() + 10000;
     continueStopped = false;
@@ -6808,7 +6814,7 @@
   }
 
   function completeReincarnation() {
-    gameOverBgm = false;
+    gameOverBgm = false; rebirthFlow = true; updateSkipBtnVisibility();
     endDeathFx();
     clearInterval(continueTimer);
     game.skipChallenge = null;
@@ -6968,7 +6974,7 @@
   function closeRebirthShop() {
     clearInterval(rebirthAutoSkipTimer);
     rebirthShopModal.classList.remove('show');
-    gameOverBgm = false;
+    gameOverBgm = false; rebirthFlow = false; updateSkipBtnVisibility();
     battleBgmType = game.stage % 10 === 0 ? 'boss' : 'normal';
     refreshBgm();
     playRunStartSound();
@@ -7080,7 +7086,7 @@
   // リトライ：敵（ボス）はそのままの状態で残し、自機だけHP全快で復活させて戦闘を続ける
   const REVIVE_INVINCIBLE_FRAMES = 90; // 復活直後の無敵時間（即死防止）
   function revivePlayerInPlace() {
-    gameOverBgm = false;
+    gameOverBgm = false; updateSkipBtnVisibility();
     refreshBgm();
     endDeathFx();
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -8039,7 +8045,7 @@
     toast.classList.remove('show');
     rebirthShopModal.classList.remove('show');
     rebirthShopPending = false;
-    gameOverBgm = false;
+    gameOverBgm = false; updateSkipBtnVisibility();
     renderArtifactList();
     updateStatsUI();
     balls = spawnBattleBalls();
