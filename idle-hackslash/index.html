@@ -717,7 +717,15 @@
   #rebirthShopList .rs-offer-sub { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); }
   #rebirthShopList .rs-new { display: inline-block; margin-right: 4px; padding: 0 5px; border-radius: 4px; background: linear-gradient(135deg, #ff4f6d, #ffb14f); color: #fff; font-size: 0.62rem; font-weight: 900; vertical-align: 1px; animation: rsNewBlink 0.9s ease-in-out infinite alternate; }
   @keyframes rsNewBlink { from { transform: scale(1); } to { transform: scale(1.12); } }
-  #rebirthShopList .rs-slot-btn { justify-content: space-between; margin-top: 4px; border-style: dashed; }
+  /* 引き直し・商品枠ボタン：横並びの押しやすいボタン */
+  #rebirthShopList .rs-slot-row { display: flex; justify-content: center; gap: 10px; margin-top: 8px; }
+  #rebirthShopList .rs-slot-row .rs-slot-btn { width: auto; flex: 0 1 150px; min-width: 0; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 12px; border: none; border-radius: 12px; color: #fff; text-align: center; font-weight: 800;
+    background: linear-gradient(180deg, #ffb45c, #ff7a2f); box-shadow: 0 3px 0 #c2521a, 0 5px 10px rgba(0,0,0,0.25); transition: transform 0.08s, box-shadow 0.08s; }
+  #rebirthShopList .rs-slot-row .rs-reroll-btn { background: linear-gradient(180deg, #6fd3ff, #2f8cff); box-shadow: 0 3px 0 #1c5bb8, 0 5px 10px rgba(0,0,0,0.25); }
+  #rebirthShopList .rs-slot-row .rs-slot-btn:active { transform: translateY(3px); box-shadow: 0 0 0 transparent, 0 2px 4px rgba(0,0,0,0.25); }
+  #rebirthShopList .rs-slot-row .rs-slot-btn .msb-name { font-size: 0.82rem; font-weight: 900; color: #fff; white-space: nowrap; text-shadow: 0 1px 0 rgba(0,0,0,0.25); }
+  #rebirthShopList .rs-slot-row .rs-slot-btn .msb-cost { font-size: 0.72rem; color: #fff; background: rgba(0,0,0,0.2); border-radius: 999px; padding: 0 8px; }
+  #rebirthShopList .rs-slot-row .rs-slot-btn.is-disabled { filter: grayscale(0.7); opacity: 0.6; }
   #rebirthShopList .rs-offer-note { font-size: 0.86rem; font-weight: 700; color: var(--text); text-align: center; line-height: 1.4; margin: 0 0 6px; }
   #rebirthShopList .upgrade-row .modal-shop-btn { flex: 1; min-width: 0; width: auto; }
   #rebirthShopList .upgrade-row { min-width: 0; }
@@ -2687,11 +2695,11 @@
       : Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory);
     const slots = getRebirthOfferSlots();
     const rerollCost = getRebirthRerollCost();
-    const rerollBtn = offerMode ? `<button class="modal-shop-btn rs-slot-btn rs-reroll-btn ${game.gems < rerollCost ? 'is-disabled' : ''}" data-rebirth-reroll><span class="msb-name">${xi('x_reload')} ラインナップを引き直す</span><span class="msb-cost">💎 ${rerollCost}</span></button>` : '';
+    const rerollBtn = offerMode ? `<button class="modal-shop-btn rs-slot-btn rs-reroll-btn ${game.gems < rerollCost ? 'is-disabled' : ''}" data-rebirth-reroll><span class="msb-name">${xi('x_reload')} 引き直す</span><span class="msb-cost">💎 ${rerollCost}</span></button>` : '';
     const newIds = offerMode && Array.isArray(game.rebirthShopNew) ? game.rebirthShopNew : [];
     const slotBtn = !offerMode ? '' : slots >= REBIRTH_OFFER_MAX_SLOTS
-      ? `<button class="modal-shop-btn rs-slot-btn is-disabled" disabled><span class="msb-name">🧺 商品枠 ${slots} / ${REBIRTH_OFFER_MAX_SLOTS}（最大）</span></button>`
-      : `<button class="modal-shop-btn rs-slot-btn ${game.gems < getRebirthSlotCost() ? 'is-disabled' : ''}" data-rebirth-slot><span class="msb-name">➕ 商品枠を増やす（${slots} → ${slots + 1} / ${REBIRTH_OFFER_MAX_SLOTS}）</span><span class="msb-cost">💎 ${getRebirthSlotCost()}</span></button>`;
+      ? `<button class="modal-shop-btn rs-slot-btn is-disabled" disabled><span class="msb-name">🧺 商品枠 最大</span><span class="msb-cost">${slots} / ${REBIRTH_OFFER_MAX_SLOTS}</span></button>`
+      : `<button class="modal-shop-btn rs-slot-btn ${game.gems < getRebirthSlotCost() ? 'is-disabled' : ''}" data-rebirth-slot><span class="msb-name">➕ 商品枠 ${slots}→${slots + 1}</span><span class="msb-cost">💎 ${getRebirthSlotCost()}</span></button>`;
     rebirthShopList.innerHTML = (offerMode ? `<div class="rs-offer-note"><span class="rs-offer-title">${xi('x_dice')} 今回のラインナップ</span><br><span class="rs-offer-sub">（転生ごとに入れ替わり・到達ステージが高いほどレアが出やすい）</span></div>` : '') + entries.map(([id, item]) => {
       const maxed = isRebirthItemMaxed(item);
       const disabled = maxed;
@@ -2708,7 +2716,7 @@
       const desc = item.desc.replace('（永続）', ''); // 永続であることは見出しに書いてあるので省略
       const maxCount = maxed ? 0 : getRebirthMaxCount(id);
       return `<div class="upgrade-row"><button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-rebirth-shop="${id}" ${disabled ? 'disabled' : ''} style="border-color:${rar.color}"><span class="rs-icon">${icon}</span><span class="rs-main"><span class="rs-line"><span class="msb-name">${newIds.includes(id) ? '<span class="rs-new">NEW!</span>' : ''}${item.name}</span><span class="msb-rarity" style="color:${rar.color}">${rarityStars(item.rarity)}</span><span class="rs-owned">${owned}</span></span><span class="rs-line"><span class="msb-desc">${desc}</span>${current ? `<span class="rs-current">現在 ${current}</span>` : ''}</span></span><span class="msb-cost">${maxed ? (isUnlockItem ? '開放済み' : '上限') : '💎 ' + cost}</span></button><button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-rebirth-max="${id}">MAX<span>${maxCount ? '×' + maxCount : '—'}</span></button></div>`;
-    }).join('') + rerollBtn + slotBtn;
+    }).join('') + (offerMode ? `<div class="rs-slot-row">${rerollBtn}${slotBtn}</div>` : '');
   }
 
   // 今のコインで上げられるだけのレベル数と、その合計コイン
