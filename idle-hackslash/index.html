@@ -667,7 +667,7 @@
   /* 一時停止（Tキー） */
   .pause-badge { position: absolute; inset: 0; z-index: 7; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 50%; background: rgba(6,8,14,0.55); color: #fff; font-size: 1.4rem; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 2px 6px rgba(0,0,0,0.8); cursor: pointer; }
   .pause-badge small { font-size: 0.7rem; font-weight: 700; letter-spacing: 0; opacity: 0.85; }
-  body.user-paused .pause-badge { display: flex; }
+  /* 一時停止は画面キャプチャ用なので「一時停止中」の表示は出さない（.pause-badge は非表示のまま） */
   /* ボス撃破のお祝い演出 */
   .boss-clear-fx { position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: 50%; overflow: hidden; animation: bcfFlash 0.6s ease-out; transition: opacity 0.6s; }
   .boss-clear-fx.out { opacity: 0; }
