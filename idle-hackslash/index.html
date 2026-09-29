@@ -524,7 +524,7 @@
   .bgm-info .bi-row.now b::before { content: '▶ '; color: #2ea043; }
   .debug-row button { border: 1px dashed var(--ring); border-radius: 8px; color: var(--text-dim); background: transparent; padding: 6px 3px; font-size: 0.63rem; cursor: pointer; }
 
-  .arena-wrap {
+  .arena-wrap { touch-action: none; /* サークル付近のドラッグでページがスクロールしないように */
     position: relative; width: 100%; aspect-ratio: 1 / 1; max-width: 460px; margin: 0 auto;
     border-radius: 50%; background: radial-gradient(circle at 50% 40%, var(--bg-soft), var(--bg));
     transition: background 0.6s ease;
@@ -9463,15 +9463,11 @@
     if (Date.now() >= accelEndAt) speedValue.textContent = gameSpeed.toFixed(1) + '×';
   });
 
-  // ---------- 自キャラのドラッグ移動：自キャラを押したまま動かすと、指（カーソル）の少し上を追いかける ----------
-  const DRAG_OFFSET_CSS = 44;    // 指で隠れないよう、この分だけ上を目標にする（画面上のpx）
-  const DRAG_GRAB_MARGIN = 18;   // 自キャラの周りこの距離までなら掴める（キャンバス上のpx）
-  let playerDrag = null;         // { id, x, y }：ドラッグ中の目標地点（キャンバス座標）
-  function dragTargetFromEvent(event) {
-    const rect = canvas.getBoundingClientRect();
-    const k = size / rect.width;
-    return { x: (event.clientX - rect.left) * k, y: (event.clientY - rect.top - DRAG_OFFSET_CSS) * k };
-  }
+  // ---------- 自キャラのドラッグ移動：ゲーム画面の近くならどこをドラッグしても、その動いた分だけ自キャラが動く ----------
+  const DRAG_START_PX = 8;       // これ以上指が動いたらドラッグ（それ未満はタップ扱い）
+  const DRAG_AREA_MARGIN = 60;   // サークルの外側このくらい（画面上のpx）まではドラッグを受け付ける
+  let dragPending = null;        // { id, sx, sy }：押した位置（まだタップかドラッグか未確定）
+  let playerDrag = null;         // { id, x, y, px, py, ox, oy }：ドラッグ中の目標地点（キャンバス座標）
   function dragMainPlayer(ball, speedMult, b) {
     // 目標はサークルの内側に収める
     let tx = playerDrag.x, ty = playerDrag.y;
@@ -9485,11 +9481,31 @@
     wallBounce(ball);
     ball.seekPoint = null; ball.missBounces = 0;
   }
+  window.addEventListener('pointerdown', event => {
+    if (phase !== 'battle' || getActiveTab() !== 'game') return;
+    if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
+    const r = canvas.getBoundingClientRect();
+    if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
+    dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
+  });
   window.addEventListener('pointermove', event => {
-    if (!playerDrag || event.pointerId !== playerDrag.id) return;
-    Object.assign(playerDrag, dragTargetFromEvent(event));
+    if (playerDrag && event.pointerId === playerDrag.id) {
+      const k = size / canvas.getBoundingClientRect().width;
+      playerDrag.x = playerDrag.px + (event.clientX - playerDrag.ox) * k;
+      playerDrag.y = playerDrag.py + (event.clientY - playerDrag.oy) * k;
+      return;
+    }
+    if (!dragPending || event.pointerId !== dragPending.id) return;
+    if (Math.hypot(event.clientX - dragPending.sx, event.clientY - dragPending.sy) < DRAG_START_PX) return;
+    const pl = balls.find(ball => isMainPlayerBall(ball));
+    dragPending = null;
+    if (!pl || phase !== 'battle') return;
+    // ドラッグ開始：タメ（長押し）は取り消す。ここからの指の動きの分だけ自キャラを動かす
+    arenaHeld = false; tackleChargeStart = 0; stopChargeSound();
+    playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
   });
   ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
+    if (dragPending && event.pointerId === dragPending.id) dragPending = null;
     if (!playerDrag || event.pointerId !== playerDrag.id) return;
     playerDrag = null;
     // 離したら、そのままの向きで反射移動に戻る（止まっていれば一番近い敵の方へ）
@@ -9509,13 +9525,6 @@
     const x = (event.clientX - rect.left) * (size / rect.width);
     const y = (event.clientY - rect.top) * (size / rect.height);
     const dx = x - arena.x, dy = y - arena.y;
-    // 自キャラを押したらドラッグ移動（タップ加速・タメは行わない）
-    const grabbed = balls.find(ball => isMainPlayerBall(ball));
-    if (grabbed && Math.hypot(x - grabbed.x, y - grabbed.y) < grabbed.radius + DRAG_GRAB_MARGIN) {
-      playerDrag = { id: event.pointerId, ...dragTargetFromEvent(event) };
-      canvas.setPointerCapture?.(event.pointerId);
-      return;
-    }
     if (Math.hypot(dx, dy) < arena.radius - 12) {
       // 長押しでタメ開始
       arenaHeld = true;
