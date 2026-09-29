@@ -5247,6 +5247,16 @@
       ],
       drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
     },
+    // 転生報酬：輪廻の宝箱（スマホゲームのプチガチャ演出系の作風×VRC6風チップチューン。ヘ長調。キラキラ駆け上がるアルペジオと弾むベースで「何が出るかな」のワクワク感）
+    rebirthReward: {
+      bpm: 160,
+      tracks: [
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'C6 = A5 C6 F6 = C6 A5 | D6 = A5 D6 F6 = E6 D6 | D6 = = A#5 F5 = A#5 D6 | C6 = E6 = G6 = = = | A6 = G6 F6 C6 = F6 A6 | G6 = E6 C6 A5 = C6 E6 | F6 = D6 A#5 G5 = A#5 D6 | E6 F6 G6 A6 A#6 = C7 =' },
+        { type: 'vrc6pulse12', gain: 0.02, notes: 'F4 A4 C5 F5 A5 F5 C5 A4 | D4 F4 A4 D5 F5 D5 A4 F4 | A#3 D4 F4 A#4 D5 A#4 F4 D4 | C4 E4 G4 C5 E5 C5 G4 E4 | F4 A4 C5 F5 A5 F5 C5 A4 | A3 C4 E4 A4 C5 A4 E4 C4 | A#3 D4 F4 A#4 D5 A#4 F4 D4 | C4 E4 G4 A#4 C5 E5 G5 A#5' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'F2 F3 F2 F3 F2 F3 F2 F3 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | F2 F3 F2 F3 F2 F3 F2 F3 | A1 A2 A1 A2 A1 A2 A1 A2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 E2 G2 A#2 C3' },
+      ],
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s ks ks ks ks',
+    },
     // 転生ショップ：運命の選択（VRC6風の拡張音源チップチューン。イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
     rebirth: {
       bpm: 150,
@@ -5444,6 +5454,7 @@
     { key: 'records', name: 'ページ 戦績 冒険の記録', desc: 'サガ系の作風。ヘ長調の穏やかで口ずさめる旋律・BPM112' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
+    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'キラキラ駆け上がるアルペジオと弾むベースで「何が出るかな」のワクワク感。VRC6風チップチューン。ヘ長調（スマホゲームのプチガチャ演出系の作風）・BPM160' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
@@ -5480,6 +5491,7 @@
     renderBgmBook();
   });
   let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
+  let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
   // ゲームオーバー（コンテニュー確認）中と転生中はチャレンジ（ステージスキップ）ボタンを隠す
   function updateSkipBtnVisibility() {
     const hide = gameOverBgm || rebirthFlow;
@@ -5495,6 +5507,7 @@
     let type = battleBgmType;
     if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
     else if (gameOverBgm) type = 'gameover';
+    else if (rebirthRewardBgm) type = 'rebirthReward';
     else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
     else {
       const tab = getActiveTab();
@@ -7420,6 +7433,7 @@
 
   function completeReincarnation() {
     gameOverBgm = false; rebirthFlow = true; updateSkipBtnVisibility();
+    rebirthRewardBgm = true; refreshBgm();
     endDeathFx();
     clearInterval(continueTimer);
     game.skipChallenge = null;
@@ -7489,8 +7503,9 @@
     clearTimeout(rebirthTimer);
     toast.classList.remove('show');
     toastIcon.className = 'artifact-icon'; // 宝箱演出のクラスを戻す
+    rebirthRewardBgm = false;
     // 転生ショップはゲームタブでのみ表示。他のタブにいる間は、ゲームタブに戻ったときに開く
-    if (getActiveTab() !== 'game') { rebirthShopPending = true; return; }
+    if (getActiveTab() !== 'game') { rebirthShopPending = true; refreshBgm(); return; }
     openRebirthShop(true);
   }
 
