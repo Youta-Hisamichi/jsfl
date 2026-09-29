@@ -8631,6 +8631,8 @@
     try {
       // 一時停止中は描画だけ続けて、ゲームの進行は止める
       if (userPaused) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; }
+      // ゲーム画面以外のページを開いている間は、戦闘を止めておく（知らないうちにやられてゲームオーバーにならないように）
+      if (activeTabCache !== 'game') { battleSfx = false; animId = requestAnimationFrame(loop); return; }
       // ヒットストップ中はゲーム更新をスキップ
       if (hitStopFrames <= 0) {
         if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
