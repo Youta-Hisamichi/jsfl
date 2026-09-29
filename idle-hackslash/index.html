@@ -491,7 +491,7 @@
   .loot-popup .lp-main { font-size: 1.05rem; font-weight: 900; margin-top: 3px; }
   .loot-popup .lp-main .ico-img { width: 1.8em; height: 1.8em; border-radius: 6px; }
   .loot-popup .lp-sub { font-size: 0.68rem; color: #cfd3e0; margin-top: 2px; }
-  .loot-popup.show { animation: lootPop 5.5s ease-out forwards; }
+  .loot-popup.show { animation: lootPop 4.2s ease-out forwards; }
   @keyframes lootPop {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
     5% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
@@ -4363,7 +4363,7 @@
   }
 
   const TREASURE_TEXT_DECAY = 1 / 280; // 宝箱のテキストは約4.5秒表示（通常のダメージ表示より長め）
-  const TREASURE_NOTICE_MS = 5000;
+  const TREASURE_NOTICE_MS = 4000;
   // 宝箱・報酬の中身をアリーナ中央に大きく表示（通知バーと違い他の通知で上書きされない）
   const lootPopup = document.getElementById('lootPopup');
   function showLootPopup(title, main, sub, color) {
@@ -4372,7 +4372,15 @@
     lootPopup.classList.remove('show');
     void lootPopup.offsetWidth; // 連続でも最初から再生
     lootPopup.classList.add('show');
+    lootNoticeActive = true;
   }
+  // 宝箱の中身の表示は、画面のどこかをタップしたらすぐ消す（タップ自体はゲーム操作としても効く）
+  let lootNoticeActive = false;
+  window.addEventListener('pointerdown', () => {
+    if (!lootPopup.classList.contains('show')) return;
+    lootPopup.classList.remove('show');
+    if (lootNoticeActive) { lootNoticeActive = false; noticeHoldUntil = 0; clearTimeout(noticeTimer); battleNotice.classList.remove('show'); }
+  }, true);
   function dropTreasureChest() {
     spawnDamageText(arena.x, arena.y - 40, '🎁 宝箱発見！', '#ffd76b', TREASURE_TEXT_DECAY);
     playLoginBonusSound();
