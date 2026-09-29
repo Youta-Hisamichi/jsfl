@@ -1901,10 +1901,20 @@
     const n = getRebirthOfferSlots() - REBIRTH_OFFER_COUNT; // これまでに増やした枠数
     return gemPrice(Math.round(20 * Math.pow(2.5, n) / 5) * 5); // 20→50→125→310→780→1955→4885
   }
-  // 到達ステージが高いほどレア度の高い商品が出やすい（150ステージで最大）
+  // 到達ステージが高いほどレア度の高い商品が出やすい（150ステージで最大）。高レアはなかなか出ない
   function getRebirthOfferWeights(stage) {
     const t = Math.min(1, Math.max(0, stage) / 150);
-    return { common: 60 * (1 - t) + 10, rare: 30, epic: 8 + 32 * t, legendary: 2 + 25 * t };
+    return { common: 65 * (1 - t) + 25, rare: 28, epic: 4 + 12 * t, legendary: 0.5 + 4.5 * t };
+  }
+  // 転生報酬の遺物：レア度ごとの出やすさ（％）。高レアほど出にくい
+  const REBIRTH_REWARD_RARITY_WEIGHTS = { common: 66, rare: 27, epic: 6, legendary: 1 };
+  function pickWeightedArtifact(pool, weights) {
+    const counts = {};
+    pool.forEach(a => counts[a.rarity] = (counts[a.rarity] || 0) + 1);
+    const w = a => (weights[a.rarity] || 0) / counts[a.rarity];
+    let r = Math.random() * pool.reduce((sum, a) => sum + w(a), 0);
+    for (const a of pool) { r -= w(a); if (r <= 0) return a; }
+    return pool[pool.length - 1];
   }
   // 初めてラインナップに並んだ商品は「NEW!」表示（並んだ時点で既出扱いにする）
   function markRebirthOfferSeen(ids) {
@@ -6540,6 +6550,7 @@
     gameOverBgm = true;
     refreshBgm();
     continueDeadline = Date.now() + 10000;
+    continueStopped = false;
     continueBtn.style.display = 'block';
     giveUpBtn.style.display = 'block';
     toastIcon.style.display = 'block';
@@ -6569,9 +6580,22 @@
     if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
     return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 2).map(t => `<div>${t}</div>`).join('')}</div>`;
   }
+  // 画面のどこかをタップしたらコンテニューのカウントダウンを止める（ボタンを押すまで待つ）
+  let continueStopped = false;
+  function renderContinueStopped() {
+    toastSub.innerHTML = `<span class="continue-count">⏸ カウント停止中</span>\n💎 3 で現在ステージをリトライ${gameOverTipsHtml}`;
+  }
+  function stopContinueCountdown() {
+    if (continueStopped || !continueTimer || phase !== 'paused' || continueBtn.style.display === 'none') return;
+    continueStopped = true;
+    clearInterval(continueTimer); continueTimer = null;
+    renderContinueStopped();
+  }
+  document.addEventListener('pointerdown', stopContinueCountdown, true);
   function startContinueCountdown() {
     clearInterval(continueTimer);
-    gameOverTipsHtml = buildGameOverTips();
+    if (!gameOverTipsHtml || !continueStopped) gameOverTipsHtml = buildGameOverTips();
+    if (continueStopped) { continueTimer = null; renderContinueStopped(); return; }
     let lastTickSec = null;
     const updateContinue = () => {
       const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
@@ -6638,7 +6662,7 @@
     // 序盤（最初の数回の転生）は攻撃力・HPを上げる遺物だけが出る
     const earlyRebirth = game.reincarnations < EARLY_REBIRTH_COUNT;
     const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
-    const pick = rebirthPool[Math.floor(Math.random() * rebirthPool.length)];
+    const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
     gainArtifact(pick.id);
     rebirthOfferStage = game.stage;
     game.coins = 0; game.stage = 1;
