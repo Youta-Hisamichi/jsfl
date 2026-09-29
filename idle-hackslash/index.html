@@ -791,7 +791,7 @@
       <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
     </div>
     <div class="action-row pair">
-      <button class="action-btn skip-action" id="stageSkipBtn">ステージスキップ</button>
+      <button class="action-btn skip-action" id="stageSkipBtn">チャレンジ</button>
       <button class="action-btn reborn-action" id="rebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
     </div>
     <div class="action-row single">
@@ -995,8 +995,8 @@
 
 <div class="modal-overlay" id="stageSkipModal">
   <div class="modal-panel">
-    <h2><span data-xi="x_skip">⏭️</span> ステージスキップ</h2>
-    <div class="modal-sub">所持ジェム: <span id="stageSkipGems">0</span><br>ジェムを消費して先のステージのボスに挑戦します。勝てばそのステージまでスキップ、負けたら現在のステージ <b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
+    <h2><span data-xi="x_skip">⏭️</span> チャレンジ</h2>
+    <div class="modal-sub">所持ジェム: <span id="stageSkipGems">0</span><br>ジェムを消費して先のステージのボスに挑戦します。勝てばそのステージまで一気に進み、負けたら現在のステージ <b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
     <div class="custom-skip">
       <div class="custom-skip-title">🎯 好きなステージに挑戦（ジェムは距離に応じて消費）</div>
       <div class="custom-skip-row">
@@ -1013,7 +1013,7 @@
 <div class="modal-overlay" id="skipRetryModal">
   <div class="modal-panel" style="text-align:center;">
     <div style="font-size:2.4rem;"><span data-xi="x_break" data-xi-big>💔</span></div>
-    <h2>スキップ失敗…</h2>
+    <h2>チャレンジ失敗…</h2>
     <div class="modal-sub" id="skipRetryText"></div>
     <div class="modal-shop-list" id="skipRetryActions">
       <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
@@ -2677,8 +2677,8 @@
       particles.push({ x: arena.x, y: arena.y - 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: info.color, decay: 0.015 });
     }
     playGachaSound(rarity);
-    showLootPopup('🏺 スキップ報酬（遺物）', `${ico(pick)} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
-    showNotice(`🏺 スキップ報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS, true);
+    showLootPopup('🏺 チャレンジ報酬（遺物）', `${ico(pick)} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
+    showNotice(`🏺 チャレンジ報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS, true);
     renderArtifactList();
     updateStatsUI();
     saveGame();
@@ -2834,7 +2834,7 @@
     updateSkipBtnVisibility();
     const skipHtml = game.skipChallenge
       ? `${xi('x_attack')} 挑戦中：STAGE ${game.skipChallenge.target}\n<small>負けたら STAGE ${game.skipChallenge.origin} へ</small>`
-      : `${xi('x_skip')} ステージスキップ`;
+      : `${xi('x_skip')} チャレンジ`;
     if (stageSkipBtn.dataset.html !== skipHtml) { stageSkipBtn.innerHTML = skipHtml; stageSkipBtn.dataset.html = skipHtml; }
     updateSpecialButton();
     updateAccelButton();
@@ -4974,7 +4974,7 @@
   ];
   let gameOverBgm = false;      // コンテニュー確認中
   let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
-  // ゲームオーバー（コンテニュー確認）中と転生中はステージスキップボタンを隠す
+  // ゲームオーバー（コンテニュー確認）中と転生中はチャレンジ（ステージスキップ）ボタンを隠す
   function updateSkipBtnVisibility() {
     stageSkipBtn.style.display = gameOverBgm || rebirthFlow ? 'none' : '';
   }
@@ -6588,7 +6588,7 @@
     const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
     const enTrait = getEnemyTrait(en);
     const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
-    enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（スキップ挑戦）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
+    enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（チャレンジ）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
   }
 
   // ---------- 「？」ボタン：迫り合いを含む詳しいステータスと敵の特性をまとめて表示 ----------
@@ -6660,7 +6660,7 @@
     game.dailyClears++;
     resetCombo();
     if (game.skipChallenge) {
-      showNotice(`⏭️ スキップ成功！ STAGE ${game.stage} のボスを撃破`);
+      showNotice(`⏭️ チャレンジ成功！ STAGE ${game.stage} のボスを撃破`);
       const skipped = game.skipChallenge.target - game.skipChallenge.origin;
       game.skipChallenge = null;
       setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
@@ -7064,7 +7064,7 @@
       const target = getSkipTargetStage(opt.skip);
       const es = getEnemyStats(target);
       const short = game.gems < opt.cost;
-      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} スキップ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+      return `<button class="modal-shop-btn ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name">👑 STAGE ${target} のボス</span><span class="msb-desc">+${opt.skip} ステージ（${target - game.stage} ステージ先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
     }).reverse().join('');
   }
   // 次の敵だけを出現させる。自機・仲間・分身はその場に残したまま（位置をリセットしない）、仲間はHP全快で復活
@@ -7179,7 +7179,7 @@
   }
   stageSkipBtn.addEventListener('click', event => {
     if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
-    if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今はスキップできません', event.clientX, event.clientY); return; }
+    if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今はチャレンジできません', event.clientX, event.clientY); return; }
     renderStageSkipList();
     stageSkipModal.classList.add('show');
   });
