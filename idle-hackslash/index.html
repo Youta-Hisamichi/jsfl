@@ -4664,16 +4664,15 @@
       ],
       drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
     },
-    // 強化ページ：武器と防具の店（王道RPGのお店系の作風。ヘ長調の軽快な曲を、メガドライブ風のFM音源で）
+    // 強化ページ：冒険者の店（アクションアドベンチャー系の作風。ト長調の弾むファミコン風チップチューン）
     upgrade: {
-      bpm: 126,
+      bpm: 138,
       tracks: [
-        { type: 'fm', gain: 0.036, notes: 'A5 = C6 = A5 G5 F5 = | D5 = F5 = A5 = = = | A#5 = A5 = G5 = F5 = | E5 = G5 = C6 = A#5 = | A5 = C6 = F6 = E6 D6 | C#6 = A5 = E5 = G5 = | F5 = A5 = G5 = B5 = | C6 = = = A#5 = G5 =' },
-        { type: 'fmbass', gain: 0.09, notes: 'F2 = F3 = C3 = A2 = | D2 = D3 = A2 = F2 = | G2 = G3 = D3 = A#2 = | C2 = C3 = G2 = E2 = | F2 = F3 = C3 = A2 = | A2 = A3 = E3 = C#3 = | D2 = D3 = G2 = G3 = | C2 = C3 = G2 = A#2 =' },
-        { type: 'fmep', gain: 0.034, notes: '- - F4+A4+C5 - - - F4+A4+C5 - | - - D4+F4+A4 - - - D4+F4+A4 - | - - F4+A#4+D5 - - - F4+A#4+D5 - | - - E4+G4+A#4 - - - E4+G4+A#4 - | - - F4+A4+C5 - - - F4+A4+C5 - | - - C#4+E4+G4 - - - C#4+E4+G4 - | - - D4+F4+A4 - - - F4+B4+D5 - | - - E4+G4+A#4 - - - E4+G4+A#4 -' },
-        { type: 'fmbell', gain: 0.03, notes: 'F6 - - - - - - - | - - - - A6 - - - | D6 - - - - - - - | - - - - C6 - - - | F6 - - - - - - - | - - - - E6 - - - | D6 - - - - - - - | - - - - E6 - - -' },
+        { type: 'square', gain: 0.03, notes: 'D5 - G5 - B5 = A5 G5 | E5 = G5 = C6 = B5 A5 | B5 - G5 - D5 = G5 A5 | F#5 = = = A5 = F#5 = | G5 - B5 - E6 = D6 B5 | C6 = B5 = A5 = G5 = | A5 - C#6 - E6 = D6 C#6 | D6 = = = C6 = A5 =' },
+        { type: 'triangle', gain: 0.1, notes: 'G2 - D3 - G2 - D3 - | C3 - G2 - C3 - G2 - | G2 - D3 - G2 - D3 - | D3 - A2 - D3 - A2 - | E2 - B2 - E2 - B2 - | C3 - G2 - C3 - G2 - | A2 - E3 - A2 - E3 - | D3 - A2 - D3 - F#3 -' },
+        { type: 'square', gain: 0.013, notes: 'G4 B4 D5 B4 G4 B4 D5 B4 | E4 G4 C5 G4 E4 G4 C5 G4 | G4 B4 D5 B4 G4 B4 D5 B4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | E4 G4 B4 G4 E4 G4 B4 G4 | E4 G4 C5 G4 E4 G4 C5 G4 | C#4 E4 G4 E4 C#4 E4 G4 E4 | D4 F#4 C5 F#4 D4 F#4 C5 F#4' },
       ],
-      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks s',
+      drums: 'h - h h s - h - | h - h h s - h - | h - h h s - h - | h - h h s - h - | h - h h s - h - | h - h h s - h - | h - h h s - h - | h - h h s s s s',
     },
     // 仲間ページ：旅の仲間（サガ系の作風。ト長調ミクソリディアの明るい行進）
     companion: {
@@ -4897,7 +4896,7 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-    { key: 'upgrade', name: 'ページ 強化 武器と防具の店', desc: '軽快なお店の曲をメガドライブ風のFM音源で。ヘ長調（王道RPGのお店系の作風）・BPM126' },
+    { key: 'upgrade', name: 'ページ 強化 冒険者の店', desc: '弾むファミコン風チップチューンのお店の曲。ト長調（アクションアドベンチャー系の作風）・BPM138' },
     { key: 'companion', name: 'ページ 仲間 旅の仲間', desc: 'サガ系の作風。ト長調ミクソリディアの明るい行進・BPM132' },
     { key: 'coinshop', name: 'ページ スキル 秘術の書庫', desc: 'サガ系の作風。イ短調の神秘的な分散和音・BPM120' },
     { key: 'artifact', name: 'ページ 遺物 遺跡の宝物庫', desc: 'サガ系の作風。ホ短調フリギアの怪しいループ・BPM116' },
