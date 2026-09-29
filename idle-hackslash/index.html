@@ -10206,6 +10206,8 @@
 
   // ---------- 自キャラのドラッグ移動：ゲーム画面の近くならどこをドラッグしても、その動いた分だけ自キャラが動く ----------
   const DRAG_START_PX = 8;       // これ以上指が動いたらドラッグ（それ未満はタップ扱い）
+  const DRAG_FOLLOW = 0.13;      // 目標までの距離に対する追いかける速さ（小さいほど遅れてついてくる）
+  const DRAG_EASE = 0.25;        // 速度の変わりやすさ（小さいほど重たい）
   const DRAG_AREA_MARGIN = 60;   // サークルの外側このくらい（画面上のpx）まではドラッグを受け付ける
   let dragPending = null;        // { id, sx, sy }：押した位置（まだタップかドラッグか未確定）
   let playerDrag = null;         // { id, x, y, px, py, ox, oy }：ドラッグ中の目標地点（キャンバス座標）
@@ -10215,9 +10217,12 @@
     const ox = tx - arena.x, oy = ty - arena.y, od = Math.hypot(ox, oy), lim = arena.radius - ball.radius - 2;
     if (od > lim) { tx = arena.x + ox / od * lim; ty = arena.y + oy / od * lim; }
     const dx = tx - ball.x, dy = ty - ball.y, d = Math.hypot(dx, dy);
-    const maxSpeed = BOUNCE_SPEED * b.speedMult * 4.5;
-    const sp = Math.min(maxSpeed, d * 0.25);
-    ball.vx = d > 0.5 ? dx / d * sp : 0; ball.vy = d > 0.5 ? dy / d * sp : 0;
+    // 少し遅れてついてくる：目標へ向かう速さを控えめにし、速度もなめらかに変える（慣性）
+    const maxSpeed = BOUNCE_SPEED * b.speedMult * 3.2;
+    const sp = Math.min(maxSpeed, d * DRAG_FOLLOW);
+    const wantVx = d > 0.5 ? dx / d * sp : 0, wantVy = d > 0.5 ? dy / d * sp : 0;
+    const ease = 1 - Math.pow(1 - DRAG_EASE, speedMult);
+    ball.vx += (wantVx - ball.vx) * ease; ball.vy += (wantVy - ball.vy) * ease;
     ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
     wallBounce(ball);
     ball.seekPoint = null; ball.missBounces = 0;
