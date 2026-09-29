@@ -2897,14 +2897,15 @@
   function updateStatsUI() {
     stageNumEl.textContent = game.stage;
     superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
-    rebornNumEl.textContent = game.reincarnations;
-    bestStageNumEl.textContent = game.bestStage;
-    totalKillsNumEl.textContent = game.totalKills;
-    totalTapsNumEl.textContent = game.totalTaps;
-    maxDamageNumEl.textContent = Math.floor(game.maxDamage || 0);
-    maxDpsNumEl.textContent = Math.floor(game.maxDps || 0);
-    maxComboNumEl.textContent = game.maxCombo || 0;
-    document.getElementById('totalSpentNum').textContent = Math.floor(game.totalCoinsSpent || 0).toLocaleString('ja-JP');
+    // 戦績の数値は 万・億・兆・京 の単位付きで表示
+    rebornNumEl.textContent = formatCoinNumber(game.reincarnations);
+    bestStageNumEl.textContent = formatCoinNumber(game.bestStage);
+    totalKillsNumEl.textContent = formatCoinNumber(game.totalKills);
+    totalTapsNumEl.textContent = formatCoinNumber(game.totalTaps);
+    maxDamageNumEl.textContent = formatCoinNumber(game.maxDamage || 0);
+    maxDpsNumEl.textContent = formatCoinNumber(game.maxDps || 0);
+    maxComboNumEl.textContent = formatCoinNumber(game.maxCombo || 0);
+    document.getElementById('totalSpentNum').textContent = formatCoinNumber(game.totalCoinsSpent || 0);
     const critBonuses = computeBonuses();
     const critRate = Math.min(1, CRIT_CHANCE + critBonuses.critChance); // 100%を超えても実質は必ずクリティカル
     critRateNumEl.textContent = +(critRate * 100).toFixed(1) + '%';
@@ -2914,7 +2915,7 @@
     document.getElementById('bossDmgNum').textContent = '+' + +(critBonuses.bossDmg * 100).toFixed(1) + '%';
     document.getElementById('counterNum').textContent = +(Math.min(1, critBonuses.counter) * 100).toFixed(1) + '%';
     game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
-    bestCoinsNumEl.textContent = Math.floor(game.bestCoins).toLocaleString('ja-JP'); // 戦績では端数を省略せず全桁表示
+    bestCoinsNumEl.textContent = formatCoinNumber(game.bestCoins);
     headerCoinsEl.textContent = formatCoinNumber(Math.max(0, game.coins - coinDisplayHold)); // 飛んでいる途中のコインはまだ表示に足さない
     headerGemsEl.textContent = Math.floor(game.gems);
     startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
@@ -4328,6 +4329,7 @@
       { value: 1e4, symbol: '万' },
       { value: 1e8, symbol: '億' },
       { value: 1e12, symbol: '兆' },
+      { value: 1e16, symbol: '京' },
     ];
     let idx = units.length - 1;
     while (idx > 0 && num < units[idx].value) idx--;
