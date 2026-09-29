@@ -190,7 +190,7 @@
   #rebirthShopList .rs-icon { flex: 0 0 auto; font-size: 1.9rem; line-height: 1; }
   #rebirthShopList .rs-icon .ico-img, #rebirthShopList .rs-icon .comp-sprite { width: 2.4rem; height: 2.4rem; border-radius: 6px; display: block; }
   .action-btn .ico-img { width: 1.5em; height: 1.5em; margin-right: 2px; }
-  .comp-sprite { width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; }
+  .comp-sprite { width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; image-rendering: pixelated; }
   .bst-sprite { width: 2.2rem; height: 2.2rem; object-fit: contain; }
   .enemy-name-sprite { width: 1.5em; height: 1.5em; vertical-align: middle; margin: -0.3em 0; object-fit: contain; }
   .upgrade-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
@@ -7931,13 +7931,16 @@
       }
       flip = (ball.faceDir || base) !== base;
     }
-    if (!flip && !ball.guarding) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); return; }
+    // ドット絵は拡大するときはぼかさずクッキリ（元の画像より小さく描くときだけなめらかに縮小）
+    ctx.imageSmoothingEnabled = sz * dpr < (img.naturalWidth || img.width || 64);
+    if (!flip && !ball.guarding) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); ctx.imageSmoothingEnabled = true; return; }
     ctx.save();
     ctx.translate(cx, cy);
     if (ball.guarding) ctx.rotate(Date.now() / 90); // 回転ガード中はくるくる回る
     if (flip) ctx.scale(-1, 1);
     ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
     ctx.restore();
+    ctx.imageSmoothingEnabled = true;
   }
   function isMainPlayerBall(ball) { return ball.isPlayer && !ball.isClone && !ball.isCompanion; }
   // 1体ぶんの描画（自機・仲間・分身・敵）
