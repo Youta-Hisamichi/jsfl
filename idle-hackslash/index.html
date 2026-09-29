@@ -4462,23 +4462,6 @@
   // ---------- 多重トラックの戦闘BGM（メロディ・ベース・和音・ドラム） ----------
   // 1トークン＝8分音符。音名は '+' で和音、'=' は前の音を伸ばす、'-' は休符。ドラムは k=キック s=スネア h=ハイハット（組み合わせ可）
   const BGM_SONGS = {
-    // 通常戦闘1：勇ましいファンタジー（王道RPG風。ハ長調・行進曲風。I-V-vi-IV-I-V-IV/V-I）
-    battle1: {
-      bpm: 150,
-      tracks: [
-        { type: 'square', gain: 0.045, notes:
-          'G4 = C5 = E5 = G5 E5 | D5 = = B4 C5 D5 G5 = | E5 = C5 = A4 B4 C5 E5 | F5 = = E5 D5 = C5 D5 | ' +
-          'E5 = G5 = C6 = B5 A5 | G5 = D5 = B4 = G5 A5 | A5 G5 F5 A5 G5 = B5 = | C6 = = = - G4 A4 B4' },
-        { type: 'triangle', gain: 0.11, notes:
-          'C3 C4 C3 C4 C3 C4 C3 C4 | G2 G3 G2 G3 G2 G3 G2 G3 | A2 A3 A2 A3 A2 A3 A2 A3 | F2 F3 F2 F3 F2 F3 F2 F3 | ' +
-          'C3 C4 C3 C4 C3 C4 C3 C4 | G2 G3 G2 G3 G2 G3 G2 G3 | F2 F3 F2 F3 G2 G3 G2 G3 | C3 C4 C3 C4 G2 G3 B2 B3' },
-        { type: 'triangle', gain: 0.022, notes:
-          'C4+E4+G4 = = = = = = = | B3+D4+G4 = = = = = = = | A3+C4+E4 = = = = = = = | A3+C4+F4 = = = = = = = | ' +
-          'C4+E4+G4 = = = = = = = | B3+D4+G4 = = = = = = = | A3+C4+F4 = = = B3+D4+G4 = = = | C4+E4+G4 = = = = = = =' },
-      ],
-      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s kh | ' +
-             'k h s h k k s h | k h s h k k s h | k h s h k s s s | k s s s s s s s',
-    },
     // 通常戦闘2：疾走するマイナー（ファンタジーRPG風のうねるベース。ニ短調・和声的短音階。Dm-B♭-C-Dm-Dm-B♭-C-A）
     battle2: {
       bpm: 172,
@@ -4822,8 +4805,8 @@
   let bgmToken = 0;
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-  // 通常戦闘BGMは8曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle1', 'battle2', 'battle3', 'battle4', 'battle5', 'battle7', 'battle10', 'battle11'];
+  // 通常戦闘BGMは7曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
+  const NORMAL_BATTLE_SONGS = ['battle2', 'battle3', 'battle4', 'battle5', 'battle7', 'battle10', 'battle11'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -4853,7 +4836,6 @@
   function resolveBgmType(type) { return type === 'normal' ? normalBgmOrder[normalBgmIndex] : type === 'boss' ? bossBgmOrder[bossBgmIndex] : type; }
   // BGMの概要（デバッグ一覧に表示・BGMボタンもここから作る）
   const BGM_INFO = [
-    { key: 'battle1', name: '戦闘1 王道', desc: '勇ましいファンタジー。ハ長調の行進曲風（王道RPGの作風）・BPM150' },
     { key: 'battle2', name: '戦闘2 疾走', desc: '疾走するマイナー。ニ短調のうねるベース（FF系の作風）・BPM172' },
     { key: 'battle3', name: '戦闘3 ロック', desc: 'シンコペーションのプログレ風ロック。ホ短調（サガ系の作風）・BPM158' },
     { key: 'battle4', name: '戦闘4 爽快', desc: '爽快なセブンスコード。ヘ長調のジャズ寄り（クロノ系の作風）・BPM150' },
