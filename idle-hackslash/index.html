@@ -7326,7 +7326,7 @@
     toast.classList.add('show');
     startContinueCountdown();
   }
-  // ゲームオーバー時の「次のおすすめ」：今の状況から効きそうな攻略を2つまで提案
+  // ゲームオーバー時の「次のおすすめ」：今の状況から効きそうな攻略を1つだけ提案（優先度の高いもの）
   let gameOverTipsHtml = '';
   function buildGameOverTips() {
     const tips = [];
@@ -7344,7 +7344,7 @@
     if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
     if (game.stage >= 3) tips.push('🌌 諦めて転生ショップへ進むと遺物がもらえて、次の周回が楽になります');
     if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
-    return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 2).map(t => `<div>${t}</div>`).join('')}</div>`;
+    return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 1).map(t => `<div>${t}</div>`).join('')}</div>`;
   }
   // 画面のどこかをタップしたらコンテニューのカウントダウンを止める（ボタンを押すまで待つ）
   let continueStopped = false;
