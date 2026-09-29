@@ -9508,8 +9508,7 @@
     const pl = balls.find(ball => isMainPlayerBall(ball));
     dragPending = null;
     if (!pl || phase !== 'battle') return;
-    // ドラッグ開始：タメ（長押し）は取り消す。ここからの指の動きの分だけ自キャラを動かす
-    arenaHeld = false; tackleChargeStart = 0; stopChargeSound();
+    // ドラッグ開始：ここからの指の動きの分だけ自キャラを動かす（タックルのタメは続けたまま動ける。離すと放つ）
     playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
   });
   ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
