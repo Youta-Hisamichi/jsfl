@@ -614,7 +614,8 @@
   body.gameover-lock .arena-wrap { z-index: 49; }
   body.gameover-lock .share-btn[data-share="game"] { visibility: hidden; } /* コンテニュー中はシェアを出さない */
   .continue-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; pointer-events: auto; }
-  .continue-actions .action-btn { flex: 0 1 50%; min-width: 0; padding: 10px 6px; font-size: 0.78rem; }
+  .continue-actions .action-btn { flex: 0 1 50%; min-width: 104px; padding: 10px 12px; font-size: 0.78rem; white-space: nowrap; }
+  .continue-actions .cb-cost { display: block; font-size: 0.72rem; opacity: 0.9; margin-top: 2px; } /* リトライ文字の下に消費ジェム */
   body.gameover-lock .potion-float { opacity: 0.35; pointer-events: none; }
   /* 自キャラのHPピンチ：HPバーが赤く点滅し、サークルの縁が赤く脈打つ */
   body.player-pinch #playerHPFill { background: linear-gradient(90deg, #ff3b4a, #ff7a5c) !important; animation: hpPinchBlink 0.9s ease-in-out infinite; }
@@ -873,7 +874,7 @@
         <div class="big" id="toastBig"></div>
         <div class="sub" id="toastSub"></div>
         <div class="continue-actions">
-          <button class="action-btn special" id="continueBtn" style="display:none;">💎 3 でリトライ</button>
+          <button class="action-btn special" id="continueBtn" style="display:none;">🔁 リトライ<span class="cb-cost">💎 3</span></button>
           <button class="action-btn" id="giveUpBtn" style="display:none;">🕊️ 転生</button>
         </div>
         <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
@@ -5247,15 +5248,15 @@
       ],
       drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
     },
-    // 転生報酬：輪廻の宝箱（国民的RPGのカジノ系の作風×VRC6風チップチューン。ハ長調。6th・7thコードの小粋なジャズ風、裏拍のコード刻みとウォーキングベースで華やかに）
+    // 転生報酬：輪廻の宝箱（ゴシックアクションRPGの古城のショップ系の作風×VRC6風チップチューン。ニ短調の3拍子風。チェンバロのような分散和音とワルツのベースで、怪しくも優雅に）
     rebirthReward: {
-      bpm: 144,
+      bpm: 132,
       tracks: [
-        { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = G5 A5 C6 = A5 G5 | E5 = G5 = C6 = B5 A5 | F5 = A5 C6 D6 = C6 A5 | B5 = = G5 F5 = D5 = | E5 = G5 A5 C6 = E6 D6 | C#6 = A5 G5 E5 = G5 A5 | D6 = C6 A5 B5 = G5 F5 | E5 = C5 = G5 E5 C6 =' },
-        { type: 'vrc6pulse12', gain: 0.016, notes: '- E4+G4+A4 - E4+G4+A4 - E4+G4+A4 - E4+G4+A4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+B4+D5 - F4+B4+D5 - F4+B4+D5 - F4+B4+D5 | - E4+G4+A4 - E4+G4+A4 - E4+A#4+C5 - E4+A#4+C5 | - E4+G4+C#5 - E4+G4+C#5 - E4+G4+C#5 - E4+G4+C#5 | - F4+A4+C5 - F4+A4+C5 - F4+B4+D5 - F4+B4+D5 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 E4+G4+C5 =' },
-        { type: 'vrc6saw', gain: 0.05, notes: 'C2 = E2 = G2 = A2 = | A1 = C2 = E2 = G2 = | D2 = F2 = A2 = C3 = | G1 = B1 = D2 = F2 = | C2 = E2 = G2 = A#2 = | A1 = C#2 = E2 = G2 = | D2 = F2 = G1 = B1 = | C2 = G1 = C2 = G2 =' },
+        { type: 'vrc6pulse25', gain: 0.028, notes: 'A5 = = = F5 = D5 = | E5 = F5 = G5 = A5 = | A#5 = = = G5 = E5 = | A5 = = = = = - - | F5 = = = D5 = A#4 = | C5 = D5 = E5 = F5 = | G5 = F5 = E5 = C#5 = | D5 = = = = = - -' },
+        { type: 'vrc6pulse12', gain: 0.02, notes: 'D4 F4 A4 D5 A4 F4 D4 F4 | C4 E4 G4 C5 G4 E4 C4 E4 | A#3 D4 G4 A#4 G4 D4 A#3 D4 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | A3 C4 F4 A4 F4 C4 A3 C4 | A#3 E4 G4 A#4 A3 C#4 E4 G4 | D4 F4 A4 D5 A4 F4 D4 A3' },
+        { type: 'vrc6saw', gain: 0.045, notes: 'D2 = A2 - D3 - A2 - | C2 = G2 - C3 - G2 - | G1 = D2 - G2 - D2 - | A1 = E2 - A2 - E2 - | A#1 = F2 - A#2 - F2 - | F1 = C2 - F2 - C2 - | G1 = A#1 - A1 = C#2 - | D2 = A1 - D2 - = -' },
       ],
-      drums: 'k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s - h h | k - h h s s ks ks',
+      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h h | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s h h',
     },
     // 転生ショップ：運命の選択（VRC6風の拡張音源チップチューン。イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
     rebirth: {
@@ -5454,7 +5455,7 @@
     { key: 'records', name: 'ページ 戦績 冒険の記録', desc: 'サガ系の作風。ヘ長調の穏やかで口ずさめる旋律・BPM112' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
-    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: '6th・7thコードの小粋なジャズ風。裏拍のコード刻みとウォーキングベースで華やかに。VRC6風チップチューン。ハ長調（国民的RPGのカジノ系の作風）・BPM144' },
+    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'チェンバロのような分散和音とワルツ風のベースで、怪しくも優雅な古城のお店。VRC6風チップチューン。ニ短調（ゴシックアクションRPGのショップ系の作風）・BPM132' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
