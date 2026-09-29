@@ -616,6 +616,13 @@
   .continue-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; pointer-events: auto; }
   .continue-actions .action-btn { flex: 0 1 50%; min-width: 0; padding: 10px 6px; font-size: 0.78rem; }
   body.gameover-lock .potion-float { opacity: 0.35; pointer-events: none; }
+  /* 自キャラのHPピンチ：HPバーが赤く点滅し、サークルの縁が赤く脈打つ */
+  body.player-pinch #playerHPFill { background: linear-gradient(90deg, #ff3b4a, #ff7a5c) !important; animation: hpPinchBlink 0.9s ease-in-out infinite; }
+  body.player-critical #playerHPFill { animation-duration: 0.45s; }
+  @keyframes hpPinchBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  body.player-pinch .arena-wrap { animation: arenaPinch 1s ease-in-out infinite; }
+  body.player-critical .arena-wrap { animation-duration: 0.55s; }
+  @keyframes arenaPinch { 0%, 100% { box-shadow: inset 0 0 18px rgba(255,40,60,0.25), 0 0 6px rgba(255,40,60,0.25); } 50% { box-shadow: inset 0 0 55px rgba(255,40,60,0.65), 0 0 22px rgba(255,40,60,0.6); } }
   .tab-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     display: flex; background: var(--panel); border-top: 1px solid var(--ring);
@@ -6865,6 +6872,10 @@
     const en = getHpDisplayEnemy();
     if (!p || !en) return;
     playerHPFill.style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
+    // ピンチ表示：HP30%以下で赤く点滅、15%以下はさらに激しく（サークルの縁も赤く脈打つ）
+    const hpRatio = p.hp / p.maxHp;
+    document.body.classList.toggle('player-pinch', p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
+    document.body.classList.toggle('player-critical', p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);
     enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
     playerHPText.textContent = Math.max(0, Math.round(p.hp));
     enemyHPText.textContent = Math.max(0, Math.round(en.hp));
@@ -8206,6 +8217,17 @@
     ctx.strokeText(txt, pl.x, y); ctx.fillText(txt, pl.x, y);
     ctx.restore();
   }
+  // ピンチ中は自キャラの足元に赤いオーラ（HPが減るほど速く点滅）
+  function drawPinchAura() {
+    const pl = balls.find(ball => isMainPlayerBall(ball));
+    if (!pl || pl.hp <= 0 || pl.hp / pl.maxHp > PINCH_HP_RATIO) return;
+    const crit = pl.hp / pl.maxHp <= PINCH_HP_RATIO / 2;
+    const a = 0.35 + 0.3 * Math.sin(Date.now() / (crit ? 70 : 140));
+    const r = pl.radius * 2.2;
+    const g = ctx.createRadialGradient(pl.x, pl.y, pl.radius * 0.4, pl.x, pl.y, r);
+    g.addColorStop(0, `rgba(255,50,70,${a})`); g.addColorStop(1, 'rgba(255,50,70,0)');
+    ctx.save(); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(pl.x, pl.y, r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
   function draw() {
     cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
     wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
@@ -8235,6 +8257,7 @@
     }
 
     drawDeathDim();
+    drawPinchAura();
     for (const ball of [...balls, ...adds]) {
       if (flyouts.includes(ball) || ball.isDying) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
       if (ball.isCompanion) {
@@ -9973,6 +9996,12 @@
   setInterval(updateCompRushButton, 1000);
   setInterval(updateNovaButton, 1000);
   setInterval(updateRewardAdButtons, 1000);
+  // HPがかなり少ない（15%以下）ときは「ドクン、ドクン」と心臓の音
+  setInterval(() => {
+    if (!audioCtx || phase !== 'battle' || isBattleSfxMuted() || !document.body.classList.contains('player-critical')) return;
+    playTone(70, 0.12, 'sine', 0.22, 45);
+    setTimeout(() => playTone(62, 0.14, 'sine', 0.18, 40), 170);
+  }, 850);
   // 画面上の「💎」（ジェム）はすべてジェムのアイコン画像で表示（あとから書き換わった文字も自動で置き換え）
   const GEM_CHAR = '💎';
   const ICON_CHARS = { '💎': ['x_gem', 'gem-ico'], '🔒': ['x_lock', 'gem-ico lock-ico'], '🧪': ['x_potion', 'gem-ico potion-ico'] }; // 文字 → [アイコン, クラス]
