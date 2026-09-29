@@ -4619,6 +4619,16 @@
       kickBoost: 1.2,
       drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s s s ks ks',
     },
+    // 通常戦闘16：重戦機の星（80年代ロボットアニメ系の作風×VRC6風チップチューン。嬰ハ短調のシンセポップ風、キラキラしたアルペジオとオクターブで跳ねるベース）
+    battle16: {
+      bpm: 144,
+      tracks: [
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'G#5 = = E5 G#5 = C#6 = | B5 = A5 G#5 E5 = C#5 = | D#5 = F#5 = B5 = A5 G#5 | G#5 = = = D#5 = F#5 = | E5 = G#5 = C#6 = D#6 E6 | E6 = C#6 = A5 = B5 C#6 | C#6 = B5 A5 F#5 = A5 C#6 | D#6 = = = F#6 = D#6 =' },
+        { type: 'vrc6pulse12', gain: 0.022, notes: 'C#4 G#4 E5 G#4 C#4 G#4 E5 G#4 | A3 E4 C#5 E4 A3 E4 C#5 E4 | B3 F#4 D#5 F#4 B3 F#4 D#5 F#4 | G#3 D#4 B4 D#4 G#3 D#4 B4 D#4 | C#4 G#4 E5 G#4 C#4 G#4 E5 G#4 | A3 E4 C#5 E4 A3 E4 C#5 E4 | F#3 C#4 A4 C#4 F#3 C#4 A4 C#4 | B3 F#4 D#5 F#4 B3 F#4 D#5 F#4' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | A1 A2 A1 A2 A1 A2 A1 A2 | B1 B2 B1 B2 B1 B2 B1 B2 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | A1 A2 A1 A2 A1 A2 A1 A2 | F#1 F#2 F#1 F#2 F#1 F#2 F#1 F#2 | B1 B2 B1 B2 B1 B2 D#2 F#2' },
+      ],
+      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
+    },
     // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
     boss: {
       bpm: 164,
@@ -4803,6 +4813,10 @@
     fmbass: { ratio: 1, index: 5, indexEnd: 0.6, decay: 0.08 },  // ベチッとしたスラップベース
     fmep:   { ratio: 1, index: 1.8, indexEnd: 0.3, decay: 0.25 }, // エレピ風の和音
     fmbell: { ratio: 3.5, index: 2.5, indexEnd: 0, decay: 0.4 },  // 鉄琴・ベル
+    // VRC7（コナミのファミコン拡張音源・2オペレータFM）風：少しざらついた明るいFMの音色
+    vrc7lead:  { ratio: 1, index: 2.2, indexEnd: 1.2, decay: 0.2 },  // 伸びるシンセリード
+    vrc7brass: { ratio: 1, index: 0.8, indexEnd: 2.6, decay: 0.12 }, // だんだん明るくなるシンセブラス
+    vrc7bass:  { ratio: 1, index: 4.5, indexEnd: 0.8, decay: 0.06 }, // はじくようなシンセベース
   };
   // PCエンジン風の波形メモリ音源：32サンプル・5bit(0〜31)の波形を1周期として鳴らす
   const PCE_WAVETABLES = {
@@ -4899,7 +4913,7 @@
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
   // 通常戦闘BGMは7曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle11', 'battle12', 'battle13', 'battle14', 'battle15'];
+  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle11', 'battle12', 'battle13', 'battle14', 'battle15', 'battle16'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -4938,6 +4952,7 @@
     { key: 'battle13', name: '戦闘13 星の海', desc: 'SFらしい浮遊感の9th・maj7コードと疾走感。VRC6風チップチューン。ニ短調（SF系オンラインRPGの作風）・BPM150' },
     { key: 'battle14', name: '戦闘14 狩猟の鼓動', desc: '勇壮なファンファーレと3-3-2の民族調リズム。VRC6風チップチューン。ホ短調（ハンティングアクション系の作風）・BPM160' },
     { key: 'battle15', name: '戦闘15 狼の咆哮', desc: 'ギターリフ風のパワーコードと疾走するベース。VRC6風チップチューン。イ短調（対戦格闘ゲームの格闘伝説系の作風）・BPM160' },
+    { key: 'battle16', name: '戦闘16 重戦機の星', desc: '80年代シンセポップ風のキラキラしたアルペジオと跳ねるベース。VRC6風チップチューン。嬰ハ短調（80年代ロボットアニメ系の作風）・BPM144' },
     { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
     { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
     { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
