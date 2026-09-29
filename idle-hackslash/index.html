@@ -4578,16 +4578,6 @@
       ],
       drums: 'kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh kh sh sh | kh h sh h kh h sh h | kh h sh h kh h sh h | kh h sh h kh h sh h | s s s s ks ks ks ks',
     },
-    // 通常戦闘9：きらめく冒険の幕開け（パズルRPG風。華やかなト長調のオーケストラ調）
-    battle9: {
-      bpm: 160,
-      tracks: [
-        { type: 'square', gain: 0.042, notes: 'D5 G5 B5 = A5 G5 A5 = | F#5 = D5 = A5 = F#5 = | G5 = E5 = B5 = G5 = | E5 = G5 = C6 = B5 A5 | B5 = D6 = B5 = G5 = | A5 = F#5 = D5 = A5 = | G5 = E5 = F#5 = A5 = | G5 = = = D5 = G5 =' },
-        { type: 'triangle', gain: 0.1, notes: 'G2 D3 G3 D3 G2 D3 G3 D3 | D3 A3 D4 A3 D3 A3 D4 A3 | E2 B2 E3 B2 E2 B2 E3 B2 | C3 G3 C4 G3 C3 G3 C4 G3 | G2 D3 G3 D3 G2 D3 G3 D3 | D3 A3 D4 A3 D3 A3 D4 A3 | C3 G3 C4 G3 D3 A3 D4 A3 | G2 D3 G3 D3 G2 = - -' },
-        { type: 'triangle', gain: 0.022, notes: 'G3+B3+D4 = = = = = = = | F#3+A3+D4 = = = = = = = | E3+G3+B3 = = = = = = = | E3+G3+C4 = = = = = = = | G3+B3+D4 = = = = = = = | F#3+A3+D4 = = = = = = = | E3+G3+C4 = = = F#3+A3+D4 = = = | G3+B3+D4 = = = = = = =' },
-      ],
-      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k k s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks',
-    },
     // 通常戦闘10：弾け飛ぶハイテンションロック（引っぱりアクション風。ホ長調の爽快アップテンポ）
     battle10: {
       bpm: 176,
@@ -4607,6 +4597,16 @@
         { type: 'triangle', gain: 0.03, notes: 'D4 F4 A4 F4 D4 F4 A4 F4 | D4 F4 A4 F4 D4 F4 A4 F4 | A#3 D4 F4 D4 A#3 D4 F4 D4 | A3 C#4 E4 C#4 A3 C#4 E4 C#4 | G3 A#3 D4 A#3 G3 A#3 D4 A#3 | D4 F4 A4 F4 D4 F4 A4 F4 | A3 C#4 E4 G4 E4 C#4 A3 C#4 | D4 F4 A4 F4 D4 = = =' },
       ],
       drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks ks ks ks',
+    },
+    // コンテニュー：哀歌（サガ系の作風。イ短調のゆったりした分散和音に、寂しげな旋律。Am-F-G-Em-F-Dm-E-E）
+    gameover: {
+      bpm: 92,
+      tracks: [
+        { type: 'square', gain: 0.026, notes: 'E5 = = = D5 C5 B4 C5 | A4 = = = = = C5 = | D5 = = = C5 B4 A4 B4 | G4 = = = = = E4 = | F4 = A4 = C5 = F5 = | E5 = D5 = = = A4 = | B4 = C5 = D5 = G#4 = | B4 = = = = = = =' },
+        { type: 'triangle', gain: 0.03, notes: 'A3 E4 A4 C5 A4 E4 A4 C5 | F3 C4 F4 A4 F4 C4 F4 A4 | G3 D4 G4 B4 G4 D4 G4 B4 | E3 B3 E4 G4 E4 B3 E4 G4 | F3 C4 F4 A4 F4 C4 F4 A4 | D3 A3 D4 F4 D4 A3 D4 F4 | E3 B3 E4 G#4 E4 B3 E4 G#4 | E3 B3 E4 G#4 B4 = = =' },
+        { type: 'triangle', gain: 0.09, notes: 'A2 = = = = = = = | F2 = = = = = = = | G2 = = = = = = = | E2 = = = = = = = | F2 = = = = = = = | D2 = = = = = = = | E2 = = = = = = = | E2 = = = = = = =' },
+      ],
+      drums: '- - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - -',
     },
     // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
     boss: {
@@ -4755,8 +4755,8 @@
   let bgmToken = 0;
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-  // 通常戦闘BGMは11曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle1', 'battle2', 'battle3', 'battle4', 'battle5', 'battle6', 'battle7', 'battle8', 'battle9', 'battle10', 'battle11'];
+  // 通常戦闘BGMは10曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
+  const NORMAL_BATTLE_SONGS = ['battle1', 'battle2', 'battle3', 'battle4', 'battle5', 'battle6', 'battle7', 'battle8', 'battle10', 'battle11'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -4794,7 +4794,6 @@
     { key: 'battle6', name: '戦闘6 ぽよぽよ', desc: '弾むハ長調のかわいいポップ（連鎖パズル系の作風）・BPM160' },
     { key: 'battle7', name: '戦闘7 冒険', desc: 'ニ長調の壮大なファンファーレ（アクションアドベンチャー系の作風）・BPM132' },
     { key: 'battle8', name: '戦闘8 モンスター', desc: '半音で駆け下りるベースの熱いト短調（育成RPGバトル系の作風）・BPM180' },
-    { key: 'battle9', name: '戦闘9 きらめき', desc: '華やかなト長調のオーケストラ調（パズルRPG系の作風）・BPM160' },
     { key: 'battle10', name: '戦闘10 ロック', desc: 'ホ長調のハイテンションロック（引っぱりアクション系の作風）・BPM176' },
     { key: 'battle11', name: '戦闘11 古城', desc: 'オクターブで刻むベースとバロック風アルペジオ。ニ短調（悪魔城系の作風）・BPM168' },
     { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
@@ -4803,6 +4802,7 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
+    { key: 'gameover', name: 'コンテニュー 哀歌', desc: 'ゲームオーバー時に流れる。寂しげな分散和音と旋律。イ短調（サガ系の作風）・BPM92' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
   // 今の場面に合うBGMを選んで流す（転生ショップ＞ゲームオーバー＞開いているタブ＞戦闘）
@@ -8147,6 +8147,7 @@
       const key = action.slice(4);
       ensureAudio();
       if (BOSS_BATTLE_SONGS.includes(key)) { battleBgmType = 'boss'; const i = bossBgmOrder.indexOf(key); if (i >= 0) bossBgmIndex = i; }
+      else if (!NORMAL_BATTLE_SONGS.includes(key)) battleBgmType = key; // コンテニュー曲など（次のステージで戦闘曲に戻る）
       else { battleBgmType = 'normal'; const i = normalBgmOrder.indexOf(key); if (i >= 0) normalBgmIndex = i; }
       currentBgmType = null;
       refreshBgm();
