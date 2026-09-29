@@ -3238,7 +3238,7 @@
     return { player, enemy };
   }
 
-  // ---------- 敵の特性（突進・回転ガード・分裂・巨大化・攻撃魔法・回復魔法・ホーミング弾・地雷） ----------
+  // ---------- 敵の特性（突進・回転ガード・分裂・巨大化・攻撃魔法・回復魔法・ホーミング弾・炎の罠） ----------
   const ENEMY_TRAITS = {
     'emoji:🐺': 'charge', 'emoji:👹': 'charge',
     'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
@@ -3255,9 +3255,9 @@
   const ENEMY_TRAIT_DESCS = {
     charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
     attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
-    mines: '地雷を設置する', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
+    mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる',
   };
-  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '地雷', deathMagic: '即死魔法', merge: '合体' };
+  const ENEMY_TRAIT_LABELS = { charge: '突進', spinGuard: '回転ガード', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
   const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
   const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
   const SPLIT_TIMES = 2;         // 分裂できる回数
@@ -3281,7 +3281,7 @@
   const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
   function isSwarmStage(stage) { return stage % 10 === 5; } // 大群ステージ（5, 15, 25…） // 敵の即死魔法の成功率（バリアで防げる）
   let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
-  let enemyMines = [];           // 敵の地雷
+  let enemyMines = [];           // 敵の炎の罠（カボチャヘッド）
   function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
   function randTraitCd(trait) { const [lo, hi] = TRAIT_CD[trait] || [300, 400]; return lo + Math.random() * (hi - lo); }
   function getEnemyTrait(enemy) {
@@ -3439,7 +3439,7 @@
             e.traitCd = 60; // 封じられている／回復不要なら少し待って再判定
           } else if (trait === 'mines') {
             if (enemyMines.length < 5) enemyMines.push({ x: e.x, y: e.y, armIn: 40, life: 720, dmg: e.atk * 1.5, owner: e });
-            spawnDamageText(e.x, e.y - e.radius - 18, '💣', '#ffb35c', 0.03);
+            spawnDamageText(e.x, e.y - e.radius - 18, '🔥', '#ff9f43', 0.03);
             e.traitCd = randTraitCd(trait);
           } else {
             e.traitState = 'cast'; e.traitTimer = trait === 'homing' ? 30 : trait === 'deathMagic' ? 70 : 45; e.traitFreeze = trait !== 'homing';
@@ -3502,13 +3502,13 @@
       }
     }
     enemyShots = enemyShots.filter(sh => sh.life > 0);
-    // 地雷：時間で消える。設置から少しして起動し、自機が踏むと爆発
+    // 炎の罠：時間で消える。設置から少しして燃え上がり、自機が踏むと炎上ダメージ
     for (const m of enemyMines) {
       m.life -= speedMult; if (m.armIn > 0) m.armIn -= speedMult;
-      if (m.armIn <= 0 && m.life > 0 && a.hp > 0 && Math.hypot(m.x - a.x, m.y - a.y) < a.radius + 9) {
+      if (m.armIn <= 0 && m.life > 0 && a.hp > 0 && Math.hypot(m.x - a.x, m.y - a.y) < a.radius + 10) {
         m.life = 0;
         spawnHitParticles(m.x, m.y, '#ff9f43'); spawnHitParticles(m.x, m.y, '#ffd76b');
-        spawnDamageText(m.x, m.y - 14, 'BOMB!', '#ff9f43', 0.02, true);
+        spawnDamageText(m.x, m.y - 14, 'BURN!', '#ff7a2b', 0.02, true);
         playNoiseBurst(0.3, 0.3);
         shakeScreenLight();
         if (damagePlayerByTrait(a, m.owner || e, m.dmg, '#ff9f43')) playerDown = true;
@@ -3519,13 +3519,35 @@
   }
   function drawEnemyTraitEffects() {
     const t = Date.now();
+    // 炎の罠：ゆらめく炎（外側の赤→橙→芯の黄色の3層）。設置直後は小さく、燃え広がると大きくなる
     for (const m of enemyMines) {
+      if (m.seed === undefined) m.seed = Math.random() * 100;
+      const grow = m.armIn > 0 ? 0.45 + 0.35 * (1 - m.armIn / 40) : 1;
       ctx.save();
-      ctx.globalAlpha = Math.min(1, m.life / 60);
-      ctx.fillStyle = '#3a3040';
-      ctx.beginPath(); ctx.arc(m.x, m.y, 7, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#ffb35c'; ctx.lineWidth = 1.5; ctx.stroke();
-      if (m.armIn <= 0 && Math.floor(t / 250) % 2) { ctx.fillStyle = '#ff3b4a'; ctx.beginPath(); ctx.arc(m.x, m.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = Math.min(1, m.life / 60) * (m.armIn > 0 ? 0.7 : 1);
+      ctx.shadowColor = '#ff6a1f'; ctx.shadowBlur = 14;
+      [['#ff4a1c', 1], ['#ff9f2b', 0.68], ['#fff1a0', 0.38]].forEach(([col, k], li) => {
+        const fl = 1 + 0.14 * Math.sin(t / 70 + m.seed + li * 1.7) + 0.06 * Math.sin(t / 23 + m.seed * 2);
+        const w = 9.5 * k * grow, h = 26 * k * grow * fl;
+        const sway = Math.sin(t / 110 + m.seed + li) * 2.2 * k;
+        const tipX = m.x + sway, tipY = m.y + 3 - h, by = m.y + 3;
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.bezierCurveTo(m.x + w * 1.15, by - h * 0.45, m.x + w, by + w * 0.2, m.x, by + w * 0.35);
+        ctx.bezierCurveTo(m.x - w, by + w * 0.2, m.x - w * 1.15, by - h * 0.45, tipX, tipY);
+        ctx.fill();
+        if (li === 0) ctx.shadowBlur = 0;
+      });
+      // 舞い上がる火の粉
+      if (m.armIn <= 0) {
+        ctx.fillStyle = '#ffd76b';
+        for (let i = 0; i < 2; i++) {
+          const ph = ((t / 900 + m.seed * 0.37 + i * 0.5) % 1);
+          ctx.globalAlpha = (1 - ph) * Math.min(1, m.life / 60);
+          ctx.beginPath(); ctx.arc(m.x + Math.sin(ph * 9 + m.seed + i) * 5, m.y - 6 - ph * 22, 1.3, 0, Math.PI * 2); ctx.fill();
+        }
+      }
       ctx.restore();
     }
     for (const sh of enemyShots) {
