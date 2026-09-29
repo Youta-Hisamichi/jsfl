@@ -7848,16 +7848,6 @@
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    for (const p of particles) {
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.isCoin ? 4.5 : 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.fill();
-      if (p.isCoin) { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.stroke(); }
-    }
-    ctx.globalAlpha = 1;
-
     if (barrierOrbs.length && barrierHits > 0) {
       const barrierColors = getBarrierColors();
       for (const orb of barrierOrbs) {
@@ -7906,6 +7896,17 @@
     drawTackleEffects();
     drawEnemyTraitEffects();
     drawNovaFx();
+
+    // ヒットエフェクト（パーティクル）はキャラ画像（ボスの大きな画像など）の手前に描く
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.isCoin ? 4.5 : 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      if (p.isCoin) { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
 
     for (const meteor of meteors) {
       ctx.save();
