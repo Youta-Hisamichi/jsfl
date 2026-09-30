@@ -415,6 +415,7 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .gb-btn::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.3), transparent); transform: skewX(-20deg); pointer-events: none; opacity: 0; }
 .gb-t1 { border-color: #a07a4a; background: linear-gradient(135deg, #3a2c1c, #5b4630 50%, #2c2116); }
 .gb-t1 .gb-name { color: #f3dcb4; }
+.gb-t1 .gb-badge { background: linear-gradient(90deg, #2ea043, #5fd47a); }
 .gb-t1 .gb-price { background: linear-gradient(180deg, #caa46e, #8a6a3e); color: #2c2116; }
 .gb-t2 { border-color: #d59a4a; background: radial-gradient(110% 90% at 12% 50%, rgba(255,190,110,0.28), transparent 60%), linear-gradient(135deg, #3d220f, #7a4520 50%, #2e1a0b); box-shadow: 0 0 10px rgba(213,154,74,0.45); }
 .gb-t2 .gb-icons .ico-img { width: 70px; height: 70px; }
@@ -2318,10 +2319,10 @@ function skillCd(id, base) { return Math.round(base * (1 - SKILL_CD_CUT_PER_LV *
 function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
 const SUPERGEM_SHOP_ITEMS = {
-  small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +5', cost: 198 },
-  medium: { icon: '💎', name: 'ジェム中袋', desc: 'ジェム +100', cost: 980 },
-  large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +256', cost: 4800 },
-  huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1024', cost: 9980 }
+  small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +20', cost: 198 },
+  medium: { icon: '💎', name: 'ジェム中袋', desc: 'ジェム +110', cost: 980 },
+  large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +605', cost: 4800 },
+  huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1331', cost: 9980 }
 };
 // ---------- サブスク（紋章）：30日間有効。上位の「伝説の勇者の紋章」が優先 ----------
 const SUBSCRIPTIONS = {
@@ -2886,7 +2887,7 @@ function renderCoinShopList() {
   const cst = document.getElementById('coinShopTitle');
   if (cst) cst.style.display = coinShopList.innerHTML ? '' : 'none';
 }
-const GEM_BAG_BADGES = { 2: 'おすすめ', 3: '人気No.1', 4: '最もお得' };
+const GEM_BAG_BADGES = { 1: '初心者向け', 2: 'おすすめ', 3: '人気No.1', 4: '最もお得' };
 function renderSupergemShopList() {
   const active = getActiveSub();
   const subHtml = Object.entries(SUBSCRIPTIONS).map(([id, sub]) => {
@@ -9895,7 +9896,7 @@ supergemShopList.addEventListener('click', event => {
   const item = SUPERGEM_SHOP_ITEMS[id];
   if (game.superGems < item.cost) { showTapError('スーパージェムが足りません', event.clientX, event.clientY); return; }
   game.superGems -= item.cost;
-  const gain = { small: 5, medium: 100, large: 256, huge: 1024 }[id] || 0;
+  const gain = { small: 20, medium: 110, large: 605, huge: 1331 }[id] || 0;
   game.gems += gain;
   updateStatsUI();
   celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, gain);
