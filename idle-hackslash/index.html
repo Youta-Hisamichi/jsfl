@@ -646,6 +646,13 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .bst-info { font-size: 0.6rem; color: var(--text-dim); }
 .rank-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--ring); font-size: 0.82rem; }
 .rank-row:last-child { border-bottom: none; }
+.rank-wall { position: relative; margin: 8px 0; padding: 7px 0; text-align: center; border-radius: 6px; background: repeating-linear-gradient(0deg, transparent 0 9px, rgba(0,0,0,0.28) 9px 10px), repeating-linear-gradient(90deg, transparent 0 19px, rgba(0,0,0,0.2) 19px 20px), linear-gradient(180deg, var(--w1), var(--w2)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 6px rgba(0,0,0,0.3); }
+.rank-wall span { display: inline-block; padding: 1px 12px; border-radius: 999px; background: rgba(0,0,0,0.45); color: #fff; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 1px 0 #000; }
+.rank-wall.w-god { --w1: #ffe27a; --w2: #b8860b; box-shadow: 0 0 14px rgba(255,200,61,0.7), inset 0 1px 0 rgba(255,255,255,0.5); }
+.rank-wall.w-god span { color: #ffe27a; }
+.rank-wall.w-pro { --w1: #c792ea; --w2: #5a2d8a; }
+.rank-wall.w-master { --w1: #6fb7ff; --w2: #2a5a9a; }
+.rank-wall.w-class { --w1: #b98a64; --w2: #6b4a30; }
 .rank-row .rank-no { width: 2.6em; font-weight: 800; color: var(--text-dim); }
 .rank-row .rank-name { flex: 1; font-weight: 700; }
 .rank-row .rank-score { color: var(--gold); font-weight: 800; }
@@ -3237,10 +3244,13 @@ function renderRanking() {
   entries.sort((a, b) => b.score - a.score);
   lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達ステージ', score: isDaily ? myScore + ' クリア' : 'Stage ' + myScore };
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
-  rankingList.innerHTML = entries.slice(0, 100).map((entry, i) => {
+  const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
+  const shown = entries.slice(0, 100);
+  rankingList.innerHTML = shown.map((entry, i) => {
+    const wall = RANK_WALLS[i] && i < shown.length ? `<div class="rank-wall ${RANK_WALLS[i][1]}"><span>🧱 ${RANK_WALLS[i][0]} 🧱</span></div>` : '';
     const cls = i < 3 ? `top${i + 1}` : i < 10 ? 'top10' : '';
     const no = i < 3 ? `<span class="rank-medal">${RANK_ICONS[i]}</span>` : `${i + 1}位`;
-    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : 'Stage ' + entry.score}</span></div>`;
+    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : 'Stage ' + entry.score}</span></div>`.replace(/^/, wall);
   }).join('');
 }
 
