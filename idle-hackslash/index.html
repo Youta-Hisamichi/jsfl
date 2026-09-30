@@ -9750,8 +9750,8 @@ function playGachaSummonSound() {
   [220, 277.18, 349.23, 440].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 1.5), i * 260));
 }
 
-const GACHA_LOADING_MS_BY_RARITY = { common: 1000, rare: 1300, epic: 1700, legendary: 2300 };
-function getGachaLoadingMs(rarity) { return GACHA_LOADING_MS_BY_RARITY[rarity] || 1000; }
+const GACHA_LOADING_MS_BY_RARITY = { common: 1500, rare: 1800, epic: 2200, legendary: 2800 };
+function getGachaLoadingMs(rarity) { return GACHA_LOADING_MS_BY_RARITY[rarity] || 1500; }
 function playGachaBuildUpSound(hintRarity) {
   const GACHA_LOADING_MS = getGachaLoadingMs(hintRarity);
   const steps = Math.round(9 * GACHA_LOADING_MS / 1000);
