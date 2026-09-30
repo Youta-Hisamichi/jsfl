@@ -374,6 +374,30 @@
   @keyframes gmFlip { 0% { transform: rotateY(90deg) scale(0.8); } 100% { transform: rotateY(0) scale(1); } }
   .gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.5rem; color: var(--text-dim); margin-top: 2px; }
   .sub-btn { border-width: 2px; }
+  /* ジェム袋：値段が高いほど豪華に */
+  .gb-btn { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; border-width: 2px; padding: 12px 6px 10px; }
+  .gb-btn.is-disabled { opacity: 0.85; }
+  .gb-icons { font-size: 1.3rem; line-height: 1.2; letter-spacing: -0.25em; }
+  .gb-name { font-weight: 900; font-size: 0.84rem; color: var(--text); }
+  .gb-amount { font-weight: 900; font-size: 1rem; color: #64e8ff; }
+  .gb-price { margin-top: 5px; padding: 3px 14px; border-radius: 999px; font-weight: 900; font-size: 0.8rem; color: #fff; background: #2f8cff; }
+  .gb-badge { position: absolute; top: 0; right: 0; padding: 1px 8px 2px; border-bottom-left-radius: 8px; font-size: 0.6rem; font-weight: 900; color: #fff; background: #ff4f6d; }
+  .gb-t1 { border-color: rgba(100,232,255,0.45); }
+  .gb-t2 { border-color: #4fb3ff; background: linear-gradient(160deg, rgba(79,179,255,0.2), rgba(79,179,255,0.05)); box-shadow: 0 0 8px rgba(79,179,255,0.35); }
+  .gb-t2 .gb-icons { font-size: 1.45rem; }
+  .gb-t3 { border-color: #b07cff; background: linear-gradient(160deg, rgba(176,124,255,0.3), rgba(100,200,255,0.1)); box-shadow: 0 0 12px rgba(176,124,255,0.5); }
+  .gb-t3 .gb-icons { font-size: 1.6rem; }
+  .gb-t3 .gb-price { background: linear-gradient(90deg, #8a5bff, #c46bff); }
+  .gb-t3 .gb-badge { background: linear-gradient(90deg, #8a5bff, #ff5fd2); }
+  .gb-t4 { border-color: #ffc94f; background: linear-gradient(160deg, rgba(255,201,79,0.32), rgba(255,95,210,0.2) 55%, rgba(100,200,255,0.2)); box-shadow: 0 0 16px rgba(255,201,79,0.6), inset 0 0 12px rgba(255,255,255,0.12); animation: gbGlow 1.8s ease-in-out infinite alternate; }
+  .gb-t4 .gb-icons { font-size: 1.75rem; filter: drop-shadow(0 0 4px rgba(255,230,140,0.9)); }
+  .gb-t4 .gb-amount { font-size: 1.12rem; color: #ffd76b; text-shadow: 0 0 6px rgba(255,201,79,0.7); }
+  .gb-t4 .gb-price { background: linear-gradient(90deg, #ffb14f, #ff5fd2, #8a5bff); box-shadow: 0 2px 8px rgba(255,95,210,0.5); }
+  .gb-t4 .gb-badge { background: linear-gradient(90deg, #ffb14f, #ff4f6d); }
+  .gb-t4::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent); animation: gbShine 2.6s ease-in-out infinite; pointer-events: none; }
+  .gb-t3::after { content: ''; position: absolute; top: 0; left: -60%; width: 35%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.2), transparent); animation: gbShine 3.6s ease-in-out infinite; pointer-events: none; }
+  @keyframes gbShine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+  @keyframes gbGlow { from { box-shadow: 0 0 10px rgba(255,201,79,0.45), inset 0 0 12px rgba(255,255,255,0.1); } to { box-shadow: 0 0 20px rgba(255,201,79,0.8), inset 0 0 14px rgba(255,255,255,0.18); } }
   .sub-btn.sub-hero { border-color: #ffc94f; background: linear-gradient(135deg, rgba(255,201,79,0.16), rgba(255,95,210,0.12)); }
   .sub-btn.sub-veteran { border-color: #b07cff; background: linear-gradient(135deg, rgba(176,124,255,0.14), rgba(100,200,255,0.1)); }
   .sub-btn.is-active { box-shadow: 0 0 0 2px #2ea043 inset; }
@@ -2680,6 +2704,7 @@
     const cst = document.getElementById('coinShopTitle');
     if (cst) cst.style.display = coinShopList.innerHTML ? '' : 'none';
   }
+  const GEM_BAG_BADGES = { 2: 'おすすめ', 3: '人気No.1', 4: '最もお得' };
   function renderSupergemShopList() {
     const active = getActiveSub();
     const subHtml = Object.entries(SUBSCRIPTIONS).map(([id, sub]) => {
@@ -2689,8 +2714,10 @@
       const status = on ? `✅ 加入中（残り${days}日）・タップで30日延長` : covered ? '上位の紋章で有効中' : `サブスク（${SUBSCRIPTION_DAYS}日間）`;
       return `<button class="shop-btn sub-btn sub-${id} ${covered || game.superGems < sub.cost ? 'is-disabled' : ''} ${on ? 'is-active' : ''}" data-sub-shop="${id}"><span class="item-icon">${sub.icon}</span> ${sub.name}<span class="shop-desc">${sub.desc}</span><span class="shop-desc sub-status">${status}</span><span class="cost">${sub.cost.toLocaleString('ja-JP')}円 / 月</span></button>`;
     }).join('');
-    supergemShopList.innerHTML = subHtml + Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item]) => {
-      return `<button class="shop-btn ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}</span><span class="cost">${item.cost.toLocaleString('ja-JP')}円</span></button>`;
+    // ジェム袋は値段が高いほど豪華な見た目に（段階1〜4：ジェムの数・枠の色・光り方・バッジ）
+    supergemShopList.innerHTML = subHtml + Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item], i) => {
+      const tier = i + 1, badge = GEM_BAG_BADGES[tier] ? `<span class="gb-badge">${GEM_BAG_BADGES[tier]}</span>` : '';
+      return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${'💎'.repeat(tier)}</span><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}円</span></button>`;
     }).join('');
   }
   function renderEvolutionList() {
