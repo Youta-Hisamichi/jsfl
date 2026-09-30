@@ -1898,9 +1898,11 @@
       + `<div class="cr-end">Thank you for playing!</div><div class="cr-role">© ${new Date().getFullYear()} ${DEVELOPER_NAME}</div>`;
     roll.style.animation = 'none'; void roll.offsetWidth; roll.style.animation = '';
     creditsModal.classList.add('show');
+    ensureAudio(); refreshBgm();
   });
-  creditsModal.addEventListener('click', () => creditsModal.classList.remove('show'));
-  document.getElementById('creditsRoll').addEventListener('animationend', () => creditsModal.classList.remove('show'));
+  function closeCredits() { creditsModal.classList.remove('show'); refreshBgm(); }
+  creditsModal.addEventListener('click', closeCredits);
+  document.getElementById('creditsRoll').addEventListener('animationend', closeCredits);
   const FAQ_LIST = [
     ['セーブデータはどこに保存されますか？', 'プレイ中のデータは、お使いのブラウザ（端末）の中に自動で保存されます。\nブラウザの履歴・キャッシュ・サイトデータを削除したり、シークレットモードで遊んだりすると、データが消えることがあります。'],
     ['機種変更・別の端末に引き継げますか？', '現在、データの引き継ぎ機能はありません。同じ端末・同じブラウザで遊んでください。'],
@@ -5298,6 +5300,16 @@
       ],
       drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h h | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s h h',
     },
+    // スタッフロール：旅の終わりに（壮大なRPGのエンディング系の作風×VRC6風チップチューン。ニ長調のバラード。大きく広がる分散和音と、ゆったり歌う旋律で感動的に）
+    credits: {
+      bpm: 96,
+      tracks: [
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 = = = A5 = D6 = | C#6 = = = B5 = A5 = | B5 = = = F#5 = D6 = | D6 = = = C#6 = B5 = | G5 = = = B5 = E6 = | E6 = = = D6 = C#6 = | C#6 = A5 = D6 = F#6 = | G6 = F#6 = E6 = = =' },
+        { type: 'vrc6pulse12', gain: 0.018, notes: 'D4 A4 D5 F#5 A5 F#5 D5 A4 | C#4 A4 C#5 E5 A5 E5 C#5 A4 | B3 F#4 B4 D5 F#5 D5 B4 F#4 | G3 D4 G4 B4 D5 B4 G4 D4 | E4 B4 E5 G5 B5 G5 E5 B4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | F#3 C#4 F#4 A4 B3 F#4 B4 D5 | G3 D4 G4 B4 A3 E4 A4 C#5' },
+        { type: 'vrc6saw', gain: 0.045, notes: 'D2 = = = = = = = | C#2 = = = = = = = | B1 = = = = = = = | G1 = = = = = = = | E2 = = = = = = = | A1 = = = = = = = | F#1 = = = B1 = = = | G1 = = = A1 = = =' },
+      ],
+      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - s s',
+    },
     // 転生ショップ：運命の選択（VRC6風の拡張音源チップチューン。イ短調。心臓の鼓動のようなキックと刻み続けるベース、せり上がる旋律でドキドキ感を出す）
     rebirth: {
       bpm: 150,
@@ -5496,6 +5508,7 @@
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
     { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'チェンバロのような分散和音とワルツ風のベースで、怪しくも優雅な古城のお店。VRC6風チップチューン。ニ短調（ゴシックアクションRPGのショップ系の作風）・BPM132' },
+    { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
   let gameOverBgm = false;      // コンテニュー確認中
@@ -5546,7 +5559,8 @@
   function refreshBgm() {
     if (!audioCtx) return;
     let type = battleBgmType;
-    if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
+    if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
+    else if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
     else if (gameOverBgm) type = 'gameover';
     else if (rebirthRewardBgm) type = 'rebirthReward';
     else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
