@@ -10619,7 +10619,13 @@
   const DRAG_AREA_MARGIN = 60;   // サークルの外側このくらい（画面上のpx）まではドラッグを受け付ける
   let dragPending = null;        // { id, sx, sy }：押した位置（まだタップかドラッグか未確定）
   let playerDrag = null;         // { id, x, y, px, py, ox, oy }：ドラッグ中の目標地点（キャンバス座標）
+  let lastDragFrameAt = 0;
   function dragMainPlayer(ball, speedMult, b) {
+    // 画面のリフレッシュレートが高いパソコン（120Hz・144Hzなど）でも速くなりすぎないよう、実時間（60fps基準）で動かす
+    const now = performance.now();
+    const ft = lastDragFrameAt && now - lastDragFrameAt < 100 ? (now - lastDragFrameAt) / (1000 / 60) : 1;
+    lastDragFrameAt = now;
+    speedMult *= Math.min(2, ft);
     // 目標はサークルの内側に収める
     let tx = playerDrag.x, ty = playerDrag.y;
     const ox = tx - arena.x, oy = ty - arena.y, od = Math.hypot(ox, oy), lim = arena.radius - ball.radius - 2;
