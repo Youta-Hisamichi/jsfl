@@ -5847,7 +5847,35 @@ function playStageClearSound() {
 function playWarningSound() {
   [200, 160, 200, 160].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'square', 0.22), i * 220));
 }
+// やられボイス：のこぎり波の声帯音をフォルマント（母音の共鳴）フィルタに通して「ぐわぁっ」などをしゃべらせる
+const VOWEL_F = { a: [800, 1200, 2600], i: [300, 2300, 3000], u: [350, 1300, 2500], e: [500, 1800, 2500], o: [500, 850, 2500] };
+const DEATH_VOICES = [
+  { seg: [['u', 0.05], ['a', 0.42]], p: [230, 250, 140], noise: [[0, 0.04, 500]], cut: true },   // ぐわぁっ
+  { seg: [['u', 0.1], ['a', 0.65]], p: [260, 270, 105], noise: [] },                             // うわぁぁ…
+  { seg: [['a', 0.26]], p: [215, 205, 165], noise: [[0, 0.03, 500], [0.09, 0.07, 2500]], gap: 0.12, cut: true }, // ぐ…はっ
+];
+function playDeathVoice() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const v = DEATH_VOICES[Math.floor(Math.random() * DEATH_VOICES.length)];
+  const t0 = audioCtx.currentTime + 0.04 + (v.gap || 0), dur = v.seg.reduce((n, x) => n + x[1], 0), vol = 0.35 * game.sfxVolume;
+  const src = audioCtx.createOscillator(); src.type = 'sawtooth';
+  src.frequency.setValueAtTime(v.p[0], t0); src.frequency.linearRampToValueAtTime(v.p[1], t0 + dur * 0.25); src.frequency.exponentialRampToValueAtTime(v.p[2], t0 + dur);
+  const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 7; lg.gain.value = 7; lfo.connect(lg); lg.connect(src.frequency);
+  const env = audioCtx.createGain();
+  env.gain.setValueAtTime(0.0001, t0); env.gain.exponentialRampToValueAtTime(vol, t0 + 0.03);
+  env.gain.setValueAtTime(vol, t0 + dur * (v.cut ? 0.85 : 0.5)); env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + (v.cut ? 0.02 : 0.15));
+  [1, 0.5, 0.25].forEach((amp, k) => {
+    const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 9 - k * 2;
+    let t = t0; f.frequency.setValueAtTime(VOWEL_F[v.seg[0][0]][k], t);
+    v.seg.forEach(([vw, d]) => { f.frequency.linearRampToValueAtTime(VOWEL_F[vw][k], t + Math.min(0.05, d)); t += d; });
+    const g = audioCtx.createGain(); g.gain.value = amp * 3; src.connect(f); f.connect(g); g.connect(env);
+  });
+  env.connect(audioCtx.destination);
+  src.start(t0); lfo.start(t0); src.stop(t0 + dur + 0.2); lfo.stop(t0 + dur + 0.2);
+  v.noise.forEach(([d, len, fq]) => filteredNoise(0.04 + d, len, 0.25, fq, 1.5));
+}
 function playDeathSound() {
+  playDeathVoice();
   thump(110, 28, 0.55, 0.85);                                  // 重い衝撃
   noiseSweep(0.45, 2600, 90, 'lowpass', 0.8, 0.7);              // 砕けるノイズ
   noiseSweep(0.12, 5000, 1500, 'bandpass', 1.2, 0.35);          // 打撃の破裂音
