@@ -312,6 +312,11 @@
   .shop-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .shop-btn .shop-desc, .shop-btn .cost { display: block; margin-top: 3px; color: var(--text-dim); }
   .shop-btn .cost { color: #64e8ff; font-weight: 800; }
+  /* ジェムショップ：アイコンと商品名を大きめに */
+  #shopList .shop-head { display: flex; align-items: center; gap: 6px; }
+  #shopList .shop-head .item-icon { font-size: 1.9rem; flex: none; }
+  #shopList .shop-head .item-icon .ico-img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
+  #shopList .shop-name { font-size: 0.86rem; font-weight: 800; line-height: 1.25; }
   .coin-shop-btn .cost { color: var(--gold); }
   .supergem-note { font-size: 0.68rem; color: var(--text-dim); margin: 10px 0 6px; }
 
@@ -2593,7 +2598,7 @@
       const locked = !owned && item.requires && !game[item.requires];
       const gcost = gemPrice(getShopItemBaseCost(id));
       const stackNote = item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.stackKey ?`（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
-      return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="item-icon">${ico(item)}</span> ${item.name}<span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : item.stackKey ? `最大（+${(item.maxStack * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒）` : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc + stackNote}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : item.stackKey ? '✓ 最大' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
+      return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="shop-head"><span class="item-icon">${ico(item)}</span><span class="shop-name">${item.name}</span></span><span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : item.stackKey ? `最大（+${(item.maxStack * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒）` : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc + stackNote}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : item.stackKey ? '✓ 最大' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
     }).join('');
   }
   // ---------- スキル：コインで好きなスキルを購入（解放・Lvアップ）。装備枠に入れたスキルだけ戦闘で使える ----------
