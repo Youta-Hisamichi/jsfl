@@ -3463,7 +3463,7 @@ function isTackling() { return !!tackle && Date.now() < tackle.until; }
 // ---------- お試し：引っ張りアクション（引っ張って離すと、反対方向へ勢いよく飛んで跳ね回る） ----------
 // true のあいだは、連打で突撃・長押しのタメ・ドラッグ移動をオフにする
 const PULL_MODE = true;
-const PULL_MIN_PX = 14;          // これ未満の引っ張りはタップ扱い（飛ばない）
+const PULL_MIN_PX = 14;          // これ未満の引っ張りは押しているだけ扱い（敵へ突撃・離しても飛ばない）
 const PULL_MAX_RATIO = 0.7;      // サークル半径のこの割合まで引っ張るとフルパワー
 const PULL_SPEED_MIN = 3.5, PULL_SPEED_MAX = 9; // 発射の速さ（反射移動の基本の速さの倍率）
 const PULL_FRICTION = 0.988;     // 1フレームごとの減速
@@ -3500,6 +3500,19 @@ function movePullShot(ball, speedMult) {
   const f = Math.pow(PULL_FRICTION, speedMult);
   ball.vx *= f; ball.vy *= f;
   if (Math.hypot(ball.vx, ball.vy) < BOUNCE_SPEED * 1.1) ball.pullShot = null;
+}
+// 押している間：一番近い敵へ向かって加速しながら突撃する
+const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
+function moveHoldRush(ball, speedMult) {
+  const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
+  if (en) {
+    const a = Math.atan2(en.y - ball.y, en.x - ball.x), sp = BOUNCE_SPEED * HOLD_RUSH_SPEED;
+    const t = 1 - Math.pow(1 - HOLD_RUSH_TURN, speedMult);
+    ball.vx += (Math.cos(a) * sp - ball.vx) * t; ball.vy += (Math.sin(a) * sp - ball.vy) * t;
+  }
+  ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+  wallBounce(ball);
+  ball.seekPoint = null; ball.missBounces = 0;
 }
 // 反射コンボ：跳ね返るたびに威力が上がり、頭上に「反射 ×N」を出す
 function registerPullBounce(ball) {
@@ -7114,6 +7127,12 @@ function movePlayerSideBalls(list, speedMult, b) {
       continue;
     }
     if (ball.isCompanion && moveCompanionCustom(ball, speedMult, moveCtxPlayer, moveCtxEnemy)) {
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
+    if (isMainPlayerBall(ball) && pullAim && !(getPullVector() || {}).power) { // 押しているだけ（引っ張っていない）間は敵へ突撃
+      ball.pullShot = null;
+      moveHoldRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
