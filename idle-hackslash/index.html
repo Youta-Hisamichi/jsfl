@@ -882,6 +882,7 @@ body.player-critical .arena-wrap { animation-duration: 0.55s; }
 
 .modal-overlay.credits-overlay { background: #05060c; padding: 0; }
 .credits-view { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: pointer; }
+.credits-close { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); color: #fff; font-size: 0.8rem; font-weight: 800; cursor: pointer; }
 .credits-roll { position: absolute; left: 0; right: 0; top: 100%; text-align: center; color: #e8ecff; animation: creditsUp 32s linear forwards; }
 @keyframes creditsUp { to { transform: translateY(calc(-100% - 100vh)); } }
 .credits-roll .cr-title { font-size: 1.5rem; font-weight: 900; margin: 0 0 6px; background: linear-gradient(90deg, #ffd76b, #ff9ec4, #7fd6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -1600,7 +1601,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 <div class="modal-overlay credits-overlay" id="creditsModal" style="z-index:80;">
   <div class="credits-view">
     <div class="credits-roll" id="creditsRoll"></div>
-    <div class="credits-hint">タップで閉じる</div>
+    <div class="credits-hint">押しっぱなしで早送り</div>
+    <button class="credits-close" id="creditsCloseBtn">✕ 閉じる</button>
   </div>
 </div>
 
@@ -2151,7 +2153,10 @@ document.getElementById('creditsBtn').addEventListener('click', () => {
   ensureAudio(); refreshBgm();
 });
 function closeCredits() { creditsModal.classList.remove('show'); refreshBgm(); }
-creditsModal.addEventListener('click', closeCredits);
+document.getElementById('creditsCloseBtn').addEventListener('click', closeCredits);
+function setCreditsSpeed(rate) { document.getElementById('creditsRoll').getAnimations().forEach(a => a.playbackRate = rate); } // 押しっぱなしで早送り
+creditsModal.addEventListener('pointerdown', event => { if (!event.target.closest('.credits-close')) setCreditsSpeed(6); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => creditsModal.addEventListener(t, () => setCreditsSpeed(1)));
 document.getElementById('creditsRoll').addEventListener('animationend', closeCredits);
 const FAQ_LIST = [
   ['セーブデータはどこに保存されますか？', 'プレイ中のデータは、お使いのブラウザ（端末）の中に自動で保存されます。\nブラウザの履歴・キャッシュ・サイトデータを削除したり、シークレットモードで遊んだりすると、データが消えることがあります。'],
