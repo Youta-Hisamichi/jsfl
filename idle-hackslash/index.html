@@ -2258,9 +2258,6 @@ const SHOP_ITEMS = {
   meteor: { icon: '☄️', name: '流星術', desc: '必殺技ダメージ +50%', cost: 12 },
   fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
-  tackle: { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（壁で跳ねた瞬間に離すと威力2倍）', cost: 30, unlockKey: 'tackleUnlocked' },
-  superTackle: { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力11倍の超タックル', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked' },
-  tacklePierce: { icon: '🐂', name: '貫きの蹄鉄', desc: 'タックルが敵にヒットしても反射せず貫通して進む（購入ごとに +0.1秒）', cost: 20, stackKey: 'tacklePierceLv', maxStack: 10, requires: 'tackleUnlocked' }
 };
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
@@ -2327,7 +2324,6 @@ ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
 Object.keys(SKILL_GACHA_SKILLS).forEach(id => { SKILL_GACHA_SKILLS[id].img = ICON_IMAGES['sk_' + id]; });
-SHOP_ITEMS.tackle.img = ICON_IMAGES.up_tackle; // タックル開放も強化ページのタックルと同じ画像
 const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 20 };
 const REBIRTH_SHOP_ITEMS = {};
 ARTIFACT_POOL.forEach(a => {
@@ -2336,11 +2332,6 @@ ARTIFACT_POOL.forEach(a => {
 });
 REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
 delete REBIRTH_SHOP_ITEMS.swordM; delete REBIRTH_SHOP_ITEMS.swordL;
-REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（壁で跳ねた瞬間に離すと威力2倍・永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
-  effect: () => { game.tackleUnlocked = true; } };
-REBIRTH_SHOP_ITEMS.unlockTackle.img = ICON_IMAGES.up_tackle;
-REBIRTH_SHOP_ITEMS.unlockSuperTackle = { icon: '💜', name: '超タックル 開放', desc: 'さらに長く溜めると攻撃力11倍の超タックル（永続）', rarity: 'epic', cost: 100, unlockKey: 'superTackleUnlocked', requires: 'tackleUnlocked', category: 'attack',
-  effect: () => { game.superTackleUnlocked = true; } };
 const REBIRTH_COST_GROWTH = 1.25;
 function getRebirthItemCost(id) {
   const item = REBIRTH_SHOP_ITEMS[id];
@@ -2448,7 +2439,7 @@ function getArtifactCurrentText(id) {
 function isRebirthItemLocked(item) { return !!item.requires && !game[item.requires]; } // 前提の開放がまだ
 const REBIRTH_SHOP_FIRST_OPEN = 2;
 function getRebirthShopOpenCount() { return REBIRTH_SHOP_FIRST_OPEN - 1 + Math.max(1, game.rebirthShopVisits || 0); }
-const REBIRTH_SHOP_EARLY = { unlockTackle: 1, unlockSuperTackle: 4 };
+const REBIRTH_SHOP_EARLY = {};
 function getRebirthCategoryIds(cat) {
   const ids = Object.keys(REBIRTH_SHOP_ITEMS).filter(k => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[k]) === cat && !(k in REBIRTH_SHOP_EARLY));
   Object.entries(REBIRTH_SHOP_EARLY).sort((a, b) => a[1] - b[1]).forEach(([id, pos]) => {
@@ -7671,7 +7662,6 @@ function buildGameOverTips() {
   if (ownedSkills.length > eq.length && eq.length < getSkillSlots()) tips.push('✨ 解放済みのスキルを装備しよう（スキルページ）');
   else if (!ownedSkills.length && cheapestSkill && game.coins >= cheapestSkill) tips.push('✨ スキルを解放して装備しよう（回復やバリアがおすすめ）');
   if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
-  if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ショップでタックルを開放しよう（長押し→離すで大ダメージ）');
   if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
   if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
   if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
