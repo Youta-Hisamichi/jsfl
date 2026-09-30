@@ -401,7 +401,11 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .gacha-multi-grid .gm-item.gm-open.rarity-legendary { animation: gmFlip 0.35s cubic-bezier(.34,1.56,.64,1), legendaryPulse 0.28s ease-in-out 0.35s infinite alternate; position: relative; z-index: 1; }
 .gacha-result.rarity-legendary .gr-icon.gr-pop { display: inline-block; animation: gachaPop 0.45s cubic-bezier(.34,1.56,.64,1), legendaryPulse 0.28s ease-in-out 0.45s infinite alternate; }
 @keyframes gmFlip { 0% { transform: rotateY(90deg) scale(0.8); } 100% { transform: rotateY(0) scale(1); } }
-.gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.5rem; color: var(--text-dim); margin-top: 2px; }
+.gacha-multi-grid .gm-item .gm-name { display: block; font-size: 0.66rem; font-weight: 800; line-height: 1.25; color: var(--text); margin-top: 3px; word-break: keep-all; overflow-wrap: anywhere; }
+.gacha-multi-grid .gm-item .gm-face { font-size: 2.2rem; line-height: 1.1; }
+.gacha-multi-grid .gm-item .gm-face .ico-img { width: 46px; height: 46px; display: block; margin: 0 auto; }
+.gacha-multi-grid { gap: 5px; }
+.gacha-multi-grid .gm-item { padding: 7px 2px 6px; }
 .sub-btn { border-width: 2px; }
 
 .gb-btn { grid-column: 1 / -1; position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; text-align: left; border: 2px solid; border-radius: 14px; padding: 10px 14px; color: #fff; }
@@ -9821,7 +9825,7 @@ function autoOpenGachaResults(results, onAllDone) {
     el.classList.add('gm-open', 'rarity-' + r.rarity);
     el.style.border = `1px solid ${rarity.color}`;
     el.style.background = rarityBackground(r.rarity);
-    el.innerHTML = `<div class="gm-face">${ico(r)}</div><span class="gm-name">${rarityStars(r.rarity)}<br>${r.name}</span>`;
+    el.innerHTML = `<div class="gm-face">${ico(r)}</div><span class="gm-name">${rarityStars(r.rarity)}<br>${r.name.replace('の欠片', '')}</span>`;
     if (withSound) playGachaSound(r.rarity);
   };
   const finish = () => {
