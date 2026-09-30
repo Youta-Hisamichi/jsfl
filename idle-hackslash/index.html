@@ -3828,11 +3828,11 @@ const ENEMY_TRAITS = {
   'emoji:🦇': 'merge',
 };
 const ENEMY_TRAIT_DESCS = {
-  charge: '溜めてから高速で突進してくる', spinGuard: '回転中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
+  charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
   attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
   mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', stack: '縦に積み重なっている。HPが減るたびに上から1体ずつ崩れ落ちて、別々に襲ってくる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
 };
-const ENEMY_TRAIT_LABELS = { stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: '回転ガード', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
+const ENEMY_TRAIT_LABELS = { stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
 const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
 const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
 const SPLIT_TIMES = 2;         // 分裂できる回数
@@ -3845,8 +3845,8 @@ const SPLIT_CONFIG = {
 function getSplitConfig(enemy) { return SPLIT_CONFIG[enemy.shape] || SPLIT_CONFIG.spike; }
 const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
 const GROW_MAX = 1.8;
-const SPIN_GUARD_FRAMES = 120; // 回転ガードの長さ
-const SPIN_GUARD_CUT = 0.8;    // 回転ガード中の被ダメージ軽減率
+const SPIN_GUARD_FRAMES = 120; // バリアの長さ
+const SPIN_GUARD_CUT = 0.8;    // バリア中の被ダメージ軽減率
 const METAL_DAMAGE_CUT = 0.75; // メタルスライムは常に硬い：被ダメージを75%カット（回転ガードとも重なる）
 function isMetalEnemy(e) { return !!e && !e.isBoss && !e.isAdd && e.emoji === '👾'; }
 function enemyDamageCut(e) { return 1 - (isMetalEnemy(e) ? 1 - METAL_DAMAGE_CUT : 1) * (e.guarding ? 1 - SPIN_GUARD_CUT : 1); }
@@ -4043,7 +4043,7 @@ function updateEnemyTraits(a, e, speedMult) {
     } else if (trait === 'spinGuard') {
       if (!e.traitState && e.traitCd <= 0) {
         e.traitState = 'guard'; e.traitTimer = SPIN_GUARD_FRAMES; e.guarding = true;
-        spawnDamageText(e.x, e.y - e.radius - 22, '回転ガード', '#c7ecff', 0.016);
+        spawnDamageText(e.x, e.y - e.radius - 22, 'バリア', '#c7ecff', 0.016);
         playTone(900, 0.2, 'square', 0.1, 1400);
       } else if (e.traitState === 'guard' && e.traitTimer <= 0) {
         e.traitState = null; e.guarding = false; e.traitCd = randTraitCd(trait);
@@ -4217,9 +4217,17 @@ function drawEnemyTraitEffects() {
     if (e.isPlayer || e.isDying || !e.trait) continue;
     const r = e.radius * ENEMY_SPRITE_SCALE / 2;
     ctx.save();
-    if (e.guarding) { // 回転ガード：回るシールド
-      ctx.strokeStyle = 'rgba(199,236,255,0.9)'; ctx.lineWidth = 3;
-      for (let i = 0; i < 3; i++) { const a0 = t / 120 + i * Math.PI * 2 / 3; ctx.beginPath(); ctx.arc(e.x, e.y, r + 4, a0, a0 + 1.2); ctx.stroke(); }
+    if (e.guarding) { // バリア：半透明の光る球体（ゆっくり脈打つ）
+      const br = r + 6 + Math.sin(t / 160) * 1.5;
+      const grad = ctx.createRadialGradient(e.x, e.y, br * 0.35, e.x, e.y, br);
+      grad.addColorStop(0, 'rgba(120,210,255,0.05)'); grad.addColorStop(0.75, 'rgba(120,210,255,0.18)'); grad.addColorStop(1, 'rgba(170,235,255,0.5)');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(e.x, e.y, br, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowColor = '#7fd8ff'; ctx.shadowBlur = 10;
+      ctx.strokeStyle = `rgba(200,240,255,${0.6 + 0.3 * Math.sin(t / 120)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(e.x, e.y, br, 0, Math.PI * 2); ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; // 左上の照り返し
+      ctx.beginPath(); ctx.ellipse(e.x - br * 0.4, e.y - br * 0.45, br * 0.28, br * 0.13, -0.6, 0, Math.PI * 2); ctx.fill();
     }
     if (e.traitState === 'windup') { // 突進の溜め
       ctx.strokeStyle = 'rgba(255,90,90,' + (0.5 + 0.5 * Math.sin(t / 60)) + ')'; ctx.lineWidth = 3;
@@ -8425,10 +8433,9 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
     flip = (ball.faceDir || base) !== base;
   }
   ctx.imageSmoothingEnabled = sz * dpr < (img.naturalWidth || img.width || 64);
-  if (!flip && !ball.guarding) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); ctx.imageSmoothingEnabled = true; return; }
+  if (!flip) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); ctx.imageSmoothingEnabled = true; return; }
   ctx.save();
   ctx.translate(cx, cy);
-  if (ball.guarding) ctx.rotate(Date.now() / 90); // 回転ガード中はくるくる回る
   if (flip) ctx.scale(-1, 1);
   ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
   ctx.restore();
