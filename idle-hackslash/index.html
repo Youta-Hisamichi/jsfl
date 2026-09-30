@@ -2133,6 +2133,8 @@
       effect: () => { gainArtifact(a.id); } };
   });
   REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
+  // 闘志の剣・中／大は店では売らない（転生報酬などのドロップでのみ手に入る）
+  delete REBIRTH_SHOP_ITEMS.swordM; delete REBIRTH_SHOP_ITEMS.swordL;
   // タックル・超タックルの開放（転生しても永続）
   REBIRTH_SHOP_ITEMS.unlockTackle = { icon: '🦏', name: 'タックル 開放', desc: 'サークルを長押し→離すとタメ体当たり（壁で跳ねた瞬間に離すと威力2倍・永続）', rarity: 'rare', cost: 30, unlockKey: 'tackleUnlocked', category: 'attack',
     effect: () => { game.tackleUnlocked = true; } };
