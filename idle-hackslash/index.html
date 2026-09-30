@@ -3490,6 +3490,7 @@
     pl.pullShot = { power: pv.power, bounces: 0 };
     spawnHitParticles(pl.x, pl.y, pv.power >= 1 ? '#ff5c8a' : '#ffb35c');
     playAccelSound();
+    if (TURN_MODE) setTurn('playerShot');
   }
   // 飛んでいる間：壁で跳ね返りながら少しずつ減速し、普段の速さまで落ちたら通常の移動に戻る
   function movePullShot(ball, speedMult) {
@@ -3508,11 +3509,81 @@
     ps.bounces++;
     const n = ps.bounces, lv = n / PULL_BOUNCE_MAX;
     const col = n >= 8 ? '#ff3b4a' : n >= 4 ? '#ff7a2b' : '#ffd76b';
-    spawnDamageText(ball.x, ball.y - ball.radius - 18, `反射 ×${n}  ATK ×${getPullDmgMult(ball).toFixed(1)}`, col, 0.03, n >= 4);
+    spawnDamageText(ball.x, ball.y - ball.radius - 18, `反射 ×${n}  ATK ×${getPullDmgMult(ball).toFixed(1)}`, ball.isPlayer ? col : '#ff8a94', 0.03, n >= 4);
     playTone(520 + n * 90, 0.07, 'square', 0.06 + lv * 0.06);
   }
   function getPullDmgMult(ball) {
     return ball && ball.pullShot ? PULL_DMG_MULT * (1 + PULL_BOUNCE_BONUS * ball.pullShot.bounces) : 1;
+  }
+  // ---------- ターン制（引っ張りアクション中）：自分が撃つ → 止まったら敵が撃ち返す → 自分のターン ----------
+  const TURN_MODE = PULL_MODE;
+  const TURN_AUTO_MS = 5000;        // 自分のターンで操作がなければ自動で撃つ（放置ゲームなので）
+  const TURN_ENEMY_WAIT_MS = 600;   // 敵が撃つまでの間
+  const TURN_SHOT_TIMEOUT_MS = 7000; // 1回の発射がいつまでも終わらないときの保険
+  let turn = { phase: 'player', since: Date.now() };
+  function setTurn(phase) {
+    turn = { phase, since: Date.now() };
+    if (phase === 'player') showTurnBanner('YOUR TURN', '#64c8ff');
+    if (phase === 'enemyWait') showTurnBanner('ENEMY TURN', '#ff5c6a');
+  }
+  let turnBanner = null;
+  function showTurnBanner(text, color) { turnBanner = { text, color, until: Date.now() + 900 }; }
+  function getTurnEnemy() { return balls.find(x => !x.isPlayer && !x.isDying && x.hp > 0); }
+  function isAnyoneSliding() { return [...balls, ...adds].some(x => x.pullShot || x.pullKnock > 0); }
+  function updateTurn() {
+    if (!TURN_MODE) return;
+    const pl = balls.find(ball => isMainPlayerBall(ball)), en = getTurnEnemy(), el = Date.now() - turn.since;
+    if (!pl) return;
+    if (turn.phase === 'player') {
+      if (!pullAim && el > TURN_AUTO_MS && en && !(en.spawnTimer > 0)) autoPullShot(pl, en); // 放置中は自動で撃つ
+    } else if (turn.phase === 'playerShot') {
+      if (!isAnyoneSliding() || el > TURN_SHOT_TIMEOUT_MS) { pl.pullShot = null; setTurn('enemyWait'); }
+    } else if (turn.phase === 'enemyWait') {
+      if (!en) { if (el > 1500) setTurn('player'); return; }
+      if (en.spawnTimer > 0 || el < TURN_ENEMY_WAIT_MS) return;
+      if (isDisabled(en) || en.traitFreeze) { spawnDamageText(en.x, en.y - en.radius - 20, '動けない！', '#ffd76b', 0.02); setTurn('player'); return; }
+      enemyPullShot(en, pl);
+      setTurn('enemyShot');
+    } else if (turn.phase === 'enemyShot') {
+      if (!isAnyoneSliding() || el > TURN_SHOT_TIMEOUT_MS || !en) { if (en) en.pullShot = null; setTurn('player'); }
+    }
+  }
+  function autoPullShot(pl, en) {
+    const a = Math.atan2(en.y - pl.y, en.x - pl.x);
+    const sp = BOUNCE_SPEED * (PULL_SPEED_MIN + (PULL_SPEED_MAX - PULL_SPEED_MIN) * 0.7);
+    pl.vx = Math.cos(a) * sp; pl.vy = Math.sin(a) * sp;
+    pl.pullShot = { power: 0.7, bounces: 0 };
+    playAccelSound();
+    setTurn('playerShot');
+  }
+  // 敵の引っ張り攻撃：自機の方へ（少しぶれて）勢いよく撃ってくる
+  function enemyPullShot(en, pl) {
+    const a = Math.atan2(pl.y - en.y, pl.x - en.x) + (Math.random() - 0.5) * 0.5;
+    const sp = BOUNCE_SPEED * (en.isBoss ? 5.5 + Math.random() * 2 : 4 + Math.random() * 2);
+    en.vx = Math.cos(a) * sp; en.vy = Math.sin(a) * sp;
+    en.pullShot = { power: 0.7, bounces: 0 };
+    spawnHitParticles(en.x, en.y, '#ff5c6a');
+    playTone(260, 0.12, 'sawtooth', 0.12, 520);
+  }
+  function drawTurnBanner() {
+    if (!TURN_MODE || phase !== 'battle') return;
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    // 常に小さくターン表示
+    const mine = turn.phase === 'player' || turn.phase === 'playerShot';
+    ctx.font = '900 13px sans-serif';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillStyle = mine ? '#8fd3ff' : '#ff8a94';
+    const label = turn.phase === 'player' ? '▶ あなたのターン（引っ張って離す）' : mine ? 'あなたの攻撃' : '敵のターン';
+    ctx.strokeText(label, arena.x, arena.y - arena.radius + 22); ctx.fillText(label, arena.x, arena.y - arena.radius + 22);
+    if (turnBanner && Date.now() < turnBanner.until) { // ターンが変わった瞬間の大きな表示
+      const t = 1 - (turnBanner.until - Date.now()) / 900;
+      ctx.globalAlpha = t < 0.2 ? t / 0.2 : t > 0.75 ? (1 - t) / 0.25 : 1;
+      ctx.font = `900 ${Math.round(arena.radius * 0.2)}px sans-serif`;
+      ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.fillStyle = turnBanner.color;
+      ctx.strokeText(turnBanner.text, arena.x, arena.y); ctx.fillText(turnBanner.text, arena.x, arena.y);
+    }
+    ctx.restore();
   }
   // 当てた相手を吹っ飛ばす（nx, ny：自機から相手への向き）。ボスは重いので控えめ
   const PULL_KNOCK_FRAMES = 45, PULL_KNOCK_FRICTION = 0.95;
@@ -3520,7 +3591,7 @@
     if (enemy.isDying || (enemy.pullKnock > PULL_KNOCK_FRAMES - 6)) return; // 同じ当たりで何度も吹っ飛ばさない
     registerPullBounce(pl); // 敵に当たって跳ね返るのも反射に数える
     const sp = Math.hypot(pl.vx, pl.vy);
-    const weight = enemy.isBoss ? 0.35 : 1;
+    const weight = enemy.isBoss ? 0.35 : enemy.isPlayer ? 0.6 : 1;
     const ksp = Math.max(BOUNCE_SPEED * 2, sp * 1.25) * weight;
     enemy.vx = nx * ksp; enemy.vy = ny * ksp;
     enemy.pullKnock = PULL_KNOCK_FRAMES;
@@ -7069,8 +7140,8 @@
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
     if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
     // 引っ張りで飛んでいる自機が当たったら、相手はビリヤードの球のように派手に吹っ飛ぶ
-    if (isMainPlayerBall(a) && a.pullShot && !b.isPlayer) pullKnockback(a, b, nx, ny);
-    else if (isMainPlayerBall(b) && b.pullShot && !a.isPlayer) pullKnockback(b, a, -nx, -ny);
+    if (a.pullShot && !b.pullShot && a.isPlayer !== b.isPlayer) pullKnockback(a, b, nx, ny);
+    else if (b.pullShot && !a.pullShot && a.isPlayer !== b.isPlayer) pullKnockback(b, a, -nx, -ny);
     return true;
   }
 
@@ -7098,8 +7169,17 @@
         if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
         continue;
       }
-      if (!ball.isPlayer && ball.pullKnock > 0) { // 引っ張り攻撃で吹っ飛ばされている
+      if (ball.pullKnock > 0 && (!ball.isPlayer || isMainPlayerBall(ball))) { // 引っ張り攻撃で吹っ飛ばされている
         moveKnockedBall(ball, speedMult);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
+      if (TURN_MODE && !ball.isPlayer && ball.pullShot) { // 敵の引っ張り攻撃：跳ね回りながら減速
+        movePullShot(ball, speedMult);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
+      if (TURN_MODE && !ball.pullShot && !isMainPlayerBall(ball) && !ball.isCompanion && !ball.isClone) { // ターン制では撃たれていない敵はその場で待つ
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
@@ -7124,6 +7204,10 @@
       }
       if (isMainPlayerBall(ball) && ball.pullShot) { // 引っ張りで発射中は跳ね回りながら減速
         movePullShot(ball, speedMult);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
+      if (TURN_MODE && isMainPlayerBall(ball)) { // ターン制では撃っていない間は止まって待つ
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
@@ -7378,6 +7462,7 @@
       adds.push(makeAddEnemy(e));
     }
 
+    updateTurn();
     movePlayerSideBalls([...balls, ...adds], speedMult, b);
     if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
 
@@ -7395,14 +7480,15 @@
       if (e.hp <= 0 && a.hp > 0) { triggerEnemyDefeat(e, a.x, a.y); battleEnded = true; }
       else if (a.hp <= 0) { onPlayerDeath(); return; }
       }
-    } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0) {
+    } else if (collided && a.hitCooldown === 0 && e.hitCooldown === 0 && (!TURN_MODE || a.pullShot || (e.pullShot && !e.pullShot.hit))) { // ターン制では撃っていないとき（止まって触れているだけ）は攻撃しない。敵の攻撃は1回の発射で1ヒットまで
       a.hitCooldown = HIT_LOCK_FRAMES; e.hitCooldown = HIT_LOCK_FRAMES;
+      if (TURN_MODE && e.pullShot && !a.pullShot) e.pullShot.hit = true;
       const combo = registerHit();
       const comboMult = getComboMultiplier(b.comboGrowth);
       if (combo >= 2) playChainSound(combo);
 
-      // 迫り合いの強さで攻撃側を決める（麻痺・眠り中の敵は反撃できない）
-      const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
+      // 迫り合いの強さで攻撃側を決める（麻痺・眠り中の敵は反撃できない）。ターン制では撃っている側が攻撃する
+      const enemyIsHit = TURN_MODE ? !e.pullShot : isDisabled(e) || Math.random() < getClashWinChance(e);
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
@@ -7420,7 +7506,7 @@
       } else if (absorbWithBarrier(a)) {
         applyHitKnockback(a, e, 3.2);
       } else {
-        const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
+        const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult * (TURN_MODE ? 1 + 0.25 * ((e.pullShot && e.pullShot.bounces) || 0) : 1))));
         a.hp -= dmg;
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
         spawnReceivedDamageText(a, dmg, crit, e);
@@ -7596,6 +7682,7 @@
         for (const atk of attackers) {
           if (resolveBallCollision(atk, add)) {
             if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
+            if (TURN_MODE && atk === a && !a.pullShot) continue; // ターン制：撃っていない自機は触れても攻撃しない
             const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * (atk === a ? getPullDmgMult(a) : 1))));
             add.hp -= dmg;
             trackDamage(dmg);
@@ -7708,6 +7795,7 @@
 
   // ---------- ステージクリア ----------
   function onStageClear() {
+    if (TURN_MODE) { const pl = balls.find(ball => isMainPlayerBall(ball)); if (pl) pl.pullShot = null; setTurn('player'); } // 次の敵が出たら自分のターンから
     if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
     const b = computeBonuses();
     const isBossStage = game.stage % 10 === 0;
@@ -9132,6 +9220,7 @@
 
     drawTapBonus();
     drawPullAim();
+    drawTurnBanner();
     // ヒットエフェクト（パーティクル）はキャラ画像（ボスの大きな画像など）の手前に描く
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, p.life);
@@ -10763,7 +10852,7 @@
     if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
     const r = canvas.getBoundingClientRect();
     if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-    if (PULL_MODE) { pullAim = { id: event.pointerId, sx: event.clientX, sy: event.clientY, cx: event.clientX, cy: event.clientY }; return; } // 引っ張り開始
+    if (PULL_MODE) { if (!TURN_MODE || turn.phase === 'player') pullAim = { id: event.pointerId, sx: event.clientX, sy: event.clientY, cx: event.clientX, cy: event.clientY }; return; } // 引っ張り開始（ターン制なら自分のターンだけ）
     dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
   });
   window.addEventListener('pointermove', event => {
