@@ -844,6 +844,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 }
 .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; color: var(--text-dim); font-size: 0.62rem; padding: 6px 2px; cursor: pointer; border-radius: 10px; }
 .tab-btn .tab-icon { font-size: 1.15rem; }
+.tab-btn .tab-label { white-space: nowrap; letter-spacing: -0.06em; }
 .tab-btn.active { color: var(--accent-player); background: rgba(79,168,255,0.1); }
 
 
@@ -853,18 +854,19 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .modal-overlay.fullscreen .modal-panel { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; border: none; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
 
 .modal-overlay.fullscreen .modal-shop-list.two { flex: 1 1 auto; min-height: 0; max-height: none; align-content: start; }
-#rebirthShopList { grid-template-columns: 1fr; gap: 5px; }
+#rebirthShopList { grid-template-columns: 1fr; gap: 5px; max-height: none; overflow: visible; margin-bottom: 16px; }
+#rebirthShopSection .rs-sec-title { font-size: 0.9rem; font-weight: 800; color: var(--text); margin: 14px 0 8px; }
 
 #rebirthShopModal .rs-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #rebirthShopModal .rs-header h2 { margin: 0; font-size: 1.05rem; }
 #rebirthShopModal .rs-gems { font-size: 1.05rem; font-weight: 900; color: #64e8ff; background: rgba(100,232,255,0.12); border: 1px solid rgba(100,232,255,0.45); border-radius: 999px; padding: 3px 12px; white-space: nowrap; }
 #rebirthShopModal .rs-note { font-size: 0.64rem; color: var(--text-dim); margin: 2px 0 6px; }
 #rebirthShopModal .auto-skip-wrap { margin: 0 0 6px; }
-#rebirthShopModal .purchase-msg { margin: 0 0 6px; padding: 4px 8px; font-size: 0.68rem; line-height: 1.35; }
+#rebirthShopSection .purchase-msg { margin: 0 0 6px; padding: 4px 8px; font-size: 0.68rem; line-height: 1.35; }
 #rebirthShopModal .rs-ad-btn { margin: 0 0 8px; padding: 7px; font-size: 0.8rem; }
-#rebirthShopModal .sub-tabs { margin: 0 0 14px; }
-#rebirthShopModal .sub-tab-btn { padding: 6px 8px; font-size: 0.86rem; }
-#rebirthShopModal .sub-tab-btn .ico-img { width: 1.5em; height: 1.5em; vertical-align: -0.4em; }
+#rebirthShopSection .sub-tabs { margin: 0 0 14px; }
+#rebirthShopSection .sub-tab-btn { padding: 6px 8px; font-size: 0.86rem; }
+#rebirthShopSection .sub-tab-btn .ico-img { width: 1.5em; height: 1.5em; vertical-align: -0.4em; }
 
 #rebirthShopList .rs-offer-title { font-size: 1.05rem; font-weight: 900; }
 #rebirthShopList .rs-offer-sub { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); }
@@ -1149,7 +1151,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="artifact"></div>
       <div class="af-hero" id="artifactProgress"></div>
-      <div class="af-note">✨ 遺物は転生報酬や転生ショップで手に入り、効果は永続。持っている遺物はすべて同時に効果を発揮します。</div>
+      <div class="af-note">✨ 遺物は転生報酬やショップで手に入り、効果は永続。持っている遺物はすべて同時に効果を発揮します。</div>
       <div class="sub-tabs af-tabs" id="artifactTabs"></div>
       <div class="artifact-list" id="artifactList">
         <span class="artifact-empty">まだ何も持っていません</span>
@@ -1183,8 +1185,14 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="gemshop"></div>
       <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
-      <div class="title">💎 ジェムショップ（購入効果は転生後も継続）</div>
+      <div class="title">🛒 ショップ（購入効果は転生後も継続）</div>
       <div class="shop-list" id="shopList"></div>
+      <div id="rebirthShopSection">
+        <div class="title rs-sec-title">🌌 永続アイテム（長押しで連続購入）</div>
+        <div class="purchase-msg" id="rebirthShopMsg" style="display:none"></div>
+        <div class="sub-tabs" id="rebirthShopTabs"></div>
+        <div class="modal-shop-list two" id="rebirthShopList"></div>
+      </div>
       <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span>円</div>
       <button class="modal-shop-btn" id="gemReturnBtn" style="display:none; justify-content:center; margin-bottom:8px; border-color:var(--gold); color:var(--gold);"><span class="msb-name">↩️ 元の画面に戻る</span></button>
       <div class="shop-list" id="supergemShopList"></div>
@@ -1270,7 +1278,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
   <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
   <button class="tab-btn" data-tab="coinshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabShop">スキル</span></button>
   <button class="tab-btn" data-tab="artifact"><span class="tab-icon">🏺</span><span class="tab-label" data-i18n="tabArtifact">遺物</span></button>
-  <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">💎</span><span class="tab-label" data-i18n="tabGem">ジェム</span></button>
+  <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabGem">ショップ</span></button>
   <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">進化</span></button>
   <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
   <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
@@ -1285,10 +1293,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="rs-header"><h2><span data-xi="x_reborn">🌌</span> 転生ショップ</h2><span class="rs-gems"><span data-xi="x_gem">💎</span> <span id="rebirthShopGems">0</span></span></div>
     <div class="rs-note">効果は転生しても永続・長押しで連続購入</div>
     <div class="shopkeeper compact" data-npc-tab="rebirth"></div>
-    <div class="purchase-msg" id="rebirthShopMsg" style="display:none"></div>
     <button class="reward-ad-btn rs-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
-    <div class="sub-tabs" id="rebirthShopTabs"></div>
-    <div class="modal-shop-list two" id="rebirthShopList"></div>
     <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
   </div>
 </div>
@@ -1454,7 +1459,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <label><span data-i18n="vibrationLabel">📳 振動（対応スマホのみ）</span></label>
       <button class="modal-shop-btn lang-btn" id="vibrationBtn"><span class="msb-name" id="vibrationState">ON</span></button>
     </div>
-    <div class="settings-row">
+    <div class="settings-row" style="display:none">
       <label><span>⏱️ 転生ショップの自動転生（30秒操作なしで開始）</span></label>
       <button class="modal-shop-btn lang-btn" id="rebirthAutoBtn"><span class="msb-name" id="rebirthAutoState">OFF</span></button>
     </div>
@@ -1672,7 +1677,6 @@ const rankDateLabel = document.getElementById('rankDateLabel');
 const rankingTitle = document.getElementById('rankingTitle');
 
 // ---------- タブ切り替え ----------
-let rebirthShopPending = false; // 他タブ表示中に転生した場合、ゲームタブに戻ったら転生ショップを開く
 function getActiveTab() {
   const page = document.querySelector('.tab-page.active');
   return page ? page.dataset.tab : 'game';
@@ -1696,7 +1700,7 @@ const NPC_SPRITES = {
 };
 const SHOPKEEPERS = {
   upgrade:   { npc: 'smith',     name: '鍛冶屋のガンツ', lines: ['いらっしゃい！ 腕も体も鍛えていきな！', 'コインがあるなら、ガンガン強化だ！', '長押しすりゃ一気に鍛えてやるぜ。', '転生したら鍛え直しだ。気にすんな！'] },
-  companion: { npc: 'guild',     name: 'ギルドマスター', lines: ['頼れる仲間を紹介しよう。', '仲間が揃えば、どんな敵も怖くないぞ。', '同じ仲間を呼べば、パーティが厚くなる。', 'レアな仲間は転生ショップで開放できるぞ。'] },
+  companion: { npc: 'guild',     name: 'ギルドマスター', lines: ['頼れる仲間を紹介しよう。', '仲間が揃えば、どんな敵も怖くないぞ。', '同じ仲間を呼べば、パーティが厚くなる。', 'レアな仲間はショップで開放できるぞ。'] },
   coinshop:  { npc: 'merchant',  name: '行商人のマルコ', lines: ['へいらっしゃい！ 掘り出し物あるよ！', '好きなスキルを選んで鍛えな！', 'お代はコインで結構ですよ〜。', '戦闘中しか使えない品もあるから気をつけて！'] },
   artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
   gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
@@ -1759,7 +1763,7 @@ function switchTab(name) {
   if (name === 'game') resizeCanvas();
   // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
   if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
-  if (name === 'game' && rebirthShopPending) { rebirthShopPending = false; openRebirthShop(true); }
+  if (name === 'gemshop') renderRebirthShopList();
   refreshBgm();
 }
 tabBar.addEventListener('click', event => {
@@ -1835,7 +1839,7 @@ rewardAdClaimBtn.addEventListener('click', () => {
   playLoginBonusSound();
   showNotice(`🎬 動画視聴ボーナス 💎${REWARD_AD_GEMS} 獲得！`);
   updateRewardAdButtons();
-  if (rebirthShopModal.classList.contains('show')) renderRebirthShopList(); // 所持ジェムとMAX個数を更新
+  if (getActiveTab() === 'gemshop') renderRebirthShopList(); // 所持ジェムとMAX個数を更新
   updateStatsUI();
   saveGame();
 });
@@ -1966,7 +1970,7 @@ function vibrate(pattern) {
   try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
 }
 
-const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・転生ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
 const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
 const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
 const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
@@ -1977,7 +1981,7 @@ const PRIVACY_TEXT_EN = 'Privacy Policy for this app.\n\n・This app only saves 
 
 const I18N = {
   ja: {
-    tabGame: 'ゲーム', tabUpgrade: '強化', tabCompanion: '仲間', tabShop: 'スキル', tabArtifact: '遺物', tabGem: 'ジェム', tabGacha: '進化', tabRecords: '戦績', tabRanking: 'ランキング',
+    tabGame: 'ゲーム', tabUpgrade: '強化', tabCompanion: '仲間', tabShop: 'スキル', tabArtifact: '遺物', tabGem: 'ショップ', tabGacha: '進化', tabRecords: '戦績', tabRanking: 'ランキング',
     settingsTitle: '⚙️ 設定', settingsSub: '音量やヘルプの設定です',
     bgmLabel: '🎵 BGM音量　', sfxLabel: '🔊 効果音音量　', vibrationLabel: '📳 振動（対応スマホのみ）',
     howToPlayBtn: '📖 遊び方', contactBtn: '✉️ お問い合わせ', termsBtn: '📜 利用規約', privacyBtn: '🔒 プライバシーポリシー',
@@ -1986,7 +1990,7 @@ const I18N = {
     howToPlayText: HOW_TO_PLAY_TEXT_JA, contactText: CONTACT_TEXT_JA, termsText: TERMS_TEXT_JA, privacyText: PRIVACY_TEXT_JA,
   },
   en: {
-    tabGame: 'Game', tabUpgrade: 'Upgrade', tabCompanion: 'Allies', tabShop: 'Skills', tabArtifact: 'Relics', tabGem: 'Gems', tabGacha: 'Evolve', tabRecords: 'Records', tabRanking: 'Ranking',
+    tabGame: 'Game', tabUpgrade: 'Upgrade', tabCompanion: 'Allies', tabShop: 'Skills', tabArtifact: 'Relics', tabGem: 'Shop', tabGacha: 'Evolve', tabRecords: 'Records', tabRanking: 'Ranking',
     settingsTitle: '⚙️ Settings', settingsSub: 'Volume and help settings',
     bgmLabel: '🎵 BGM Volume　', sfxLabel: '🔊 SFX Volume　', vibrationLabel: '📳 Vibration (supported phones only)',
     howToPlayBtn: '📖 How to Play', contactBtn: '✉️ Contact', termsBtn: '📜 Terms of Service', privacyBtn: '🔒 Privacy Policy',
@@ -2067,7 +2071,7 @@ const FAQ_LIST = [
   ['機種変更・別の端末に引き継げますか？', '現在、データの引き継ぎ機能はありません。同じ端末・同じブラウザで遊んでください。'],
   ['音が鳴りません', 'ブラウザの仕組みにより、最初に画面をタップするまで音は鳴りません。\nそれでも鳴らない場合は、端末のマナーモードや音量、設定のBGM・効果音の音量を確認してください。'],
   ['転生すると何がなくなりますか？', 'コイン・強化・スキル・仲間・ステージは最初に戻ります。\n遺物・ジェム・回復ポーション・スキル枠・パーティ枠・サブスクは引き継がれます。転生するたびに遺物がもらえて、次の周回が楽になります。'],
-  ['ジェムはどうやって手に入れますか？', 'ボス撃破、転生、復帰ガチャ、動画視聴、メタルスライムの撃破などで手に入ります。ジェムショップで購入することもできます。'],
+  ['ジェムはどうやって手に入れますか？', 'ボス撃破、転生、復帰ガチャ、動画視聴、メタルスライムの撃破などで手に入ります。ショップで購入することもできます。'],
   ['ゲームが重い・カクカクします', 'ほかのアプリやタブを閉じてみてください。仲間や敵が多い場面では処理が重くなることがあります。'],
   ['購入したアイテムが反映されません', 'いったんゲーム画面を再読み込みしてください。それでも反映されない場合は、お問い合わせからご連絡ください。'],
   ['不具合を見つけました', '設定の「お問い合わせ」から、発生した画面や手順をお知らせいただけると助かります。'],
@@ -2083,9 +2087,9 @@ const FUNDS_ACT_ROWS = [
   ['前払式支払手段の名称', 'ジェム（有償で購入したもの）'],
   ['支払可能金額等', '上限なし（購入画面に表示された数量）'],
   ['有効期間', '有効期間の定めはありません（サービス終了時を除く）'],
-  ['使用できる場所', '本ゲーム内（ジェムショップ・転生ショップ等）'],
+  ['使用できる場所', '本ゲーム内（ショップ等）'],
   ['利用上の注意', '購入後の払い戻しはできません。ただし、法令に定める場合（サービスの終了など）はこの限りではありません。'],
-  ['未使用残高の確認方法', 'ゲーム画面上部のジェム表示、またはジェムショップの画面で確認できます。'],
+  ['未使用残高の確認方法', 'ゲーム画面上部のジェム表示、またはショップの画面で確認できます。'],
   ['所在地', '請求があった場合には遅滞なく開示いたします。'],
   ['お問い合わせ窓口', 'hisashi.app@gmail.com（設定の「お問い合わせ」）'],
   ['利用規約', '設定の「利用規約」をご確認ください。'],
@@ -2977,7 +2981,7 @@ function renderCompanionList() {
   }).join('');
   const info = compInfoId && COMPANIONS[compInfoId] && !game.companions.recruited[compInfoId] ? (() => {
     const c = COMPANIONS[compInfoId], rar = RARITY_INFO[c.rarity];
-    return `<div class="cp-info ${isCompanionUnlocked(compInfoId) ? '' : 'sealed'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(compInfoId)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${isCompanionUnlocked(compInfoId) ? '🔒 未入手：仲間召喚で入手できます' : `🔒 未開放：転生ショップで開放（💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</div></div>`;
+    return `<div class="cp-info ${isCompanionUnlocked(compInfoId) ? '' : 'sealed'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(compInfoId)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${isCompanionUnlocked(compInfoId) ? '🔒 未入手：仲間召喚で入手できます' : `🔒 未開放：ショップで開放（💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</div></div>`;
   })() : '';
   companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間召喚」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 未入手の仲間 <b>${others.length}</b><small>タップで詳しく</small></div>${info}<div class="cp-grid">${othersHtml}</div>` : '');
@@ -5760,7 +5764,7 @@ const BGM_INFO = [
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
-  { key: 'gemshop', name: 'ページ ジェム キラキラ☆ジェムショップ', desc: 'maj7コードとキラキラ駆け上がるアルペジオの明るいショップ曲。VRC6風チップチューン。ホ長調（スマホゲームのショップ画面系の作風）・BPM150' },
+  { key: 'gemshop', name: 'ページ ショップ キラキラ☆ショップ', desc: 'maj7コードとキラキラ駆け上がるアルペジオの明るいショップ曲。VRC6風チップチューン。ホ長調（スマホゲームのショップ画面系の作風）・BPM150' },
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
@@ -7765,13 +7769,13 @@ function buildGameOverTips() {
   const ownedSkills = Object.keys(SKILL_GACHA_SKILLS).filter(id => game.shopOwned[id]);
   const cheapestSkill = Object.keys(SKILL_GACHA_SKILLS).filter(id => !game.shopOwned[id]).map(getSkillBuyCost).sort((a, b) => a - b)[0];
   const atkLv = getMaxAffordableUpgradeLevels('atk', game.coins), hpLv = getMaxAffordableUpgradeLevels('hp', game.coins);
-  if (!(game.potions > 0) && game.gems >= gemPrice(SHOP_ITEMS.potion.cost)) tips.push('🧪 ジェムショップで回復ポーションを買っておくと、ピンチをしのげます');
+  if (!(game.potions > 0) && game.gems >= gemPrice(SHOP_ITEMS.potion.cost)) tips.push('🧪 ショップで回復ポーションを買っておくと、ピンチをしのげます');
   else if (game.potions > 0) tips.push('🧪 ピンチになったらサークル左上の回復ポーションを早めに使おう');
   if (atkLv + hpLv >= 2) tips.push(`⚔️ 強化で攻撃力・HPを上げよう（今のコインで 攻撃力+${atkLv}Lv / HP+${hpLv}Lv）`);
   if (ownedSkills.length > eq.length && eq.length < getSkillSlots()) tips.push('✨ 解放済みのスキルを装備しよう（スキルページ）');
   else if (!ownedSkills.length && cheapestSkill && game.coins >= cheapestSkill) tips.push('✨ スキルを解放して装備しよう（回復やバリアがおすすめ）');
   if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
-  if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ジェムショップでタックルを開放しよう（長押し→離すで大ダメージ）');
+  if (!game.tackleUnlocked && game.gems >= gemPrice(30)) tips.push('🦏 ショップでタックルを開放しよう（長押し→離すで大ダメージ）');
   if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
   if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
   if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
@@ -7925,9 +7929,9 @@ function finishRebirth() {
   toastIcon.className = 'artifact-icon'; // 宝箱演出のクラスを戻す
   toast.classList.remove('rebirth-reward');
   rebirthRewardBgm = false;
-  // 転生ショップはゲームタブでのみ表示。他のタブにいる間は、ゲームタブに戻ったときに開く
-  if (getActiveTab() !== 'game') { rebirthShopPending = true; refreshBgm(); return; }
-  openRebirthShop(true);
+  // 転生ショップは一旦なし：商品はショップページで買える。転生ごとに商品の開放だけ進めて、すぐ周回開始
+  advanceRebirthShopVisit();
+  closeRebirthShop();
 }
 
 // 転生ショップ：操作がないまま30秒たつと自動で閉じて周回開始。残り10秒になったらカウントダウンのゲージを出す（操作するたびに30秒に戻る）
@@ -7992,18 +7996,19 @@ function showRebirthPurchaseMessage(item) {
   void rebirthShopMsg.offsetWidth; // 連続購入でもアニメーションを再生
   rebirthShopMsg.classList.add('show');
 }
+// 転生するごとに各タブの商品を上から1つずつ開放（以前のセーブは転生回数から引き継ぐ）
+function advanceRebirthShopVisit() {
+  if (game.rebirthShopVisits == null) game.rebirthShopVisits = Math.max(0, (game.reincarnations || 1) - 1);
+  game.rebirthShopVisits++;
+  const openCount = getRebirthShopOpenCount();
+  game.rebirthShopNew = game.rebirthShopVisits > 1 ? REBIRTH_SHOP_CATEGORIES.map(c => getRebirthCategoryIds(c.id)[openCount - 1]).filter(Boolean) : [];
+  saveGame();
+}
 let rebirthOfferStage = null; // 転生した時点の到達ステージ（ランダム3択のレア度に使う）
 function openRebirthShop(fresh = false) {
   if (fresh) rebirthShopMsg.classList.remove('show');
   if (!REBIRTH_OFFER_ENABLED) game.rebirthShopOffer = null;
-  if (!REBIRTH_OFFER_ENABLED && fresh) {
-    // 訪れるごとに各タブの商品を上から1つずつ開放（以前のセーブは転生回数から引き継ぐ）
-    if (game.rebirthShopVisits == null) game.rebirthShopVisits = Math.max(0, (game.reincarnations || 1) - 1);
-    game.rebirthShopVisits++;
-    const openCount = getRebirthShopOpenCount();
-    game.rebirthShopNew = game.rebirthShopVisits > 1 ? REBIRTH_SHOP_CATEGORIES.map(c => getRebirthCategoryIds(c.id)[openCount - 1]).filter(Boolean) : [];
-    saveGame();
-  }
+  if (!REBIRTH_OFFER_ENABLED && fresh) advanceRebirthShopVisit();
   if (REBIRTH_OFFER_ENABLED && (fresh || !Array.isArray(game.rebirthShopOffer))) {
     game.rebirthOfferStage = rebirthOfferStage ?? game.stage;
     game.rebirthShopOffer = rollRebirthOffer(game.rebirthOfferStage);
@@ -9443,8 +9448,7 @@ debugRow.addEventListener('click', event => {
   }
   if (action === 'rebirthShop') {
     // 転生ショップを表示（閉じると現在のステージで戦闘を再開）
-    phase = 'paused';
-    openRebirthShop(true);
+    switchTab('gemshop'); // 転生ショップの商品はショップページにある
     return;
   }
   if (action === 'slots') { openDebugSlots(); return; }
@@ -9651,7 +9655,7 @@ function updatePotionButton() {
   potionBtn.classList.toggle('is-disabled', n <= 0);
 }
 potionBtn.addEventListener('click', event => {
-  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ジェムショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
+  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
   if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
@@ -10112,7 +10116,7 @@ window.addEventListener('blur', stopHold);
 
 function rerollRebirthOffer() {
   const cost = getRebirthRerollCost();
-  if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }); return; }
+  if (game.gems < cost) { promptGemShortage(cost); return; }
   game.gems -= cost;
   game.rebirthRerolls = (game.rebirthRerolls || 0) + 1;
   const count = getRebirthOfferSlots();
@@ -10131,7 +10135,7 @@ function rerollRebirthOffer() {
 function buyRebirthSlot(x, y) {
   if (getRebirthOfferSlots() >= REBIRTH_OFFER_MAX_SLOTS) return;
   const cost = getRebirthSlotCost();
-  if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }); return; }
+  if (game.gems < cost) { promptGemShortage(cost); return; }
   game.gems -= cost;
   game.rebirthOfferSlots = getRebirthOfferSlots() + 1;
   if (Array.isArray(game.rebirthShopOffer)) {
@@ -10174,7 +10178,7 @@ function buyRebirthItem(id, x, y, fromHold) {
   const cost = getRebirthItemCost(id);
   if (game.gems < cost) {
     if (fromHold) showTapError('ジェムが足りません', x, y); // 連続購入中はダイアログを出さずに止める
-    else promptGemShortage(cost, { returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true });
+    else promptGemShortage(cost);
     return false;
   }
   game.gems -= cost;
