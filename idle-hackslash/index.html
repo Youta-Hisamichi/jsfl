@@ -468,6 +468,64 @@
   .companion-card button.cc-max-btn.is-disabled { opacity: 0.4; background: var(--bg-soft); color: var(--text-dim); border-color: var(--ring); }
   .companion-card button.recruit-btn { border-color: var(--gold); color: var(--gold); }
   .companion-card button:disabled { opacity: 0.45; cursor: not-allowed; }
+  /* ---- 仲間ページ（ソシャゲ風） ---- */
+  .cp-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 10px; }
+  .cp-stat { background: linear-gradient(160deg, rgba(100,200,255,0.14), rgba(176,124,255,0.1)); border: 1px solid var(--ring); border-radius: 12px; padding: 8px 10px; }
+  .cp-stat-label { display: block; font-size: 0.66rem; font-weight: 800; color: var(--text-dim); }
+  .cp-stat-val { display: block; font-size: 1.25rem; font-weight: 900; color: var(--text); line-height: 1.3; }
+  .cp-stat-val small { font-size: 0.66rem; margin-left: 4px; color: var(--text-dim); }
+  .cp-bar { height: 6px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 4px; }
+  .cp-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #64e8ff, #b07cff); transition: width 0.3s; }
+  .gacha-pull.cp-summon { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px; border: none; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #ff9a4f, #ff5f8f 55%, #b07cff); box-shadow: 0 4px 0 #b3406a, 0 6px 14px rgba(255,95,143,0.35); position: relative; overflow: hidden; }
+  .gacha-pull.cp-summon::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent); animation: gbShine 3s ease-in-out infinite; pointer-events: none; }
+  .gacha-pull.cp-summon:active { transform: translateY(3px); box-shadow: 0 1px 0 #b3406a, 0 2px 6px rgba(255,95,143,0.3); }
+  .cp-summon .cps-title { font-size: 1.05rem; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+  .cp-summon .cps-cost { font-size: 0.78rem; font-weight: 900; background: rgba(0,0,0,0.22); border-radius: 999px; padding: 1px 12px; }
+  .cp-help { margin: 6px 0 4px; font-size: 0.68rem; color: var(--text-dim); background: var(--bg-soft); border-radius: 10px; padding: 6px 10px; }
+  .cp-help summary { cursor: pointer; font-weight: 800; color: var(--text); }
+  .cp-help p { margin: 5px 0 0; line-height: 1.5; }
+  .cp-sec { display: flex; align-items: baseline; gap: 6px; font-size: 0.86rem; font-weight: 900; margin: 12px 0 2px; padding-left: 8px; border-left: 4px solid #ffb14f; }
+  .cp-sec b { font-size: 0.72rem; color: #fff; background: #ffb14f; border-radius: 999px; padding: 0 7px; }
+  .cp-sec small { margin-left: auto; font-size: 0.6rem; font-weight: 700; color: var(--text-dim); }
+  .cp-empty { text-align: center; font-size: 0.74rem; color: var(--text-dim); padding: 14px; border: 1px dashed var(--ring); border-radius: 12px; margin-top: 8px; }
+  .companion-list { gap: 9px; }
+  .companion-card.recruited { position: relative; border: 1.5px solid var(--rc); border-radius: 14px; padding: 10px; background: linear-gradient(135deg, color-mix(in srgb, var(--rc) 16%, transparent), transparent 60%), var(--bg-soft); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+  .companion-card .cc-top { display: flex; gap: 10px; align-items: center; }
+  .companion-card .cc-portrait { position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 45%, transparent), color-mix(in srgb, var(--rc) 12%, transparent)); border: 2px solid var(--rc); }
+  .companion-card .cc-portrait .comp-sprite { width: 54px; height: 54px; margin: 0; }
+  .companion-card .cc-lv { position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); font-size: 0.62rem; font-weight: 900; color: #fff; background: #1f2433; border: 1.5px solid var(--rc); border-radius: 999px; padding: 0 7px; white-space: nowrap; }
+  .companion-card .cc-main { min-width: 0; flex: 1; }
+  .companion-card .cc-name { display: block; font-weight: 900; font-size: 1rem; }
+  .companion-card .cc-meta { display: flex; flex-wrap: wrap; gap: 2px 8px; margin: 1px 0 4px; }
+  .companion-card .cc-rarity { color: var(--rc); font-size: 0.62rem; font-weight: 900; margin: 0; }
+  .companion-card .cc-chips, .cp-info .cc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .cc-chip { font-size: 0.62rem; font-weight: 800; color: var(--text); background: var(--panel); border: 1px solid var(--ring); border-radius: 999px; padding: 1px 8px; }
+  .cc-chip.atk { color: #ff7a5c; border-color: rgba(255,122,92,0.5); }
+  .companion-card .cc-trait, .cp-info .cc-trait { margin: 8px 0 2px; font-size: 0.66rem; line-height: 1.45; }
+  .companion-card .cc-level-row { margin-top: 6px; }
+  .companion-card button.cc-lvup { display: flex; flex-direction: column; align-items: center; gap: 1px; border: none; border-radius: 10px; color: #fff; background: linear-gradient(180deg, #4fc3ff, #2f8cff); box-shadow: 0 3px 0 #1c5bb8; padding: 6px; }
+  .companion-card button.cc-lvup b { font-size: 0.76rem; }
+  .companion-card button.cc-lvup span { font-size: 0.66rem; font-weight: 800; opacity: 0.95; }
+  .companion-card button.cc-lvup:active { transform: translateY(2px); box-shadow: 0 1px 0 #1c5bb8; }
+  .companion-card button.cc-lvup.is-disabled { background: var(--bg-soft); color: var(--text-dim); box-shadow: none; border: 1px solid var(--ring); }
+  .companion-card button.cc-max-btn { border-radius: 10px; }
+  .cp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 6px; }
+  .cp-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px 6px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--rc) 60%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 14%, transparent), var(--bg-soft)); color: var(--text); cursor: pointer; font: inherit; }
+  .cp-tile.active { box-shadow: 0 0 0 2px var(--rc); }
+  .cp-tile-img .comp-sprite { width: 44px; height: 44px; filter: grayscale(0.5) brightness(0.9); }
+  .cp-tile.sealed .cp-tile-img .comp-sprite { filter: brightness(0) opacity(0.45); }
+  .cp-tile-name { font-size: 0.64rem; font-weight: 900; line-height: 1.25; text-align: center; }
+  .cp-tile-stars { font-size: 0.56rem; color: var(--rc); }
+  .cp-tile-lock { font-size: 0.54rem; color: var(--text-dim); font-weight: 700; }
+  .cp-info { margin-top: 6px; border: 1.5px solid var(--rc); border-radius: 12px; padding: 8px 10px; background: var(--bg-soft); font-size: 0.68rem; }
+  .cp-info-head { display: flex; align-items: center; gap: 8px; }
+  .cp-info-head .comp-sprite { width: 44px; height: 44px; }
+  .cp-info.sealed .cp-info-head .comp-sprite { filter: brightness(0) opacity(0.45); } /* 未開放の仲間は影だけ */
+  .cp-info-head b { display: block; font-size: 0.9rem; }
+  .cp-info-head span { font-size: 0.6rem; font-weight: 900; }
+  .cp-info .cc-chips { margin-top: 6px; }
+  .cp-info .cc-trait { display: block; color: var(--text); background: rgba(255,177,79,0.12); border-left: 3px solid #ffb14f; border-radius: 4px; padding: 3px 6px; }
+  .cp-info-lock { margin-top: 4px; text-align: center; color: var(--text-dim); font-weight: 700; }
 
   .record-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ring); border: 1px solid var(--ring); border-radius: 12px; overflow: hidden; }
   .record-panel.two { grid-template-columns: repeat(2, 1fr); }
@@ -1039,13 +1097,18 @@
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="companion"></div>
-      <div class="title">🐾 仲間（コインの仲間召喚で入手・レベルはコインで上昇・長押しで連続レベルアップ／仲間は転生ですべてリセット）<br>それぞれ戦闘中に個性的な能力を発揮します</div>
-      <div class="gacha-actions pull-row"><button class="gacha-pull" id="compGachaBtn">🐾 仲間召喚<br>🟡 200</button></div>
+      <div class="cp-hero">
+        <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
+        <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
+      </div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"></button></div>
       <div class="comp-full-note" id="compFullNote" style="display:none;">🐾 パーティが満員です（下の「パーティ枠を増やす」で召喚できるようになります）</div>
-      <div class="artifact-progress" id="companionProgress">仲間図鑑　取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
-      <div class="party-count" id="partyCount">パーティ 0 / 1人</div>
       <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
-      <div class="supergem-note">召喚するたびに費用が上がります。仲間・覚醒・召喚費用は転生でリセットされます。召喚した仲間はパーティに加わり、同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）</div>
+      <details class="cp-help"><summary>ⓘ 仲間のしくみ</summary>
+        <p>コインの「仲間召喚」で入手し、レベルもコインで上がります（長押しで連続レベルアップ）。それぞれ戦闘中に個性的な能力を発揮します。</p>
+        <p>召喚するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
+        <p>仲間・覚醒・召喚費用は転生ですべてリセットされます。</p>
+      </details>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>
@@ -2735,7 +2798,7 @@
     gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
     const cgb = document.getElementById('compGachaBtn');
     const cost1 = getCompSummonCost(1);
-    if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `🐾 仲間召喚<br>🟡 ${formatCoinNumber(cost1)}`; }
+    if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 ${formatCoinNumber(cost1)}</span>`; }
     updateCompSummonVisibility();
   }
   // パーティが満員のときは仲間召喚ボタンを隠す（枠を増やすと再び表示）
@@ -2805,6 +2868,7 @@
     const c = COMPANIONS[id];
     return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
   }
+  let compInfoId = null; // 未入手の仲間で詳しく表示中のもの
   function renderCompanionList() {
     // 仲間図鑑：一度でも仲間にした種類数（転生しても残る）。今の仲間も図鑑に登録しておく（古いセーブ対応）
     if (!game.companionBook) game.companionBook = {};
@@ -2812,9 +2876,11 @@
     const compIds = Object.keys(COMPANIONS);
     const found = compIds.filter(id => game.companionBook[id]).length;
     const compRate = (compIds.length ? Math.floor(found / compIds.length * 1000) / 10 : 0).toFixed(1);
-    document.getElementById('companionProgress').innerHTML = `仲間図鑑　取得数 <strong>${found} / ${compIds.length}</strong>　取得率 <strong>${compRate}%</strong>`;
+    document.getElementById('companionProgress').innerHTML = `${found} / ${compIds.length}<small>${compRate}%</small>`;
+    document.getElementById('compBookBar').style.width = compRate + '%';
     const pc = document.getElementById('partyCount');
-    if (pc) pc.textContent = `🐾 パーティ ${getCompanionTotal()} / ${getPartyLimit()}人`;
+    if (pc) pc.innerHTML = `${getCompanionTotal()} / ${getPartyLimit()}<small>人</small>`;
+    document.getElementById('partyBar').style.width = Math.min(100, getCompanionTotal() / getPartyLimit() * 100) + '%';
     updateCompSummonVisibility();
     const psb = document.getElementById('partySlotBtn');
     if (psb) {
@@ -2827,22 +2893,30 @@
     const RARITY_ORDER = { legendary: 4, epic: 3, rare: 2, common: 1 };
     // 取得済み（パーティにいる）仲間を上に、その中でレア度の高い順（同じレア度は定義順のまま）
     const owned = id => game.companions.recruited[id] ? 1 : 0;
-    companionList.innerHTML = Object.entries(COMPANIONS).sort((x, y) => (owned(y[0]) - owned(x[0])) || (RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity])).map(([id, c]) => {
-      const recruited = !!game.companions.recruited[id];
+    const sorted = Object.entries(COMPANIONS).sort((x, y) => (owned(y[0]) - owned(x[0])) || (RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]));
+    const mine = sorted.filter(([id]) => game.companions.recruited[id]), others = sorted.filter(([id]) => !game.companions.recruited[id]);
+    // パーティメンバー：レア度の色の枠・大きな立ち絵・Lvバッジ・能力のチップ・大きなレベルアップボタン
+    const mineHtml = mine.map(([id, c]) => {
       const rar = RARITY_INFO[c.rarity];
-      const rarTag = `<span class="cc-rarity" style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>`;
-      if (!recruited) {
-        return `<div class="companion-card not-owned"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag}<span class="cc-desc">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span><span class="cc-trait">${c.trait}</span><span class="cc-locked">${isCompanionUnlocked(id) ? '🔒 未入手（仲間召喚で入手）' : `🔒 未開放（転生ショップで開放：💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</span></div>`;
-      }
       const aw = getCompanionAwaken(id);
-      const awTag = `<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span> <span class="cc-count">×${getCompanionCount(id)}人</span>`;
       const level = game.companions.level[id];
       const cost = getCompanionLevelCost(id);
       const disabled = game.coins < cost;
       const maxLv = getCompanionMaxLevels(id).count;
       const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
-      return `<div class="companion-card recruited"><span class="cc-name"><span class="item-icon">${companionIconHtml(id)}</span> ${c.name}</span>${rarTag} ${awTag}<span class="cc-desc">${c.desc}　<span class="cc-level">Lv.${level}</span>　⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-trait">${c.trait}</span><div class="cc-level-row"><button class="${disabled ? 'is-disabled' : ''}" data-companion-level="${id}">レベルアップ　🟡 ${formatCoinNumber(cost)}</button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${pctLv} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
+      return `<div class="companion-card recruited" style="--rc:${rar.color}"><div class="cc-top"><div class="cc-portrait">${companionIconHtml(id)}<span class="cc-lv">Lv.${level}</span></div><div class="cc-main"><div class="cc-name">${c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span><span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-level-row"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>レベルアップ</b><span>🟡 ${formatCoinNumber(cost)}</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${pctLv} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
     }).join('');
+    // 未入手の仲間：図鑑のようなタイル表示（タップで詳しい説明）
+    const othersHtml = others.map(([id, c]) => {
+      const rar = RARITY_INFO[c.rarity];
+      return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${isCompanionUnlocked(id) ? '召喚で入手' : '🔒 未開放'}</span></button>`;
+    }).join('');
+    const info = compInfoId && COMPANIONS[compInfoId] && !game.companions.recruited[compInfoId] ? (() => {
+      const c = COMPANIONS[compInfoId], rar = RARITY_INFO[c.rarity];
+      return `<div class="cp-info ${isCompanionUnlocked(compInfoId) ? '' : 'sealed'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(compInfoId)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${isCompanionUnlocked(compInfoId) ? '🔒 未入手：仲間召喚で入手できます' : `🔒 未開放：転生ショップで開放（💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</div></div>`;
+    })() : '';
+    companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間召喚」で仲間を呼びましょう！</div>`)
+      + (others.length ? `<div class="cp-sec">📖 未入手の仲間 <b>${others.length}</b><small>タップで詳しく</small></div>${info}<div class="cp-grid">${othersHtml}</div>` : '');
   }
 
   // ---------- 仲間召喚（コインガチャ） ----------
@@ -9798,6 +9872,8 @@
   });
 
   companionList.addEventListener('click', event => {
+    const infoTile = event.target.closest('[data-comp-info]');
+    if (infoTile) { compInfoId = compInfoId === infoTile.dataset.compInfo ? null : infoTile.dataset.compInfo; renderCompanionList(); return; }
     const maxBtn = event.target.closest('[data-companion-level-max], [data-companion-level-pct]');
     if (maxBtn) {
       const isPct = maxBtn.dataset.companionLevelPct !== undefined;
