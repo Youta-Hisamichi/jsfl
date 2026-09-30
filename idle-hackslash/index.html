@@ -3460,47 +3460,10 @@ let tackleChargeStart = 0;
 let arenaHeld = false; // サークルを押し続けているか（クールダウン明けにタメを開始するため）
 let tackle = null; // { until, mult, full }
 function isTackling() { return !!tackle && Date.now() < tackle.until; }
-// ---------- お試し：引っ張りアクション（引っ張って離すと、反対方向へ勢いよく飛んで跳ね回る） ----------
+// ---------- 押して突撃（押している間は一番近い敵へ突撃する） ----------
 // true のあいだは、連打で突撃・長押しのタメ・ドラッグ移動をオフにする
-const PULL_MODE = true;
-const PULL_MIN_PX = 14;          // これ未満の引っ張りは押しているだけ扱い（敵へ突撃・離しても飛ばない）
-const PULL_MAX_RATIO = 0.7;      // サークル半径のこの割合まで引っ張るとフルパワー
-const PULL_SPEED_MIN = 3.5, PULL_SPEED_MAX = 9; // 発射の速さ（反射移動の基本の速さの倍率）
-const PULL_FRICTION = 0.988;     // 1フレームごとの減速
-const PULL_DMG_MULT = 1.5;       // 飛んでいる間に当てたダメージの倍率
-const PULL_BOUNCE_BONUS = 0.5;   // 反射（壁・敵）1回ごとのダメージ上乗せ（反射コンボ）
-const PULL_BOUNCE_MAX = 12;      // 反射コンボの上限回数
-let pullAim = null;              // { id, sx, sy, cx, cy }：引っ張り中の指の位置（画面座標）
-function getPullVector() {
-  if (!pullAim) return null;
-  const k = size / canvas.getBoundingClientRect().width;
-  const dx = (pullAim.sx - pullAim.cx) * k, dy = (pullAim.sy - pullAim.cy) * k, len = Math.hypot(dx, dy);
-  if (len < PULL_MIN_PX) return { len, power: 0 };
-  return { dx: dx / len, dy: dy / len, len, power: Math.min(1, len / (arena.radius * PULL_MAX_RATIO)) };
-}
-function launchPullShot() {
-  const pv = getPullVector();
-  pullAim = null;
-  if (!pv || !pv.power || phase !== 'battle') return;
-  const pl = balls.find(ball => isMainPlayerBall(ball));
-  if (!pl) return;
-  const sp = BOUNCE_SPEED * (PULL_SPEED_MIN + (PULL_SPEED_MAX - PULL_SPEED_MIN) * pv.power);
-  pl.vx = pv.dx * sp; pl.vy = pv.dy * sp;
-  pl.seekPoint = null; pl.missBounces = 0;
-  pl.pullShot = { power: pv.power, bounces: 0 };
-  spawnHitParticles(pl.x, pl.y, pv.power >= 1 ? '#ff5c8a' : '#ffb35c');
-  playAccelSound();
-}
-// 飛んでいる間：壁で跳ね返りながら少しずつ減速し、普段の速さまで落ちたら通常の移動に戻る
-function movePullShot(ball, speedMult) {
-  ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
-  const pvx = ball.vx, pvy = ball.vy;
-  wallBounce(ball);
-  if (ball.vx !== pvx || ball.vy !== pvy) registerPullBounce(ball); // 壁で反射
-  const f = Math.pow(PULL_FRICTION, speedMult);
-  ball.vx *= f; ball.vy *= f;
-  if (Math.hypot(ball.vx, ball.vy) < BOUNCE_SPEED * 1.1) ball.pullShot = null;
-}
+const HOLD_RUSH_MODE = true;
+let holdRush = null;             // { id }：押している指
 // 押している間：一番近い敵へ向かって加速しながら突撃する
 const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
 function moveHoldRush(ball, speedMult) {
@@ -3513,63 +3476,6 @@ function moveHoldRush(ball, speedMult) {
   ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
   wallBounce(ball);
   ball.seekPoint = null; ball.missBounces = 0;
-}
-// 反射コンボ：跳ね返るたびに威力が上がり、頭上に「反射 ×N」を出す
-function registerPullBounce(ball) {
-  const ps = ball.pullShot;
-  if (!ps || ps.bounces >= PULL_BOUNCE_MAX) return;
-  ps.bounces++;
-  const n = ps.bounces, lv = n / PULL_BOUNCE_MAX;
-  const col = n >= 8 ? '#ff3b4a' : n >= 4 ? '#ff7a2b' : '#ffd76b';
-  spawnDamageText(ball.x, ball.y - ball.radius - 18, `反射 ×${n}  ATK ×${getPullDmgMult(ball).toFixed(1)}`, col, 0.03, n >= 4);
-  playTone(520 + n * 90, 0.07, 'square', 0.06 + lv * 0.06);
-}
-function getPullDmgMult(ball) {
-  return ball && ball.pullShot ? PULL_DMG_MULT * (1 + PULL_BOUNCE_BONUS * ball.pullShot.bounces) : 1;
-}
-// 当てた相手を吹っ飛ばす（nx, ny：自機から相手への向き）。ボスは重いので控えめ
-const PULL_KNOCK_FRAMES = 45, PULL_KNOCK_FRICTION = 0.95;
-function pullKnockback(pl, enemy, nx, ny) {
-  if (enemy.isDying || (enemy.pullKnock > PULL_KNOCK_FRAMES - 6)) return; // 同じ当たりで何度も吹っ飛ばさない
-  registerPullBounce(pl); // 敵に当たって跳ね返るのも反射に数える
-  const sp = Math.hypot(pl.vx, pl.vy);
-  const weight = enemy.isBoss ? 0.35 : enemy.isPlayer ? 0.6 : 1;
-  const ksp = Math.max(BOUNCE_SPEED * 2, sp * 1.25) * weight;
-  enemy.vx = nx * ksp; enemy.vy = ny * ksp;
-  enemy.pullKnock = PULL_KNOCK_FRAMES;
-  spawnHitParticles(enemy.x, enemy.y, '#ffffff');
-  spawnHitParticles(enemy.x, enemy.y, '#ffd76b');
-  if (sp > BOUNCE_SPEED * 4) shakeScreenLight();
-  playTone(1500, 0.05, 'square', 0.1, 900); thump(180, 60, 0.1, 0.35); // 「カコーン」
-}
-// 吹っ飛び中の相手：壁で跳ね返りながら滑って止まる
-function moveKnockedBall(ball, speedMult) {
-  ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
-  wallBounce(ball);
-  const f = Math.pow(PULL_KNOCK_FRICTION, speedMult);
-  ball.vx *= f; ball.vy *= f;
-  ball.pullKnock -= speedMult;
-  ball.knockSpin = (ball.knockSpin || 0) + Math.hypot(ball.vx, ball.vy) * 0.04 * speedMult;
-}
-// 引っ張り中の狙いの矢印（飛ぶ方向・長さ＝パワー）
-function drawPullAim() {
-  const pv = getPullVector(), pl = balls.find(ball => isMainPlayerBall(ball));
-  if (!pv || !pv.power || !pl) return;
-  const len = 30 + pv.power * arena.radius * 0.55, full = pv.power >= 1;
-  const ex = pl.x + pv.dx * len, ey = pl.y + pv.dy * len;
-  ctx.save();
-  ctx.strokeStyle = full ? 'rgba(255,92,138,0.95)' : 'rgba(255,179,92,0.9)';
-  ctx.fillStyle = ctx.strokeStyle;
-  ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.setLineDash([2, 9]);
-  ctx.beginPath(); ctx.moveTo(pl.x, pl.y); ctx.lineTo(ex, ey); ctx.stroke();
-  ctx.setLineDash([]);
-  const a = Math.atan2(pv.dy, pv.dx), hs = 12 + pv.power * 6;
-  ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * hs, ey + Math.sin(a) * hs);
-  ctx.lineTo(ex + Math.cos(a + 2.4) * hs, ey + Math.sin(a + 2.4) * hs);
-  ctx.lineTo(ex + Math.cos(a - 2.4) * hs, ey + Math.sin(a - 2.4) * hs); ctx.closePath(); ctx.fill();
-  ctx.lineWidth = 3; ctx.globalAlpha = 0.8; // パワーの輪
-  ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pv.power); ctx.stroke();
-  ctx.restore();
 }
 function getTackleChargeLevel() {
   if (!tackleChargeStart) return -1;
@@ -7082,8 +6988,6 @@ function resolveBallCollision(a, b) {
   if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
   if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
   // 引っ張りで飛んでいる自機が当たったら、相手はビリヤードの球のように派手に吹っ飛ぶ
-  if (a.pullShot && !b.pullShot && a.isPlayer !== b.isPlayer) pullKnockback(a, b, nx, ny);
-  else if (b.pullShot && !a.pullShot && a.isPlayer !== b.isPlayer) pullKnockback(b, a, -nx, -ny);
   return true;
 }
 
@@ -7111,11 +7015,6 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
       continue;
     }
-    if (ball.pullKnock > 0 && (!ball.isPlayer || isMainPlayerBall(ball))) { // 引っ張り攻撃で吹っ飛ばされている
-      moveKnockedBall(ball, speedMult);
-      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
-      continue;
-    }
     if (!ball.isPlayer && (isDisabled(ball) || ball.traitFreeze)) { // 麻痺・眠り中・溜め／詠唱中の敵はその場で動けない
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
@@ -7130,19 +7029,8 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
-    if (isMainPlayerBall(ball) && pullAim && !(getPullVector() || {}).power) { // 押しているだけ（引っ張っていない）間は敵へ突撃
-      ball.pullShot = null;
+    if (isMainPlayerBall(ball) && holdRush) { // 押している間は敵へ突撃
       moveHoldRush(ball, speedMult);
-      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
-      continue;
-    }
-    if (isMainPlayerBall(ball) && pullAim) { // 引っ張っている間はその場で止まって狙う
-      ball.pullShot = null;
-      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
-      continue;
-    }
-    if (isMainPlayerBall(ball) && ball.pullShot) { // 引っ張りで発射中は跳ね回りながら減速
-      movePullShot(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
@@ -7403,7 +7291,7 @@ function step() {
   // 「貫きの蹄鉄」を持っていればタックル中は敵で反射せず、重なってもそのまま貫通する（当たり判定だけ取る）
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * getPullDmgMult(a); // リセット前の連打ボーナスでダメージを計算する（引っ張りで発射中は反射コンボで威力アップ）
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
@@ -7615,7 +7503,7 @@ function processAdds(a) {
       for (const atk of attackers) {
         if (resolveBallCollision(atk, add)) {
           if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * (atk === a ? getPullDmgMult(a) : 1))));
+          const { dmg, crit } = rollCrit(Math.max(1, (atk.atk || 1)));
           add.hp -= dmg;
           trackDamage(dmg);
           focusHpEnemy(add);
@@ -9150,7 +9038,6 @@ function draw() {
   drawNovaFx();
 
   drawTapBonus();
-  drawPullAim();
   // ヒットエフェクト（パーティクル）はキャラ画像（ボスの大きな画像など）の手前に描く
   for (const p of particles) {
     ctx.globalAlpha = Math.max(0, p.life);
@@ -10782,11 +10669,10 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (PULL_MODE) { pullAim = { id: event.pointerId, sx: event.clientX, sy: event.clientY, cx: event.clientX, cy: event.clientY }; return; } // 引っ張り開始
+  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId }; return; } // 押している間は突撃
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
-  if (pullAim && event.pointerId === pullAim.id) { pullAim.cx = event.clientX; pullAim.cy = event.clientY; return; }
   if (playerDrag && event.pointerId === playerDrag.id) {
     const k = size / canvas.getBoundingClientRect().width;
     playerDrag.x = playerDrag.px + (event.clientX - playerDrag.ox) * k;
@@ -10802,7 +10688,7 @@ window.addEventListener('pointermove', event => {
   playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
 });
 ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
-  if (pullAim && event.pointerId === pullAim.id) { if (type === 'pointerup') launchPullShot(); else pullAim = null; return; } // 離したら発射
+  if (holdRush && event.pointerId === holdRush.id) { holdRush = null; return; } // 離したら普段の動きに戻る
   if (dragPending && event.pointerId === dragPending.id) dragPending = null;
   if (!playerDrag || event.pointerId !== playerDrag.id) return;
   playerDrag = null;
@@ -10824,7 +10710,7 @@ canvas.addEventListener('pointerdown', event => {
   const y = (event.clientY - rect.top) * (size / rect.height);
   const dx = x - arena.x, dy = y - arena.y;
   if (Math.hypot(dx, dy) < arena.radius - 12) {
-    if (PULL_MODE) { onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 引っ張りアクション中は連打突撃・タメはなし
+    if (HOLD_RUSH_MODE) { onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 押して突撃モード中は連打突撃・タメはなし
     // 長押しでタメ開始
     arenaHeld = true;
     updateTackleHold();
