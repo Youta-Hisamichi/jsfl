@@ -479,6 +479,7 @@
   .gacha-pull.cp-summon { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px; border: none; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #ff9a4f, #ff5f8f 55%, #b07cff); box-shadow: 0 4px 0 #b3406a, 0 6px 14px rgba(255,95,143,0.35); position: relative; overflow: hidden; }
   .gacha-pull.cp-summon::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent); animation: gbShine 3s ease-in-out infinite; pointer-events: none; }
   .gacha-pull.cp-summon:active { transform: translateY(3px); box-shadow: 0 1px 0 #b3406a, 0 2px 6px rgba(255,95,143,0.3); }
+  .gacha-pull.cp-summon.is-disabled { opacity: 0.75; filter: grayscale(0.6); } /* コイン不足でも文字は読めるように */
   .cp-summon .cps-title { font-size: 1.05rem; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
   .cp-summon .cps-cost { font-size: 0.78rem; font-weight: 900; background: rgba(0,0,0,0.22); border-radius: 999px; padding: 1px 12px; }
   .cp-help { margin: 6px 0 4px; font-size: 0.68rem; color: var(--text-dim); background: var(--bg-soft); border-radius: 10px; padding: 6px 10px; }
@@ -1101,7 +1102,7 @@
         <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
         <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
       </div>
-      <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"></button></div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"><span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 200</span></button></div>
       <div class="comp-full-note" id="compFullNote" style="display:none;">🐾 パーティが満員です（下の「パーティ枠を増やす」で召喚できるようになります）</div>
       <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
       <details class="cp-help"><summary>ⓘ 仲間のしくみ</summary>
@@ -2796,9 +2797,6 @@
     }).join('');
     gachaBtn.classList.toggle('is-disabled', game.gems < 5);
     gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
-    const cgb = document.getElementById('compGachaBtn');
-    const cost1 = getCompSummonCost(1);
-    if (cgb) { cgb.classList.toggle('is-disabled', game.coins < cost1); cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 ${formatCoinNumber(cost1)}</span>`; }
     updateCompSummonVisibility();
   }
   // パーティが満員のときは仲間召喚ボタンを隠す（枠を増やすと再び表示）
@@ -2806,6 +2804,9 @@
     const cgb = document.getElementById('compGachaBtn');
     if (!cgb) return;
     const full = getCompanionTotal() >= getPartyLimit();
+    const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
+    cgb.classList.toggle('is-disabled', game.coins < cost1);
+    cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 ${formatCoinNumber(cost1)}</span>`;
     cgb.parentElement.style.display = full ? 'none' : '';
     const note = document.getElementById('compFullNote');
     if (note) note.style.display = full ? '' : 'none';
