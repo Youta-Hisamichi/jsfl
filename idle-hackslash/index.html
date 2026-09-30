@@ -4015,6 +4015,7 @@ function updateEnemyTraits(a, e, speedMult) {
       if (e.guarding || isMetalEnemy(e)) {
         const lost = e.traitLastHp - e.hp;
         e.hp += lost * enemyDamageCut(e);
+        if (e.guarding) playEnemyBarrierBlockSound();
         if (Math.random() < 0.5) spawnDamageText(e.x, e.y - e.radius - 18, e.guarding ? 'GUARD' : 'カキン！', '#c7ecff', 0.03);
         updateHPUI();
       }
@@ -4045,7 +4046,7 @@ function updateEnemyTraits(a, e, speedMult) {
       if (!e.traitState && e.traitCd <= 0) {
         e.traitState = 'guard'; e.traitTimer = SPIN_GUARD_FRAMES; e.guarding = true;
         spawnDamageText(e.x, e.y - e.radius - 22, 'バリア', '#c7ecff', 0.016);
-        playTone(900, 0.2, 'square', 0.1, 1400);
+        playEnemyBarrierSound();
       } else if (e.traitState === 'guard' && e.traitTimer <= 0) {
         e.traitState = null; e.guarding = false; e.traitCd = randTraitCd(trait);
       }
@@ -5851,6 +5852,17 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
+}
+function playEnemyBarrierSound() { // 敵のバリア展開：低いうなりから立ち上がる光の膜
+  thump(220, 440, 0.4, 0.12, 'sine');
+  thump(660, 1320, 0.35, 0.05, 'triangle', 0.04);
+  thump(990, 1980, 0.3, 0.03, 'sine', 0.08);
+  filteredNoise(0.05, 0.35, 0.05, 7000, 0.8, 'highpass');
+}
+function playEnemyBarrierBlockSound() { // バリアで弾く：ブォン
+  thump(520, 380, 0.16, 0.12, 'sine');
+  thump(1560, 1100, 0.12, 0.04, 'triangle');
+  filteredNoise(0, 0.1, 0.04, 5000, 1, 'highpass');
 }
 function playTowerGateSound() { // ドアノブを回す「ガチャ」
   filteredNoise(0, 0.035, 0.35, 3200, 2.5);
