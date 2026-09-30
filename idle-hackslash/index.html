@@ -5169,6 +5169,16 @@
       kickBoost: 1.2, // ティンパニのように重く
       drums: 'k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k k s s ks ks ks ks',
     },
+    // 戦闘19：鋼鉄の要塞（横スクロールアクションの最終要塞ステージ系の作風×VRC6風チップチューン。ホ短調。オクターブで跳ねるベースと駆け回る分散和音、胸が熱くなる旋律。Em-C-D-Em-Em-C-D-B）
+    battle19: {
+      bpm: 164,
+      tracks: [
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'B5 = = = E6 = F#6 G6 | G6 = E6 = C6 = E6 G6 | F#6 = = = D6 = A5 = | B5 = = = = = G5 A5 | B5 = = = E6 = F#6 G6 | A6 = G6 = E6 = G6 A6 | B6 = A6 = F#6 = D6 = | D#6 = = = F#6 = B6 =' },
+        { type: 'vrc6pulse12', gain: 0.02, notes: 'E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | E4 G4 B4 E5 B4 G4 E4 G4 | E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | B3 D#4 F#4 B4 F#4 D#4 B3 D#4' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | E2 E3 E2 E3 E2 E3 E2 E3 | E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | B1 B2 B1 B2 B1 B2 B1 B2' },
+      ],
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+    },
     // ボス戦：緊張感のあるダーク（イ短調・フリギア風の半音進行。Am-Am-F-E-Am-Am-B♭-E）
     boss: {
       bpm: 164,
@@ -5478,7 +5488,7 @@
   let currentBgmType = null;
   let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
   // 通常戦闘BGMは7曲をシャッフルして順番に流し、ボスを倒したら次の曲へ
-  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle16', 'battle17', 'battle18'];
+  const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle16', 'battle17', 'battle18', 'battle19'];
   let normalBgmOrder = [], normalBgmIndex = 0;
   function shuffleNormalBgm(avoidFirst) {
     normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -5519,6 +5529,7 @@
     { key: 'battle16', name: '戦闘16 重戦機の星', desc: '80年代シンセポップ風のキラキラしたアルペジオと跳ねるベース。VRC6風チップチューン。嬰ハ短調（80年代ロボットアニメ系の作風）・BPM144' },
     { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
     { key: 'battle18', name: '戦闘18 潜入作戦', desc: '刻み続けるベースの緊張感と、映画のように壮大に伸びる旋律。VRC6風チップチューン。ニ短調（潜入アクション系のオープニングの作風）・BPM132' },
+    { key: 'battle19', name: '戦闘19 鋼鉄の要塞', desc: 'オクターブで跳ねるベースと駆け回る分散和音、胸が熱くなる旋律。VRC6風チップチューン。ホ短調（横スクロールアクションの最終要塞ステージ系の作風）・BPM164' },
     { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
     { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
     { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
