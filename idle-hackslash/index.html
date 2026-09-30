@@ -858,6 +858,7 @@ button.tiny:hover { color: var(--text); border-color: var(--text-dim); }
 
 .tab-page { display: none; flex-direction: column; gap: 12px; }
 .tab-page.active { display: flex; }
+.tab-page.active:not([data-tab="game"]) { padding-bottom: 28px; }
 
 
 body.gameover-lock::before { content: ''; position: fixed; inset: 0; z-index: 48; background: rgba(6,8,14,0.55); }
