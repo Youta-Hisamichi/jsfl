@@ -8593,7 +8593,8 @@ function drawBall(ball) {
     ctx.strokeStyle = 'rgba(255,255,255,0.65)';
     ctx.lineWidth = 1;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
-    ctx.fillStyle = ball.isPlayer ? '#7ed0ff' : (ball.isBoss ? '#d39cff' : '#ff7b87');
+    const hpRate = ball.hp / ball.maxHp; // 自キャラは緑（突進ゲージの水色と区別）、残り少ないと黄→赤
+    ctx.fillStyle = ball.isPlayer ? (hpRate <= 0.25 ? '#ff5c5c' : hpRate <= 0.5 ? '#ffd24f' : '#5fd47a') : (ball.isBoss ? '#d39cff' : '#ff7b87');
     ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
 
   }
