@@ -1221,7 +1221,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button>
       <div class="debug-cat">🖼️ モンスターを選んで出現・削除</div>
       <div class="dbg-mon" id="dbgMonGrid"></div>
-      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button></div>
+      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
       <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
@@ -10543,6 +10543,14 @@ document.getElementById('dbgMonDel').addEventListener('click', () => {
   if (game.removedEnemies[dbgMonKey]) delete game.removedEnemies[dbgMonKey]; else game.removedEnemies[dbgMonKey] = true; // もう一度押すと戻す
   saveGame(); renderDebugMonsters();
   showNotice(`DEBUG: ${ENEMY_BOOK_BY_KEY[dbgMonKey].name} を${isEnemyRemoved(dbgMonKey) ? '出現しないように削除' : '元に戻しました'}`);
+});
+document.getElementById('dbgMonCopy').addEventListener('click', () => {
+  const keys = Object.keys(game.removedEnemies || {});
+  if (!keys.length) { showNotice('DEBUG: 削除した敵はありません'); return; }
+  const text = 'プログラムから削除する敵: ' + keys.map(k => `${ENEMY_BOOK_BY_KEY[k] ? ENEMY_BOOK_BY_KEY[k].name : ''}(${k})`).join('、');
+  const done = () => showNotice('DEBUG: 削除リストをコピーしました。チャットに貼り付けてください');
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => prompt('コピーしてチャットに貼り付けてください', text));
+  else prompt('コピーしてチャットに貼り付けてください', text);
 });
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
