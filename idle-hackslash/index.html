@@ -5290,14 +5290,14 @@ const BGM_SONGS = {
     drums: 'kh h ks h kh h ks h | kh h ks h kh h ks h | kh h ks h kh h ks h | kh h ks h kh h ks h | kh h ks h kh h ks h | kh h ks h kh h ks h | kh h ks h kh h ks h | k s k s ks ks ks ks',
   },
   battle18: {
-    bpm: 132,
+    bpm: 150,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'A5 = = = = = D6 = | D6 = = = C6 = A#5 = | C6 = = = = = G5 = | A5 = = = = = = = | A#5 = = = A5 = G5 = | F5 = = = G5 = A#5 = | A5 = = = C#6 = E6 = | E6 = = = D6 = C#6 =' },
-      { type: 'vrc6pulse12', gain: 0.02, notes: 'D4 A4 F4 A4 D5 A4 F4 A4 | D4 A#4 F4 A#4 D5 A#4 F4 A#4 | E4 C5 G4 C5 E5 C5 G4 C5 | D4 A4 F4 A4 D5 A4 F4 A4 | D4 A#4 G4 A#4 D5 A#4 G4 A#4 | D4 A#4 F4 A#4 D5 A#4 F4 A#4 | C#4 A4 E4 A4 C#5 A4 E4 A4 | C#4 A4 E4 A4 G4 E4 C#4 A3' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'D2 D2 D3 D2 D2 D2 D3 D2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | G1 G1 G2 G1 G1 G1 G2 G1 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | A1 A1 A2 A1 A1 A1 A2 A1 | A1 A1 A2 A1 C#2 E2 G2 A2' },
+      { type: 'vrc6pulse25', gain: 0.032, notes: 'G5 = = D5 G5 = A#5 = | A#5 = A5 = G5 = D#5 = | F5 = = C5 F5 = A5 = | A5 = = = F#5 = D5 = | G5 = = A#5 D6 = C6 A#5 | C6 = = A#5 G5 = D#6 = | E6 = D6 = C6 = G5 = | F#5 = G5 = A5 = D6 =' },
+      { type: 'vrc6pulse12', gain: 0.02, notes: 'G4 A#4 D5 A#4 G4 A#4 D5 A#4 | G4 A#4 D#5 A#4 G4 A#4 D#5 A#4 | F4 A4 C5 A4 F4 A4 C5 A4 | F#4 A4 D5 A4 F#4 A4 D5 A4 | G4 A#4 D5 A#4 G4 A#4 D5 A#4 | G4 A#4 D#5 A#4 G4 A#4 D#5 A#4 | G4 C5 E5 C5 G4 C5 E5 C5 | F#4 A4 D5 A4 F#4 A4 C5 D5' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'G1 = G1 G1 G2 = G1 G1 | D#1 = D#1 D#1 D#2 = D#1 D#1 | F1 = F1 F1 F2 = F1 F1 | D2 = D2 D2 D3 = D2 D2 | G1 = G1 G1 G2 = G1 G1 | D#1 = D#1 D#1 D#2 = D#1 D#1 | C2 = C2 C2 C3 = C2 C2 | D2 = D2 D2 D3 = A1 C2' },
     ],
-    kickBoost: 1.2, // ティンパニのように重く
-    drums: 'k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k - h k s - h h | k k s s ks ks ks ks',
+    kickBoost: 1.2,
+    drums: 'k - s s k - s - | k - s s k - s - | k - s s k - s - | k - s s k s s s | k - s s k - s - | k - s s k - s - | k - s s k - s - | k s s s ks ks ks ks',
   },
   battle19: {
     bpm: 164,
@@ -5631,7 +5631,7 @@ const BGM_INFO = [
   { key: 'battle15', name: '戦闘15 狼の咆哮', desc: 'ギターリフ風のパワーコードと疾走するベース。VRC6風チップチューン。イ短調（対戦格闘ゲームの格闘伝説系の作風）・BPM160' },
   { key: 'battle16', name: '戦闘16 重戦機の星', desc: '80年代シンセポップ風のキラキラしたアルペジオと跳ねるベース。VRC6風チップチューン。嬰ハ短調（80年代ロボットアニメ系の作風）・BPM144' },
   { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
-  { key: 'battle18', name: '戦闘18 潜入作戦', desc: '刻み続けるベースの緊張感と、映画のように壮大に伸びる旋律。VRC6風チップチューン。ニ短調（潜入アクション系のオープニングの作風）・BPM132' },
+  { key: 'battle18', name: '戦闘18 精霊の大地', desc: '付点のリズムで跳ねるブラスの英雄的な旋律と、行進するスネア、駆けるベース。VRC6風チップチューン。ト短調（壮大な冒険RPG系の作風）・BPM150' },
   { key: 'battle19', name: '戦闘19 鋼鉄の要塞', desc: 'オクターブで跳ねるベースと駆け回る分散和音、胸が熱くなる旋律。VRC6風チップチューン。ホ短調（横スクロールアクションの最終要塞ステージ系の作風）・BPM164' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
