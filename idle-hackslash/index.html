@@ -1869,9 +1869,9 @@ function promptGemShortage(needed, options = {}) {
   gemShortPending = options;
   if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();
   // 誤タップ防止：ボタンは0.6秒後に表示（レイアウトは保ったまま非表示にしておく）
-  [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'hidden'; });
   clearTimeout(gemShortBtnTimer);
-  gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 600);
+  [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = options.instant ? 'visible' : 'hidden'; }); // instant: すぐ表示（ポーション切れなど）
+  if (!options.instant) gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 600);
   gemShortModal.classList.add('show');
 }
 function runGemShopReturn() {
@@ -9698,7 +9698,7 @@ function updatePotionButton() {
   potionBtn.classList.toggle('is-disabled', n <= 0);
 }
 potionBtn.addEventListener('click', event => {
-  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
+  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪', instant: true }); return; }
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
   if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
