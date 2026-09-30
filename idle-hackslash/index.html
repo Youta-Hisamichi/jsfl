@@ -3467,7 +3467,24 @@ function isTackling() { return !!tackle && Date.now() < tackle.until; }
 // ---------- 押して突撃（押している間は一番近い敵へ突撃する） ----------
 // true のあいだは、連打で突撃・長押しのタメ・ドラッグ移動をオフにする
 const HOLD_RUSH_MODE = true;
-let holdRush = null;             // { id }：押している指
+let holdRush = null;             // { id, start }：押している指と、ためはじめた時刻
+// 押しっぱなしの時間が長いほど攻撃力アップ（HOLD_POWER_MS で最大 ×HOLD_POWER_MAX）。敵に当たるとためなおし
+const HOLD_POWER_MS = 2500, HOLD_POWER_MAX = 3;
+function getHoldPower() { return holdRush ? Math.min(1, (Date.now() - holdRush.start) / HOLD_POWER_MS) : 0; }
+function getHoldDmgMult() { return 1 + (HOLD_POWER_MAX - 1) * getHoldPower(); }
+function consumeHoldPower() { if (holdRush) holdRush.start = Date.now(); }
+// ため中は自機のまわりにたまり具合の輪を出す（最大で赤く光る）
+function drawHoldCharge() {
+  const pw = getHoldPower(), pl = balls.find(ball => isMainPlayerBall(ball));
+  if (!pl || pw < 0.05) return;
+  const full = pw >= 1;
+  ctx.save();
+  ctx.strokeStyle = full ? '#ff4f6d' : '#ffb35c';
+  ctx.lineWidth = 3 + pw * 2; ctx.lineCap = 'round';
+  if (full) { ctx.shadowColor = '#ff4f6d'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 80) * 6; }
+  ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pw); ctx.stroke();
+  ctx.restore();
+}
 // 押している間：一番近い敵へ向かって加速しながら突撃する
 const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
 function moveHoldRush(ball, speedMult) {
@@ -6969,6 +6986,27 @@ function applyBounceReward() {
   updateStatsUI();
 }
 
+// ぶつかったときの跳ね返り：速さに上乗せする押し出し（少しずつ弱まる）。ボスは重いので控えめ
+const HIT_KNOCK_SPEED = 7, HIT_KNOCK_DECAY = 0.86;
+function applyHitKnock(ball, nx, ny) {
+  if (ball.isDying || Math.hypot(ball.kbx || 0, ball.kby || 0) > HIT_KNOCK_SPEED * 0.5) return; // 同じ当たりで重ねがけしない
+  const k = HIT_KNOCK_SPEED * (ball.isBoss ? 0.4 : ball.isPlayer && !isMainPlayerBall(ball) ? 0.7 : 1);
+  ball.kbx = nx * k; ball.kby = ny * k;
+}
+function moveHitKnock(ball, speedMult) {
+  if (!ball.kbx && !ball.kby) return;
+  ball.x += ball.kbx * speedMult; ball.y += ball.kby * speedMult;
+  const dx = ball.x - arena.x, dy = ball.y - arena.y, d = Math.hypot(dx, dy) || 1;
+  if (d + ball.radius > arena.radius) { // 壁に当たったら押し出しも跳ね返す
+    const nx = dx / d, ny = dy / d;
+    ball.x = arena.x + nx * (arena.radius - ball.radius); ball.y = arena.y + ny * (arena.radius - ball.radius);
+    const dot = ball.kbx * nx + ball.kby * ny;
+    if (dot > 0) { ball.kbx -= 2 * dot * nx; ball.kby -= 2 * dot * ny; }
+  }
+  const f = Math.pow(HIT_KNOCK_DECAY, speedMult);
+  ball.kbx *= f; ball.kby *= f;
+  if (Math.hypot(ball.kbx, ball.kby) < 0.15) ball.kbx = ball.kby = 0;
+}
 function resolveBallCollision(a, b) {
   const dx = b.x - a.x, dy = b.y - a.y;
   let dist = Math.hypot(dx, dy);
@@ -6991,7 +7029,7 @@ function resolveBallCollision(a, b) {
   if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { b.seekPoint = null; b.missBounces = 0; }
   if (PLAYER_BOUNCE_MODE && isMainPlayerBall(a)) { const d = a.vx * nx + a.vy * ny; if (d > 0) { a.vx -= 2 * d * nx; a.vy -= 2 * d * ny; } }
   if (PLAYER_BOUNCE_MODE && isMainPlayerBall(b)) { const d = b.vx * nx + b.vy * ny; if (d < 0) { b.vx -= 2 * d * nx; b.vy -= 2 * d * ny; } }
-  // 引っ張りで飛んでいる自機が当たったら、相手はビリヤードの球のように派手に吹っ飛ぶ
+  if (a.isPlayer !== b.isPlayer) { applyHitKnock(a, -nx, -ny); applyHitKnock(b, nx, ny); } // 攻撃がぶつかったら両者とも大きめに跳ね返る
   return true;
 }
 
@@ -7015,6 +7053,7 @@ function movePlayerSideBalls(list, speedMult, b) {
   const moveCtxEnemy = balls.find(x => !x.isPlayer && !x.isDying);
   for (const ball of list) {
     if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
+    moveHitKnock(ball, speedMult);
     if (ball.isCompanion && ball.hp <= 0) { // 倒れた仲間は動かない（画面からも消える。蘇生されたら復帰）
       if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
       continue;
@@ -7295,7 +7334,8 @@ function step() {
   // 「貫きの蹄鉄」を持っていればタックル中は敵で反射せず、重なってもそのまま貫通する（当たり判定だけ取る）
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
+  const holdMult = getHoldDmgMult(); // 押しっぱなしのため（攻撃が当たったらためなおし）
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * holdMult; // リセット前の連打ボーナスでダメージを計算する
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
@@ -7322,7 +7362,8 @@ function step() {
       trackDamage(dmg);
       spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
       spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-      if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+      if (tapDmgMult > 1.05) spawnDamageText(e.x, e.y - e.radius - 34, `${holdMult > 1 ? 'ため' : '連打'}ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, holdMult >= HOLD_POWER_MAX ? '#ff4f6d' : '#ff9f43', 0.022, tapDmgMult >= 2);
+      consumeHoldPower();
       onPlayerHitEnemy(e, dmg);
       playEnemyHitSound();
       applyHitKnockback(e, a, 3.2);
@@ -7506,8 +7547,9 @@ function processAdds(a) {
       if (add.hp <= 0) continue;
       for (const atk of attackers) {
         if (resolveBallCollision(atk, add)) {
-          if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
-          const { dmg, crit } = rollCrit(Math.max(1, (atk.atk || 1)));
+          const holdMult = atk === a ? getHoldDmgMult() : 1;
+          if (atk === a) { a.tapSpeedMult = 1; consumeHoldPower(); } // 雑魚敵に衝突してもタップ加速・ためをリセット
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * holdMult)));
           add.hp -= dmg;
           trackDamage(dmg);
           focusHpEnemy(add);
@@ -9039,6 +9081,7 @@ function draw() {
   drawAtkUpEffects();
   drawRegenEffects();
   drawTackleEffects();
+  drawHoldCharge();
   drawEnemyTraitEffects();
   drawNovaFx();
 
@@ -10673,7 +10716,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId }; return; } // 押している間は突撃
+  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId, start: Date.now() }; return; } // 押している間は突撃
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
