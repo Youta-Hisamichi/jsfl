@@ -3329,20 +3329,25 @@
       el.parentElement.classList.toggle('goal-ready', done);
     });
   }
-  document.addEventListener('click', event => {
-    const btn = event.target.closest('[data-goal-claim]');
-    if (!btn) return;
-    const key = btn.dataset.goalClaim;
-    if (!RECORD_GOALS[key] || !isRecordGoalReady(key)) return;
+  // 報酬を1段ぶん受け取る。受け取れたら true（押しっぱなしの連続受け取りからも呼ばれる）
+  function claimRecordGoal(key, x, y) {
+    if (!RECORD_GOALS[key] || !isRecordGoalReady(key)) return false;
     const reward = getRecordGoalReward(getRecordGoalLevel(key));
     if (!game.recordGoals) game.recordGoals = {};
     game.recordGoals[key] = getRecordGoalLevel(key) + 1;
     game.gems += reward;
     playRegisterSound();
-    showTapError(`💎+${reward} ゲット！`, event.clientX, event.clientY);
+    showTapError(`💎+${reward} ゲット！`, x, y);
     updateStatsUI();
     renderRecordGoals(true);
     saveGame();
+    return true;
+  }
+  document.addEventListener('click', event => {
+    const btn = event.target.closest('[data-goal-claim]');
+    if (!btn) return;
+    if (consumeHoldClick()) return; // 押しっぱなしで受け取った直後のクリックは無視
+    claimRecordGoal(btn.dataset.goalClaim, event.clientX, event.clientY);
   });
   function spendCoins(amount) {
     game.coins -= amount;
@@ -10049,6 +10054,7 @@
     { attr: 'upgrade', action: levelUpUpgrade },
     { attr: 'companionLevel', action: levelUpCompanion },
     { attr: 'rebirthShop', action: (id, x, y) => buyRebirthItem(id, x, y, true) },
+    { attr: 'goalClaim', action: claimRecordGoal }, // 戦績の報酬は押しっぱなしで一気に受け取れる
   ];
   let holdTimer = null;
   let holdRepeated = false;
@@ -10064,7 +10070,7 @@
   document.addEventListener('pointerdown', event => {
     stopHold();
     holdRepeated = false;
-    const el = event.target.closest('[data-upgrade], [data-companion-level], [data-rebirth-shop]');
+    const el = event.target.closest('[data-upgrade], [data-companion-level], [data-rebirth-shop], [data-goal-claim]');
     if (!el) return;
     const target = HOLD_TARGETS.find(t => el.dataset[t.attr] !== undefined);
     const id = el.dataset[target.attr];
