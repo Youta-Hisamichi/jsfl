@@ -899,7 +899,21 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; color: var(--text-dim); font-size: 0.62rem; padding: 6px 2px; cursor: pointer; border-radius: 10px; }
 .tab-btn .tab-icon { font-size: 1.15rem; }
 .tab-btn .tab-label { white-space: nowrap; letter-spacing: -0.06em; }
-.tab-btn.active { color: var(--accent-player); background: rgba(79,168,255,0.1); }
+.tab-btn { position: relative; transition: transform 0.12s; }
+.tab-btn .tab-icon { transition: transform 0.18s cubic-bezier(.34,1.56,.64,1); }
+.tab-btn.active { color: var(--accent-player); font-weight: 900; background: linear-gradient(180deg, rgba(79,168,255,0.24), rgba(79,168,255,0.05)); box-shadow: inset 0 -3px 0 var(--accent-player); }
+.tab-btn.active .tab-icon { transform: translateY(-3px) scale(1.14); filter: drop-shadow(0 2px 3px rgba(79,168,255,0.45)); }
+.tab-btn.has-new::after { content: ''; position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px var(--panel); animation: tabDot 1.2s ease-in-out infinite alternate; }
+@keyframes tabDot { to { transform: scale(1.3); } }
+.upgrade-btn, .upgrade-max-btn, .shop-btn, .modal-shop-btn, .action-btn, .gacha-pull, .sub-tab-btn, .modal-close-btn, .reward-ad-btn { transition: transform 0.08s, filter 0.08s; }
+:is(.upgrade-btn, .upgrade-max-btn, .shop-btn, .modal-shop-btn, .action-btn, .gacha-pull, .sub-tab-btn, .modal-close-btn, .reward-ad-btn, .tab-btn):active:not(:disabled):not(.is-disabled) { transform: scale(0.95); filter: brightness(1.08); }
+.upgrade-btn { position: relative; }
+.upgrade-btn:not(.is-disabled) { border-color: #2ea043; box-shadow: 0 0 0 1px rgba(46,160,67,0.3), 0 0 10px rgba(46,160,67,0.22); }
+.upgrade-btn:not(.is-disabled)::after { content: 'UP'; position: absolute; top: -1px; right: -1px; padding: 0 5px; border-radius: 0 9px 0 7px; background: linear-gradient(135deg, #2ea043, #5fd47a); color: #fff; font-size: 0.56rem; font-weight: 900; animation: upBlink 0.9s ease-in-out infinite alternate; }
+@keyframes upBlink { to { filter: brightness(1.3); } }
+.top-header .th-item.gem { display: inline-flex; align-items: center; gap: 3px; padding: 1px 4px 1px 8px; border-radius: 999px; background: rgba(100,232,255,0.1); border: 1px solid rgba(100,232,255,0.35); }
+.top-header .th-item.gem::after { content: '+'; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 2px; border-radius: 50%; background: linear-gradient(180deg, #ffb14f, #ff6b3d); color: #fff; font-size: 0.85rem; font-weight: 900; line-height: 1; box-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+.top-header { font-size: 0.9rem; }
 
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(6,8,14,0.82); display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
@@ -1800,6 +1814,7 @@ function switchTab(name) {
   renderShopkeeper(name);
   renderDirtyTabList(name);
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-btn.has-new').forEach(b => { if (b.dataset.tab === name) b.classList.remove('has-new'); });
   tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
   if (name === 'records') { renderBestiary(); renderBgmBook(); updateStatsUI(); renderRecordGoals(true); } // 戦績の目標は開いたときに必ず描く（他のページでは戦闘が止まって更新されないため）
   else if (bgmBookPreview) bgmBookPreview = null; // 戦績ページを離れたら試聴をやめる
@@ -1811,6 +1826,7 @@ function switchTab(name) {
 tabBar.addEventListener('click', event => {
   const btn = event.target.closest('.tab-btn');
   if (!btn) return;
+  if (audioCtx && btn.dataset.tab !== getActiveTab()) playTabSound();
   switchTab(btn.dataset.tab);
 });
 
@@ -3315,7 +3331,19 @@ function spendCoins(amount) {
   game.coins -= amount;
   game.totalCoinsSpent = (game.totalCoinsSpent || 0) + amount;
 }
+let tabBadgeAt = 0;
+function updateTabBadges() {
+  if (Date.now() - tabBadgeAt < 500) return;
+  tabBadgeAt = Date.now();
+  const canUp = Object.keys(UPGRADES).some(id => game.upgrades[id] < getUpgradeLevelCap(id) && game.coins >= getUpgradeCost(id));
+  const canComp = getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1);
+  const canShop = Object.entries(REBIRTH_SHOP_ITEMS).some(([id, item]) => !isRebirthItemMaxed(item) && !isRebirthItemLocked(item) && !getRebirthShopLockLeft(id) && game.gems >= getRebirthItemCost(id));
+  const canEvo = game.gems >= 5;
+  const set = { upgrade: canUp, companion: canComp, gemshop: canShop, gacha: canEvo };
+  for (const tab in set) { const b = tabBar.querySelector(`.tab-btn[data-tab="${tab}"]`); if (b) b.classList.toggle('has-new', set[tab] && getActiveTab() !== tab); }
+}
 function updateStatsUI() {
+  updateTabBadges();
   stageNumEl.textContent = game.stage;
   superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
   rebornNumEl.textContent = formatCoinNumber(game.reincarnations);
@@ -5706,6 +5734,10 @@ function stopBgm() {
   clearTimeout(bgmTimer);
   stopSong();
 }
+function playUiTapSound() { playTone(880, 0.045, 'triangle', 0.08, 1320); }
+function playTabSound() { playTone(660, 0.04, 'square', 0.035, 880); setTimeout(() => playTone(1320, 0.05, 'square', 0.03), 35); }
+function playModalOpenSound() { playTone(520, 0.1, 'triangle', 0.07, 1040); }
+function playModalCloseSound() { playTone(760, 0.08, 'triangle', 0.05, 420); }
 function playTone(freq, duration, type, startGain, glideTo) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const t0 = audioCtx.currentTime;
@@ -7950,6 +7982,19 @@ skipGiveUpBtn.addEventListener('click', () => {
   if (!game.skipChallenge || !skipRetryButtonsReady()) return;
   giveUpSkipChallenge();
 });
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  let open = m.classList.contains('show');
+  new MutationObserver(() => {
+    const now = m.classList.contains('show');
+    if (now !== open && audioCtx) (now ? playModalOpenSound : playModalCloseSound)();
+    open = now;
+  }).observe(m, { attributes: true, attributeFilter: ['class'] });
+});
+document.addEventListener('pointerdown', event => {
+  const btn = event.target.closest && event.target.closest('button');
+  if (!btn || !audioCtx || btn.disabled || btn.classList.contains('is-disabled') || btn.closest('#tabBar')) return;
+  playUiTapSound();
+}, true);
 new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
 stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
