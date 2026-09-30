@@ -315,6 +315,8 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 @keyframes towerFloat { to { transform: translateY(-4px); } }
 #stageSkipModal h2 { margin: 0; color: #ffe39a; font-size: 1.35rem; letter-spacing: 0.2em; text-shadow: 0 2px 0 #000, 0 0 10px rgba(255,200,90,0.6); }
 #stageSkipModal .tower-gems { display: inline-block; margin: 6px 0 4px; padding: 2px 12px; border-radius: 999px; background: rgba(0,0,0,0.35); border: 1px solid rgba(100,232,255,0.5); color: #64e8ff; font-weight: 900; }
+#stageSkipModal .tower-best { margin-top: 2px; font-size: 0.78rem; font-weight: 800; color: #e8d6a8; }
+#stageSkipModal .tower-best b { color: #ffe39a; font-size: 0.95rem; text-shadow: 0 0 8px rgba(255,200,90,0.6); }
 #stageSkipModal .modal-sub { color: #c9cfda; font-size: 0.7rem; line-height: 1.5; }
 #stageSkipModal .modal-sub b { color: #ffe39a; }
 #stageSkipModal .custom-skip { background: rgba(0,0,0,0.3); border: 1px solid #8a6a2e; }
@@ -1298,6 +1300,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
         <div class="record" data-goal-row="maxDamage">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ<div class="rec-goal" data-goal="maxDamage"></div></div>
         <div class="record" data-goal-row="maxDps">MAX<strong id="maxDpsNum" data-unit="DPS">0</strong>DPS<div class="rec-goal" data-goal="maxDps"></div></div>
         <div class="record" data-goal-row="maxCombo">MAX<strong id="maxComboNum" data-unit="回">0</strong>コンボ<div class="rec-goal" data-goal="maxCombo"></div></div>
+        <div class="record" data-goal-row="bestTowerJump">MAX<strong id="bestTowerJumpNum" data-unit="ステージ">0</strong>試練の塔 ジャンプ<div class="rec-goal" data-goal="bestTowerJump"></div></div>
         <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
         <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
@@ -1366,7 +1369,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 
 <div class="modal-overlay" id="stageSkipModal">
   <div class="modal-panel">
-    <div class="tower-head"><span data-xi="x_tower">🏰</span><h2>試練の塔</h2><span class="tower-gems">💎 <span id="stageSkipGems">0</span></span></div>
+    <div class="tower-head"><span data-xi="x_tower">🏰</span><h2>試練の塔</h2><span class="tower-gems">💎 <span id="stageSkipGems">0</span></span><div class="tower-best">🏆 自己ベスト <b id="towerBestJump">-</b></div></div>
     <div class="modal-sub">ジェムを捧げて塔を登り、上の階のボスに挑みます。勝てばその階まで一気に進み、負けたら今の STAGE <b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
     <div class="custom-skip">
       <div class="custom-skip-title">🎯 登る階を指定（ジェムは距離に応じて消費）</div>
@@ -2592,6 +2595,7 @@ const game = {
   lastLoginDate: null,
   loginStreak: 0,
   maxDamage: 0,
+  bestTowerJump: 0, // 試練の塔で突破した最大のステージジャンプ数
   maxDps: 0,
   dailyClearDate: null,
   dailyClears: 0,
@@ -3281,6 +3285,7 @@ const RECORD_GOALS = {
   maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
   maxDps: { get: () => game.maxDps || 0, goal: geo(100, 10), unit: 'DPS' },
   maxCombo: { get: () => game.maxCombo || 0, goal: listThen([5, 10, 20, 30, 50, 75, 100], 1.5), unit: '回' },
+  bestTowerJump: { get: () => game.bestTowerJump || 0, goal: listThen([50, 100, 200, 500, 1000], 2), unit: 'ステージ' },
   playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
@@ -3351,6 +3356,7 @@ function updateStatsUI() {
   totalKillsNumEl.textContent = formatCoinNumber(game.totalKills);
   totalTapsNumEl.textContent = formatCoinNumber(game.totalTaps);
   maxDamageNumEl.textContent = formatCoinNumber(game.maxDamage || 0);
+  document.getElementById('bestTowerJumpNum').textContent = (game.bestTowerJump || 0).toLocaleString('ja-JP');
   maxDpsNumEl.textContent = formatCoinNumber(game.maxDps || 0);
   maxComboNumEl.textContent = formatCoinNumber(game.maxCombo || 0);
   document.getElementById('totalSpentNum').textContent = formatCoinNumber(game.totalCoinsSpent || 0);
@@ -7457,6 +7463,7 @@ function onStageClear() {
   if (game.skipChallenge) {
     showNotice(`🏰 試練の塔 突破！ STAGE ${game.stage} のボスを撃破`);
     const skipped = game.skipChallenge.target - game.skipChallenge.origin;
+    if (skipped > (game.bestTowerJump || 0)) { game.bestTowerJump = skipped; setTimeout(() => showNotice(`🏆 試練の塔 自己ベスト更新！ +${skipped} ステージ`), 2400); }
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
   }
@@ -7847,6 +7854,7 @@ function renderStageSkipList() {
   updateCustomSkip();
   stageSkipGems.textContent = Math.floor(game.gems);
   stageSkipOrigin.textContent = game.stage;
+  document.getElementById('towerBestJump').textContent = game.bestTowerJump ? `+${game.bestTowerJump.toLocaleString('ja-JP')} ステージ` : 'まだ突破なし';
   stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
     const target = getSkipTargetStage(opt.skip);
     const es = getEnemyStats(target);
