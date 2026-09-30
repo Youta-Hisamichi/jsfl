@@ -965,6 +965,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .dbg-mon button.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: #ff4f6d; font-weight: 900; font-size: 1.2rem; }
 .dbg-mon-bar { grid-column: 1 / -1; display: flex; gap: 4px; align-items: center; font-size: 0.66rem; }
 .dbg-mon-bar span { flex: 1; font-weight: 800; }
+.dbg-mon-list { grid-column: 1 / -1; width: 100%; min-height: 60px; font-size: 0.7rem; background: var(--bg); color: var(--text); border: 1px solid #ffd76b; border-radius: 6px; padding: 6px; }
 .tab-btn.has-new::after { content: ''; position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px var(--panel); animation: tabDot 1.2s ease-in-out infinite alternate; }
 @keyframes tabDot { to { transform: scale(1.3); } }
 .upgrade-btn, .upgrade-max-btn, .shop-btn, .modal-shop-btn, .action-btn, .gacha-pull, .sub-tab-btn, .modal-close-btn, .reward-ad-btn { transition: transform 0.08s, filter 0.08s; }
@@ -1222,6 +1223,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="debug-cat">🖼️ モンスターを選んで出現・削除</div>
       <div class="dbg-mon" id="dbgMonGrid"></div>
       <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
+      <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
       <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
@@ -10547,10 +10549,11 @@ document.getElementById('dbgMonDel').addEventListener('click', () => {
 document.getElementById('dbgMonCopy').addEventListener('click', () => {
   const keys = Object.keys(game.removedEnemies || {});
   if (!keys.length) { showNotice('DEBUG: 削除した敵はありません'); return; }
-  const text = 'プログラムから削除する敵: ' + keys.map(k => `${ENEMY_BOOK_BY_KEY[k] ? ENEMY_BOOK_BY_KEY[k].name : ''}(${k})`).join('、');
-  const done = () => showNotice('DEBUG: 削除リストをコピーしました。チャットに貼り付けてください');
-  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => prompt('コピーしてチャットに貼り付けてください', text));
-  else prompt('コピーしてチャットに貼り付けてください', text);
+  const ta = document.getElementById('dbgMonList'); // プレビュー内では自動コピーが止められることがあるので、文をその場に表示して選択しておく
+  ta.value = 'プログラムから削除する敵: ' + keys.map(k => `${ENEMY_BOOK_BY_KEY[k] ? ENEMY_BOOK_BY_KEY[k].name : ''}(${k})`).join('、');
+  ta.style.display = 'block'; ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  showNotice(ok ? 'DEBUG: コピーしました。チャットに貼り付けてください' : 'DEBUG: 下の枠の文を長押し（右クリック）でコピーしてください');
 });
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
