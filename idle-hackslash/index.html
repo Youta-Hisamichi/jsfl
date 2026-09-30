@@ -5719,13 +5719,11 @@ function thump(f0, f1, dur, gainAmt, type = 'sine', delay = 0) {
   osc.start(t0); osc.stop(t0 + dur + 0.02);
 }
 const SNES_RATE = 32000; // スーファミの音源と同じサンプリング周波数
-const SNES_SLASHES = [
-  { dur: 0.26, parts: [{ t: 0, noise: [2600, 420], q: 0.8, len: 0.16, amp: 0.9 }, { t: 0.01, thump: [120, 40], len: 0.2, amp: 0.8 }] },
-  { dur: 0.34, parts: [{ t: 0, noise: [2200, 300], q: 0.7, len: 0.22, amp: 1.0 }, { t: 0.015, thump: [95, 32], len: 0.28, amp: 1.0 }, { t: 0.02, ring: 620, len: 0.24, amp: 0.06 }] },
-  { dur: 0.38, parts: [{ t: 0, noise: [1800, 220], q: 0.6, len: 0.28, amp: 0.9 }, { t: 0.02, thump: [80, 28], len: 0.34, amp: 1.1 }] },
-  { dur: 0.32, parts: [{ t: 0, noise: [2800, 500], q: 0.8, len: 0.11, amp: 0.8 }, { t: 0, thump: [130, 45], len: 0.12, amp: 0.6 }, { t: 0.1, noise: [2500, 380], q: 0.8, len: 0.15, amp: 0.9 }, { t: 0.1, thump: [110, 36], len: 0.2, amp: 0.8 }] },
-  { dur: 0.3, parts: [{ t: 0, noise: [900, 2400], q: 0.8, len: 0.05, amp: 0.35 }, { t: 0.045, noise: [2400, 300], q: 0.7, len: 0.18, amp: 1.0 }, { t: 0.05, thump: [130, 38], len: 0.22, amp: 0.9 }] },
-  { dur: 0.32, parts: [{ t: 0, noise: [700, 2000], q: 0.7, len: 0.1, amp: 0.7 }, { t: 0.08, noise: [1600, 260], q: 0.7, len: 0.14, amp: 0.7 }, { t: 0.08, thump: [110, 36], len: 0.22, amp: 1.0 }] },
+const SNES_SLASHES = [ // 斬撃：高い「シュッ」と風を切ってから「ザシュ」と斬る（低い打撃音は控えめに）
+  { dur: 0.22, parts: [{ t: 0, noise: [7000, 2600], q: 1.2, len: 0.07, amp: 0.55 }, { t: 0.05, noise: [3800, 900], q: 0.9, len: 0.13, amp: 1.0 }, { t: 0.05, thump: [230, 90], len: 0.08, amp: 0.28 }] },
+  { dur: 0.24, parts: [{ t: 0, noise: [6200, 2200], q: 1.1, len: 0.08, amp: 0.5 }, { t: 0.06, noise: [3200, 700], q: 0.8, len: 0.15, amp: 1.0 }, { t: 0.06, thump: [200, 80], len: 0.09, amp: 0.3 }] },
+  { dur: 0.2, parts: [{ t: 0, noise: [8000, 3200], q: 1.4, len: 0.05, amp: 0.5 }, { t: 0.035, noise: [4200, 1200], q: 1.0, len: 0.12, amp: 0.95 }, { t: 0.035, thump: [260, 110], len: 0.06, amp: 0.25 }] },
+  { dur: 0.3, parts: [{ t: 0, noise: [6800, 2400], q: 1.2, len: 0.06, amp: 0.5 }, { t: 0.04, noise: [3600, 900], q: 0.9, len: 0.1, amp: 0.9 }, { t: 0.13, noise: [4000, 1000], q: 0.9, len: 0.12, amp: 0.8 }, { t: 0.04, thump: [220, 90], len: 0.07, amp: 0.25 }] },
 ];
 let snesSlashBufs = null, snesEcho = null;
 function renderSnesSlash(def) {
@@ -6526,10 +6524,15 @@ function spawnMissText(target) {
   spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
   playMissSound();
 }
+function playEvadeSound() { // 剣で弾く「カキーン！」：金属の響き（倍音がずれた高い音）と打ち合う瞬間のカチッ
+  if (!audioCtx || isBattleSfxMuted()) return;
+  filteredNoise(0, 0.03, 0.35, 5000, 0.8, 'highpass');
+  [[1950, 0.16], [2870, 0.11], [4130, 0.08], [5480, 0.05]].forEach(([f, a], k) => thump(f, f * 0.985, 0.55 - k * 0.08, a, 'sine'));
+}
 function spawnEvadeText(target) {
   spawnDamageText(target.x, target.y - target.radius - 8, currentLang === 'en' ? 'EVADE!' : '回避！', '#7ee7ff');
   spawnHitParticles(target.x, target.y, '#7ee7ff');
-  playMissSound();
+  playEvadeSound();
 }
 
 const gameTabPage = document.querySelector('.tab-page[data-tab="game"]');
