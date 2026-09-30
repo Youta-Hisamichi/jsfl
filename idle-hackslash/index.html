@@ -957,6 +957,14 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .reborn-reward { margin: 10px auto 12px; padding: 8px 14px; border-radius: 12px; background: rgba(100,232,255,0.1); border: 1px solid rgba(100,232,255,0.45); font-weight: 800; font-size: 0.9rem; }
 .reborn-reward b { color: #64e8ff; font-size: 1.15rem; margin-left: 4px; }
 .reborn-ad-btn b { margin-left: 6px; font-size: 1.05rem; }
+.dbg-mon { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; max-height: 190px; overflow-y: auto; }
+.dbg-mon button { position: relative; padding: 2px; border: 1px solid var(--ring); border-radius: 6px; background: var(--bg-soft); cursor: pointer; }
+.dbg-mon button img, .dbg-mon button i { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; border-radius: 50%; }
+.dbg-mon button.sel { border: 2px solid #ffd76b; }
+.dbg-mon button.gone { opacity: 0.3; }
+.dbg-mon button.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: #ff4f6d; font-weight: 900; font-size: 1.2rem; }
+.dbg-mon-bar { grid-column: 1 / -1; display: flex; gap: 4px; align-items: center; font-size: 0.66rem; }
+.dbg-mon-bar span { flex: 1; font-weight: 800; }
 .tab-btn.has-new::after { content: ''; position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px var(--panel); animation: tabDot 1.2s ease-in-out infinite alternate; }
 @keyframes tabDot { to { transform: scale(1.3); } }
 .upgrade-btn, .upgrade-max-btn, .shop-btn, .modal-shop-btn, .action-btn, .gacha-pull, .sub-tab-btn, .modal-close-btn, .reward-ad-btn { transition: transform 0.08s, filter 0.08s; }
@@ -1211,6 +1219,9 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button>
+      <div class="debug-cat">🖼️ モンスターを選んで出現・削除</div>
+      <div class="dbg-mon" id="dbgMonGrid"></div>
+      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button></div>
       <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
@@ -6128,6 +6139,16 @@ const ENEMY_BOOK = [
   ...BOSS_EMOJIS.map(em => ({ key: 'boss:' + em, kind: 'boss', name: BOSS_ENEMY_NAMES[em], icon: em, sprite: BOSS_ENEMY_SPRITE[em] }))
 ];
 const ENEMY_BOOK_BY_KEY = {};
+// デバッグで「削除」した敵は出現しなくなる（セーブに残る。↩で戻せる）
+function isEnemyRemoved(key) { return !!(game.removedEnemies && game.removedEnemies[key]); }
+function pickFrom(list) { return list[Math.floor(Math.random() * list.length)]; }
+let dbgMonKey = null;
+function renderDebugMonsters() {
+  const grid = document.getElementById('dbgMonGrid'); if (!grid) return;
+  grid.innerHTML = ENEMY_BOOK.map(en => `<button class="${en.key === dbgMonKey ? 'sel' : ''} ${isEnemyRemoved(en.key) ? 'gone' : ''}" data-mon="${en.key}" title="${en.name}">${en.sprite && ENEMY_SPRITES[en.sprite] ? `<img src="${ENEMY_SPRITES[en.sprite]}" alt="">` : `<i style="background:${en.color || '#888'}"></i>`}</button>`).join('');
+  const en = ENEMY_BOOK_BY_KEY[dbgMonKey];
+  document.getElementById('dbgMonSel').textContent = en ? `${en.kind === 'boss' ? '👑' : ''}${en.name}${isEnemyRemoved(en.key) ? '（削除中）' : ''}` : '画像をタップして選択';
+}
 ENEMY_BOOK.forEach(entry => ENEMY_BOOK_BY_KEY[entry.key] = entry);
 function getEnemyBookKey(enemy) {
   if (enemy.isBoss) return 'boss:' + enemy.emoji;
@@ -6207,10 +6228,11 @@ function makeBall(isPlayer) {
     const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || Math.random() < GIANT_BOSS_CHANCE);
     forcedGiantBoss = false;
     if (isGiant) { es.hp = Math.round(es.hp * GIANT_BOSS_HP_MULT); es.atk = Math.round(es.atk * GIANT_BOSS_ATK_MULT); }
-    let isEmoji = !es.isBoss && Math.random() < 0.45;
+    let isEmoji = !es.isBoss && (Math.random() < 0.45 || isEnemyRemoved('shape:' + style.shape));
+    const bossPool = BOSS_EMOJIS.filter(e => !isEnemyRemoved('boss:' + e)), emojiPool = EMOJI_ENEMIES.filter(e => !isEnemyRemoved('emoji:' + e));
     let emoji = es.isBoss
-      ? (forcedBossEmoji || BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)])
-      : (isEmoji ? EMOJI_ENEMIES[Math.floor(Math.random() * EMOJI_ENEMIES.length)] : null);
+      ? (forcedBossEmoji || pickFrom(bossPool.length ? bossPool : BOSS_EMOJIS))
+      : (isEmoji ? pickFrom(emojiPool.length ? emojiPool : EMOJI_ENEMIES) : null);
     if (forcedEnemyKey && !es.isBoss) {
       const [kind, val] = forcedEnemyKey.split(':');
       if (kind === 'shape') { isEmoji = false; emoji = null; const c = SHAPE_ENEMY_COLORS[val] || '#ff5c6c'; style = { color: c, glow: c + '8c', shape: val }; }
@@ -10508,6 +10530,21 @@ Object.keys(SKILL_BUTTON_KEYS).forEach(id => {
 });
 updateSkillButtonVisibility();
 updatePotionButton();
+renderDebugMonsters();
+document.getElementById('dbgMonGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-mon]'); if (b) { dbgMonKey = b.dataset.mon; renderDebugMonsters(); } });
+document.getElementById('dbgMonShow').addEventListener('click', () => {
+  if (!dbgMonKey) return;
+  const b = document.createElement('button'); b.dataset.debug = 'enemy:' + dbgMonKey; b.textContent = ENEMY_BOOK_BY_KEY[dbgMonKey].name; b.style.display = 'none';
+  debugRow.appendChild(b); b.click(); b.remove();
+});
+document.getElementById('dbgMonDel').addEventListener('click', () => {
+  if (!dbgMonKey) return;
+  if (!game.removedEnemies) game.removedEnemies = {};
+  if (game.removedEnemies[dbgMonKey]) delete game.removedEnemies[dbgMonKey]; else game.removedEnemies[dbgMonKey] = true; // もう一度押すと戻す
+  saveGame(); renderDebugMonsters();
+  showNotice(`DEBUG: ${ENEMY_BOOK_BY_KEY[dbgMonKey].name} を${isEnemyRemoved(dbgMonKey) ? '出現しないように削除' : '元に戻しました'}`);
+});
+document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
   .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
 document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', '<button data-debug="bgmNow">🎶 今の曲名</button>' + BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
