@@ -3453,6 +3453,7 @@ let arenaHeld = false; // サークルを押し続けているか（クールダ
 let tackle = null; // { until, mult, full }
 function isTackling() { return !!tackle && Date.now() < tackle.until; }
 const HOLD_RUSH_MODE = true;
+const MUTUAL_HIT = true; // お試し：ぶつかると敵味方の両方が攻撃する（味方が先）
 let holdRush = null;             // { id }：押している指
 // 突進ゲージ：押しっぱなしの突進で減り、離すと回復。空になると回復が RUSH_RECOVER まで戻るまで突進できない
 const RUSH_DRAIN_FRAMES = 150, RUSH_REGEN_FRAMES = 240, RUSH_RECOVER = 0.3;
@@ -7151,39 +7152,77 @@ function step() {
     const comboMult = getComboMultiplier(b.comboGrowth);
     if (combo >= 2) playChainSound(combo);
 
-    const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
-    if (enemyIsHit && !playerAttackHits(e)) {
-      spawnMissText(e);
-    } else if (enemyIsHit) {
-      const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
-      e.hp -= dmg;
-      trackDamage(dmg);
-      spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
-      spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-      if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
-      onPlayerHitEnemy(e, dmg);
-      playEnemyHitSound();
-      applyHitKnockback(e, a, 3.2);
-    } else if (!enemyAttackHits(e)) {
-      spawnEvadeText(a); // 回避したらバリアも消費しない
-    } else if (absorbWithBarrier(a)) {
-      applyHitKnockback(a, e, 3.2);
+    // お試し：ぶつかったら味方が先に攻撃し、敵が生き残っていれば敵も攻撃する（麻痺・眠り中の敵は反撃できない）
+    if (!MUTUAL_HIT) {
+      const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
+      if (enemyIsHit && !playerAttackHits(e)) {
+        spawnMissText(e);
+      } else if (enemyIsHit) {
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
+        e.hp -= dmg;
+        trackDamage(dmg);
+        spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
+        spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        onPlayerHitEnemy(e, dmg);
+        playEnemyHitSound();
+        applyHitKnockback(e, a, 3.2);
+      } else if (!enemyAttackHits(e)) {
+        spawnEvadeText(a); // 回避したらバリアも消費しない
+      } else if (absorbWithBarrier(a)) {
+        applyHitKnockback(a, e, 3.2);
+      } else {
+        const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
+        a.hp -= dmg;
+        spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
+        spawnReceivedDamageText(a, dmg, crit, e);
+        playPlayerHitSound();
+        applyHitKnockback(a, e, 3.2);
+        if (a.hp > 0 && Math.random() < computeBonuses().counter) {
+          const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
+          e.hp -= counter.dmg;
+          trackDamage(counter.dmg);
+          spawnDamageText(e.x, e.y - e.radius - 30, 'COUNTER!', '#64e8ff', 0.014, true);
+          spawnAttackDamageText(e, counter.dmg, counter.crit, '#b4f6ff');
+          spawnHitParticles(e.x, e.y, '#64e8ff');
+          onPlayerHitEnemy(e, counter.dmg);
+          playCounterSound();
+        }
+      }
     } else {
-      const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
-      a.hp -= dmg;
-      spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
-      spawnReceivedDamageText(a, dmg, crit, e);
-      playPlayerHitSound();
-      applyHitKnockback(a, e, 3.2);
-      if (a.hp > 0 && Math.random() < computeBonuses().counter) {
-        const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
-        e.hp -= counter.dmg;
-        trackDamage(counter.dmg);
-        spawnDamageText(e.x, e.y - e.radius - 30, 'COUNTER!', '#64e8ff', 0.014, true);
-        spawnAttackDamageText(e, counter.dmg, counter.crit, '#b4f6ff');
-        spawnHitParticles(e.x, e.y, '#64e8ff');
-        onPlayerHitEnemy(e, counter.dmg);
-        playCounterSound();
+      if (!playerAttackHits(e)) spawnMissText(e);
+      else {
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
+        e.hp -= dmg;
+        trackDamage(dmg);
+        spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
+        spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        onPlayerHitEnemy(e, dmg);
+        playEnemyHitSound();
+        applyHitKnockback(e, a, 3.2);
+      }
+      if (e.hp > 0 && !isDisabled(e)) {
+        if (!enemyAttackHits(e)) spawnEvadeText(a);
+        else if (absorbWithBarrier(a)) applyHitKnockback(a, e, 3.2);
+        else {
+          const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * comboMult)));
+          a.hp -= dmg;
+          spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#5cc8ff');
+          spawnReceivedDamageText(a, dmg, crit, e);
+          playPlayerHitSound();
+          applyHitKnockback(a, e, 3.2);
+          if (a.hp > 0 && Math.random() < computeBonuses().counter) {
+            const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
+            e.hp -= counter.dmg;
+            trackDamage(counter.dmg);
+            spawnDamageText(e.x, e.y - e.radius - 30, 'COUNTER!', '#64e8ff', 0.014, true);
+            spawnAttackDamageText(e, counter.dmg, counter.crit, '#b4f6ff');
+            spawnHitParticles(e.x, e.y, '#64e8ff');
+            onPlayerHitEnemy(e, counter.dmg);
+            playCounterSound();
+          }
+        }
       }
     }
     updateHPUI();
