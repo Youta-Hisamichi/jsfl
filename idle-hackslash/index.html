@@ -2255,7 +2255,15 @@
   // 転生ショップの段階開放：各タブの上から、最初は REBIRTH_SHOP_FIRST_OPEN 個。以降ショップを訪れる（転生する）ごとに1つずつ開放
   const REBIRTH_SHOP_FIRST_OPEN = 2;
   function getRebirthShopOpenCount() { return REBIRTH_SHOP_FIRST_OPEN - 1 + Math.max(1, game.rebirthShopVisits || 0); }
-  function getRebirthCategoryIds(cat) { return Object.keys(REBIRTH_SHOP_ITEMS).filter(k => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[k]) === cat); }
+  // 並び順を前に出す商品（タブ内の位置）：タックルは早めに開放されるように
+  const REBIRTH_SHOP_EARLY = { unlockTackle: 1, unlockSuperTackle: 4 };
+  function getRebirthCategoryIds(cat) {
+    const ids = Object.keys(REBIRTH_SHOP_ITEMS).filter(k => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[k]) === cat && !(k in REBIRTH_SHOP_EARLY));
+    Object.entries(REBIRTH_SHOP_EARLY).sort((a, b) => a[1] - b[1]).forEach(([id, pos]) => {
+      if (REBIRTH_SHOP_ITEMS[id] && getRebirthItemCategory(REBIRTH_SHOP_ITEMS[id]) === cat) ids.splice(Math.min(pos, ids.length), 0, id);
+    });
+    return ids;
+  }
   // まだ開放されていなければ、開放まであと何回の転生か（開放済みなら 0）
   function getRebirthShopLockLeft(id) {
     const item = REBIRTH_SHOP_ITEMS[id];
@@ -2713,7 +2721,7 @@
     });
     const entries = offerMode
       ? game.rebirthShopOffer.filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => [id, REBIRTH_SHOP_ITEMS[id]])
-      : Object.entries(REBIRTH_SHOP_ITEMS).filter(([, item]) => getRebirthItemCategory(item) === rebirthShopCategory);
+      : getRebirthCategoryIds(rebirthShopCategory).map(id => [id, REBIRTH_SHOP_ITEMS[id]]);
     const slots = getRebirthOfferSlots();
     const rerollCost = getRebirthRerollCost();
     const rerollBtn = offerMode ? `<button class="modal-shop-btn rs-slot-btn rs-reroll-btn ${game.gems < rerollCost ? 'is-disabled' : ''}" data-rebirth-reroll><span class="msb-name">${xi('x_reload')} 引き直す</span><span class="msb-cost">💎 ${rerollCost}</span></button>` : '';
