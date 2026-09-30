@@ -3457,7 +3457,21 @@ const MUTUAL_HIT = true; // お試し：ぶつかると敵味方の両方が攻�
 let holdRush = null;             // { id }：押している指
 // 突進ゲージ：押しっぱなしの突進で減り、離すと回復。空になると回復が RUSH_RECOVER まで戻るまで突進できない
 const RUSH_DRAIN_FRAMES = 150, RUSH_REGEN_FRAMES = 240, RUSH_RECOVER = 0.3;
-let rushGauge = 1, rushExhausted = false;
+let rushGauge = 1, rushExhausted = false, rushingNow = false;
+// 突進中の攻撃はゲージが多いほど強い（最大 ×2）。ゲージ満タンから押した最初の1撃は ×3
+const RUSH_DMG_MAX = 2, RUSH_FULL_FIRST = 3;
+function getRushDmgMult() {
+  if (!rushingNow || !holdRush) return 1;
+  if (holdRush && holdRush.fullFirst) return RUSH_FULL_FIRST;
+  return 1 + (RUSH_DMG_MAX - 1) * rushGauge;
+}
+function consumeRushHit(x, y) {
+  if (!rushingNow || !holdRush) return;
+  const m = getRushDmgMult();
+  if (holdRush.fullFirst) { spawnDamageText(x, y - 44, `フル突進！ ×${RUSH_FULL_FIRST}`, '#ff4f6d', 0.02, true); shakeScreenLight(); }
+  else if (m >= 1.2) spawnDamageText(x, y - 44, `突進 ×${m.toFixed(1)}`, '#4fe0ff', 0.024);
+  holdRush.fullFirst = false;
+}
 function tickRushGauge(speedMult) {
   const rushing = !!holdRush && !rushExhausted;
   if (rushing) {
@@ -3467,7 +3481,8 @@ function tickRushGauge(speedMult) {
     rushGauge = Math.min(1, rushGauge + speedMult / RUSH_REGEN_FRAMES);
     if (rushExhausted && rushGauge >= RUSH_RECOVER) rushExhausted = false;
   }
-  return rushing && rushGauge > 0;
+  rushingNow = rushing && rushGauge > 0;
+  return rushingNow;
 }
 function drawRushGauge() {
   const pl = balls.find(ball => isMainPlayerBall(ball));
@@ -7149,7 +7164,8 @@ function step() {
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
+  const rushMult = getRushDmgMult(); // 突進ゲージが多いほど強い
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult; // リセット前の連打ボーナスでダメージを計算する
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
@@ -7175,7 +7191,8 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        if (rushMult > 1) consumeRushHit(e.x, e.y - e.radius);
+        else if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
@@ -7209,7 +7226,8 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        if (rushMult > 1) consumeRushHit(e.x, e.y - e.radius);
+        else if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
@@ -7380,8 +7398,9 @@ function processAdds(a) {
       if (add.hp <= 0) continue;
       for (const atk of attackers) {
         if (resolveBallCollision(atk, add)) {
-          if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
-          const { dmg, crit } = rollCrit(Math.max(1, (atk.atk || 1)));
+          const rm = atk === a ? getRushDmgMult() : 1;
+          if (atk === a) { a.tapSpeedMult = 1; consumeRushHit(add.x, add.y - add.radius); } // 雑魚敵に衝突してもタップ加速をリセット
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * rm)));
           add.hp -= dmg;
           trackDamage(dmg);
           focusHpEnemy(add);
@@ -10446,7 +10465,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId }; return; } // 押している間は突撃
+  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId, fullFirst: rushGauge >= 0.999 }; return; } // 押している間は突撃
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
