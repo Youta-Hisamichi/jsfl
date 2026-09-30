@@ -493,7 +493,28 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 @keyframes sparkleMove { 0%, 100% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
 @keyframes legendaryGlow { from { box-shadow: 0 0 16px rgba(255,215,107,0.5); } to { box-shadow: 0 0 34px rgba(255,215,107,0.95); } }
 .gacha-pull { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; background: #142d39; color: #b4f6ff; padding: 9px; font-weight: 800; cursor: pointer; }
-.evolution-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+.evolution-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.evo-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 14px 3px 6px; border-radius: 11px; border: 2px solid var(--rc); background: radial-gradient(90% 60% at 50% 30%, color-mix(in srgb, var(--rc) 30%, transparent), transparent 70%), var(--bg-soft); box-shadow: 0 0 8px color-mix(in srgb, var(--rc) 35%, transparent); text-align: center; min-width: 0; }
+.evo-card .evo-lv { position: absolute; top: -1px; left: -1px; padding: 0 6px; border-radius: 9px 0 8px 0; background: var(--rc); color: #fff; font-size: 0.56rem; font-weight: 900; text-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+.evo-card .evo-ico { font-size: 1.9rem; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); }
+.evo-card .evo-ico .ico-img { width: 40px; height: 40px; display: block; }
+.evo-card .evo-stars { font-size: 0.5rem; color: var(--rc); letter-spacing: -0.05em; }
+.evo-card .evo-name { font-size: 0.6rem; font-weight: 900; line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evo-card .evo-desc { font-size: 0.5rem; color: var(--text-dim); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.evo-card.unowned { border-style: dashed; box-shadow: none; background: var(--bg-soft); }
+.evo-card.unowned .evo-ico { filter: grayscale(1) brightness(0.35) opacity(0.6); }
+.evo-card.unowned .evo-lv { background: #6b7085; }
+#evolutionProgress { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2px 10px; padding: 10px 12px; margin: 10px 0; border-radius: 12px; background: linear-gradient(135deg, rgba(199,146,234,0.18), rgba(100,200,255,0.12)); border: 1px solid rgba(199,146,234,0.45); }
+#evolutionProgress .evo-prog-label { grid-column: 1 / -1; font-size: 0.66rem; font-weight: 800; color: var(--text-dim); }
+#evolutionProgress strong { font-size: 1.25rem; font-weight: 900; }
+#evolutionProgress strong small { font-size: 0.7rem; color: var(--text-dim); }
+#evolutionProgress .evo-prog-bar { height: 8px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+#evolutionProgress .evo-prog-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c792ea, #64e8ff); }
+#evolutionProgress .evo-prog-rate { font-size: 0.78rem; font-weight: 900; color: #c792ea; }
+.gacha-actions.pull-row .gacha-pull { position: relative; overflow: hidden; border: none; border-radius: 14px; padding: 12px 6px; color: #fff; font-size: 0.95rem; font-weight: 900; text-shadow: 0 1px 0 rgba(0,0,0,0.35); background: linear-gradient(135deg, #4fb3ff, #6a5bff) !important; box-shadow: 0 4px 0 #3a3fb0, 0 6px 12px rgba(106,91,255,0.35); }
+.gacha-actions.pull-row #gacha10Btn { background: linear-gradient(135deg, #ffb14f, #ff5fd2 55%, #8a5bff) !important; box-shadow: 0 4px 0 #9a3a8a, 0 6px 14px rgba(255,95,210,0.45); }
+.gacha-actions.pull-row .gacha-pull::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent); transform: skewX(-20deg); animation: gbShine 3s ease-in-out infinite; pointer-events: none; }
+.gacha-actions.pull-row .gacha-pull.is-disabled { filter: grayscale(0.7); opacity: 0.7; }
 .evolution { background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px; font-size: 0.66rem; }
 .evolution .rarity-tag { font-size: 0.6rem; font-weight: 800; padding: 1px 6px; border-radius: 999px; display: inline-block; margin-bottom: 3px; }
 .evolution button { width: 100%; margin-top: 5px; border: 1px solid #64e8ff; border-radius: 6px; background: transparent; color: #b4f6ff; font-size: 0.63rem; padding: 4px; cursor: pointer; }
@@ -2854,11 +2875,11 @@ function renderEvolutionList() {
   const evoIds = Object.keys(GACHA_POOL);
   const obtained = evoIds.filter(id => (game.evolutions[id] || 0) > 0 || (game.gachaShards[id] || 0) > 0).length;
   const evoRate = (evoIds.length ? Math.floor(obtained / evoIds.length * 1000) / 10 : 0).toFixed(1);
-  document.getElementById('evolutionProgress').innerHTML = `取得数 <strong>${obtained} / ${evoIds.length}</strong>　取得率 <strong>${evoRate}%</strong>`;
+  document.getElementById('evolutionProgress').innerHTML = `<span class="evo-prog-label">進化コレクション</span><strong>${obtained}<small> / ${evoIds.length}</small></strong><span class="evo-prog-bar"><i style="width:${evoRate}%"></i></span><span class="evo-prog-rate">${evoRate}%</span>`;
   evolutionList.innerHTML = Object.entries(GACHA_POOL).map(([id, type]) => {
-    const level = game.evolutions[id];
+    const level = game.evolutions[id] || 0;
     const rarity = RARITY_INFO[type.rarity];
-    return `<div class="evolution"><span class="rarity-tag" style="background:${rarity.color}22;color:${rarity.color};border:1px solid ${rarity.color}55;">${rarityStars(type.rarity)}</span><br><span class="item-icon">${ico(type)}</span> ${type.name} Lv.${level}<br><span>${type.desc}</span></div>`;
+    return `<div class="evo-card ${level ? '' : 'unowned'}" style="--rc:${rarity.color}"><span class="evo-lv">${level ? 'Lv.' + level : '未入手'}</span><span class="evo-ico">${ico(type)}</span><span class="evo-stars">${rarityStars(type.rarity)}</span><span class="evo-name">${type.name.replace('の欠片', '')}</span><span class="evo-desc">${type.desc}</span></div>`;
   }).join('');
   gachaBtn.classList.toggle('is-disabled', game.gems < 5);
   gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
