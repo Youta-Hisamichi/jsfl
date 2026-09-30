@@ -5599,6 +5599,17 @@ const BGM_SONGS = {
     ],
     drums: 'k - - h s - - h | k - - h s - h h | k - - h s - - h | k - - h s - h h | k - - h s - - h | k - - h s - h h | k - - h s - - h | k - s h s s h s',
   },
+  // 試練の塔：螺旋の階段（VRC6風チップチューン。イ短調。刻み続ける分散和音とうねるベースで不安をあおり、階段を登るように上がっていく旋律で高揚させる。Am-F-Dm-E-Am-F-G-E）
+  tower: {
+    bpm: 140,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'A4 = C5 = E5 = D#5 E5 | F5 = E5 = C5 = A4 = | D5 = F5 = A5 = G#5 A5 | B5 = G#5 = E5 = = = | C6 = B5 = A5 = E5 = | F5 = A5 = C6 = D6 C6 | B5 = D6 = G5 = B5 D6 | E6 = D6 = B5 = G#5 =' },
+      { type: 'vrc6pulse12', gain: 0.019, notes: 'A4 C5 E5 C5 A4 C5 E5 C5 | F4 A4 C5 A4 F4 A4 C5 A4 | D4 F4 A4 F4 D4 F4 A4 F4 | E4 G#4 B4 G#4 E4 G#4 B4 D5 | A4 C5 E5 C5 A4 C5 E5 C5 | F4 A4 C5 A4 F4 A4 C5 A4 | G4 B4 D5 B4 G4 B4 D5 B4 | E4 G#4 B4 D5 E5 D5 B4 G#4' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'A1 A1 A2 A1 A1 A1 A2 A1 | F1 F1 F2 F1 F1 F1 F2 F1 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 E2 E2 E3 E2 | A1 A1 A2 A1 A1 A1 A2 A1 | F1 F1 F2 F1 F1 F1 F2 F1 | G1 G1 G2 G1 G1 G1 G2 G1 | E2 E2 E3 E2 E2 E3 G#2 B2' },
+    ],
+    kickBoost: 1.1,
+    drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s s | k - s - k k s - | k - s - k k s - | k - s - k k s - | k k s s ks ks ks ks',
+  },
   // 進化ページ：覚醒の儀式（サガ系の作風。ロ短調の高揚する儀式ループ）
   gacha: {
     bpm: 144,
@@ -5833,6 +5844,7 @@ const BGM_INFO = [
   { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
   { key: 'gemshop', name: 'ページ ショップ 怪しげな行商人', desc: '和声的短音階とナポリの和音、忍び足のベースで少し怪しげな商人の店の曲。VRC6風チップチューン。ホ短調・BPM126' },
+  { key: 'tower', name: 'ページ 試練の塔 螺旋の階段', desc: '刻み続ける分散和音とうねるベースの不安感に、階段を登るように上がっていく旋律の高揚感を重ねた曲。VRC6風チップチューン。イ短調・BPM140' },
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
@@ -5891,6 +5903,7 @@ function refreshBgm() {
   if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
   else if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
   else if (gameOverBgm) type = 'gameover';
+  else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (rebirthRewardBgm) { stopBgm(); return; } // 転生報酬はBGMなし（効果音だけ）
   else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
   else {
@@ -8352,6 +8365,7 @@ skipGiveUpBtn.addEventListener('click', () => {
   if (!game.skipChallenge || !skipRetryButtonsReady()) return;
   giveUpSkipChallenge();
 });
+new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
 stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
 // ---------- ジェムでスキルのクールダウンをリセット ----------
