@@ -5280,15 +5280,15 @@
       kickBoost: 1.2, // ティンパニのように重く
       drums: 'k - s k k - s - | k - s k k - s - | k - s k k - s - | k - s k k s s s | k - s k k - s - | k - s k k - s - | k - s k k - s - | k k s s ks ks ks ks',
     },
-    // ランキングページ：栄光の頂（サガ系の作風。ニ長調の勝利のファンファーレ）
+    // ランキングページ：栄光の頂（VRC6風チップチューン。ホ長調。王道進行で駆け上がる爽快感と表彰の高揚感に、同主短調の和音（Am）で切なさと郷愁をひとさじ。A-B-G#m-C#m-A-Am-F#m/B-E）
     ranking: {
-      bpm: 138,
+      bpm: 140,
       tracks: [
-        { type: 'square', gain: 0.03, notes: 'D5 = F#5 = A5 = D6 = | C#6 = = = A5 = E5 = | F#5 = D5 = B4 = D5 F#5 | G5 = = = B5 = D6 = | A5 = F#5 = D5 = A5 = | E6 = C#6 = A5 = C#6 = | B5 = G5 = C#6 = A5 = | D6 = = = = = - -' },
-        { type: 'square', gain: 0.04, notes: 'D3 D3 A2 A2 D3 D3 A2 A2 | A2 A2 E3 E3 A2 A2 E3 E3 | B2 B2 F#3 F#3 B2 B2 F#3 F#3 | G2 G2 D3 D3 G2 G2 D3 D3 | D3 D3 A2 A2 D3 D3 A2 A2 | A2 A2 E3 E3 A2 A2 E3 E3 | G2 G2 D3 D3 A2 A2 E3 E3 | D3 D3 A2 A2 D3 = = =' },
-        { type: 'triangle', gain: 0.022, notes: 'D4+F#4+A4 = = = = = = = | C#4+E4+A4 = = = = = = = | B3+D4+F#4 = = = = = = = | B3+D4+G4 = = = = = = = | D4+F#4+A4 = = = = = = = | C#4+E4+A4 = = = = = = = | B3+D4+G4 = = = C#4+E4+A4 = = = | D4+F#4+A4 = = = = = = =' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = A5 B5 C#6 = = E6 | D#6 = = C#6 B5 = F#5 = | D#6 = = = E6 = D#6 B5 | C#6 = = = G#5 = = = | A5 = B5 C#6 E6 = = F#6 | E6 = = = C6 = A5 = | F#5 = A5 C#6 D#6 = F#6 = | E6 = = = G#5 = B5 =' },
+        { type: 'vrc6pulse12', gain: 0.02, notes: 'A3 C#4 E4 A4 C#5 A4 E4 C#4 | B3 D#4 F#4 B4 D#5 B4 F#4 D#4 | G#3 B3 D#4 G#4 B4 G#4 D#4 B3 | C#4 E4 G#4 C#5 E5 C#5 G#4 E4 | A3 C#4 E4 A4 C#5 A4 E4 C#4 | A3 C4 E4 A4 C5 A4 E4 C4 | F#3 A3 C#4 F#4 B3 D#4 F#4 B4 | E4 G#4 B4 E5 G#5 E5 B4 G#4' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'A1 A1 A2 A1 A1 A1 A2 A1 | B1 B1 B2 B1 B1 B1 B2 B1 | G#1 G#1 G#2 G#1 G#1 G#1 G#2 G#1 | C#2 C#2 C#3 C#2 C#2 C#2 C#3 C#2 | A1 A1 A2 A1 A1 A1 A2 A1 | A1 A1 A2 A1 A1 A1 A2 A1 | F#1 F#1 F#2 F#1 B1 B1 B2 B1 | E2 E2 E3 E2 E2 E2 E3 E2' },
       ],
-      drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
     },
     // 転生報酬：輪廻の宝箱（ゴシックアクションRPGの古城のショップ系の作風×VRC6風チップチューン。ニ短調の3拍子風。チェンバロのような分散和音とワルツのベースで、怪しくも優雅に）
     rebirthReward: {
@@ -5505,7 +5505,7 @@
     { key: 'gemshop', name: 'ページ ジェム キラキラ☆ジェムショップ', desc: 'maj7コードとキラキラ駆け上がるアルペジオの明るいショップ曲。VRC6風チップチューン。ホ長調（スマホゲームのショップ画面系の作風）・BPM150' },
     { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
     { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
-    { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: 'サガ系の作風。ニ長調の勝利のファンファーレ・BPM138' },
+    { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'VRC6風チップチューン。心臓の鼓動のようなキックと刻むベース、せり上がる旋律でドキドキ感。イ短調・BPM150' },
     { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'チェンバロのような分散和音とワルツ風のベースで、怪しくも優雅な古城のお店。VRC6風チップチューン。ニ短調（ゴシックアクションRPGのショップ系の作風）・BPM132' },
     { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
