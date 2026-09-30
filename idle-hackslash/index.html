@@ -706,6 +706,40 @@
   @keyframes chestOpen { 0% { transform: scale(0.2) rotate(-30deg); opacity: 0; filter: brightness(3) drop-shadow(0 0 30px #fff); } 60% { transform: scale(1.35) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
 
   .artifact-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
+  /* ---- 遺物ページ（ソシャゲ風） ---- */
+  .af-hero { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 4px 0 6px; border-radius: 14px; border: 1px solid var(--ring); background: linear-gradient(135deg, rgba(255,201,79,0.16), rgba(176,124,255,0.14) 60%, rgba(100,200,255,0.1)); }
+  .af-ring { flex: none; width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(#ffc94f calc(var(--p) * 1%), var(--bg-soft) 0); box-shadow: 0 0 12px rgba(255,201,79,0.35); }
+  .af-ring span { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--panel); font-size: 0.62rem; color: var(--text-dim); }
+  .af-ring b { font-size: 1.05rem; color: var(--text); }
+  .af-hero-main { min-width: 0; flex: 1; }
+  .af-hero-title { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); }
+  .af-hero-count { font-size: 0.8rem; color: var(--text-dim); }
+  .af-hero-count b { font-size: 1.35rem; color: var(--text); }
+  .af-rchips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+  .af-rchip { font-size: 0.58rem; color: var(--rc); background: var(--panel); border: 1px solid var(--rc); border-radius: 999px; padding: 0 6px; }
+  .af-rchip b { color: var(--text); }
+  .af-note { font-size: 0.64rem; color: var(--text-dim); margin: 0 0 8px; line-height: 1.5; }
+  .af-tabs { margin-bottom: 8px; }
+  #artifactList.artifact-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .af-card { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px 10px; border-radius: 14px; border: 1.5px solid var(--rc); color: var(--text); text-align: center; font: inherit; cursor: pointer;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 22%, transparent), color-mix(in srgb, var(--rc) 4%, transparent) 70%), var(--bg-soft); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .af-card .af-icon { width: 58px; height: 58px; border-radius: 14px; display: grid; place-items: center; font-size: 2rem; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 45%, transparent), transparent 70%); }
+  .af-card .af-icon .ico-img { width: 50px; height: 50px; border-radius: 10px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35)); }
+  .af-card .af-count { position: absolute; top: 6px; right: 6px; font-size: 0.72rem; font-weight: 900; color: #fff; background: color-mix(in srgb, var(--rc) 85%, #000); border-radius: 999px; padding: 0 7px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .af-card .af-count small { font-size: 0.56rem; opacity: 0.85; }
+  .af-card .af-count.none { background: var(--panel); color: var(--text-dim); border: 1px solid var(--ring); font-size: 0.56rem; }
+  .af-card .af-name { font-size: 0.8rem; font-weight: 900; line-height: 1.25; }
+  .af-card .af-stars { font-size: 0.58rem; font-weight: 900; color: var(--rc); }
+  .af-card .af-desc { font-size: 0.62rem; color: var(--text-dim); line-height: 1.4; }
+  .af-card .af-cur { margin-top: 3px; font-size: 0.62rem; font-weight: 900; color: #7ee787; background: rgba(126,231,135,0.12); border-radius: 999px; padding: 1px 8px; }
+  .af-card.r-legendary { box-shadow: 0 0 12px color-mix(in srgb, var(--rc) 55%, transparent); }
+  .af-card.r-legendary::after, .af-card.r-epic::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent); animation: gbShine 3.2s ease-in-out infinite; pointer-events: none; }
+  .af-card.r-epic::after { animation-duration: 4.6s; }
+  .af-card.not-owned { border-style: dashed; background: var(--bg-soft); box-shadow: none; }
+  .af-card.not-owned::after { display: none; }
+  .af-card.not-owned .af-icon .ico-img { filter: brightness(0) opacity(0.4); }
+  .af-card.not-owned .af-name, .af-card.not-owned .af-desc { opacity: 0.6; }
+
   .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
   .artifact-chip { color: var(--text); }
   .artifact-chip .chip-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 6px; color: var(--text); font-weight: 800; }
@@ -1114,8 +1148,9 @@
   <div class="tab-page" data-tab="artifact">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="artifact"></div>
-      <div class="title">所持アーティファクト（転生で入手・永続・所持している遺物はすべて効果を発揮）</div>
-      <div class="artifact-progress" id="artifactProgress">取得数 <strong>0 / 0</strong>　取得率 <strong>0%</strong></div>
+      <div class="af-hero" id="artifactProgress"></div>
+      <div class="af-note">✨ 遺物は転生報酬や転生ショップで手に入り、効果は永続。持っている遺物はすべて同時に効果を発揮します。</div>
+      <div class="sub-tabs af-tabs" id="artifactTabs"></div>
       <div class="artifact-list" id="artifactList">
         <span class="artifact-empty">まだ何も持っていません</span>
       </div>
@@ -3140,20 +3175,34 @@
   function gainArtifact(id) {
     game.ownedArtifacts[id] = (game.ownedArtifacts[id] || 0) + 1;
   }
+  let artifactFilter = 'all';
+  const ARTIFACT_FILTERS = [{ id: 'all', label: 'すべて' }, ...REBIRTH_SHOP_CATEGORIES];
   function renderArtifactList() {
     const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
     const total = ARTIFACT_POOL.length;
     const rate = (total ? Math.floor(ownedKinds / total * 1000) / 10 : 0).toFixed(1);
-    artifactProgressEl.innerHTML = `取得数 <strong>${ownedKinds} / ${total}</strong>　取得率 <strong>${rate}%</strong>`;
-    artifactListEl.innerHTML = ARTIFACT_POOL.map(a => {
-      const count = game.ownedArtifacts[a.id] || 0;
-      const owned = count > 0;
-      return `<button class="artifact-chip ${owned ? '' : 'not-owned'}" data-artifact="${a.id}">
-        <span class="chip-head"><span class="item-icon">${ico(a)}</span> ${a.name}<span class="count">${owned ? 'x' + count : '未所持'}</span></span>
-        <span class="chip-rarity" style="color:${RARITY_INFO[a.rarity].color}">${rarityStars(a.rarity)} ${RARITY_INFO[a.rarity].label}</span>
-        <span class="chip-desc">${a.desc}</span>
-      </button>`;
+    // 収集率のリングと、レア度ごとの集まり具合
+    const rarChips = ['legendary', 'epic', 'rare', 'common'].map(r => {
+      const all = ARTIFACT_POOL.filter(a => a.rarity === r), got = all.filter(a => game.ownedArtifacts[a.id] > 0).length;
+      return `<span class="af-rchip" style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} <b>${got}/${all.length}</b></span>`;
     }).join('');
+    artifactProgressEl.innerHTML = `<div class="af-ring" style="--p:${rate}"><span><b>${rate}</b>%</span></div><div class="af-hero-main"><div class="af-hero-title">遺物コレクション</div><div class="af-hero-count"><b>${ownedKinds}</b> / ${total} 種類</div><div class="af-rchips">${rarChips}</div></div>`;
+    renderSubTabs(document.getElementById('artifactTabs'), ARTIFACT_FILTERS, artifactFilter, cat => { artifactFilter = cat; renderArtifactList(); });
+    const RANK = { legendary: 4, epic: 3, rare: 2, common: 1 };
+    const list = ARTIFACT_POOL.filter(a => artifactFilter === 'all' || (ARTIFACT_CATEGORY[a.id] || 'attack') === artifactFilter)
+      .slice().sort((x, y) => ((game.ownedArtifacts[y.id] > 0) - (game.ownedArtifacts[x.id] > 0)) || (RANK[y.rarity] - RANK[x.rarity]));
+    artifactListEl.innerHTML = list.map(a => {
+      const count = game.ownedArtifacts[a.id] || 0, owned = count > 0, rar = RARITY_INFO[a.rarity];
+      const limit = ARTIFACT_STACK_LIMIT[a.id];
+      const cur = owned ? getArtifactCurrentText(a.id) : '';
+      return `<button class="af-card r-${a.rarity} ${owned ? '' : 'not-owned'}" style="--rc:${rar.color}" data-artifact="${a.id}">
+        <span class="af-icon">${ico(a)}</span>${owned ? `<span class="af-count">×${count}${limit ? `<small>/${limit}</small>` : ''}</span>` : '<span class="af-count none">未入手</span>'}
+        <span class="af-name">${a.name}</span>
+        <span class="af-stars">${rarityStars(a.rarity)} ${rar.label}</span>
+        <span class="af-desc">${a.desc}</span>
+        ${cur ? `<span class="af-cur">現在 ${cur}</span>` : ''}
+      </button>`;
+    }).join('') || '<span class="artifact-empty">この種類の遺物はありません</span>';
   }
 
   // ランキングのライバル（99人）。毎回同じ顔ぶれになるよう固定の乱数で生成
