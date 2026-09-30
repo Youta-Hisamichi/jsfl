@@ -5307,6 +5307,15 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k - s s k - s - | k - s s k - s - | k - s s k - s - | k - s s k s s s | k - s s k - s - | k - s s k - s - | k - s s k - s - | k s s s ks ks ks ks',
   },
+  battle20: {
+    bpm: 160,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 = F5 A5 = G5 F5 E5 | G5 = = E5 C5 = D5 E5 | F5 = D5 F5 A#5 = A5 G5 | A5 = G5 = E5 = C5 = | D6 = C6 A5 = C6 D6 = | C6 = A5 F5 = G5 A5 C6 | B5 = D6 = G5 = B5 D6 | C#6 = E6 = A5 = = =' },
+      { type: 'vrc6pulse12', gain: 0.019, notes: 'D4 A4 D5 A4 F4 A4 D5 A4 | C4 G4 C5 G4 E4 G4 C5 G4 | A#3 F4 A#4 F4 D4 F4 A#4 F4 | C4 G4 C5 G4 E4 G4 C5 G4 | D4 A4 D5 A4 F4 A4 D5 A4 | F4 C5 F5 C5 A4 C5 F5 C5 | G4 D5 G5 D5 B4 D5 G5 D5 | A4 E5 A5 E5 C#5 E5 A5 E5' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 D2 = D2 C3 D2 | C2 = C3 C2 = C2 A#2 C2 | A#1 = A#2 A#1 = A#1 A2 A#1 | C2 = C3 C2 = C2 E2 G2 | D2 = D3 D2 = D2 C3 D2 | F1 = F2 F1 = F1 D#2 F1 | G1 = G2 G1 = G1 F2 G1 | A1 = A2 A1 = A1 C#2 E2' },
+    ],
+    drums: 'k - h s - k s h | k - h s - k s h | k - h s - k s h | k - h s - k s s | k - h s - k s h | k - h s - k s h | k - h s - k s h | k s s k s s ks ks',
+  },
   battle19: {
     bpm: 164,
     tracks: [
@@ -5601,7 +5610,7 @@ let bgmTimer = null;
 let bgmToken = 0;
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle16', 'battle17', 'battle18', 'battle19'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle16', 'battle17', 'battle18', 'battle19', 'battle20'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -5641,6 +5650,7 @@ const BGM_INFO = [
   { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
   { key: 'battle18', name: '戦闘18 精霊の大地', desc: '付点のリズムで跳ねるブラスの英雄的な旋律と、行進するスネア、駆けるベース。VRC6風チップチューン。ト短調（壮大な冒険RPG系の作風）・BPM150' },
   { key: 'battle19', name: '戦闘19 鋼鉄の要塞', desc: 'オクターブで跳ねるベースと駆け回る分散和音、胸が熱くなる旋律。VRC6風チップチューン。ホ短調（横スクロールアクションの最終要塞ステージ系の作風）・BPM164' },
+  { key: 'battle20', name: '戦闘20 マナの森の激闘', desc: 'はずむシンコペーションのベースと打楽器、ドリア調で明るさと切迫感が入り混じる旋律。VRC6風チップチューン。ニ・ドリア（アクションRPG系の作風）・BPM160' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
@@ -7708,6 +7718,10 @@ function openRebirthChest() {
   toast.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color); // 開封したらレア度の色に光る
   const rar = RARITY_INFO[pick.rarity];
   toastSub.innerHTML = `転生 ${game.reincarnations}回目！\n<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
+  const dx = toast.clientWidth / 2 - (toastIcon.offsetLeft + toastIcon.offsetWidth / 2), dy = toast.clientHeight / 2 - (toastIcon.offsetTop + toastIcon.offsetHeight / 2);
+  toastIcon.style.transition = 'none'; toastIcon.style.translate = `${dx}px ${dy}px`; // 魔法陣の中心から
+  void toastIcon.offsetWidth;
+  toastIcon.style.transition = 'translate 0.9s cubic-bezier(.2,.8,.3,1)'; toastIcon.style.translate = '0px 0px'; // せり上がって定位置へ
   playGachaSound(pick.rarity);
   rebirthSkippable = true;
   rebirthTimer = setTimeout(finishRebirth, 6500);
@@ -7719,6 +7733,7 @@ function finishRebirth() {
   clearTimeout(rebirthTimer);
   toast.classList.remove('show');
   toastIcon.className = 'artifact-icon'; // 宝箱演出のクラスを戻す
+  toastIcon.style.translate = ''; toastIcon.style.transition = '';
   toast.classList.remove('rebirth-reward');
   rebirthRewardBgm = false;
   advanceRebirthShopVisit();
