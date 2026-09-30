@@ -4738,7 +4738,6 @@
   let continueDeadline = 0;
   let rebirthTimer = null;
   let rebirthSkippable = false;
-  let rebirthResultTaps = 0; // 転生報酬の結果画面は2回タップで次へ（誤タップで読み飛ばさないように）
   let gachaDialogOpen = false;
 
   // 連鎖(コンボ)
@@ -7548,7 +7547,6 @@
     toastSub.innerHTML = `転生 ${game.reincarnations}回目！\n<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
     playGachaSound(pick.rarity);
     rebirthSkippable = true;
-    rebirthResultTaps = 0;
     rebirthTimer = setTimeout(finishRebirth, 6500);
   }
 
@@ -8899,12 +8897,7 @@
     if (event.target === continueBtn || event.target === dialogCloseBtn || event.target === giveUpBtn) return;
     if (rebirthChest) { openRebirthChest(); return; } // 宝箱演出中はタップで開封
     if (!rebirthSkippable) return;
-    rebirthResultTaps++;
-    if (rebirthResultTaps < 2) {
-      if (!toastSub.querySelector('.rebirth-tap-hint')) toastSub.insertAdjacentHTML('beforeend', '\n<span class="rebirth-tap-hint">もう一度タップで次へ</span>');
-      return;
-    }
-    finishRebirth();
+    finishRebirth(); // 結果画面は1回のタップで次へ
   });
 
   dialogCloseBtn.addEventListener('click', () => {
