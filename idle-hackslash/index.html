@@ -1925,8 +1925,7 @@ function promptGemShortage(needed, options = {}) {
   gemShortPending = options;
   if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();
   clearTimeout(gemShortBtnTimer);
-  [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = options.instant ? 'visible' : 'hidden'; }); // instant: すぐ表示（ポーション切れなど）
-  if (!options.instant) gemShortBtnTimer = setTimeout(() => { [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); }, 600);
+  [gemShortGoBtn, gemShortCancelBtn].forEach(btn => { btn.style.visibility = 'visible'; }); // ボタンはすぐ表示
   gemShortModal.classList.add('show');
 }
 function runGemShopReturn() {
@@ -5834,23 +5833,12 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
-// 試練の塔：重い石の門がギギギ…と開いてズゥン
-function playTowerGateSound() {
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const t0 = audioCtx.currentTime, dur = 0.9;
-  const osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(58, t0); osc.frequency.linearRampToValueAtTime(74, t0 + dur);
-  const lfo = audioCtx.createOscillator(); lfo.frequency.value = 23; const lg = audioCtx.createGain(); lg.gain.value = 9;
-  lfo.connect(lg); lg.connect(osc.frequency);
-  const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = 3;
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * game.sfxVolume, t0 + 0.12);
-  g.gain.setValueAtTime(0.22 * game.sfxVolume, t0 + dur - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
-  osc.start(t0); lfo.start(t0); osc.stop(t0 + dur + 0.02); lfo.stop(t0 + dur + 0.02);
-  filteredNoise(0, dur, 0.05, 300, 0.7, 'lowpass');
-  thump(110, 38, 0.55, 0.5, 'sine', dur - 0.05);
-  filteredNoise(dur - 0.05, 0.4, 0.18, 200, 0.8, 'lowpass');
+function playTowerGateSound() { // ドアノブを回す「ガチャ」
+  filteredNoise(0, 0.035, 0.35, 3200, 2.5);
+  thump(1900, 1200, 0.03, 0.08, 'square');
+  filteredNoise(0.07, 0.05, 0.4, 2200, 2);
+  thump(900, 500, 0.05, 0.12, 'square', 0.07);
+  thump(180, 90, 0.06, 0.2, 'sine', 0.07);
 }
 // 挑戦開始：石段をザッ、ザッ、ザッと踏みしめて登る
 function playTowerStepsSound() {
@@ -9400,7 +9388,7 @@ function updatePotionButton() {
   potionBtn.classList.toggle('is-disabled', n <= 0);
 }
 potionBtn.addEventListener('click', event => {
-  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪', instant: true }); return; }
+  if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
   if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
