@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>画像読み込みテスト</title>
+<style>body{font-family:sans-serif;background:#1b1e29;color:#eef0f6;text-align:center;padding:24px}img{width:128px;height:128px;image-rendering:pixelated;border:2px dashed #64e8ff;border-radius:12px}#r{font-size:1.4rem;font-weight:800;margin-top:16px}</style></head>
+<body><h2>別ファイル画像の読み込みテスト</h2>
+<img id="i" src="img/test_tower.webp" alt="">
+<div id="r">確認中…</div>
+<script>
+const i = document.getElementById('i'), r = document.getElementById('r');
+i.onload = () => { r.textContent = '✅ 表示できました（塔の絵が見えればOK）'; r.style.color = '#7ee787'; };
+i.onerror = () => { r.textContent = '❌ 読み込めませんでした'; r.style.color = '#ff5c6c'; };
+</script></body></html>
