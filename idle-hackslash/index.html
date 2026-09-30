@@ -5815,6 +5815,45 @@ function noiseSweep(dur, f0, f1, filterType, q, gainAmt, delay = 0) {
   src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
+function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const t0 = audioCtx.currentTime + delay, n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const f = audioCtx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gainAmt * game.sfxVolume, t0 + Math.min(0.01, dur / 4));
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  src.start(t0); src.stop(t0 + dur + 0.02);
+}
+// 試練の塔：重い石の門がギギギ…と開いてズゥン
+function playTowerGateSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const t0 = audioCtx.currentTime, dur = 0.9;
+  const osc = audioCtx.createOscillator(); osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(58, t0); osc.frequency.linearRampToValueAtTime(74, t0 + dur);
+  const lfo = audioCtx.createOscillator(); lfo.frequency.value = 23; const lg = audioCtx.createGain(); lg.gain.value = 9;
+  lfo.connect(lg); lg.connect(osc.frequency);
+  const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = 3;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * game.sfxVolume, t0 + 0.12);
+  g.gain.setValueAtTime(0.22 * game.sfxVolume, t0 + dur - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  osc.start(t0); lfo.start(t0); osc.stop(t0 + dur + 0.02); lfo.stop(t0 + dur + 0.02);
+  filteredNoise(0, dur, 0.05, 300, 0.7, 'lowpass');
+  thump(110, 38, 0.55, 0.5, 'sine', dur - 0.05);
+  filteredNoise(dur - 0.05, 0.4, 0.18, 200, 0.8, 'lowpass');
+}
+// 挑戦開始：石段をザッ、ザッ、ザッと踏みしめて登る
+function playTowerStepsSound() {
+  for (let i = 0; i < 4; i++) {
+    const d = i * 0.2;
+    filteredNoise(d, 0.11, 0.3, 1400 + i * 120, 1.2);
+    thump(140, 60, 0.09, 0.22, 'sine', d);
+  }
+}
 function thump(f0, f1, dur, gainAmt, type = 'sine', delay = 0) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const t0 = audioCtx.currentTime + delay;
@@ -7843,6 +7882,7 @@ function startSkipChallenge(challenge) {
   game.gems -= cost;
   game.skipChallenge = { origin: game.stage, target, cost };
   game.stage = target;
+  playTowerStepsSound();
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
   stageAnnounceText = 'STAGE ' + target;
@@ -7922,6 +7962,7 @@ function giveUpSkipChallenge() {
 stageSkipBtn.addEventListener('click', event => {
   if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
   if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今は塔に挑めません', event.clientX, event.clientY); return; }
+  playTowerGateSound();
   renderStageSkipList();
   stageSkipModal.classList.add('show');
 });
@@ -7994,7 +8035,7 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
   let open = m.classList.contains('show');
   new MutationObserver(() => {
     const now = m.classList.contains('show');
-    if (now !== open && audioCtx) (now ? playModalOpenSound : playModalCloseSound)();
+    if (now !== open && audioCtx && m !== stageSkipModal) (now ? playModalOpenSound : playModalCloseSound)(); // 塔は門・足音の専用効果音
     open = now;
   }).observe(m, { attributes: true, attributeFilter: ['class'] });
 });
