@@ -801,7 +801,7 @@ canvas { width: 100%; height: 100%; display: block; border-radius: 50%; touch-ac
 .af-rchip b { color: var(--text); }
 .af-note { font-size: 0.64rem; color: var(--text-dim); margin: 0 0 8px; line-height: 1.5; }
 .af-tabs { margin-bottom: 8px; }
-#artifactList.artifact-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#artifactList.artifact-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .af-card { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px 10px; border-radius: 14px; border: 1.5px solid var(--rc); color: var(--text); text-align: center; font: inherit; cursor: pointer;
   background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 22%, transparent), color-mix(in srgb, var(--rc) 4%, transparent) 70%), var(--bg-soft); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 .af-card .af-icon { width: 58px; height: 58px; border-radius: 14px; display: grid; place-items: center; font-size: 2rem; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 45%, transparent), transparent 70%); }
@@ -820,6 +820,16 @@ canvas { width: 100%; height: 100%; display: block; border-radius: 50%; touch-ac
 .af-card.not-owned::after { display: none; }
 .af-card.not-owned .af-icon .ico-img { filter: brightness(0) opacity(0.4); }
 .af-card.not-owned .af-name, .af-card.not-owned .af-desc { opacity: 0.6; }
+#artifactList .af-card { min-width: 0; padding: 16px 3px 6px; border-radius: 11px; gap: 1px; }
+#artifactList .af-card .af-icon { width: 44px; height: 44px; border-radius: 10px; font-size: 1.6rem; }
+#artifactList .af-card .af-icon .ico-img { width: 40px; height: 40px; }
+#artifactList .af-card .af-count { top: -1px; right: auto; left: -1px; border-radius: 10px 0 8px 0; font-size: 0.56rem; padding: 0 5px; box-shadow: none; }
+#artifactList .af-card .af-count small { font-size: 0.48rem; }
+#artifactList .af-card .af-count.none { font-size: 0.5rem; border: none; background: #6b7085; color: #fff; }
+#artifactList .af-card .af-name { font-size: 0.58rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#artifactList .af-card .af-stars { font-size: 0.48rem; letter-spacing: -0.05em; }
+#artifactList .af-card .af-desc { font-size: 0.5rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#artifactList .af-card .af-cur { display: none; }
 
 .artifact-chip { flex: 1 1 46%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: var(--bg); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 10px; font-size: 0.78rem; cursor: pointer; text-align: left; }
 .artifact-chip { color: var(--text); }
