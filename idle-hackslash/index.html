@@ -3453,7 +3453,7 @@ let arenaHeld = false; // サークルを押し続けているか（クールダ
 let tackle = null; // { until, mult, full }
 function isTackling() { return !!tackle && Date.now() < tackle.until; }
 const HOLD_RUSH_MODE = true;
-const MUTUAL_HIT = true; // お試し：ぶつかると敵味方の両方が攻撃する（味方が先）
+const MUTUAL_HIT = true; // お試し：ぶつかると敵味方の両方が同時に攻撃する
 let holdRush = null;             // { id }：押している指
 // 突進ゲージ：押しっぱなしの突進で減り、離すと回復。空になると回復が RUSH_RECOVER まで戻るまで突進できない
 const RUSH_DRAIN_FRAMES = 150, RUSH_REGEN_FRAMES = 240, RUSH_RECOVER = 0.3;
@@ -7170,7 +7170,7 @@ function step() {
     const comboMult = getComboMultiplier(b.comboGrowth);
     if (combo >= 2) playChainSound(combo);
 
-    // お試し：ぶつかったら味方が先に攻撃し、敵が生き残っていれば敵も攻撃する（麻痺・眠り中の敵は反撃できない）
+    // お試し：ぶつかったら敵味方が同時に攻撃する（麻痺・眠り中の敵は反撃できない）
     if (!MUTUAL_HIT) {
       const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
       if (enemyIsHit && !playerAttackHits(e)) {
@@ -7222,7 +7222,7 @@ function step() {
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       }
-      if (e.hp > 0 && !isDisabled(e)) {
+      if (!isDisabled(e)) { // 同時：味方の攻撃で倒れた敵も相打ちで攻撃してくる
         if (!enemyAttackHits(e)) spawnEvadeText(a);
         else if (absorbWithBarrier(a)) applyHitKnockback(a, e, 3.2);
         else {
