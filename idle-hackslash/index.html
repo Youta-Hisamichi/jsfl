@@ -5403,16 +5403,6 @@
       ],
       drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
     },
-    // 転生報酬：輪廻の宝箱（ゴシックアクションRPGの古城のショップ系の作風×VRC6風チップチューン。ニ短調の3拍子風。チェンバロのような分散和音とワルツのベースで、怪しくも優雅に）
-    rebirthReward: {
-      bpm: 132,
-      tracks: [
-        { type: 'vrc6pulse25', gain: 0.028, notes: 'A5 = = = F5 = D5 = | E5 = F5 = G5 = A5 = | A#5 = = = G5 = E5 = | A5 = = = = = - - | F5 = = = D5 = A#4 = | C5 = D5 = E5 = F5 = | G5 = F5 = E5 = C#5 = | D5 = = = = = - -' },
-        { type: 'vrc6pulse12', gain: 0.02, notes: 'D4 F4 A4 D5 A4 F4 D4 F4 | C4 E4 G4 C5 G4 E4 C4 E4 | A#3 D4 G4 A#4 G4 D4 A#3 D4 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | A3 C4 F4 A4 F4 C4 A3 C4 | A#3 E4 G4 A#4 A3 C#4 E4 G4 | D4 F4 A4 D5 A4 F4 D4 A3' },
-        { type: 'vrc6saw', gain: 0.045, notes: 'D2 = A2 - D3 - A2 - | C2 = G2 - C3 - G2 - | G1 = D2 - G2 - D2 - | A1 = E2 - A2 - E2 - | A#1 = F2 - A#2 - F2 - | F1 = C2 - F2 - C2 - | G1 = A#1 - A1 = C#2 - | D2 = A1 - D2 - = -' },
-      ],
-      drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h h | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s h h',
-    },
     // スタッフロール：旅の終わりに（壮大なRPGのエンディング系の作風×VRC6風チップチューン。ニ長調のバラード。大きく広がる分散和音と、ゆったり歌う旋律で感動的に）
     credits: {
       bpm: 96,
@@ -5620,7 +5610,6 @@
     { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
     { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'オルガンのような分散和音と重く刻むオクターブのベースの、重厚で怪しげな曲。VRC6風チップチューン。ニ短調（ゴシックアクションのパスワード入力画面系の作風）・BPM120' },
-    { key: 'rebirthReward', name: '転生報酬 輪廻の宝箱', desc: 'チェンバロのような分散和音とワルツ風のベースで、怪しくも優雅な古城のお店。VRC6風チップチューン。ニ短調（ゴシックアクションRPGのショップ系の作風）・BPM132' },
     { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
@@ -5675,12 +5664,13 @@
     if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
     else if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
     else if (gameOverBgm) type = 'gameover';
-    else if (rebirthRewardBgm) type = 'rebirthReward';
+    else if (rebirthRewardBgm) { stopBgm(); startSacredAmbience(); return; } // 転生報酬はBGMなしで神聖な環境音だけ
     else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
     else {
       const tab = getActiveTab();
       if (tab !== 'game' && (BGM_SONGS[tab] || BGM_PATTERNS[tab])) type = tab; // 各ページ専用の曲
     }
+    stopSacredAmbience();
     playBgmTrack(resolveBgmType(type));
   }
 
@@ -5719,6 +5709,49 @@
     stopSong();
     if (BGM_SONGS[type]) startSong(type); // 通常戦闘・ボス戦は多重トラックの曲
     else scheduleBgmStep(type, 0, bgmToken);
+  }
+  // 転生報酬の神聖な環境音：ゆっくり揺れる風のようなホワイトノイズ＋かすかに響く高い和音
+  let sacredAmb = null;
+  function startSacredAmbience() {
+    if (!audioCtx || sacredAmb) return;
+    const t0 = audioCtx.currentTime, vol = game.bgmVolume ?? 0.7;
+    const master = audioCtx.createGain();
+    master.gain.setValueAtTime(0.0001, t0);
+    master.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol), t0 + 1.2);
+    master.connect(audioCtx.destination);
+    const len = audioCtx.sampleRate * 2, buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const noise = audioCtx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.6;
+    const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 700;
+    const ng = audioCtx.createGain(); ng.gain.value = 0.05;
+    const lfo = audioCtx.createOscillator(); lfo.frequency.value = 0.13; // 風がゆっくり満ち引きする
+    const lfoAmt = audioCtx.createGain(); lfoAmt.gain.value = 1400;
+    lfo.connect(lfoAmt); lfoAmt.connect(bp.frequency);
+    const lfo2 = audioCtx.createOscillator(); lfo2.frequency.value = 0.09;
+    const lfo2Amt = audioCtx.createGain(); lfo2Amt.gain.value = 0.02;
+    lfo2.connect(lfo2Amt); lfo2Amt.connect(ng.gain);
+    noise.connect(hp); hp.connect(bp); bp.connect(ng); ng.connect(master);
+    const nodes = [noise, lfo, lfo2];
+    [1046.5, 1318.5, 1568, 2093].forEach((f, i) => { // 天から降るような澄んだ和音（ごく小さく、ゆっくり明滅）
+      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.value = 0.006;
+      const tl = audioCtx.createOscillator(); tl.frequency.value = 0.2 + i * 0.07;
+      const ta = audioCtx.createGain(); ta.gain.value = 0.005;
+      tl.connect(ta); ta.connect(g.gain); o.connect(g); g.connect(master);
+      nodes.push(o, tl);
+    });
+    nodes.forEach(n => n.start(t0));
+    sacredAmb = { master, nodes };
+  }
+  function stopSacredAmbience() {
+    if (!sacredAmb || !audioCtx) { sacredAmb = null; return; }
+    const { master, nodes } = sacredAmb, t0 = audioCtx.currentTime;
+    sacredAmb = null;
+    master.gain.cancelScheduledValues(t0);
+    master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), t0);
+    master.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+    nodes.forEach(n => { try { n.stop(t0 + 0.55); } catch (e) { /* 停止済み */ } });
   }
   function stopBgm() {
     bgmToken++;
