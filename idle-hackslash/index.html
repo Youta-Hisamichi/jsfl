@@ -591,14 +591,15 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .companion-card button.cc-lvup:active { transform: translateY(2px); box-shadow: 0 1px 0 #1c5bb8; }
 .companion-card button.cc-lvup.is-disabled { background: var(--bg-soft); color: var(--text-dim); box-shadow: none; border: 1px solid var(--ring); }
 .companion-card button.cc-max-btn { border-radius: 10px; }
-.cp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 6px; }
+.cp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.cp-tile { min-width: 0; padding: 7px 2px 5px !important; }
 .cp-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px 6px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--rc) 60%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 14%, transparent), var(--bg-soft)); color: var(--text); cursor: pointer; font: inherit; }
 .cp-tile.active { box-shadow: 0 0 0 2px var(--rc); }
-.cp-tile-img .comp-sprite { width: 44px; height: 44px; filter: grayscale(0.5) brightness(0.9); }
+.cp-tile-img .comp-sprite { width: 40px; height: 40px; filter: grayscale(0.5) brightness(0.9); }
 .cp-tile.sealed .cp-tile-img .comp-sprite { filter: brightness(0) opacity(0.45); }
-.cp-tile-name { font-size: 0.64rem; font-weight: 900; line-height: 1.25; text-align: center; }
-.cp-tile-stars { font-size: 0.56rem; color: var(--rc); }
-.cp-tile-lock { font-size: 0.54rem; color: var(--text-dim); font-weight: 700; }
+.cp-tile-name { font-size: 0.56rem; font-weight: 900; line-height: 1.25; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-tile-stars { font-size: 0.48rem; color: var(--rc); letter-spacing: -0.05em; }
+.cp-tile-lock { font-size: 0.48rem; color: var(--text-dim); font-weight: 700; white-space: nowrap; }
 .cp-info { margin-top: 6px; border: 1.5px solid var(--rc); border-radius: 12px; padding: 8px 10px; background: var(--bg-soft); font-size: 0.68rem; }
 .cp-info-head { display: flex; align-items: center; gap: 8px; }
 .cp-info-head .comp-sprite { width: 44px; height: 44px; }
