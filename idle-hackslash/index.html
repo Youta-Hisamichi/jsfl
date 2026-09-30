@@ -7068,6 +7068,11 @@
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
+      if (isMainPlayerBall(ball) && pullAim) { // 引っ張っている間はその場で止まって狙う
+        ball.pullShot = null;
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
       if (isMainPlayerBall(ball) && ball.pullShot) { // 引っ張りで発射中は跳ね回りながら減速
         movePullShot(ball, speedMult);
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
