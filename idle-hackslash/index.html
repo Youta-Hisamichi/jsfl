@@ -2222,11 +2222,11 @@
     }
     return picks;
   }
-  const REBIRTH_SHOP_CATEGORIES = [
-    { id: 'attack', label: '⚔️ 攻撃' },
-    { id: 'defense', label: '🛡️ 防御' },
-    { id: 'economy', label: '🟡 経済' },
-    { id: 'companion', label: '🐾 仲間' },
+  const REBIRTH_SHOP_CATEGORIES = [ // タブのアイコンは強化ページと同じ画像
+    { id: 'attack', label: `${xi('x_up_attack')} 攻撃` },
+    { id: 'defense', label: `${xi('x_up_defense')} 防御` },
+    { id: 'economy', label: `${xi('x_up_coin')} 経済` },
+    { id: 'companion', label: `${xi('x_up_companion')} 仲間` },
   ];
   const ARTIFACT_CATEGORY = {
     heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
