@@ -533,6 +533,19 @@
   .record-panel.one { grid-template-columns: 1fr; }
   .record-panel.one .record { display: grid; grid-template-columns: 5em 9em 1fr; align-items: center; column-gap: 6px; padding: 8px 12px; text-align: left; }
   .record-panel.one .record strong { display: block; order: 1; }
+  /* 戦績の目標 */
+  .record-panel.one .record .rec-goal { grid-column: 1 / -1; order: 3; display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.62rem; }
+  .rec-goal:empty { display: none !important; }
+  .rec-goal .rg-bar { flex: 1; min-width: 40px; height: 5px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; }
+  .rec-goal .rg-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #64e8ff, #b07cff); }
+  .rec-goal .rg-text { white-space: nowrap; color: var(--text-dim); }
+  .rec-goal .rg-text b { color: var(--text); }
+  .rec-goal .rg-reward { white-space: nowrap; font-weight: 800; color: #64c8ff; }
+  .rec-goal .rg-claim { white-space: nowrap; border: none; border-radius: 999px; padding: 3px 10px; font-weight: 900; font-size: 0.66rem; color: #fff; background: linear-gradient(90deg, #ffb14f, #ff5f8f); box-shadow: 0 2px 6px rgba(255,95,143,0.4); cursor: pointer; animation: rsNewBlink 0.7s ease-in-out infinite alternate; }
+  .record.goal-ready { background: linear-gradient(90deg, rgba(255,177,79,0.12), transparent) , var(--panel); }
+  .record.goal-ready .rg-bar i { background: linear-gradient(90deg, #ffb14f, #ff5f8f); }
+  .tab-btn.has-reward { position: relative; }
+  .tab-btn.has-reward::after { content: ''; position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px var(--panel); }
   .record strong[data-unit]::after { content: attr(data-unit); margin-left: 2px; font-size: 0.7rem; font-weight: normal; color: var(--text-dim); }
   .artifact-progress { margin-bottom: 8px; padding: 8px; text-align: center; font-size: 0.75rem; color: var(--text-dim); background: var(--panel); border: 1px solid var(--ring); border-radius: 10px; }
   .artifact-progress strong { color: var(--gold); font-size: 0.9rem; }
@@ -1152,15 +1165,15 @@
         </div>
       </div>
       <div class="record-panel one">
-        <div class="record">BEST<strong id="bestStageNum" data-unit="ステージ">1</strong>到達ステージ</div>
-        <div class="record">BEST<strong id="bestCoinsNum" data-unit="枚">0</strong>コイン所持数</div>
-        <div class="record">TOTAL<strong id="totalKillsNum" data-unit="体">0</strong>キル</div>
-        <div class="record">TOTAL<strong id="totalTapsNum" data-unit="回">0</strong>タップ</div>
-        <div class="record">TOTAL<strong id="rebornNum" data-unit="回">0</strong>転生回数</div>
-        <div class="record">TOTAL<strong id="totalSpentNum" data-unit="枚">0</strong>消費コイン</div>
-        <div class="record">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ</div>
-        <div class="record">MAX<strong id="maxDpsNum" data-unit="DPS">0</strong>DPS</div>
-        <div class="record">MAX<strong id="maxComboNum" data-unit="回">0</strong>コンボ</div>
+        <div class="record" data-goal-row="bestStage">BEST<strong id="bestStageNum" data-unit="ステージ">1</strong>到達ステージ<div class="rec-goal" data-goal="bestStage"></div></div>
+        <div class="record" data-goal-row="bestCoins">BEST<strong id="bestCoinsNum" data-unit="枚">0</strong>コイン所持数<div class="rec-goal" data-goal="bestCoins"></div></div>
+        <div class="record" data-goal-row="totalKills">TOTAL<strong id="totalKillsNum" data-unit="体">0</strong>キル<div class="rec-goal" data-goal="totalKills"></div></div>
+        <div class="record" data-goal-row="totalTaps">TOTAL<strong id="totalTapsNum" data-unit="回">0</strong>タップ<div class="rec-goal" data-goal="totalTaps"></div></div>
+        <div class="record" data-goal-row="reincarnations">TOTAL<strong id="rebornNum" data-unit="回">0</strong>転生回数<div class="rec-goal" data-goal="reincarnations"></div></div>
+        <div class="record" data-goal-row="totalSpent">TOTAL<strong id="totalSpentNum" data-unit="枚">0</strong>消費コイン<div class="rec-goal" data-goal="totalSpent"></div></div>
+        <div class="record" data-goal-row="maxDamage">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ<div class="rec-goal" data-goal="maxDamage"></div></div>
+        <div class="record" data-goal-row="maxDps">MAX<strong id="maxDpsNum" data-unit="DPS">0</strong>DPS<div class="rec-goal" data-goal="maxDps"></div></div>
+        <div class="record" data-goal-row="maxCombo">MAX<strong id="maxComboNum" data-unit="回">0</strong>コンボ<div class="rec-goal" data-goal="maxCombo"></div></div>
         <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
         <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
@@ -1168,7 +1181,7 @@
         <div class="record">BOSS<strong id="bossDmgNum">+0%</strong>ボス特攻</div>
         <div class="record">COUNTER<strong id="counterNum">0%</strong>カウンター率</div>
         <div class="record">START<strong id="startedAtText">-</strong>ゲーム開始日時</div>
-        <div class="record">TOTAL<strong id="playTimeText">0時間00分00秒</strong>プレイ時間</div>
+        <div class="record" data-goal-row="playTime">TOTAL<strong id="playTimeText">0時間00分00秒</strong>プレイ時間<div class="rec-goal" data-goal="playTime"></div></div>
       </div>
       <div class="title" style="margin-top:14px;"><span data-xi="x_book">📖</span> 敵図鑑 <span id="bestiaryCount" style="color:var(--gold);">0 / 0</span></div>
       <div class="bestiary-list" id="bestiaryList"></div>
@@ -3212,6 +3225,61 @@
   }
 
   // コインを消費（戦績の TOTAL 消費コインに記録）
+  // ---------- 戦績の目標：各戦績に次の目標を出し、達成したら報酬ジェムを受け取れる ----------
+  const geo = (start, mult) => lv => Math.round(start * Math.pow(mult, lv));
+  const listThen = (list, mult) => lv => lv < list.length ? list[lv] : Math.round(list[list.length - 1] * Math.pow(mult, lv - list.length + 1));
+  const RECORD_GOALS = {
+    bestStage: { get: () => game.bestStage || 1, goal: listThen([10, 20, 30, 50, 75, 100, 150, 200, 300, 500], 1.5), unit: 'ステージ' },
+    bestCoins: { get: () => game.bestCoins || 0, goal: geo(1000, 10), unit: '枚' },
+    totalKills: { get: () => game.totalKills || 0, goal: listThen([50, 100, 300, 1000, 3000, 10000], 3), unit: '体' },
+    totalTaps: { get: () => game.totalTaps || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
+    reincarnations: { get: () => game.reincarnations || 0, goal: listThen([1, 3, 5, 10, 20, 30, 50], 1.5), unit: '回' },
+    totalSpent: { get: () => game.totalCoinsSpent || 0, goal: geo(1000, 10), unit: '枚' },
+    maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
+    maxDps: { get: () => game.maxDps || 0, goal: geo(100, 10), unit: 'DPS' },
+    maxCombo: { get: () => game.maxCombo || 0, goal: listThen([5, 10, 20, 30, 50, 75, 100], 1.5), unit: '回' },
+    playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
+  };
+  function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
+  function getRecordGoalReward(lv) { return Math.min(30, 3 + lv * 2); } // 3→5→7…（最大30）
+  function isRecordGoalReady(key) { const g = RECORD_GOALS[key]; return g.get() >= g.goal(getRecordGoalLevel(key)); }
+  let recordGoalsSig = '';
+  function renderRecordGoals(force) {
+    const ready = Object.keys(RECORD_GOALS).some(isRecordGoalReady);
+    const tabBtn = document.querySelector('.tab-btn[data-tab="records"]');
+    if (tabBtn) tabBtn.classList.toggle('has-reward', ready); // 受け取れる報酬があれば戦績タブに印
+    if (getActiveTab() !== 'records' && !force) return;
+    const rows = Object.entries(RECORD_GOALS).map(([key, g]) => {
+      const lv = getRecordGoalLevel(key), target = g.goal(lv), v = g.get();
+      return [key, lv, target, Math.min(1, v / target), v >= target];
+    });
+    const sig = rows.map(r => r[1] + ':' + r[4] + ':' + Math.floor(r[3] * 50)).join('|');
+    if (sig === recordGoalsSig && !force) return; // 変化がなければ描き直さない
+    recordGoalsSig = sig;
+    rows.forEach(([key, lv, target, pct, done]) => {
+      const el = document.querySelector(`[data-goal="${key}"]`);
+      if (!el) return;
+      const g = RECORD_GOALS[key], reward = getRecordGoalReward(lv);
+      el.innerHTML = `<div class="rg-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div><span class="rg-text">次の目標 <b>${formatCoinNumber(target)}</b>${g.unit}</span>`
+        + (done ? `<button class="rg-claim" data-goal-claim="${key}">💎${reward} 受け取る</button>` : `<span class="rg-reward">報酬 💎${reward}</span>`);
+      el.parentElement.classList.toggle('goal-ready', done);
+    });
+  }
+  document.addEventListener('click', event => {
+    const btn = event.target.closest('[data-goal-claim]');
+    if (!btn) return;
+    const key = btn.dataset.goalClaim;
+    if (!RECORD_GOALS[key] || !isRecordGoalReady(key)) return;
+    const reward = getRecordGoalReward(getRecordGoalLevel(key));
+    if (!game.recordGoals) game.recordGoals = {};
+    game.recordGoals[key] = getRecordGoalLevel(key) + 1;
+    game.gems += reward;
+    playRegisterSound();
+    showTapError(`💎+${reward} ゲット！`, event.clientX, event.clientY);
+    updateStatsUI();
+    renderRecordGoals(true);
+    saveGame();
+  });
   function spendCoins(amount) {
     game.coins -= amount;
     game.totalCoinsSpent = (game.totalCoinsSpent || 0) + amount;
@@ -3242,6 +3310,7 @@
     headerGemsEl.textContent = Math.floor(game.gems);
     startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
     playTimeText.textContent = formatDuration(game.playTimeMs || 0);
+    renderRecordGoals();
 
     const stageInCycle = ((game.stage - 1) % 10) + 1;
     stageProgressText.textContent = stageInCycle + ' / 10';
