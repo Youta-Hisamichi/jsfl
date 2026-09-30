@@ -3453,7 +3453,35 @@ const HOLD_POWER_MS = 2500, HOLD_POWER_MAX = 3;
 function getHoldPower() { return holdRush ? Math.min(1, (Date.now() - holdRush.start) / HOLD_POWER_MS) : 0; }
 function getHoldDmgMult() { return 1 + (HOLD_POWER_MAX - 1) * getHoldPower(); }
 function consumeHoldPower() { if (holdRush) holdRush.start = Date.now(); }
+// 突進ゲージ：押しっぱなしの突進で減り、離すと回復。空になると回復が RUSH_RECOVER まで戻るまで突進できない
+const RUSH_DRAIN_FRAMES = 150, RUSH_REGEN_FRAMES = 240, RUSH_RECOVER = 0.3;
+let rushGauge = 1, rushExhausted = false;
+function tickRushGauge(speedMult) {
+  const rushing = !!holdRush && !rushExhausted;
+  if (rushing) {
+    rushGauge = Math.max(0, rushGauge - speedMult / RUSH_DRAIN_FRAMES);
+    if (rushGauge <= 0) { rushExhausted = true; playTone(300, 0.12, 'square', 0.06, 180); }
+  } else {
+    rushGauge = Math.min(1, rushGauge + speedMult / RUSH_REGEN_FRAMES);
+    if (rushExhausted && rushGauge >= RUSH_RECOVER) rushExhausted = false;
+    if (holdRush) holdRush.start = Date.now(); // 突進できない間はためない
+  }
+  return rushing && rushGauge > 0;
+}
+function drawRushGauge() {
+  const pl = balls.find(ball => isMainPlayerBall(ball));
+  if (!pl || (rushGauge >= 1 && !holdRush)) return;
+  const w = 44, h = 6, x = pl.x - w / 2, y = pl.y + pl.radius + 8;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+  const blink = rushExhausted && Math.floor(Date.now() / 150) % 2;
+  ctx.fillStyle = rushExhausted ? (blink ? '#ff4f6d' : '#8a2a36') : rushGauge < 0.3 ? '#ffb14f' : '#4fe0ff';
+  ctx.fillRect(x, y, w * rushGauge, h);
+  if (rushExhausted) { ctx.fillStyle = '#ff4f6d'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('突進切れ', pl.x, y + h + 11); }
+  ctx.restore();
+}
 function drawHoldCharge() {
+  drawRushGauge();
   const pw = getHoldPower(), pl = balls.find(ball => isMainPlayerBall(ball));
   if (!pl || pw < 0.05) return;
   const full = pw >= 1;
@@ -6834,7 +6862,7 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
-    if (isMainPlayerBall(ball) && holdRush) { // 押している間は敵へ突撃
+    if (isMainPlayerBall(ball) && tickRushGauge(speedMult)) { // 押している間は突進ゲージを使って敵へ突撃
       moveHoldRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
