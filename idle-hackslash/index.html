@@ -1754,7 +1754,7 @@
     renderDirtyTabList(name);
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
-    if (name === 'records') { renderBestiary(); renderBgmBook(); }
+    if (name === 'records') { renderBestiary(); renderBgmBook(); updateStatsUI(); renderRecordGoals(true); } // 戦績の目標は開いたときに必ず描く（他のページでは戦闘が止まって更新されないため）
     else if (bgmBookPreview) bgmBookPreview = null; // 戦績ページを離れたら試聴をやめる
     if (name === 'game') resizeCanvas();
     // 戦闘を止めたままショップに来ていた場合、ゲーム画面に戻ったら元の確認画面を再表示
