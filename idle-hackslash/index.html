@@ -954,6 +954,9 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .hold-sum.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .hold-sum b { color: #ffd76b; font-size: 0.9rem; }
 .hold-sum span { color: #6b7085; margin: 0 4px; }
+.reborn-reward { margin: 10px auto 12px; padding: 8px 14px; border-radius: 12px; background: rgba(100,232,255,0.1); border: 1px solid rgba(100,232,255,0.45); font-weight: 800; font-size: 0.9rem; }
+.reborn-reward b { color: #64e8ff; font-size: 1.15rem; margin-left: 4px; }
+.reborn-ad-btn b { margin-left: 6px; font-size: 1.05rem; }
 .tab-btn.has-new::after { content: ''; position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px var(--panel); animation: tabDot 1.2s ease-in-out infinite alternate; }
 @keyframes tabDot { to { transform: scale(1.3); } }
 .upgrade-btn, .upgrade-max-btn, .shop-btn, .modal-shop-btn, .action-btn, .gacha-pull, .sub-tab-btn, .modal-close-btn, .reward-ad-btn { transition: transform 0.08s, filter 0.08s; }
@@ -1475,7 +1478,9 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div style="font-size:2.4rem;"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
     <h2>本当に転生しますか？</h2>
     <div class="modal-sub" style="color:var(--text); font-size:0.85rem;">コイン・強化・仲間・ステージ進行がリセットされます<br>（代わりにランダムなアーティファクトを1つ獲得できます）</div>
+    <div class="reborn-reward">転生報酬 <b>💎 <span id="rebornGemAmt">2</span></b></div>
     <div class="modal-shop-list">
+      <button class="reward-ad-btn reborn-ad-btn" id="rebornAdBtn">🎬 動画を見て報酬3倍 <b>💎 <span id="rebornGemAmt3">6</span></b></button>
       <button class="modal-close-btn" id="rebornConfirmOkBtn"><span data-xi="x_reborn">🌌</span> 転生する</button>
       <button class="modal-shop-btn" id="rebornConfirmCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
     </div>
@@ -7591,6 +7596,9 @@ function reincarnateAfterAd() {
   showInterstitialAd(() => completeReincarnation());
 }
 
+// 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
+let rebirthGemMult = 1;
+function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {
   gameOverBgm = false; rebirthFlow = true; updateSkipBtnVisibility();
   rebirthRewardBgm = true; refreshBgm();
@@ -7599,6 +7607,7 @@ function completeReincarnation() {
   game.skipChallenge = null;
   continueBtn.style.display = 'none';
   giveUpBtn.style.display = 'none';
+  const gemBase = getRebirthGemGain(); // ステージを戻す前に計算
   const earlyRebirth = game.reincarnations < EARLY_REBIRTH_COUNT;
   const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
   const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
@@ -7615,7 +7624,7 @@ function completeReincarnation() {
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);
   renderCompanionList();
-  const rebirthGemGain = 2 + computeBonuses().rebirthGems; // 遺物「輪廻の宝珠」で増加
+  const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
   game.gems += rebirthGemGain; game.reincarnations++;
   renderArtifactList();
   updateStatsUI();
@@ -9910,14 +9919,25 @@ document.getElementById('shareCloseBtn').addEventListener('click', () => shareMo
 shareModal.addEventListener('click', event => { if (event.target === shareModal) shareModal.classList.remove('show'); });
 
 const rebornConfirmModal = document.getElementById('rebornConfirmModal');
-document.getElementById('rebornConfirmOkBtn').addEventListener('click', () => {
+function doSelfRebirth(mult) {
   rebornConfirmModal.classList.remove('show');
-  if (phase === 'battle' && game.stage >= 3) onPlayerDeath(true);
+  if (phase !== 'battle' || game.stage < 3) return;
+  rebirthGemMult = mult;
+  onPlayerDeath(true);
+}
+document.getElementById('rebornConfirmOkBtn').addEventListener('click', () => doSelfRebirth(1));
+document.getElementById('rebornAdBtn').addEventListener('click', () => {
+  if (isAdFree()) { doSelfRebirth(3); return; } // 紋章（サブスク）加入中は動画なし
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); });
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', () => rebornConfirmModal.classList.remove('show'));
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) rebornConfirmModal.classList.remove('show'); });
 rebornBtn.addEventListener('click', event => {
   if (phase === 'battle' && game.stage >= 3) {
+    const g = getRebirthGemGain();
+    document.getElementById('rebornGemAmt').textContent = g;
+    document.getElementById('rebornGemAmt3').textContent = g * 3;
+    document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
     rebornConfirmModal.classList.add('show');
   } else {
     showTapError('ステージ3から転生できます', event.clientX, event.clientY);
