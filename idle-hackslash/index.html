@@ -3448,11 +3448,7 @@ let arenaHeld = false; // サークルを押し続けているか（クールダ
 let tackle = null; // { until, mult, full }
 function isTackling() { return !!tackle && Date.now() < tackle.until; }
 const HOLD_RUSH_MODE = true;
-let holdRush = null;             // { id, start }：押している指と、ためはじめた時刻
-const HOLD_POWER_MS = 2500, HOLD_POWER_MAX = 3;
-function getHoldPower() { return holdRush ? Math.min(1, (Date.now() - holdRush.start) / HOLD_POWER_MS) : 0; }
-function getHoldDmgMult() { return 1 + (HOLD_POWER_MAX - 1) * getHoldPower(); }
-function consumeHoldPower() { if (holdRush) holdRush.start = Date.now(); }
+let holdRush = null;             // { id }：押している指
 // 突進ゲージ：押しっぱなしの突進で減り、離すと回復。空になると回復が RUSH_RECOVER まで戻るまで突進できない
 const RUSH_DRAIN_FRAMES = 150, RUSH_REGEN_FRAMES = 240, RUSH_RECOVER = 0.3;
 let rushGauge = 1, rushExhausted = false;
@@ -3464,7 +3460,6 @@ function tickRushGauge(speedMult) {
   } else {
     rushGauge = Math.min(1, rushGauge + speedMult / RUSH_REGEN_FRAMES);
     if (rushExhausted && rushGauge >= RUSH_RECOVER) rushExhausted = false;
-    if (holdRush) holdRush.start = Date.now(); // 突進できない間はためない
   }
   return rushing && rushGauge > 0;
 }
@@ -3478,18 +3473,6 @@ function drawRushGauge() {
   ctx.fillStyle = rushExhausted ? (blink ? '#ff4f6d' : '#8a2a36') : rushGauge < 0.3 ? '#ffb14f' : '#4fe0ff';
   ctx.fillRect(x, y, w * rushGauge, h);
   if (rushExhausted) { ctx.fillStyle = '#ff4f6d'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('突進切れ', pl.x, y + h + 11); }
-  ctx.restore();
-}
-function drawHoldCharge() {
-  drawRushGauge();
-  const pw = getHoldPower(), pl = balls.find(ball => isMainPlayerBall(ball));
-  if (!pl || pw < 0.05) return;
-  const full = pw >= 1;
-  ctx.save();
-  ctx.strokeStyle = full ? '#ff4f6d' : '#ffb35c';
-  ctx.lineWidth = 3 + pw * 2; ctx.lineCap = 'round';
-  if (full) { ctx.shadowColor = '#ff4f6d'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 80) * 6; }
-  ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pw); ctx.stroke();
   ctx.restore();
 }
 const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
@@ -7102,8 +7085,7 @@ function step() {
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-  const holdMult = getHoldDmgMult(); // 押しっぱなしのため（攻撃が当たったらためなおし）
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * holdMult; // リセット前の連打ボーナスでダメージを計算する
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
@@ -7127,8 +7109,7 @@ function step() {
       trackDamage(dmg);
       spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
       spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-      if (tapDmgMult > 1.05) spawnDamageText(e.x, e.y - e.radius - 34, `${holdMult > 1 ? 'ため' : '連打'}ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, holdMult >= HOLD_POWER_MAX ? '#ff4f6d' : '#ff9f43', 0.022, tapDmgMult >= 2);
-      consumeHoldPower();
+      if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
       onPlayerHitEnemy(e, dmg);
       playEnemyHitSound();
       applyHitKnockback(e, a, 3.2);
@@ -7297,9 +7278,8 @@ function processAdds(a) {
       if (add.hp <= 0) continue;
       for (const atk of attackers) {
         if (resolveBallCollision(atk, add)) {
-          const holdMult = atk === a ? getHoldDmgMult() : 1;
-          if (atk === a) { a.tapSpeedMult = 1; consumeHoldPower(); } // 雑魚敵に衝突してもタップ加速・ためをリセット
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * holdMult)));
+          if (atk === a) a.tapSpeedMult = 1; // 雑魚敵に衝突してもタップ加速をリセット
+          const { dmg, crit } = rollCrit(Math.max(1, (atk.atk || 1)));
           add.hp -= dmg;
           trackDamage(dmg);
           focusHpEnemy(add);
@@ -8777,7 +8757,7 @@ function draw() {
   drawAtkUpEffects();
   drawRegenEffects();
   drawTackleEffects();
-  drawHoldCharge();
+  drawRushGauge();
   drawEnemyTraitEffects();
   drawNovaFx();
 
@@ -10355,7 +10335,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId, start: Date.now() }; return; } // 押している間は突撃
+  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId }; return; } // 押している間は突撃
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
