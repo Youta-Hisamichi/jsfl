@@ -5886,24 +5886,25 @@
     playTone(520, 0.05, 'sine', 0.09, 760);
     setTimeout(() => playTone(920, 0.08, 'sine', 0.1, 1200), 35);
   }
-  // ショップで買ったときのレジ音：重い「ドガシャッ」＋小銭「チャリッ」＋響く「チャリーン♪」（RPGのお店の会計音のようにパンチを効かせる）
+  // ショップで買ったときのレジ音：軽い小銭「チャッ」＋爽やかに響く「チーン♪」（最初の低音は控えめに）
   let lastRegisterAt = 0;
   function playRegisterSound() {
-    const now = performance.now(), rapid = now - lastRegisterAt < 150; // 長押しの連続購入中は軽めに
+    const now = performance.now(), rapid = now - lastRegisterAt < 150; // 長押しの連続購入中はベルだけ
     lastRegisterAt = now;
-    thump(130, 42, 0.24, rapid ? 0.5 : 0.95);                     // 腹に響く低音「ドッ」
     if (!rapid) {
-      thump(260, 85, 0.1, 0.5, 'square');                           // 引き出しの金属「ガッ」
-      noiseSweep(0.12, 2400, 280, 'lowpass', 0.8, 0.6);             // 「シャッ」
-      setTimeout(() => playTone(2637, 0.05, 'square', 0.07), 55);   // 小銭「チャ」
-      setTimeout(() => playTone(3136, 0.05, 'square', 0.07), 85);   // 「リッ」
+      thump(110, 55, 0.12, 0.25);                                   // ほんのり下支えする低音
+      playTone(2637, 0.04, 'square', 0.05);                         // 小銭「チャ」
+      setTimeout(() => playTone(3520, 0.04, 'square', 0.05), 35);   // 「ッ」
     }
-    setTimeout(() => { // 「チャリーン♪」：明るいベルに低い胴鳴りを重ねて厚みを出す
-      playTone(1568, 0.5, 'triangle', 0.16);
-      playTone(2349, 0.45, 'triangle', 0.1);
-      playTone(1568 * 2.76, 0.3, 'sine', 0.035);
-      playTone(392, 0.32, 'triangle', 0.14, 380);
-    }, rapid ? 0 : 110);
+    setTimeout(() => { // 「チーン♪」：高く澄んだベルを2音で駆け上がり、長めに響かせる
+      playTone(2093, 0.18, 'sine', 0.1);
+      setTimeout(() => {
+        playTone(3136, 0.7, 'sine', 0.14);
+        playTone(3136 * 2, 0.4, 'sine', 0.03);
+        playTone(3136 * 2.76, 0.25, 'sine', 0.02);
+        playTone(1568, 0.5, 'triangle', 0.06);
+      }, 60);
+    }, rapid ? 0 : 70);
   }
   function playUpgradeSound() {
     playTone(660, 0.08, 'triangle', 0.12, 880);
