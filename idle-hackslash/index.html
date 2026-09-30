@@ -5236,16 +5236,16 @@
       ],
       drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
     },
-    // 強化ページ：鍛冶屋の工房（VRC6風チップチューン。ニ短調のドリア風の力強い作業歌。金床を打つ「カーン、カン」という高い刻みと、ずっしり刻むベースで鍛冶屋らしく）
+    // 強化ページ：鍛冶屋の工房（VRC6風チップチューン。ニ長調で駆け上がる、テンションの上がる鍛冶場の曲。金床を打つ「カーン、カン」という高い刻みと、8分で突き進むオクターブのベース）
     upgrade: {
-      bpm: 116,
+      bpm: 150,
       tracks: [
-        { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 = F5 = A5 = G5 F5 | E5 = G5 = C6 = A#5 A5 | A5 = F5 = D5 = F5 A5 | C#6 = = = A5 = = = | D6 = C6 = A5 = F5 = | A5 = C6 = F5 = A5 = | G5 = B5 = D6 = C6 B5 | A5 = = = C#6 = E6 =' },
-        { type: 'vrc6pulse12', gain: 0.02, notes: 'A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - A6 - A6 A6 A6 -' },
-        { type: 'vrc6saw', gain: 0.05, notes: 'D2 - D2 A1 D2 - D2 A1 | C2 - C2 G1 C2 - C2 G1 | D2 - D2 A1 D2 - D2 A1 | A1 - A1 E2 A1 - A1 E2 | D2 - D2 A1 D2 - D2 A1 | F1 - F1 C2 F1 - F1 C2 | G1 - G1 D2 G1 - G1 D2 | A1 - A1 E2 A1 - C#2 E2' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 A5 D6 A5 F#5 A5 D6 E6 | E6 = C#6 A5 E5 = A5 C#6 | D6 C#6 B5 F#5 D5 F#5 B5 D6 | B5 = G5 = D6 = B5 = | F#6 = E6 D6 A5 = D6 F#6 | E6 = C#6 A5 E6 = F#6 E6 | D6 = B5 G5 C#6 = A5 E6 | D6 = = = A5 = D6 =' },
+        { type: 'vrc6pulse12', gain: 0.02, notes: 'A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - A6 - A6 A6 A6 A6' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | G1 G2 G1 G2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3' },
       ],
-      kickBoost: 1.2, // 槌を振り下ろすような重さ
-      drums: 'k - h s k h s - | k - h s k h s - | k - h s k h s - | k - h s k h s s | k - h s k h s - | k - h s k h s - | k - h s k h s - | k - k s k s ks ks',
+      kickBoost: 1.15, // 槌を振り下ろすような力強さ
+      drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
     },
     // 仲間ページ：なかまとホーム（スマホゲームのホーム画面系の作風×VRC6風チップチューン。ニ長調の王道進行G-A-F#m-Bmで明るくキャッチーに）
     companion: {
@@ -5525,7 +5525,7 @@
     { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
     { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
     { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-    { key: 'upgrade', name: 'ページ 強化 鍛冶屋の工房', desc: '金床を打つ高い刻みとずっしりしたベースの力強い作業歌。VRC6風チップチューン。ニ短調・BPM116' },
+    { key: 'upgrade', name: 'ページ 強化 鍛冶屋の工房', desc: '金床を打つ高い刻みと8分で突き進むベースの、テンションの上がる鍛冶場の曲。VRC6風チップチューン。ニ長調・BPM150' },
     { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
     { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
     { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
