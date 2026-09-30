@@ -3460,6 +3460,63 @@
   let arenaHeld = false; // サークルを押し続けているか（クールダウン明けにタメを開始するため）
   let tackle = null; // { until, mult, full }
   function isTackling() { return !!tackle && Date.now() < tackle.until; }
+  // ---------- お試し：引っ張りアクション（引っ張って離すと、反対方向へ勢いよく飛んで跳ね回る） ----------
+  // true のあいだは、連打で突撃・長押しのタメ・ドラッグ移動をオフにする
+  const PULL_MODE = true;
+  const PULL_MIN_PX = 14;          // これ未満の引っ張りはタップ扱い（飛ばない）
+  const PULL_MAX_RATIO = 0.7;      // サークル半径のこの割合まで引っ張るとフルパワー
+  const PULL_SPEED_MIN = 3.5, PULL_SPEED_MAX = 9; // 発射の速さ（反射移動の基本の速さの倍率）
+  const PULL_FRICTION = 0.988;     // 1フレームごとの減速
+  const PULL_DMG_MULT = 1.5;       // 飛んでいる間に当てたダメージの倍率
+  let pullAim = null;              // { id, sx, sy, cx, cy }：引っ張り中の指の位置（画面座標）
+  function getPullVector() {
+    if (!pullAim) return null;
+    const k = size / canvas.getBoundingClientRect().width;
+    const dx = (pullAim.sx - pullAim.cx) * k, dy = (pullAim.sy - pullAim.cy) * k, len = Math.hypot(dx, dy);
+    if (len < PULL_MIN_PX) return { len, power: 0 };
+    return { dx: dx / len, dy: dy / len, len, power: Math.min(1, len / (arena.radius * PULL_MAX_RATIO)) };
+  }
+  function launchPullShot() {
+    const pv = getPullVector();
+    pullAim = null;
+    if (!pv || !pv.power || phase !== 'battle') return;
+    const pl = balls.find(ball => isMainPlayerBall(ball));
+    if (!pl) return;
+    const sp = BOUNCE_SPEED * (PULL_SPEED_MIN + (PULL_SPEED_MAX - PULL_SPEED_MIN) * pv.power);
+    pl.vx = pv.dx * sp; pl.vy = pv.dy * sp;
+    pl.seekPoint = null; pl.missBounces = 0;
+    pl.pullShot = { power: pv.power };
+    spawnHitParticles(pl.x, pl.y, pv.power >= 1 ? '#ff5c8a' : '#ffb35c');
+    playAccelSound();
+  }
+  // 飛んでいる間：壁で跳ね返りながら少しずつ減速し、普段の速さまで落ちたら通常の移動に戻る
+  function movePullShot(ball, speedMult) {
+    ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+    wallBounce(ball);
+    const f = Math.pow(PULL_FRICTION, speedMult);
+    ball.vx *= f; ball.vy *= f;
+    if (Math.hypot(ball.vx, ball.vy) < BOUNCE_SPEED * 1.1) ball.pullShot = null;
+  }
+  // 引っ張り中の狙いの矢印（飛ぶ方向・長さ＝パワー）
+  function drawPullAim() {
+    const pv = getPullVector(), pl = balls.find(ball => isMainPlayerBall(ball));
+    if (!pv || !pv.power || !pl) return;
+    const len = 30 + pv.power * arena.radius * 0.55, full = pv.power >= 1;
+    const ex = pl.x + pv.dx * len, ey = pl.y + pv.dy * len;
+    ctx.save();
+    ctx.strokeStyle = full ? 'rgba(255,92,138,0.95)' : 'rgba(255,179,92,0.9)';
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.setLineDash([2, 9]);
+    ctx.beginPath(); ctx.moveTo(pl.x, pl.y); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.setLineDash([]);
+    const a = Math.atan2(pv.dy, pv.dx), hs = 12 + pv.power * 6;
+    ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * hs, ey + Math.sin(a) * hs);
+    ctx.lineTo(ex + Math.cos(a + 2.4) * hs, ey + Math.sin(a + 2.4) * hs);
+    ctx.lineTo(ex + Math.cos(a - 2.4) * hs, ey + Math.sin(a - 2.4) * hs); ctx.closePath(); ctx.fill();
+    ctx.lineWidth = 3; ctx.globalAlpha = 0.8; // パワーの輪
+    ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pv.power); ctx.stroke();
+    ctx.restore();
+  }
   function getTackleChargeLevel() {
     if (!tackleChargeStart) return -1;
     const held = Date.now() - tackleChargeStart;
@@ -5551,15 +5608,15 @@
       ],
       drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - s s',
     },
-    // 転生ショップ：運命の選択（ゴシックアクションのパスワード入力画面系の作風×VRC6風チップチューン。ニ短調の和声的短音階。オルガンのような分散和音と重く刻むオクターブのベースで、重厚で怪しげに）
+    // 転生ショップ：運命の選択（ゴシックアクションのパスワード入力画面系の作風×VRC6風チップチューン。ニ短調から平行長調へ開けていく Dm-B♭-F-C の進行で、重厚さを残しつつ明るく希望のある響きに）
     rebirth: {
-      bpm: 120,
+      bpm: 124,
       tracks: [
-        { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 = = = F5 = A5 = | A#5 = = = A5 = G5 = | G5 = = = A#5 = D6 = | C#6 = = = = = A5 = | D6 = = = C6 = A#5 A5 | A5 = = = F5 = C6 = | A#5 = A5 G5 A5 = C#6 E6 | D6 = = = = = - -' },
-        { type: 'vrc6pulse12', gain: 0.018, notes: 'D4 A4 F4 A4 D5 A4 F4 A4 | D4 A#4 F4 A#4 D5 A#4 F4 A#4 | D4 A#4 G4 A#4 D5 A#4 G4 A#4 | C#4 A4 E4 A4 C#5 A4 E4 A4 | D4 A4 F4 A4 D5 A4 F4 A4 | C4 A4 F4 A4 C5 A4 F4 A4 | D4 A#4 G4 A#4 C#4 A4 E4 A4 | D4 A4 F4 A4 D5 A4 F4 D4' },
-        { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 = D2 = D3 = | A#1 = A#2 = A#1 = A#2 = | G1 = G2 = G1 = G2 = | A1 = A2 = A1 = A2 = | D2 = D3 = D2 = D3 = | F1 = F2 = F1 = F2 = | G1 = G2 = A1 = A2 = | D2 = A1 = D2 = = =' },
+        { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 = = = F5 = A5 = | A#5 = = = D6 = C6 = | C6 = = = A5 = F5 = | G5 = = = C6 = E6 = | F6 = = = E6 = D6 C6 | D6 = = = A#5 = F5 = | E5 = G5 = C6 = E6 = | F6 = = = C6 = A5 =' },
+        { type: 'vrc6pulse12', gain: 0.018, notes: 'D4 A4 F4 A4 D5 A4 F4 A4 | D4 A#4 F4 A#4 D5 A#4 F4 A#4 | C4 A4 F4 A4 C5 A4 F4 A4 | C4 G4 E4 G4 C5 G4 E4 G4 | D4 A4 F4 A4 D5 A4 F4 A4 | D4 A#4 F4 A#4 D5 A#4 F4 A#4 | C4 G4 E4 G4 C5 G4 E4 G4 | C4 A4 F4 A4 C5 A4 F4 C5' },
+        { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 = D2 = D3 = | A#1 = A#2 = A#1 = A#2 = | F1 = F2 = F1 = F2 = | C2 = C3 = C2 = C3 = | D2 = D3 = D2 = D3 = | A#1 = A#2 = A#1 = A#2 = | C2 = C3 = C2 = C3 = | F1 = F2 = C2 = F2 =' },
       ],
-      kickBoost: 1.3, // 重く響かせる
+      kickBoost: 1.2,
       drums: 'k - - - s - - - | k - - k s - - - | k - - - s - - - | k - - k s - s - | k - - - s - - - | k - - k s - - - | k - - - s - - - | k - k - s s ks ks',
     },
   };
@@ -5747,7 +5804,7 @@
     { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
     { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
     { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
-    { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'オルガンのような分散和音と重く刻むオクターブのベースの、重厚で怪しげな曲。VRC6風チップチューン。ニ短調（ゴシックアクションのパスワード入力画面系の作風）・BPM120' },
+    { key: 'rebirth', name: 'ページ 転生ショップ 運命の選択', desc: 'オルガンのような分散和音と重く刻むベースの重厚さを残しつつ、平行長調へ開けていく明るく希望のある曲。VRC6風チップチューン。ニ短調・BPM124' },
     { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
     { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
   ];
@@ -7011,6 +7068,11 @@
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
         continue;
       }
+      if (isMainPlayerBall(ball) && ball.pullShot) { // 引っ張りで発射中は跳ね回りながら減速
+        movePullShot(ball, speedMult);
+        if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+        continue;
+      }
       if (isMainPlayerBall(ball) && playerDrag) { // ドラッグ中は指（カーソル）の少し上を追いかける
         dragMainPlayer(ball, speedMult, b);
         if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
@@ -7268,7 +7330,7 @@
     // 「貫きの蹄鉄」を持っていればタックル中は敵で反射せず、重なってもそのまま貫通する（当たり判定だけ取る）
     const piercing = isTackling() && getTacklePierceMs() > 0;
     const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-    const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
+    const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * (a.pullShot ? PULL_DMG_MULT : 1); // リセット前の連打ボーナスでダメージを計算する（引っ張りで発射中は威力アップ）
     if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
     if (collided && isTackling()) {
       // 「貫きの蹄鉄」で持続中のタックルは、同じ敵には当たり直しの間隔をあける（毎フレーム当たらないように）
@@ -9015,6 +9077,7 @@
     drawNovaFx();
 
     drawTapBonus();
+    drawPullAim();
     // ヒットエフェクト（パーティクル）はキャラ画像（ボスの大きな画像など）の手前に描く
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, p.life);
@@ -10646,9 +10709,11 @@
     if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
     const r = canvas.getBoundingClientRect();
     if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
+    if (PULL_MODE) { pullAim = { id: event.pointerId, sx: event.clientX, sy: event.clientY, cx: event.clientX, cy: event.clientY }; return; } // 引っ張り開始
     dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
   });
   window.addEventListener('pointermove', event => {
+    if (pullAim && event.pointerId === pullAim.id) { pullAim.cx = event.clientX; pullAim.cy = event.clientY; return; }
     if (playerDrag && event.pointerId === playerDrag.id) {
       const k = size / canvas.getBoundingClientRect().width;
       playerDrag.x = playerDrag.px + (event.clientX - playerDrag.ox) * k;
@@ -10664,6 +10729,7 @@
     playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
   });
   ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
+    if (pullAim && event.pointerId === pullAim.id) { if (type === 'pointerup') launchPullShot(); else pullAim = null; return; } // 離したら発射
     if (dragPending && event.pointerId === dragPending.id) dragPending = null;
     if (!playerDrag || event.pointerId !== playerDrag.id) return;
     playerDrag = null;
@@ -10685,6 +10751,7 @@
     const y = (event.clientY - rect.top) * (size / rect.height);
     const dx = x - arena.x, dy = y - arena.y;
     if (Math.hypot(dx, dy) < arena.radius - 12) {
+      if (PULL_MODE) { onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 引っ張りアクション中は連打突撃・タメはなし
       // 長押しでタメ開始
       arenaHeld = true;
       updateTackleHold();
