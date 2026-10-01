@@ -1132,6 +1132,20 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 #bootLoading .bl-bar { width: 180px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; }
 #bootLoading .bl-bar i { display: block; height: 100%; width: 40%; border-radius: 999px; background: linear-gradient(90deg, #ffd76b, #64e8ff); animation: blBar 1.1s ease-in-out infinite; }
 @keyframes blBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+.pu-panel { text-align: center; background: radial-gradient(120% 80% at 50% 0%, rgba(255,215,107,0.25), transparent 60%), var(--panel); border: 2px solid #ffd76b; }
+.pu-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.08em; background: linear-gradient(90deg, #ffd76b, #ff9ec4, #7fd6ff); -webkit-background-clip: text; background-clip: text; color: transparent; animation: puPop 0.5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes puPop { from { transform: scale(0.4); opacity: 0; } }
+.pu-sub { font-size: 0.75rem; color: var(--text-dim); margin: 2px 0 12px; }
+.pu-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pu-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px 10px; border-radius: 14px; border: 2px solid var(--pc); background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 22%, transparent), var(--bg-soft)); color: var(--text); cursor: pointer; font: inherit; animation: puCard 0.45s cubic-bezier(.34,1.56,.64,1) both; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.pu-card:nth-child(2) { animation-delay: 0.08s; } .pu-card:nth-child(3) { animation-delay: 0.16s; }
+@keyframes puCard { from { transform: translateY(30px) scale(0.8); opacity: 0; } }
+.pu-card:active { transform: scale(0.95); }
+.pu-kind { font-size: 0.56rem; font-weight: 900; color: #fff; background: var(--pc); border-radius: 999px; padding: 1px 8px; }
+.pu-icon { font-size: 2.2rem; line-height: 1; }
+.pu-icon .ico-img, .pu-icon .comp-sprite { width: 44px; height: 44px; display: block; }
+.pu-name { font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
+.pu-desc { font-size: 0.58rem; color: var(--text-dim); line-height: 1.3; }
 </style>
 </head>
 <body class="floor-bg">
@@ -1423,6 +1437,14 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
   <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">進化</span></button>
   <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
   <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
+</div>
+
+<div class="modal-overlay" id="powerUpModal" style="z-index:72;">
+  <div class="modal-panel pu-panel">
+    <div class="pu-title">⚡ パワーアップ！</div>
+    <div class="pu-sub">ひとつ選んでください</div>
+    <div class="pu-list" id="powerUpList"></div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="stageSkipModal">
@@ -7450,6 +7472,7 @@ function onStageClear() {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
   game.totalKills++;
+  checkPowerUp();
   ensureDailyClearReset();
   game.dailyClears++;
   resetCombo();
@@ -8847,6 +8870,63 @@ function loop() {
   animId = requestAnimationFrame(loop);
 }
 
+// ---------- 3択パワーアップ：敵を一定数倒すたびに、強化・スキル・仲間からランダムな3択 ----------
+const POWERUP_EVERY = 10; // 何体倒すごとに出すか
+let powerUpPending = false;
+function checkPowerUp() {
+  game.powerUpKills = (game.powerUpKills || 0) + 1;
+  if (game.powerUpKills < POWERUP_EVERY || powerUpPending || game.skipChallenge) return;
+  game.powerUpKills = 0; powerUpPending = true;
+  setTimeout(openPowerUp, 900); // 撃破演出のあとに出す
+}
+function makePowerUpChoices() {
+  const pool = [];
+  const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
+  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
+  for (const id in SKILL_GACHA_SKILLS) {
+    const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
+    if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
+    pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
+  }
+  if (getCompanionTotal() < getPartyLimit() || Object.keys(game.companions.recruited).length) pool.push({ kind: 'comp', col: '#ff9a4f', label: '仲間', icon: '🐾', name: '仲間を1人召喚', desc: 'ランダムな仲間が加入（満員なら覚醒）' });
+  pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP全回復', desc: 'HPと仲間を全回復' });
+  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今のステージに応じたコイン' });
+  const picks = [], kinds = new Set();
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  for (const c of shuffled) { if (picks.length >= 3) break; if (!kinds.has(c.kind) || shuffled.length < 6) { picks.push(c); kinds.add(c.kind); } } // できるだけ別の種類から
+  for (const c of shuffled) { if (picks.length >= 3) break; if (!picks.includes(c)) picks.push(c); }
+  return picks;
+}
+let powerUpChoices = [];
+function openPowerUp() {
+  if (phase !== 'battle' || getActiveTab() !== 'game') { setTimeout(openPowerUp, 1000); return; } // ゲーム画面に戻ったら出す
+  powerUpChoices = makePowerUpChoices();
+  document.getElementById('powerUpList').innerHTML = powerUpChoices.map((c, i) => `<button class="pu-card" style="--pc:${c.col}" data-pu="${i}"><span class="pu-kind">${c.label}</span><span class="pu-icon">${c.icon}</span><span class="pu-name">${c.name}</span><span class="pu-desc">${c.desc}</span></button>`).join('');
+  phase = 'paused';
+  document.getElementById('powerUpModal').classList.add('show');
+  playGachaSound('rare');
+}
+function applyPowerUp(c) {
+  if (c.kind === 'up') { game.upgrades[c.id] = Math.min(getUpgradeLevelCap(c.id), game.upgrades[c.id] + c.n); refreshPlayerBallStats(false); }
+  else if (c.kind === 'skill') {
+    if (!game.skillLevels) game.skillLevels = {};
+    if (!game.shopOwned[c.id]) { game.shopOwned[c.id] = true; game.skillLevels[c.id] = 1; const eq = getEquippedSkills(); if (eq.length < getSkillSlots()) eq.push(c.id); }
+    else game.skillLevels[c.id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(c.id) + 1);
+    updateSkillButtonVisibility(); renderSkillGacha();
+  } else if (c.kind === 'comp') { const r = grantCompanion(pickCompanionId()); showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList(); }
+  else if (c.kind === 'heal') { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = pl.maxHp; balls.forEach(b => { if (b.isCompanion) b.hp = b.maxHp; }); playHealSound(); }
+  else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; showNotice(`🟡 +${formatCoinNumber(g)} コイン`); }
+}
+document.getElementById('powerUpList').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-pu]'); if (!b) return;
+  const c = powerUpChoices[+b.dataset.pu]; if (!c) return;
+  applyPowerUp(c);
+  document.getElementById('powerUpModal').classList.remove('show');
+  powerUpPending = false;
+  phase = 'battle';
+  playUpgradeSound(); showLevelUpPop(window.innerWidth / 2, window.innerHeight / 2, c.name + '！');
+  updateStatsUI(); updateHPUI(); saveGame();
+});
 let userPaused = false;
 function setUserPaused(on) {
   userPaused = on;
