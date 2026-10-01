@@ -1152,6 +1152,11 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .pu-act { border: none; border-radius: 10px; padding: 8px 4px; font-weight: 900; font-size: 0.68rem; color: #fff; background: linear-gradient(180deg, #4fb3ff, #2f6fdb); box-shadow: 0 3px 0 #1c4a9a; cursor: pointer; line-height: 1.3; }
 .pu-act.all { background: linear-gradient(135deg, #ffb14f, #ff5fd2); box-shadow: 0 3px 0 #9a3a8a; }
 .pu-act.is-disabled { filter: grayscale(0.8); opacity: 0.55; }
+.pu-zoom { position: fixed; top: 42%; z-index: 95; display: flex; flex-direction: column; align-items: center; gap: 6px; transform: translate(-50%, -50%); pointer-events: none; animation: puZoom 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
+.pu-zoom-icon { font-size: 4rem; line-height: 1; filter: drop-shadow(0 0 18px var(--pc)) drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+.pu-zoom-icon .ico-img, .pu-zoom-icon .comp-sprite { width: 96px; height: 96px; display: block; }
+.pu-zoom-name { font-size: 1.1rem; font-weight: 900; color: #fff; white-space: nowrap; -webkit-text-stroke: 1px rgba(0,0,0,0.8); paint-order: stroke fill; text-shadow: 0 0 10px var(--pc), 0 2px 4px #000; }
+@keyframes puZoom { 0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; } 18% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; } 45% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -62%) scale(2.4); opacity: 0; } }
 .pu-timer { margin-top: 8px; font-size: 0.66rem; color: var(--text-dim); }
 .lv-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 .lv-badge { flex: 0 0 auto; font-size: 0.7rem; font-weight: 900; color: #fff; background: linear-gradient(135deg, #8a5bff, #4fb3ff); border-radius: 999px; padding: 1px 9px; box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
@@ -9072,7 +9077,19 @@ function tickPowerUpTimer() {
   document.getElementById('puTimer').textContent = `${Math.ceil(left / 1000)} 秒後に自動で選びます`;
   if (left <= 0) { clearInterval(puTimer); finishPowerUp([powerUpChoices[Math.floor(Math.random() * powerUpChoices.length)]]); }
 }
+function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大しながらフェードアウト
+  list.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'pu-zoom';
+    el.style.setProperty('--pc', c.col || '#ffd76b');
+    el.style.left = (50 + (i - (list.length - 1) / 2) * (list.length > 1 ? 22 : 0)) + '%';
+    el.innerHTML = `<span class="pu-zoom-icon">${c.icon || '✨'}</span><span class="pu-zoom-name">${c.name}</span>`;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  });
+}
 function finishPowerUp(list) {
+  showPowerUpZoom(list);
   clearInterval(puTimer);
   list.forEach(applyPowerUp);
   document.getElementById('powerUpModal').classList.remove('show');
@@ -9080,7 +9097,7 @@ function finishPowerUp(list) {
   phase = 'battle';
   if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
   renderLvGauge();
-  playUpgradeSound(); showLevelUpPop(window.innerWidth / 2, window.innerHeight / 2, list.length > 1 ? '全部ゲット！' : list[0].name + '！');
+  playUpgradeSound();
   updateStatsUI(); updateHPUI(); saveGame();
 }
 document.getElementById('powerUpModal').addEventListener('pointerdown', () => { puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
