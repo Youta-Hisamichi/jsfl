@@ -3666,12 +3666,12 @@ function tickChargeSound() {
   const lv = getChargeLevel(), t = audioCtx.currentTime;
   if (!chargeSnd) {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
-    o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1400;
-    g.gain.setValueAtTime(0.0001, t); g.gain.setTargetAtTime(0.022 * game.sfxVolume, t, 0.08);
+    o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 2600;
+    g.gain.setValueAtTime(0.0001, t); g.gain.setTargetAtTime(0.034 * game.sfxVolume, t, 0.08);
     o.connect(f); f.connect(g); g.connect(audioCtx.destination); o.start(t);
     chargeSnd = { o, g, full: false };
   }
-  chargeSnd.o.frequency.setTargetAtTime(180 + 320 * lv + (lv >= 1 ? Math.sin(Date.now() / 60) * 6 : 0), t, 0.05);
+  chargeSnd.o.frequency.setTargetAtTime(380 + 560 * lv + (lv >= 1 ? Math.sin(Date.now() / 60) * 6 : 0), t, 0.05);
   if (lv >= 1 && !chargeSnd.full) { chargeSnd.full = true; thump(1568, 1568, 0.25, 0.04, 'sine'); thump(2349, 2349, 0.18, 0.015, 'sine', 0.02); }
 }
 function drawChargeRing() {
@@ -3925,7 +3925,7 @@ function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, update
 
 const ENEMY_TRAITS = {
   'emoji:🥬': 'spinGuard', 'emoji:🧙': 'attackMagic', 'emoji:🪖': 'charge', 'emoji:🔪': 'charge', 'emoji:🌑': 'deathMagic', 'emoji:⚫': 'merge', 'emoji:🩶': 'grow', 'emoji:🩷': 'healMagic', 'emoji:🔷': 'split', 'emoji:🦕': 'homing', 'emoji:🟩': 'split', 'emoji:🐟': 'charge', 'emoji:🦒': 'grow', 'emoji:🥒': 'charge', 'emoji:🦎': 'charge', 'emoji:🦀': 'spinGuard', 'emoji:🥈': 'spinGuard', 'emoji:🌈': 'healMagic', 'emoji:🟨': 'split', 'emoji:🦋': 'merge', 'emoji:🔥': 'mines', 'emoji:💋': 'healMagic', 'emoji:🛡️': 'spinGuard', 'emoji:🗡️': 'charge', 'emoji:🪲': 'spinGuard', 'boss:💪': 'grow', 'emoji:🐻': 'mines', 'emoji:🦞': 'deathMagic', 'emoji:🦫': 'charge', 'boss:👁️': 'attackMagic', 'boss:🕸️': 'homing', 'boss:🪦': 'deathMagic', 'boss:🦍': 'charge',
-  'emoji:🧛': 'healMagic', 'emoji:🌕': 'charge', 'emoji:⚡': 'grow', 'emoji:💧': 'split', 'boss:⚰️': 'deathMagic', 'boss:😈': 'attackMagic',
+  'emoji:🧛': 'healMagic', 'emoji:🌕': 'charge', 'emoji:⚡': 'grow', 'emoji:💧': 'split', 'boss:⚰️': 'deathMagic', 'boss:🫧': 'megaSlime', 'boss:😈': 'attackMagic',
   'emoji:👑': 'spinGuard', 'emoji:🐧': 'attackMagic', 'emoji:🪼': 'healMagic', 'emoji:🛢️': 'mines', 
   'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
   'shape:spike': 'split',
@@ -3993,6 +3993,79 @@ function updateStackSlime(e) {
     spawnDamageText(e.x, e.y - e.radius * 2.2, 'ポロッ！', SHAPE_ENEMY_COLORS[key] || '#ffffff', 0.016, true);
     spawnHitParticles(e.x, e.y - e.radius, SHAPE_ENEMY_COLORS[key] || '#ffffff');
     playTone(700, 0.12, 'triangle', 0.1, 350);
+  }
+}
+// ボス「超ジャンボスライム」：倒せないミニスライムが叩かれるたびに分裂し、32匹そろうと合体して超ジャンボスライムになる
+const MEGA_COUNT = 32, MEGA_INV_HP = 999999, MEGA_HP_MULT = 4, MEGA_ATK_MULT = 1.5, MEGA_RADIUS = 66, MEGA_AUTO_SPLIT = 240;
+function makeMegaMini(e, x, y) {
+  const c = makeAddEnemy(e);
+  c.shape = 'slimeChibi'; c.emoji = null; c.color = '#5cc8ff'; c.glow = 'rgba(92,200,255,0.55)';
+  c.radius = 10; c.maxHp = c.hp = MEGA_INV_HP; c.atk = Math.max(1, Math.round(e.megaBaseAtk * 0.25));
+  c.megaOwner = e; c.isSplit = true;
+  const a = Math.random() * Math.PI * 2;
+  c.x = x + Math.cos(a) * 8; c.y = y + Math.sin(a) * 8; c.vx = Math.cos(a) * 4.5; c.vy = Math.sin(a) * 4.5;
+  const cp = arenaClampPt(c.x, c.y, 14); c.x = cp.x; c.y = cp.y;
+  adds.push(c);
+  return c;
+}
+function updateMegaSlime(e, speedMult) {
+  if (!e.megaPhase) {
+    e.megaPhase = 'mini'; e.megaBaseHp = e.maxHp; e.megaBaseAtk = e.atk; e.megaTimer = 0;
+    e.traitBaseRadius = 12; e.radius = 12; e.baseRadius = 12;
+    e.maxHp = e.hp = MEGA_INV_HP; e.traitLastHp = e.hp; e.atk = Math.max(1, Math.round(e.megaBaseAtk * 0.3));
+    spawnDamageText(arena.x, arena.y - 50, '倒せないミニスライム…？ 叩くと増える！', '#7fd6ff', 0.01, true);
+    updateHPUI();
+    return;
+  }
+  const minis = adds.filter(ad => ad.megaOwner === e && ad.hp > 0);
+  if (e.megaPhase === 'mini') {
+    const hitList = [];
+    if (e.hp < e.maxHp) { hitList.push(e); e.hp = e.maxHp; }
+    for (const ad of minis) if (ad.hp < ad.maxHp) { hitList.push(ad); ad.hp = ad.maxHp; }
+    e.megaTimer += speedMult;
+    if (e.megaTimer >= MEGA_AUTO_SPLIT) { e.megaTimer = 0; hitList.push(minis.length ? minis[Math.floor(Math.random() * minis.length)] : e); } // 放っておいても少しずつ増える
+    let count = 1 + minis.length;
+    for (const src of hitList) {
+      if (count >= MEGA_COUNT) break;
+      makeMegaMini(e, src.x, src.y); count++;
+      spawnHitParticles(src.x, src.y, '#7fd6ff');
+      playTone(420 + count * 22, 0.09, 'sine', 0.09, 700 + count * 30);
+      if (count % 8 === 0 || count === 2) spawnDamageText(src.x, src.y - 20, `ぷるん！分裂（${count}/${MEGA_COUNT}）`, '#7fd6ff', 0.014, true);
+    }
+    if (count >= MEGA_COUNT) {
+      e.megaPhase = 'gather'; e.traitFreeze = true; e.vx = e.vy = 0;
+      adds.filter(ad => ad.megaOwner === e && ad.hp > 0).forEach(ad => { ad.merging = true; ad.traitFreeze = true; });
+      spawnDamageText(e.x, e.y - 40, `${MEGA_COUNT}匹そろった！ 合体するぞ！`, '#b46cff', 0.008, true);
+      playTone(300, 0.6, 'sawtooth', 0.1, 900); shakeScreenLight();
+    }
+    return;
+  }
+  if (e.megaPhase === 'gather') {
+    e.hp = e.maxHp;
+    let left = 0;
+    for (const ad of minis) {
+      left++;
+      const dx = e.x - ad.x, dy = e.y - ad.y, dist = Math.hypot(dx, dy) || 1, st = Math.min(dist, 7 * speedMult);
+      ad.x += dx / dist * st; ad.y += dy / dist * st;
+      if (dist < e.radius + 2) {
+        ad.hp = 0; ad.megaOwner = null; left--;
+        e.megaMerged = (e.megaMerged || 0) + 1;
+        e.radius = e.traitBaseRadius = e.baseRadius = 12 + (MEGA_RADIUS - 12) * Math.min(1, e.megaMerged / (MEGA_COUNT - 1));
+        spawnHitParticles(e.x, e.y, '#b46cff');
+        playTone(260 + e.megaMerged * 18, 0.1, 'square', 0.06, 500 + e.megaMerged * 25);
+      }
+    }
+    adds = adds.filter(ad => ad.hp > 0);
+    if (!left) {
+      e.megaPhase = 'mega'; e.traitFreeze = false; e.isGiant = true;
+      e.radius = e.traitBaseRadius = e.baseRadius = MEGA_RADIUS;
+      e.maxHp = e.hp = Math.round(e.megaBaseHp * MEGA_HP_MULT); e.traitLastHp = e.hp;
+      e.atk = Math.round(e.megaBaseAtk * MEGA_ATK_MULT);
+      spawnDamageText(e.x, e.y - e.radius - 20, '合体！ 超ジャンボスライム！', '#b46cff', 0.008, true);
+      for (let i = 0; i < 4; i++) spawnHitParticles(e.x, e.y, i % 2 ? '#ffffff' : '#b46cff');
+      shakeScreen(); playNoiseBurst(0.5, 0.35); thump(90, 35, 0.7, 0.6);
+      updateHPUI();
+    }
   }
 }
 function updateJumboSlime(e, speedMult) {
@@ -4083,6 +4156,7 @@ function damagePlayerByTrait(a, e, dmg, color) {
 function enemySurvivesDefeat(enemy) {
   const trait = getEnemyTrait(enemy);
   if (!trait) return false;
+  if (enemy.megaPhase && enemy.megaPhase !== 'mega') { enemy.hp = enemy.maxHp; return true; } // 合体前のミニスライムは倒せない
   if ((enemy.guarding || isMetalEnemy(enemy)) && enemy.traitLastHp > 0) {
     const lost = enemy.traitLastHp - enemy.hp;
     enemy.hp = enemy.traitLastHp - lost * (1 - enemyDamageCut(enemy));
@@ -4165,6 +4239,8 @@ function updateEnemyTraits(a, e, speedMult) {
       updateStackSlime(e);
     } else if (trait === 'jumbo') {
       updateJumboSlime(e, speedMult);
+    } else if (trait === 'megaSlime') {
+      updateMegaSlime(e, speedMult);
     } else if (trait === 'merge') {
       const mine = adds.filter(ad => ad.mergeOwner === e && ad.hp > 0);
       if (!mine.some(ad => ad.merging) && e.traitCd <= 0) {
@@ -4381,6 +4457,7 @@ function tgInside(tg, x, y, pr) {
 }
 function updateEnemyTelegraph(a, e, speedMult) {
   if (!a || !e || e.isDying || e.hp <= 0 || e.spawnTimer > 0 || phase !== 'battle') return false;
+  if (e.megaPhase && e.megaPhase !== 'mega') return false; // 合体前は予兆攻撃しない
   if (e.tgCd === undefined) e.tgCd = 120 + Math.random() * 120;
   if (e.traitState === 'tgStun') {
     e.tgTimer -= speedMult;
@@ -5441,15 +5518,6 @@ Object.assign(BGM_PATTERNS, {
   rebirth: melody('C5 G5 E6 G5 A4 E5 C6 E5 F4 C5 A5 C5 G4 D5 B5 D5', 0.34, 'sine', 0.05),
 });
 const BGM_SONGS = {
-  battle13: {
-    bpm: 150,
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'A5 = = G5 A5 = C6 = | D6 = = C6 A5 = F5 = | G5 = = F5 G5 = A#5 = | A5 = = = G5 = E5 = | A5 = = G5 A5 = E6 = | D6 = C6 = A5 = F6 = | E6 = = D6 C6 = G5 = | C#6 = = = E6 = A5 =' },
-      { type: 'vrc6pulse12', gain: 0.022, notes: 'D4 F4 A4 E5 D4 F4 A4 E5 | A#3 D4 F4 A4 A#3 D4 F4 A4 | G3 A#3 D4 A4 G3 A#3 D4 A4 | A3 D4 E4 G4 A3 C#4 E4 G4 | D4 F4 A4 E5 D4 F4 A4 E5 | A#3 D4 F4 A4 A#3 D4 F4 A4 | C4 E4 G4 D5 C4 E4 G4 D5 | A3 C#4 E4 G4 A3 C#4 E4 G4' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 D2 - D2 C3 D3 | A#1 = A#2 A#1 - A#1 A2 A#2 | G1 = G2 G1 - G1 F2 G2 | A1 = A2 A1 - A1 G2 A2 | D2 = D3 D2 - D2 C3 D3 | A#1 = A#2 A#1 - A#1 A2 A#2 | C2 = C3 C2 - C2 B2 C3 | A1 = A2 A1 - C#2 E2 G2' },
-    ],
-    drums: 'k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h - k s h | k h s h s s ks ks',
-  },
   battle14: {
     bpm: 160,
     tracks: [
@@ -5562,6 +5630,16 @@ const BGM_SONGS = {
     ],
     kickBoost: 1.3,
     drums: 'k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h ks ks ks ks | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | ks ks ks ks ks ks ks ks',
+  },
+  battle23: {
+    bpm: 152,
+    tracks: [
+      { type: 'fm', gain: 0.05, notes: 'G5 = C6 = - G5 A#5 C6 | - A#5 G5 = E5 = G5 = | F5 = A#5 = D6 = C6 A#5 | C6 = A5 = F5 = = = | G5 = C6 = - G5 A#5 C6 | E6 = D6 C6 - A#5 G5 = | A#5 = D6 = F6 = D6 = | D6 = B5 = G5 = = = | E6 = = C6 D6 E6 = = | F6 = E6 D6 C6 = A5 = | D6 = = B5 C6 D6 = = | E6 = C6 = G5 = = = | A5 C6 E6 = A5 C6 E6 = | F6 E6 C6 = A5 = F5 = | G5 B5 D6 = G6 = F6 = | D6 = B5 = G5 = F5 =' },
+      { type: 'fmep', gain: 0.022, notes: '- C4+E4+G4 - - C4+E4+G4 - C4+E4+G4 - | - C4+E4+G4 - - C4+E4+G4 - C4+E4+G4 - | - A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - | - A3+C4+F4 - - A3+C4+F4 - A3+C4+F4 - | - C4+E4+G4 - - C4+E4+G4 - C4+E4+G4 - | - C4+E4+G4 - - C4+E4+G4 - C4+E4+G4 - | - A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - | - G3+B3+D4 - - G3+B3+D4 - G3+B3+D4 - | - A3+C4+E4 - - A3+C4+E4 - A3+C4+E4 - | - A3+C4+F4 - - A3+C4+F4 - A3+C4+F4 - | - G3+B3+D4 - - G3+B3+D4 - G3+B3+D4 - | - C4+E4+G4 - - C4+E4+G4 - C4+E4+G4 - | - A3+C4+E4 - - A3+C4+E4 - A3+C4+E4 - | - A3+C4+F4 - - A3+C4+F4 - A3+C4+F4 - | - G3+B3+D4 - - G3+B3+D4 - G3+B3+D4 - | - G3+B3+F4 - - G3+B3+F4 - G3+B3+F4 -' },
+      { type: 'fmbass', gain: 0.07, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | F2 F3 F2 F3 F2 F3 F2 F3 | C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | F2 F3 F2 F3 F2 F3 F2 F3 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | A1 A2 A1 A2 A1 A2 A1 A2 | F2 F3 F2 F3 F2 F3 F2 F3 | G1 G2 G1 G2 G1 G2 G1 G2 | G1 G2 G1 G2 G1 G2 G1 G2' },
+    ],
+    kickBoost: 1.2,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h s s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s s s ks ks ks ks',
   },
   boss: {
     bpm: 164,
@@ -5858,7 +5936,7 @@ let bgmTimer = null;
 let bgmToken = 0;
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle23'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -5895,12 +5973,12 @@ const BGM_INFO = [
   { key: 'battle5', name: '戦闘5 落ち物', desc: 'イ短調の民謡っぽい中毒ループ（落ち物パズル系の作風）・BPM150' },
   { key: 'battle7', name: '戦闘7 ストリートの挑戦者', desc: 'ファンキーなオクターブベースとブラスの合いの手、熱いメロディ。VRC6風チップチューン。ニ短調（対戦格闘ゲーム系の作風）・BPM152' },
   { key: 'battle12', name: '戦闘12 疾風ロック', desc: '2小節のリフを繰り返す中毒性のあるロック。PCエンジン風の波形メモリ音源。ホ短調・BPM164' },
-  { key: 'battle13', name: '戦闘13 星の海', desc: 'SFらしい浮遊感の9th・maj7コードと疾走感。VRC6風チップチューン。ニ短調（SF系オンラインRPGの作風）・BPM150' },
   { key: 'battle14', name: '戦闘14 狩猟の鼓動', desc: '勇壮なファンファーレと3-3-2の民族調リズム。VRC6風チップチューン。ホ短調（ハンティングアクション系の作風）・BPM160' },
   { key: 'battle15', name: '戦闘15 狼の咆哮', desc: 'ギターリフ風のパワーコードと疾走するベース。VRC6風チップチューン。イ短調（対戦格闘ゲームの格闘伝説系の作風）・BPM160' },
   { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
   { key: 'battle20', name: '戦闘20 マナの森の激闘', desc: 'はずむシンコペーションのベースと打楽器、ドリア調で明るさと切迫感が入り混じる旋律。VRC6風チップチューン。ニ・ドリア（アクションRPG系の作風）・BPM160' },
   { key: 'battle22', name: '戦闘22 ビートの迷宮', desc: '四つ打ちのキックと裏拍で弾むオクターブベース、裏打ちのコードスタブに乗る中毒性のあるリフ。VRC6風チップチューン。ホ短調（音楽ゲーム系のハウスの作風）・BPM148' },
+  { key: 'battle23', name: '戦闘23 港の殴り込み', desc: 'はずむオクターブベースと裏打ちのブラス風コード、軽快で陽気な旋律の港町のケンカ道中。FM音源風。ハ長調（90年代ベルトスクロールアクション系の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
@@ -6423,7 +6501,7 @@ function getEffectiveSpeed() {
 }
 
 const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🧛', '🌕', '⚡', '💧', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '💋', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫'];
-const BOSS_EMOJIS = ['👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '👁️', '🕸️', '🪦', '🦍', '💪'];
+const BOSS_EMOJIS = ['👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '👁️', '🕸️', '🪦', '🦍', '💪', '🫧'];
 const TACKLE_TRADE_BOSS = '🦔';
 let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
 let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定
@@ -6438,7 +6516,7 @@ const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメー
 const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', slimeBlood: 'ブラッドスライム', slimeChibi: 'チビスライム', slimeJumbo: 'ジャンボスライム', slimeSnowman: '雪だるまスライム', slimeDango: '三色団子スライム', slimeIce: 'ユキスライム', slimePink: 'サクラスライム', slimeMatcha: 'マッチャスライム', diamond: 'フレイムウィスプ', square: 'ワーム' };
 const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', slimeBlood: '#c8102e', slimeChibi: '#5cc8ff', slimeJumbo: '#b46cff', slimeSnowman: '#dff3ff', slimeDango: '#ff9ec4', slimeIce: '#dff3ff', slimePink: '#ff9ec4', slimeMatcha: '#9fd67a', diamond: '#ff9d4f', square: '#f46bd4' };
 const EMOJI_ENEMY_NAMES = { '🥬': 'ゴブリンスライム', '🧙': '魔女スライム', '🪖': 'バイキングスライム', '🔪': 'ナイフゴブリン', '🌑': '闇の魔導士', '⚫': 'ブラックスライム', '🩶': 'グレースライム', '🩷': 'ピンクスライム', '🔷': 'アオスライム', '🦕': 'チビドラゴン', '🪙': 'ゴールドスライム', '🟩': 'ミドリスライム', '🐟': '魚人', '🦒': 'ノビスライム', '🥒': 'キュウリ兵', '🦎': 'ソードリザード', '🦀': 'カニ娘', '🥈': 'シルバースライム', '🌈': 'レインボースライム', '🟨': 'キイロスライム', '🦋': 'ブルーバット', '🔥': 'ほのおの精', '💋': 'サキュバス', '🛡️': '鉄騎士', '🗡️': '狼剣士', '🪲': 'クワガタナイト', '🐻': 'フレイムベア', '🦞': 'レッドスコーピオン', '🦫': 'マーモット', '🧛': 'ヴァンパイア', '🌕': 'ワーウルフ', '⚡': 'フランケン', '💧': 'スライム娘', '👑': 'スライムキング', '🐧': 'ペンギン魔導士', '🪼': 'クラゲの歌姫', '🛢️': 'タルねこ', '👺': 'ゴブリン', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'カボチャヘッド', '🐉': 'ドラゴン', '🦂': 'コブラ', '🦇': 'コウモリ', '👾': 'メタルスライム', '🧟': 'ゾンビ', '🦖': 'サラマンダー', '🐲': 'ワイバーン' };
-const BOSS_ENEMY_NAMES = { '💪': 'マッチョスライム', '👁️': '百目の少女', '🕸️': '絡新婦', '🪦': '井戸の怨霊', '🦍': 'ゴリタウロス', '⚰️': '死神', '😈': '魔王', '👹': 'デーモンロード', '💀': '死霊王リッチ', '🦖': '暗黒竜', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };
+const BOSS_ENEMY_NAMES = { '🫧': '超ジャンボスライム', '💪': 'マッチョスライム', '👁️': '百目の少女', '🕸️': '絡新婦', '🪦': '井戸の怨霊', '🦍': 'ゴリタウロス', '⚰️': '死神', '😈': '魔王', '👹': 'デーモンロード', '💀': '死霊王リッチ', '🦖': '暗黒竜', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };
 const ENEMY_SPRITES = {
   goblinSlime: 'data:image/webp;base64,UklGRnoDAABXRUJQVlA4WAoAAAAQAAAAKwAAKwAAQUxQSOkBAAARkIPtnyFJv6rqXu+ebTO3jcy2L2Vq2wgvZKTUtm3f2qj+1+8w6E4viogJwH/NSsVTsSMBtP5HGcQ2sbQxJimVUwvwAA/IrlWrVk4tBU8DxkPyCvXf5c5pBxjUG/M291fuj9wjfQCtgPaDBvVLSaaxI1+tzcKyC4wr23oAs9e9INkEKhFof0VQQ967TAYupgi/X75L0vJbfSilVTyD0bTOkiKMb0nSBsG3vsbXAFQcpds9C4QSMGEJxLGaxwEgc0VbmFgw2E3LMIXPO+hGfaZ8442GAKA9z/NTUrdRQhA+bQfMJSm80krBIGbGKbrkxN2sBWPqnpYaCu8CaLtowcLFY1AczuPO2uh6FyRw8nBIevqm5yRpT5QzTMtNnpd2mULh826fP5E11lqGHRR0grdaArpXv0aSTkjS2ZCE29IxhtZxtW9EGK1zxUi7TCkvvArFqJ3kD0otJa/Vq60QGS3P47tUTAOAIDJKydp3XABPAXSRkZSnbTwNYB8lumquhg8A3XMppHNRuKBwnjL/qP65rkYYaeCuQuNfg4Fl5K88F4HjSBULPsaeOZrdrtS5sMTdSVMqFjQA1KuiDUmqOFN5iK+NMf5Sy8CF4IQ8nKmRpMLkYwz38ipAJQMDPWZSGV1iAXeObg6tEBcAVlA4IGoBAABQCACdASosACwAPw1wslAsJqUisdmaAYAhiUAZSDY2MiN1QJ25njWsu/pFO5bpgZ8j189KpIcRsOTjWDhBly6ekK2xUaWDAyVddMAA/v2ZgAGH0ZgBGvPQ7rme4S295IUvbkWooLIcF2wGfnSTX/S7unf5+QBKRlPbakk6EuEMtPG/rKpPg5zJb2G9HCizAvAt+89i3O+gAPT4apbdVYHvE4200pb0Ibumjs3xgNoxDmNub3JoVAnsaTnWUQsiMoPYLavbmLz2QyESmpPtdzoeVZh+PpvIFpcFgDre/KrOaSxS8SqPV/5fKNdP/DtJzTH1vYmzvJPgVgtPgkKSzAnQv3xTpRV14v1Mhnq2rYVmzbgsTOO44Ff6I48uKkBw6uXLeeHInlRB8g4QvVEXT8/jXVnkG5A3iHZVrHVrY4DgsKfnyu3MxCHziDzH4Z7xX8dWDo2+Pryq71+cwqNWRCjZmn4TIOQR4QAAAA==',
   witchSlime: 'data:image/webp;base64,UklGRh4EAABXRUJQVlA4WAoAAAAQAAAAKwAAKwAAQUxQSFMCAAARoITtnyFJ+sU/ojmztm3btm3btm3jbJ1t27ZteyvjH98iqyZqTnuMiAnQ/6GxdfywpNZk40GQFl9n7bXXWVoK/QpRcxz1NcD3Ry2k1B+TZnkBcs4Z3phfqR+mKW56l6YAlL/4cClFpWR1TNM9Ck7XzLeLKUmyGiFO9RiN02PDO/Pq5NOWUc2kRXB6LTiv3w7vLVMhavoXc+mJkgt04FsFMwstIQSzpJlfxOmx8BU0f/7FY/dvG9QaFEytC79CpteGow+8CThDkta+997rRqUgpdGhA+6/6yOccThME+y++04K0Tb4Cfj4rLFhaI77P/mwAzi9Z86dJEoKkiBnh60muMIBcnbGNZflwnBKklQc+Kusvwy5uBcqOlcMKNh/oEDDBsuQM5Wdq4alaNKuv+M0f2w+4eXQeB0y718yr2TSxj+UDmcp6YxnqF7gr73nlQ1o0x+a/Nh8MWro4nuL18GL89FyUtQ2uWFHDcQwyZOlVAI6fLySgo39Jvt+gykObEahsjdNga2lGLeA70fMBr/yav+9d59BycKM99PsLx3Rceo6L1x4yZFqTdqJzAMPQKnUcLUks5awnzcFCrUzd2koqjXpEDrkXM/L07NaaIu2+mc4hfoN+yu1ybTcJ+70o5w01E1JN5F/69TD/1jQYpdgU33KYXfi9ThZA9ZFo79w/9eUajgnqXsYPBZu/IZSrXi5Y3trM00P236W64Hzy3ptikP7v7HuveQ+lN/ZpYukoKnvx+vBcwv3EGSa6s7ilQqfbj+7eg0yTbPUPniFzDlLLSgZAFZQOCCkAQAAMAkAnQEqLAAsAD8Rcq9QrCakIqqtUYAiCWwAzi+CYKOf/Uz7zugarBm8P8TF9zcxv7ptwrZ/gT0TMxBRaLulyehzYbzc9JzePWWYx5sn68i4gAD++dBSfiTzDD7ITDtf9IBlvZoOp1wPp1EGtl8v3zB6TdaVAejmma7HUvUdapnkrpWVoNoZRrG3SJNTwX3KYbWX9mfPXrdKoGTmaV1ou9QvP41cDk8CCT2IFtsqB/t94j7Fl3KsoLYeWs1YFhJ7aGDbmcXRp/y3c3c2oPNGCB2cWtyXZhVnOWE/4E8U1Wpn1K51yH0CqoumWpRsNGV7INoGbcUehIwFe/NfeYTFr1WRWaXjMsQKQl3yVLO+9Rhc1uqwRUXJ89bSFjrjnkszFWv7ZXYp81qAuL6KsdedU9io+dKSOBGm2O4EncFCAGK0BEXK3yD/e8wLAMgYjZfSCzynMLsk0bjSE64OxkbQZaEk5bbxtVdaMecpIB2A2fHIS8zE0DcbfKOAJDrAmz3mqx3VE9U/H+w3bLb81Vrlkox0mm7j2BEnmocVtNLvWEh8AAAA',
@@ -6506,7 +6584,7 @@ const ENEMY_SPRITES = {
 };
 const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', slimeChibi: 'slime', slimeJumbo: 'slimeJumbo', slimeSnowman: 'slimeIce', slimeDango: 'slimeMatcha', slimeIce: 'slimeIce', slimePink: 'slimePink', slimeMatcha: 'slimeMatcha', diamond: 'flameWisp', square: 'worm' };
 const EMOJI_ENEMY_SPRITE = { '🥬': 'goblinSlime', '🧙': 'witchSlime', '🪖': 'vikingSlime', '🔪': 'knifeGoblin', '🌑': 'darkMage', '⚫': 'slimeBlack', '🩶': 'slimeGray', '🩷': 'slimePinkS', '🔷': 'slimeBlueS', '🦕': 'fatDragon', '🪙': 'slimeGold', '🟩': 'slimeGreenS', '🐟': 'fishman', '🦒': 'longSlime', '🥒': 'cucumber', '🦎': 'swordLizard', '🦀': 'crabGirl', '🥈': 'slimeSilver', '🌈': 'slimeRainbow', '🟨': 'slimeYellow', '🦋': 'blueBat', '🔥': 'fireSpirit', '💋': 'succubus', '🛡️': 'ironKnight', '🗡️': 'wolfSword', '🪲': 'stagKnight', '🐻': 'flameBear', '🦞': 'scorpion', '🦫': 'marmot', '🧛': 'vampire', '🌕': 'werewolf', '⚡': 'franken', '💧': 'slimeGirl', '👑': 'slimeKing', '🐧': 'penguinMage', '🪼': 'jellyDiva', '🛢️': 'barrelCat', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🦖': 'salamander', '🐲': 'wyvern' };
-const BOSS_ENEMY_SPRITE = { '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
+const BOSS_ENEMY_SPRITE = { '🫧': 'slimeJumbo', '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
 const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
 document.getElementById('stageBossMark').src = ENEMY_SPRITES.demon; // ステージ進行ゲージのゴール（ボス）アイコン
 const enemySpriteImgs = {};
@@ -6544,6 +6622,7 @@ const buildSlimeVariantsLater = () => scheduleIdle(buildSlimeVariants);
 if (enemySpriteImgs.slime.complete && enemySpriteImgs.slime.naturalWidth) buildSlimeVariantsLater();
 else enemySpriteImgs.slime.addEventListener('load', buildSlimeVariantsLater, { once: true });
 function getEnemySpriteKey(enemy) {
+  if (enemy.isBoss && enemy.megaPhase && enemy.megaPhase !== 'mega') return 'slime'; // 超ジャンボスライムは合体するまでミニスライムの姿
   if (enemy.isBoss) return BOSS_ENEMY_SPRITE[enemy.emoji];
   return enemy.emoji ? EMOJI_ENEMY_SPRITE[enemy.emoji] : SHAPE_ENEMY_SPRITE[enemy.shape];
 }
@@ -7806,7 +7885,7 @@ function updateHPUI() {
   document.body.classList.toggle('player-critical', p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);
   enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
   playerHPText.textContent = Math.max(0, Math.round(p.hp));
-  enemyHPText.textContent = Math.max(0, Math.round(en.hp));
+  enemyHPText.textContent = en.megaPhase && en.megaPhase !== 'mega' ? '∞' : Math.max(0, Math.round(en.hp));
   playerAtkNum.textContent = p.atk;
   playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
   playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
@@ -8127,10 +8206,9 @@ function completeReincarnation() {
   rebirthSkippable = false;
   clearTimeout(rebirthTimer);
   rebirthChest = { pick, rebirthGemGain };
-  if (pick.rarity === 'legendary') rebirthTimer = setTimeout(openRebirthChest, REBIRTH_CHEST_MS); // 宝箱の演出はレジェンドだけ
-  else { toastIcon.innerHTML = ''; openRebirthChest(); }
+  rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
-const REBIRTH_CHEST_MS = 1400;
+const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 350;
 let rebirthChest = null;
 function openRebirthChest() {
   if (!rebirthChest) return;
@@ -9312,6 +9390,14 @@ function renderLvGauge() {
   const f = document.getElementById('pLvFill'); f.style.width = Math.min(100, ex / need * 100) + '%'; f.classList.toggle('full', powerUpPending);
   document.getElementById('pLvText').textContent = `${Math.floor(ex)} / ${need}`;
 }
+// レベルアップの軽いファンファーレ：「タタタ・ターン」と駆け上がって明るい和音で締める
+function playLevelUpFanfare() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const N = [[784, 0], [784, 0.09], [784, 0.18], [1047, 0.3]]; // ソソソ・ド
+  N.forEach(([f, t], i) => { const len = i === 3 ? 0.5 : 0.08; thump(f, f, len, 0.07, 'square', t); thump(f / 2, f / 2, len, 0.04, 'triangle', t); });
+  [1319, 1568].forEach(f => thump(f, f, 0.5, 0.03, 'square', 0.3)); // ミ・ソを重ねて和音に
+  [2093, 2637, 3136].forEach((f, i) => thump(f, f, 0.15, 0.015, 'sine', 0.36 + i * 0.05)); // キラッ
+}
 function gainExp(n) {
   if (game.skipChallenge) return;
   game.pLv = game.pLv || 1; game.pExp = (game.pExp || 0) + n;
@@ -9319,7 +9405,7 @@ function gainExp(n) {
     game.pExp -= getLvNeed(game.pLv); game.pLv++; powerUpPending = true;
     const pl = balls.find(isMainPlayerBall);
     if (pl) spawnDamageText(pl.x, pl.y - 46, `LEVEL UP!  Lv.${game.pLv}`, '#c792ea', 0.016, true);
-    playLoginBonusSound();
+    playLevelUpFanfare();
     setTimeout(openPowerUp, 900); // 撃破演出のあとに出す
   }
   renderLvGauge();
@@ -9381,7 +9467,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 function makePowerUpChoices() {
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
-  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
+  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
     if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
