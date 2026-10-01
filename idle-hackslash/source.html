@@ -3679,6 +3679,7 @@ const WEAPONS = {
   knife:     { icon: '🔪', name: 'ナイフ', desc: 'まっすぐ速く飛ぶ', cd: 45 },
   shield:    { icon: '🛡️', name: '回転シールド', desc: '盾が周りを回って敵を弾き、敵の弾も防ぐ', cd: 0 },
   thunder:   { icon: '🪄', name: '雷の杖', desc: 'ランダムに雷を落とす', cd: 95 },
+  dove:      { icon: '🕊️', name: '鳩', desc: '鳩が飛び立ち、敵めがけてホーミング', cd: 100 },
 };
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
@@ -3711,6 +3712,9 @@ function fireWeapon(id, lv, pl) {
   } else if (id === 'knife') {
     for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
     playTone(1500, 0.05, 'triangle', 0.04, 2200);
+  } else if (id === 'dove') {
+    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 4, vy: Math.sin(a) * 4, t: 0, life: 200, r: 9, dmg: weaponDmg(0.8, lv), hit: new Set(), pierce: 0 }); }
+    [1400, 1800].forEach((f, i) => thump(f, f * 1.15, 0.06, 0.03, 'triangle', i * 0.07)); // パタパタ
   } else if (id === 'thunder') {
     const foes = weaponFoes().sort(() => Math.random() - 0.5);
     for (let i = 0; i < n; i++) {
@@ -3755,6 +3759,17 @@ function updateWeapons(pl, speedMult) {
       p.vy += 0.22 * speedMult; p.x += p.vx * speedMult; p.y += p.vy * speedMult;
       hitFoes(p);
     } else if (p.id === 'knife') {
+      p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      hitFoes(p, 1, true);
+    } else if (p.id === 'dove') { // 一番近い敵へ向きを変えながら飛ぶ
+      const tg = p.t > 12 && nearestOf(p, foes.filter(f => f.hp > 0));
+      const sp = Math.min(7.5, 4 + p.t * 0.05);
+      if (tg) {
+        const want = Math.atan2(tg.y - p.y, tg.x - p.x), cur = Math.atan2(p.vy, p.vx);
+        let d = want - cur; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+        const a = cur + Math.max(-0.12, Math.min(0.12, d)) * speedMult;
+        p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
+      }
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
       hitFoes(p, 1, true);
     } else if (p.id === 'holyWater') {
@@ -3819,7 +3834,8 @@ function drawWeapons() {
   }
   for (const p of weaponProj) {
     ctx.save(); ctx.translate(p.x, p.y);
-    if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); }
+    if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 絵文字の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); }
+    else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); }
     else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); }
     else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); ctx.font = (p.id === 'boomerang' ? 17 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); }
     ctx.restore();
