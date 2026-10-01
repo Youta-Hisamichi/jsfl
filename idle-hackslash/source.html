@@ -7790,7 +7790,8 @@ function completeReincarnation() {
   rebirthSkippable = false;
   clearTimeout(rebirthTimer);
   rebirthChest = { pick, rebirthGemGain };
-  rebirthTimer = setTimeout(openRebirthChest, REBIRTH_CHEST_MS);
+  if (pick.rarity === 'legendary') rebirthTimer = setTimeout(openRebirthChest, REBIRTH_CHEST_MS); // 宝箱の演出はレジェンドだけ
+  else { toastIcon.innerHTML = ''; openRebirthChest(); }
 }
 const REBIRTH_CHEST_MS = 1400;
 let rebirthChest = null;
