@@ -9217,9 +9217,27 @@ function updateExpGems(speedMult) {
     else { g.vx *= Math.pow(0.9, speedMult); g.vy *= Math.pow(0.9, speedMult); }
     g.x += g.vx * speedMult; g.y += g.vy * speedMult;
     const cp = arenaClampPt(g.x, g.y, 8); g.x = cp.x; g.y = cp.y;
-    if (d < pl.radius + 6) { g.got = true; gainExp(g.v); playTone(1500 + Math.random() * 400, 0.05, 'triangle', 0.05, 2200); }
+    if (d < pl.radius + 6) { g.got = true; gainExp(g.v); playExpGemSound(); }
   }
   expGems = expGems.filter(g => !g.got);
+}
+// 経験値ダイヤを拾う音：続けて拾うほど音階が上がり、上がりきったらまた下から（ペンタトニックでキラキラ鳴る）
+const EXP_GEM_SCALE = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
+const EXP_GEM_CHAIN_MS = 700;
+let expGemChain = -1, expGemLastAt = 0, expGemQueued = 0;
+function playExpGemSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const now = performance.now();
+  if (now - expGemLastAt > EXP_GEM_CHAIN_MS) expGemChain = -1;
+  expGemLastAt = now;
+  expGemChain = (expGemChain + 1) % EXP_GEM_SCALE.length;
+  const f = 1046.5 * Math.pow(2, EXP_GEM_SCALE[expGemChain] / 12); // C6 から
+  // 同じフレームでまとめて拾ったときは少しずつずらして鳴らす（音が重ならず駆け上がって聞こえる）
+  const delay = Math.min(0.25, expGemQueued * 0.045); expGemQueued++;
+  requestAnimationFrame(() => { expGemQueued = 0; });
+  thump(f, f, 0.16, 0.06, 'sine', delay);
+  thump(f * 2, f * 2, 0.07, 0.02, 'triangle', delay);
+  thump(f * 3.01, f * 3.01, 0.04, 0.008, 'sine', delay + 0.01);
 }
 function drawExpGems() {
   ctx.save();
