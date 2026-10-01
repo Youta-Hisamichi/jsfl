@@ -3471,8 +3471,51 @@ let rushingNow = false;
 const RUSH_RUN_MAX = 3;
 function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * Math.min(1, (holdRush.dist || 0) / (arena.radius * 1.6)) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
-function isRushPiercing() { return rushingNow && holdRush && !holdRush.used && (holdRush.hits || 0) < getRushPierce(); }
+// 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
+const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
+let rampageCharge = 0, rampageLeft = 0;
+function isRampage() { return rampageLeft > 0; }
+function addRampageTap() {
+  if (isRampage()) return;
+  rampageCharge = Math.min(1, rampageCharge + RAMPAGE_PER_TAP);
+  if (rampageCharge >= 1) {
+    rampageCharge = 0; rampageLeft = RAMPAGE_FRAMES;
+    const pl = balls.find(isMainPlayerBall);
+    if (pl) spawnDamageText(pl.x, pl.y - 50, '⚔️ 乱舞！！', '#ff4f6d', 0.02, true);
+    shakeScreenLight(); playAccelSound();
+  }
+}
+function tickRampage(speedMult) {
+  if (isRampage()) rampageLeft = Math.max(0, rampageLeft - speedMult);
+  else rampageCharge = Math.max(0, rampageCharge - RAMPAGE_DECAY * speedMult);
+}
+function moveRampage(ball, speedMult) {
+  const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0) && !(x.hitCooldown > 0)))
+    || nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
+  if (en) {
+    const a = Math.atan2(en.y - ball.y, en.x - ball.x), sp = BOUNCE_SPEED * 5.5, t = 1 - Math.pow(0.6, speedMult);
+    ball.vx += (Math.cos(a) * sp - ball.vx) * t; ball.vy += (Math.sin(a) * sp - ball.vy) * t;
+  }
+  ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+  wallBounce(ball);
+  ball.seekPoint = null; ball.missBounces = 0;
+  if (Math.random() < 0.5 * speedMult) particles.push({ x: ball.x, y: ball.y, vx: 0, vy: 0, life: 0.6, decay: 0.05, color: '#ff8a5c' }); // 残像
+}
+function drawRampageGauge() {
+  const pl = balls.find(isMainPlayerBall);
+  if (!pl || (!isRampage() && rampageCharge <= 0)) return;
+  const v = isRampage() ? rampageLeft / RAMPAGE_FRAMES : rampageCharge;
+  const w = 44, h = 5, x = pl.x - w / 2, y = pl.y + pl.radius + 8;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+  ctx.fillStyle = isRampage() ? (Math.floor(Date.now() / 100) % 2 ? '#ff4f6d' : '#ffd76b') : '#ff9f43';
+  ctx.fillRect(x, y, w * v, h);
+  if (isRampage()) { ctx.strokeStyle = 'rgba(255,79,109,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 6 + Math.sin(Date.now() / 60) * 2, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.restore();
+}
+function isRushPiercing() { return isRampage() || (rushingNow && holdRush && !holdRush.used && (holdRush.hits || 0) < getRushPierce()); }
 function consumeRushHit(x, y) {
+  if (isRampage()) return;
   if (!rushingNow || !holdRush || holdRush.used) return;
   if ((holdRush.hits || 0) < getRushPierce()) { // 貫通中：跳ね返らずにそのまま次の敵へ
     holdRush.hits = (holdRush.hits || 0) + 1;
@@ -6864,6 +6907,11 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
+    if (isMainPlayerBall(ball) && isRampage()) { // 乱舞中は敵から敵へ斬りかかる
+      moveRampage(ball, speedMult);
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
     if (isMainPlayerBall(ball) && tickRushGauge()) { // 押している間は敵へ体当たり
       moveHoldRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
@@ -7052,6 +7100,7 @@ function step() {
   if (!a) return;
   const b = computeBonuses();
   const speedMult = getEffectiveSpeed();
+  tickRampage(speedMult);
   a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
   a.inPinch = b.pinchAtk > 0 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
   if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk)));
@@ -7106,7 +7155,7 @@ function step() {
   const rushPierce = isRushPiercing(); // 貫きの蹄鉄：体当たりが跳ね返らずに貫通する
   const collided = (piercing || rushPierce) ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult; // リセット前の連打ボーナスでダメージを計算する
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * (isRampage() ? RAMPAGE_DMG : 1); // リセット前の連打ボーナスでダメージを計算する
   if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
@@ -7172,7 +7221,7 @@ function step() {
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       }
-      if (!isDisabled(e)) { // 同時：味方の攻撃で倒れた敵も相打ちで攻撃してくる
+      if (!isDisabled(e) && !isRampage()) { // 同時：味方の攻撃で倒れた敵も相打ちで攻撃してくる（乱舞中は反撃されない）
         if (!enemyAttackHits(e)) spawnEvadeText(a);
         else if (absorbWithBarrier(a)) applyHitKnockback(a, e, 3.2);
         else {
@@ -8784,6 +8833,7 @@ function draw() {
   drawAtkUpEffects();
   drawRegenEffects();
   drawTackleEffects();
+  drawRampageGauge();
   drawEnemyTraitEffects();
   drawNovaFx();
 
@@ -10452,7 +10502,7 @@ canvas.addEventListener('pointerdown', event => {
   const y = (event.clientY - rect.top) * (size / rect.height);
   const dx = x - arena.x, dy = y - arena.y;
   if (Math.hypot(dx, dy) < arena.radius - 12) {
-    if (HOLD_RUSH_MODE) { onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 押して突撃モード中は連打突撃・タメはなし
+    if (HOLD_RUSH_MODE) { addRampageTap(); onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 押して突撃モード中は連打突撃・タメはなし
     arenaHeld = true;
     updateTackleHold();
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
