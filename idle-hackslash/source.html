@@ -7576,6 +7576,7 @@ function showContinuePrompt() {
   continueDeadline = Date.now() + 10000;
   continueStopped = false;
   continueBtn.style.display = 'block';
+  continueBtn.querySelector('.cb-cost').textContent = '💎 ' + getContinueCost();
   giveUpBtn.style.display = 'block';
   toastIcon.style.display = 'block';
   toastIcon.innerHTML = xi('x_break');
@@ -7604,7 +7605,7 @@ function buildGameOverTips() {
 }
 let continueStopped = false;
 function renderContinueStopped() {
-  toastSub.innerHTML = `<span class="continue-count">⏸ カウント停止中</span>\n💎 3 で現在ステージをリトライ${gameOverTipsHtml}`;
+  toastSub.innerHTML = `<span class="continue-count">⏸ カウント停止中</span>\n💎 ${getContinueCost()} で現在ステージをリトライ${gameOverTipsHtml}`;
 }
 function stopContinueCountdown() {
   if (continueStopped || !continueTimer || phase !== 'paused' || continueBtn.style.display === 'none') return;
@@ -7621,7 +7622,7 @@ function startContinueCountdown() {
   const updateContinue = () => {
     const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
     if (seconds !== lastTickSec && seconds > 0) { lastTickSec = seconds; playCountdownTick(seconds); }
-    toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 3 で現在ステージをリトライ${gameOverTipsHtml}`;
+    toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 ${getContinueCost()} で現在ステージをリトライ${gameOverTipsHtml}`;
     if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
   };
   updateContinue();
@@ -9073,12 +9074,15 @@ dialogCloseBtn.addEventListener('click', () => {
   phase = 'battle';
 });
 
+// コンテニュー（リトライ）のジェム：序盤（STAGE 30まで）は1個、それ以降は3個
+function getContinueCost() { return game.stage <= 30 ? 1 : 3; }
 continueBtn.addEventListener('click', event => {
   if (phase !== 'paused') return;
-  if (game.gems < 3) {
+  const contCost = getContinueCost();
+  if (game.gems < contCost) {
     clearInterval(continueTimer); // 確認中・ショップにいる間はカウントダウンを止める
     const remaining = Math.max(1000, continueDeadline - Date.now());
-    promptGemShortage(3, {
+    promptGemShortage(contCost, {
       onCancel: () => { continueDeadline = Date.now() + remaining; startContinueCountdown(); },
       onLeave: () => { toast.classList.remove('show'); },
       returnTo: () => { switchTab('game'); onPlayerDeath(false, true); },
@@ -9087,7 +9091,7 @@ continueBtn.addEventListener('click', event => {
     return;
   }
   clearInterval(continueTimer);
-  game.gems -= 3;
+  game.gems -= contCost;
   continueBtn.style.display = 'none';
   giveUpBtn.style.display = 'none';
   toast.classList.remove('show');
