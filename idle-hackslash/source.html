@@ -9757,7 +9757,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     if (lv >= WEAPON_MAX_LV) continue;
     pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: W.icon, name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
   }
-  pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP全回復', desc: 'HPと仲間を全回復' });
+  pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
   pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今のステージに応じたコイン' });
   return pool;
 }
@@ -9876,7 +9876,7 @@ function applyPowerUp(c) {
     showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
   }
   else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; }
-  else if (c.kind === 'heal') { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = pl.maxHp; balls.forEach(b => { if (b.isCompanion) b.hp = b.maxHp; }); playHealSound(); }
+  else if (c.kind === 'heal') { const PU_HEAL = 0.3; const pl = balls.find(isMainPlayerBall); if (pl && pl.hp > 0) { const h = Math.min(pl.maxHp - pl.hp, Math.round(pl.maxHp * PU_HEAL)); pl.hp += h; spawnDamageText(pl.x, pl.y - pl.radius - 14, '+' + h + ' HP', '#5fe0a8', 0.012); } balls.forEach(b => { if (b.isCompanion && b.hp > 0) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * PU_HEAL); }); playHealSound(); }
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
 document.getElementById('powerUpList').addEventListener('click', ev => {
