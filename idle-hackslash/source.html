@@ -4593,6 +4593,7 @@ function updateEnemyTraits(a, e, speedMult) {
     }
     sh.x += sh.vx * speedMult; sh.y += sh.vy * speedMult; sh.life -= speedMult;
     if (!arenaContains(sh.x, sh.y)) sh.life = 0;
+    else if (obstacleHit(sh.x, sh.y, 4)) { sh.life = 0; spawnHitParticles(sh.x, sh.y, '#b9b2a6'); } // 岩の陰に隠れれば弾を防げる
     if (sh.life > 0 && a.hp > 0 && Math.hypot(sh.x - a.x, sh.y - a.y) < a.radius + 6) {
       sh.life = 0;
       if (damagePlayerByTrait(a, sh.owner || e, sh.dmg, sh.kind === 'fire' ? '#ff9f43' : '#c792ea')) playerDown = true;
@@ -7637,7 +7638,55 @@ function drawCoinFx() {
   }
 }
 
+// ステージの障害物（岩の柱）：ステージごとに配置が決まる。キャラは跳ね返り、敵の弾は遮られる
+let obstacles = [], obstacleStage = -1;
+function stageRand(seed) { let x = seed * 9301 + 49297; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
+function setupObstacles() {
+  obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
+  obstacles = [];
+  const rnd = stageRand(game.stage * 7 + 3), half = arena.radius;
+  const n = game.stage % 10 === 0 ? 2 : 2 + Math.floor(rnd() * 3); // 2〜4個（ボス戦は2個）
+  for (let tries = 0; obstacles.length < n && tries < 60; tries++) {
+    const r = half * (0.09 + rnd() * 0.06);
+    const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
+    if (Math.hypot(x - arena.x, y - arena.y) < half * 0.22) continue; // 真ん中は空ける
+    if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + half * 0.22)) continue; // 間を通り抜けられるように
+    obstacles.push({ x, y, r, seed: rnd() });
+  }
+}
+let obstacleHalf = 0;
+function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+function obstacleHit(x, y, r) { return obstacles.find(o => Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
+function obstacleBounce(ball) {
+  for (const o of obstacles) {
+    const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 1, min = o.r + ball.radius * 0.8;
+    if (d >= min) continue;
+    const nx = dx / d, ny = dy / d;
+    ball.x = o.x + nx * min; ball.y = o.y + ny * min;
+    const dot = ball.vx * nx + ball.vy * ny;
+    if (dot < 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; }
+    if (ball.kbx || ball.kby) { const kd = ball.kbx * nx + ball.kby * ny; if (kd < 0) { ball.kbx -= 2 * kd * nx; ball.kby -= 2 * kd * ny; } }
+    const now = Date.now();
+    if (dot < -0.6 && now - (ball.wallSoundAt || 0) > 150) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
+  }
+}
+function drawObstacles() {
+  for (const o of obstacles) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 3, o.y + o.r * 0.55, o.r * 1.05, o.r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); // 影
+    const g = ctx.createRadialGradient(o.x - o.r * 0.35, o.y - o.r * 0.4, o.r * 0.1, o.x, o.y, o.r);
+    g.addColorStop(0, '#b9b2a6'); g.addColorStop(0.6, '#7d766c'); g.addColorStop(1, '#4b463f');
+    ctx.fillStyle = g; ctx.beginPath();
+    for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI * 2, rr = o.r * (0.92 + 0.08 * Math.sin(i * 2.7 + o.seed * 20)); i ? ctx.lineTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr) : ctx.moveTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(40,36,30,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(40,36,30,0.5)'; ctx.lineWidth = 1.5; // ひび
+    ctx.beginPath(); ctx.moveTo(o.x - o.r * 0.2, o.y - o.r * 0.5); ctx.lineTo(o.x + o.r * 0.05, o.y - o.r * 0.1); ctx.lineTo(o.x - o.r * 0.1, o.y + o.r * 0.3); ctx.stroke();
+    ctx.restore();
+  }
+}
 function wallBounce(ball) {
+  obstacleBounce(ball);
   const w = arenaWallHit(ball);
   if (w) {
     const { nx, ny } = w;
@@ -7667,6 +7716,7 @@ function applyHitKnock(ball, nx, ny) {
 function moveHitKnock(ball, speedMult) {
   if (!ball.kbx && !ball.kby) return;
   ball.x += ball.kbx * speedMult; ball.y += ball.kby * speedMult;
+  obstacleBounce(ball);
   const w = arenaWallHit(ball);
   if (w) { // 壁に当たったら押し出しも跳ね返す
     const { nx, ny } = w;
@@ -7933,6 +7983,7 @@ function step() {
   if (!a) return;
   const b = computeBonuses();
   const speedMult = getEffectiveSpeed();
+  tickObstacles();
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   updateExpGems(speedMult);
@@ -9587,6 +9638,7 @@ function draw() {
   wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
   ctx.clearRect(0, 0, size, size);
   drawArenaFloor();
+  drawObstacles();
   arenaPath();
   ctx.strokeStyle = 'rgba(150,160,190,0.35)';
   ctx.lineWidth = 2;
