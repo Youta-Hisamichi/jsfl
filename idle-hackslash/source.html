@@ -3546,6 +3546,25 @@ function releaseCharge() {
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
 }
+// タメ中の音：小さくうなる音がタメ量に合わせて少しずつ上がり、MAXで軽く「チン」
+let chargeSnd = null;
+function tickChargeSound() {
+  const active = chargeHold && Date.now() - chargeHold.start >= CHARGE_MIN_MS && phase === 'battle' && audioCtx && !isBattleSfxMuted();
+  if (!active) {
+    if (chargeSnd) { const t = audioCtx.currentTime; chargeSnd.g.gain.cancelScheduledValues(t); chargeSnd.g.gain.setTargetAtTime(0.0001, t, 0.03); chargeSnd.o.stop(t + 0.15); chargeSnd = null; }
+    return;
+  }
+  const lv = getChargeLevel(), t = audioCtx.currentTime;
+  if (!chargeSnd) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
+    o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 1400;
+    g.gain.setValueAtTime(0.0001, t); g.gain.setTargetAtTime(0.022 * game.sfxVolume, t, 0.08);
+    o.connect(f); f.connect(g); g.connect(audioCtx.destination); o.start(t);
+    chargeSnd = { o, g, full: false };
+  }
+  chargeSnd.o.frequency.setTargetAtTime(180 + 320 * lv + (lv >= 1 ? Math.sin(Date.now() / 60) * 6 : 0), t, 0.05);
+  if (lv >= 1 && !chargeSnd.full) { chargeSnd.full = true; thump(1568, 1568, 0.25, 0.04, 'sine'); thump(2349, 2349, 0.18, 0.015, 'sine', 0.02); }
+}
 function drawChargeRing() {
   const lv = getChargeLevel(), pl = balls.find(isMainPlayerBall);
   if (!chargeHold || !pl || Date.now() - chargeHold.start < CHARGE_MIN_MS) return;
@@ -9071,6 +9090,7 @@ function draw() {
   drawTackleEffects();
   drawRampageGauge();
   drawChargeRing();
+  tickChargeSound();
   drawDragStick();
   drawExpGems();
   drawEnemyTraitEffects();
@@ -9362,7 +9382,16 @@ function applyPowerUp(c) {
     if (!game.shopOwned[c.id]) { game.shopOwned[c.id] = true; game.skillLevels[c.id] = 1; const eq = getEquippedSkills(); if (eq.length < getSkillSlots()) eq.push(c.id); }
     else game.skillLevels[c.id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(c.id) + 1);
     updateSkillButtonVisibility(); renderSkillGacha();
-  } else if (c.kind === 'comp') { const r = grantCompanion(pickCompanionId()); showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList(); }
+  } else if (c.kind === 'comp') {
+    const r = grantCompanion(pickCompanionId());
+    // 選択中は phase が 'battle' ではないため grantCompanion では戦場に出ない → ここで出現させる
+    if (game.companions.alive[r.id] && !balls.some(ball => ball.isCompanion && ball.companionId === r.id)) {
+      const cb = makeCompanionBall(r.id); balls.push(cb);
+      spawnHitParticles(cb.x, cb.y, '#ff9a4f');
+    }
+    refreshCompanionBalls(); refreshPlayerBallStats(false);
+    showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
+  }
   else if (c.kind === 'heal') { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = pl.maxHp; balls.forEach(b => { if (b.isCompanion) b.hp = b.maxHp; }); playHealSound(); }
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
@@ -10537,6 +10566,16 @@ atkUpBtn.addEventListener('click', event => {
   updateHPUI();
 });
 
+// 魔法封じの音：キラキラした魔力が揺らぎながら萎んでいき、最後に「カチッ」と封印が閉じる
+function playSilenceSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  [2093, 1760, 1397, 1175, 988].forEach((f, i) => thump(f, f * 0.97, 0.16, 0.035, 'triangle', i * 0.035)); // 魔力のきらめき（下降）
+  thump(660, 220, 0.42, 0.05, 'square', 0.05); thump(671, 216, 0.42, 0.05, 'square', 0.05); // うなりながら萎む魔力
+  filteredNoise(0.05, 0.35, 0.07, 2400, 2, 'bandpass');                                       // シュウゥ…と吸い込まれる
+  thump(180, 55, 0.2, 0.2, 'sine', 0.44);                                                      // 封印の「ドン」
+  filteredNoise(0.44, 0.05, 0.25, 1800, 1.5, 'bandpass');                                      // 錠が閉まる「カチッ」
+  thump(523, 523, 0.5, 0.025, 'sine', 0.5); thump(784, 784, 0.4, 0.012, 'sine', 0.5);         // 静まった余韻
+}
 silenceBtn.addEventListener('click', event => {
   if (!game.shopOwned.skillSilence) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
   if (phase !== 'battle') { showTapError('今は魔法封じを使えません', event.clientX, event.clientY); return; }
@@ -10551,7 +10590,7 @@ silenceBtn.addEventListener('click', event => {
     spawnDamageText(en.x, en.y - en.radius - 20, '🔇 魔法封じ', '#9fa8ff', 0.012);
     spawnHitParticles(en.x, en.y, '#9fa8ff');
   }
-  playTone(700, 0.3, 'triangle', 0.14, 220);
+  playSilenceSound();
   showNotice(`🔇 魔法封じ！ ${SILENCE_MS / 1000}秒間 敵の魔法と弾を封じた`);
   updateSilenceButton();
 });
