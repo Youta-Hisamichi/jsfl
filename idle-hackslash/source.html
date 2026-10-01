@@ -2394,7 +2394,7 @@ const SKILL_GACHA_SKILLS = {
   skillPoison:   { icon: '☠️', name: '毒',       desc: '当てた敵を毒状態に' },
   skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
   skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '取得したら転生まで常に攻撃力1.5倍（セット不要）' },
-  skillRegen:    { icon: '🌿', name: 'リヒール', desc: '20秒間 HPが少しずつ自動回復' },
+  skillRegen:    { icon: '🌿', name: 'リヒール', desc: '取得したら転生まで常にHPが少しずつ自動回復（セット不要）' },
   skillSilence:  { icon: '🔇', name: '魔法封じ', desc: '15秒間 敵の魔法・弾を封じる' },
   skillSacrifice:{ icon: '🩸', name: '捨て身',   desc: 'HPを30%削って大ダメージ' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
@@ -2890,13 +2890,13 @@ function renderSkillGacha() {
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   updateSkillButtonVisibility();
 }
-const PASSIVE_SKILLS = ['skillAtkUp']; // 取得するだけで効く（スキル枠を使わない）
+const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）
 function updateSkillButtonVisibility() {
   let keys;
   try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
   for (const btnId in keys) {
     const btn = document.getElementById(btnId);
-    if (btn) btn.style.display = isSkillEquipped(keys[btnId]) && btnId !== 'atkUpBtn' ? '' : 'none'; // 攻撃UPは常時発動なのでボタンなし
+    if (btn) btn.style.display = isSkillEquipped(keys[btnId]) && !PASSIVE_SKILLS.includes(keys[btnId]) ? '' : 'none'; // 常時発動のスキルはボタンなし
   }
   const ssb = document.getElementById('skillSetBtn');
   if (ssb) ssb.style.display = SKILL_ORDER.some(id => game.shopOwned[id]) ? '' : 'none';
@@ -4075,27 +4075,30 @@ let lastRegenAt = Date.now() - REGEN_COOLDOWN;
 let regenEndAt = 0;
 let lastRegenTickAt = 0;
 let regenHealAccum = 0; // 回復量の表示用（1秒ごとにまとめて表示）
+const REGEN_PASSIVE_RATIO = 0.005; // 常時発動のリヒール：毎秒 最大HPの0.5%（控えめ）
+function isRegenActive() { return !!game.shopOwned.skillRegen || Date.now() < regenEndAt; }
 function updateRegen() {
   const now = Date.now();
-  if (now >= regenEndAt) return;
+  if (!isRegenActive()) return;
+  const rate = now < regenEndAt ? REGEN_RATIO_PER_SEC : REGEN_PASSIVE_RATIO;
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   const dt = Math.min(0.1, (now - (lastRegenTickAt || now)) / 1000);
   lastRegenTickAt = now;
   if (!player || player.hp <= 0 || player.hp >= player.maxHp) return;
-  const heal = player.maxHp * REGEN_RATIO_PER_SEC * dt;
+  const heal = player.maxHp * rate * dt;
   player.hp = Math.min(player.maxHp, player.hp + heal);
   regenHealAccum += heal;
-  if (regenHealAccum >= Math.max(1, player.maxHp * REGEN_RATIO_PER_SEC)) {
+  if (regenHealAccum >= Math.max(1, player.maxHp * 0.02)) { // 最大HPの2%たまるごとにまとめて表示
     spawnDamageText(player.x, player.y - player.radius - 14, '+' + Math.round(regenHealAccum) + ' HP', '#5fe0a8', 0.012); // 約1.4秒表示
     regenHealAccum = 0;
   }
   updateHPUI();
 }
 function drawRegenEffects() {
-  if (Date.now() >= regenEndAt) return;
+  if (!isRegenActive()) return;
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   if (!player) return;
-  if (Math.random() < 0.25) {
+  if (Math.random() < (Date.now() < regenEndAt ? 0.25 : 0.05)) { // 常時発動中は控えめに光の粒
     const a = Math.random() * Math.PI * 2;
     particles.push({ x: player.x + Math.cos(a) * player.radius, y: player.y + Math.sin(a) * player.radius, vx: 0, vy: -0.6, life: 0.8, color: '#5fe0a8', decay: 0.03 });
   }
@@ -9139,8 +9142,10 @@ const SPRITE_FACING = {
   goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: 0, darkMage: 0, slimeBlack: 0, slimeGray: 0, slimePinkS: 0, slimeBlueS: 0, fatDragon: 0, slimeGold: 0, slimeGreenS: 0, fishman: 0, longSlime: 0, cucumber: 0, swordLizard: 0, crabGirl: 0, slimeSilver: 0, slimeRainbow: 0, slimeYellow: 0, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: 0, stagKnight: 0, muscleSlime: 0, flameBear: 0, scorpion: 0, marmot: 0, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: 0,
   slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, 
 };
+const isSlimeSprite = key => /slime/i.test(key) && key !== 'slimeGirl'; // スライム系（プヨプヨ揺らす）
 function drawFacingSprite(img, ball, key, cx, cy, sz) {
-  if (!ball.isDying) {
+  const squishy = !ball.isPlayer && isSlimeSprite(key);
+  if (!ball.isDying && !squishy) {
     const sp = Math.hypot(ball.vx || 0, ball.vy || 0);
     ball.walkPhase = (ball.walkPhase || 0) + Math.min(sp, 4) * 0.16;
     cy -= Math.abs(Math.sin(ball.walkPhase)) * Math.min(3, sp * 1.4);
@@ -9166,6 +9171,18 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
     flip = (ball.faceDir || base) !== base;
   }
   ctx.imageSmoothingEnabled = sz * dpr < (img.naturalWidth || img.width || 64);
+  if (squishy) { // 足元を支点に、横に広がる⇔縦に伸びるを繰り返してプヨプヨ（動くと大きく弾む）
+    if (ball.squishSeed === undefined) ball.squishSeed = Math.random() * 10;
+    const sp = Math.min(4, Math.hypot(ball.vx || 0, ball.vy || 0)), hit = ball.hitCooldown > 0 ? 0.06 : 0;
+    const w = Math.sin(Date.now() / (150 - sp * 12) + ball.squishSeed) * (0.06 + sp * 0.015 + hit);
+    ctx.save();
+    ctx.translate(cx, cy + sz / 2);
+    ctx.scale((flip ? -1 : 1) * (1 + w), 1 - w);
+    ctx.drawImage(img, -sz / 2, -sz, sz, sz);
+    ctx.restore();
+    ctx.imageSmoothingEnabled = true;
+    return;
+  }
   if (!flip) { ctx.drawImage(img, cx - sz / 2, cy - sz / 2, sz, sz); ctx.imageSmoothingEnabled = true; return; }
   ctx.save();
   ctx.translate(cx, cy);
@@ -11614,7 +11631,7 @@ delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
-if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => x !== 'skillAtkUp'); // 攻撃UPは常時発動になったので枠から外す
+if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
 for (const id of ['skillSleep', 'skillHoming']) { // 削除したスキル（眠り・追尾）はセーブからも取り除く
   if (game.shopOwned) delete game.shopOwned[id];
   if (game.skillLevels) delete game.skillLevels[id];
