@@ -5950,6 +5950,16 @@ const BGM_SONGS = {
     drums: 'k h k s k h k s | k h k s k h k s | k h k s k h k s | k k s h k k s s | ' +
            'k h k s k h k s | k h k s k h k s | k h k s k h k s | s s s s ks ks ks ks',
   },
+  boss7: {
+    bpm: 182,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'E6 = B5 = E6 F6 G6 = | F6 = C6 = F6 = E6 = | G6 = B6 = A6 G6 F6 = | A6 = = = F6 = C6 = | E6 = G6 = C7 = B6 = | D#6 = F#6 = B6 = A6 = | G6 = E6 = B5 = E6 = | D#6 E6 F#6 = A6 = B6 = | C7 = B6 A6 = E6 = = | B6 = A6 G6 F#6 = D#6 = | E6 = G6 = B6 = E7 = | F6 = A6 = C7 = B6 = | A6 = C7 = E7 = D7 C7 | B6 = D#7 = F#7 = = = | E7 = C7 = G6 = E6 = | D#6 = = = B5 = = =' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'E4 G4 B4 G4 E4 G4 B4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | E4 G4 B4 G4 E4 G4 B4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | C4 E4 G4 E4 C4 E4 G4 E4 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4 | E4 G4 B4 G4 E4 G4 B4 G4 | B3 D#4 A4 D#4 B3 D#4 A4 D#4 | A3 C4 E4 C4 A3 C4 E4 C4 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4 | E4 G4 B4 G4 E4 G4 B4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | A3 C4 E4 C4 A3 C4 E4 C4 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4 | C4 E4 G4 E4 C4 E4 G4 E4 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4' },
+      { type: 'vrc6saw', gain: 0.052, notes: 'E2 E2 E3 E2 E2 E2 E3 E2 | F2 F2 F3 F2 F2 F2 F3 F2 | E2 E2 E3 E2 E2 E2 E3 E2 | F2 F2 F3 F2 F2 F2 F3 F2 | C2 C2 C3 C2 C2 C2 C3 C2 | B1 B1 B2 B1 B1 B1 B2 B1 | E2 E2 E3 E2 E2 E2 E3 E2 | B1 B1 B2 B1 B1 B1 B2 B1 | A1 A1 A2 A1 A1 A1 A2 A1 | B1 B1 B2 B1 B1 B1 B2 B1 | E2 E2 E3 E2 E2 E2 E3 E2 | F2 F2 F3 F2 F2 F2 F3 F2 | A1 A1 A2 A1 A1 A1 A2 A1 | B1 B1 B2 B1 B1 B1 B2 B1 | C2 C2 C3 C2 C2 C2 C3 C2 | B1 B1 B2 B1 B1 B1 B2 B1' },
+    ],
+    kickBoost: 1.4,
+    drums: 'k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k s k s ks s ks ks | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | k k s h k k s h | ks ks ks ks s s s s',
+  },
   tboss1: {
     bpm: 168,
     tracks: [
@@ -6243,7 +6253,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6', 'boss7'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -6281,6 +6291,7 @@ const BGM_INFO = [
   { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
+  { key: 'boss7', name: 'ボス7 宿命の刃', desc: '半音でにじり寄る重いベースの刻みと畳みかける旋律、休む間のない緊迫した決闘。VRC6風チップチューン。ホ短調（ファミコンの忍者アクション系の作風）・BPM182' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'upgrade', name: 'ページ 強化 鍛冶屋の工房', desc: '金床を打つ高い刻みと8分で突き進むベースの、テンションの上がる鍛冶場の曲。VRC6風チップチューン。ニ長調・BPM150' },
