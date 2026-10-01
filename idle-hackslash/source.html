@@ -8523,7 +8523,7 @@ function completeReincarnation() {
   rebirthChest = { pick, rebirthGemGain };
   rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
-const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 350;
+const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 750;
 let rebirthChest = null;
 function openRebirthChest() {
   if (!rebirthChest) return;
