@@ -267,7 +267,15 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .deck-card.locked { border: 1px dashed var(--ring); background: transparent; box-shadow: none; cursor: pointer; color: var(--text-dim); opacity: 0.5; animation: none; }
 .deck-card .dc-plus { font-size: 1.3rem; font-weight: 900; line-height: 1; }
 .skill-slot-btn { width: 100%; justify-content: space-between; margin: 0 0 8px; border-style: dashed; }
-.skill-buy-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
+.skill-buy-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-bottom: 6px; }
+.skill-buy-list .sk-card { padding: 6px 4px; min-width: 0; text-align: center; }
+.skill-buy-list .sk-top { flex-direction: column; gap: 2px; }
+.skill-buy-list .sk-top .ico-img { width: 2rem; height: 2rem; }
+.skill-buy-list .sk-name { font-size: 0.7rem; }
+.skill-buy-list .sk-lv { font-size: 0.58rem; }
+.skill-buy-list .sk-desc { font-size: 0.54rem; line-height: 1.3; min-height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.skill-buy-list .sk-btns { flex-direction: column; gap: 3px; }
+.skill-buy-list .sk-btns button { font-size: 0.56rem; padding: 4px 1px; }
 .sk-card { display: flex; flex-direction: column; gap: 3px; padding: 7px; border-radius: 10px; background: var(--bg-soft); border: 1px solid var(--ring); font-size: 0.66rem; color: var(--text); }
 .sk-card.equipped { border: 2px solid #2ea043; box-shadow: 0 0 8px rgba(46,160,67,0.25); }
 .sk-card.locked { opacity: 0.75; }
