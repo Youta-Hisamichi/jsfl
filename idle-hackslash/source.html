@@ -6892,7 +6892,7 @@ function spawnReceivedDamageText(target, dmg, crit, attacker) {
   spawnBlood(target.x, target.y, 8);
   const y = target.y - target.radius - 8;
   if (!crit) { spawnDamageText(target.x, y, String(dmg), '#ffb3b3'); return; }
-  spawnDamageText(target.x, y - 6, 'CRITICAL!\n' + dmg, '#ff3b4a', 0.014, true);
+  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + dmg, '#ff3b4a', 0.014, true);
   spawnHitParticles(target.x, target.y, '#ff3b4a');
   spawnHitParticles(target.x, target.y, '#ff9aa5');
   playEnemyCritSound();
@@ -6901,7 +6901,7 @@ function spawnReceivedDamageText(target, dmg, crit, attacker) {
 function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
   const y = target.y - target.radius - (offsetY || 8);
   if (!crit) { spawnDamageText(target.x, y, String(dmg), color); return; }
-  spawnDamageText(target.x, y - 6, 'CRITICAL!\n' + dmg, '#ff7a3d', 0.014, true);
+  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + dmg, '#ff7a3d', 0.014, true);
   spawnHitParticles(target.x, target.y, '#ff7a3d');
   spawnHitParticles(target.x, target.y, '#ffd76b');
   playCritSound();
