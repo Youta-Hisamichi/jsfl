@@ -6524,7 +6524,7 @@ function normalizeSpeed(ball, targetSpeed) {
   ball.vy = (ball.vy / s) * targetSpeed;
 }
 
-function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.7, decay: decay || 0.018, big: !!big }); }
+function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.45, decay: (decay || 0.018) * 0.55, big: !!big }); } // 小さめの文字で長めに残す
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
@@ -8843,13 +8843,13 @@ function drawDamageTexts() {
   ctx.save();
   ctx.textAlign = 'center';
   for (const d of damageTexts) {
-    ctx.font = d.big ? 'bold 23px "Hiragino Sans", sans-serif' : 'bold 17px "Hiragino Sans", sans-serif';
+    ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
     ctx.globalAlpha = Math.max(0, d.life);
     ctx.fillStyle = d.color;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     const lines = d.text.split('\n');
-    const lineHeight = d.big ? 25 : 19;
+    const lineHeight = d.big ? 20 : 15;
     lines.forEach((line, i) => {
       const ly = d.y - (lines.length - 1 - i) * lineHeight;
       ctx.strokeText(line, d.x, ly);
