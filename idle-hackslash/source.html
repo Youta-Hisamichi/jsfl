@@ -5231,15 +5231,7 @@ const BGM_SONGS = {
     ],
     drums: 'k - h s - k s h | k - h s - k s h | k - h s - k s h | k - h s - k s s | k - h s - k s h | k - h s - k s h | k - h s - k s h | k s s k s s ks ks',
   },
-  battle19: {
-    bpm: 164,
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'B5 = = = E6 = F#6 G6 | G6 = E6 = C6 = E6 G6 | F#6 = = = D6 = A5 = | B5 = = = = = G5 A5 | B5 = = = E6 = F#6 G6 | A6 = G6 = E6 = G6 A6 | B6 = A6 = F#6 = D6 = | D#6 = = = F#6 = B6 =' },
-      { type: 'vrc6pulse12', gain: 0.02, notes: 'E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | E4 G4 B4 E5 B4 G4 E4 G4 | E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | B3 D#4 F#4 B4 F#4 D#4 B3 D#4' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | E2 E3 E2 E3 E2 E3 E2 E3 | E2 E3 E2 E3 E2 E3 E2 E3 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | B1 B2 B1 B2 B1 B2 B1 B2' },
-    ],
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
-  },
+
   boss: {
     bpm: 164,
     tracks: [
@@ -5535,7 +5527,7 @@ let bgmTimer = null;
 let bgmToken = 0;
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle17', 'battle18', 'battle19', 'battle20'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle17', 'battle18', 'battle20'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -5577,7 +5569,6 @@ const BGM_INFO = [
   { key: 'battle15', name: '戦闘15 狼の咆哮', desc: 'ギターリフ風のパワーコードと疾走するベース。VRC6風チップチューン。イ短調（対戦格闘ゲームの格闘伝説系の作風）・BPM160' },
   { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
   { key: 'battle18', name: '戦闘18 精霊の大地', desc: '付点のリズムで跳ねるブラスの英雄的な旋律と、行進するスネア、駆けるベース。VRC6風チップチューン。ト短調（壮大な冒険RPG系の作風）・BPM150' },
-  { key: 'battle19', name: '戦闘19 鋼鉄の要塞', desc: 'オクターブで跳ねるベースと駆け回る分散和音、胸が熱くなる旋律。VRC6風チップチューン。ホ短調（横スクロールアクションの最終要塞ステージ系の作風）・BPM164' },
   { key: 'battle20', name: '戦闘20 マナの森の激闘', desc: 'はずむシンコペーションのベースと打楽器、ドリア調で明るさと切迫感が入り混じる旋律。VRC6風チップチューン。ニ・ドリア（アクションRPG系の作風）・BPM160' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
