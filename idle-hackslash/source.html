@@ -6524,7 +6524,7 @@ function normalizeSpeed(ball, targetSpeed) {
   ball.vy = (ball.vy / s) * targetSpeed;
 }
 
-function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.45, decay: (decay || 0.018) * 0.55, big: !!big }); } // 小さめの文字で長めに残す
+function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.45, decay: (decay || 0.018) * 0.45, big: !!big }); } // 小さめの文字で長めに残す
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
@@ -8844,7 +8844,7 @@ function drawDamageTexts() {
   ctx.textAlign = 'center';
   for (const d of damageTexts) {
     ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
-    ctx.globalAlpha = Math.max(0, d.life);
+    ctx.globalAlpha = Math.max(0, Math.min(1, d.life / 0.3)); // 最後の3割になるまではくっきり表示し、そこから消える
     ctx.fillStyle = d.color;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
     ctx.lineWidth = 2.5;
