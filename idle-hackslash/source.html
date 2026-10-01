@@ -3616,26 +3616,32 @@ function doTapSlash() {
     if (d > R + en.radius) continue;
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
-    if (!playerAttackHits(en)) { spawnMissText(en); continue; }
-    const mult = SLASH_DMG * (isTelegraphStunned(en) ? TG_STUN_DMG : 1);
-    const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * mult)), en);
-    en.hp -= dmg; trackDamage(dmg); hits++;
-    spawnHitParticles(en.x, en.y, '#ffe08a');
-    spawnAttackDamageText(en, dmg, crit, '#fff4b8', en.isAdd ? 6 : undefined);
-    if (en.isAdd) {
-      focusHpEnemy(en);
-      if (en.hp <= 0) {
-        recordBestiaryKill(en); spawnExpGems(en.x, en.y, 4);
-        const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain;
-        spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
-      }
-    } else {
-      onPlayerHitEnemy(en, dmg);
-      applyHitKnockback(en, pl, 1.6);
-      if (en.hp <= 0) triggerEnemyDefeat(en, pl.x, pl.y);
-    }
+    if (playerHitEnemyBy(en, pl, SLASH_DMG, '#ffe08a', 1.6)) hits++;
   }
   if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
+}
+// 自キャラの攻撃（切り払い・武器スキル）で敵に攻撃力×mult のダメージ。命中したら true
+function playerHitEnemyBy(en, pl, mult, color, knock) {
+  if (!en || en.hp <= 0 || en.isDying) return false;
+  if (!playerAttackHits(en)) { spawnMissText(en); return false; }
+  const m = mult * (isTelegraphStunned(en) ? TG_STUN_DMG : 1);
+  const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m)), en);
+  en.hp -= dmg; trackDamage(dmg);
+  spawnHitParticles(en.x, en.y, color || '#ffe08a');
+  spawnAttackDamageText(en, dmg, crit, '#fff4b8', en.isAdd ? 6 : undefined);
+  if (en.isAdd) {
+    focusHpEnemy(en);
+    if (en.hp <= 0) {
+      recordBestiaryKill(en); spawnExpGems(en.x, en.y, 4);
+      const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain;
+      spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
+    }
+  } else {
+    onPlayerHitEnemy(en, dmg);
+    if (knock) applyHitKnockback(en, pl, knock);
+    if (en.hp <= 0) triggerEnemyDefeat(en, pl.x, pl.y);
+  }
+  return true;
 }
 function drawSlashFx() { // 三日月形の斬撃の軌跡
   const now = Date.now();
@@ -3654,6 +3660,170 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
     }
     ctx.restore();
   }
+}
+// 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
+// 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
+const WEAPON_MAX_LV = 5;
+const WEAPONS = {
+  boomerang: { icon: '🪃', name: 'ブーメラン', desc: '弧を描いて飛び、手元に戻ってくる', cd: 110 },
+  cross:     { icon: '✝️', name: '十字架', desc: 'まっすぐ飛んで減速し、反転して戻ってくる', cd: 130 },
+  axe:       { icon: '🪓', name: '斧', desc: '放物線を描いて飛び、敵を貫く', cd: 120 },
+  holyWater: { icon: '💧', name: '聖水', desc: '投げると割れて、しばらく燃え続ける', cd: 170 },
+  knife:     { icon: '🔪', name: 'ナイフ', desc: 'まっすぐ速く飛ぶ', cd: 45 },
+  shield:    { icon: '🛡️', name: '回転シールド', desc: '盾が周りを回って敵を弾き、敵の弾も防ぐ', cd: 0 },
+  thunder:   { icon: '🪄', name: '雷の杖', desc: 'ランダムに雷を落とす', cd: 95 },
+};
+let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0;
+function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
+function weaponCount(lv) { return 1 + Math.floor((lv - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3
+function weaponDmg(base, lv) { return base * (1 + 0.3 * (lv - 1)); }
+function weaponFoes() { return [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)]; }
+function weaponAimAngle(pl, spread) {
+  const en = nearestOf(pl, weaponFoes());
+  const base = en ? Math.atan2(en.y - pl.y, en.x - pl.x) : ((pl.faceDir || 1) > 0 ? 0 : Math.PI);
+  return base + (spread || 0);
+}
+function fireWeapon(id, lv, pl) {
+  const n = weaponCount(lv), W = WEAPONS[id];
+  if (id === 'boomerang') {
+    for (let i = 0; i < n; i++) weaponProj.push({ id, x: pl.x, y: pl.y, ang: weaponAimAngle(pl, (i - (n - 1) / 2) * 0.7), t: 0, life: 70, side: i % 2 ? -1 : 1, r: 9, dmg: weaponDmg(0.7, lv), hit: new Set() });
+    playTone(500, 0.12, 'triangle', 0.05, 900);
+  } else if (id === 'cross') {
+    for (let i = 0; i < n; i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.35); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 7.5, vy: Math.sin(a) * 7.5, ax: -Math.cos(a) * 0.17, ay: -Math.sin(a) * 0.17, t: 0, life: 150, r: 11, dmg: weaponDmg(0.9, lv), hit: new Set(), turned: false }); }
+    playTone(900, 0.1, 'square', 0.04, 1300);
+  } else if (id === 'axe') {
+    for (let i = 0; i < n; i++) { const dir = (i % 2 ? -1 : 1) * ((pl.faceDir || 1) > 0 ? 1 : -1); weaponProj.push({ id, x: pl.x, y: pl.y, vx: dir * (1.6 + i * 0.9), vy: -7.5 - i * 0.6, t: 0, life: 120, r: 11, dmg: weaponDmg(1.3, lv), hit: new Set() }); }
+    playTone(220, 0.12, 'sawtooth', 0.05, 160);
+  } else if (id === 'holyWater') {
+    const foes = weaponFoes().sort(() => Math.random() - 0.5);
+    for (let i = 0; i < n; i++) {
+      const en = foes[i % Math.max(1, foes.length)];
+      const tx = en ? en.x : pl.x + (Math.random() - 0.5) * 160, ty = en ? en.y : pl.y + (Math.random() - 0.5) * 160;
+      weaponProj.push({ id, x: pl.x, y: pl.y, sx: pl.x, sy: pl.y, tx, ty, t: 0, dur: 28, life: 28, r: 6, lv });
+    }
+  } else if (id === 'knife') {
+    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
+    playTone(1500, 0.05, 'triangle', 0.04, 2200);
+  } else if (id === 'thunder') {
+    const foes = weaponFoes().sort(() => Math.random() - 0.5);
+    for (let i = 0; i < n; i++) {
+      const en = foes[i], rr = arena.radius * 0.8 * Math.sqrt(Math.random()), aa = Math.random() * Math.PI * 2;
+      const x = en && Math.random() < 0.75 ? en.x : arena.x + Math.cos(aa) * rr, y = en && Math.random() < 0.75 ? en.y : arena.y + Math.sin(aa) * rr;
+      const R = 24 + lv * 3;
+      for (const f of weaponFoes()) if (Math.hypot(f.x - x, f.y - y) < R + f.radius) playerHitEnemyBy(f, pl, weaponDmg(1.5, lv), '#fff27a');
+      weaponFx.push({ kind: 'bolt', x, y, R, start: Date.now(), seed: Math.random() * 1000 });
+    }
+    filteredNoise(0, 0.25, 0.25, 2500, 0.6, 'highpass'); thump(120, 40, 0.3, 0.25);
+  }
+}
+function updateWeapons(pl, speedMult) {
+  if (!game.weapons || !pl || pl.hp <= 0) { weaponProj = []; return; }
+  for (const id in WEAPONS) {
+    const lv = getWeaponLv(id); if (!lv || id === 'shield') continue;
+    weaponCd[id] = (weaponCd[id] ?? WEAPONS[id].cd * 0.5) - speedMult;
+    if (weaponCd[id] <= 0) { weaponCd[id] = WEAPONS[id].cd * (1 - 0.06 * (lv - 1)); fireWeapon(id, lv, pl); }
+  }
+  const foes = weaponFoes();
+  let hits = 0;
+  const hitFoes = (p, mult, once) => {
+    for (const f of foes) {
+      if (f.hp <= 0 || p.hit.has(f) || Math.hypot(f.x - p.x, f.y - p.y) > p.r + f.radius) continue;
+      p.hit.add(f);
+      if (playerHitEnemyBy(f, pl, p.dmg * (mult || 1), '#ffe08a')) hits++;
+      if (once) { if (p.pierce > 0) p.pierce--; else { p.life = 0; return; } }
+    }
+  };
+  for (const p of weaponProj) {
+    p.t += speedMult; p.life -= speedMult;
+    if (p.id === 'boomerang') { // 弧を描いて手元へ戻る
+      const k = Math.min(1, p.t / 70), out = Math.sin(k * Math.PI) * 120, sw = Math.sin(k * Math.PI * 2) * 45 * p.side;
+      p.x = pl.x + Math.cos(p.ang) * out - Math.sin(p.ang) * sw; p.y = pl.y + Math.sin(p.ang) * out + Math.cos(p.ang) * sw;
+      if (k >= 0.5 && !p.turned) { p.turned = true; p.hit.clear(); }
+      hitFoes(p);
+    } else if (p.id === 'cross') {
+      p.vx += p.ax * speedMult; p.vy += p.ay * speedMult; p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      if (!p.turned && p.vx * p.ax + p.vy * p.ay > 0) { p.turned = true; p.hit.clear(); }
+      hitFoes(p);
+    } else if (p.id === 'axe') {
+      p.vy += 0.22 * speedMult; p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      hitFoes(p);
+    } else if (p.id === 'knife') {
+      p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      hitFoes(p, 1, true);
+    } else if (p.id === 'holyWater') {
+      const k = Math.min(1, p.t / p.dur);
+      p.x = p.sx + (p.tx - p.sx) * k; p.y = p.sy + (p.ty - p.sy) * k - Math.sin(k * Math.PI) * 50;
+      if (k >= 1) { // 割れて燃える
+        p.life = 0;
+        weaponFx.push({ kind: 'fire', x: p.tx, y: p.ty, R: 26 + p.lv * 4, until: 130 + p.lv * 15, t: 0, tick: 0, dmg: weaponDmg(0.25, p.lv), start: Date.now() });
+        filteredNoise(0, 0.12, 0.2, 3500, 1, 'bandpass'); playNoiseBurst(0.25, 0.12);
+      }
+    }
+    if (!arenaContains(p.x, p.y, -60) && p.id !== 'boomerang') p.life = 0;
+  }
+  weaponProj = weaponProj.filter(p => p.life > 0);
+  for (const f of weaponFx) {
+    if (f.kind !== 'fire') continue;
+    f.t += speedMult; f.tick -= speedMult;
+    if (f.tick <= 0) { f.tick = 18; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43')) hits++; } }
+  }
+  weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < 350);
+  // 回転シールド
+  const slv = getWeaponLv('shield');
+  if (slv) {
+    shieldAngle += 0.06 * speedMult;
+    const n = [0, 1, 2, 2, 3, 4][slv], R = pl.radius + 30;
+    for (let i = 0; i < n; i++) {
+      const a = shieldAngle + Math.PI * 2 * i / n, sx = pl.x + Math.cos(a) * R, sy = pl.y + Math.sin(a) * R;
+      for (const en of foes) {
+        if (en.hp <= 0 || Math.hypot(en.x - sx, en.y - sy) > 12 + en.radius) continue;
+        if (en.shieldHitAt && Date.now() - en.shieldHitAt < 450) continue;
+        en.shieldHitAt = Date.now();
+        if (playerHitEnemyBy(en, pl, weaponDmg(0.4, slv), '#c7ecff', 2.2)) { hits++; playEnemyBarrierBlockSound(); }
+      }
+      for (const sh of enemyShots) if (sh.life > 0 && Math.hypot(sh.x - sx, sh.y - sy) < 16) { sh.life = 0; spawnHitParticles(sx, sy, '#c7ecff'); playEvadeSound(); }
+    }
+  }
+  if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
+}
+function drawWeapons() {
+  const now = Date.now(), pl = balls.find(isMainPlayerBall);
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const f of weaponFx) {
+    if (f.kind === 'fire') { // 燃える聖水
+      const fade = Math.min(1, (f.until - f.t) / 30);
+      const g = ctx.createRadialGradient(f.x, f.y, 2, f.x, f.y, f.R);
+      g.addColorStop(0, `rgba(255,240,160,${0.55 * fade})`); g.addColorStop(0.6, `rgba(255,120,40,${0.4 * fade})`); g.addColorStop(1, 'rgba(255,60,20,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, f.R, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = fade; ctx.font = '13px sans-serif';
+      for (let i = 0; i < 5; i++) { const a = i * 1.26 + now / 400, rr = f.R * 0.55 * (0.5 + 0.5 * Math.sin(now / 150 + i)); ctx.fillText('🔥', f.x + Math.cos(a) * rr, f.y + Math.sin(a) * rr * 0.6 - 3); }
+      ctx.globalAlpha = 1;
+    } else if (f.kind === 'bolt') { // 雷
+      const k = (now - f.start) / 350;
+      ctx.globalAlpha = 1 - k;
+      ctx.strokeStyle = '#fff6a0'; ctx.lineWidth = 3; ctx.shadowColor = '#ffe65c'; ctx.shadowBlur = 14;
+      ctx.beginPath(); let x = f.x + Math.sin(f.seed) * 20, y = f.y - 260; ctx.moveTo(x, y);
+      for (let i = 1; i <= 8; i++) { y = f.y - 260 + 260 * i / 8; x = f.x + (i === 8 ? 0 : Math.sin(f.seed + i * 2.3) * 16); ctx.lineTo(x, y); }
+      ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,250,190,0.45)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.R * (0.6 + k * 0.6), 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+  for (const p of weaponProj) {
+    ctx.save(); ctx.translate(p.x, p.y);
+    if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); }
+    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); }
+    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); ctx.font = (p.id === 'boomerang' ? 17 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); }
+    ctx.restore();
+  }
+  const slv = getWeaponLv('shield');
+  if (slv && pl && pl.hp > 0) {
+    const n = [0, 1, 2, 2, 3, 4][slv], R = pl.radius + 30;
+    ctx.font = '17px sans-serif';
+    for (let i = 0; i < n; i++) { const a = shieldAngle + Math.PI * 2 * i / n; ctx.fillText('🛡️', pl.x + Math.cos(a) * R, pl.y + Math.sin(a) * R); }
+  }
+  ctx.restore();
 }
 // タメ中の音：小さくうなる音がタメ量に合わせて少しずつ上がり、MAXで軽く「チン」
 let chargeSnd = null;
@@ -3756,6 +3926,8 @@ function moveHoldRush(ball, speedMult) {
   }
   ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
   if (holdRush) holdRush.dist = (holdRush.dist || 0) + Math.hypot(ball.vx, ball.vy) * speedMult; // 助走距離
+  rushTrail.push({ x: ball.x, y: ball.y, t: Date.now() }); // ダッシュの残像
+  if (Math.random() < 0.5 * speedMult) particles.push({ x: ball.x - ball.vx * 1.5 + (Math.random() - 0.5) * 10, y: ball.y + ball.radius * 0.8, vx: -ball.vx * 0.15 + (Math.random() - 0.5), vy: -Math.random() * 0.8, life: 0.7, color: 'rgba(230,220,200,0.8)', decay: 0.05 }); // 足元の砂ぼこり
   wallBounce(ball);
   ball.seekPoint = null; ball.missBounces = 0;
 }
@@ -4530,6 +4702,34 @@ function tgPath(tg, ex, ey) {
     ctx.moveTo(ex - s * hw, ey + c * hw); ctx.lineTo(ex + c * tg.len - s * hw, ey + s * tg.len + c * hw);
     ctx.lineTo(ex + c * tg.len + s * hw, ey + s * tg.len - c * hw); ctx.lineTo(ex + s * hw, ey - c * hw); ctx.closePath();
   }
+}
+// 長押し突進のダッシュ演出：残像と、進行方向の後ろへ流れるスピード線
+let rushTrail = [];
+const RUSH_TRAIL_MS = 180;
+function drawRushTrail() {
+  const now = Date.now();
+  rushTrail = rushTrail.filter(p => now - p.t < RUSH_TRAIL_MS);
+  const pl = balls.find(isMainPlayerBall);
+  if (!pl || !rushTrail.length) return;
+  ctx.save();
+  for (let i = 0; i < rushTrail.length; i += 3) { // 残像（青白く透ける）
+    const p = rushTrail[i], k = 1 - (now - p.t) / RUSH_TRAIL_MS;
+    ctx.globalAlpha = 0.35 * k;
+    drawBall({ ...pl, x: p.x, y: p.y, hitFlash: 0 });
+  }
+  ctx.globalAlpha = 1;
+  if (rushingNow) { // スピード線
+    const sp = Math.hypot(pl.vx, pl.vy) || 1, ux = pl.vx / sp, uy = pl.vy / sp;
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineCap = 'round';
+    for (let i = 0; i < 6; i++) {
+      const off = ((i * 37 + now / 8) % 50) - 25, back = 18 + ((i * 53 + now / 3) % 30), len = 16 + (i % 3) * 8;
+      const bx = pl.x - ux * back - uy * off, by = pl.y - uy * back + ux * off;
+      ctx.lineWidth = 1.5 + (i % 2);
+      ctx.globalAlpha = 0.4 + 0.3 * Math.sin(now / 40 + i);
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx - ux * len, by - uy * len); ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 function drawEnemyTelegraphs() {
   const now = Date.now();
@@ -7535,6 +7735,7 @@ function step() {
   const b = computeBonuses();
   const speedMult = getEffectiveSpeed();
   tickRampage(speedMult);
+  updateWeapons(a, speedMult);
   updateExpGems(speedMult);
   a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
   a.inPinch = b.pinchAtk > 0 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
@@ -8183,7 +8384,7 @@ function completeReincarnation() {
   game.companionSummons = 0;
   game.skillGachaPulls = 0;
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-  game.skillLevels = {}; game.equippedSkills = [];
+  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);
@@ -9249,6 +9450,7 @@ function draw() {
   drawDeathDim();
   drawPinchAura();
   drawEnemyTelegraphs();
+  drawRushTrail();
   for (const ball of [...balls, ...adds]) {
     if (flyouts.includes(ball) || ball.isDying) continue; // 撃破されて吹っ飛び中の敵はオーバーレイ側で描画
     if (ball.isCompanion) {
@@ -9278,6 +9480,7 @@ function draw() {
   drawRampageGauge();
   drawChargeRing();
   drawSlashFx();
+  drawWeapons();
   tickChargeSound();
   drawDragStick();
   drawExpGems();
@@ -9474,6 +9677,11 @@ function makePowerUpChoices() {
     pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
   }
   if (getCompanionTotal() < getPartyLimit() || Object.keys(game.companions.recruited).length) pool.push({ kind: 'comp', col: '#ff9a4f', label: '仲間', icon: ico({ icon: '🐾', img: ICON_IMAGES.tab_companion }), name: '仲間を1人召喚', desc: 'ランダムな仲間が加入（満員なら覚醒）' });
+  for (const id in WEAPONS) {
+    const lv = getWeaponLv(id), W = WEAPONS[id];
+    if (lv >= WEAPON_MAX_LV) continue;
+    pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: W.icon, name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
+  }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP全回復', desc: 'HPと仲間を全回復' });
   pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今のステージに応じたコイン' });
   const picks = [], kinds = new Set();
@@ -9588,6 +9796,7 @@ function applyPowerUp(c) {
     refreshCompanionBalls(); refreshPlayerBallStats(false);
     showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
   }
+  else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; }
   else if (c.kind === 'heal') { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = pl.maxHp; balls.forEach(b => { if (b.isCompanion) b.hp = b.maxHp; }); playHealSound(); }
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
