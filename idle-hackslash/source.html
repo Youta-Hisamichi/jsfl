@@ -3592,15 +3592,17 @@ const CHARGE_MIN_MS = 200, CHARGE_FULL_MS = 1500;
 let chargeHold = null; // { id, start }
 // 引っ張り攻撃（モンスト風）：押したまま後ろへ引っ張った量が威力、離すと引いた向きと逆へ飛び出して壁や敵で跳ね返る
 const PULL_FULL = 90, PULL_MIN = 0.12;
-function getChargeLevel() { return chargeHold && chargeHold.aiming ? Math.min(1, Math.hypot(chargeHold.dx, chargeHold.dy) / PULL_FULL) : 0; }
-function getPullAngle() { return chargeHold ? Math.atan2(-chargeHold.dy, -chargeHold.dx) : 0; }
+// 画面のどこを押してもよく、ドラッグ（＝キャラ移動）した量と向きがそのまま引っ張りになる。離すとドラッグと逆向きへ発射
+function getPullVec() { return chargeHold && playerDrag ? { dx: playerDrag.jx || 0, dy: playerDrag.jy || 0 } : null; }
+function getChargeLevel() { const v = getPullVec(); return v ? Math.min(1, Math.hypot(v.dx, v.dy) / PULL_FULL) : 0; }
+function getPullAngle() { const v = getPullVec(); return v ? Math.atan2(-v.dy, -v.dx) : 0; }
 function releaseCharge() {
   if (!chargeHold) return;
-  const held = Date.now() - chargeHold.start, lv = getChargeLevel(), ang = getPullAngle(), wasAiming = chargeHold.aiming;
+  const held = Date.now() - chargeHold.start, lv = getChargeLevel(), ang = getPullAngle(), wasAiming = !!playerDrag;
   chargeHold = null;
   if (phase !== 'battle') return;
   if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
-  if (playerDrag || !wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
+  if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
   const dur = 900 + 1100 * lv, sp = 6 + 8 * lv;
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp };
@@ -3860,7 +3862,7 @@ function drawWeapons() {
 // タメ中の音：小さくうなる音がタメ量に合わせて少しずつ上がり、MAXで軽く「チン」
 let chargeSnd = null;
 function tickChargeSound() {
-  const active = chargeHold && Date.now() - chargeHold.start >= CHARGE_MIN_MS && phase === 'battle' && audioCtx && !isBattleSfxMuted();
+  const active = chargeHold && getChargeLevel() >= PULL_MIN && phase === 'battle' && audioCtx && !isBattleSfxMuted(); // 引っ張っている間だけ鳴る
   if (!active) {
     if (chargeSnd) { const t = audioCtx.currentTime; chargeSnd.g.gain.cancelScheduledValues(t); chargeSnd.g.gain.setTargetAtTime(0.0001, t, 0.03); chargeSnd.o.stop(t + 0.15); chargeSnd = null; }
     return;
@@ -3878,15 +3880,11 @@ function tickChargeSound() {
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
   const pl = balls.find(isMainPlayerBall);
-  if (!chargeHold || !pl || Date.now() - chargeHold.start < CHARGE_MIN_MS) return;
+  if (!chargeHold || !pl || !getPullVec()) return;
   const lv = getChargeLevel(), full = lv >= 1, now = Date.now();
+  if (lv < PULL_MIN) return;
   ctx.save();
   ctx.lineCap = 'round';
-  if (!chargeHold.aiming || lv < PULL_MIN) { // 狙う前：引っ張れることを示す点線の輪
-    ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-    ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 10 + Math.sin(now / 150) * 2, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore(); return;
-  }
   const a = getPullAngle(), ux = Math.cos(a), uy = Math.sin(a), col = full ? '#ff4f6d' : lv > 0.5 ? '#ffb35c' : '#ffe08a';
   // 引っ張っている側（ゴムのような線）
   ctx.setLineDash([]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.35)';
@@ -7609,12 +7607,6 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
-    if (isMainPlayerBall(ball) && chargeHold && !playerDrag && Date.now() - chargeHold.start >= CHARGE_MIN_MS) { // タメ中はその場で踏ん張る
-      const f = Math.pow(0.85, speedMult); ball.vx *= f; ball.vy *= f;
-      ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult; wallBounce(ball);
-      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
-      continue;
-    }
     if (isMainPlayerBall(ball) && tickRushGauge()) { // 離したら敵へ突撃
       moveHoldRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
@@ -9169,9 +9161,7 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
       const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2;
       if (d < best) { best = d; target = c; }
     }
-    if (chargeHold && chargeHold.aiming && isMainPlayerBall(ball)) { // 引っ張り中は発射する方を向く
-      if (Math.abs(chargeHold.dx) > 4) ball.faceDir = chargeHold.dx < 0 ? 1 : -1;
-    } else if (playerDrag && isMainPlayerBall(ball)) { // ドラッグ移動中は進行方向を向く
+    if (playerDrag && isMainPlayerBall(ball)) { // ドラッグ移動中は進行方向を向く
       const dx = playerDrag.jx || 0;
       if (Math.abs(dx) > 4) ball.faceDir = dx > 0 ? 1 : -1;
     } else if (target) {
@@ -9743,7 +9733,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 }
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => id !== 'accuracy' && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率は3択に出さない
+  const upIds = Object.keys(UPGRADES).filter(id => id !== 'accuracy' && id !== 'clash' && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・競り合いは3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
@@ -11407,17 +11397,10 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = null; chargeHold = { id: event.pointerId, start: Date.now(), sx: event.clientX, sy: event.clientY, dx: 0, dy: 0, aiming: false }; } // 少し押したまま引っ張ると狙いを付け、離して発射（すぐ動かすとドラッグ移動）
+  if (HOLD_RUSH_MODE) { chargeHold = { id: event.pointerId, start: Date.now(), sx: event.clientX, sy: event.clientY, dx: 0, dy: 0, aiming: false }; } // 少し押したまま引っ張ると狙いを付け、離して発射（すぐ動かすとドラッグ移動）
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
-  if (chargeHold && event.pointerId === chargeHold.id && !playerDrag && Date.now() - chargeHold.start >= CHARGE_MIN_MS) { // 引っ張って狙う
-    const k = size / canvas.getBoundingClientRect().width;
-    chargeHold.dx = (event.clientX - chargeHold.sx) * k; chargeHold.dy = (event.clientY - chargeHold.sy) * k;
-    if (Math.hypot(chargeHold.dx, chargeHold.dy) > 4) chargeHold.aiming = true;
-    dragPending = null;
-    return;
-  }
   if (playerDrag && event.pointerId === playerDrag.id) {
     const k = size / canvas.getBoundingClientRect().width;
     playerDrag.jx = (event.clientX - playerDrag.ox) * k;
