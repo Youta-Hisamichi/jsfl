@@ -4716,7 +4716,11 @@ function updateEnemyTelegraph(a, e, speedMult) {
   }
   if (e.traitState === 'tgDash') {
     e.tgTimer -= speedMult;
-    if (e.tgTimer <= 0) { e.dashing = false; e.vx *= 0.2; e.vy *= 0.2; e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！', '#ffd76b', 0.02); }
+    if (e.tgTimer <= 0) {
+      e.dashing = false; e.vx *= 0.2; e.vy *= 0.2;
+      if (e.tgBig) { e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！', '#ffd76b', 0.02); }
+      else e.traitState = null;
+    }
     return false;
   }
   const tg = e.tg;
@@ -4727,15 +4731,16 @@ function updateEnemyTelegraph(a, e, speedMult) {
     let kind = tgKindFor(e);
     const dist = Math.hypot(a.x - e.x, a.y - e.y), ang = Math.atan2(a.y - e.y, a.x - e.x);
     if (kind === 'fan' && dist > 150) kind = 'circle';
-    const big = e.isBoss ? 1.25 : 1;
-    const t = { kind, wind: e.isBoss ? TG_WIND - 8 : TG_WIND, t: 0, ang, x: e.x, y: e.y };
+    const isBig = e.isBoss || Math.random() < 0.3; // 大技：ボスは毎回、雑魚はときどき。範囲が広く溜めが長いが、終わると「スキ」ができる
+    const big = (e.isBoss ? 1.25 : 1) * (isBig ? 1.3 : 1);
+    const t = { kind, wind: (e.isBoss ? TG_WIND - 8 : TG_WIND) + (isBig ? 14 : 0), t: 0, ang, x: e.x, y: e.y, big: isBig };
     if (kind === 'circle') { t.x = a.x; t.y = a.y; t.r = 52 * big; }
     else if (kind === 'fan') { t.r = (e.radius + 80) * big; t.half = 0.62; }
     else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, '！', '#ff4d4d', 0.025, true);
-    playTone(880, 0.12, 'square', 0.06, 660);
+    spawnDamageText(e.x, e.y - e.radius - 22, isBig ? '大技！' : '！', '#ff4d4d', 0.025, true);
+    playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
     return false;
   }
   if (e.traitState !== 'tg') { e.tg = null; return false; } // 封印などで中断された
@@ -4756,15 +4761,15 @@ function updateEnemyTelegraph(a, e, speedMult) {
   }
   e.tgFx = { kind: tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
   if (tg.kind === 'line') {
-    e.traitState = 'tgDash'; e.traitFreeze = false; e.dashing = true;
+    e.traitState = 'tgDash'; e.traitFreeze = false; e.dashing = true; e.tgBig = tg.big;
     const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
-  } else {
+  } else if (tg.big) { // 大技の後だけ隙ができる
     e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true;
     spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！', '#ffd76b', 0.02);
-  }
+  } else { e.traitState = null; e.traitFreeze = false; }
   if (hit) {
     applyHitKnockback(a, e, 5);
-    return damagePlayerByTrait(a, e, e.atk * TG_DMG, '#ff4d4d');
+    return damagePlayerByTrait(a, e, e.atk * TG_DMG * (tg.big ? 1.5 : 1), '#ff4d4d'); // 大技は威力も大きい
   }
   if (tg.wasIn || Math.random() < 0.3) spawnEvadeText(a);
   return false;
