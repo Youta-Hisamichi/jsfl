@@ -3548,7 +3548,7 @@ function consumeRushHit(x, y) {
   if (m >= RUSH_RUN_MAX) shakeScreenLight();
   holdRush.used = true;
 }
-function tickRushGauge() { rushingNow = !!holdRush && !holdRush.used; return rushingNow; }
+function tickRushGauge() { if (holdRush && holdRush.until && Date.now() > holdRush.until) holdRush.used = true; rushingNow = !!holdRush && !holdRush.used; return rushingNow; }
 const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
 function moveHoldRush(ball, speedMult) {
   const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
@@ -6892,6 +6892,7 @@ function resolveBallCollision(a, b) {
 
 function triggerEnemyDefeat(enemy, sourceX, sourceY) {
   if (enemySurvivesDefeat(enemy)) return; // 回転ガード・分裂で生き残った
+  lastKillPos = { x: enemy.x, y: enemy.y };
   recordBestiaryKill(enemy);
   enemy.hp = 0;
   enemy.isDying = true;
@@ -7122,6 +7123,7 @@ function step() {
   const b = computeBonuses();
   const speedMult = getEffectiveSpeed();
   tickRampage(speedMult);
+  updateExpGems(speedMult);
   a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
   a.inPinch = b.pinchAtk > 0 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
   if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk)));
@@ -7421,7 +7423,7 @@ function processAdds(a) {
           playEnemyHitSound();
           if (add.hp <= 0) {
             recordBestiaryKill(add);
-            gainExp(4);
+            spawnExpGems(add.x, add.y, 4);
             const coinGain = 5 + Math.floor(Math.random() * 8);
             game.coins += coinGain;
             if (Math.random() < 0.3) game.gems += 1;
@@ -7760,7 +7762,7 @@ function completeReincarnation() {
   const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
   gainArtifact(pick.id);
   game.coins = 0; game.stage = 1;
-  game.pLv = 1; game.pExp = 0; // レベルは周回ごと
+  game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   coinFx = []; coinDisplayHold = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
@@ -8858,6 +8860,7 @@ function draw() {
   drawRegenEffects();
   drawTackleEffects();
   drawRampageGauge();
+  drawExpGems();
   drawEnemyTraitEffects();
   drawNovaFx();
 
@@ -8979,7 +8982,40 @@ function gainExp(n) {
   }
   renderLvGauge();
 }
-function checkPowerUp(isBoss) { gainExp(isBoss ? 40 : 12); }
+// 経験値は敵を倒すと出る「経験値ジェム」を拾って得る（近づくと吸い寄せられる・しばらくすると自動で飛んでくる）
+let expGems = [], lastKillPos = null;
+function spawnExpGems(x, y, total) {
+  const n = Math.min(8, Math.max(1, Math.round(total / 6)));
+  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 2.5; expGems.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, v: total / n, born: Date.now(), big: total >= 30 }); }
+}
+function updateExpGems(speedMult) {
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  for (const g of expGems) {
+    const dx = pl.x - g.x, dy = pl.y - g.y, d = Math.hypot(dx, dy) || 1;
+    const age = Date.now() - g.born;
+    if (d < 70 || age > 8000) { const sp = Math.min(9, 2 + (age > 8000 ? (age - 8000) / 300 : (70 - d) / 8)); g.vx += (dx / d * sp - g.vx) * 0.25; g.vy += (dy / d * sp - g.vy) * 0.25; } // 吸い寄せ
+    else { g.vx *= Math.pow(0.9, speedMult); g.vy *= Math.pow(0.9, speedMult); }
+    g.x += g.vx * speedMult; g.y += g.vy * speedMult;
+    const ax = g.x - arena.x, ay = g.y - arena.y, ad = Math.hypot(ax, ay), lim = arena.radius - 8;
+    if (ad > lim) { g.x = arena.x + ax / ad * lim; g.y = arena.y + ay / ad * lim; }
+    if (d < pl.radius + 6) { g.got = true; gainExp(g.v); playTone(1500 + Math.random() * 400, 0.05, 'triangle', 0.05, 2200); }
+  }
+  expGems = expGems.filter(g => !g.got);
+}
+function drawExpGems() {
+  ctx.save();
+  for (const g of expGems) {
+    const s = g.big ? 6 : 4.5, tw = 0.7 + 0.3 * Math.sin(Date.now() / 120 + g.born);
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = '#64e8ff'; ctx.shadowBlur = 8 * tw;
+    ctx.fillStyle = g.big ? '#c792ea' : '#5fd8ff';
+    ctx.beginPath(); ctx.moveTo(g.x, g.y - s * 1.3); ctx.lineTo(g.x + s, g.y); ctx.lineTo(g.x, g.y + s * 1.3); ctx.lineTo(g.x - s, g.y); ctx.closePath(); ctx.fill();
+    ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath(); ctx.moveTo(g.x, g.y - s * 1.1); ctx.lineTo(g.x + s * 0.4, g.y - s * 0.2); ctx.lineTo(g.x - s * 0.3, g.y - s * 0.1); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function checkPowerUp(isBoss) { const p = lastKillPos || arena; spawnExpGems(p.x, p.y, isBoss ? 40 : 12); }
 function makePowerUpChoices() {
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
@@ -10551,7 +10587,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = { id: event.pointerId }; return; } // 押している間は突撃
+  if (HOLD_RUSH_MODE) holdRush = null; // スワイプで動かし、離したら突撃
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
@@ -10569,10 +10605,11 @@ window.addEventListener('pointermove', event => {
   playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
 });
 ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
-  if (holdRush && event.pointerId === holdRush.id) { holdRush = null; return; } // 離したら普段の動きに戻る
   if (dragPending && event.pointerId === dragPending.id) dragPending = null;
   if (!playerDrag || event.pointerId !== playerDrag.id) return;
+  const swipe = Math.hypot(playerDrag.x - playerDrag.px, playerDrag.y - playerDrag.py) * 0.5; // スワイプした距離も助走に少し加える
   playerDrag = null;
+  if (HOLD_RUSH_MODE && type === 'pointerup') { holdRush = { id: -1, dist: swipe, until: Date.now() + 2500 }; return; } // 指を離したら一番近い敵へ突撃
   const pl = balls.find(ball => isMainPlayerBall(ball));
   if (pl && Math.hypot(pl.vx, pl.vy) < 0.5) {
     const en = nearestOf(pl, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
