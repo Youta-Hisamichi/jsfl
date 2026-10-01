@@ -1103,6 +1103,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .custom-skip-row { display: flex; gap: 6px; }
 .custom-skip-row input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--ring); border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 0.9rem; font-weight: 700; }
 .custom-skip-row .modal-shop-btn { width: auto; flex: 0 0 auto; padding: 8px 12px; gap: 8px; }
+#customSkipMaxBtn { padding: 8px 8px; border-color: #ffd76b; color: #ffd76b; font-size: 0.72rem; }
 .custom-skip-info { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; min-height: 1.2em; }
 .custom-skip-info.error { color: #ff5c6c; }
 .slot-row { display: flex; align-items: center; gap: 6px; background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 10px; padding: 7px 8px; }
@@ -1455,6 +1456,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="custom-skip-title">🎯 登る階を指定（ジェムは距離に応じて消費）</div>
       <div class="custom-skip-row">
         <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦ステージ">
+        <button class="modal-shop-btn" id="customSkipMaxBtn"><span class="msb-name">手持ちMAX</span></button>
         <button class="modal-shop-btn" id="customSkipBtn"><span class="msb-name">挑戦</span><span class="msb-cost" id="customSkipCost">💎 -</span></button>
       </div>
       <div class="custom-skip-info" id="customSkipInfo">挑戦したいステージを入力してください</div>
@@ -7981,6 +7983,16 @@ function updateCustomSkip() {
   customSkipBtn.classList.toggle('is-disabled', game.gems < cost);
 }
 customSkipInput.addEventListener('input', updateCustomSkip);
+// 手持ちMAX：今のジェムで行ける一番遠いステージを入れる
+document.getElementById('customSkipMaxBtn').addEventListener('click', event => {
+  if (game.gems < getCustomSkipCost(1)) { showTapError('ジェムが足りません', event.clientX, event.clientY); return; }
+  let lo = 1, hi = 1;
+  while (getCustomSkipCost(hi * 2) <= game.gems && hi < 1e7) hi *= 2;
+  hi *= 2;
+  while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (getCustomSkipCost(mid) <= game.gems) lo = mid; else hi = mid - 1; }
+  customSkipInput.value = game.stage + lo;
+  updateCustomSkip();
+});
 customSkipInput.addEventListener('keydown', event => { if (event.key === 'Enter') customSkipBtn.click(); });
 customSkipBtn.addEventListener('click', event => {
   const target = getCustomSkipTarget();
