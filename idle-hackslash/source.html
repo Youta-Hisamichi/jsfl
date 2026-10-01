@@ -2195,10 +2195,11 @@ const ARTIFACT_POOL = [
   { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +25%（最大5個）', rarity: 'epic' },
   { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +40%（最大3個）', rarity: 'epic' },
   { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
+  { id: 'pierceHoof', icon: '🐂', name: '貫きの蹄鉄', desc: '体当たりが敵を貫通し、跳ね返らずに連続攻撃（1個ごとに+1ヒット・最大3個）', rarity: 'epic' },
 ];
 const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
 const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
-const ARTIFACT_STACK_LIMIT = { hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
+const ARTIFACT_STACK_LIMIT = { pierceHoof: 3, hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
 const ARTIFACT_BY_ID = {};
 ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 
@@ -2389,7 +2390,7 @@ const ARTIFACT_CATEGORY = {
   heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
   book: 'defense', armor: 'defense', feather: 'defense',
   ring: 'economy', compass: 'economy', calendar: 'economy', rebirthOrb: 'economy',
-  banner: 'companion', amulet: 'companion',
+  banner: 'companion', amulet: 'companion', pierceHoof: 'attack',
 };
 function getRebirthItemCategory(item) {
   if (item.category) return item.category;
@@ -2402,6 +2403,7 @@ function renderSubTabs(el, cats, current, onPick) {
   el.onclick = ev => { const btn = ev.target.closest('[data-subtab]'); if (btn) onPick(btn.dataset.subtab); };
 }
 const ARTIFACT_CURRENT = {
+  pierceHoof: n => `貫通 +${n}ヒット`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
   compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `必殺技 +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
   turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
@@ -3420,8 +3422,15 @@ let rushingNow = false;
 // 体当たりは助走（押してから走った距離）が長いほど強い：サークル半径の1.6倍走ると最大 ×3
 const RUSH_RUN_MAX = 3;
 function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * Math.min(1, (holdRush.dist || 0) / (arena.radius * 1.6)) : 1; }
+function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
+function isRushPiercing() { return rushingNow && holdRush && !holdRush.used && (holdRush.hits || 0) < getRushPierce(); }
 function consumeRushHit(x, y) {
   if (!rushingNow || !holdRush || holdRush.used) return;
+  if ((holdRush.hits || 0) < getRushPierce()) { // 貫通中：跳ね返らずにそのまま次の敵へ
+    holdRush.hits = (holdRush.hits || 0) + 1;
+    if (x !== undefined) spawnDamageText(x, y - 58, `貫通！ ${holdRush.hits}/${getRushPierce() + 1}`, '#7ee7ff', 0.022, true);
+    return;
+  }
   const m = getRushDmgMult();
   if (m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `助走 ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
   if (m >= RUSH_RUN_MAX) shakeScreenLight();
@@ -7045,10 +7054,11 @@ function step() {
   if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
-  const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
+  const rushPierce = isRushPiercing(); // 貫きの蹄鉄：体当たりが跳ね返らずに貫通する
+  const collided = (piercing || rushPierce) ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
   const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult; // リセット前の連打ボーナスでダメージを計算する
-  if (collided) consumeRushHit(e.x, e.y - e.radius);
+  if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
@@ -7278,7 +7288,8 @@ function processAdds(a) {
     for (const add of adds) {
       if (add.hp <= 0) continue;
       for (const atk of attackers) {
-        if (resolveBallCollision(atk, add)) {
+        if (atk === a && isRushPiercing() ? Math.hypot(add.x - a.x, add.y - a.y) < a.radius + add.radius && !(add.hitCooldown > 0) : resolveBallCollision(atk, add)) {
+          if (atk === a && isRushPiercing()) add.hitCooldown = HIT_LOCK_FRAMES;
           const rm = atk === a ? getRushDmgMult() : 1;
           if (atk === a) { a.tapSpeedMult = 1; consumeRushHit(add.x, add.y - add.radius); } // 雑魚敵に衝突してもタップ加速をリセット
           const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * rm)));
