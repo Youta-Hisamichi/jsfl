@@ -7571,7 +7571,7 @@ function buildGameOverTips() {
   if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
   if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
   if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
-  return `<div class="gameover-tips"><b>💡 次のおすすめ</b>${tips.slice(0, 1).map(t => `<div>${t}</div>`).join('')}</div>`;
+  return `<div class="gameover-tips">${tips.slice(0, 1).map(t => `<div>${t}</div>`).join('')}</div>`;
 }
 let continueStopped = false;
 function renderContinueStopped() {
