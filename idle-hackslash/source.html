@@ -1145,6 +1145,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .pu-card:active { transform: scale(0.95); }
 .pu-kind { font-size: 0.56rem; font-weight: 900; color: #fff; background: var(--pc); border-radius: 999px; padding: 1px 8px; }
 .pu-icon { font-size: 2.2rem; line-height: 1; }
+.ico-combo { position: relative; display: inline-block; }
+.pu-icon .ico-combo .ico-badge { position: absolute; right: -10px; bottom: -6px; font-size: 1.35rem; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 .pu-icon .ico-img, .pu-icon .comp-sprite { width: 44px; height: 44px; display: block; }
 .pu-name { font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
 .pu-desc { font-size: 0.58rem; color: var(--text-dim); line-height: 1.3; }
@@ -5423,15 +5425,6 @@ const BGM_SONGS = {
     drums: 'k - h s - k s h | k - h s - k s h | k - h s - k s h | k - h s - k s s | k - h s - k s h | k - h s - k s h | k - h s - k s h | k s s k s s ks ks',
   },
 
-  battle21: {
-    bpm: 172,
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'A5 = B5 C6 = B5 A5 E5 | F5 = G5 A5 = C6 B5 A5 | G5 = A5 B5 = D6 C6 B5 | E5 = = G5 B5 = E6 = | A5 = B5 C6 = E6 D6 C6 | A5 = C6 F6 = E6 D6 C6 | B5 = D6 G6 = F6 E6 D6 | E6 = D6 = C6 B5 G#5 = | C6 = A5 C6 F6 = E6 = | D6 = B5 D6 G6 = F6 = | E6 = B5 G5 = E5 G5 B5 | C6 = B5 A5 = E5 A5 = | D6 = F6 A6 = G6 F6 E6 | D6 = B5 G5 = B5 D6 F6 | E6 = G6 C7 = B6 G6 E6 | G#6 = E6 B5 G#5 = E5 =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'A3 E4 A4 E4 C4 E4 A4 E4 | F3 C4 F4 C4 A3 C4 F4 C4 | G3 D4 G4 D4 B3 D4 G4 D4 | E3 B3 E4 B3 G3 B3 E4 B3 | A3 E4 A4 E4 C4 E4 A4 E4 | F3 C4 F4 C4 A3 C4 F4 C4 | G3 D4 G4 D4 B3 D4 G4 D4 | E3 B3 E4 B3 G#3 B3 E4 B3 | F3 C4 F4 C4 A3 C4 F4 C4 | G3 D4 G4 D4 B3 D4 G4 D4 | E3 B3 E4 B3 G3 B3 E4 B3 | A3 E4 A4 E4 C4 E4 A4 E4 | D4 A4 D5 A4 F4 A4 D5 A4 | G3 D4 G4 D4 B3 D4 G4 D4 | C4 G4 C5 G4 E4 G4 C5 G4 | E3 B3 E4 B3 G#3 B3 E4 B3' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'A1 A2 A1 A2 A1 A2 A1 A2 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2 | E1 E2 E1 E2 E1 E2 E1 E2 | A1 A2 A1 A2 A1 A2 A1 A2 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2 | E1 E2 E1 E2 E1 E2 E1 E2 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2 | E1 E2 E1 E2 E1 E2 E1 E2 | A1 A2 A1 A2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | E1 E2 E1 E2 E1 E2 E1 E2' },
-    ],
-    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k k s s | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
-  },
   battle22: {
     bpm: 148,
     tracks: [
@@ -5737,7 +5730,7 @@ let bgmTimer = null;
 let bgmToken = 0;
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle17', 'battle20', 'battle21', 'battle22'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle13', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -5779,7 +5772,6 @@ const BGM_INFO = [
   { key: 'battle15', name: '戦闘15 狼の咆哮', desc: 'ギターリフ風のパワーコードと疾走するベース。VRC6風チップチューン。イ短調（対戦格闘ゲームの格闘伝説系の作風）・BPM160' },
   { key: 'battle17', name: '戦闘17 星間航路', desc: '疾走するテクノ風ベースと宇宙に伸びていく壮大な旋律。VRC6風チップチューン。ホ短調（90年代の宇宙シューティング系の作風）・BPM152' },
   { key: 'battle20', name: '戦闘20 マナの森の激闘', desc: 'はずむシンコペーションのベースと打楽器、ドリア調で明るさと切迫感が入り混じる旋律。VRC6風チップチューン。ニ・ドリア（アクションRPG系の作風）・BPM160' },
-  { key: 'battle21', name: '戦闘21 幻想の弾幕', desc: '駆け上がる旋律と休みなく刻むオクターブベース、VI-VII-v-iの切なく疾走する進行。VRC6風チップチューン。イ短調（弾幕シューティング系の作風）・BPM172' },
   { key: 'battle22', name: '戦闘22 ビートの迷宮', desc: '四つ打ちのキックと裏拍で弾むオクターブベース、裏打ちのコードスタブに乗る中毒性のあるリフ。VRC6風チップチューン。ホ短調（音楽ゲーム系のハウスの作風）・BPM148' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
@@ -9253,10 +9245,13 @@ function drawExpGems() {
   ctx.restore();
 }
 function checkPowerUp(isBoss) { const p = lastKillPos || arena; spawnExpGems(p.x, p.y, isBoss ? 40 : 12); }
+function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に剣
+  return `<span class="ico-combo"><img class="ico-img" src="${ICON_IMAGES.tab_companion}" alt=""><span class="ico-badge">⚔️</span></span>`;
+}
 function makePowerUpChoices() {
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
-  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
+  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
     if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
