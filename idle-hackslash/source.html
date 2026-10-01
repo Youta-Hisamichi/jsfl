@@ -3590,14 +3590,22 @@ const RUSH_RUN_MAX = 3;
 // タメ打ち突撃：押しっぱなしでタメ（最大 CHARGE_FULL_MS で ×RUSH_RUN_MAX）、離すと一番近い敵へ突撃
 const CHARGE_MIN_MS = 200, CHARGE_FULL_MS = 1500;
 let chargeHold = null; // { id, start }
-function getChargeLevel() { return chargeHold ? Math.max(0, Math.min(1, (Date.now() - chargeHold.start - CHARGE_MIN_MS) / (CHARGE_FULL_MS - CHARGE_MIN_MS))) : 0; }
+// 引っ張り攻撃（モンスト風）：押したまま後ろへ引っ張った量が威力、離すと引いた向きと逆へ飛び出して壁や敵で跳ね返る
+const PULL_FULL = 90, PULL_MIN = 0.12;
+function getChargeLevel() { return chargeHold && chargeHold.aiming ? Math.min(1, Math.hypot(chargeHold.dx, chargeHold.dy) / PULL_FULL) : 0; }
+function getPullAngle() { return chargeHold ? Math.atan2(-chargeHold.dy, -chargeHold.dx) : 0; }
 function releaseCharge() {
   if (!chargeHold) return;
-  const held = Date.now() - chargeHold.start, lv = getChargeLevel();
+  const held = Date.now() - chargeHold.start, lv = getChargeLevel(), ang = getPullAngle(), wasAiming = chargeHold.aiming;
   chargeHold = null;
   if (phase !== 'battle') return;
   if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
-  holdRush = { id: -1, dist: 0, until: Date.now() + 2500, charge: lv };
+  if (playerDrag || !wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const dur = 900 + 1100 * lv, sp = 6 + 8 * lv;
+  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp };
+  pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
+  if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
 }
@@ -3868,17 +3876,33 @@ function tickChargeSound() {
   chargeSnd.o.frequency.setTargetAtTime(380 + 560 * lv + (lv >= 1 ? Math.sin(Date.now() / 60) * 6 : 0), t, 0.05);
   if (lv >= 1 && !chargeSnd.full) { chargeSnd.full = true; thump(1568, 1568, 0.25, 0.04, 'sine'); thump(2349, 2349, 0.18, 0.015, 'sine', 0.02); }
 }
-function drawChargeRing() {
-  const lv = getChargeLevel(), pl = balls.find(isMainPlayerBall);
+function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
+  const pl = balls.find(isMainPlayerBall);
   if (!chargeHold || !pl || Date.now() - chargeHold.start < CHARGE_MIN_MS) return;
-  const full = lv >= 1;
+  const lv = getChargeLevel(), full = lv >= 1, now = Date.now();
   ctx.save();
-  ctx.lineWidth = 4; ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = full ? '#ff4f6d' : '#ffb35c';
-  if (full) { ctx.shadowColor = '#ff4f6d'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 60) * 6; }
-  ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.03, lv)); ctx.stroke();
-  if (full) { ctx.shadowBlur = 0; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('MAX', pl.x, pl.y - pl.radius - 16); ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', pl.x, pl.y - pl.radius - 16); }
+  ctx.lineCap = 'round';
+  if (!chargeHold.aiming || lv < PULL_MIN) { // 狙う前：引っ張れることを示す点線の輪
+    ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 10 + Math.sin(now / 150) * 2, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore(); return;
+  }
+  const a = getPullAngle(), ux = Math.cos(a), uy = Math.sin(a), col = full ? '#ff4f6d' : lv > 0.5 ? '#ffb35c' : '#ffe08a';
+  // 引っ張っている側（ゴムのような線）
+  ctx.setLineDash([]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath(); ctx.moveTo(pl.x, pl.y); ctx.lineTo(pl.x - ux * (pl.radius + 40 * lv), pl.y - uy * (pl.radius + 40 * lv)); ctx.stroke();
+  // 発射方向の矢印
+  const len = 40 + 110 * lv, sx = pl.x + ux * (pl.radius + 4), sy = pl.y + uy * (pl.radius + 4), ex = sx + ux * len, ey = sy + uy * len;
+  if (full) { ctx.shadowColor = col; ctx.shadowBlur = 10 + Math.sin(now / 60) * 5; }
+  ctx.strokeStyle = col; ctx.lineWidth = 5 + 3 * lv; ctx.setLineDash([10, 7]); ctx.lineDashOffset = -now / 20;
+  ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.setLineDash([]); ctx.fillStyle = col;
+  ctx.beginPath(); ctx.moveTo(ex + ux * 14, ey + uy * 14); ctx.lineTo(ex - uy * 10, ey + ux * 10); ctx.lineTo(ex + uy * 10, ey - ux * 10); ctx.closePath(); ctx.fill();
+  ctx.shadowBlur = 0;
+  // 威力の輪
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * lv); ctx.stroke();
+  if (full) { ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('MAX', pl.x, pl.y - pl.radius - 16); ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', pl.x, pl.y - pl.radius - 16); }
   ctx.restore();
 }
 function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0) : 1; }
@@ -3935,6 +3959,11 @@ function consumeRushHit(x, y) {
     return;
   }
   const m = getRushDmgMult();
+  if (holdRush.shot) { // 引っ張り発射は時間いっぱい跳ね回って何度でも当たる
+    if (!holdRush.shown && m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `パワー ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
+    holdRush.shown = true;
+    return;
+  }
   if (m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `タメ ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
   if (m >= RUSH_RUN_MAX) shakeScreenLight();
   holdRush.used = true;
@@ -3942,11 +3971,17 @@ function consumeRushHit(x, y) {
 function tickRushGauge() { if (holdRush && holdRush.until && Date.now() > holdRush.until) holdRush.used = true; rushingNow = !!holdRush && !holdRush.used; return rushingNow; }
 const HOLD_RUSH_SPEED = 5.2, HOLD_RUSH_TURN = 0.26; // 突撃の速さ（反射移動の何倍か）と、敵へ向きを合わせる速さ
 function moveHoldRush(ball, speedMult) {
+  if (holdRush && holdRush.shot) { // 引っ張り発射：まっすぐ飛んで壁・敵で跳ね返り、終わり際に減速
+    const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (0.3 + 0.7 * Math.min(1, r * 1.6));
+    const cur = Math.hypot(ball.vx, ball.vy) || 1;
+    ball.vx = ball.vx / cur * sp; ball.vy = ball.vy / cur * sp;
+  } else {
   const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
   if (en) {
     const a = Math.atan2(en.y - ball.y, en.x - ball.x), sp = BOUNCE_SPEED * HOLD_RUSH_SPEED;
     const t = 1 - Math.pow(1 - HOLD_RUSH_TURN, speedMult);
     ball.vx += (Math.cos(a) * sp - ball.vx) * t; ball.vy += (Math.sin(a) * sp - ball.vy) * t;
+  }
   }
   ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
   if (holdRush) holdRush.dist = (holdRush.dist || 0) + Math.hypot(ball.vx, ball.vy) * speedMult; // 助走距離
@@ -9124,7 +9159,9 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
       const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2;
       if (d < best) { best = d; target = c; }
     }
-    if (playerDrag && isMainPlayerBall(ball)) { // ドラッグ移動中は進行方向を向く
+    if (chargeHold && chargeHold.aiming && isMainPlayerBall(ball)) { // 引っ張り中は発射する方を向く
+      if (Math.abs(chargeHold.dx) > 4) ball.faceDir = chargeHold.dx < 0 ? 1 : -1;
+    } else if (playerDrag && isMainPlayerBall(ball)) { // ドラッグ移動中は進行方向を向く
       const dx = playerDrag.jx || 0;
       if (Math.abs(dx) > 4) ball.faceDir = dx > 0 ? 1 : -1;
     } else if (target) {
@@ -9696,7 +9733,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 }
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
+  const upIds = Object.keys(UPGRADES).filter(id => id !== 'accuracy' && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率は3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
@@ -11360,10 +11397,17 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) { holdRush = null; chargeHold = { id: event.pointerId, start: Date.now() }; } // 押しっぱなしでタメ、離して突撃（ドラッグで移動）
+  if (HOLD_RUSH_MODE) { holdRush = null; chargeHold = { id: event.pointerId, start: Date.now(), sx: event.clientX, sy: event.clientY, dx: 0, dy: 0, aiming: false }; } // 少し押したまま引っ張ると狙いを付け、離して発射（すぐ動かすとドラッグ移動）
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
+  if (chargeHold && event.pointerId === chargeHold.id && !playerDrag && Date.now() - chargeHold.start >= CHARGE_MIN_MS) { // 引っ張って狙う
+    const k = size / canvas.getBoundingClientRect().width;
+    chargeHold.dx = (event.clientX - chargeHold.sx) * k; chargeHold.dy = (event.clientY - chargeHold.sy) * k;
+    if (Math.hypot(chargeHold.dx, chargeHold.dy) > 4) chargeHold.aiming = true;
+    dragPending = null;
+    return;
+  }
   if (playerDrag && event.pointerId === playerDrag.id) {
     const k = size / canvas.getBoundingClientRect().width;
     playerDrag.jx = (event.clientX - playerDrag.ox) * k;
