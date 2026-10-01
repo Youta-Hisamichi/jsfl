@@ -3618,7 +3618,7 @@ function consumeRushHit(x, y) {
   holdRush.used = true;
 }
 function tickRushGauge() { if (holdRush && holdRush.until && Date.now() > holdRush.until) holdRush.used = true; rushingNow = !!holdRush && !holdRush.used; return rushingNow; }
-const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
+const HOLD_RUSH_SPEED = 5.2, HOLD_RUSH_TURN = 0.26; // 突撃の速さ（反射移動の何倍か）と、敵へ向きを合わせる速さ
 function moveHoldRush(ball, speedMult) {
   const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
   if (en) {
