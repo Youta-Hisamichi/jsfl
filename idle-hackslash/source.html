@@ -5924,6 +5924,16 @@ const BGM_SONGS = {
     ],
     drums: 'k - h s - k s h | k - h s k - s h | k - h s - k s h | k - h s k - s h | k - h s - k s h | k - h s k - s h | k - h s - k s h | k - s s k s s s | k - h s - k s h | k - h s k - s h | k - h s - k s h | k - h s k - s h | k - h s - k s h | k - h s k - s h | k - h s - k s h | ks - s s ks s ks ks',
   },
+  battle27: {
+    bpm: 170,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D6 = A5 = D6 E6 F6 = | F6 = E6 D6 = C6 D6 = | E6 = C6 = G5 = C6 E6 | D6 = = = A5 = = = | A5 D6 F6 A6 = G6 F6 E6 | F6 = D6 = A#5 = D6 F6 | G6 = E6 = C6 = E6 G6 | A6 = = = C#6 = E6 = | G6 = A#6 = A6 G6 F6 = | F6 = A6 = G6 F6 E6 = | D6 = F6 = E6 D6 C6 = | C#6 = E6 = A5 = = = | A#5 = D6 = G6 = F6 = | E6 = G6 = C7 = A#6 = | A6 = F6 = D6 = F6 = | E6 = C#6 = A5 = G5 =' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4 F4 A4 D5 A4 F4 D4 F4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F4 A4 D5 A4 F4 D4 F4 | D4 F4 A4 D5 A4 F4 D4 F4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | C4 E4 G4 C5 G4 E4 C4 E4 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | G3 A#3 D4 G4 D4 A#3 G3 A#3 | D4 F4 A4 D5 A4 F4 D4 F4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | G3 A#3 D4 G4 D4 A#3 G3 A#3 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F4 A4 D5 A4 F4 D4 F4 | A3 C#4 G4 A4 G4 C#4 A3 C#4' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D3 D2 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | A1 A2 A1 A2 A1 A2 A2 A1 | G1 G2 G1 G2 G1 G2 G1 G2 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | A1 A2 A1 A2 A1 A2 A2 A1 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A2 A1' },
+    ],
+    kickBoost: 1.2,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks ks ks ks',
+  },
   boss: {
     bpm: 164,
     tracks: [
@@ -6219,7 +6229,7 @@ let bgmTimer = null;
 let bgmToken = 0;
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle25', 'battle26'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle25', 'battle26', 'battle27'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -6264,6 +6274,7 @@ const BGM_INFO = [
   { key: 'battle24', name: '戦闘24 裏通りの拳', desc: '刻むロックベースとパワーコードのリフ、ブルージーな音を混ぜた熱い旋律の街の殴り合い。VRC6風チップチューン。イ短調（ベルトスクロールアクション系の作風）・BPM156' },
   { key: 'battle25', name: '戦闘25 熱血大運動会', desc: 'ぴょこぴょこ跳ねるベースと裏打ちの和音、明るくコミカルに駆け回る旋律の大騒ぎ運動会。VRC6風チップチューン。ト長調（ファミコンの熱血スポーツ系の作風）・BPM172' },
   { key: 'battle26', name: '戦闘26 失われた肖像', desc: 'シンコペーションで跳ねるベースとチェンバロ風の分散和音、セブンスの響きに乗る憂いを帯びたゴシックな旋律。VRC6風チップチューン。ホ短調（ゴシックな探索アクション系の作風）・BPM136' },
+  { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
