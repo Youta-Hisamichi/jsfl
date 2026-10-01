@@ -6752,6 +6752,17 @@ function spawnCoinDrop(x, y, value, count) {
     });
   }
 }
+// コインの噴水：大量のコインを噴き上げてからヘッダーへ回収（3択パワーアップの「コインの山」など）
+function spawnCoinFountain(x, y, value, count = 48) {
+  for (let i = 0; i < count; i++) {
+    const v = value / count, a = -Math.PI / 2 + (Math.random() - 0.5) * 1.8, sp = 4 + Math.random() * 5;
+    coinDisplayHold += v;
+    coinFx.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, ground: y + 30 + Math.random() * 60, bounces: 0, phase: 'fly', wait: 40 + i * 3, t: 0, value: v, spin: Math.random() * 6 });
+  }
+  spawnDamageText(x, y - 40, '💰 +' + formatCoinNumber(value) + ' 🟡', '#ffd76b', 0.006, true);
+  shakeScreenLight();
+  for (let i = 0; i < 16; i++) setTimeout(() => playCoinChime(i), i * 40);
+}
 function getCoinTargetInArena() {
   const rect = canvas.getBoundingClientRect();
   const el = headerCoinsEl.parentElement.getBoundingClientRect();
@@ -9098,7 +9109,7 @@ function applyPowerUp(c) {
     updateSkillButtonVisibility(); renderSkillGacha();
   } else if (c.kind === 'comp') { const r = grantCompanion(pickCompanionId()); showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList(); }
   else if (c.kind === 'heal') { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = pl.maxHp; balls.forEach(b => { if (b.isCompanion) b.hp = b.maxHp; }); playHealSound(); }
-  else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; showNotice(`🟡 +${formatCoinNumber(g)} コイン`); }
+  else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
 document.getElementById('powerUpList').addEventListener('click', ev => {
   const b = ev.target.closest('[data-pu]'); if (!b) return;
