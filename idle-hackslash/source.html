@@ -63,7 +63,6 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .top-header .th-item.coin { display: inline-block; }
 .top-header .th-item.coin.coin-pulse { animation: coinPulse 0.22s ease-out; }
 @keyframes coinPulse { 0% { transform: scale(1); } 45% { transform: scale(1.22); filter: brightness(1.3); } 100% { transform: scale(1); } }
-#rebirthShopModal .rs-gems { cursor: pointer; }
 #gemShortText { white-space: pre-line; }
 .top-header .th-gear { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 2px 4px; color: var(--text); }
 .subtitle { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 14px; text-align: center; }
@@ -988,13 +987,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 #rebirthShopList { grid-template-columns: 1fr; gap: 5px; max-height: none; overflow: visible; margin-bottom: 16px; }
 #rebirthShopSection .rs-sec-title { font-size: 0.9rem; font-weight: 800; color: var(--text); margin: 14px 0 8px; }
 
-#rebirthShopModal .rs-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-#rebirthShopModal .rs-header h2 { margin: 0; font-size: 1.05rem; }
-#rebirthShopModal .rs-gems { font-size: 1.05rem; font-weight: 900; color: #64e8ff; background: rgba(100,232,255,0.12); border: 1px solid rgba(100,232,255,0.45); border-radius: 999px; padding: 3px 12px; white-space: nowrap; }
-#rebirthShopModal .rs-note { font-size: 0.64rem; color: var(--text-dim); margin: 2px 0 6px; }
-#rebirthShopModal .auto-skip-wrap { margin: 0 0 6px; }
 #rebirthShopSection .purchase-msg { margin: 0 0 6px; padding: 4px 8px; font-size: 0.68rem; line-height: 1.35; }
-#rebirthShopModal .rs-ad-btn { margin: 0 0 8px; padding: 7px; font-size: 0.8rem; }
 #rebirthShopSection .sub-tabs { margin: 0 0 14px; }
 #rebirthShopSection .sub-tab-btn { padding: 6px 8px; font-size: 0.86rem; }
 #rebirthShopSection .sub-tab-btn .ico-img { width: 1.5em; height: 1.5em; vertical-align: -0.4em; }
@@ -1230,7 +1223,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="debug-cat">🔓 解放・付与</div>
       <button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="clearSubs">🚫 サブスク解除</button>
       <div class="debug-cat">🪟 画面表示</div>
-      <button data-debug="rebirthShop">🌌 転生ショップ表示</button><button data-debug="loginBonus">🔮 帰還くじ表示</button><button data-debug="rewardAdReset">🎬 動画CTリセット</button>
+      <button data-debug="rebirthShop">🛒 永続アイテム表示</button><button data-debug="loginBonus">🔮 帰還くじ表示</button><button data-debug="rewardAdReset">🎬 動画CTリセット</button>
       <div class="debug-cat" id="debugBgmCat">🎵 BGM（押すと再生）</div>
       <div class="debug-cat">💾 セーブ・システム</div>
       <button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="saveReset">🗑️ セーブリセット</button><button id="resetBtn">🔄 最初から全部やり直す</button>
@@ -1408,20 +1401,6 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
   <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
 </div>
 
-<div class="modal-overlay fullscreen" id="rebirthShopModal">
-  <div class="modal-panel">
-    <div class="auto-skip-wrap" id="rebirthAutoSkipWrap">
-      <div class="auto-skip-label" id="rebirthAutoSkipLabel">操作がないと 10 秒後に自動で転生</div>
-      <div class="auto-skip-track"><div class="auto-skip-fill" id="rebirthAutoSkipFill"></div></div>
-    </div>
-    <div class="rs-header"><h2><span data-xi="x_reborn">🌌</span> 転生ショップ</h2><span class="rs-gems"><span data-xi="x_gem">💎</span> <span id="rebirthShopGems">0</span></span></div>
-    <div class="rs-note">効果は転生しても永続・長押しで連続購入</div>
-    <div class="shopkeeper compact" data-npc-tab="rebirth"></div>
-    <button class="reward-ad-btn rs-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
-    <button class="modal-close-btn" id="rebirthShopCloseBtn">閉じて周回開始</button>
-  </div>
-</div>
-
 <div class="modal-overlay" id="stageSkipModal">
   <div class="modal-panel">
     <div class="tower-head"><span data-xi="x_tower">🏰</span><h2>試練の塔</h2><span class="tower-gems">💎 <span id="stageSkipGems">0</span></span><div class="tower-best">🏆 自己ベスト <b id="towerBestJump">-</b></div></div>
@@ -1585,10 +1564,6 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <label><span data-i18n="vibrationLabel">📳 振動（対応スマホのみ）</span></label>
       <button class="modal-shop-btn lang-btn" id="vibrationBtn"><span class="msb-name" id="vibrationState">ON</span></button>
     </div>
-    <div class="settings-row" style="display:none">
-      <label><span>⏱️ 転生ショップの自動転生（30秒操作なしで開始）</span></label>
-      <button class="modal-shop-btn lang-btn" id="rebirthAutoBtn"><span class="msb-name" id="rebirthAutoState">OFF</span></button>
-    </div>
     <div class="settings-btn-row">
       <button class="modal-shop-btn" id="howToPlayBtn"><span class="msb-name" data-i18n="howToPlayBtn">📖 遊び方</span></button>
       <button class="modal-shop-btn" id="contactBtn"><span class="msb-name" data-i18n="contactBtn">✉️ お問い合わせ</span></button>
@@ -1747,10 +1722,7 @@ try { if (localStorage.getItem('circle-battle-idle-debug-open') === '1') setDebu
 const tabBar = document.getElementById('tabBar');
 const tabPages = document.querySelectorAll('.tab-page');
 
-const rebirthShopModal = document.getElementById('rebirthShopModal');
 const rebirthShopList = document.getElementById('rebirthShopList');
-const rebirthShopGems = document.getElementById('rebirthShopGems');
-const rebirthShopCloseBtn = document.getElementById('rebirthShopCloseBtn');
 const stageSkipBtn = document.getElementById('stageSkipBtn');
 const stageSkipModal = document.getElementById('stageSkipModal');
 const stageSkipList = document.getElementById('stageSkipList');
@@ -1815,7 +1787,6 @@ const NPC_SPRITES = {
   merchant: 'data:image/webp;base64,UklGRgAFAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSAsCAAARf6C2bRs2lbo6PRERFNjuyYyuvXfI2f/PkOQ11WDvLuyePUe2bdu2kdn2XWTb9kW+RXRGZ+vdzvfZqV+9g1p01f9fsxfR/wkQ9d/3W8cy4Y3+nJMz2M/A0S8A8k/GnbUqRDTs5OyINGCjK+8HzEFSjG7nYpS0oLn3/WCK572D/cC6dDiE5bWuJARlwHSWP7qKEOWtvSoz06u0AsxpnPcSzLApY3sVuEGc5PUpAftMjPT4j2SFQwTR21kFftCUsrocVg1tOZNN8Ipg1NDQynIwRVgtLRpQtvWUh7BqEMMBMVurYhv5TIrQK81QkbCTII7iQCngbpwym1WtgKGCesJJA9IPydDV1QoNSSUcVFcrPYxU7KAabxOUIvCgMJVSyKiGMRgQsxXQdHW1AWFzi1fCUSYcjJl6pV0FCdMo6QpZNK0UbwgNCmbKclOvdKS6WkU0Ka+poVVxxG1Xg9jqQCvaLGnTtmraqLTNbgqbm1oVOlCRu3GTeMAzHxLWUWWOztq8S+UZEq0uywyJWen/Tjq5m6lwCWUVpcIWJChbYM8rs9yZEKMcsYXrSyK5OTkdBfmC7U7/YgDhwLZtYrQjtqF+IQAMEdxR0tIyVhA5GON4lZygAUdcrJCRsEXsWxoAGrF6zb8iAdzJFn2+KiBIsoTo9Twn5+YgIcSsFy9f7os5EH6blC+ivu/7ov4CAFZQOCDOAgAAEBAAnQEqQABAAD8ReLJSrCckoqoTPcmAIgliAMPNWlg/8nMYrTE6pYv3pf+xcl9brxcSDEieNDQPlktH0eM1RKkKkvQ213DyHhOJehwUVqk0d2JmSUYq/eRitS/cKcASwfhbpppX9AL/m1eUfeWFTTxtoscrAl80BXSLfNOarZZu5E49a9V/3RgA/vZQf+h/3l//zcgqBfM9nzvuOgZhObv1XN3Ou/QEVF8EANso1gEJTmi6F4KlYAl3gu75DqO7/bVP1puhgxvD9DrII1PnonLop4Y5jF6V0uB8y18psiTT3vb9D4bVgCjp49l1YYSyrmxlmsgxUvyVnahq4tnLOP0csdTqkcpmWaDObTIXtH3lMrKrLNDcg57pfSlm1tQkhtsiSMmrVwmLS33OiQsVK5KjXyyER4BEiCITC+l3v/5KlymfrrqLGdLXdJTdpgy/vlVDwpY4izEeooxXArZtaNOoE2vduQxIJPgSUst2HNjB01hc4y01nBYgaAbo/RpIbGhV8q12QYBQGR3+EnaJ6PLsm3XNVz5Ysj8fogU+q8vZZeNIxGvXaKq4rWE3KXf3brV8HGJEKIQ18pWHPQx14sWwjQrxFq/v99Sz30zQXRXtog3pPWyCuj6FpjJOCvizLVndalc8Ol3IN6Qkj6f5iTf+foQay/lZk+iA9aXA5BzRCeP+UMTc+qkJA/ja9ciN01OQpiz0f0F9O1ms0P5kEAHtcdlOVGziN856tMpsCltQ/yS06pVquHJy0AJ2sHDngTKB2YGuzcxEOmfMObMjugayl0fFIQSww6jfd3RmHpnBFeK1IsgAInCo5DdsGhEtrzl3O3YbrYVFUoup5bo/nSKyHVlp5VnEk4h8p6xC0SElO8A62K7akKhqFtzg97ml3ije9SF+cB0O7nEsNHCZZFGMy/7iVpl6eUyblP0sL5/22LuPCV1AA2n0kAAAAA==',
   scholar: 'data:image/webp;base64,UklGRvoEAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSAECAAARf6CwbSM1dnz3zB8RAfn9NcfZa+57nkKytW2GJEWU1lmYmm1bq7FWtm3buALbszZWtm3Xsp25buUXdxCNjPjjr5kbiOj/BIh/2isrK5NF2f/69ev+xVjfCOD0phjb2i4A0BgpmUqaYA7yPN7B0ILpPKWNsF+OsazpIgRJDu8GqDWSYUAT6VSMYXZIesdxHuRC3M2rN2kdCUa6ze6ydQPAcum0GwQFYEfa6bwFpuVu3ygAgmlOXrNFm6qLVchJNljSLuKJRXdH7mbT0mWfTXcrYGomLVxHt1i6uwEsHT++3EU89k064vv+9rR0WNNiUwC6u4PjOYcBjQaYotukQ7PbuxhtT2iD9a7DV9iUZalDG0NNmlTSYdKUWtrs0KChle1UhrQHJg1iIUnxLli6NSGokZSnFqUoF2OURoPu7gb1b4JQ0mGAVqQCwZvTZeruVpRLMZt4ArOmjRLEepsCMehH8NoMWuluyrssYU9oADSoZ9KE62DdUTxJOM9zOUZY08XynuI1sNyjiBshR62kDOxwu3MsIchPaL7v/8kLx4HNlHcTx48fEnMRX6Bs26XgvA57UJWWbMGvSF4KFgXo7XsBYBTPFwWgbnUI4FKMpQ0ARhmCJEt7ZPrslkiKLZheesP3/bsxlptQqlCVHrhh4YIKwTr61e1bW2RaCv50Oi3FfwkAVlA4INICAACQDgCdASpAAEAAPsFWpE4npKMiKhM66PAYCWMAyURnx964fI0E2M3OBl26aeaf5QNTa5cgE4APB/env2F3J+/A/Mlz1SF8dhvDd/3HDpULm/m88tw2w/EwuRQjY4Mw8PG6qC2FCnQMxyOT+phPDdQlM2XhvIgTzidSfoEAgAD+/ob2PhCNv57GpWh0sTuCXCtOoGJGsUMruQuo3ZI9UyA7HYSgD7YbPGuKRRqHkuiudGls10Na31cMNxAF6vJ5ujiOP5uFfBKfFJk5cD1TBbnXhZbjmzKrpP5ldFhhV7upWQE3lmYzHAm18yns6yfCOiMQ+rhtEglaozTXknWGLqvV/buCH/UC8ihIOU2plj61DKLykxXhQIeaq0/CrteX/zdjNutYvpZmUNwQO567APibnXjdAg9ggBDZA5OWNtUKWJjD5MxMBq4mOs240uBiik0IYrjhlraEMHJxf0zUzxzi1d4c8jjcrNODz+sw67UCj6eTo7Kj/syjOeG4Xu6w+lGFMtzVDbyxuph7PfWPgkociQ+CBCy9r90OFC8b2mp6M6/rjGD7idDaO6uiyjczlexJL9cxWhR/PK18oLy48uvXSgWe4IIGJYUsm/MwuAAhQQS/d3HRuz1NC1qrooj7Z8sZpsg3yT4fK0fFgoeQlkYLj+2KqMb4f6z2wraDXIX5eyeKeh/RGicydzL2hhkASpofh5G0AxpordCNQva5Q/i+8ERnbxReLqLtPLp2LSKRKg/VR9YDl37fG/nFRGTdR1Fva3Eclcliu/7uKEBCrENh79nR6EjATTJDyky9fkMA7VgajKnEmm1kAYZm13tHYQVl/ZIK0jRi7Z7Hz7RGMAvHyfek64a70VTOk5ZOEfCJdcvrQZLoLEw1DCwp4aog8Osb3T0zNOk4nhgZA5/abTloZwnnvMTEkKnJhWuhWRwLSp0fil5JpP/6vezhpZzkkrmAAA==',
   princess: 'data:image/webp;base64,UklGRkAEAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSLUBAAARf6C4bSQ1tfhkuIuIAIvemuyc6v0KObdtrXE7Jg233ziciqG00zEzMzP1nIqTGnuz6zAzc1KZQbVBuu8HZK1vZqxP7z0lEf2fAO9fN5NSyRQXvcilkjDFlnBPIqeP9+DN2Wl6i7p/hUBfbUatKUTUz+rBldMyn2OyWpsC2GQeI6FFQ4idpdSM+AtKbRFLAOpTKqbfAQBv0yo1AxGnP1rlRMDAXJXb4K5TecixczVMR1IT/v5vm4KkHiGpdt4+BcPD9ZSsupNXl5ZdDiMWsATgjkIT+BoPXJZQ0jGfXLFvMqJFgxEishTxZ0jMidAFC+dcnVKJyJJjrQwRIsSuE10BYEslAixFzqckTxgAAfiTFUzoBlAqlQCAAMAfLRkCYEsUcY+RDMpmpHhG5k+XdDlKnGmSxyKsLvK8EyGAEnFqRwo2BZESxx8rqBkEQGCvESwaktWleFdCiP0syzRDMc97rDGONaFbYy+rOtC4zlqoUpfm3A41/ozhfILqeE5rYh9V/ALnUKBRm+KYr32yvjEee+a1Psmf5WmeN2Hr2S6AyFV7bmfKk1/5Ff9qhqdqJk6KT+loAwBWUDggZAIAAHANAJ0BKkAAQAA/EXawUiwnJCKuFJxxgCIJQBjPOAy0QibuUyZtfjTVdrgd7s3cm/A8JFsq9u0X3ad6ISLg5PjJ2QpYNBJJ9KE2Eb0j7mZXxSzpNDSBPnJuzCo6pOKfziMxLeL0GcKrHFnLu8M26D0lVR+AAP74zLpfwUu8wnfBG4gI0YXWgXx8eRBX3xkPNHGs1u0Ao5RxAq+JmCX6zaubcdZDkYCOuL3X8J86FzJc+iAi3ROedWw9UMwZt0XLrxWn2ms9SNQJ6luPhVZPCPji//Cazk18BKlHa82dml1IJrIcb2mdBry+jepnYiRd9TOKG9IUWW9Jm9zBRW+a+1jKtN2wcFpUy0WJ07zIrkQ2ggt7TiUkyYqXhmIiLpqSDkmTLsN5pbrGzWNj+NsaXQyaiUkSvqkz52QoCaWCxijIwAUKdvMvp/3S/+cAaLFhsSPM+fPlu4c1DYymJjkmeri/loOsu8fAghoLpC0DbOECWFZmzC01d0giPhnjaKFLoZPSNzYhzurMXoBliMSM/7Zq2IeFDSzybNkMeIQVwPLXfdSzwBQmXGpYjt6kOsQb4rUD8gEH/c1m33jrFan46V//61N2fPpD0eN13QjESiUiOEaR6nMo1WpFwKimYc5zBMhejaNXBNR4PWGZttR3aYhhXrkseU9D9f8y4UHEY7sfXHN2IM/qEiulLjovEW3puxZ+VmSNkqSRKeKmgm3wn/0704qWABehwUykNChT7kC5Hk6sUSQP8e2DJh1X/+1SbalowkeqCWZ96G4u4+8UaWDk6ReQuCmbb5nJmg3hVqzwwgAAAA==',
-  priestNpc: 'data:image/webp;base64,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',
   fortune: 'data:image/webp;base64,UklGRogEAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSNcBAAARf6C4bSQ1tvjj3YOICLAXWb965tZbhVwBgNO6OdmhUU5xZOZ66/QylZkZJmaaeOKuzMzciTGcjBxrLun8Bw5Jd+d8QUT/JwD6+JBp8TCVR3Svrv7D6Ehu0+V/iPhpq5KaWonOxlFSd6wLzwcyFW3oNdOVyD0kvgglhrZSzBiJvZaCOwX0PSTfCHhT2mlmMG+jpWUTeO+ROY815C/nguLss67OTldjyNBV6M48WMrY2+5KO1PPHEXSldaFaafnOq3Qgf7M87k/6aQl+M0cUqUErqPo5vxQci4FRMwYUqXE55C0yQqcU6Qh/3lmFE03854HQP/BO6IYb3nXA5qu5H0OaUPaeGYQrfCfh3MUaZMVeB6S3qFg40BF0L8lcEdE2Ptf5PNAwg+UnUNoEjpf7pnyT8iM9Zy0rqyzMyVl8zzv0JMxcJ3nl6+zs5OUeYa0klIKejbavPbIzXUdR39nZ4rktbwsZbwIWGxTnBeWOPZYuTJHoVVurUO/k7vgOmnFbjhgarWVuuDSiy9aobUugCE1lmOSxKIZ5IOKQ200s23ZsppkdUAAuFvfYdEk9R8+fPjw5EwRwObDRUAeGt/vSJKGGXEcDx9WrgAgAm7h0KlTWwLIVUcK+j4AVlA4IIoCAABwDwCdASpAAEAAPxF8tFOsJ6SiqBQNUYAiCWYAxQxMib/wPoO88a0cLLt05zT6tSDfhxL2D6Eio5WUJA0Nw/lhmpiACUF4vHumIy7D5IXLM/dFdivdYx1MLvNbVBBrz6+p/twroGUGdjpS/qHmbCoWaV6tC2IEsrxtgX/laRO9XA8YWAAA/vtlb+ti/G7mM5OGEHrr+0G4RGjtMUwn5zhMNizgGRo3KBqE8T0GL7X6OwjyR34w8YGQSenLXj8ng9aIS10BPoKFbltSHfrSf0uD+sZWZlW3BqHoP8KGzAgj+JV9N3iuCejPPd939f+nqXjKBMGbRgcWvnFBsospbBtioYpcJ3eNsViTGwiHNEC9z+qlqcWWKDRBTiokoCZRjZIDZy9LMVveezTFVwpa6yK7Ulq7Zu/lgxO2VRL8N4lIP+2hHakMaFy3PKkPc3no40ULjzBd7tgcNGgLRqLAgUEn+K9aNpwiiBq89BfEfbiiop+zxfXzesXYsDNZt/ScDYiDqe8bSPevXMxhms5mzD5qhmR+IQ8e80/xwOl63YzHFOBY3e+0iR1QR8xBSgbpd6u5Pqvw9dBEfEtQ01g4340Ctjw1B2SVKTarl6pNGc6S8OJh/gy4hqjycB7RfXxhSNvBNZRH5SUmdLYF0/hfAyLt4nY0aAaV3ldMrk4JSoWZZqgsJRPb+HYeM9BHJZZ4EiODMHos0Cq39pieGpJhednXD1Rdlsh0Zv8DS+pJW6c1F96Z/v1PcdiDoNXKCJk6KgoJ3iw+Q7IhgjHIlUiHLspyAThagcauX97dx/nEklQDBd6DjsHXX6ZRmyaDv3ewsyVY+93ZI2z92hYqpd49qzmuFPgVu0cdOoAAAA==',
   guild: 'data:image/webp;base64,UklGRgwFAABXRUJQVlA4WAoAAAAQAAAAPwAAPwAAQUxQSPoBAAARf6C4bSQ1tS/mPYiIALs7s9v3VN+PkLT/nyG5O6penasnPNpOn2LbtnGybdu52ZycbNtm57bs/v3fQJ76B9VVNdmI/k+A+M9lEARBVgb8sc+eP3/e1Hcm9z4BSN3YmOVqXARtWMNRpU9I3Oy5GRMnpbPdrEBy2NRJpccASIORThpFgFKkmeImBhQneO5Ys8SVUsyUGWZmImCpm0jHAJa4Yr2rShGUjrDUTQk4Q0VJjKW+A39WZLI15VnJyp9g8rKmb+WviqCSKJycsvsIE+Bmdc+mbRHAyYSwm9UKWGBLls0hUmyWLmshH5gxIaxl0aYEbE6oa9EntlItLGZAqYzIi4DVliyjSsVQbIEw16ht5AB5RkdjsDUqGuXDhogx2agAyoKZKe0Z9C1xct7kMJy8KmdwzwljiZf03tH+pEZFALtIZyXMAFRmVgBcCggva+rkLlcYoWv0xdlIXZ8oY7ETyhjDQv1DpAwICJvp2hQnKYtzZXXyIQAwEwFKRwRgmKcTK2OAmQh6xUwAbpZLkI0fI4RSSVCaZp5IlDO/nyshGCom9XNBtjCsPKDjml8mAF4M9YSlvKALf8T/9PCEdeOLPwDsmzdpbwyEFYTDNqeuXbtWUYhKV65dW5jlQjYJgiAlfb9KlSop4UQIIaRw6Xv/SF/vCd/3PRelFlZQOCDsAgAAEA8AnQEqQABAAD7BUqROp6QjIiYVXOjwGAljAMW/3gUZ4G3mbI1tP+I4Bcb6cbLn0ujRyvRH+LBnm1CI/iRZuT0NDYBJWfMC2CTwuSTeEQOahXrlw56kq/HazbEd2jy1khQHOUL8IkodItOxTjcrPn7VFELp3IDvn6TEnBR1h4xQAP77QBsqXdUrkA5CzQnG0Qrgz25qmKXdefXIGfK+nHfpOKRYJDb9uxBOfTm6aOyzCq8TOQrU1JMQDnmbKokrBNjvU4Ub6OVaw0qj8+7iz/LSLI4ptuYvlQ5613qP0qAx+9PDtqG/sewoX/f+Ao0jM92zE6xLgX84IWUvD7YWkA/Qvsvw0Jo+vks/wrzjS7+kciZaNjFefpTat/+cGUKqmUfhVA4SYaC7uxUBUX7ASGqlkd9ajNswezvt8zSHTlqKBB4UqO+TycnhrnORTpv9hTbNfIfZHIixmn5Q8KRShNJ5lUks4gd28Bc3BztsgdDwsf4w0YCQ1TX/1/ky0d//+elT1VUgb/IOYNBfkVuwgyruyjMcLS8cOXMOTIHC/FNOph68rLkhMRE7m3E7QCEgkd0wtVtYVmhPNuFvTuqLkzpxW151QcZRCoawkGCxiygMWKRrtAtU/IZ3nmCJr+lKajoWGZQkaiDA+3FP+ee2+AL6GMqzFICnx7GhTtbfIaAp5IggLrkg1WHGKdhsiM3yBCvfGP9qnU5PK3R0GVDQKP51sAfTPaqxkTErbWx/XkeLeT3Oaf9LKZoWcwyKB6AZf4Wh7jpQhYKZQmTijGhLEGuYK+yjSL+9pbjJ+72NDoh72fPsw01zm3BmWznKeswO+ULjubaGx9Ix5eAN84sfepuwRTp7dKUMpFRIiycH/OC9BTjBzCiPUZNiGeu1yxuk+LX18D73wOxkMXlxwzKXy86Hlz2AtH/M87+jx5XAJzyyUHEkewk2oJBzRcmWfZfr3pz+4WLW1ndKIme9O1Q2rj7tF4KrlwzS7cAAAA==',
 };
@@ -1829,7 +1800,6 @@ const SHOPKEEPERS = {
   records:   { npc: 'elder',     name: '記録係の長老', lines: ['ほっほっ、よく戦っておるのう。', 'おぬしの戦いの記録、しっかり残しておるぞ。', '図鑑を埋めるのも冒険の楽しみじゃ。', '最高記録を更新する日が楽しみじゃわい。'] },
   ranking:   { npc: 'king',      name: 'アルス王', lines: ['よくぞ参った、勇者よ！', 'ランキングの頂点を目指すのだ！', '今日の戦果、期待しておるぞ。', '上位の者には、わしから称賛を贈ろう。'] },
   settings:  { npc: 'sister',    name: '案内係のシスター', lines: ['お困りのことはありませんか？', '音量はここで調整できますよ。', '遊び方はこちらからご覧ください。', 'ゆっくり休むことも大切ですよ。'] },
-  rebirth:   { npc: 'priestNpc', name: '神官セレス', lines: ['輪廻の旅路にご加護を。', '永遠の力を授けましょう。', '新たな周回の前に、準備はよろしいですか？', 'ジェムを捧げれば、力は永遠に宿ります。'] },
 };
 function renderShopkeeper(tab) {
   const info = SHOPKEEPERS[tab];
@@ -1997,7 +1967,7 @@ gemShortGoBtn.addEventListener('click', () => {
   gemShortPending = null;
   gemShortModal.classList.remove('show');
   if (opts.onLeave) opts.onLeave();
-  [rebirthShopModal, stageSkipModal, skipRetryModal].forEach(m => m.classList.remove('show'));
+  [stageSkipModal, skipRetryModal].forEach(m => m.classList.remove('show'));
   gemShopReturn = opts.returnTo ? { fn: opts.returnTo, mustResume: !!opts.mustResume } : null;
   gemReturnBtn.style.display = gemShopReturn ? 'flex' : 'none';
   switchTab('gemshop');
@@ -2014,7 +1984,6 @@ function promptGemShop(options = {}) {
   promptGemShortage(0, { title: 'ジェム購入ショップ', text: `所持ジェム 💎${Math.floor(game.gems).toLocaleString('ja-JP')}\nジェム購入ショップに行きますか？`, silent: true, ...options });
 }
 document.querySelector('.th-item.gem').addEventListener('click', () => promptGemShop());
-document.querySelector('#rebirthShopModal .rs-gems').addEventListener('click', () => promptGemShop({ returnTo: () => { switchTab('game'); openRebirthShop(); }, mustResume: true }));
 
 rankDailyBtn.addEventListener('click', () => {
   rankingMode = 'daily';
@@ -2057,17 +2026,6 @@ function renderVibrationSetting() {
   vibrationState.textContent = game.vibration === false ? 'OFF' : 'ON';
   vibrationBtn.classList.toggle('active', game.vibration !== false);
 }
-const rebirthAutoBtn = document.getElementById('rebirthAutoBtn');
-const rebirthAutoState = document.getElementById('rebirthAutoState');
-function renderRebirthAutoSetting() {
-  rebirthAutoState.textContent = isRebirthAutoSkipOn() ? 'ON' : 'OFF';
-  rebirthAutoBtn.classList.toggle('active', isRebirthAutoSkipOn());
-}
-rebirthAutoBtn.addEventListener('click', () => {
-  game.rebirthAutoSkipOff = isRebirthAutoSkipOn();
-  renderRebirthAutoSetting();
-  saveGame();
-});
 vibrationBtn.addEventListener('click', () => {
   game.vibration = game.vibration === false;
   renderVibrationSetting();
@@ -2895,7 +2853,6 @@ function updateCompSummonVisibility() {
   if (note) note.style.display = full ? '' : 'none';
 }
 function renderRebirthShopList() {
-  rebirthShopGems.textContent = Math.floor(game.gems);
   const newTabIds = (Array.isArray(game.rebirthShopNew) ? game.rebirthShopNew : []).filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[id]));
   const tabCats = REBIRTH_SHOP_CATEGORIES.map(c => newTabIds.includes(c.id) ? { ...c, label: c.label + '<span class="rs-tab-new"></span>' } : c);
   renderSubTabs(document.getElementById('rebirthShopTabs'), tabCats, rebirthShopCategory, cat => {
@@ -5566,7 +5523,6 @@ function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
   if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
-  else if (rebirthShopModal && rebirthShopModal.classList.contains('show')) type = 'rebirth';
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (rebirthRewardBgm) { stopBgm(); return; } // 転生報酬はBGMなし（効果音だけ）
@@ -7734,45 +7690,9 @@ function finishRebirth() {
   toast.classList.remove('rebirth-reward');
   rebirthRewardBgm = false;
   advanceRebirthShopVisit();
-  closeRebirthShop();
+  startNextRun();
 }
 
-const REBIRTH_SHOP_AUTO_SKIP_MS = 30 * 1000;
-const REBIRTH_SHOP_GAUGE_MS = 10 * 1000;
-const rebirthAutoSkipLabel = document.getElementById('rebirthAutoSkipLabel');
-const rebirthAutoSkipFill = document.getElementById('rebirthAutoSkipFill');
-let rebirthShopIdleSince = 0;
-let rebirthAutoSkipTimer = null;
-let rebirthGaugeHideAt = 0; // ゲージを消すのを指を離すまで待つ（押した瞬間にレイアウトがずれて別のボタンを押さないように）
-const rebirthAutoSkipWrap = document.getElementById('rebirthAutoSkipWrap');
-function isRebirthAutoSkipOn() { return !game.rebirthAutoSkipOff; }
-function resetRebirthShopIdle() { rebirthShopIdleSince = Date.now(); }
-function onRebirthShopActivity(event) {
-  if (!rebirthShopModal.classList.contains('show')) return;
-  resetRebirthShopIdle();
-  if (event && event.type === 'pointerdown') rebirthGaugeHideAt = Infinity; // 離したら消す
-}
-window.addEventListener('pointerup', () => { if (rebirthGaugeHideAt === Infinity) rebirthGaugeHideAt = Date.now(); });
-function tickRebirthAutoSkip() {
-  if (!rebirthShopModal.classList.contains('show')) { clearInterval(rebirthAutoSkipTimer); return; }
-  if (gemShortModal.classList.contains('show')) resetRebirthShopIdle(); // ジェム不足の確認中は止める
-  const remaining = Math.max(0, REBIRTH_SHOP_AUTO_SKIP_MS - (Date.now() - rebirthShopIdleSince));
-  const showGauge = remaining <= REBIRTH_SHOP_GAUGE_MS || (rebirthAutoSkipWrap.style.display !== 'none' && Date.now() < rebirthGaugeHideAt);
-  rebirthAutoSkipWrap.style.display = showGauge ? '' : 'none';
-  if (showGauge) {
-    rebirthAutoSkipFill.style.width = (Math.min(remaining, REBIRTH_SHOP_GAUGE_MS) / REBIRTH_SHOP_GAUGE_MS * 100) + '%';
-    rebirthAutoSkipLabel.textContent = `操作がないと ${Math.ceil(Math.min(remaining, REBIRTH_SHOP_GAUGE_MS) / 1000)} 秒後に自動で転生`;
-  }
-  if (remaining <= 0) closeRebirthShop();
-}
-rebirthShopModal.addEventListener('pointerdown', onRebirthShopActivity);
-rebirthShopModal.addEventListener('wheel', onRebirthShopActivity, { passive: true });
-rebirthShopList.addEventListener('scroll', onRebirthShopActivity, { passive: true });
-window.addEventListener('pointermove', event => {
-  if (!rebirthShopModal.classList.contains('show')) return;
-  if (event.movementX === 0 && event.movementY === 0) return;
-  onRebirthShopActivity(event);
-});
 const rebirthShopMsg = document.getElementById('rebirthShopMsg');
 function showRebirthPurchasePop(item, x, y, count = 1) {
   const icon = item.companionId ? COMPANIONS[item.companionId].icon : ico(item);
@@ -7801,24 +7721,7 @@ function advanceRebirthShopVisit() {
   game.rebirthShopNew = game.rebirthShopVisits > 1 ? REBIRTH_SHOP_CATEGORIES.map(c => getRebirthCategoryIds(c.id)[openCount - 1]).filter(Boolean) : [];
   saveGame();
 }
-function openRebirthShop(fresh = false) {
-  if (fresh) rebirthShopMsg.classList.remove('show');
-  game.rebirthShopOffer = null;
-  if (fresh) advanceRebirthShopVisit();
-  renderRebirthShopList();
-  rebirthShopModal.classList.add('show');
-  renderShopkeeper('rebirth');
-  refreshBgm();
-  clearInterval(rebirthAutoSkipTimer);
-  rebirthAutoSkipWrap.style.display = 'none';
-  if (!isRebirthAutoSkipOn()) return; // 設定でOFFならタイムアウトしない
-  resetRebirthShopIdle();
-  tickRebirthAutoSkip();
-  rebirthAutoSkipTimer = setInterval(tickRebirthAutoSkip, 100);
-}
-function closeRebirthShop() {
-  clearInterval(rebirthAutoSkipTimer);
-  rebirthShopModal.classList.remove('show');
+function startNextRun() { // 転生後、次の周回を始める
   gameOverBgm = false; rebirthFlow = false; updateSkipBtnVisibility();
   battleBgmType = game.stage % 10 === 0 ? 'boss' : 'normal';
   refreshBgm();
@@ -8973,8 +8876,6 @@ function fullReset() {
   giveUpBtn.style.display = 'none';
   dialogCloseBtn.style.display = 'none';
   toast.classList.remove('show');
-  rebirthShopModal.classList.remove('show');
-  rebirthShopPending = false;
   gameOverBgm = false; updateSkipBtnVisibility();
   renderArtifactList();
   updateStatsUI();
@@ -9920,7 +9821,6 @@ rebirthShopList.addEventListener('click', event => {
   if (consumeHoldClick()) return; // 長押しで連続購入した直後のクリックは無視
   buyRebirthItem(button.dataset.rebirthShop, event.clientX, event.clientY, false);
 });
-rebirthShopCloseBtn.addEventListener('click', closeRebirthShop);
 
 const SHARE_HASHTAG = '#放置系ハクスラ無限反射';
 function buildShareText(kind) {
@@ -10650,7 +10550,6 @@ bgmVolVal.textContent = bgmVolRange.value + '%';
 sfxVolRange.value = Math.round((game.sfxVolume ?? 0.7) * 100);
 sfxVolVal.textContent = sfxVolRange.value + '%';
 renderVibrationSetting();
-renderRebirthAutoSetting();
 updateRewardAdButtons();
 usernameInput.value = game.username || '';
 resizeCanvas();
