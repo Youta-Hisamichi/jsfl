@@ -3851,24 +3851,12 @@ function drawWeapons() {
   }
   ctx.restore();
 }
-// タメ中の音：小さくうなる音がタメ量に合わせて少しずつ上がり、MAXで軽く「チン」
-let chargeSnd = null;
+// 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
 function tickChargeSound() {
-  const active = chargeHold && getChargeLevel() >= PULL_MIN && phase === 'battle' && audioCtx && !isBattleSfxMuted(); // 引っ張っている間だけ鳴る
-  if (!active) {
-    if (chargeSnd) { const t = audioCtx.currentTime; chargeSnd.g.gain.cancelScheduledValues(t); chargeSnd.g.gain.setTargetAtTime(0.0001, t, 0.03); chargeSnd.o.stop(t + 0.15); chargeSnd = null; }
-    return;
-  }
-  const lv = getChargeLevel(), t = audioCtx.currentTime;
-  if (!chargeSnd) {
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
-    o.type = 'triangle'; f.type = 'lowpass'; f.frequency.value = 2600;
-    g.gain.setValueAtTime(0.0001, t); g.gain.setTargetAtTime(0.034 * game.sfxVolume, t, 0.08);
-    o.connect(f); f.connect(g); g.connect(audioCtx.destination); o.start(t);
-    chargeSnd = { o, g, full: false };
-  }
-  chargeSnd.o.frequency.setTargetAtTime(380 + 560 * lv + (lv >= 1 ? Math.sin(Date.now() / 60) * 6 : 0), t, 0.05);
-  if (lv >= 1 && !chargeSnd.full) { chargeSnd.full = true; thump(1568, 1568, 0.25, 0.04, 'sine'); thump(2349, 2349, 0.18, 0.015, 'sine', 0.02); }
+  if (!chargeHold || chargeHold.pullSnd || phase !== 'battle' || getChargeLevel() < PULL_MIN) return;
+  chargeHold.pullSnd = true;
+  thump(320, 760, 0.14, 0.05, 'triangle');
+  thump(640, 1500, 0.1, 0.015, 'sine', 0.01);
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
   const pl = balls.find(isMainPlayerBall);
