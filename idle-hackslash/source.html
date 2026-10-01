@@ -3541,10 +3541,72 @@ function releaseCharge() {
   if (!chargeHold) return;
   const held = Date.now() - chargeHold.start, lv = getChargeLevel();
   chargeHold = null;
-  if (held < CHARGE_MIN_MS || phase !== 'battle') return; // 短いタップでは突撃しない
+  if (phase !== 'battle') return;
+  if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
   holdRush = { id: -1, dist: 0, until: Date.now() + 2500, charge: lv };
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
+}
+// タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
+const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;
+let slashFx = [], lastSlashAt = 0, slashSide = 1;
+function doTapSlash() {
+  const now = Date.now();
+  if (now - lastSlashAt < SLASH_GAP_MS) return;
+  lastSlashAt = now;
+  const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
+  const R = pl.radius + SLASH_RANGE;
+  const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
+  const near = nearestOf(pl, foes);
+  const ang = near && Math.hypot(near.x - pl.x, near.y - pl.y) < R * 2.2 ? Math.atan2(near.y - pl.y, near.x - pl.x) : ((pl.faceDir || 1) > 0 ? 0 : Math.PI);
+  if (Math.abs(Math.cos(ang)) > 0.2) pl.faceDir = Math.cos(ang) > 0 ? 1 : -1;
+  slashSide = -slashSide;
+  slashFx.push({ ball: pl, ang, side: slashSide, start: now, r: R });
+  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length));
+  let hits = 0;
+  for (const en of foes) {
+    const d = Math.hypot(en.x - pl.x, en.y - pl.y);
+    if (d > R + en.radius) continue;
+    let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+    if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
+    if (!playerAttackHits(en)) { spawnMissText(en); continue; }
+    const mult = SLASH_DMG * (isTelegraphStunned(en) ? TG_STUN_DMG : 1);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * mult)), en);
+    en.hp -= dmg; trackDamage(dmg); hits++;
+    spawnHitParticles(en.x, en.y, '#ffe08a');
+    spawnAttackDamageText(en, dmg, crit, '#fff4b8', en.isAdd ? 6 : undefined);
+    if (en.isAdd) {
+      focusHpEnemy(en);
+      if (en.hp <= 0) {
+        recordBestiaryKill(en); spawnExpGems(en.x, en.y, 4);
+        const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain;
+        spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
+      }
+    } else {
+      onPlayerHitEnemy(en, dmg);
+      applyHitKnockback(en, pl, 1.6);
+      if (en.hp <= 0) triggerEnemyDefeat(en, pl.x, pl.y);
+    }
+  }
+  if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
+}
+function drawSlashFx() { // 三日月形の斬撃の軌跡
+  const now = Date.now();
+  slashFx = slashFx.filter(f => now - f.start < SLASH_FX_MS);
+  for (const f of slashFx) {
+    const k = (now - f.start) / SLASH_FX_MS, b = f.ball;
+    const sweep = SLASH_HALF * 2 * Math.min(1, k * 1.8);
+    const a0 = f.ang - f.side * SLASH_HALF, a1 = a0 + f.side * sweep;
+    ctx.save();
+    ctx.globalAlpha = 1 - k * k;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = '#fff3b0'; ctx.shadowBlur = 10;
+    for (const [w, col, rr] of [[7, 'rgba(255,230,140,0.55)', 1], [2.5, '#ffffff', 1.02]]) {
+      ctx.strokeStyle = col; ctx.lineWidth = w;
+      ctx.beginPath(); ctx.arc(b.x, b.y, f.r * rr, Math.min(a0, a1), Math.max(a0, a1)); ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 // タメ中の音：小さくうなる音がタメ量に合わせて少しずつ上がり、MAXで軽く「チン」
 let chargeSnd = null;
@@ -9090,6 +9152,7 @@ function draw() {
   drawTackleEffects();
   drawRampageGauge();
   drawChargeRing();
+  drawSlashFx();
   tickChargeSound();
   drawDragStick();
   drawExpGems();
@@ -9225,11 +9288,11 @@ function updateExpGems(speedMult) {
   for (const g of expGems) {
     const dx = pl.x - g.x, dy = pl.y - g.y, d = Math.hypot(dx, dy) || 1;
     const age = Date.now() - g.born;
-    if (d < 70 || age > 8000) { const sp = Math.min(9, 2 + (age > 8000 ? (age - 8000) / 300 : (70 - d) / 8)); g.vx += (dx / d * sp - g.vx) * 0.25; g.vy += (dy / d * sp - g.vy) * 0.25; } // 吸い寄せ
+    if (d < 110 || age > 3500) { const sp = Math.min(18, 6 + (age > 3500 ? (age - 3500) / 120 : (110 - d) / 5)); const k = 1 - Math.pow(0.55, speedMult); g.vx += (dx / d * sp - g.vx) * k; g.vy += (dy / d * sp - g.vy) * k; } // 吸い寄せ（高速）
     else { g.vx *= Math.pow(0.9, speedMult); g.vy *= Math.pow(0.9, speedMult); }
     g.x += g.vx * speedMult; g.y += g.vy * speedMult;
     const cp = arenaClampPt(g.x, g.y, 8); g.x = cp.x; g.y = cp.y;
-    if (d < pl.radius + 6) { g.got = true; gainExp(g.v); playExpGemSound(); }
+    if (Math.hypot(pl.x - g.x, pl.y - g.y) < pl.radius + 10 || d < Math.hypot(g.vx, g.vy) * speedMult + pl.radius) { g.got = true; gainExp(g.v); playExpGemSound(); }
   }
   expGems = expGems.filter(g => !g.got);
 }
