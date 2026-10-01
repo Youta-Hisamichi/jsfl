@@ -6617,25 +6617,27 @@ function playWarningSound() {
 }
 // やられボイス：のこぎり波の声帯音をフォルマント（母音の共鳴）フィルタに通して「ぐわぁっ」などをしゃべらせる
 const VOWEL_F = { a: [800, 1200, 2600], i: [300, 2300, 3000], u: [350, 1300, 2500], e: [500, 1800, 2500], o: [500, 850, 2500] };
-const DEATH_VOICES = [ // 短いうめき声
-  { seg: [['u', 0.14]], p: [210, 225, 170], noise: [], cut: true },                       // ウッ！
-  { seg: [['u', 0.12]], p: [180, 190, 150], noise: [[0, 0.03, 500]], cut: true },         // グッ！
-  { seg: [['u', 0.1]], p: [200, 205, 175], noise: [[0.12, 0.05, 2200]], cut: true },      // ウフッ
+const DEATH_VOICES = [ // 若めでコミカルなやられ声（高めの声で語尾がへなへなと下がる）
+  { seg: [['u', 0.07], ['a', 0.34]], p: [430, 530, 290], noise: [] },                                   // うわぁ〜っ
+  { seg: [['i', 0.06], ['a', 0.13], ['u', 0.14]], p: [470, 540, 360], noise: [[0.19, 0.05, 1300]] },     // ぎゃふん
+  { seg: [['i', 0.4]], p: [590, 650, 360], noise: [[0, 0.06, 3600]] },                                  // ひぃ〜ん
+  { seg: [['a', 0.1], ['i', 0.08], ['a', 0.28]], p: [420, 480, 310], noise: [] },                       // あいた〜
 ];
+const DEATH_VOICE_FORMANT = 1.18; // 声道を短くして若い声に
 function playDeathVoice() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const v = DEATH_VOICES[Math.floor(Math.random() * DEATH_VOICES.length)];
-  const t0 = audioCtx.currentTime + 0.04 + (v.gap || 0), dur = v.seg.reduce((n, x) => n + x[1], 0), vol = 0.35 * game.sfxVolume;
+  const t0 = audioCtx.currentTime + 0.04 + (v.gap || 0), dur = v.seg.reduce((n, x) => n + x[1], 0), vol = 0.32 * game.sfxVolume;
   const src = audioCtx.createOscillator(); src.type = 'sawtooth';
   src.frequency.setValueAtTime(v.p[0], t0); src.frequency.linearRampToValueAtTime(v.p[1], t0 + dur * 0.25); src.frequency.exponentialRampToValueAtTime(v.p[2], t0 + dur);
-  const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 7; lg.gain.value = 7; lfo.connect(lg); lg.connect(src.frequency);
+  const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 9; lg.gain.value = 14; // 震え声で情けなく lfo.connect(lg); lg.connect(src.frequency);
   const env = audioCtx.createGain();
   env.gain.setValueAtTime(0.0001, t0); env.gain.exponentialRampToValueAtTime(vol, t0 + 0.03);
   env.gain.setValueAtTime(vol, t0 + dur * (v.cut ? 0.85 : 0.5)); env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + (v.cut ? 0.02 : 0.15));
   [1, 0.5, 0.25].forEach((amp, k) => {
     const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 9 - k * 2;
-    let t = t0; f.frequency.setValueAtTime(VOWEL_F[v.seg[0][0]][k], t);
-    v.seg.forEach(([vw, d]) => { f.frequency.linearRampToValueAtTime(VOWEL_F[vw][k], t + Math.min(0.05, d)); t += d; });
+    let t = t0; f.frequency.setValueAtTime(VOWEL_F[v.seg[0][0]][k] * DEATH_VOICE_FORMANT, t);
+    v.seg.forEach(([vw, d]) => { f.frequency.linearRampToValueAtTime(VOWEL_F[vw][k] * DEATH_VOICE_FORMANT, t + Math.min(0.05, d)); t += d; });
     const g = audioCtx.createGain(); g.gain.value = amp * 3; src.connect(f); f.connect(g); g.connect(env);
   });
   env.connect(audioCtx.destination);
