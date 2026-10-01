@@ -1147,6 +1147,14 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .pu-icon .ico-img, .pu-icon .comp-sprite { width: 44px; height: 44px; display: block; }
 .pu-name { font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
 .pu-desc { font-size: 0.58rem; color: var(--text-dim); line-height: 1.3; }
+.lv-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.lv-badge { flex: 0 0 auto; font-size: 0.7rem; font-weight: 900; color: #fff; background: linear-gradient(135deg, #8a5bff, #4fb3ff); border-radius: 999px; padding: 1px 9px; box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
+.lv-badge b { font-size: 0.82rem; }
+.lv-track { flex: 1; height: 9px; border-radius: 999px; background: var(--bg); border: 1px solid var(--ring); overflow: hidden; }
+.lv-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #4fb3ff, #8a5bff, #ff5fd2); transition: width 0.3s; }
+.lv-fill.full { animation: lvFull 0.5s ease-in-out infinite alternate; }
+@keyframes lvFull { to { filter: brightness(1.5); } }
+.lv-text { flex: 0 0 auto; font-size: 0.6rem; font-weight: 800; color: var(--text-dim); min-width: 4.5em; text-align: right; }
 </style>
 </head>
 <body class="floor-bg">
@@ -1177,6 +1185,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
         <img class="stage-mark stage-mark-boss" id="stageBossMark" alt="">
         <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
       </div>
+      <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
     </div>
 
     <div class="arena-wrap">
@@ -7400,6 +7409,7 @@ function processAdds(a) {
           playEnemyHitSound();
           if (add.hp <= 0) {
             recordBestiaryKill(add);
+            gainExp(4);
             const coinGain = 5 + Math.floor(Math.random() * 8);
             game.coins += coinGain;
             if (Math.random() < 0.3) game.gems += 1;
@@ -7523,7 +7533,7 @@ function onStageClear() {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
   game.totalKills++;
-  checkPowerUp();
+  checkPowerUp(isBossStage);
   ensureDailyClearReset();
   game.dailyClears++;
   resetCombo();
@@ -7738,6 +7748,7 @@ function completeReincarnation() {
   const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
   gainArtifact(pick.id);
   game.coins = 0; game.stage = 1;
+  game.pLv = 1; game.pExp = 0; // レベルは周回ごと
   coinFx = []; coinDisplayHold = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
@@ -8934,14 +8945,28 @@ function loop() {
 }
 
 // ---------- 3択パワーアップ：敵を一定数倒すたびに、強化・スキル・仲間からランダムな3択 ----------
-const POWERUP_EVERY = 10; // 何体倒すごとに出すか
 let powerUpPending = false;
-function checkPowerUp() {
-  game.powerUpKills = (game.powerUpKills || 0) + 1;
-  if (game.powerUpKills < POWERUP_EVERY || powerUpPending || game.skipChallenge) return;
-  game.powerUpKills = 0; powerUpPending = true;
-  setTimeout(openPowerUp, 900); // 撃破演出のあとに出す
+// レベル：敵を倒すと経験値。ゲージがMAXになるとレベルアップして3択パワーアップ（転生でLv1に戻る）
+function getLvNeed(lv) { return 30 + lv * 15; }
+function renderLvGauge() {
+  const lv = game.pLv || 1, ex = game.pExp || 0, need = getLvNeed(lv);
+  document.getElementById('pLvNum').textContent = lv;
+  const f = document.getElementById('pLvFill'); f.style.width = Math.min(100, ex / need * 100) + '%'; f.classList.toggle('full', powerUpPending);
+  document.getElementById('pLvText').textContent = `${Math.floor(ex)} / ${need}`;
 }
+function gainExp(n) {
+  if (game.skipChallenge) return;
+  game.pLv = game.pLv || 1; game.pExp = (game.pExp || 0) + n;
+  if (!powerUpPending && game.pExp >= getLvNeed(game.pLv)) {
+    game.pExp -= getLvNeed(game.pLv); game.pLv++; powerUpPending = true;
+    const pl = balls.find(isMainPlayerBall);
+    if (pl) spawnDamageText(pl.x, pl.y - 46, `LEVEL UP!  Lv.${game.pLv}`, '#c792ea', 0.016, true);
+    playLoginBonusSound();
+    setTimeout(openPowerUp, 900); // 撃破演出のあとに出す
+  }
+  renderLvGauge();
+}
+function checkPowerUp(isBoss) { gainExp(isBoss ? 40 : 12); }
 function makePowerUpChoices() {
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
@@ -8962,6 +8987,7 @@ function makePowerUpChoices() {
 }
 let powerUpChoices = [];
 function openPowerUp() {
+  document.querySelector('#powerUpModal .pu-title').textContent = `⚡ LEVEL UP!  Lv.${game.pLv || 1}`;
   if (phase !== 'battle' || getActiveTab() !== 'game') { setTimeout(openPowerUp, 1000); return; } // ゲーム画面に戻ったら出す
   powerUpChoices = makePowerUpChoices();
   document.getElementById('powerUpList').innerHTML = powerUpChoices.map((c, i) => `<button class="pu-card" style="--pc:${c.col}" data-pu="${i}"><span class="pu-kind">${c.label}</span><span class="pu-icon">${c.icon}</span><span class="pu-name">${c.name}</span><span class="pu-desc">${c.desc}</span></button>`).join('');
@@ -8987,6 +9013,8 @@ document.getElementById('powerUpList').addEventListener('click', ev => {
   document.getElementById('powerUpModal').classList.remove('show');
   powerUpPending = false;
   phase = 'battle';
+  if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
+  renderLvGauge();
   playUpgradeSound(); showLevelUpPop(window.innerWidth / 2, window.innerHeight / 2, c.name + '！');
   updateStatsUI(); updateHPUI(); saveGame();
 });
@@ -10648,6 +10676,7 @@ Object.keys(SKILL_BUTTON_KEYS).forEach(id => {
   decorateSkillButton(btn);
 });
 updateSkillButtonVisibility();
+renderLvGauge();
 updatePotionButton();
 renderDebugMonsters();
 document.getElementById('dbgMonGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-mon]'); if (b) { dbgMonKey = b.dataset.mon; renderDebugMonsters(); } });
