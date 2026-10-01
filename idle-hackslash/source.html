@@ -1291,7 +1291,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
       <div class="debug-cat">🔓 解放・付与</div>
-      <button data-debug="arenaRect">⬛ 四角/丸</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="clearSubs">🚫 サブスク解除</button>
+      <button data-debug="size">📦 容量</button><button data-debug="arenaRect">⬛ 四角/丸</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="clearSubs">🚫 サブスク解除</button>
       <div class="debug-cat">🪟 画面表示</div>
       <button data-debug="rebirthShop">🛒 永続アイテム表示</button><button data-debug="loginBonus">🔮 帰還くじ表示</button><button data-debug="rewardAdReset">🎬 動画CTリセット</button>
       <div class="debug-cat" id="debugBgmCat">🎵 BGM（押すと再生）</div>
@@ -3468,6 +3468,35 @@ function updateStatsUI() {
 let dpr = Math.max(1, window.devicePixelRatio || 1);
 let size = 0;
 let arena = { x: 0, y: 0, radius: 0 };
+const BUILD_SIZE = '@@BUILD_SIZE@@'; // ビルド時に index.html のバイト数へ置き換わる（同じ文字数）
+// デバッグ：ゲームの容量（HTML本体・埋め込み画像・セーブデータ）を表示
+async function showGameSize() {
+  const kb = n => (n / 1024).toFixed(1) + ' KB';
+  const LIMIT = 1000000;
+  let html = 0, how = '';
+  try { const r = await fetch(location.href, { cache: 'no-store' }); if (r.ok) { html = (await r.arrayBuffer()).byteLength; how = '実ファイル'; } } catch (err) {}
+  const built = parseInt(BUILD_SIZE, 10); // build.js が書き込んだ index.html の実サイズ
+  if (!html && built > 0) { html = built; how = 'ビルド時の実サイズ'; }
+  if (!html) { html = new Blob(['<!DOCTYPE html>' + document.documentElement.outerHTML]).size; how = '画面から概算（未ビルド）'; }
+  const imgOf = obj => (JSON.stringify(obj).match(/data:image[^"]*/g) || []).reduce((t, u) => t + u.length, 0);
+  const groups = [['アイコン', ICON_IMAGES], ['敵', ENEMY_SPRITES], ['仲間', COMPANION_SPRITES], ['NPC', NPC_SPRITES], ['床', FLOOR_TILES], ['背景', OUTER_TILES]].map(([n, o]) => [n, imgOf(o)]);
+  const imgTotal = groups.reduce((t, g) => t + g[1], 0);
+  let save = 0, ls = 0;
+  try { save = (localStorage.getItem(SAVE_KEY) || '').length * 2; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); ls += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (err) {}
+  const lines = [
+    `📦 ゲーム容量（${how}）`,
+    `HTML本体: ${html.toLocaleString()} バイト（${kb(html)}）`,
+    `上限 1,000,000 バイトまで残り ${(LIMIT - html).toLocaleString()} バイト（使用 ${(html / LIMIT * 100).toFixed(1)}%）`,
+    `埋め込み画像 合計: ${kb(imgTotal)}（${(imgTotal / html * 100).toFixed(0)}%）`,
+    ...groups.map(([n, v]) => `　${n}: ${kb(v)}`),
+    `プログラム等（画像以外）: ${kb(html - imgTotal)}`,
+    `セーブデータ: ${kb(save)}（ローカル保存全体 ${kb(ls)}）`,
+  ];
+  const ta = document.getElementById('dbgMonList');
+  ta.value = lines.join('\n'); ta.style.display = ''; ta.rows = lines.length + 1;
+  ta.scrollIntoView({ block: 'center' });
+  showNotice(`📦 HTML ${kb(html)}（上限の ${(html / LIMIT * 100).toFixed(1)}%）`);
+}
 // お試し：ゲームサークルを四角形（画面の横幅いっぱい）にする。デバッグの「⬛ 四角/丸」で切り替え
 let ARENA_RECT = true;
 try { const v = localStorage.getItem('arenaRect'); if (v !== null) ARENA_RECT = v === '1'; } catch (err) {}
@@ -9676,6 +9705,7 @@ debugRow.addEventListener('click', event => {
   if (!button) return;
   const action = button.dataset.debug;
   if (action === 'reload') { saveGame(); location.reload(); return; }
+  if (action === 'size') { showGameSize(); return; }
   if (action === 'arenaRect') { // お試しの四角い戦闘エリアと丸を切り替え
     ARENA_RECT = !ARENA_RECT;
     try { localStorage.setItem('arenaRect', ARENA_RECT ? '1' : '0'); } catch (err) {}

@@ -12,7 +12,8 @@ const { minify } = require('terser'); const csso = require('csso');
   }
   s = s.replace(/<style>([\s\S]*?)<\/style>/, (_, c) => '<style>' + csso.minify(c).css + '</style>');
   s = '<!-- このファイルは自動生成です。編集は source.html で行い、tools/build.js で作り直してください -->\n' + s;
-  fs.writeFileSync(path.join(dir, 'index.html'), s);
   const kb = Buffer.byteLength(s);
+  s = s.split('@@BUILD_SIZE@@').join(String(kb).padStart('@@BUILD_SIZE@@'.length, '0')); // デバッグの容量表示用（文字数は変わらない）
+  fs.writeFileSync(path.join(dir, 'index.html'), s);
   console.log('index.html', kb, 'bytes', kb >= 1000000 ? '⚠️ 1MBを超えています' : '');
 })();
