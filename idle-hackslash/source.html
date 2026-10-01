@@ -1147,6 +1147,12 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .pu-icon .ico-img, .pu-icon .comp-sprite { width: 44px; height: 44px; display: block; }
 .pu-name { font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
 .pu-desc { font-size: 0.58rem; color: var(--text-dim); line-height: 1.3; }
+.pu-list.n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pu-list.n5, .pu-list.n6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pu-actions { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 6px; margin-top: 12px; }
+.pu-act { border: none; border-radius: 10px; padding: 8px 4px; font-weight: 900; font-size: 0.68rem; color: #fff; background: linear-gradient(180deg, #4fb3ff, #2f6fdb); box-shadow: 0 3px 0 #1c4a9a; cursor: pointer; line-height: 1.3; }
+.pu-act.all { background: linear-gradient(135deg, #ffb14f, #ff5fd2); box-shadow: 0 3px 0 #9a3a8a; }
+.pu-act.is-disabled { filter: grayscale(0.8); opacity: 0.55; }
+.pu-timer { margin-top: 8px; font-size: 0.66rem; color: var(--text-dim); }
 .lv-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 .lv-badge { flex: 0 0 auto; font-size: 0.7rem; font-weight: 900; color: #fff; background: linear-gradient(135deg, #8a5bff, #4fb3ff); border-radius: 999px; padding: 1px 9px; box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 .lv-badge b { font-size: 0.82rem; }
@@ -1454,6 +1460,12 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="pu-title">⚡ パワーアップ！</div>
     <div class="pu-sub">ひとつ選んでください</div>
     <div class="pu-list" id="powerUpList"></div>
+    <div class="pu-actions">
+      <button class="pu-act all" id="puAllBtn"></button>
+      <button class="pu-act" id="puRerollBtn"></button>
+      <button class="pu-act" id="puSlotBtn"></button>
+    </div>
+    <div class="pu-timer" id="puTimer"></div>
   </div>
 </div>
 
@@ -8981,8 +8993,9 @@ function makePowerUpChoices() {
   pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今のステージに応じたコイン' });
   const picks = [], kinds = new Set();
   const shuffled = pool.sort(() => Math.random() - 0.5);
-  for (const c of shuffled) { if (picks.length >= 3) break; if (!kinds.has(c.kind) || shuffled.length < 6) { picks.push(c); kinds.add(c.kind); } } // できるだけ別の種類から
-  for (const c of shuffled) { if (picks.length >= 3) break; if (!picks.includes(c)) picks.push(c); }
+  const N = getPowerUpCount();
+  for (const c of shuffled) { if (picks.length >= N) break; if (!kinds.has(c.kind) || shuffled.length < 6) { picks.push(c); kinds.add(c.kind); } } // できるだけ別の種類から
+  for (const c of shuffled) { if (picks.length >= N) break; if (!picks.includes(c)) picks.push(c); }
   return picks;
 }
 let powerUpChoices = [];
@@ -8990,11 +9003,64 @@ function openPowerUp() {
   document.querySelector('#powerUpModal .pu-title').textContent = `⚡ LEVEL UP!  Lv.${game.pLv || 1}`;
   if (phase !== 'battle' || getActiveTab() !== 'game') { setTimeout(openPowerUp, 1000); return; } // ゲーム画面に戻ったら出す
   powerUpChoices = makePowerUpChoices();
-  document.getElementById('powerUpList').innerHTML = powerUpChoices.map((c, i) => `<button class="pu-card" style="--pc:${c.col}" data-pu="${i}"><span class="pu-kind">${c.label}</span><span class="pu-icon">${c.icon}</span><span class="pu-name">${c.name}</span><span class="pu-desc">${c.desc}</span></button>`).join('');
+  renderPowerUp();
   phase = 'paused';
   document.getElementById('powerUpModal').classList.add('show');
   playGachaSound('rare');
+  puDeadline = Date.now() + PU_AUTO_MS;
+  clearInterval(puTimer); puTimer = setInterval(tickPowerUpTimer, 250); tickPowerUpTimer();
 }
+// 20秒操作がなければ自動で選ぶ。ジェムで「全部取る」「引き直し」「枠+1（永続）」
+const PU_AUTO_MS = 20000, PU_SLOT_MAX = 3;
+let puDeadline = 0, puTimer = null;
+function getPowerUpCount() { return 3 + Math.min(PU_SLOT_MAX, game.puSlots || 0); }
+function getPuAllCost() { return gemPrice(2 * getPowerUpCount()); }
+function getPuRerollCost() { return gemPrice(2); }
+function getPuSlotCost() { return gemPrice(20 * Math.pow(2, game.puSlots || 0)); }
+function renderPowerUp() {
+  const list = document.getElementById('powerUpList');
+  list.className = 'pu-list n' + powerUpChoices.length;
+  list.innerHTML = powerUpChoices.map((c, i) => `<button class="pu-card" style="--pc:${c.col}" data-pu="${i}"><span class="pu-kind">${c.label}</span><span class="pu-icon">${c.icon}</span><span class="pu-name">${c.name}</span><span class="pu-desc">${c.desc}</span></button>`).join('');
+  const all = document.getElementById('puAllBtn'), rr = document.getElementById('puRerollBtn'), sl = document.getElementById('puSlotBtn');
+  all.innerHTML = `全部取る<br>💎 ${getPuAllCost()}`; all.classList.toggle('is-disabled', game.gems < getPuAllCost());
+  rr.innerHTML = `引き直し<br>💎 ${getPuRerollCost()}`; rr.classList.toggle('is-disabled', game.gems < getPuRerollCost());
+  const maxed = (game.puSlots || 0) >= PU_SLOT_MAX;
+  sl.innerHTML = maxed ? '枠 最大' : `枠+1（永続）<br>💎 ${getPuSlotCost()}`; sl.classList.toggle('is-disabled', maxed || game.gems < getPuSlotCost());
+}
+function tickPowerUpTimer() {
+  if (!document.getElementById('powerUpModal').classList.contains('show')) { clearInterval(puTimer); return; }
+  const left = Math.max(0, puDeadline - Date.now());
+  document.getElementById('puTimer').textContent = `${Math.ceil(left / 1000)} 秒後に自動で選びます`;
+  if (left <= 0) { clearInterval(puTimer); finishPowerUp([powerUpChoices[Math.floor(Math.random() * powerUpChoices.length)]]); }
+}
+function finishPowerUp(list) {
+  clearInterval(puTimer);
+  list.forEach(applyPowerUp);
+  document.getElementById('powerUpModal').classList.remove('show');
+  powerUpPending = false;
+  phase = 'battle';
+  if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
+  renderLvGauge();
+  playUpgradeSound(); showLevelUpPop(window.innerWidth / 2, window.innerHeight / 2, list.length > 1 ? '全部ゲット！' : list[0].name + '！');
+  updateStatsUI(); updateHPUI(); saveGame();
+}
+document.getElementById('powerUpModal').addEventListener('pointerdown', () => { puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
+document.getElementById('puAllBtn').addEventListener('click', ev => {
+  const cost = getPuAllCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
+  game.gems -= cost; finishPowerUp(powerUpChoices);
+});
+document.getElementById('puRerollBtn').addEventListener('click', ev => {
+  const cost = getPuRerollCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
+  game.gems -= cost; powerUpChoices = makePowerUpChoices(); renderPowerUp(); playGachaSound('rare'); updateStatsUI();
+});
+document.getElementById('puSlotBtn').addEventListener('click', ev => {
+  if ((game.puSlots || 0) >= PU_SLOT_MAX) return;
+  const cost = getPuSlotCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
+  game.gems -= cost; game.puSlots = (game.puSlots || 0) + 1;
+  const extra = makePowerUpChoices().find(c => !powerUpChoices.some(p => p.kind === c.kind && p.id === c.id));
+  if (extra) powerUpChoices.push(extra);
+  renderPowerUp(); playRegisterSound(); updateStatsUI(); saveGame();
+});
 function applyPowerUp(c) {
   if (c.kind === 'up') { game.upgrades[c.id] = Math.min(getUpgradeLevelCap(c.id), game.upgrades[c.id] + c.n); refreshPlayerBallStats(false); }
   else if (c.kind === 'skill') {
@@ -9009,14 +9075,7 @@ function applyPowerUp(c) {
 document.getElementById('powerUpList').addEventListener('click', ev => {
   const b = ev.target.closest('[data-pu]'); if (!b) return;
   const c = powerUpChoices[+b.dataset.pu]; if (!c) return;
-  applyPowerUp(c);
-  document.getElementById('powerUpModal').classList.remove('show');
-  powerUpPending = false;
-  phase = 'battle';
-  if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
-  renderLvGauge();
-  playUpgradeSound(); showLevelUpPop(window.innerWidth / 2, window.innerHeight / 2, c.name + '！');
-  updateStatsUI(); updateHPUI(); saveGame();
+  finishPowerUp([c]);
 });
 let userPaused = false;
 function setUserPaused(on) {
