@@ -6865,10 +6865,12 @@ function wallBounce(ball) {
     ball.x = arena.x + nx * (arena.radius - ball.radius);
     ball.y = arena.y + ny * (arena.radius - ball.radius);
     const dot = ball.vx * nx + ball.vy * ny;
+    if (dot <= 0) return; // 既に内向きなら反射しない（壁際で反射が往復して音が連続するのを防ぐ）
     ball.vx -= 2 * dot * nx;
     ball.vy -= 2 * dot * ny;
-    if (ball.isPlayer) playPlayerWallSound(); else playEnemyWallSound();
-    if (ball.isPlayer && !ball.isClone && !ball.isCompanion) { ball.lastWallAt = Date.now(); applyBounceReward(); }
+    const now = Date.now();
+    if (dot > 0.6 && now - (ball.wallSoundAt || 0) > 150) { ball.wallSoundAt = now; if (ball.isPlayer) playPlayerWallSound(); else playEnemyWallSound(); }
+    if (ball.isPlayer && !ball.isClone && !ball.isCompanion) { ball.lastWallAt = now; applyBounceReward(); }
   }
 }
 
