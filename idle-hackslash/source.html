@@ -9313,6 +9313,19 @@ function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大し�
     el.addEventListener('animationend', () => el.remove());
   });
 }
+// パワーアップ選択音：上へ駆け上がる「ギュイーン」＋分散和音＋キラキラの余韻で締める
+function playPowerUpSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  thump(220, 1760, 0.32, 0.05, 'sawtooth');          // 上昇スイープ
+  thump(110, 880, 0.32, 0.04, 'square');
+  filteredNoise(0, 0.3, 0.12, 3000, 0.7, 'bandpass'); // 風切り
+  [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => { // ドミソドミの駆け上がり
+    thump(f, f, 0.14, 0.07, 'square', 0.28 + i * 0.055);
+    thump(f * 2, f * 2, 0.1, 0.02, 'triangle', 0.28 + i * 0.055);
+  });
+  [1046.5, 1318.5, 1567.98, 2093].forEach(f => thump(f, f, 0.7, 0.035, 'triangle', 0.58)); // 決めの和音
+  [2637, 3136, 3520, 4186, 3520, 4699].forEach((f, i) => thump(f, f, 0.12, 0.018, 'sine', 0.62 + i * 0.06)); // キラキラ
+}
 function finishPowerUp(list) {
   showPowerUpZoom(list);
   clearInterval(puTimer);
@@ -9322,7 +9335,7 @@ function finishPowerUp(list) {
   phase = 'battle';
   if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
   renderLvGauge();
-  playUpgradeSound();
+  playPowerUpSound();
   updateStatsUI(); updateHPUI(); saveGame();
 }
 document.getElementById('powerUpModal').addEventListener('pointerdown', () => { puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
