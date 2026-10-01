@@ -9750,11 +9750,13 @@ function checkPowerUp(isBoss) { const p = lastKillPos || arena; spawnExpGems(p.x
 function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に剣
   return `<span class="ico-combo"><img class="ico-img" src="${ICON_IMAGES.tab_companion}" alt=""><span class="ico-badge">⚔️</span></span>`;
 }
+const PU_EXCLUDED_SKILLS = ['skillParalyze']; // レベルアップ3択に出さないスキル
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
+    if (PU_EXCLUDED_SKILLS.includes(id)) continue;
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
     if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
     pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '⚔️' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
