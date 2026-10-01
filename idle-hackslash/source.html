@@ -1117,9 +1117,22 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .auto-skip-track { background: var(--bg); border: 1px solid var(--ring); border-radius: 999px; height: 6px; overflow: hidden; }
 .auto-skip-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c792ea, #4f7bff); border-radius: 999px; }
 .rank-tab-btn { flex: 1; border: 1px solid #64e8ff; border-radius: 9px; color: #b4f6ff; padding: 9px; font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+#bootLoading { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: radial-gradient(circle at 50% 40%, #2a2f4a, #0c0e16 70%); color: #fff; transition: opacity 0.4s; }
+#bootLoading.done { opacity: 0; pointer-events: none; }
+#bootLoading .bl-ring { width: 64px; height: 64px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.12); border-top-color: #ffd76b; border-right-color: #64e8ff; animation: blSpin 0.9s linear infinite; }
+@keyframes blSpin { to { transform: rotate(360deg); } }
+#bootLoading .bl-title { font-size: 1.5rem; font-weight: 900; text-align: center; line-height: 1.25; letter-spacing: 0.06em; background: linear-gradient(90deg, #ffd76b, #ff9ec4, #7fd6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#bootLoading .bl-text { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.3em; color: #9aa6c8; }
+#bootLoading .bl-text span { animation: blDot 1.2s infinite; }
+#bootLoading .bl-text span:nth-child(2) { animation-delay: 0.2s; } #bootLoading .bl-text span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blDot { 0%, 60%, 100% { opacity: 0.2; } 30% { opacity: 1; } }
+#bootLoading .bl-bar { width: 180px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; }
+#bootLoading .bl-bar i { display: block; height: 100%; width: 40%; border-radius: 999px; background: linear-gradient(90deg, #ffd76b, #64e8ff); animation: blBar 1.1s ease-in-out infinite; }
+@keyframes blBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
 </style>
 </head>
 <body class="floor-bg">
+<div id="bootLoading"><div class="bl-ring"></div><div class="bl-title">放置系ハクスラ<br>無限反射</div><div class="bl-text">NOW LOADING<span>.</span><span>.</span><span>.</span></div><div class="bl-bar"><i></i></div></div>
 <canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
 
 <h1 style="display:none;">⚔️ 放置系ハクスラ無限反射</h1>
@@ -10602,6 +10615,8 @@ checkLoginBonus(game.lastSeenAt ? Date.now() - game.lastSeenAt : 0);
 game.lastSeenAt = Date.now();
 if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開
 loop();
+// 起動ローディングを消す（最低0.6秒は表示してチラつかないように）
+(() => { const el = document.getElementById('bootLoading'); if (!el) return; const wait = Math.max(0, 600 - performance.now()); setTimeout(() => { el.classList.add('done'); setTimeout(() => el.remove(), 450); }, wait); })();
 })();
 </script>
 
