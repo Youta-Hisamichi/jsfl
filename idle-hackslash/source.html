@@ -1153,6 +1153,9 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 @keyframes puPop { from { transform: scale(0.4); opacity: 0; } }
 .pu-sub { font-size: 0.75rem; color: var(--text-dim); margin: 2px 0 12px; }
 .pu-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pu-card.slot-hl { transform: scale(1.07); box-shadow: 0 0 0 3px #fff, 0 0 20px var(--pc); z-index: 1; }
+.pu-card.slot-win { animation: puSlotWin 0.5s ease-out; box-shadow: 0 0 0 4px #ffd76b, 0 0 28px #ffd76b; }
+@keyframes puSlotWin { 0% { transform: scale(1.07); } 40% { transform: scale(1.18); } 100% { transform: scale(1.1); } }
 .pu-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px 10px; border-radius: 14px; border: 2px solid var(--pc); background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 22%, transparent), var(--bg-soft)); color: var(--text); cursor: pointer; font: inherit; animation: puCard 0.45s cubic-bezier(.34,1.56,.64,1) both; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .pu-card:nth-child(2) { animation-delay: 0.08s; } .pu-card:nth-child(3) { animation-delay: 0.16s; }
 @keyframes puCard { from { transform: translateY(30px) scale(0.8); opacity: 0; } }
@@ -9845,7 +9848,34 @@ function tickPowerUpTimer() {
   if (!document.getElementById('powerUpModal').classList.contains('show')) { clearInterval(puTimer); return; }
   const left = Math.max(0, puDeadline - Date.now());
   document.getElementById('puTimer').textContent = `${Math.ceil(left / 1000)} 秒後に自動で選びます`;
-  if (left <= 0) { clearInterval(puTimer); finishPowerUp([powerUpChoices[Math.floor(Math.random() * powerUpChoices.length)]]); }
+  if (left <= 0) { clearInterval(puTimer); startPowerUpSlot(); }
+}
+// 時間切れ：スロットのように選択枠が回って、だんだん遅くなって止まったカードに自動決定
+let puSpinning = false;
+function startPowerUpSlot() {
+  if (puSpinning || !powerUpChoices.length) return;
+  puSpinning = true;
+  document.getElementById('puTimer').textContent = '🎰 時間切れ！ 自動で選んでいます…';
+  const cards = [...document.querySelectorAll('#powerUpList .pu-card')];
+  const win = Math.floor(Math.random() * powerUpChoices.length);
+  const steps = cards.length * 4 + win + 1; // 何周か回ってから当たりで止まる
+  let i = 0, delay = 55;
+  const tick = () => {
+    cards.forEach(c => c.classList.remove('slot-hl'));
+    const idx = i % cards.length;
+    if (cards[idx]) cards[idx].classList.add('slot-hl');
+    playTone(900 + idx * 120, 0.04, 'square', 0.05);
+    i++;
+    if (i >= steps) {
+      if (cards[idx]) cards[idx].classList.add('slot-win');
+      thump(1046, 1046, 0.25, 0.06, 'square'); thump(1568, 1568, 0.3, 0.04, 'triangle', 0.06);
+      setTimeout(() => { puSpinning = false; cards.forEach(c => c.classList.remove('slot-hl', 'slot-win')); finishPowerUp([powerUpChoices[idx]]); }, 650);
+      return;
+    }
+    if (i > steps - 7) delay *= 1.35; // 終わり際にだんだん遅く
+    setTimeout(tick, delay);
+  };
+  tick();
 }
 function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大しながらフェードアウト
   list.forEach((c, i) => {
@@ -9883,16 +9913,19 @@ function finishPowerUp(list) {
   playPowerUpSound();
   updateStatsUI(); updateHPUI(); saveGame();
 }
-document.getElementById('powerUpModal').addEventListener('pointerdown', () => { puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
+document.getElementById('powerUpModal').addEventListener('pointerdown', () => { if (!puSpinning) puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
 document.getElementById('puAllBtn').addEventListener('click', ev => {
+  if (puSpinning) return;
   const cost = getPuAllCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
   game.gems -= cost; finishPowerUp(powerUpChoices);
 });
 document.getElementById('puRerollBtn').addEventListener('click', ev => {
+  if (puSpinning) return;
   const cost = getPuRerollCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
   game.gems -= cost; powerUpChoices = makePowerUpChoices(); renderPowerUp(); playGachaSound('rare'); updateStatsUI();
 });
 document.getElementById('puSlotBtn').addEventListener('click', ev => {
+  if (puSpinning) return;
   if ((game.puSlots || 0) >= PU_SLOT_MAX) return;
   const cost = getPuSlotCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
   game.gems -= cost; game.puSlots = (game.puSlots || 0) + 1;
@@ -9923,7 +9956,7 @@ function applyPowerUp(c) {
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
 document.getElementById('powerUpList').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-pu]'); if (!b) return;
+  const b = ev.target.closest('[data-pu]'); if (!b || puSpinning) return; // スロット中は選べない
   const c = powerUpChoices[+b.dataset.pu]; if (!c) return;
   finishPowerUp([c]);
 });
