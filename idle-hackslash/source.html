@@ -974,6 +974,11 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .dbg-mon button.sel { border: 2px solid #ffd76b; }
 .dbg-mon button.gone { opacity: 0.3; }
 .dbg-mon button.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: #ff4f6d; font-weight: 900; font-size: 1.2rem; }
+.dbg-pu { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-height: 260px; overflow-y: auto; }
+.dbg-pu button { display: flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid var(--ring); border-left: 4px solid var(--pc); border-radius: 6px; background: var(--bg-soft); color: var(--text); font-size: 0.6rem; font-weight: 800; text-align: left; cursor: pointer; line-height: 1.2; }
+.dbg-pu button .ico-img, .dbg-pu button .ico-combo { width: 20px; height: 20px; flex: none; font-size: 0.9rem; }
+.dbg-pu button .ico-combo .ico-img { width: 20px; height: 20px; }
+.dbg-pu button .ico-badge { display: none; }
 .dbg-mon-bar { grid-column: 1 / -1; display: flex; gap: 4px; align-items: center; font-size: 0.66rem; }
 .dbg-mon-bar span { flex: 1; font-weight: 800; }
 .dbg-mon-list { grid-column: 1 / -1; width: 100%; min-height: 60px; font-size: 0.7rem; background: var(--bg); color: var(--text); border: 1px solid #ffd76b; border-radius: 6px; padding: 6px; }
@@ -1287,6 +1292,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="dbg-mon" id="dbgMonGrid"></div>
       <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
       <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
+      <div class="debug-cat">🎲 3択パワーアップ一覧（押すとその場で取得）</div>
+      <div class="dbg-pu" id="dbgPuGrid"></div>
       <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
@@ -9667,7 +9674,7 @@ function checkPowerUp(isBoss) { const p = lastKillPos || arena; spawnExpGems(p.x
 function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に剣
   return `<span class="ico-combo"><img class="ico-img" src="${ICON_IMAGES.tab_companion}" alt=""><span class="ico-badge">⚔️</span></span>`;
 }
-function makePowerUpChoices() {
+function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
   const upIds = Object.keys(UPGRADES).filter(id => game.upgrades[id] < getUpgradeLevelCap(id));
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
@@ -9684,6 +9691,10 @@ function makePowerUpChoices() {
   }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP全回復', desc: 'HPと仲間を全回復' });
   pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今のステージに応じたコイン' });
+  return pool;
+}
+function makePowerUpChoices() {
+  const pool = buildPowerUpPool();
   const picks = [], kinds = new Set();
   const shuffled = pool.sort(() => Math.random() - 0.5);
   const N = getPowerUpCount();
@@ -11518,6 +11529,21 @@ updateSkillButtonVisibility();
 renderLvGauge();
 updatePotionButton();
 renderDebugMonsters();
+let dbgPuPool = [];
+function renderDebugPowerUps() {
+  const grid = document.getElementById('dbgPuGrid'); if (!grid) return;
+  dbgPuPool = buildPowerUpPool();
+  grid.innerHTML = dbgPuPool.map((c, i) => `<button style="--pc:${c.col}" data-dbg-pu="${i}"><span>${c.icon}</span><span>${c.label}｜${c.name}</span></button>`).join('');
+}
+renderDebugPowerUps();
+document.getElementById('dbgPuGrid').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-dbg-pu]'); if (!b) return;
+  const c = dbgPuPool[+b.dataset.dbgPu]; if (!c) return;
+  if (phase !== 'battle' && (c.kind === 'comp' || c.kind === 'heal')) { showNotice('DEBUG: 戦闘中に使ってください', true); return; }
+  applyPowerUp(c); playPowerUpSound();
+  updateStatsUI(); updateHPUI(); saveGame(); renderDebugPowerUps();
+  showNotice(`DEBUG: ${c.label}「${c.name}」を取得`);
+});
 document.getElementById('dbgMonGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-mon]'); if (b) { dbgMonKey = b.dataset.mon; renderDebugMonsters(); } });
 document.getElementById('dbgMonShow').addEventListener('click', () => {
   if (!dbgMonKey) return;
