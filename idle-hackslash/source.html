@@ -6183,7 +6183,8 @@ function recordBestiaryKill(enemy) {
   const rec = game.bestiary[key];
   if (!rec) {
     game.bestiary[key] = { kills: 1, firstStage: game.stage };
-    spawnDamageText(arena.x, arena.y + 46, '📖 図鑑に登録：' + ENEMY_BOOK_BY_KEY[key].name, '#8fd3ff', 0.008);
+    spawnDamageText(arena.x, arena.y - arena.radius * 0.72, '📖 図鑑に登録：' + ENEMY_BOOK_BY_KEY[key].name, '#8fd3ff', 0.012);
+    damageTexts[damageTexts.length - 1].vy = 0; // 動かさずにサークル上部に表示
   } else {
     rec.kills++;
   }
