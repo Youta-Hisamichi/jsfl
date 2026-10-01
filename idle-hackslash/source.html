@@ -4814,10 +4814,53 @@ function drawRushTrail() {
   }
   ctx.restore();
 }
+// 敵の攻撃フェーズ：一定間隔で「構え（予告）→攻撃中」を繰り返し、攻撃中にぶつかった時だけダメージを受ける
+// ステージが進むほど攻撃中の時間が長く、間隔が短くなる（ボスはさらに長め）
+function getEnemyAtkCycle(e) {
+  const st = Math.max(1, game.stage);
+  let calm = Math.max(75, 190 - st * 1.1), atk = Math.min(110, 40 + st * 0.6);
+  if (e.isBoss) { calm *= 0.8; atk *= 1.3; }
+  return { calm, warn: 36, atk };
+}
+function tickEnemyAtkPhase(e, speedMult) {
+  if (!e || e.isDying || e.spawnTimer > 0) return;
+  if (isDisabled(e) || e.traitState === 'tgStun') { e.atkPh = 'calm'; e.atkT = 0; return; } // 麻痺・隙の間は攻撃しない
+  const c = getEnemyAtkCycle(e);
+  if (!e.atkPh) { e.atkPh = 'calm'; e.atkT = Math.random() * c.calm * 0.5; }
+  e.atkT += speedMult;
+  if (e.atkPh === 'calm' && e.atkT >= c.calm) { e.atkPh = 'warn'; e.atkT = 0; }
+  else if (e.atkPh === 'warn' && e.atkT >= c.warn) {
+    e.atkPh = 'attack'; e.atkT = 0;
+    playTone(240, 0.12, 'sawtooth', 0.06, 160);
+    const pl = balls.find(isMainPlayerBall); // 攻撃開始で少し踏み込む
+    if (pl) { const an = Math.atan2(pl.y - e.y, pl.x - e.x); e.vx += Math.cos(an) * 1.5; e.vy += Math.sin(an) * 1.5; }
+  } else if (e.atkPh === 'attack' && e.atkT >= c.atk) { e.atkPh = 'calm'; e.atkT = 0; }
+}
+function isEnemyAttacking(e) { return !!e && e.atkPh === 'attack'; }
+function drawEnemyAtkPhase(e) {
+  if (!e.atkPh || e.isDying) return;
+  const now = Date.now(), r = e.radius * ENEMY_SPRITE_SCALE / 2;
+  ctx.save();
+  if (e.atkPh === 'warn') { // 構え：赤い輪が縮みながら点滅（もうすぐ攻撃）
+    const k = Math.min(1, e.atkT / getEnemyAtkCycle(e).warn);
+    ctx.strokeStyle = `rgba(255,70,70,${0.5 + 0.5 * Math.abs(Math.sin(now / 70))})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(e.x, e.y, r * (1.6 - 0.5 * k), 0, Math.PI * 2); ctx.stroke();
+  } else if (e.atkPh === 'attack') { // 攻撃中：赤いオーラと剣マーク（触るとダメージ）
+    const g = ctx.createRadialGradient(e.x, e.y, r * 0.2, e.x, e.y, r * 1.3);
+    g.addColorStop(0, `rgba(255,40,40,${0.35 + 0.15 * Math.sin(now / 90)})`); g.addColorStop(0.75, `rgba(255,40,40,${0.3 + 0.15 * Math.sin(now / 90)})`); g.addColorStop(1, 'rgba(255,40,40,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y, r * 1.3, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,70,70,0.95)'; ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 + now / 400; ctx.beginPath(); ctx.moveTo(e.x + Math.cos(an) * r * 1.0, e.y + Math.sin(an) * r * 1.0); ctx.lineTo(e.x + Math.cos(an) * r * 1.22, e.y + Math.sin(an) * r * 1.22); ctx.stroke(); }
+    ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = 'bold 17px sans-serif'; ctx.fillText('⚔️', e.x + r * 0.8, e.y - r * 0.85);
+  }
+  ctx.restore();
+}
 function drawEnemyTelegraphs() {
   const now = Date.now();
   for (const e of balls) {
     if (e.isPlayer || e.isDying) continue;
+    drawEnemyAtkPhase(e);
     const tg = e.tg;
     if (tg) {
       const p = Math.min(1, tg.t / tg.wind);
@@ -7943,6 +7986,7 @@ function step() {
   movePlayerSideBalls([...balls, ...adds], speedMult, b);
   if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
   if (updateEnemyTelegraph(a, e, speedMult)) { onPlayerDeath(); return; }
+  tickEnemyAtkPhase(e, speedMult);
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const rushPierce = isRushPiercing(); // 貫きの蹄鉄：体当たりが跳ね返らずに貫通する
@@ -8016,7 +8060,7 @@ function step() {
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
       }
-      if (!isDisabled(e) && !isRampage()) { // 同時：味方の攻撃で倒れた敵も相打ちで攻撃してくる（乱舞中は反撃されない）
+      if (!isDisabled(e) && !isRampage() && isEnemyAttacking(e)) { // 敵が攻撃フェーズのときだけ、ぶつかると反撃される
         if (!enemyAttackHits(e)) spawnEvadeText(a);
         else if (absorbWithBarrier(a)) applyHitKnockback(a, e, 3.2);
         else {
