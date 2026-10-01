@@ -3460,7 +3460,16 @@ const MUTUAL_HIT = true; // お試し：ぶつかると敵味方の両方が同�
 let holdRush = null;             // { id }：押している指
 // 押している間は敵へ体当たり。1回ぶつかったら、指を離して押し直すまで次の体当たりはできない
 let rushingNow = false;
-function consumeRushHit() { if (rushingNow && holdRush) holdRush.used = true; }
+// 体当たりは助走（押してから走った距離）が長いほど強い：サークル半径の1.6倍走ると最大 ×3
+const RUSH_RUN_MAX = 3;
+function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * Math.min(1, (holdRush.dist || 0) / (arena.radius * 1.6)) : 1; }
+function consumeRushHit(x, y) {
+  if (!rushingNow || !holdRush || holdRush.used) return;
+  const m = getRushDmgMult();
+  if (m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `助走 ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
+  if (m >= RUSH_RUN_MAX) shakeScreenLight();
+  holdRush.used = true;
+}
 function tickRushGauge() { rushingNow = !!holdRush && !holdRush.used; return rushingNow; }
 const HOLD_RUSH_SPEED = 3.2, HOLD_RUSH_TURN = 0.18;
 function moveHoldRush(ball, speedMult) {
@@ -3471,6 +3480,7 @@ function moveHoldRush(ball, speedMult) {
     ball.vx += (Math.cos(a) * sp - ball.vx) * t; ball.vy += (Math.sin(a) * sp - ball.vy) * t;
   }
   ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+  if (holdRush) holdRush.dist = (holdRush.dist || 0) + Math.hypot(ball.vx, ball.vy) * speedMult; // 助走距離
   wallBounce(ball);
   ball.seekPoint = null; ball.missBounces = 0;
 }
@@ -7078,8 +7088,9 @@ function step() {
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const collided = piercing ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult); // リセット前の連打ボーナスでダメージを計算する
-  if (collided) consumeRushHit();
+  const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult; // リセット前の連打ボーナスでダメージを計算する
+  if (collided) consumeRushHit(e.x, e.y - e.radius);
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
@@ -7105,7 +7116,7 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
@@ -7139,7 +7150,7 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        if (tapDmgMult > 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
+        if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playEnemyHitSound();
         applyHitKnockback(e, a, 3.2);
@@ -7310,8 +7321,8 @@ function processAdds(a) {
       if (add.hp <= 0) continue;
       for (const atk of attackers) {
         if (resolveBallCollision(atk, add)) {
-          const rm = 1;
-          if (atk === a) { a.tapSpeedMult = 1; consumeRushHit(); } // 雑魚敵に衝突してもタップ加速をリセット
+          const rm = atk === a ? getRushDmgMult() : 1;
+          if (atk === a) { a.tapSpeedMult = 1; consumeRushHit(add.x, add.y - add.radius); } // 雑魚敵に衝突してもタップ加速をリセット
           const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * rm)));
           add.hp -= dmg;
           trackDamage(dmg);
