@@ -3495,7 +3495,33 @@ let holdRush = null;             // { id }：押している指
 let rushingNow = false;
 // 体当たりは助走（押してから走った距離）が長いほど強い：サークル半径の1.6倍走ると最大 ×3
 const RUSH_RUN_MAX = 3;
-function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * Math.min(1, (holdRush.dist || 0) / (arena.radius * 1.6)) : 1; }
+// タメ打ち突撃：押しっぱなしでタメ（最大 CHARGE_FULL_MS で ×RUSH_RUN_MAX）、離すと一番近い敵へ突撃
+const CHARGE_MIN_MS = 200, CHARGE_FULL_MS = 1500;
+let chargeHold = null; // { id, start }
+function getChargeLevel() { return chargeHold ? Math.max(0, Math.min(1, (Date.now() - chargeHold.start - CHARGE_MIN_MS) / (CHARGE_FULL_MS - CHARGE_MIN_MS))) : 0; }
+function releaseCharge() {
+  if (!chargeHold) return;
+  const held = Date.now() - chargeHold.start, lv = getChargeLevel();
+  chargeHold = null;
+  if (held < CHARGE_MIN_MS || phase !== 'battle') return; // 短いタップでは突撃しない
+  holdRush = { id: -1, dist: 0, until: Date.now() + 2500, charge: lv };
+  if (lv >= 1) shakeScreenLight();
+  playAccelSound();
+}
+function drawChargeRing() {
+  const lv = getChargeLevel(), pl = balls.find(isMainPlayerBall);
+  if (!chargeHold || !pl || Date.now() - chargeHold.start < CHARGE_MIN_MS) return;
+  const full = lv >= 1;
+  ctx.save();
+  ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = full ? '#ff4f6d' : '#ffb35c';
+  if (full) { ctx.shadowColor = '#ff4f6d'; ctx.shadowBlur = 12 + Math.sin(Date.now() / 60) * 6; }
+  ctx.beginPath(); ctx.arc(pl.x, pl.y, pl.radius + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.03, lv)); ctx.stroke();
+  if (full) { ctx.shadowBlur = 0; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('MAX', pl.x, pl.y - pl.radius - 16); ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', pl.x, pl.y - pl.radius - 16); }
+  ctx.restore();
+}
+function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
@@ -3549,7 +3575,7 @@ function consumeRushHit(x, y) {
     return;
   }
   const m = getRushDmgMult();
-  if (m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `助走 ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
+  if (m >= 1.2 && x !== undefined) spawnDamageText(x, y - 44, `タメ ×${m.toFixed(1)}`, m >= RUSH_RUN_MAX ? '#ff4f6d' : '#ffb35c', 0.022, m >= RUSH_RUN_MAX);
   if (m >= RUSH_RUN_MAX) shakeScreenLight();
   holdRush.used = true;
 }
@@ -6941,7 +6967,13 @@ function movePlayerSideBalls(list, speedMult, b) {
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
-    if (isMainPlayerBall(ball) && tickRushGauge()) { // 押している間は敵へ体当たり
+    if (isMainPlayerBall(ball) && chargeHold && !playerDrag && Date.now() - chargeHold.start >= CHARGE_MIN_MS) { // タメ中はその場で踏ん張る
+      const f = Math.pow(0.85, speedMult); ball.vx *= f; ball.vy *= f;
+      ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult; wallBounce(ball);
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
+    if (isMainPlayerBall(ball) && tickRushGauge()) { // 離したら敵へ突撃
       moveHoldRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
@@ -8490,7 +8522,10 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
       const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2;
       if (d < best) { best = d; target = c; }
     }
-    if (target) {
+    if (playerDrag && isMainPlayerBall(ball)) { // ドラッグ移動中は進行方向を向く
+      const dx = playerDrag.x - ball.x;
+      if (Math.abs(dx) > 4) ball.faceDir = dx > 0 ? 1 : -1;
+    } else if (target) {
       const dx = target.x - ball.x;
       if (Math.abs(dx) > 6) ball.faceDir = dx > 0 ? 1 : -1;
     }
@@ -8867,6 +8902,7 @@ function draw() {
   drawRegenEffects();
   drawTackleEffects();
   drawRampageGauge();
+  drawChargeRing();
   drawExpGems();
   drawEnemyTraitEffects();
   drawNovaFx();
@@ -10606,7 +10642,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
-  if (HOLD_RUSH_MODE) holdRush = null; // スワイプで動かし、離したら突撃
+  if (HOLD_RUSH_MODE) { holdRush = null; chargeHold = { id: event.pointerId, start: Date.now() }; } // 押しっぱなしでタメ、離して突撃（ドラッグで移動）
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
 window.addEventListener('pointermove', event => {
@@ -10621,14 +10657,15 @@ window.addEventListener('pointermove', event => {
   const pl = balls.find(ball => isMainPlayerBall(ball));
   dragPending = null;
   if (!pl || phase !== 'battle') return;
+  chargeHold = null; // ドラッグ移動はタメ解除
   playerDrag = { id: event.pointerId, px: pl.x, py: pl.y, ox: event.clientX, oy: event.clientY, x: pl.x, y: pl.y };
 });
 ['pointerup', 'pointercancel'].forEach(type => window.addEventListener(type, event => {
+  if (chargeHold && event.pointerId === chargeHold.id) { if (type === 'pointerup') releaseCharge(); else chargeHold = null; }
   if (dragPending && event.pointerId === dragPending.id) dragPending = null;
   if (!playerDrag || event.pointerId !== playerDrag.id) return;
-  const swipe = Math.hypot(playerDrag.x - playerDrag.px, playerDrag.y - playerDrag.py) * 0.5; // スワイプした距離も助走に少し加える
   playerDrag = null;
-  if (HOLD_RUSH_MODE && type === 'pointerup') { holdRush = { id: -1, dist: swipe, until: Date.now() + 2500 }; return; } // 指を離したら一番近い敵へ突撃
+  if (HOLD_RUSH_MODE) return; // 指を離したら一番近い敵へ突撃
   const pl = balls.find(ball => isMainPlayerBall(ball));
   if (pl && Math.hypot(pl.vx, pl.vy) < 0.5) {
     const en = nearestOf(pl, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0));
@@ -10646,7 +10683,7 @@ canvas.addEventListener('pointerdown', event => {
   const y = (event.clientY - rect.top) * (size / rect.height);
   const dx = x - arena.x, dy = y - arena.y;
   if (Math.hypot(dx, dy) < arena.radius - 12) {
-    if (HOLD_RUSH_MODE) { addRampageTap(); onCoinStrikeTap(x, y); game.totalTaps++; updateStatsUI(); return; } // 押して突撃モード中は連打突撃・タメはなし
+    if (HOLD_RUSH_MODE) { game.totalTaps++; return; } // タップ・連打の攻撃処理はなし（押しっぱなしのタメ打ちとドラッグ移動のみ）
     arenaHeld = true;
     updateTackleHold();
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
