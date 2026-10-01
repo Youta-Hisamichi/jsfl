@@ -3597,7 +3597,7 @@ function releaseCharge() {
   if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
   if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const dur = 900 + 1100 * lv, sp = 6 + 8 * lv;
+  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
@@ -3612,7 +3612,7 @@ function doTapSlash() {
   if (now - lastSlashAt < SLASH_GAP_MS) return;
   lastSlashAt = now;
   const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
-  const R = pl.radius + SLASH_RANGE;
+  const R = pl.radius + SLASH_RANGE + 6 * getRunBuff('slash');
   const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
   const near = nearestOf(pl, foes);
   const ang = near && Math.hypot(near.x - pl.x, near.y - pl.y) < R * 2.2 ? Math.atan2(near.y - pl.y, near.x - pl.x) : ((pl.faceDir || 1) > 0 ? 0 : Math.PI);
@@ -3626,7 +3626,7 @@ function doTapSlash() {
     if (d > R + en.radius) continue;
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
-    if (playerHitEnemyBy(en, pl, SLASH_DMG, '#ffe08a', 1.6)) hits++;
+    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')), '#ffe08a', 1.6)) hits++;
   }
   if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
@@ -3895,7 +3895,14 @@ function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ�
   if (full) { ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('MAX', pl.x, pl.y - pl.radius - 16); ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', pl.x, pl.y - pl.radius - 16); }
   ctx.restore();
 }
-function getRushDmgMult() { return rushingNow && holdRush ? 1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0) : 1; }
+// レベルアップ3択の強化（転生まで）：引っ張り体当たり・近距離の切り払い
+const RUN_BUFF_MAX = 5;
+const RUN_BUFFS = {
+  pull:  { icon: '🎯', name: '引っ張り体当たり強化', desc: '引っ張り攻撃のダメージ+25%・飛ぶ時間+10%' },
+  slash: { icon: '🗡️', name: '近距離攻撃強化', desc: 'タップの切り払いのダメージ+30%・範囲+6' },
+};
+function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
+function getRushDmgMult() { return rushingNow && holdRush ? (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
@@ -8481,7 +8488,7 @@ function completeReincarnation() {
   game.companionSummons = 0;
   game.skillGachaPulls = 0;
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; weaponProj = []; weaponFx = [];
+  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.runBuffs = {}; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);
@@ -9752,6 +9759,10 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '⚔️' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
   }
   if (getCompanionTotal() < getPartyLimit() || Object.keys(game.companions.recruited).length) pool.push({ kind: 'comp', col: '#ff9a4f', label: '仲間', icon: ico({ icon: '🐾', img: ICON_IMAGES.tab_companion }), name: '仲間を1人召喚', desc: 'ランダムな仲間が加入（満員なら覚醒）' });
+  for (const id in RUN_BUFFS) {
+    const lv = getRunBuff(id), B = RUN_BUFFS[id];
+    if (lv < RUN_BUFF_MAX) pool.push({ kind: 'buff', id, col: '#2f8fe0', label: '強化', icon: B.icon, name: `${B.name} Lv${lv + 1}`, desc: B.desc });
+  }
   for (const id in WEAPONS) {
     const lv = getWeaponLv(id), W = WEAPONS[id];
     if (lv >= WEAPON_MAX_LV) continue;
@@ -9875,6 +9886,7 @@ function applyPowerUp(c) {
     refreshCompanionBalls(); refreshPlayerBallStats(false);
     showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
   }
+  else if (c.kind === 'buff') { if (!game.runBuffs) game.runBuffs = {}; game.runBuffs[c.id] = Math.min(RUN_BUFF_MAX, getRunBuff(c.id) + 1); }
   else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; }
   else if (c.kind === 'heal') { const PU_HEAL = 0.3; const pl = balls.find(isMainPlayerBall); if (pl && pl.hp > 0) { const h = Math.min(pl.maxHp - pl.hp, Math.round(pl.maxHp * PU_HEAL)); pl.hp += h; spawnDamageText(pl.x, pl.y - pl.radius - 14, '+' + h + ' HP', '#5fe0a8', 0.012); } balls.forEach(b => { if (b.isCompanion && b.hp > 0) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * PU_HEAL); }); playHealSound(); }
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
