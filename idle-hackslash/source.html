@@ -2428,7 +2428,7 @@ const SKILL_GACHA_SKILLS = {
   skillRegen:    { icon: '🌿', name: 'リヒール', desc: '取得したら転生まで常にHPが少しずつ自動回復（セット不要）' },
   skillSilence:  { icon: '🔇', name: '魔法封じ', desc: '15秒間 敵の魔法・弾を封じる' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
-  skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 タップでコイン獲得・討伐コイン1.5倍' },
+  skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 敵めがけてコインを投げまくる（当たるとコイン獲得）・討伐コイン1.5倍' },
   skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
   skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
@@ -3717,7 +3717,7 @@ const WEAPONS = {
   thunder:   { icon: '🪄', name: '雷の杖', desc: 'ランダムに雷を落とす', cd: 95 },
   dove:      { icon: '🕊️', name: '鳩', desc: '鳩が飛び立ち、敵めがけてホーミング', cd: 100 },
 };
-let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0;
+let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
 function weaponCount(lv) { return 1 + Math.floor((lv - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3
 function weaponDmg(base, lv) { return base * (1 + 0.3 * (lv - 1)); }
@@ -3764,7 +3764,17 @@ function fireWeapon(id, lv, pl) {
   }
 }
 function updateWeapons(pl, speedMult) {
-  if (!game.weapons || !pl || pl.hp <= 0) { weaponProj = []; return; }
+  if (!pl || pl.hp <= 0) { weaponProj = []; return; }
+  if (isCoinStrike()) { // コイン攻撃中：敵めがけてコインを投げまくる
+    coinThrowCd = (coinThrowCd || 0) - speedMult;
+    const tg = nearestOf(pl, weaponFoes());
+    if (tg && coinThrowCd <= 0) {
+      coinThrowCd = 6;
+      const a = Math.atan2(tg.y - pl.y, tg.x - pl.x) + (Math.random() - 0.5) * 0.35, sp = 9 + Math.random() * 2;
+      weaponProj.push({ id: 'coin', x: pl.x, y: pl.y - 4, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, life: 70, r: 7, dmg: 0.3, hit: new Set(), spin: Math.random() * 6 });
+      if (Math.random() < 0.5) playTone(1500 + Math.random() * 500, 0.04, 'square', 0.025, 2200);
+    }
+  }
   for (const id in WEAPONS) {
     const lv = getWeaponLv(id); if (!lv || id === 'shield') continue;
     weaponCd[id] = (weaponCd[id] ?? WEAPONS[id].cd * 0.5) - speedMult;
@@ -3797,6 +3807,14 @@ function updateWeapons(pl, speedMult) {
     } else if (p.id === 'knife') {
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
       hitFoes(p, 1, true);
+    } else if (p.id === 'coin') { // 投げたコイン：当たるとダメージ＋コインを少し獲得
+      p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      const before = p.life; hitFoes(p, 1, true);
+      if (p.life <= 0 && before > 0) {
+        const gain = Math.max(1, Math.round((3 + game.stage) * 0.25 * computeBonuses().coinMult));
+        game.coins += gain; spawnDamageText(p.x, p.y - 12, '+' + formatCoinNumber(gain) + ' 🟡', '#ffd76b', 0.03);
+        playTone(1800, 0.05, 'triangle', 0.04, 2400); updateStatsUI();
+      }
     } else if (p.id === 'dove') { // 一番近い敵へ向きを変えながら飛ぶ
       const tg = p.t > 12 && nearestOf(p, foes.filter(f => f.hp > 0));
       const sp = Math.min(7.5, 4 + p.t * 0.05);
@@ -3870,7 +3888,12 @@ function drawWeapons() {
   }
   for (const p of weaponProj) {
     ctx.save(); ctx.translate(p.x, p.y);
-    if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 絵文字の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); }
+    if (p.id === 'coin') { // くるくる回る金貨
+      p.spin += 0.5; const sx = Math.max(0.25, Math.abs(Math.cos(p.spin)));
+      ctx.scale(sx, 1); ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = '#ffcf3d'; ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = '#b8860b'; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(-1.6, -1.6, 2.2, 0, Math.PI * 2); ctx.fill();
+    } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 絵文字の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); }
     else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); }
     else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); }
     else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); }
@@ -7730,8 +7753,8 @@ function obstacleBounce(ball) {
       if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, holdRush.speed / 0.72 * 1.1); // 摩擦の減速を打ち消して加速
       o.flash = now;
       if (hard) { ball.wallSoundAt = now; thump(520, 900, 0.12, 0.08, 'square'); thump(260, 180, 0.15, 0.06, 'sine'); }
-    } else if (o.kind === 'crate' && isMainPlayerBall(ball) && (dot < -2 || rushingNow) && now - (o.hitAt || 0) > 250) { // 木箱：勢いよく当たると壊れていく
-      o.hitAt = now; o.hp--;
+    } else if (o.kind === 'crate' && (dot < -0.6 || (isMainPlayerBall(ball) && rushingNow)) && now - (o.hitAt || 0) > 250) { // 木箱：誰かが跳ね返るたびに傷み、3回で壊れる（引っ張り攻撃は一撃2回分）
+      o.hitAt = now; o.hp -= isMainPlayerBall(ball) && rushingNow ? 2 : 1;
       spawnHitParticles(o.x, o.y, '#c8955a');
       thump(160, 90, 0.12, 0.12, 'triangle'); filteredNoise(0, 0.08, 0.15, 900, 1.2);
       if (o.hp <= 0) {
@@ -11422,7 +11445,7 @@ coinStrikeBtn.addEventListener('click', event => {
   if (!ctxs) return;
   coinStrikeEndAt = Date.now() + COIN_STRIKE_MS;
   spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン攻撃', '#ffd76b', 0.012);
-  showNotice(`🪙 コイン攻撃！ ${COIN_STRIKE_MS / 1000}秒間 タップでコイン獲得・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
+  showNotice(`🪙 コイン攻撃！ ${COIN_STRIKE_MS / 1000}秒間 敵めがけてコインを投げまくる・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
   playTone(988, 0.12, 'square', 0.12, 1318);
   updateCoinStrikeButton();
 });
