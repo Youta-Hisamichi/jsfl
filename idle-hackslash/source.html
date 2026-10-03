@@ -6488,10 +6488,10 @@ function playSongDrum(time, kind, boost = 1) {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(time);
 }
 let songTimer = null, songState = null;
-function startSong(type) {
+function startSong(type, startStep = 0) {
   const song = prepareSong(BGM_SONGS[type]);
   stopSong();
-  songState = { song, step: 0, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2 };
+  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2 };
   const tick = () => {
     const s = songState;
     if (!s) return;
@@ -6509,6 +6509,7 @@ function startSong(type) {
 function stopSong() { clearInterval(songTimer); songTimer = null; songState = null; }
 let bgmTimer = null;
 let bgmToken = 0;
+let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
 const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28'];
@@ -6666,10 +6667,13 @@ function playBgmTrack(type) {
   if (currentBgmType === type) return;
   if (type && !BATTLE_BGM_KEYS[type]) unlockBgmBook(type); // ページ・コンテニューの曲は聴いたら図鑑に登録
   bgmToken++;
+  if (type === 'levelup' && songState && currentBgmType) bgmResume = { type: currentBgmType, step: songState.step }; // 3択の後に戦闘曲を続きから再開するため覚えておく
+  const resumeStep = bgmResume && bgmResume.type === type ? bgmResume.step : 0;
+  if (type !== 'levelup') bgmResume = null;
   currentBgmType = type;
   clearTimeout(bgmTimer);
   stopSong();
-  if (BGM_SONGS[type]) startSong(type); // 通常戦闘・ボス戦は多重トラックの曲
+  if (BGM_SONGS[type]) startSong(type, resumeStep); // 通常戦闘・ボス戦は多重トラックの曲（3択の後は続きから）
   else scheduleBgmStep(type, 0, bgmToken);
   updateDebugNowBgm();
 }
