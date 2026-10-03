@@ -963,6 +963,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .bcf-sub { margin-top: 6px; font-size: 0.9rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); animation: bcfPop 0.7s 0.25s cubic-bezier(.34,1.56,.64,1) both; }
 @keyframes bcfPop { 0% { transform: scale(2.6); opacity: 0; } 60% { transform: scale(0.92); opacity: 1; } 100% { transform: scale(1); } }
 .bcf-confetti i { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; animation: lbFall linear forwards; }
+.debug-row .dbg-now-bgm { text-align: left; cursor: pointer; border-style: solid; }
+.dbg-now-desc { grid-column: 1 / -1; font-size: 0.7rem; line-height: 1.5; padding: 6px 8px; border-radius: 8px; background: rgba(255,177,79,0.12); color: var(--text); }
 .dbg-now-bgm { grid-column: 1 / -1; font-size: 0.72rem; font-weight: 800; padding: 6px 8px; border-radius: 8px; border: 1px solid #ffb14f; color: var(--text); background: rgba(255,177,79,0.08); }
 .debug-pause-btn { grid-column: 1 / -1; font-weight: 900; border-color: #ffb14f !important; }
 
@@ -1324,7 +1326,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
       <button data-debug="pause" id="debugPauseBtn" class="debug-pause-btn">⏸ 一時停止（T キー）</button>
-      <div class="dbg-now-bgm" id="dbgNowBgm">🎶 再生中：—</div>
+      <button class="dbg-now-bgm" id="dbgNowBgm">🎶 再生中：—</button>
+      <div class="dbg-now-desc" id="dbgNowDesc" style="display:none"></div>
       <div class="debug-cat">💰 通貨</div>
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
@@ -6673,8 +6676,15 @@ function playBgmTrack(type) {
 function updateDebugNowBgm() { // デバッグパネル上部に今の曲名を常に表示
   const el = document.getElementById('dbgNowBgm'); if (!el) return;
   const info = BGM_INFO.find(b => b.key === currentBgmType);
-  el.textContent = '🎶 再生中：' + (!audioCtx || !currentBgmType ? '（まだ鳴っていません）' : info ? info.name : currentBgmType);
+  el.textContent = '🎶 再生中：' + (!audioCtx || !currentBgmType ? '（まだ鳴っていません）' : info ? info.name : currentBgmType) + '　ⓘ';
+  const d = document.getElementById('dbgNowDesc');
+  if (d && d.style.display !== 'none') d.textContent = info ? info.desc : '（この曲の概要はありません）';
 }
+document.getElementById('dbgNowBgm').addEventListener('click', () => { // 押すと今の曲の概要を開閉
+  const d = document.getElementById('dbgNowDesc');
+  d.style.display = d.style.display === 'none' ? '' : 'none';
+  updateDebugNowBgm();
+});
 function stopBgm() {
   bgmToken++;
   currentBgmType = null;
