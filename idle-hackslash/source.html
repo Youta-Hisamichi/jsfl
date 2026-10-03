@@ -977,6 +977,10 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .dbg-mon button.sel { border: 2px solid #ffd76b; }
 .dbg-mon button.gone { opacity: 0.3; }
 .dbg-mon button.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: #ff4f6d; font-weight: 900; font-size: 1.2rem; }
+#dbgMonWrap { grid-column: 1 / -1; display: none; grid-template-columns: inherit; gap: inherit; }
+#dbgMonWrap.open { display: contents !important; }
+.debug-row .dbg-fold { grid-column: 1 / -1; cursor: pointer; text-align: left; border: 0; border-bottom: 1px solid var(--ring); border-radius: 0; background: none; color: var(--text); font-size: 0.68rem; font-weight: 900; padding: 0 0 2px; }
+.dbg-fold b { float: right; font-size: 0.85em; color: #ffd76b; }
 .dbg-pu { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-height: 260px; overflow-y: auto; }
 .dbg-pu button { display: flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid var(--ring); border-left: 4px solid var(--pc); border-radius: 6px; background: var(--bg-soft); color: var(--text); font-size: 0.6rem; font-weight: 800; text-align: left; cursor: pointer; line-height: 1.2; }
 .dbg-pu button .ico-img, .dbg-pu button .ico-combo { width: 20px; height: 20px; flex: none; font-size: 0.9rem; }
@@ -1307,9 +1311,11 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群ステージへ</button>
-      <div class="debug-cat">🖼️ モンスターを選んで出現・削除</div>
+      <button class="debug-cat dbg-fold" id="dbgMonFold">🖼️ モンスターを選んで出現・削除 <b id="dbgMonFoldMark">▼ 開く</b></button>
+      <div id="dbgMonWrap" style="display:none">
       <div class="dbg-mon" id="dbgMonGrid"></div>
       <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
+      </div>
       <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
       <div class="debug-cat">🎲 3択パワーアップ一覧（押すとその場で取得）</div>
       <div class="dbg-pu" id="dbgPuGrid"></div>
@@ -11811,6 +11817,13 @@ updateSkillButtonVisibility();
 renderLvGauge();
 updatePotionButton();
 renderDebugMonsters();
+(() => { // モンスター一覧は開閉できる（開閉状態は覚えておく）
+  const wrap = document.getElementById('dbgMonWrap'), mark = document.getElementById('dbgMonFoldMark');
+  const set = open => { wrap.classList.toggle('open', open); mark.textContent = open ? '▲ 閉じる' : '▼ 開く'; try { localStorage.setItem('dbgMonOpen', open ? '1' : '0'); } catch (err) {} };
+  let open = false; try { open = localStorage.getItem('dbgMonOpen') === '1'; } catch (err) {}
+  set(open);
+  document.getElementById('dbgMonFold').addEventListener('click', () => set(!wrap.classList.contains('open')));
+})();
 let dbgPuPool = [];
 function renderDebugPowerUps() {
   const grid = document.getElementById('dbgPuGrid'); if (!grid) return;
