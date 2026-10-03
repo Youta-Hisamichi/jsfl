@@ -703,10 +703,15 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
   90% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -60%); }
 }
+.chest-panel .chest-big { width: 96px; height: 96px; margin: 0 auto 6px; }
+.chest-panel .chest-big .ico-img { width: 100%; height: 100%; image-rendering: pixelated; }
+.chest-panel .chest-big.shake { animation: chestShake 0.5s ease-in-out infinite; }
+@keyframes chestShake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+.chest-panel .chest-loot { font-size: 1.15rem; font-weight: 900; margin: 6px 0; }
 .chest-tray { position: absolute; left: 6px; bottom: 6px; z-index: 5; display: flex; flex-wrap: wrap-reverse; gap: 3px; max-width: 60%; }
 .chest-tray button { position: relative; width: 34px; height: 34px; padding: 2px; border-radius: 8px; border: 1.5px solid #ffd76b; background: rgba(8,11,18,0.7); cursor: pointer; animation: chestBob 1.6s ease-in-out infinite; }
 .chest-tray button .ico-img { width: 100%; height: 100%; display: block; }
-.chest-tray button b { position: absolute; right: -6px; bottom: -6px; font-size: 0.66rem; background: #ff5c6c; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.6); color: #fff; border-radius: 999px; padding: 0 5px; }
+.chest-tray button b { position: absolute; right: -8px; bottom: -8px; font-size: 0.74rem; font-weight: 900; color: #fff; background: #10131c; border: 2px solid #fff; line-height: 1.25; box-shadow: 0 0 0 2px #10131c, 0 2px 4px rgba(0,0,0,0.7); text-shadow: -1px -1px 0 #10131c, 1px -1px 0 #10131c, -1px 1px 0 #10131c, 1px 1px 0 #10131c, 0 1px 3px rgba(0,0,0,0.8); color: #fff; border-radius: 999px; padding: 0 5px; }
 .chest-tray .tray-new { animation: chestIn 0.45s cubic-bezier(.34,1.56,.64,1), chestBob 1.6s ease-in-out 0.45s infinite; }
 @keyframes chestBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes chestIn { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -1605,6 +1610,14 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
   </div>
 </div>
 
+<div class="modal-overlay" id="chestModal" style="z-index:66;">
+  <div class="modal-panel chest-panel" style="text-align:center;">
+    <div class="chest-big" id="chestModalIcon"></div>
+    <h2 id="chestModalTitle">宝箱</h2>
+    <div class="modal-sub" id="chestModalText" style="color:var(--text); white-space:pre-line;"></div>
+    <div class="modal-shop-list" id="chestModalBtns"></div>
+  </div>
+</div>
 <div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
   <div class="modal-panel" style="text-align:center;">
     <div style="font-size:2.4rem;"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
@@ -5820,36 +5833,64 @@ function dropTreasureChest(rarity) {
 function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
   const hc = getHeldChests();
-  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="background:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
+  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
-  const k = b.dataset.openChest, hc = getHeldChests();
-  if (!(hc[k] > 0)) return;
-  hc[k]--;
-  openTreasureChest(k);
-  renderChestTray();
+  const k = b.dataset.openChest;
+  if (!(getHeldChests()[k] > 0) || phase !== 'battle') return;
+  openChestDialog(k);
 });
-function openTreasureChest(rarity = 'common') {
+// 宝箱ダイアログ：開けるまで・閉じるまで戦闘は止まる。動画を見ると中身3倍
+const chestModal = document.getElementById('chestModal');
+let chestPausedPhase = null;
+function openChestDialog(rarity) {
+  chestPausedPhase = phase; phase = 'paused';
+  const info = RARITY_INFO[rarity];
+  document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
+  document.getElementById('chestModalIcon').className = 'chest-big shake';
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱</span>`;
+  document.getElementById('chestModalText').textContent = `残り ${getHeldChests()[rarity]} 個\n動画を見ると中身が3倍に！`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍開封' : '🎬 動画を見て3倍開封'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button>`;
+  chestModal.classList.add('show');
+  const open = mult => {
+    const hc = getHeldChests(); if (!(hc[rarity] > 0)) return;
+    hc[rarity]--; renderChestTray();
+    showChestResult(rarity, openTreasureChest(rarity, mult), mult);
+  };
+  document.getElementById('chestOpenBtn').onclick = () => open(1);
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { open(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); open(3); }); };
+}
+function showChestResult(rarity, loot, mult) {
+  document.getElementById('chestModalIcon').className = 'chest-big';
+  document.getElementById('chestModalIcon').innerHTML = loot.icon;
+  document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:${loot.color}">${loot.main}${mult > 1 ? ' <span style="color:#ff5c6c">×3！</span>' : ''}</div>${loot.sub || ''}`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
+  document.getElementById('chestCloseBtn').onclick = () => {
+    chestModal.classList.remove('show');
+    if (chestPausedPhase === 'battle' && phase === 'paused') phase = 'battle';
+    chestPausedPhase = null;
+  };
+}
+function openTreasureChest(rarity = 'common', mult = 1) { // 中身を決めて受け取る。表示用の情報を返す
   playChestOpenSound();
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
+  let loot;
   if (isCoin) {
-    const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult);
+    const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
     spawnCoinBurst(arena.x, arena.y + 20, bonus);
-    showLootPopup(`🎁 ${RARITY_INFO[rarity].label}の宝箱`, `🟡 ${formatCoinNumber(bonus)} コイン`, '', '#ffd76b');
-    showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS, true);
+    loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `🟡 ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, CHEST_ART_WEIGHTS[rarity]); // レア度の高い宝箱ほど良い遺物
-    gainArtifact(pick.id);
-    spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
+    for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    showLootPopup('🎁 宝箱の中身（遺物）', `${ico(pick)} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
-    showNotice(`宝箱から ${pick.icon} ${pick.name} 獲得！`, false, TREASURE_NOTICE_MS, true);
+    loot = { icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}` };
     renderArtifactList();
   }
   updateStatsUI();
   saveGame();
+  return loot;
 }
 function showTapError(text, clientX, clientY) {
   battleNotice.textContent = text;
