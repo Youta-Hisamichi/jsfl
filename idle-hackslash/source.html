@@ -7932,9 +7932,10 @@ function obstacleBounce(ball) {
         }
         for (let i = 0; i < 3; i++) spawnHitParticles(o.x + (Math.random() - 0.5) * o.r, o.y + (Math.random() - 0.5) * o.r, i ? '#a0703c' : '#e0b070');
         shakeScreenLight(); thump(120, 50, 0.25, 0.3);
-        const coins = Math.round(getEnemyStats(game.stage).hp * 0.6 + 10); game.coins += coins;
-        spawnDamageText(o.x, o.y - 10, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true);
-        spawnExpGems(o.x, o.y, 6);
+        const r = Math.random(); // 中身：超たまに激レア宝箱、たまにコイン、たいていはスカ
+        if (r < 0.03) { spawnDamageText(o.x, o.y - 10, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
+        else if (r < 0.3) { const coins = Math.round(getEnemyStats(game.stage).hp * 0.6 + 10); game.coins += coins; spawnDamageText(o.x, o.y - 10, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
+        else { spawnDamageText(o.x, o.y - 10, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
         playNoiseBurst(0.25, 0.2); updateStatsUI();
       }
     } else if (hard) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
