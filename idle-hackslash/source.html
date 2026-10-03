@@ -705,6 +705,8 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 }
 .enemy-trait-badge { position: absolute; right: 6px; top: 6px; z-index: 4; pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .enemy-trait-badge span { font-size: 0.62rem; font-weight: 800; color: #fff; background: rgba(8,11,18,0.72); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+.enemy-trait-badge span.etb-head { display: flex; align-items: center; gap: 3px; background: rgba(160,30,50,0.85); border-color: rgba(255,140,150,0.6); color: #ffe0e4; }
+.enemy-trait-badge span.etb-head img { width: 18px; height: 18px; image-rendering: pixelated; margin: -3px 0 -3px -3px; }
 .enemy-trait-badge span.warn { border-color: #ff6b6b; color: #ffd0d0; }
 .record-badge { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; text-align: center; font-size: 0.72rem; font-weight: 800; color: #ffd76b; background: rgba(8,11,18,0.8); border: 1px solid rgba(255,215,107,0.7); border-radius: 12px; padding: 5px 12px; line-height: 1.5; opacity: 0; }
 .record-badge b { color: #fff; }
@@ -8440,7 +8442,9 @@ function renderEnemyTraitBadge(en, trait) {
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' ? 'warn' : '']);
     if (isSwarmStage(game.stage) && !en.isBoss) tags.push(['👥 大群', '']);
   }
-  const html = tags.map(([t, c]) => `<span class="${c}">${t}</span>`).join('');
+  const key = en && getEnemySpriteKey(en), img = key && ENEMY_SPRITES[key];
+  const head = tags.length ? `<span class="etb-head">${img ? `<img src="${img}" alt="">` : '👾'}敵の特徴</span>` : ''; // 誰の情報か分かるよう、敵の顔つきの見出し
+  const html = head + tags.map(([t, c]) => `<span class="${c}">${t}</span>`).join('');
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
 
