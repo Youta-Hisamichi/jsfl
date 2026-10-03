@@ -7898,6 +7898,7 @@ function obstacleBounce(ball) {
   for (const o of obstacles) {
     const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 1, min = o.r + ball.radius * 0.8;
     if (d >= min) continue;
+    if (ball.isGiant && !ball.isPlayer && !o.broken) { smashObstacle(o); continue; } // 激デカボスは障害物を壊して突き進む
     const nx = dx / d, ny = dy / d;
     ball.x = o.x + nx * min; ball.y = o.y + ny * min;
     const dot = ball.vx * nx + ball.vy * ny;
@@ -7939,6 +7940,14 @@ function obstacleBounce(ball) {
     } else if (hard) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
   }
   if (obstacles.some(o => o.broken)) obstacles = obstacles.filter(o => !o.broken);
+}
+function smashObstacle(o) { // 激デカボスに踏みつぶされて粉々になる
+  if (o.kind === 'egg') { hatchEgg(o); return; }
+  o.broken = true;
+  const cols = o.kind === 'crate' ? ['#b07a42', '#8a5a2c'] : o.kind === 'bumper' ? ['#ff5cb8', '#ffd2f0'] : ['#8d867b', '#5d574f'];
+  for (let i = 0; i < 16; i++) { const a = Math.random() * Math.PI * 2, sp = 2.5 + Math.random() * 4.5; crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.5, h: 3 + Math.random() * 5, life: 1, col: cols[i % 2] }); }
+  spawnDamageText(o.x, o.y - 14, 'ドガァン！', '#ff9f43', 0.02, true);
+  thump(90, 35, 0.4, 0.5); playNoiseBurst(0.35, 0.3); shakeScreen();
 }
 // 卵が割れる：たいていはやばい敵が飛び出す（倒すまで次のステージに進めない）。たまに宝箱
 function hatchEgg(o) {
