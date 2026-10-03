@@ -1170,6 +1170,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .ss-card.on::after { content: 'セット中'; position: absolute; top: -7px; right: -4px; background: #2ea043; color: #fff; font-size: 0.55rem; padding: 1px 5px; border-radius: 6px; }
 .pu-icon { font-size: 2.2rem; line-height: 1; }
 .ico-combo { position: relative; display: inline-block; }
+.atkup-ico { filter: drop-shadow(0 0 6px rgba(255,80,80,0.9)); }
 .pu-icon .ico-combo .ico-badge { position: absolute; right: -10px; bottom: -6px; font-size: 1.35rem; filter: drop-shadow(0 0 2px #fff) drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 .pu-icon .ico-img, .pu-icon .comp-sprite { width: 44px; height: 44px; display: block; }
 .pu-name { font-size: 0.78rem; font-weight: 900; line-height: 1.2; }
@@ -9891,7 +9892,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     if (PU_EXCLUDED_SKILLS.includes(id)) continue;
     const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
     if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
-    pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '⚔️' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
+    pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '<span class="ico-combo atkup-ico">🗡️<span class="ico-badge">⏫</span></span>' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
   }
   if (getCompanionTotal() < getPartyLimit() || Object.keys(game.companions.recruited).length) pool.push({ kind: 'comp', col: '#ff9a4f', label: '仲間', icon: ico({ icon: '🐾', img: ICON_IMAGES.tab_companion }), name: '仲間を1人召喚', desc: 'ランダムな仲間が加入（満員なら覚醒）' });
   for (const id in RUN_BUFFS) {
