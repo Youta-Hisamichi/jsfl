@@ -6867,8 +6867,21 @@ function playBarrierSound() {
 }
 function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
 function playMissSound() { playTone(900, 0.08, 'sine', 0.08, 1500); }
-function playEnemyCritSound() { playNoiseBurst(0.12, 0.26); playTone(260, 0.2, 'sawtooth', 0.2, 90); }
-function playCritSound() { playNoiseBurst(0.08, 0.22); playTone(1400, 0.12, 'square', 0.16, 2200); }
+// クリティカル専用：こちらの会心は「ズバァン！＋キィィン」と鋭い斬撃と金属の響きが駆け上がる
+function playCritSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  filteredNoise(0, 0.07, 0.35, 3500, 0.7, 'highpass');                  // ズバッ（鋭い切り裂き）
+  thump(140, 45, 0.22, 0.45);                                          // 重い手応え
+  thump(900, 2400, 0.09, 0.07, 'square', 0.02);                        // キュイッと駆け上がる
+  [2637, 3520, 4699].forEach((f, i) => thump(f, f * 0.99, 0.35 - i * 0.07, 0.035, 'sine', 0.06 + i * 0.02)); // キィィン（金属の余韻）
+}
+// 敵の会心を受けた時：鈍く重い「ドゴォッ」と下がるうなり
+function playEnemyCritSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  thump(110, 32, 0.35, 0.6);
+  filteredNoise(0, 0.14, 0.3, 700, 0.8, 'lowpass');
+  thump(330, 70, 0.3, 0.09, 'sawtooth', 0.02);
+}
 function playHomingLaunchSound() {
   for (let i = 0; i < HOMING_MISSILE_COUNT; i++) setTimeout(() => { playTone(700 + i * 60, 0.12, 'sawtooth', 0.07, 1400); playNoiseBurst(0.05, 0.05); }, i * 60);
 }
