@@ -955,8 +955,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 
 .boss-clear-fx { position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: 50%; overflow: hidden; animation: bcfFlash 0.6s ease-out; transition: opacity 0.6s; }
 .boss-clear-fx.out { opacity: 0; }
-@keyframes bcfFlash { 0% { background: rgba(255,240,180,0.85); } 100% { background: rgba(255,240,180,0); } }
-.bcf-rays { position: absolute; left: 50%; top: 45%; width: 170%; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, rgba(255,215,107,0.38) 0deg 9deg, transparent 9deg 22deg); animation: lbSpin 6s linear infinite, bcfFade 0.5s ease-out; }
+@keyframes bcfFlash { 0% { background: rgba(255,240,180,0.45); } 100% { background: rgba(255,240,180,0); } }
+.bcf-rays { position: absolute; left: 50%; top: 45%; width: 170%; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, rgba(255,215,107,0.14) 0deg 5deg, transparent 5deg 30deg); -webkit-mask-image: radial-gradient(circle, transparent 12%, #000 30%, transparent 70%); mask-image: radial-gradient(circle, transparent 12%, #000 30%, transparent 70%); animation: lbSpin 14s linear infinite, bcfFade 0.5s ease-out; } /* 控えめ：細く薄く、ゆっくり、外側は消える */
 @keyframes bcfFade { from { opacity: 0; } to { opacity: 1; } }
 .bcf-text { position: absolute; left: 0; right: 0; top: 15%; text-align: center; }
 .bcf-main { font-size: clamp(1.1rem, 6.5vw, 1.6rem); font-weight: 900; letter-spacing: 0.06em; color: #ffd76b; -webkit-text-stroke: 1px #7a4a00; text-shadow: 0 0 14px rgba(255,200,80,0.9), 0 3px 0 #7a4a00; animation: bcfPop 0.7s cubic-bezier(.34,1.56,.64,1) both; }
