@@ -706,7 +706,7 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .chest-tray { position: absolute; left: 6px; bottom: 6px; z-index: 5; display: flex; flex-wrap: wrap-reverse; gap: 3px; max-width: 60%; }
 .chest-tray button { position: relative; width: 34px; height: 34px; padding: 2px; border-radius: 8px; border: 1.5px solid #ffd76b; background: rgba(8,11,18,0.7); cursor: pointer; animation: chestBob 1.6s ease-in-out infinite; }
 .chest-tray button .ico-img { width: 100%; height: 100%; display: block; }
-.chest-tray button b { position: absolute; right: -5px; top: -7px; font-size: 0.62rem; background: #ff5c6c; color: #fff; border-radius: 999px; padding: 0 5px; }
+.chest-tray button b { position: absolute; right: -6px; bottom: -6px; font-size: 0.66rem; background: #ff5c6c; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.6); color: #fff; border-radius: 999px; padding: 0 5px; }
 .chest-tray .tray-new { animation: chestIn 0.45s cubic-bezier(.34,1.56,.64,1), chestBob 1.6s ease-in-out 0.45s infinite; }
 @keyframes chestBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes chestIn { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -1288,7 +1288,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     </div>
 
     <div class="action-row four six" id="skillRow">
-      <button class="action-btn special" id="specialBtn">🔒 必殺技</button>
+      <button class="action-btn special" id="specialBtn">🔒 メテオ</button>
       <button class="action-btn accel" id="accelBtn">🔒 加速</button>
       <button class="action-btn heal" id="healBtn">🔒 回復</button>
       <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
@@ -2319,8 +2319,8 @@ const ARTIFACT_POOL = [
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
-  { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: '必殺技ダメージ +35%', rarity: 'epic' },
-  { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: '必殺技の待機時間 -15%（最大3個）', rarity: 'epic' },
+  { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +35%', rarity: 'epic' },
+  { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: 'メテオの待機時間 -15%（最大3個）', rarity: 'epic' },
   { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）', rarity: 'epic' },
   { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）', rarity: 'legendary' },
   { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）', rarity: 'legendary' },
@@ -2357,7 +2357,7 @@ const GACHA_POOL = {
   power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
   vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },
   fortune:  { icon: '🍀', name: '幸運の欠片',   rarity: 'rare',      desc: 'コイン獲得 +15%/Lv',    bonus: { coin: 0.15 },              weight: 16 },
-  meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: '必殺技ダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
+  meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: 'メテオダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
   chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
   critical: { icon: '🎯', name: '会心の欠片',   rarity: 'epic',      desc: 'クリティカル率 +1%/Lv', bonus: { crit: 0.01 },              weight: 5 },
   critdmg:  { icon: '💥', name: '剛撃の欠片',   rarity: 'epic',      desc: 'クリティカルダメージ +10%/Lv', bonus: { critDmg: 0.10 },    weight: 5 },
@@ -2409,7 +2409,7 @@ function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
 const SHOP_ITEMS = {
   sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
   shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
-  meteor: { icon: '☄️', name: '流星術', desc: '必殺技ダメージ +50%', cost: 12 },
+  meteor: { icon: '☄️', name: '流星術', desc: 'メテオダメージ +50%', cost: 12 },
   fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
 };
@@ -2428,7 +2428,7 @@ const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
 };
 const SKILL_GACHA_SKILLS = {
-  skillSpecial:  { icon: '✨', name: '必殺技',   desc: '隕石を落とす必殺技' },
+  skillSpecial:  { icon: '☄️', name: 'メテオ',   desc: '隕石を落として大ダメージ' },
   skillAccel:    { icon: '⏩', name: '加速',     desc: 'しばらく2.5倍速' },
   skillHeal:     { icon: '💗', name: '回復',     desc: 'HPを回復' },
   skillBarrier:  { icon: '🌀', name: 'バリア',   desc: '被ダメージを数回肩代わり' },
@@ -2539,7 +2539,7 @@ function renderSubTabs(el, cats, current, onPick) {
 const ARTIFACT_CURRENT = {
   pierceHoof: n => `貫通 +${n}ヒット`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
-  compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `必殺技 +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
+  compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
   turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
   feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
   banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
@@ -5797,38 +5797,50 @@ window.addEventListener('pointerdown', () => {
   if (lootNoticeActive) { lootNoticeActive = false; noticeHoldUntil = 0; clearTimeout(noticeTimer); battleNotice.classList.remove('show'); }
 }, true);
 // 戦闘中に手に入れた宝箱はすぐ開けず、ステージ左下に並べておく。タップで開封
-const CHEST_TRAY_SHOW = 6;
-function dropTreasureChest() {
-  game.heldChests = (game.heldChests || 0) + 1;
-  spawnDamageText(arena.x, arena.y + 30, '🎁 宝箱ゲット！ 左下をタップで開封', '#ffd76b', TREASURE_TEXT_DECAY);
+// 宝箱にはレア度がある。ステージ左下にレア度ごとにまとめて「×個数」で表示し、タップで1個ずつ開封
+const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary'];
+const CHEST_WEIGHTS = { common: 60, rare: 28, epic: 10, legendary: 2 };
+const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' };
+const CHEST_COIN_MULT = { common: 1, rare: 2.5, epic: 6, legendary: 15 };
+const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.85 };
+const CHEST_ART_WEIGHTS = { common: { common: 75, rare: 22, epic: 3, legendary: 0 }, rare: { common: 45, rare: 42, epic: 12, legendary: 1 }, epic: { common: 15, rare: 45, epic: 35, legendary: 5 }, legendary: { common: 0, rare: 20, epic: 55, legendary: 25 } };
+function getHeldChests() { // 古いセーブ（個数だけ）はノーマルとして扱う
+  if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
+  return game.heldChests;
+}
+function dropTreasureChest(rarity) {
+  if (!rarity) { let r = Math.random() * 100; rarity = CHEST_RARITIES.find(k => (r -= CHEST_WEIGHTS[k]) < 0) || 'common'; }
+  const hc = getHeldChests(); hc[rarity] = (hc[rarity] || 0) + 1;
+  const info = RARITY_INFO[rarity];
+  spawnDamageText(arena.x, arena.y + 30, `🎁 ${info.label}の宝箱ゲット！ 左下をタップで開封`, info.color, TREASURE_TEXT_DECAY);
   playLoginBonusSound();
-  renderChestTray(true);
+  renderChestTray(rarity);
   saveGame();
 }
-function renderChestTray(isNew) {
+function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
-  const n = game.heldChests || 0, show = Math.min(n, CHEST_TRAY_SHOW);
-  let html = '';
-  for (let i = 0; i < show; i++) html += `<button data-open-chest="1" class="${isNew && i === show - 1 ? 'tray-new' : ''}" title="タップで開封">${xi('x_chest1') || '🎁'}${i === show - 1 && n > CHEST_TRAY_SHOW ? `<b>×${n}</b>` : ''}</button>`;
-  el.innerHTML = html;
+  const hc = getHeldChests();
+  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="background:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
-  if (!ev.target.closest('[data-open-chest]') || !(game.heldChests > 0)) return;
-  game.heldChests--;
-  openTreasureChest();
-  renderChestTray(false);
+  const b = ev.target.closest('[data-open-chest]'); if (!b) return;
+  const k = b.dataset.openChest, hc = getHeldChests();
+  if (!(hc[k] > 0)) return;
+  hc[k]--;
+  openTreasureChest(k);
+  renderChestTray();
 });
-function openTreasureChest() {
+function openTreasureChest(rarity = 'common') {
   playChestOpenSound();
-  const isCoin = Math.random() < 0.6;
+  const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   if (isCoin) {
-    const bonus = Math.round((60 + game.stage * 10) * computeBonuses().coinMult);
+    const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult);
     game.coins += bonus;
     spawnCoinBurst(arena.x, arena.y + 20, bonus);
-    showLootPopup('🎁 宝箱の中身', `🟡 ${formatCoinNumber(bonus)} コイン`, '', '#ffd76b');
+    showLootPopup(`🎁 ${RARITY_INFO[rarity].label}の宝箱`, `🟡 ${formatCoinNumber(bonus)} コイン`, '', '#ffd76b');
     showNotice(`宝箱から 🟡 ${formatCoinNumber(bonus)} コイン獲得！`, false, TREASURE_NOTICE_MS, true);
   } else {
-    const pick = ARTIFACT_POOL[Math.floor(Math.random() * ARTIFACT_POOL.length)];
+    const pick = pickWeightedArtifact(ARTIFACT_POOL, CHEST_ART_WEIGHTS[rarity]); // レア度の高い宝箱ほど良い遺物
     gainArtifact(pick.id);
     spawnHitParticles(arena.x, arena.y + 20, '#c792ea');
     const info = RARITY_INFO[pick.rarity];
@@ -9246,7 +9258,7 @@ function updateSpecialButton() {
   if (!game.shopOwned.skillSpecial) {
     specialBtn.disabled = false;
     specialBtn.classList.add('is-disabled');
-    specialBtn.textContent = '🔒 必殺技';
+    specialBtn.textContent = '🔒 メテオ';
     return;
   }
   const cooldown = getSpecialCooldown();
@@ -9254,12 +9266,12 @@ function updateSpecialButton() {
   if (remaining === 0) {
     specialBtn.disabled = false;
     specialBtn.classList.toggle('is-disabled', phase !== 'battle');
-    specialBtn.textContent = '✨ 必殺技　READY';
+    specialBtn.textContent = '☄️ メテオ　READY';
     return;
   }
   specialBtn.disabled = false;
   specialBtn.classList.toggle('is-disabled', !isSkillResetPending('special'));
-  specialBtn.textContent = cooldownLabel('special', '✨ 必殺技', remaining);
+  specialBtn.textContent = cooldownLabel('special', '☄️ メテオ', remaining);
 }
 
 function updateAccelButton() {
@@ -10480,7 +10492,7 @@ const DEBUG_ACTION_LABELS = {
   gems1000: 'DEBUG: ジェム +1000 を付与しました',
   coins1000: 'DEBUG: コイン +1000 を付与しました',
   supergems: 'DEBUG: スーパージェム +10000円 を付与しました',
-  special: 'DEBUG: 必殺技・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
+  special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
   prev: 'DEBUG: ステージを1つ戻しました',
   next: 'DEBUG: ステージを1つ進めました',
   nextboss: 'DEBUG: 次のボスステージまでスキップしました',
@@ -11427,7 +11439,7 @@ rebornBtn.addEventListener('click', event => {
 
 specialBtn.addEventListener('click', event => {
   if (!game.shopOwned.skillSpecial) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
-  if (phase !== 'battle') { showTapError('今は必殺技を使えません', event.clientX, event.clientY); return; }
+  if (phase !== 'battle') { showTapError('今はメテオを使えません', event.clientX, event.clientY); return; }
   if (Date.now() - lastSpecialAt < getSpecialCooldown()) { tryGemResetSkill('special', event, () => { lastSpecialAt = Date.now() - SPECIAL_COOLDOWN; }, updateSpecialButton); return; }
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
@@ -12097,7 +12109,7 @@ usernameInput.value = game.username || '';
 resizeCanvas();
 renderArtifactList();
 updateStatsUI();
-renderChestTray(false); // 前回から持ち越した未開封の宝箱
+renderChestTray(); // 前回から持ち越した未開封の宝箱
 balls = spawnBattleBalls();
 refreshPlayerBallStats(true);
 refreshCompanionBalls(); // 仲間の状態を正しく設定
