@@ -711,6 +711,7 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .chest-tray { position: absolute; left: 6px; bottom: 6px; z-index: 5; display: flex; flex-wrap: wrap-reverse; gap: 3px; max-width: 60%; }
 .chest-tray button { position: relative; width: 34px; height: 34px; padding: 2px; border-radius: 8px; border: 1.5px solid #ffd76b; background: rgba(8,11,18,0.7); cursor: pointer; animation: chestBob 1.6s ease-in-out infinite; }
 .chest-tray button .ico-img { width: 100%; height: 100%; display: block; }
+.chest-tray .chest-all { width: auto; min-width: 40px; height: 34px; padding: 0 6px; font-size: 0.56rem; font-weight: 900; line-height: 1.1; color: #fff; background: linear-gradient(180deg, #ff9f43, #e0602c); border-color: #fff3c4; }
 .chest-tray button b { position: absolute; right: -8px; bottom: -8px; font-size: 0.74rem; font-weight: 900; color: #fff; background: #10131c; border: 2px solid #fff; line-height: 1.25; box-shadow: 0 0 0 2px #10131c, 0 2px 4px rgba(0,0,0,0.7); text-shadow: -1px -1px 0 #10131c, 1px -1px 0 #10131c, -1px 1px 0 #10131c, 1px 1px 0 #10131c, 0 1px 3px rgba(0,0,0,0.8); color: #fff; border-radius: 999px; padding: 0 5px; }
 .chest-tray .tray-new { animation: chestIn 0.45s cubic-bezier(.34,1.56,.64,1), chestBob 1.6s ease-in-out 0.45s infinite; }
 @keyframes chestBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
@@ -5812,6 +5813,7 @@ window.addEventListener('pointerdown', () => {
 // 戦闘中に手に入れた宝箱はすぐ開けず、ステージ左下に並べておく。タップで開封
 // 宝箱にはレア度がある。ステージ左下にレア度ごとにまとめて「×個数」で表示し、タップで1個ずつ開封
 const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary'];
+const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数
 const CHEST_WEIGHTS = { common: 60, rare: 28, epic: 10, legendary: 2 };
 const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' };
 const CHEST_COIN_MULT = { common: 1, rare: 2.5, epic: 6, legendary: 15 };
@@ -5823,7 +5825,9 @@ function getHeldChests() { // 古いセーブ（個数だけ）はノーマル�
 }
 function dropTreasureChest(rarity) {
   if (!rarity) { let r = Math.random() * 100; rarity = CHEST_RARITIES.find(k => (r -= CHEST_WEIGHTS[k]) < 0) || 'common'; }
-  const hc = getHeldChests(); hc[rarity] = (hc[rarity] || 0) + 1;
+  const hc = getHeldChests();
+  if (CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0) >= CHEST_STOCK_MAX) { spawnDamageText(arena.x, arena.y + 30, `🎁 宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); return; }
+  hc[rarity] = (hc[rarity] || 0) + 1;
   const info = RARITY_INFO[rarity];
   spawnDamageText(arena.x, arena.y + 30, `🎁 ${info.label}の宝箱ゲット！ 左下をタップで開封`, info.color, TREASURE_TEXT_DECAY);
   playLoginBonusSound();
@@ -5833,9 +5837,11 @@ function dropTreasureChest(rarity) {
 function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
   const hc = getHeldChests();
-  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
+  const total = CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0);
+  el.innerHTML = (total >= 2 ? `<button class="chest-all" data-open-all="1" title="全部まとめて開ける">全部<br>開ける<b>${total}</b></button>` : '') + CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
+  if (ev.target.closest('[data-open-all]')) { if (phase === 'battle') openChestDialog('all'); return; }
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
   const k = b.dataset.openChest;
   if (!(getHeldChests()[k] > 0) || phase !== 'battle') return;
@@ -5846,6 +5852,7 @@ const chestModal = document.getElementById('chestModal');
 let chestPausedPhase = null;
 function openChestDialog(rarity) {
   chestPausedPhase = phase; phase = 'paused';
+  if (rarity === 'all') { openAllChestDialog(); return; }
   const info = RARITY_INFO[rarity];
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
@@ -5861,35 +5868,64 @@ function openChestDialog(rarity) {
   document.getElementById('chestOpenBtn').onclick = () => open(1);
   document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { open(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); open(3); }); };
 }
+function openAllChestDialog() { // まとめて開封
+  const hc = getHeldChests(), total = CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0);
+  document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[CHEST_RARITIES.filter(k => hc[k] > 0).pop() || 'common']) || '🎁';
+  document.getElementById('chestModalIcon').className = 'chest-big shake';
+  document.getElementById('chestModalTitle').textContent = `🎁 宝箱を全部開ける（${total}個）`;
+  document.getElementById('chestModalText').innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<span style="color:${RARITY_INFO[k].color};font-weight:800">${RARITY_INFO[k].label} ×${hc[k]}</span>`).join('　') + '<br>動画を見ると全部の中身が3倍に！';
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で全部3倍' : '🎬 動画を見て全部3倍'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま全部開ける</span></button>`;
+  chestModal.classList.add('show');
+  const openAll = mult => {
+    let coins = 0; const arts = {};
+    for (const k of CHEST_RARITIES) {
+      while (hc[k] > 0) {
+        hc[k]--;
+        const before = game.coins, loot = openTreasureChest(k, mult, true);
+        if (loot.art) arts[loot.art.id] = (arts[loot.art.id] || 0) + mult; else coins += game.coins - before;
+      }
+    }
+    playChestOpenSound(); renderChestTray(); renderArtifactList(); updateStatsUI(); saveGame();
+    const list = Object.entries(arts).map(([id, n]) => { const a = ARTIFACT_POOL.find(x => x.id === id); return `<span style="color:${RARITY_INFO[a.rarity].color}">${a.icon} ${a.name} ×${n}</span>`; }).join('<br>');
+    document.getElementById('chestModalIcon').className = 'chest-big';
+    document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:4rem">🎉</span>';
+    document.getElementById('chestModalTitle').textContent = `🎁 ${total}個 開封！${mult > 1 ? '（3倍）' : ''}`;
+    document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:#d18b00">🟡 ${formatCoinNumber(coins)} コイン</div>${list ? `<div style="max-height:30vh;overflow-y:auto;font-weight:800;line-height:1.6">${list}</div>` : ''}`;
+    document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
+    document.getElementById('chestCloseBtn').onclick = closeChestDialog;
+  };
+  document.getElementById('chestOpenBtn').onclick = () => openAll(1);
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }); };
+}
+function closeChestDialog() {
+  chestModal.classList.remove('show');
+  if (chestPausedPhase === 'battle' && phase === 'paused') phase = 'battle';
+  chestPausedPhase = null;
+}
 function showChestResult(rarity, loot, mult) {
   document.getElementById('chestModalIcon').className = 'chest-big';
   document.getElementById('chestModalIcon').innerHTML = loot.icon;
   document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:${loot.color}">${loot.main}${mult > 1 ? ' <span style="color:#ff5c6c">×3！</span>' : ''}</div>${loot.sub || ''}`;
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
-  document.getElementById('chestCloseBtn').onclick = () => {
-    chestModal.classList.remove('show');
-    if (chestPausedPhase === 'battle' && phase === 'paused') phase = 'battle';
-    chestPausedPhase = null;
-  };
+  document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
-function openTreasureChest(rarity = 'common', mult = 1) { // 中身を決めて受け取る。表示用の情報を返す
-  playChestOpenSound();
+function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
+  if (!quiet) playChestOpenSound();
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   let loot;
   if (isCoin) {
     const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
-    spawnCoinBurst(arena.x, arena.y + 20, bonus);
+    if (!quiet) spawnCoinBurst(arena.x, arena.y + 20, bonus);
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `🟡 ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, CHEST_ART_WEIGHTS[rarity]); // レア度の高い宝箱ほど良い遺物
     for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    loot = { icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}` };
-    renderArtifactList();
+    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}` };
+    if (!quiet) renderArtifactList();
   }
-  updateStatsUI();
-  saveGame();
+  if (!quiet) { updateStatsUI(); saveGame(); }
   return loot;
 }
 function showTapError(text, clientX, clientY) {
