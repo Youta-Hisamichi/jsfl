@@ -988,8 +988,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .dbg-mon button.sel { border: 2px solid #ffd76b; }
 .dbg-mon button.gone { opacity: 0.3; }
 .dbg-mon button.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: #ff4f6d; font-weight: 900; font-size: 1.2rem; }
-#dbgMonWrap { grid-column: 1 / -1; display: none; grid-template-columns: inherit; gap: inherit; }
-#dbgMonWrap.open { display: contents !important; }
+#dbgMonWrap, .dbg-fold-wrap { grid-column: 1 / -1; display: none; grid-template-columns: inherit; gap: inherit; }
+#dbgMonWrap.open, .dbg-fold-wrap.open { display: contents !important; }
 .debug-row .dbg-fold { grid-column: 1 / -1; cursor: pointer; text-align: left; border: 0; border-bottom: 1px solid var(--ring); border-radius: 0; background: none; color: var(--text); font-size: 0.68rem; font-weight: 900; padding: 0 0 2px; }
 .dbg-fold b { float: right; font-size: 0.85em; color: #ffd76b; }
 .dbg-pu { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-height: 260px; overflow-y: auto; }
@@ -1326,12 +1326,13 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <button class="debug-cat dbg-fold" id="dbgMonFold">🖼️ モンスターを選んで出現・削除 <b id="dbgMonFoldMark">▼ 開く</b></button>
       <div id="dbgMonWrap" style="display:none">
       <div class="dbg-mon" id="dbgMonGrid"></div>
-      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
+      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgFilmBtn">🎬 撮影モード</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
       </div>
       <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
       <div class="debug-cat">🎲 3択パワーアップ一覧（押すとその場で取得）</div>
       <div class="dbg-pu" id="dbgPuGrid"></div>
-      <div class="debug-cat" id="debugEnemyCat">👾 特殊な敵（押すと出現）</div>
+      <button class="debug-cat dbg-fold" id="debugEnemyCat">👾 特殊な敵（押すと出現） <b id="dbgEnemyFoldMark">▼ 開く</b></button>
+      <div class="dbg-fold-wrap" id="dbgEnemyWrap"></div>
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
       <div class="debug-cat">🔓 解放・付与</div>
@@ -7214,9 +7215,10 @@ function makeBall(isPlayer) {
       { color: '#f46bd4', glow: 'rgba(244,107,212,0.55)', shape: 'square' }
     ];
     let style = enemyStyles[0], isEmoji = false, emoji = null;
-    if (es.isBoss) { isEmoji = true; emoji = forcedBossEmoji || getStageBossEmoji(game.stage); }
-    else { // ステージごとに決まった敵
-      const [kind, val] = getStageEnemyKey(game.stage).split(':');
+    const filmKind = filmMode && filmMode.key.split(':')[0];
+    if (es.isBoss) { isEmoji = true; emoji = forcedBossEmoji || (filmKind === 'boss' ? filmMode.key.split(':')[1] : null) || getStageBossEmoji(game.stage); }
+    else { // ステージごとに決まった敵（撮影モード中は選んだ敵）
+      const [kind, val] = (filmKind && filmKind !== 'boss' ? filmMode.key : getStageEnemyKey(game.stage)).split(':');
       if (kind === 'shape') { const c = SHAPE_ENEMY_COLORS[val] || '#ff5c6c'; style = { color: c, glow: c + '8c', shape: val }; }
       else { isEmoji = true; emoji = val; }
     }
@@ -8644,7 +8646,7 @@ function onStageClear() {
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
   }
-  game.stage++;
+  if (!filmMode) game.stage++; // 撮影モード中は同じステージ（同じ敵）を繰り返す
   game.bestStage = Math.max(game.bestStage, game.stage);
   stageAnnounceText = 'STAGE ' + game.stage + (isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
@@ -8711,6 +8713,7 @@ function endDeathFx() {
   deathFx = null;
 }
 function onPlayerDeath(forceRebirth = false, skipFx = false) {
+  if (filmMode && !forceRebirth) { const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; updateHPUI(); } return; } // 撮影モード中はやられない
   homingMissiles = [];
   if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
   if (deathFx && !skipFx) return; // 演出中の二重呼び出しを防ぐ
@@ -10219,22 +10222,28 @@ function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大し�
   });
 }
 // パワーアップ選択音：上へ駆け上がる「ギュイーン」＋分散和音＋キラキラの余韻で締める
-function playPowerUpSound() { // パチンコの当たりのような「キュイン！キュイン！」と、きらびやかな決め音
+function playPowerUpSound() { // パワーアップ：力がみなぎる上昇チャージ → 一気に駆け上がるアルペジオ → 「ドーン！ジャーン！」と覚醒
   if (!audioCtx || isBattleSfxMuted()) return;
-  const kyuin = (t0, top) => {
-    const t = audioCtx.currentTime + t0, o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'square'; o2.type = 'sawtooth';
-    o.frequency.setValueAtTime(700, t); o.frequency.exponentialRampToValueAtTime(top, t + 0.16); o.frequency.setValueAtTime(top, t + 0.24);
-    o2.frequency.setValueAtTime(704, t); o2.frequency.exponentialRampToValueAtTime(top * 1.005, t + 0.16);
-    const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 28; lg.gain.value = top * 0.03; lfo.connect(lg); lg.connect(o.frequency); // ビブラートでキラキラ
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.07 * game.sfxVolume, t + 0.02); g.gain.setValueAtTime(0.07 * game.sfxVolume, t + 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-    o.connect(g); o2.connect(g); g.connect(audioCtx.destination);
-    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + 0.32); });
-  };
-  kyuin(0, 2800); kyuin(0.26, 3600);                                  // キュイン！キュイン！
-  thump(1047, 1047, 0.6, 0.05, 'square', 0.56); thump(1319, 1319, 0.6, 0.04, 'square', 0.56); thump(1568, 1568, 0.6, 0.04, 'square', 0.56); // ジャーン
-  thump(130, 60, 0.3, 0.35, 'sine', 0.56);                            // ドン
-  [2093, 2637, 3136, 4186, 3136, 4186, 5274].forEach((f, i) => thump(f, f, 0.1, 0.02, 'sine', 0.6 + i * 0.05)); // キラキラ
+  const t = audioCtx.currentTime, v = game.sfxVolume;
+  { // 力がたまっていく上昇音（震えながら高くなる）
+    const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain();
+    o.type = 'sawtooth'; o2.type = 'square';
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(1600, t + 0.42);
+    o2.frequency.setValueAtTime(152, t); o2.frequency.exponentialRampToValueAtTime(1612, t + 0.42);
+    lfo.frequency.setValueAtTime(10, t); lfo.frequency.linearRampToValueAtTime(30, t + 0.42); lg.gain.value = 0.5; lfo.connect(lg);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06 * v, t + 0.38); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.46);
+    const trem = audioCtx.createGain(); trem.gain.value = 0.6; lg.connect(trem.gain);
+    o.connect(trem); o2.connect(trem); trem.connect(g); g.connect(audioCtx.destination);
+    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + 0.48); });
+  }
+  filteredNoise(0, 0.42, 0.08, 1800, 0.6, 'bandpass'); // ゴォォ…（気が集まる）
+  [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => { thump(f, f, 0.07, 0.05, 'square', 0.26 + i * 0.03); thump(f * 2, f * 2, 0.05, 0.015, 'triangle', 0.26 + i * 0.03); }); // 駆け上がるアルペジオ
+  const hit = 0.48;
+  thump(150, 40, 0.5, 0.6, 'sine', hit);                    // ドーン
+  filteredNoise(hit, 0.5, 0.18, 6000, 0.6, 'highpass');      // シャーン（シンバル）
+  [523, 659, 784, 1047].forEach(f => { thump(f, f, 0.9, 0.04, 'square', hit); thump(f * 1.003, f * 1.003, 0.9, 0.03, 'sawtooth', hit); }); // ジャーン（覚醒の和音）
+  thump(131, 131, 0.9, 0.08, 'triangle', hit);
+  [2637, 3136, 3951, 4699, 5274].forEach((f, i) => thump(f, f, 0.12, 0.02, 'sine', hit + 0.1 + i * 0.06)); // キラキラ
 }
 function finishPowerUp(list) {
   showPowerUpZoom(list);
@@ -11964,6 +11973,8 @@ renderDebugMonsters();
   let open = false; try { open = localStorage.getItem('dbgMonOpen') === '1'; } catch (err) {}
   set(open);
   document.getElementById('dbgMonFold').addEventListener('click', () => set(!wrap.classList.contains('open')));
+  const ew = document.getElementById('dbgEnemyWrap'), em = document.getElementById('dbgEnemyFoldMark'); // 特殊な敵も最初は閉じておく
+  document.getElementById('debugEnemyCat').addEventListener('click', () => { const o = !ew.classList.contains('open'); ew.classList.toggle('open', o); em.textContent = o ? '▲ 閉じる' : '▼ 開く'; });
 })();
 let dbgPuPool = [];
 function renderDebugPowerUps() {
@@ -11981,6 +11992,19 @@ document.getElementById('dbgPuGrid').addEventListener('click', ev => {
   showNotice(`DEBUG: ${c.label}「${c.name}」を取得`);
 });
 document.getElementById('dbgMonGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-mon]'); if (b) { dbgMonKey = b.dataset.mon; renderDebugMonsters(); } });
+// 🎬 撮影モード：選んだ敵を出し、倒しても同じ敵が出続ける（ステージは進まない・自キャラはやられない）。デバッグ一覧を閉じて画面を撮りやすく
+let filmMode = null;
+document.getElementById('dbgFilmBtn').addEventListener('click', () => {
+  const btn = document.getElementById('dbgFilmBtn');
+  if (filmMode) { filmMode = null; btn.textContent = '🎬 撮影モード'; showNotice('🎬 撮影モードを終了しました'); return; }
+  if (!dbgMonKey) { showNotice('先に敵の画像をタップして選んでください', true); return; }
+  filmMode = { key: dbgMonKey };
+  btn.textContent = '⏹ 撮影終了';
+  document.getElementById('dbgMonShow').click();
+  setDebugOpen(false);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showNotice(`🎬 撮影モード：${ENEMY_BOOK_BY_KEY[dbgMonKey].name} が出続けます（やられません）`);
+});
 document.getElementById('dbgMonShow').addEventListener('click', () => {
   if (!dbgMonKey) return;
   const b = document.createElement('button'); b.dataset.debug = 'enemy:' + dbgMonKey; b.textContent = ENEMY_BOOK_BY_KEY[dbgMonKey].name; b.style.display = 'none';
@@ -12003,7 +12027,7 @@ document.getElementById('dbgMonCopy').addEventListener('click', () => {
   showNotice(ok ? 'DEBUG: コピーしました。チャットに貼り付けてください' : 'DEBUG: 下の枠の文を長押し（右クリック）でコピーしてください');
 });
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
-document.getElementById('debugEnemyCat').insertAdjacentHTML('afterend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
+document.getElementById('dbgEnemyWrap').insertAdjacentHTML('beforeend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
   .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
 document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
 function renderBgmInfo() { // （関数宣言なので上のデバッグ処理からも呼べる）
