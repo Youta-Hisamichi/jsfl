@@ -703,6 +703,9 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
   90% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -60%); }
 }
+.enemy-trait-badge { position: absolute; right: 6px; top: 6px; z-index: 4; pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.enemy-trait-badge span { font-size: 0.62rem; font-weight: 800; color: #fff; background: rgba(8,11,18,0.72); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+.enemy-trait-badge span.warn { border-color: #ff6b6b; color: #ffd0d0; }
 .record-badge { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 4; pointer-events: none; white-space: nowrap; text-align: center; font-size: 0.72rem; font-weight: 800; color: #ffd76b; background: rgba(8,11,18,0.8); border: 1px solid rgba(255,215,107,0.7); border-radius: 12px; padding: 5px 12px; line-height: 1.5; opacity: 0; }
 .record-badge b { color: #fff; }
 .record-badge.show { animation: recordPop 2.2s ease-out forwards; }
@@ -1237,6 +1240,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
       <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
       <div class="boss-warning" id="bossWarning">WARNING</div>
       <div class="record-badge" id="recordBadge"></div>
+      <div class="enemy-trait-badge" id="enemyTraitBadge"></div>
       <div class="combo-badge" id="comboBadge"></div>
       <div class="loot-popup" id="lootPopup"></div>
       <div class="pause-badge" id="pauseBadge">⏸ 一時停止中<small>T キー（またはここをタップ）で再開</small></div>
@@ -5998,6 +6002,15 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks s ks s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s ks s ks ks ks ks',
   },
+  levelup: {
+    bpm: 132,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.026, notes: 'E5 G5 C6 = E6 = D6 C6 | D6 = B5 = G5 = = = | F5 A5 C6 = F6 = E6 D6 | E6 = = = C6 = = = | E5 G5 C6 = E6 = G6 = | F6 = D6 = B5 = D6 F6 | E6 = C6 = A5 = D6 = | C6 = G5 = C6 = = =' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'C4 E4 G4 E4 C4 E4 G4 E4 | G3 B3 D4 B3 G3 B3 D4 B3 | F3 A3 C4 A3 F3 A3 C4 A3 | C4 E4 G4 E4 C4 E4 G4 E4 | C4 E4 G4 E4 C4 E4 G4 E4 | G3 B3 D4 B3 G3 B3 D4 B3 | A3 C4 E4 C4 A3 C4 E4 C4 | C4 E4 G4 E4 C4 E4 G4 E4' },
+      { type: 'triangle', gain: 0.05, notes: 'C2 = C3 = C2 = C3 = | G1 = G2 = G1 = G2 = | F1 = F2 = F1 = F2 = | C2 = C3 = C2 = C3 = | C2 = C3 = C2 = C3 = | G1 = G2 = G1 = G2 = | A1 = A2 = A1 = A2 = | C2 = G1 = C2 = G1 =' },
+    ],
+    drums: 'k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h s h s s s s',
+  },
   boss: {
     bpm: 164,
     tracks: [
@@ -6359,6 +6372,7 @@ const BGM_INFO = [
   { key: 'battle25', name: '戦闘25 熱血大運動会', desc: 'ぴょこぴょこ跳ねるベースと裏打ちの和音、明るくコミカルに駆け回る旋律の大騒ぎ運動会。VRC6風チップチューン。ト長調（ファミコンの熱血スポーツ系の作風）・BPM172' },
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
+  { key: 'levelup', name: 'レベルアップ ひらめきの時間', desc: '3択パワーアップを選んでいる間に流れる、明るく弾む短いループ。VRC6風チップチューン。ハ長調・BPM132' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
@@ -6428,6 +6442,7 @@ function refreshBgm() {
   if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
+  else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
   else if (rebirthRewardBgm) { stopBgm(); return; } // 転生報酬はBGMなし（効果音だけ）
   else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
   else {
@@ -7652,7 +7667,8 @@ function setupObstacles() {
     const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
     if (Math.hypot(x - arena.x, y - arena.y) < half * 0.22) continue; // 真ん中は空ける
     if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + half * 0.22)) continue; // 間を通り抜けられるように
-    obstacles.push({ x, y, r, seed: rnd() });
+    const k = rnd(), kind = k < 0.45 ? 'rock' : k < 0.75 ? 'crate' : 'bumper'; // 岩・木箱（壊せる）・バンパー（加速して弾く）
+    obstacles.push({ x, y, r: kind === 'bumper' ? r * 0.85 : r, seed: rnd(), kind, hp: 3 });
   }
 }
 let obstacleHalf = 0;
@@ -7667,22 +7683,58 @@ function obstacleBounce(ball) {
     const dot = ball.vx * nx + ball.vy * ny;
     if (dot < 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; }
     if (ball.kbx || ball.kby) { const kd = ball.kbx * nx + ball.kby * ny; if (kd < 0) { ball.kbx -= 2 * kd * nx; ball.kby -= 2 * kd * ny; } }
-    const now = Date.now();
-    if (dot < -0.6 && now - (ball.wallSoundAt || 0) > 150) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
+    const now = Date.now(), hard = dot < -0.6 && now - (ball.wallSoundAt || 0) > 150;
+    if (o.kind === 'bumper') { // バンパー：勢いを増して弾き返す
+      const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = Math.min(14, Math.max(sp * 1.3, 6));
+      ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
+      if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, holdRush.speed / 0.72 * 1.1); // 摩擦の減速を打ち消して加速
+      o.flash = now;
+      if (hard) { ball.wallSoundAt = now; thump(520, 900, 0.12, 0.08, 'square'); thump(260, 180, 0.15, 0.06, 'sine'); }
+    } else if (o.kind === 'crate' && isMainPlayerBall(ball) && (dot < -2 || rushingNow) && now - (o.hitAt || 0) > 250) { // 木箱：勢いよく当たると壊れていく
+      o.hitAt = now; o.hp--;
+      spawnHitParticles(o.x, o.y, '#c8955a');
+      thump(160, 90, 0.12, 0.12, 'triangle'); filteredNoise(0, 0.08, 0.15, 900, 1.2);
+      if (o.hp <= 0) {
+        o.broken = true;
+        for (let i = 0; i < 3; i++) spawnHitParticles(o.x + (Math.random() - 0.5) * o.r, o.y + (Math.random() - 0.5) * o.r, i ? '#a0703c' : '#e0b070');
+        const coins = Math.round(getEnemyStats(game.stage).hp * 0.6 + 10); game.coins += coins;
+        spawnDamageText(o.x, o.y - 10, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true);
+        spawnExpGems(o.x, o.y, 6);
+        playNoiseBurst(0.25, 0.2); updateStatsUI();
+      }
+    } else if (hard) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
   }
+  if (obstacles.some(o => o.broken)) obstacles = obstacles.filter(o => !o.broken);
 }
 function drawObstacles() {
+  const now = Date.now();
   for (const o of obstacles) {
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 3, o.y + o.r * 0.55, o.r * 1.05, o.r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); // 影
-    const g = ctx.createRadialGradient(o.x - o.r * 0.35, o.y - o.r * 0.4, o.r * 0.1, o.x, o.y, o.r);
-    g.addColorStop(0, '#b9b2a6'); g.addColorStop(0.6, '#7d766c'); g.addColorStop(1, '#4b463f');
-    ctx.fillStyle = g; ctx.beginPath();
-    for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI * 2, rr = o.r * (0.92 + 0.08 * Math.sin(i * 2.7 + o.seed * 20)); i ? ctx.lineTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr) : ctx.moveTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr); }
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(40,36,30,0.8)'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.strokeStyle = 'rgba(40,36,30,0.5)'; ctx.lineWidth = 1.5; // ひび
-    ctx.beginPath(); ctx.moveTo(o.x - o.r * 0.2, o.y - o.r * 0.5); ctx.lineTo(o.x + o.r * 0.05, o.y - o.r * 0.1); ctx.lineTo(o.x - o.r * 0.1, o.y + o.r * 0.3); ctx.stroke();
+    if (o.kind === 'crate') { // 木箱（ひびが増える）
+      const h = o.r * 0.9;
+      ctx.fillStyle = '#b07a42'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
+      ctx.strokeStyle = '#5e3c1c'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x - h, o.y - h); ctx.lineTo(o.x + h, o.y + h); ctx.moveTo(o.x + h, o.y - h); ctx.lineTo(o.x - h, o.y + h); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,230,180,0.25)'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 0.35);
+      if (o.hp < 3) { ctx.strokeStyle = '#2b1a0a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(o.x - h * 0.6, o.y - h * 0.2); ctx.lineTo(o.x - h * 0.1, o.y + h * 0.3); ctx.lineTo(o.x + h * 0.2, o.y + h * 0.1); if (o.hp < 2) { ctx.moveTo(o.x + h * 0.5, o.y - h * 0.6); ctx.lineTo(o.x + h * 0.1, o.y - h * 0.2); } ctx.stroke(); }
+    } else if (o.kind === 'bumper') { // バンパー（当たると光る）
+      const lit = now - (o.flash || 0) < 180;
+      const g = ctx.createRadialGradient(o.x - o.r * 0.3, o.y - o.r * 0.3, o.r * 0.1, o.x, o.y, o.r);
+      g.addColorStop(0, lit ? '#ffffff' : '#ffd2f0'); g.addColorStop(0.55, lit ? '#ffe36b' : '#ff5cb8'); g.addColorStop(1, '#a0186e');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * (lit ? 1.08 : 1), 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = lit ? '#fff6a0' : '#ffe0f4'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 0.62, 0, Math.PI * 2); ctx.stroke();
+      if (lit) { ctx.shadowColor = '#ffe36b'; ctx.shadowBlur = 16; ctx.stroke(); }
+    } else { // 岩
+      const g = ctx.createRadialGradient(o.x - o.r * 0.35, o.y - o.r * 0.4, o.r * 0.1, o.x, o.y, o.r);
+      g.addColorStop(0, '#b9b2a6'); g.addColorStop(0.6, '#7d766c'); g.addColorStop(1, '#4b463f');
+      ctx.fillStyle = g; ctx.beginPath();
+      for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI * 2, rr = o.r * (0.92 + 0.08 * Math.sin(i * 2.7 + o.seed * 20)); i ? ctx.lineTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr) : ctx.moveTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr); }
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(40,36,30,0.8)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = 'rgba(40,36,30,0.5)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(o.x - o.r * 0.2, o.y - o.r * 0.5); ctx.lineTo(o.x + o.r * 0.05, o.y - o.r * 0.1); ctx.lineTo(o.x - o.r * 0.1, o.y + o.r * 0.3); ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -8351,6 +8403,23 @@ function updateHPUI() {
   const enTrait = getEnemyTrait(en);
   const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
   enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（試練の塔）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
+  renderEnemyTraitBadge(en, enTrait);
+}
+// ステージ右上に、今の敵の特徴をアイコン＋短い文字で小さく表示
+const ENEMY_TRAIT_ICONS = { stack: '🍡', jumbo: '🫧', charge: '💨', spinGuard: '🛡️', split: '✂️', splitMany: '✂️', grow: '📈', attackMagic: '🔥', healMagic: '💚', homing: '🎯', mines: '🔥', deathMagic: '💀', merge: '🧩', megaSlime: '🫧' };
+const ENEMY_TRAIT_LABELS_EXTRA = { megaSlime: '叩くと分裂→合体' };
+function renderEnemyTraitBadge(en, trait) {
+  const el = document.getElementById('enemyTraitBadge'); if (!el) return;
+  const tags = [];
+  if (en && !en.isDying && phase !== 'gameover') {
+    if (en.isBoss) tags.push(['👑 ボス', 'warn']);
+    if (en.isGiant) tags.push(['⬆️ 激デカ', 'warn']);
+    if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
+    if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' ? 'warn' : '']);
+    if (isSwarmStage(game.stage) && !en.isBoss) tags.push(['👥 大群', '']);
+  }
+  const html = tags.map(([t, c]) => `<span class="${c}">${t}</span>`).join('');
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
 
 const statModal = document.getElementById('statModal');
@@ -9886,7 +9955,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 const PU_EXCLUDED_SKILLS = ['skillParalyze']; // レベルアップ3択に出さないスキル
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
+  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg', 'critDmg'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     if (PU_EXCLUDED_SKILLS.includes(id)) continue;
@@ -9926,6 +9995,7 @@ function openPowerUp() {
   phase = 'paused';
   document.getElementById('powerUpModal').classList.add('show');
   playGachaSound('rare');
+  refreshBgm(); // 3択中は明るいレベルアップの曲
   puDeadline = Date.now() + PU_AUTO_MS;
   clearInterval(puTimer); puTimer = setInterval(tickPowerUpTimer, 250); tickPowerUpTimer();
 }
@@ -10008,6 +10078,7 @@ function finishPowerUp(list) {
   clearInterval(puTimer);
   list.forEach(applyPowerUp);
   document.getElementById('powerUpModal').classList.remove('show');
+  refreshBgm(); // 戦闘の曲に戻す
   powerUpPending = false;
   phase = 'battle';
   if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
