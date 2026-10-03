@@ -10219,17 +10219,22 @@ function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大し�
   });
 }
 // パワーアップ選択音：上へ駆け上がる「ギュイーン」＋分散和音＋キラキラの余韻で締める
-function playPowerUpSound() {
+function playPowerUpSound() { // パチンコの当たりのような「キュイン！キュイン！」と、きらびやかな決め音
   if (!audioCtx || isBattleSfxMuted()) return;
-  thump(220, 1760, 0.32, 0.05, 'sawtooth');          // 上昇スイープ
-  thump(110, 880, 0.32, 0.04, 'square');
-  filteredNoise(0, 0.3, 0.12, 3000, 0.7, 'bandpass'); // 風切り
-  [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => { // ドミソドミの駆け上がり
-    thump(f, f, 0.14, 0.07, 'square', 0.28 + i * 0.055);
-    thump(f * 2, f * 2, 0.1, 0.02, 'triangle', 0.28 + i * 0.055);
-  });
-  [1046.5, 1318.5, 1567.98, 2093].forEach(f => thump(f, f, 0.7, 0.035, 'triangle', 0.58)); // 決めの和音
-  [2637, 3136, 3520, 4186, 3520, 4699].forEach((f, i) => thump(f, f, 0.12, 0.018, 'sine', 0.62 + i * 0.06)); // キラキラ
+  const kyuin = (t0, top) => {
+    const t = audioCtx.currentTime + t0, o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'square'; o2.type = 'sawtooth';
+    o.frequency.setValueAtTime(700, t); o.frequency.exponentialRampToValueAtTime(top, t + 0.16); o.frequency.setValueAtTime(top, t + 0.24);
+    o2.frequency.setValueAtTime(704, t); o2.frequency.exponentialRampToValueAtTime(top * 1.005, t + 0.16);
+    const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 28; lg.gain.value = top * 0.03; lfo.connect(lg); lg.connect(o.frequency); // ビブラートでキラキラ
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.07 * game.sfxVolume, t + 0.02); g.gain.setValueAtTime(0.07 * game.sfxVolume, t + 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    o.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + 0.32); });
+  };
+  kyuin(0, 2800); kyuin(0.26, 3600);                                  // キュイン！キュイン！
+  thump(1047, 1047, 0.6, 0.05, 'square', 0.56); thump(1319, 1319, 0.6, 0.04, 'square', 0.56); thump(1568, 1568, 0.6, 0.04, 'square', 0.56); // ジャーン
+  thump(130, 60, 0.3, 0.35, 'sine', 0.56);                            // ドン
+  [2093, 2637, 3136, 4186, 3136, 4186, 5274].forEach((f, i) => thump(f, f, 0.1, 0.02, 'sine', 0.6 + i * 0.05)); // キラキラ
 }
 function finishPowerUp(list) {
   showPowerUpZoom(list);
