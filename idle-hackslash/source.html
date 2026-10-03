@@ -3229,11 +3229,18 @@ function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
   const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage)));
   const baseAtk = Math.round(6 + stage * 2.4);
+  const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階層ごとの節目のボスは別格に強い
   return {
-    hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT) : baseHp,
-    atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT) : baseAtk,
-    isBoss
+    hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT * (ms ? ms.hp : 1)) : baseHp,
+    atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1)) : baseAtk,
+    isBoss, milestone: ms
   };
+}
+// 節目のボス：100階層ごと・1000階層ごとに、HP・攻撃力・大きさ・報酬が跳ね上がる
+function getMilestoneBoss(stage) {
+  if (stage % 1000 === 0) return { label: `${stage}階層の覇王`, hp: 6, atk: 2.2, radius: 1.6, reward: 10 };
+  if (stage % 100 === 0) return { label: `${stage}階層の主`, hp: 3, atk: 1.5, radius: 1.3, reward: 4 };
+  return null;
 }
 
 const SKIP_DROP_TABLE = [
@@ -5534,7 +5541,10 @@ function daysBetweenKeys(a, b) {
   return Math.round((db - da) / 86400000);
 }
 function showBossWarning() {
+  const ms = game.stage % 10 === 0 && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは特別な警告
+  bossWarning.textContent = ms ? `⚠ ${ms.label} ⚠` : 'WARNING';
   bossWarning.classList.add('show');
+  if (ms) { shakeScreen(); setTimeout(playWarningSound, 600); }
   playWarningSound();
   setTimeout(() => bossWarning.classList.remove('show'), 1800);
 }
@@ -7361,7 +7371,7 @@ function makeBall(isPlayer) {
       ...farSpawnPoint(0.72),
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
       maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
-      radius: isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? 34 : 16,
+      radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? 34 : 16) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
       glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
       shape: es.isBoss ? 'emoji' : (isEmoji ? 'emoji' : style.shape),
@@ -8715,7 +8725,7 @@ function renderEnemyTraitBadge(en, trait) {
   const el = document.getElementById('enemyTraitBadge'); if (!el) return;
   const tags = [];
   if (en && !en.isDying && phase !== 'gameover') {
-    if (en.isBoss) tags.push(['👑 ボス', 'warn']);
+    if (en.isBoss) tags.push([en.milestone && !game.skipChallenge ? `👑 ${en.milestone.label}` : '👑 ボス', 'warn']);
     if (en.isGiant) tags.push(['⬆️ 激デカ', 'warn']);
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' ? 'warn' : '']);
@@ -8767,7 +8777,8 @@ function onStageClear() {
   const isBossStage = game.stage % 10 === 0;
   const defeated = balls.find(ball => !ball.isPlayer);
   const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
-  const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
+  const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
+  const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
     const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
     game.gems += metalGems;
@@ -8776,7 +8787,8 @@ function onStageClear() {
   }
   game.coins += coinGain;
   const giantKill = !!(defeated && defeated.isGiant);
-  if (isBossStage) game.gems += giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5;
+  if (isBossStage) game.gems += (giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5) * (msBoss ? msBoss.reward : 1);
+  if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? 'legendary' : 'epic'); }
   if (giantKill) {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
@@ -8784,7 +8796,7 @@ function onStageClear() {
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else playStageClearSound(); // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
-  if (isBossStage) spawnDamageText(arena.x, arena.y, '+5 💎', '#64e8ff');
+  if (isBossStage) spawnDamageText(arena.x, arena.y, `+${5 * (msBoss ? msBoss.reward : 1)} 💎`, '#64e8ff');
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
