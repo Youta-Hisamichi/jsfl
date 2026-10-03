@@ -949,6 +949,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .bcf-sub { margin-top: 6px; font-size: 0.9rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); animation: bcfPop 0.7s 0.25s cubic-bezier(.34,1.56,.64,1) both; }
 @keyframes bcfPop { 0% { transform: scale(2.6); opacity: 0; } 60% { transform: scale(0.92); opacity: 1; } 100% { transform: scale(1); } }
 .bcf-confetti i { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; animation: lbFall linear forwards; }
+.dbg-now-bgm { grid-column: 1 / -1; font-size: 0.72rem; font-weight: 800; padding: 6px 8px; border-radius: 8px; border: 1px solid #ffb14f; color: var(--text); background: rgba(255,177,79,0.08); }
 .debug-pause-btn { grid-column: 1 / -1; font-weight: 900; border-color: #ffb14f !important; }
 
 #debugRow { background: color-mix(in srgb, var(--panel) 92%, transparent); border-radius: 12px; padding: 8px; }
@@ -1308,7 +1309,7 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
       <button data-debug="pause" id="debugPauseBtn" class="debug-pause-btn">⏸ 一時停止（T キー）</button>
-      <button data-debug="bgmNow" class="debug-pause-btn">🎶 今の曲名</button>
+      <div class="dbg-now-bgm" id="dbgNowBgm">🎶 再生中：—</div>
       <div class="debug-cat">💰 通貨</div>
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
@@ -6503,12 +6504,19 @@ function playBgmTrack(type) {
   stopSong();
   if (BGM_SONGS[type]) startSong(type); // 通常戦闘・ボス戦は多重トラックの曲
   else scheduleBgmStep(type, 0, bgmToken);
+  updateDebugNowBgm();
+}
+function updateDebugNowBgm() { // デバッグパネル上部に今の曲名を常に表示
+  const el = document.getElementById('dbgNowBgm'); if (!el) return;
+  const info = BGM_INFO.find(b => b.key === currentBgmType);
+  el.textContent = '🎶 再生中：' + (!audioCtx || !currentBgmType ? '（まだ鳴っていません）' : info ? info.name : currentBgmType);
 }
 function stopBgm() {
   bgmToken++;
   currentBgmType = null;
   clearTimeout(bgmTimer);
   stopSong();
+  updateDebugNowBgm();
 }
 function playUiTapSound() { playTone(880, 0.045, 'triangle', 0.08, 1320); }
 function playTabSound() { playTone(660, 0.04, 'square', 0.035, 880); setTimeout(() => playTone(1320, 0.05, 'square', 0.03), 35); }
