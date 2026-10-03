@@ -1447,6 +1447,8 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
         <div class="record" data-goal-row="bestCoins">BEST<strong id="bestCoinsNum" data-unit="枚">0</strong>コイン所持数<div class="rec-goal" data-goal="bestCoins"></div></div>
         <div class="record" data-goal-row="totalKills">TOTAL<strong id="totalKillsNum" data-unit="体">0</strong>キル<div class="rec-goal" data-goal="totalKills"></div></div>
         <div class="record" data-goal-row="totalTaps">TOTAL<strong id="totalTapsNum" data-unit="回">0</strong>タップ<div class="rec-goal" data-goal="totalTaps"></div></div>
+        <div class="record" data-goal-row="totalBounces">TOTAL<strong id="totalBouncesNum" data-unit="回">0</strong>反射回数<div class="rec-goal" data-goal="totalBounces"></div></div>
+        <div class="record" data-goal-row="maxBounceChain">MAX<strong id="maxBounceChainNum" data-unit="連鎖">0</strong>反射連鎖<div class="rec-goal" data-goal="maxBounceChain"></div></div>
         <div class="record" data-goal-row="reincarnations">TOTAL<strong id="rebornNum" data-unit="回">0</strong>転生回数<div class="rec-goal" data-goal="reincarnations"></div></div>
         <div class="record" data-goal-row="totalSpent">TOTAL<strong id="totalSpentNum" data-unit="枚">0</strong>消費コイン<div class="rec-goal" data-goal="totalSpent"></div></div>
         <div class="record" data-goal-row="maxDamage">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ<div class="rec-goal" data-goal="maxDamage"></div></div>
@@ -3365,6 +3367,8 @@ const RECORD_GOALS = {
   bestCoins: { get: () => game.bestCoins || 0, goal: geo(1000, 10), unit: '枚' },
   totalKills: { get: () => game.totalKills || 0, goal: listThen([50, 100, 300, 1000, 3000, 10000], 3), unit: '体' },
   totalTaps: { get: () => game.totalTaps || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
+  totalBounces: { get: () => game.totalBounces || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
+  maxBounceChain: { get: () => game.maxBounceChain || 0, goal: listThen([3, 5, 8, 10, 15], 1.5), unit: '連鎖' },
   reincarnations: { get: () => game.reincarnations || 0, goal: listThen([1, 3, 5, 10, 20, 30, 50], 1.5), unit: '回' },
   totalSpent: { get: () => game.totalCoinsSpent || 0, goal: geo(1000, 10), unit: '枚' },
   maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
@@ -3440,6 +3444,8 @@ function updateStatsUI() {
   bestStageNumEl.textContent = formatCoinNumber(game.bestStage);
   totalKillsNumEl.textContent = formatCoinNumber(game.totalKills);
   totalTapsNumEl.textContent = formatCoinNumber(game.totalTaps);
+  document.getElementById('totalBouncesNum').textContent = formatCoinNumber(game.totalBounces || 0);
+  document.getElementById('maxBounceChainNum').textContent = formatCoinNumber(game.maxBounceChain || 0);
   maxDamageNumEl.textContent = formatCoinNumber(game.maxDamage || 0);
   document.getElementById('bestTowerJumpNum').textContent = (game.bestTowerJump || 0).toLocaleString('ja-JP');
   maxDpsNumEl.textContent = formatCoinNumber(game.maxDps || 0);
@@ -4012,6 +4018,7 @@ function moveHoldRush(ball, speedMult) {
 const PULL_WALL_SCALE = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
 function playPullWallChain(ball, rush) {
   rush.wallChain = (rush.wallChain || 0) + 1;
+  if (rush.wallChain > (game.maxBounceChain || 0)) game.maxBounceChain = rush.wallChain; // 戦歴の最大反射連鎖
   const n = rush.wallChain, f = 659 * Math.pow(2, PULL_WALL_SCALE[Math.min(n - 1, PULL_WALL_SCALE.length - 1)] / 12);
   thump(f, f * 0.98, 0.2, 0.07, 'square');
   thump(f * 2, f * 2, 0.12, 0.03, 'triangle');
@@ -7708,6 +7715,7 @@ function obstacleBounce(ball) {
     if (dot < 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; }
     if (ball.kbx || ball.kby) { const kd = ball.kbx * nx + ball.kby * ny; if (kd < 0) { ball.kbx -= 2 * kd * nx; ball.kby -= 2 * kd * ny; } }
     const now = Date.now(), hard = dot < -0.6 && now - (ball.wallSoundAt || 0) > 150;
+    if (dot < -0.6 && isMainPlayerBall(ball)) game.totalBounces = (game.totalBounces || 0) + 1; // 障害物での反射も数える
     if (o.kind === 'bumper') { // バンパー：勢いを増して弾き返す
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = Math.min(14, Math.max(sp * 1.3, 6));
       ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
@@ -7773,7 +7781,7 @@ function wallBounce(ball) {
     ball.vy -= 2 * dot * ny;
     const now = Date.now();
     if (dot > 0.6 && now - (ball.wallSoundAt || 0) > 150) { ball.wallSoundAt = now; if (ball.isPlayer) playPlayerWallSound(); else playEnemyWallSound(); }
-    if (ball.isPlayer && !ball.isClone && !ball.isCompanion) { ball.lastWallAt = now; applyBounceReward(); }
+    if (ball.isPlayer && !ball.isClone && !ball.isCompanion) { ball.lastWallAt = now; applyBounceReward(); if (dot > 0.6) game.totalBounces = (game.totalBounces || 0) + 1; } // 戦歴の反射回数
   }
 }
 
@@ -8759,8 +8767,17 @@ function completeReincarnation() {
   rebirthChest = { pick, rebirthGemGain };
   rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
-const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 750;
+const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 1100;
 let rebirthChest = null;
+// 宝箱を開ける音：留め金が外れる「カチャッ」→ ふたがきしんで開く「ギィ…」→ 光があふれる「パァッ」
+function playChestOpenSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  filteredNoise(0, 0.04, 0.3, 3200, 2, 'bandpass'); thump(1800, 1400, 0.05, 0.05, 'square');   // カチャッ
+  filteredNoise(0.06, 0.05, 0.25, 2600, 2, 'bandpass');
+  thump(180, 260, 0.22, 0.12, 'sawtooth', 0.12); filteredNoise(0.12, 0.2, 0.1, 600, 4, 'bandpass'); // ギィ…
+  thump(90, 50, 0.18, 0.3, 'sine', 0.3);                                                     // ふたが開き切る「ゴトッ」
+  [1047, 1319, 1568, 2093].forEach((f, i) => thump(f, f, 0.35, 0.03, 'triangle', 0.32 + i * 0.04)); // パァッ（光）
+}
 function openRebirthChest() {
   if (!rebirthChest) return;
   const { pick, rebirthGemGain } = rebirthChest;
@@ -8776,7 +8793,7 @@ function openRebirthChest() {
   toastIcon.style.transition = 'none'; toastIcon.style.translate = `${dx}px ${dy}px`; // 魔法陣の中心から
   void toastIcon.offsetWidth;
   toastIcon.style.transition = 'translate 0.9s cubic-bezier(.2,.8,.3,1)'; toastIcon.style.translate = '0px 0px'; // せり上がって定位置へ
-  playGachaSound(pick.rarity);
+  playChestOpenSound(); setTimeout(() => playGachaSound(pick.rarity), 260); // 宝箱が開く「ガチャッ…パカッ」→ レア度の音
   rebirthSkippable = true;
   rebirthTimer = setTimeout(finishRebirth, 6500);
 }
@@ -10179,7 +10196,7 @@ function fullReset() {
   if (animId) cancelAnimationFrame(animId);
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
-  game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0;
+  game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
