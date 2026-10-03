@@ -5994,13 +5994,13 @@ const BGM_SONGS = {
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks s ks s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s ks s ks ks ks ks',
   },
   levelup: {
-    bpm: 132,
+    bpm: 150,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.026, notes: 'E5 G5 C6 = E6 = D6 C6 | D6 = B5 = G5 = = = | F5 A5 C6 = F6 = E6 D6 | E6 = = = C6 = = = | E5 G5 C6 = E6 = G6 = | F6 = D6 = B5 = D6 F6 | E6 = C6 = A5 = D6 = | C6 = G5 = C6 = = =' },
-      { type: 'vrc6pulse12', gain: 0.012, notes: 'C4 E4 G4 E4 C4 E4 G4 E4 | G3 B3 D4 B3 G3 B3 D4 B3 | F3 A3 C4 A3 F3 A3 C4 A3 | C4 E4 G4 E4 C4 E4 G4 E4 | C4 E4 G4 E4 C4 E4 G4 E4 | G3 B3 D4 B3 G3 B3 D4 B3 | A3 C4 E4 C4 A3 C4 E4 C4 | C4 E4 G4 E4 C4 E4 G4 E4' },
-      { type: 'triangle', gain: 0.05, notes: 'C2 = C3 = C2 = C3 = | G1 = G2 = G1 = G2 = | F1 = F2 = F1 = F2 = | C2 = C3 = C2 = C3 = | C2 = C3 = C2 = C3 = | G1 = G2 = G1 = G2 = | A1 = A2 = A1 = A2 = | C2 = G1 = C2 = G1 =' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'G5 = - G5 A#5 = C6 = | D6 = C6 A#5 - G5 = = | F5 = - F5 A5 = C6 = | D#6 = D6 C6 - A5 = = | G5 = - G5 A#5 = D6 = | F6 = D#6 D6 C6 = A#5 = | C6 D6 D#6 = D6 C6 A#5 A5 | G5 = D6 = G6 = = =' },
+      { type: 'vrc6pulse12', gain: 0.015, notes: '- G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - | - G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - | - F4+A4+C5 - - F4+A4+C5 - F4+A4+C5 - | - D#4+G4+A#4 - - D#4+G4+A#4 - D#4+G4+A#4 - | - G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - | - D#4+G4+A#4 - - D#4+G4+A#4 - D#4+G4+A#4 - | - F4+A4+C5 - - F4+A4+C5 - F4+A4+C5 - | - D4+F#4+A4 - - D4+F#4+A4 - D4+F#4+A4 -' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'G1 = G1 G2 - G1 D2 G2 | G1 = G1 G2 - G1 D2 G2 | F1 = F1 F2 - F1 C2 F2 | D#1 = D#1 D#2 - D#1 A#1 D#2 | G1 = G1 G2 - G1 D2 G2 | D#1 = D#1 D#2 - D#1 A#1 D#2 | F1 = F1 F2 - F1 C2 F2 | D2 = D2 D3 - D2 A1 D3' },
     ],
-    drums: 'k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h h h s h h h | k h s h s s s s',
+    drums: 'k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | s s k s s s ks ks',
   },
   boss: {
     bpm: 164,
@@ -6362,7 +6362,7 @@ const BGM_INFO = [
   { key: 'battle24', name: '戦闘24 裏通りの拳', desc: '刻むロックベースとパワーコードのリフ、ブルージーな音を混ぜた熱い旋律の街の殴り合い。VRC6風チップチューン。イ短調（ベルトスクロールアクション系の作風）・BPM156' },
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
-  { key: 'levelup', name: 'レベルアップ ひらめきの時間', desc: '3択パワーアップを選んでいる間に流れる、明るく弾む短いループ。VRC6風チップチューン。ハ長調・BPM132' },
+  { key: 'levelup', name: 'レベルアップ 作戦会議', desc: '3択パワーアップを選んでいる間に流れる、軍楽隊のようなブラスの合いの手とファンキーに跳ねるベースの陽気なループ。VRC6風チップチューン。ト短調（アーケードのミリタリーアクション系の作風）・BPM150' },
   { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
