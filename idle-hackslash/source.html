@@ -4925,6 +4925,27 @@ function drawEnemyAtkPhase(e) {
   }
   ctx.restore();
 }
+// 謎魔法の演出：虹色の魔法陣が回りながら広がり、「？」が渦を巻いて飛び散る
+let mysteryFx = null;
+function drawMysteryFx() {
+  if (!mysteryFx) return;
+  const k = (Date.now() - mysteryFx.start) / 1100;
+  if (k >= 1) { mysteryFx = null; return; }
+  const { x, y } = mysteryFx, R = arena.radius * (0.25 + k * 1.1);
+  ctx.save();
+  ctx.globalAlpha = 0.35 * (1 - k); ctx.fillStyle = mysteryFx.color || '#ffffff'; arenaPath(); ctx.fill(); // 画面がぱっと光る
+  ctx.globalAlpha = 1 - k;
+  for (let r = 0; r < 3; r++) { // 虹色の輪
+    ctx.lineWidth = 6 - r * 1.5; ctx.strokeStyle = `hsl(${(Date.now() / 4 + r * 120) % 360},90%,62%)`;
+    ctx.beginPath(); ctx.arc(x, y, R * (1 - r * 0.22), 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.translate(x, y); ctx.rotate(k * Math.PI * 3); // 回る魔法陣
+  ctx.strokeStyle = `rgba(255,255,255,${0.8 * (1 - k)})`; ctx.lineWidth = 2;
+  ctx.beginPath(); for (let i = 0; i <= 5; i++) { const a = i * Math.PI * 4 / 5 - Math.PI / 2, rr = R * 0.55; i ? ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.stroke();
+  ctx.font = `bold ${18 + k * 14}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = R * 0.75; ctx.fillStyle = `hsl(${i * 45},90%,65%)`; ctx.fillText('？', Math.cos(a) * rr, Math.sin(a) * rr); }
+  ctx.restore();
+}
 function drawEnemyTelegraphs() {
   const now = Date.now();
   for (const e of balls) {
@@ -10021,6 +10042,7 @@ function draw() {
   drawExpGems();
   drawEnemyTraitEffects();
   drawNovaFx();
+  drawMysteryFx();
 
   drawTapBonus();
   for (const p of particles) {
@@ -10205,7 +10227,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 const PU_EXCLUDED_SKILLS = ['skillParalyze']; // レベルアップ3択に出さないスキル
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg', 'critDmg'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
+  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg', 'critDmg', 'compAtk'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     if (PU_EXCLUDED_SKILLS.includes(id)) continue;
@@ -10213,7 +10235,14 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
     pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '<span class="ico-combo atkup-ico">🗡️<span class="ico-badge">⏫</span></span>' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
   }
-  if (getCompanionTotal() < getPartyLimit() || Object.keys(game.companions.recruited).length) pool.push({ kind: 'comp', col: '#ff9a4f', label: '仲間', icon: ico({ icon: '🐾', img: ICON_IMAGES.tab_companion }), name: '仲間を1人召喚', desc: 'ランダムな仲間が加入（満員なら覚醒）' });
+  { // 仲間は個別に選べる：まだいない仲間は「加入」、もういる仲間はレベルアップ
+    const room = getCompanionTotal() < getPartyLimit(), lvN = 2 + Math.floor(game.stage / 15);
+    const ids = Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && (getCompanionCount(id) > 0 || room)).sort(() => Math.random() - 0.5).slice(0, 3);
+    for (const id of ids) {
+      const c = COMPANIONS[id], has = getCompanionCount(id) > 0;
+      pool.push({ kind: 'compPick', id, n: lvN, col: '#ff9a4f', label: '仲間', icon: companionIconHtml(id), name: has ? `${c.name} Lv+${lvN}` : `${c.name} 加入`, desc: has ? `Lv${(game.companions.level[id] || 0) + 1} → Lv${(game.companions.level[id] || 0) + 1 + lvN}` : '仲間に加わって一緒に戦う' });
+    }
+  }
   for (const id in RUN_BUFFS) {
     const lv = getRunBuff(id), B = RUN_BUFFS[id];
     if (lv < RUN_BUFF_MAX) pool.push({ kind: 'buff', id, col: '#2f8fe0', label: '強化', icon: B.icon, name: `${B.name} Lv${lv + 1}`, desc: B.desc });
@@ -10374,6 +10403,15 @@ function applyPowerUp(c) {
     if (!game.shopOwned[c.id]) { game.shopOwned[c.id] = true; game.skillLevels[c.id] = 1; const eq = getEquippedSkills(); if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(c.id)) eq.push(c.id); }
     else game.skillLevels[c.id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(c.id) + 1);
     updateSkillButtonVisibility(); renderSkillGacha();
+  } else if (c.kind === 'compPick') {
+    const id = c.id, has = getCompanionCount(id) > 0;
+    if (has) { game.companions.level[id] = (game.companions.level[id] || 0) + c.n; showNotice(`🐾 ${COMPANIONS[id].name} がレベルアップ！（Lv${game.companions.level[id] + 1}）`); }
+    else {
+      const r = grantCompanion(id);
+      if (game.companions.alive[r.id] && !balls.some(ball => ball.isCompanion && ball.companionId === r.id)) { const cb = makeCompanionBall(r.id); balls.push(cb); spawnHitParticles(cb.x, cb.y, '#ff9a4f'); }
+      showNotice(`🐾 ${COMPANIONS[id].name}：${r.label}`);
+    }
+    refreshCompanionBalls(); refreshPlayerBallStats(false); renderCompanionList();
   } else if (c.kind === 'comp') {
     const r = grantCompanion(pickCompanionId());
     // 選択中は phase が 'battle' ではないため grantCompanion では戦場に出ない → ここで出現させる
@@ -11756,7 +11794,11 @@ mysteryBtn.addEventListener('click', event => {
   const total = MYSTERY_EFFECTS.reduce((sum, ef) => sum + ef.w, 0);
   let roll = Math.random() * total;
   const ef = MYSTERY_EFFECTS.find(x => (roll -= x.w) < 0) || MYSTERY_EFFECTS[0];
-  [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f * (0.9 + Math.random() * 0.2), 0.1, 'triangle', 0.1), i * 70));
+  [523, 659, 784, 1046, 1319, 1568, 2093, 1568, 2637].forEach((f, i) => setTimeout(() => playTone(f * (0.92 + Math.random() * 0.16), 0.09, i % 2 ? 'square' : 'triangle', 0.09), i * 55)); // ルーレットのように鳴る
+  setTimeout(() => { thump(110, 40, 0.5, 0.5); filteredNoise(0, 0.6, 0.2, 5000, 0.6, 'highpass'); }, 500);
+  mysteryFx = { start: Date.now(), color: ef.color, x: ctxs.player.x, y: ctxs.player.y };
+  for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 5; particles.push({ x: ctxs.player.x, y: ctxs.player.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: `hsl(${Math.floor(Math.random() * 360)},90%,65%)`, decay: 0.02 }); }
+  shakeScreenLight();
   spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 18, '❓ 謎魔法…', '#7fe0ff', 0.02);
   ef.fn(ctxs);
   showNotice('❓ 謎魔法 → ' + ef.name);
