@@ -198,8 +198,8 @@ function updateJumboSlime(e, speedMult) {
   }
 }
 const MAX_FREE_ADDS = 3;          // 通常ステージで同時に出る雑魚の最大数（本体は別）
-const SWARM_ADDS = 9;             // 大群ステージの雑魚の数
-function isSwarmStage(stage) { return stage % 10 === 5; } // 大群ステージ（5, 15, 25…） // 敵の即死魔法の成功率（バリアで防げる）
+const SWARM_ADDS = 6;             // 大群ステージの雑魚の数（控えめ）
+function isSwarmStage(stage) { return stage >= 30 && stage % 20 === 15; } // 大群ステージ（序盤は無し。35, 55, 75…と20階層ごと） // 敵の即死魔法の成功率（バリアで防げる）
 let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
 let enemyMines = [];           // 敵の炎の罠（カボチャヘッド）
 function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
