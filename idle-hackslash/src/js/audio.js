@@ -587,6 +587,7 @@ function updateSkipBtnVisibility() {
   if (hide) rebornBtn.style.display = 'none'; // 転生するボタンもゲームオーバー・転生中は出さない
   else rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
   document.body.classList.toggle('gameover-lock', gameOverBgm);
+  if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
 }
 function refreshBgm() {
   if (!audioCtx) return;

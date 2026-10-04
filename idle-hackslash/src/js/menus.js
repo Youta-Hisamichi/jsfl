@@ -313,8 +313,8 @@ function getEarlyPlayerHpRate(stage) {
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
   return EARLY_PLAYER_HP_MIN_RATE + (1 - EARLY_PLAYER_HP_MIN_RATE) * t;
 }
-const BOSS_HP_MULT = 4.5;  // ボスのHP倍率（通常敵比）
-const BOSS_ATK_MULT = 1.8; // ボスの攻撃力倍率（通常敵比）
+const BOSS_HP_MULT = 6;    // ボスのHP倍率（通常敵比）
+const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
 const EARLY_HP_MIN_RATE = 0.1;
 const EARLY_HP_UNTIL_STAGE = 20;
 function getEarlyHpRate(stage) {
@@ -569,6 +569,7 @@ function updateTabBadges() {
   for (const tab in set) { const b = tabBar.querySelector(`.tab-btn[data-tab="${tab}"]`); if (b) b.classList.toggle('has-new', set[tab] && getActiveTab() !== tab); }
 }
 function updateStatsUI() {
+  if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
   updateTabBadges();
   stageNumEl.textContent = game.stage;
   superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
@@ -771,10 +772,21 @@ function launchPull(ang, lv) { // 引っ張り攻撃の発射（ang の向きへ
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
 }
+function isAutoMode() { return phase === 'battle' && !chargeHold && !playerDrag && getActiveTab() === 'game' && Date.now() - lastUserInputAt >= AUTO_PULL_IDLE_MS; }
+function drawAutoLabel() { // オート中は自キャラの近くに AUTO と表示
+  if (!isAutoMode()) return;
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const a = 0.75 + Math.sin(Date.now() / 300) * 0.25, x = pl.x, y = pl.y + pl.radius + 18;
+  ctx.save(); ctx.globalAlpha = a; ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const w = ctx.measureText('AUTO').width + 10;
+  ctx.fillStyle = 'rgba(20,120,255,0.85)'; ctx.beginPath(); ctx.roundRect(x - w / 2, y - 8, w, 16, 8); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText('AUTO', x, y + 0.5);
+  ctx.restore();
+}
 // 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
-const AUTO_PULL_IDLE_MS = 5000, AUTO_PULL_GAP_MS = [2500, 5000];
+const AUTO_PULL_IDLE_MS = 3000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
-['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
+['pointerdown', 'pointerup', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
 function tickAutoPull() {
   const now = Date.now();
   if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') return;

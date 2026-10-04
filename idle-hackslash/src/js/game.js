@@ -5,6 +5,11 @@ function step() {
   const speedMult = getEffectiveSpeed();
   tickObstacles();
   tickAutoPull();
+  tickBossTimer();
+  if (!isBossFight() && !game.skipChallenge) { // お試し：ボス戦以外では自機のHPが減らない
+    if (a.safeHp != null && a.hp < a.safeHp) a.hp = Math.min(a.maxHp, a.safeHp);
+    a.safeHp = a.hp;
+  } else a.safeHp = null;
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   updateExpGems(speedMult);
@@ -474,9 +479,9 @@ function onStageClear() {
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
   }
-  if (!filmMode) game.stage++; // 撮影モード中は同じステージ（同じ敵）を繰り返す
+  if (!filmMode && !(game.bossLoop && game.stage === game.bossLoop - 1)) game.stage++; // 撮影モード中・ボスに負けたあとのループ中は同じステージを繰り返す
   game.bestStage = Math.max(game.bestStage, game.stage);
-  stageAnnounceText = game.stage + '階層' + (isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
+  stageAnnounceText = game.stage + '階層' + (game.bossLoop && game.stage === game.bossLoop - 1 ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   meteors = []; adds = []; clearEnemyTraitObjects();
   for (const id in COMPANIONS) {
@@ -540,10 +545,66 @@ function endDeathFx() {
   clearTimeout(deathFxTimer);
   deathFx = null;
 }
+// ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階層をループ。「ボス再戦」で再挑戦 ----
+const BOSS_TIME_LIMIT_MS = 30000;
+let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
+function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
+function tickBossTimer() {
+  const now = Date.now(), boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0);
+  if (!boss || filmMode || phase !== 'battle') { bossTimerLastAt = now; if (!boss) bossTimerFor = null; return; }
+  if (bossTimerFor !== boss) { bossTimerFor = boss; bossTimeLeftMs = BOSS_TIME_LIMIT_MS; bossTimerLastAt = now; return; }
+  if (boss.spawnTimer > 0) { bossTimerLastAt = now; return; } // 出現演出中は数えない
+  bossTimeLeftMs -= Math.min(100, now - bossTimerLastAt); bossTimerLastAt = now; // 一時停止中やタブ切り替え中は進まない
+  if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossFail('time'); }
+}
+function drawBossTimer() {
+  if (!bossTimerFor || !isBossFight() || filmMode) return;
+  const s = Math.max(0, bossTimeLeftMs / 1000), urgent = s < 10;
+  ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.font = `900 ${urgent ? 22 : 18}px sans-serif`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+  const t = `⏱ ${s.toFixed(urgent ? 1 : 0)}`, y = arena.y - arena.radius + 8;
+  ctx.fillStyle = urgent ? (Math.floor(Date.now() / 250) % 2 ? '#ff4040' : '#ffd0d0') : '#ffffff';
+  ctx.strokeText(t, arena.x, y); ctx.fillText(t, arena.x, y);
+  ctx.restore();
+}
+function bossFail(reason) {
+  const bossStage = game.stage;
+  game.bossLoop = bossStage; game.stage = Math.max(1, bossStage - 1);
+  homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
+  bossTimerFor = null;
+  for (const id in COMPANIONS) if (game.companions.recruited[id]) { game.companions.alive[id] = true; game.companions.hp[id] = getCompanionMaxHP(id); }
+  spawnNextEnemy();
+  refreshPlayerBallStats(true);
+  const p = balls.find(isMainPlayerBall); if (p) p.safeHp = p.hp;
+  playDeathSound();
+  spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
+  showNotice(`${bossStage}階層のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
+  stageAnnounceText = game.stage + '階層 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+  startBgm('normal');
+  updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
+}
+function retryBoss() {
+  if (!game.bossLoop || phase !== 'battle') return;
+  game.stage = game.bossLoop; game.bossLoop = 0;
+  homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
+  refreshPlayerBallStats(true);
+  spawnBossWithWarning();
+  updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
+}
+function updateBossRetryBtn() {
+  const btn = document.getElementById('bossRetryBtn'); if (!btn) return;
+  btn.style.display = game.bossLoop && !gameOverBgm && !rebirthFlow ? '' : 'none';
+  if (game.bossLoop) btn.innerHTML = `👑 ボス再戦<small>${game.bossLoop}階層</small>`;
+}
 function onPlayerDeath(forceRebirth = false, skipFx = false) {
   if (filmMode && !forceRebirth) { const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; updateHPUI(); } return; } // 撮影モード中はやられない
   homingMissiles = [];
   if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
+  if (!forceRebirth) { // 転生は手動だけ：ボス戦で倒れたら1つ前の階層をループ、それ以外では倒れない
+    if (isBossFight()) { bossFail('death'); return; }
+    const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = p.hp; updateHPUI(); }
+    return;
+  }
   if (deathFx && !skipFx) return; // 演出中の二重呼び出しを防ぐ
   phase = 'paused';
   meteors = []; adds = []; clearEnemyTraitObjects();
@@ -680,7 +741,7 @@ function completeReincarnation() {
   const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
   if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
   game.rebirthChests.push(pick.id); // 転生ガチャの宝箱は開けずに左下へストック（中身は抽選済み）
-  game.coins = 0; game.stage = 1;
+  game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
   if (!document.getElementById('powerUpModal').classList.contains('show')) powerUpPending = false;
@@ -714,7 +775,7 @@ function completeReincarnation() {
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  rebirthTimer = setTimeout(finishRebirth, 2800);
+  rebirthTimer = setTimeout(finishRebirth, 6000); // 転生情報はじっくり読めるように
   renderChestTray(pick.rarity);
 }
 // 左下にストックした転生ガチャの宝箱を開ける（戦闘は止めて、開封演出→中身を獲得）
@@ -965,6 +1026,7 @@ function giveUpSkipChallenge() {
   updateHPUI();
   saveGame();
 }
+document.getElementById('bossRetryBtn').addEventListener('click', () => retryBoss());
 stageSkipBtn.addEventListener('click', event => {
   if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
   if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今は塔に挑めません', event.clientX, event.clientY); return; }
