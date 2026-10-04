@@ -946,7 +946,7 @@ const SPRITE_TAILWIND_MS = 1500;
 
 const game = {
   stage: 1, coins: 0, gems: 0, superGems: 0,
-  reincarnations: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
+  reincarnations: 0, rebirthLv: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
   upgrades: newUpgradeLevels(),
   coinCloneSlots: 0,
   shopOwned: {},
@@ -989,6 +989,9 @@ const game = {
 };
 
 
+// 転生Lv：転生前に進んだ階層が深いほど多く上がる（10階層ごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
+const REBIRTH_LV_BONUS = 0.03;
+function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
 function computeBonuses() {
   const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 };
   for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
@@ -1067,6 +1070,8 @@ function computeBonuses() {
 
   b.atkMult += game.rebirthBonus.atk;
   b.hpMult += game.rebirthBonus.hp;
+  const rlv = game.rebirthLv || 0; // 転生Lv：転生するたびに上がり、キャラの基礎能力がずっと強くなる
+  b.atkMult += rlv * REBIRTH_LV_BONUS; b.hpMult += rlv * REBIRTH_LV_BONUS;
   return b;
 }
 

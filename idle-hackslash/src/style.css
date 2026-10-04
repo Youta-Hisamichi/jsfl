@@ -1223,3 +1223,5 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .bcf-main .bcf-banner { display: block; width: min(300px, 80vw); margin: 0 auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
 .dbg-size { grid-column: 1 / -1; color: var(--text); text-align: left; margin: 4px 0 6px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); font-size: 0.8rem; line-height: 1.5; cursor: pointer; }
 .dbg-obs-img { width: 20px; height: 20px; vertical-align: middle; image-rendering: pixelated; }
+.chest-tray .tray-rebirth { border-color: #c792ea; box-shadow: 0 0 8px #b06cff; background: radial-gradient(circle, rgba(120,60,200,0.6), rgba(8,11,18,0.8)); }
+.chest-cancel-btn { opacity: 0.85; }

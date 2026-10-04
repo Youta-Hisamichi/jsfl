@@ -476,11 +476,11 @@ function fullReset() {
   if (animId) cancelAnimationFrame(animId);
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
-  game.reincarnations = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
+  game.reincarnations = 0; game.rebirthLv = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-  game.ownedArtifacts = {}; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+  game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
   lastAccelAt = Date.now() - ACCEL_COOLDOWN;

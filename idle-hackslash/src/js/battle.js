@@ -1150,6 +1150,7 @@ function loadGame() {
     const data = JSON.parse(raw);
     if (!data || !data.game) return false;
     Object.assign(game, data.game);
+    if (data.game.rebirthLv == null) game.rebirthLv = game.reincarnations || 0; // 転生Lvが無い昔のセーブ：これまでの転生1回につきLv1
     if (!Array.isArray(data.game.equippedSkills)) {
       game.equippedSkills = Object.keys(SKILL_GACHA_SKILLS).filter(id => game.shopOwned && game.shopOwned[id]).slice(0, game.skillSlots || 1);
     }
@@ -1625,11 +1626,11 @@ function dropTreasureChest(rarity) {
 }
 function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
-  const hc = getHeldChests();
-  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
+  const hc = getHeldChests(), rb = Array.isArray(game.rebirthChests) ? game.rebirthChests.length : 0;
+  el.innerHTML = (rb ? `<button data-open-rebirth="1" class="tray-rebirth" title="転生ガチャの宝箱（タップで開封）">${xi('x_reborn')}${rb > 1 ? `<b>${rb}</b>` : ''}</button>` : '') + CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
-  if (ev.target.closest('[data-open-all]')) { if (phase === 'battle') openChestDialog('all'); return; }
+  if (ev.target.closest('[data-open-rebirth]')) { if (phase === 'battle') openRebirthChestDialog(); return; }
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
   const k = b.dataset.openChest;
   if (!(getHeldChests()[k] > 0) || phase !== 'battle') return;
@@ -1646,7 +1647,8 @@ function openChestDialog(rarity) {
   document.getElementById('chestModalIcon').className = 'chest-big shake';
   document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱</span>`;
   document.getElementById('chestModalText').textContent = `残り ${getHeldChests()[rarity]} 個\n動画を見ると中身が3倍に！`;
-  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍開封' : '🎬 動画を見て3倍開封'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button>`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍開封' : '🎬 動画を見て3倍開封'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestCancelBtn').onclick = closeChestDialog;
   chestModal.classList.add('show');
   const open = mult => {
     const hc = getHeldChests(); if (!(hc[rarity] > 0)) return;
@@ -1684,6 +1686,18 @@ function openAllChestDialog() { // まとめて開封
   };
   document.getElementById('chestOpenBtn').onclick = () => openAll(1);
   document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }); };
+}
+function openRebirthChestDialog() { // 転生ガチャの宝箱：開けるか、開けずに戻るか
+  const n = Array.isArray(game.rebirthChests) ? game.rebirthChests.length : 0; if (!n) return;
+  chestPausedPhase = phase; phase = 'paused';
+  document.getElementById('chestModalIcon').innerHTML = xi('x_reborn');
+  document.getElementById('chestModalIcon').className = 'chest-big shake';
+  document.getElementById('chestModalTitle').innerHTML = '<span style="color:#c792ea">🔮 転生ガチャの宝箱</span>';
+  document.getElementById('chestModalText').textContent = `残り ${n} 個\n中身は遺物（開けるまでお楽しみ）`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbOpenBtn">開ける</button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestCancelBtn').onclick = closeChestDialog;
+  document.getElementById('rbOpenBtn').onclick = () => { closeChestDialog(); openStockedRebirthChest(); };
+  chestModal.classList.add('show');
 }
 function closeChestDialog() {
   chestModal.classList.remove('show');

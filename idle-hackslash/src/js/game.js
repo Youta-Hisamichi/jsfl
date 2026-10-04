@@ -672,10 +672,13 @@ function completeReincarnation() {
   continueBtn.style.display = 'none';
   giveUpBtn.style.display = 'none';
   const gemBase = getRebirthGemGain(); // ステージを戻す前に計算
+  const lvGain = getRebirthLvGain(game.stage);
+  game.rebirthLv = (game.rebirthLv || 0) + lvGain;
   const earlyRebirth = game.reincarnations < EARLY_REBIRTH_COUNT;
   const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
   const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
-  gainArtifact(pick.id);
+  if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
+  game.rebirthChests.push(pick.id); // 転生ガチャの宝箱は開けずに左下へストック（中身は抽選済み）
   game.coins = 0; game.stage = 1;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
@@ -699,17 +702,41 @@ function completeReincarnation() {
   saveGame();
   playRebirthSound();
   toastIcon.style.display = 'block';
-  toastIcon.innerHTML = xi({ common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' }[pick.rarity] || 'x_chest1');
+  toastIcon.innerHTML = xi('x_reborn');
   toastIcon.className = 'artifact-icon chest-shake';
   toast.classList.add('rebirth-reward'); // 背景に魔法陣
   toast.style.removeProperty('--chest-glow');
   toastBig.textContent = '輪廻転生……';
   toastBig.className = 'big reborn';
-  toastSub.textContent = `転生 ${game.reincarnations}回目！\n宝箱を開けています…（タップで開封）`;
+  toastSub.textContent = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n転生ガチャの宝箱を手に入れた！\n（画面左下からいつでも開けられます）`;
+  toast.classList.add('show');
+  clearTimeout(rebirthTimer);
+  rebirthChest = null; rebirthChestFromTray = false;
+  rebirthSkippable = true;
+  rebirthTimer = setTimeout(finishRebirth, 2800);
+  renderChestTray();
+}
+// 左下にストックした転生ガチャの宝箱を開ける（戦闘は止めて、開封演出→中身を獲得）
+let rebirthChestFromTray = false, rebirthTrayPausedPhase = null;
+function openStockedRebirthChest() {
+  if (!Array.isArray(game.rebirthChests) || !game.rebirthChests.length || phase !== 'battle') return;
+  const pick = ARTIFACT_BY_ID[game.rebirthChests.shift()];
+  renderChestTray();
+  if (!pick) { saveGame(); return; }
+  gainArtifact(pick.id); renderArtifactList(); updateStatsUI(); saveGame();
+  rebirthTrayPausedPhase = phase; phase = 'paused'; rebirthChestFromTray = true;
+  toastIcon.style.display = 'block';
+  toastIcon.innerHTML = xi({ common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' }[pick.rarity] || 'x_chest1');
+  toastIcon.className = 'artifact-icon chest-shake';
+  toast.classList.add('rebirth-reward');
+  toast.style.removeProperty('--chest-glow');
+  toastBig.textContent = '転生ガチャ';
+  toastBig.className = 'big reborn';
+  toastSub.textContent = '宝箱を開けています…（タップで開封）';
   toast.classList.add('show');
   rebirthSkippable = false;
   clearTimeout(rebirthTimer);
-  rebirthChest = { pick, rebirthGemGain };
+  rebirthChest = { pick, rebirthGemGain: 0 };
   rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
 const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 1100;
@@ -734,7 +761,7 @@ function openRebirthChest() {
   toastIcon.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color);
   toast.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color); // 開封したらレア度の色に光る
   const rar = RARITY_INFO[pick.rarity];
-  toastSub.innerHTML = `転生 ${game.reincarnations}回目！\n<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）\n+' + rebirthGemGain + ' 💎';
+  toastSub.innerHTML = `<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）' + (rebirthGemGain ? '\n+' + rebirthGemGain + ' 💎' : '');
   const dx = toast.clientWidth / 2 - (toastIcon.offsetLeft + toastIcon.offsetWidth / 2), dy = toast.clientHeight / 2 - (toastIcon.offsetTop + toastIcon.offsetHeight / 2);
   toastIcon.style.transition = 'none'; toastIcon.style.translate = `${dx}px ${dy}px`; // 魔法陣の中心から
   void toastIcon.offsetWidth;
@@ -753,6 +780,7 @@ function finishRebirth() {
   toastIcon.className = 'artifact-icon'; // 宝箱演出のクラスを戻す
   toastIcon.style.translate = ''; toastIcon.style.transition = '';
   toast.classList.remove('rebirth-reward');
+  if (rebirthChestFromTray) { rebirthChestFromTray = false; if (phase === 'paused') phase = rebirthTrayPausedPhase || 'battle'; renderChestTray(); return; } // 左下の宝箱を開けただけなら戦闘に戻る
   rebirthRewardBgm = false;
   advanceRebirthShopVisit();
   startNextRun();
