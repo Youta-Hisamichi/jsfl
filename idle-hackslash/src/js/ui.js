@@ -291,7 +291,7 @@ function makePowerUpChoices() {
 }
 let powerUpChoices = [];
 function openPowerUp() {
-  document.querySelector('#powerUpModal .pu-title').textContent = `⚡ LEVEL UP!  Lv.${game.pLv || 1}`;
+  document.querySelector('#powerUpModal .pu-title').innerHTML = `<img class="pu-banner" src="assets/img/ui/levelUp.webp" alt="LEVEL UP!"><span class="pu-lv">Lv.${game.pLv || 1}</span>`;
   if (phase !== 'battle' || getActiveTab() !== 'game') { setTimeout(openPowerUp, 1000); return; } // ゲーム画面に戻ったら出す
   powerUpChoices = makePowerUpChoices();
   renderPowerUp();

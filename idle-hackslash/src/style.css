@@ -936,8 +936,10 @@ body.player-critical .arena-wrap { animation-duration: 0.55s; }
 body.floor-bg {
   background-image: linear-gradient(color-mix(in srgb, var(--bg) 58%, transparent), color-mix(in srgb, var(--bg) 58%, transparent)), var(--floor-bg);
   background-size: auto, var(--floor-bg-size, 64px 64px);
+  background-repeat: repeat, var(--floor-bg-repeat, repeat);
+  background-position: center, center;
   background-attachment: fixed;
-  image-rendering: pixelated;
+  image-rendering: var(--floor-bg-render, pixelated);
 }
 body.floor-bg * { image-rendering: auto; }
 body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelated; }
@@ -1213,3 +1215,9 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .lv-fill.full { animation: lvFull 0.5s ease-in-out infinite alternate; }
 @keyframes lvFull { to { filter: brightness(1.5); } }
 .lv-text { flex: 0 0 auto; font-size: 0.6rem; font-weight: 800; color: var(--text-dim); min-width: 4.5em; text-align: right; }
+
+/* UI素材（ロゴ画像） */
+.pu-title .pu-banner { display: block; width: min(240px, 70vw); margin: 0 auto -2px; image-rendering: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.pu-title .pu-lv { font-size: 1.1rem; }
+.toast .artifact-icon .go-banner { display: block; width: min(260px, 72vw); margin: 0 auto; filter: drop-shadow(0 0 10px rgba(160,90,255,0.55)); }
+.bcf-main .bcf-banner { display: block; width: min(300px, 80vw); margin: 0 auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }

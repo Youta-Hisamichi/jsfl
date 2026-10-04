@@ -866,7 +866,19 @@ const COMPANIONS = {
   warrior:{ icon: '🛡️', name: '鋼の戦士ガイ', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
             trait: '【雄叫び】12秒ごとに自機の攻撃力を4秒間1.5倍' },
   cat:    { icon: '🐱', name: '相棒ニャンタ', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
-            trait: '【拾い物】7秒ごとにコインを拾ってくる' }
+            trait: '【拾い物】7秒ごとにコインを拾ってくる' },
+  paladin:{ icon: '⚜️', name: '聖騎士パラディン', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+            trait: '【聖盾】10秒ごとに自機と仲間全員のHPを8%回復' },
+  dragoon:{ icon: '🐲', name: '竜騎士ジーク', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', weight: 2, recruitCost: 300, baseBonus: 0.14, perLevel: 0.05, levelCostBase: 50,
+            trait: '【竜槍ジャンプ】9秒ごとに敵へ急降下し攻撃力5倍の一撃（激レア）' },
+  summoner:{ icon: '🦊', name: '召喚士ミント', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+            trait: '【霊獣召喚】7秒ごとに追尾する霊獣を2体放つ' },
+  alchemist:{ icon: '⚗️', name: '錬金術師パラケル', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.08, perLevel: 0.03, levelCostBase: 20,
+            trait: '【錬金】12秒ごとにコインをまとめて作り出す' },
+  gunner: { icon: '🔫', name: '機工士ボルト', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+            trait: '【狙撃】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
+  pirate: { icon: '🏴‍☠️', name: '海賊キャプテン・レイ', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', weight: 10, recruitCost: 130, baseBonus: 0.10, perLevel: 0.04, levelCostBase: 25,
+            trait: '【略奪】敵に当てるとたまにコインを奪う（8秒に1回まで）' }
 };
 const COMPANION_SPRITES = {
   heroine: 'assets/img/companions/heroine.webp',
@@ -892,6 +904,12 @@ Object.assign(COMPANION_SPRITES, {
   samurai: 'assets/img/companions/samurai.webp',
   sage: 'assets/img/companions/sage.webp',
   angel: 'assets/img/companions/angel.webp',
+  paladin: 'assets/img/companions/paladin.webp',
+  dragoon: 'assets/img/companions/dragoon.webp',
+  summoner: 'assets/img/companions/summoner.webp',
+  alchemist: 'assets/img/companions/alchemist.webp',
+  gunner: 'assets/img/companions/gunner.webp',
+  pirate: 'assets/img/companions/pirate.webp',
 });
 const PLAYER_SPRITE = document.getElementById('blHero').src; // 画像の本体は起動画面の<img>にある（二重に持たない）
 const playerSpriteImg = new Image();

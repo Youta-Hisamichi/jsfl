@@ -229,6 +229,12 @@ function step() {
             game.coins += coin;
             spawnDamageText(comp.x, comp.y - comp.radius - 10, '盗んだ！ +' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
           }
+          if (cid === 'pirate' && Math.random() < 0.5 && !(comp.lootCdUntil > Date.now())) {
+            comp.lootCdUntil = Date.now() + 8000;
+            const coin = Math.max(1, Math.round((12 + game.stage * 3) * computeBonuses().coinMult));
+            game.coins += coin;
+            spawnDamageText(comp.x, comp.y - comp.radius - 10, '略奪！ +' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
+          }
           if (cid === 'ninja') {
             applyPoison(e, true);
           }
@@ -560,7 +566,7 @@ function showContinuePrompt() {
   continueBtn.querySelector('.cb-cost').textContent = '💎 ' + getContinueCost();
   giveUpBtn.style.display = 'block';
   toastIcon.style.display = 'block';
-  toastIcon.innerHTML = xi('x_break');
+  toastIcon.innerHTML = '<img class="go-banner" src="assets/img/ui/gameOver.webp" alt="GAME OVER">';
   toastBig.textContent = 'コンテニュー？';
   toastBig.className = 'big reborn';
   toast.classList.add('show');
@@ -1323,12 +1329,13 @@ function updateBarrierButton() {
 }
 
 const SPRITE_FACING = {
-  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: 0, knight: 1, archer: 1, witch: 1, sprite: 1, golem: 1, monk: -1, bard: 1, ninja: -1, priest: 1, dragon: 1, lumber: -1, thief: 1, lancer: 1, samurai: -1, sage: 1, angel: 1,
+  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: 0, knight: 0, archer: 0, witch: 0, sprite: 1, golem: 1, monk: 0, bard: 0, ninja: 0, priest: 0, dragon: 1, lumber: 0, thief: 0, lancer: 0, samurai: 0, sage: 0, angel: 1,
+  paladin: 0, dragoon: 0, summoner: 0, alchemist: 0, gunner: 0, pirate: 0, darkKnight: -1,
   slime: 0, metalSlime: 0, goblin: 1, skeleton: 1, zombie: 1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
   worm: 1, cobra: 1, salamander: 1, flameWisp: 0, lich: 1, 
   blueDragon: 1, blackDragon: 1, wyvern: 1, 
   vampire: 0, werewolf: 0, franken: 0, slimeGirl: 0, reaper: 0, demonKing: 0,
-  goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: 0, darkMage: 0, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: 0, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: 0, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: 0, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: 0,
+  goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: 0, darkMage: 0, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: 0, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: 0, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: -1, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: 0,
   slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, 
 };
 const isSlimeSprite = key => /slime/i.test(key) && key !== 'slimeGirl'; // スライム系（プヨプヨ揺らす）
@@ -1634,23 +1641,61 @@ function drawTapBonus() {
   ctx.strokeText(txt, pl.x, y); ctx.fillText(txt, pl.x, y);
   ctx.restore();
 }
-const FLOOR_TILES = {grass:"assets/img/floors/grass.webp",soil:"assets/img/floors/soil.webp",sand:"assets/img/floors/sand.webp",snow:"assets/img/floors/snow.webp",cobble:"assets/img/floors/cobble.webp",town:"assets/img/floors/town.webp",market:"assets/img/floors/market.webp",ship:"assets/img/floors/ship.webp",ruins:"assets/img/floors/ruins.webp",tower:"assets/img/floors/tower.webp",dungeon2:"assets/img/floors/dungeon2.webp",other:"assets/img/floors/other.webp",mystic:"assets/img/floors/mystic.webp",dungeon:"assets/img/floors/dungeon.webp"};
-const FLOOR_NORMAL = ['grass', 'soil', 'sand', 'cobble', 'town', 'snow', 'market', 'ship', 'ruins', 'tower']; // 通常ステージの床（10ステージごとに次へ）
-const FLOOR_BOSS = ['dungeon2', 'other', 'mystic', 'dungeon'];                                  // ボスステージの床
+const FLOOR_TILES = { // 床タイル
+  lawn: 'assets/img/floors/lawn.webp',
+  dirt: 'assets/img/floors/dirt.webp',
+  desert: 'assets/img/floors/desert.webp',
+  mossStone: 'assets/img/floors/mossStone.webp',
+  town: 'assets/img/floors/town.webp',
+  snow: 'assets/img/floors/snow.webp',
+  market: 'assets/img/floors/market.webp',
+  woodFloor: 'assets/img/floors/woodFloor.webp',
+  ruins: 'assets/img/floors/ruins.webp',
+  tower: 'assets/img/floors/tower.webp',
+  redCarpet: 'assets/img/floors/redCarpet.webp',
+  dryCrack: 'assets/img/floors/dryCrack.webp',
+  panel: 'assets/img/floors/panel.webp',
+  blueTile: 'assets/img/floors/blueTile.webp',
+  wasteland: 'assets/img/floors/wasteland.webp',
+  sea: 'assets/img/floors/sea.webp',
+  brick: 'assets/img/floors/brick.webp',
+  dungeon2: 'assets/img/floors/dungeon2.webp',
+  other: 'assets/img/floors/other.webp',
+  mystic: 'assets/img/floors/mystic.webp',
+  dungeon: 'assets/img/floors/dungeon.webp'
+};
+const FLOOR_NORMAL = ['lawn', 'dirt', 'desert', 'mossStone', 'town', 'snow', 'market', 'woodFloor', 'ruins', 'tower']; // 通常ステージの床（エリア＝10ステージごとに次へ）
+const FLOOR_BOSS = ['redCarpet', 'dryCrack', 'panel', 'blueTile', 'wasteland', 'brick', 'sea', 'dungeon2', 'mystic', 'dungeon', 'other']; // ボスステージの床
 const FLOOR_TILE_PX = 42;
+const FLOOR_SPAN = { lawn: 3, dirt: 3, desert: 3, mossStone: 3, woodFloor: 3, redCarpet: 4, dryCrack: 3, panel: 3, blueTile: 3, wasteland: 3, sea: 3, brick: 3 }; // 1枚の画像が床タイル何枚分か（マップチップは大きめ）
 const floorImgs = {};
 for (const k in FLOOR_TILES) { const img = new Image(); img.src = FLOOR_TILES[k]; floorImgs[k] = img; }
 function getFloorKey(stage) {
   const cycle = Math.floor((Math.max(1, stage) - 1) / 10);
   return stage % 10 === 0 ? FLOOR_BOSS[cycle % FLOOR_BOSS.length] : FLOOR_NORMAL[cycle % FLOOR_NORMAL.length];
 }
-const OUTER_TILES = {stone:{src:"assets/img/outer/stone.webp",w:46,h:34},dungeon:{src:"assets/img/outer/dungeon.webp",w:38,h:40},castle:{src:"assets/img/outer/castle.webp",w:38,h:32},forest:{src:"assets/img/outer/forest.webp",w:218,h:74}};
-const OUTER_FOR_FLOOR = { grass: 'forest', soil: 'forest', sand: 'stone', cobble: 'stone', town: 'stone', snow: 'castle', market: 'stone', ship: 'stone', ruins: 'dungeon', tower: 'castle',
-  dungeon2: 'dungeon', other: 'dungeon', mystic: 'castle', dungeon: 'dungeon' };
+// サークルの外の背景：バトル背景の一枚絵（cover）か、繰り返しタイル
+const OUTER_TILES = {
+  stone: { src: 'assets/img/outer/stone.webp', w: 46, h: 34 },
+  meadow: { src: 'assets/img/bg/meadow.webp', cover: true },
+  badlands: { src: 'assets/img/bg/badlands.webp', cover: true },
+  forest: { src: 'assets/img/bg/forest.webp', cover: true },
+  snowfield: { src: 'assets/img/bg/snowfield.webp', cover: true },
+  crystal: { src: 'assets/img/bg/crystal.webp', cover: true },
+  ruins: { src: 'assets/img/bg/ruins.webp', cover: true },
+  lava: { src: 'assets/img/bg/lava.webp', cover: true },
+  hall: { src: 'assets/img/bg/hall.webp', cover: true },
+  throne: { src: 'assets/img/bg/throne.webp', cover: true },
+  sky: { src: 'assets/img/bg/sky.webp', cover: true }
+};
+const OUTER_FOR_FLOOR = { lawn: 'meadow', dirt: 'forest', desert: 'badlands', mossStone: 'ruins', town: 'stone', snow: 'snowfield', market: 'meadow', woodFloor: 'sky', ruins: 'ruins', tower: 'throne',
+  redCarpet: 'throne', dryCrack: 'lava', panel: 'hall', blueTile: 'crystal', wasteland: 'badlands', brick: 'hall', sea: 'sky', dungeon2: 'crystal', other: 'hall', mystic: 'sky', dungeon: 'lava' };
 function applyOuterBackground(floorKey) {
   const t = OUTER_TILES[OUTER_FOR_FLOOR[floorKey] || 'stone'];
   document.body.style.setProperty('--floor-bg', `url(${t.src})`);
-  document.body.style.setProperty('--floor-bg-size', `${Math.round(t.w * 1.6)}px ${Math.round(t.h * 1.6)}px`);
+  document.body.style.setProperty('--floor-bg-size', t.cover ? 'cover' : `${Math.round(t.w * 1.6)}px ${Math.round(t.h * 1.6)}px`);
+  document.body.style.setProperty('--floor-bg-repeat', t.cover ? 'no-repeat' : 'repeat');
+  document.body.style.setProperty('--floor-bg-render', t.cover ? 'auto' : 'pixelated'); // 一枚絵は拡大が大きいのでなめらかに
 }
 let floorPattern = null, floorPatternKey = '', floorPatternCtx = null;
 function drawArenaFloor() {
@@ -1661,7 +1706,7 @@ function drawArenaFloor() {
     applyOuterBackground(key); // 画面の背景（サークルの外）は床に合った景色（壁・森・崖など）
   }
   const tilePx = Math.max(24, arena.radius / 5); // 1枚の大きさ（サークルの大きさに合わせる）
-  floorPattern.setTransform(new DOMMatrix().translate(arena.x, arena.y).scale(tilePx / FLOOR_TILE_PX));
+  floorPattern.setTransform(new DOMMatrix().translate(arena.x, arena.y).scale(tilePx * (FLOOR_SPAN[key] || 1) / (img.naturalWidth || FLOOR_TILE_PX)));
   ctx.save();
   arenaPath(); ctx.clip();
   ctx.imageSmoothingEnabled = false;

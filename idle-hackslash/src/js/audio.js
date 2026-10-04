@@ -948,7 +948,7 @@ function showBossClearFx(stage) {
   const cols = ['#ffd76b', '#ff5c8a', '#64e8ff', '#7ee787', '#c792ea', '#ffffff'];
   let conf = '';
   for (let i = 0; i < 46; i++) conf += `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - 0.5) * 140}px;--rot:${Math.random() * 900 - 450}deg;animation-duration:${1.8 + Math.random() * 1.4}s;animation-delay:${0.2 + Math.random() * 0.5}s"></i>`;
-  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main">BOSS DEFEATED!</div><div class="bcf-sub">🎉 おめでとう！ ${stage}階層 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
+  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main"><img class="bcf-banner" src="assets/img/ui/questClear.webp" alt="BOSS DEFEATED!"></div><div class="bcf-sub">🎉 おめでとう！ ${stage}階層 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
   wrapEl.appendChild(fx);
   setTimeout(() => fx.classList.add('out'), 3000);
   setTimeout(() => fx.remove(), 3600);
@@ -1082,7 +1082,7 @@ function getEffectiveSpeed() {
 }
 
 const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🧛', '🌕', '⚡', '💧', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '💋', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫'];
-const BOSS_EMOJIS = ['👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '👁️', '🕸️', '🪦', '🦍', '💪', '🫧'];
+const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '👁️', '🕸️', '🪦', '🦍', '💪', '🫧'];
 const TACKLE_TRADE_BOSS = '🦔';
 let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
 let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定
@@ -1097,4 +1097,4 @@ const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメー
 const SHAPE_ENEMY_NAMES = { spike: 'スライム', slimeOrange: 'オレンジスライム', slimeGreen: 'グリーンスライム', slimeBlood: 'ブラッドスライム', slimeChibi: 'チビスライム', slimeJumbo: 'ジャンボスライム', slimeSnowman: '雪だるまスライム', slimeDango: '三色団子スライム', slimeIce: 'ユキスライム', slimePink: 'サクラスライム', slimeMatcha: 'マッチャスライム', diamond: 'フレイムウィスプ', square: 'ワーム' };
 const SHAPE_ENEMY_COLORS = { spike: '#ff5c6c', slimeOrange: '#ff9a2e', slimeGreen: '#4fd35a', slimeBlood: '#c8102e', slimeChibi: '#5cc8ff', slimeJumbo: '#b46cff', slimeSnowman: '#dff3ff', slimeDango: '#ff9ec4', slimeIce: '#dff3ff', slimePink: '#ff9ec4', slimeMatcha: '#9fd67a', diamond: '#ff9d4f', square: '#f46bd4' };
 const EMOJI_ENEMY_NAMES = { '🥬': 'ゴブリンスライム', '🧙': '魔女スライム', '🪖': 'バイキングスライム', '🔪': 'ナイフゴブリン', '🌑': '闇の魔導士', '⚫': 'ブラックスライム', '🩶': 'グレースライム', '🩷': 'ピンクスライム', '🔷': 'アオスライム', '🦕': 'チビドラゴン', '🪙': 'ゴールドスライム', '🟩': 'ミドリスライム', '🐟': '魚人', '🦒': 'ノビスライム', '🥒': 'キュウリ兵', '🦎': 'ソードリザード', '🦀': 'カニ娘', '🥈': 'シルバースライム', '🌈': 'レインボースライム', '🟨': 'キイロスライム', '🦋': 'ブルーバット', '🔥': 'ほのおの精', '💋': 'サキュバス', '🛡️': '鉄騎士', '🗡️': '狼剣士', '🪲': 'クワガタナイト', '🐻': 'フレイムベア', '🦞': 'レッドスコーピオン', '🦫': 'マーモット', '🧛': 'ヴァンパイア', '🌕': 'ワーウルフ', '⚡': 'フランケン', '💧': 'スライム娘', '👑': 'スライムキング', '🐧': 'ペンギン魔導士', '🪼': 'クラゲの歌姫', '🛢️': 'タルねこ', '👺': 'ゴブリン', '💀': 'スケルトン', '👻': 'ゴースト', '🎃': 'カボチャヘッド', '🐉': 'ドラゴン', '🦂': 'コブラ', '🦇': 'コウモリ', '👾': 'メタルスライム', '🧟': 'ゾンビ', '🦖': 'サラマンダー', '🐲': 'ワイバーン' };
-const BOSS_ENEMY_NAMES = { '🫧': '超ジャンボスライム', '💪': 'マッチョスライム', '👁️': '百目の少女', '🕸️': '絡新婦', '🪦': '井戸の怨霊', '🦍': 'ゴリタウロス', '⚰️': '死神', '😈': '魔王', '👹': 'デーモンロード', '💀': '死霊王リッチ', '🦖': '暗黒竜', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };
+const BOSS_ENEMY_NAMES = { '⚔️': '漆黒の騎士', '🫧': '超ジャンボスライム', '💪': 'マッチョスライム', '👁️': '百目の少女', '🕸️': '絡新婦', '🪦': '井戸の怨霊', '🦍': 'ゴリタウロス', '⚰️': '死神', '😈': '魔王', '👹': 'デーモンロード', '💀': '死霊王リッチ', '🦖': '暗黒竜', '🐲': '蒼き竜帝', '🦔': '針鎧の王' };

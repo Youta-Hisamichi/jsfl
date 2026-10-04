@@ -23,6 +23,7 @@ const ENEMY_SPRITES = {
   fireSpirit: 'assets/img/enemies/fireSpirit.webp',
   succubus: 'assets/img/enemies/succubus.webp',
   ironKnight: 'assets/img/enemies/ironKnight.webp',
+  darkKnight: 'assets/img/enemies/darkKnight.webp',
   wolfSword: 'assets/img/enemies/wolfSword.webp',
   stagKnight: 'assets/img/enemies/stagKnight.webp',
   muscleSlime: 'assets/img/enemies/muscleSlime.webp',
@@ -65,7 +66,7 @@ const ENEMY_SPRITES = {
 };
 const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', slimeChibi: 'slime', slimeJumbo: 'slimeJumbo', slimeSnowman: 'slimeIce', slimeDango: 'slimeMatcha', slimeIce: 'slimeIce', slimePink: 'slimePink', slimeMatcha: 'slimeMatcha', diamond: 'flameWisp', square: 'worm' };
 const EMOJI_ENEMY_SPRITE = { '🥬': 'goblinSlime', '🧙': 'witchSlime', '🪖': 'vikingSlime', '🔪': 'knifeGoblin', '🌑': 'darkMage', '⚫': 'slimeBlack', '🩶': 'slimeGray', '🩷': 'slimePinkS', '🔷': 'slimeBlueS', '🦕': 'fatDragon', '🪙': 'slimeGold', '🟩': 'slimeGreenS', '🐟': 'fishman', '🦒': 'longSlime', '🥒': 'cucumber', '🦎': 'swordLizard', '🦀': 'crabGirl', '🥈': 'slimeSilver', '🌈': 'slimeRainbow', '🟨': 'slimeYellow', '🦋': 'blueBat', '🔥': 'fireSpirit', '💋': 'succubus', '🛡️': 'ironKnight', '🗡️': 'wolfSword', '🪲': 'stagKnight', '🐻': 'flameBear', '🦞': 'scorpion', '🦫': 'marmot', '🧛': 'vampire', '🌕': 'werewolf', '⚡': 'franken', '💧': 'slimeGirl', '👑': 'slimeKing', '🐧': 'penguinMage', '🪼': 'jellyDiva', '🛢️': 'barrelCat', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🦖': 'salamander', '🐲': 'wyvern' };
-const BOSS_ENEMY_SPRITE = { '🫧': 'slimeJumbo', '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
+const BOSS_ENEMY_SPRITE = { '⚔️': 'darkKnight', '🫧': 'slimeJumbo', '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
 const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
 document.getElementById('stageBossMark').src = ENEMY_SPRITES.demon; // ステージ進行ゲージのゴール（ボス）アイコン
 const enemySpriteImgs = {};
@@ -251,10 +252,10 @@ const STAGE_ZONES = [
   { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:💧', 'emoji:👑'], boss: '🫧' },
   { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👁️' },
   { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:💧', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲' },
-  { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '💀' },
+  { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️' },
   { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈' },
 ];
-const LATE_BOSSES = ['👹', '🦖', '⚰️']; // 100ステージ以降はボスの顔ぶれを広げて巡回
+const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
 function getStageEnemyKey(stage) { // そのステージの通常の敵（削除中なら同じエリアの次の敵）
   const z = getStageZone(stage), i = (Math.max(1, stage) - 1) % 10;
@@ -326,8 +327,9 @@ function makeClone(x, y) {
   };
 }
 
-const COMPANION_COLORS = { heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', lumber: '#c98b4f', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
+const COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', lumber: '#c98b4f', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
 const COMPANION_MOVEMENT = {
+  paladin: { style: 'guard', speedFactor: 0.85 }, dragoon: { style: 'hunter', speedFactor: 1.2 }, summoner: { style: 'kite', speedFactor: 1 }, alchemist: { style: 'kite', speedFactor: 0.95 }, gunner: { style: 'kite', speedFactor: 1 }, pirate: { style: 'hunter', speedFactor: 1.1 },
   heroine: { style: 'guard', speedFactor: 0.9 }, mage: { style: 'kite', speedFactor: 1 }, ranger: { style: 'kite', speedFactor: 1.1 }, warrior: { style: 'guard', speedFactor: 0.85 }, cat: { style: 'hop', speedFactor: 1.2 },
   knight: { style: 'guard', speedFactor: 0.8 },
   archer: { style: 'kite', speedFactor: 1.1 },
@@ -859,6 +861,7 @@ function hatchEgg(o) {
   spawnDamageText(o.x, o.y - 20, '🥚💥 やばいのが出てきた！', '#ff4f6d', 0.012, true);
   shakeScreen(); playWarningSound();
 }
+const crateImg = new Image(); crateImg.src = 'assets/img/ui/crate.webp';
 function drawObstacles() {
   const now = Date.now();
   for (const sh of crateShards) { // 飛び散った板切れ
@@ -874,10 +877,13 @@ function drawObstacles() {
     if (o.kind === 'crate') { // 木箱（ひびが増える）
       const h = o.r * 0.9, sk = now - (o.shakeAt || 0) < 160 ? (Math.random() - 0.5) * 4 : 0; // 当たった瞬間ぐらつく
       ctx.translate(sk, 0);
-      ctx.fillStyle = '#b07a42'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
-      ctx.strokeStyle = '#5e3c1c'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
-      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x - h, o.y - h); ctx.lineTo(o.x + h, o.y + h); ctx.moveTo(o.x + h, o.y - h); ctx.lineTo(o.x - h, o.y + h); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,230,180,0.25)'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 0.35);
+      if (crateImg.complete && crateImg.naturalWidth) { ctx.imageSmoothingEnabled = false; ctx.drawImage(crateImg, o.x - h * 1.15, o.y - h * 1.2, h * 2.3, h * 2.3); ctx.imageSmoothingEnabled = true; } // UI素材の木箱
+      else {
+        ctx.fillStyle = '#b07a42'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
+        ctx.strokeStyle = '#5e3c1c'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
+        ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x - h, o.y - h); ctx.lineTo(o.x + h, o.y + h); ctx.moveTo(o.x + h, o.y - h); ctx.lineTo(o.x - h, o.y + h); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,230,180,0.25)'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 0.35);
+      }
       if (o.cracks && o.cracks.length) { // 傷はぶつけるたびに増える
         ctx.save(); ctx.beginPath(); ctx.rect(o.x - h, o.y - h, h * 2, h * 2); ctx.clip();
         ctx.strokeStyle = '#2b1a0a'; ctx.lineWidth = 1.6; ctx.lineJoin = 'round';
