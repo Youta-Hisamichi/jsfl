@@ -251,7 +251,7 @@ function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に�
 const PU_EXCLUDED_SKILLS = ['skillParalyze']; // レベルアップ3択に出さないスキル
 function buildPowerUpPool() { // 3択パワーアップの候補すべて
   const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'clash', 'bossDmg', 'critDmg', 'compAtk'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・迫り合い・ボス特攻は3択に出さない
+  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'evasion', 'clash', 'bossDmg', 'critDmg', 'compAtk'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・回避・迫り合い・ボス特攻などは3択に出さない
   for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
   for (const id in SKILL_GACHA_SKILLS) {
     if (PU_EXCLUDED_SKILLS.includes(id)) continue;
