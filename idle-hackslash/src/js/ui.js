@@ -2134,11 +2134,10 @@ renderDebugMonsters();
   const ow = document.getElementById('dbgObsWrap'), om = document.getElementById('dbgObsFoldMark'); // 障害物も最初は閉じておく
   document.getElementById('dbgObsCat').addEventListener('click', () => { const o = !ow.classList.contains('open'); ow.classList.toggle('open', o); om.textContent = o ? '▲ 閉じる' : '▼ 開く'; });
   ow.innerHTML = DEBUG_OBSTACLES.map(([k, sp, name], i) => `<button data-dbg-obs="${i}">${sp && OBSTACLE_IMGS[sp] ? `<img class="dbg-obs-img" src="${OBSTACLE_IMGS[sp].src}" alt="">` : k === 'egg' ? '🥚' : '❓'} ${name}</button>`).join('') +
-    '<button data-dbg-obs="spin">🔍 回転角を表示</button><button data-dbg-obs="clear">🧹 障害物を全部消す</button><button data-dbg-obs="reset">↩ この階層の配置に戻す</button>';
+    '<button data-dbg-obs="clear">🧹 障害物を全部消す</button><button data-dbg-obs="reset">↩ この階層の配置に戻す</button>';
   ow.addEventListener('click', ev => {
     const btn = ev.target.closest('[data-dbg-obs]'); if (!btn) return;
     const v = btn.dataset.dbgObs;
-    if (v === 'spin') { debugShowSpin = !debugShowSpin; showNotice(`DEBUG: 回転角の表示 ${debugShowSpin ? 'ON' : 'OFF'}`); return; }
     if (v === 'clear') { obstacles = []; showNotice('DEBUG: 障害物を全部消しました'); return; }
     if (v === 'reset') { setupObstacles(); showNotice('DEBUG: この階層の障害物の配置に戻しました'); return; }
     const [k, sp, name] = DEBUG_OBSTACLES[+v];
