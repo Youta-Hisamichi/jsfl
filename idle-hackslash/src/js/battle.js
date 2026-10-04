@@ -1626,8 +1626,7 @@ function dropTreasureChest(rarity) {
 function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
   const hc = getHeldChests();
-  const total = CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0);
-  el.innerHTML = (total >= 2 ? `<button class="chest-all" data-open-all="1" title="全部まとめて開ける">全部<br>開ける<b>${total}</b></button>` : '') + CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
+  el.innerHTML = CHEST_RARITIES.filter(k => hc[k] > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${hc[k]}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
   if (ev.target.closest('[data-open-all]')) { if (phase === 'battle') openChestDialog('all'); return; }
