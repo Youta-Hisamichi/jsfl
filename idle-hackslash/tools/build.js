@@ -75,7 +75,8 @@ function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).flatMap
   for (const f of files.filter(f => f.startsWith('js/'))) fs.writeFileSync(path.join(DIST, f), fill(fs.readFileSync(path.join(DIST, f), 'utf8')));
   fs.writeFileSync(path.join(ROOT, 'index.html'), fill(single));
   fs.writeFileSync(path.join(ROOT, '.build/dev.html'), fill(fs.readFileSync(path.join(ROOT, '.build/dev.html'), 'utf8')));
-  const version = crypto.createHash('sha1').update(files.map(f => f + fs.statSync(path.join(DIST, f)).size).join('|') + minJs[jsFiles[0]].length).digest('hex').slice(0, 10);
+  const vh = crypto.createHash('sha1'); for (const f of files) { vh.update(f); vh.update(fs.readFileSync(path.join(DIST, f))); } // 中身で版を決める（同じサイズの変更でも更新される）
+  const version = vh.digest('hex').slice(0, 10);
   const precache = ['./', ...files.filter(f => f !== 'sw.js')];
   put('sw.js', `// オフラインでも遊べるよう、ゲームのファイルを端末に保存しておく（版が変わったら入れ替え）
 const CACHE = 'mugen-hansha-${version}';
