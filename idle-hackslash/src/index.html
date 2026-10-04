@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>放置系ハクスラ無限反射</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="floor-bg">
+<div id="bootLoading"><div class="bl-run"><img id="blHero" src="assets/img/misc/blHero.webp" alt=""><i class="bl-dust"></i><i class="bl-dust d2"></i><div class="bl-ground"></div></div><div class="bl-title">放置系ハクスラ<br>無限反射</div><div class="bl-text">NOW LOADING<span>.</span><span>.</span><span>.</span></div><div class="bl-bar"><i></i></div><div class="bl-tip" id="blTip"></div></div>
+<script>(function () { // 起動中のヒント（本体の読み込みより先に表示）
+  var tips = ['画面をドラッグすると移動、離すと逆方向へ引っ張り攻撃！', '引っ張る距離が長いほど引っ張り攻撃は強力に', '短いタップで周りの敵を切り払える', '敵の足元に赤い予告が出たら範囲の外へ逃げよう', '攻撃した直後の敵は隙だらけ。今がダメージ2倍のチャンス', '経験値ダイヤを集めてレベルアップ！3択から強化を選べる', '武器スキルは一定時間ごとに自動で発動する', '攻撃UP・リヒールは取得するだけで常に効く', '壁で跳ね返るたびに反射の連鎖音が上がっていく', 'ボスは10階層ごとに登場。HPと回復を整えて挑もう', '転生すると強力な遺物と💎がもらえる', '10階層ごとにエリアが変わり、出てくる敵も変わる', 'スキルはゲーム画面の「スキル入れ替え」から付け替えられる'];
+  var el = document.getElementById('blTip'); if (el) el.textContent = '💡 ' + tips[Math.floor(Math.random() * tips.length)];
+})();</script>
+<canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
+
+<h1 style="display:none;">⚔️ 放置系ハクスラ無限反射</h1>
+
+<div class="top-header" id="topHeader">
+  <span class="th-item coin">🟡 <span id="headerCoins">0</span></span>
+  <div class="th-right">
+    <span class="th-item gem"><span data-xi="x_gem">💎</span> <span id="headerGems">0</span></span>
+    <button class="th-gear" id="settingsBtn"><span data-xi="x_settings">⚙️</span></button>
+  </div>
+</div>
+
+<div class="battle-notice" id="battleNotice"></div>
+
+<div class="layout">
+
+  <!-- ===== ゲーム画面タブ ===== -->
+  <div class="tab-page active" data-tab="game">
+
+    <div class="exp-wrap">
+      <div class="exp-label" style="justify-content:flex-start; gap:6px;"><span><b id="stageNum">1</b>階層　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
+      <div class="stage-track-wrap">
+        <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
+        <img class="stage-mark stage-mark-boss" id="stageBossMark" alt="">
+        <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
+      </div>
+      <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
+    </div>
+
+    <div class="arena-wrap">
+      <canvas id="arenaCanvas"></canvas>
+      <button class="potion-float" id="potionBtn" title="回復ポーション">🧪×0</button>
+      <div class="clone-counter" id="cloneCounter">分身 0 / 3</div>
+      <div class="boss-warning" id="bossWarning">WARNING</div>
+      <div class="record-badge" id="recordBadge"></div>
+      <div class="enemy-trait-badge" id="enemyTraitBadge"></div>
+      <div class="chest-tray" id="chestTray"></div>
+      <div class="combo-badge" id="comboBadge"></div>
+      <div class="loot-popup" id="lootPopup"></div>
+      <div class="pause-badge" id="pauseBadge">⏸ 一時停止中<small>T キー（またはここをタップ）で再開</small></div>
+      <div class="toast" id="toast">
+        <svg class="magic-circle" viewBox="0 0 100 100" aria-hidden="true"><g class="mc-outer"><circle cx="50" cy="50" r="47"/><circle cx="50" cy="50" r="44.5" class="mc-ticks"/><circle cx="50" cy="50" r="42"/></g><g class="mc-star"><polygon points="50.0,12.0 82.9,69.0 17.1,69.0"/><polygon points="50.0,88.0 17.1,31.0 82.9,31.0"/><circle cx="50.0" cy="12.0" r="2.2"/><circle cx="82.9" cy="31.0" r="2.2"/><circle cx="82.9" cy="69.0" r="2.2"/><circle cx="50.0" cy="88.0" r="2.2"/><circle cx="17.1" cy="69.0" r="2.2"/><circle cx="17.1" cy="31.0" r="2.2"/></g><g class="mc-inner"><circle cx="50" cy="50" r="24"/><circle cx="50" cy="50" r="20" class="mc-ticks2"/><rect x="36" y="36" width="28" height="28"/><rect x="36" y="36" width="28" height="28" transform="rotate(45 50 50)"/><circle cx="50" cy="50" r="9"/></g></svg>
+        <div class="artifact-icon" id="toastIcon" style="display:none;"></div>
+        <div class="big" id="toastBig"></div>
+        <div class="sub" id="toastSub"></div>
+        <div class="continue-actions">
+          <button class="action-btn special" id="continueBtn" style="display:none;">リトライ<span class="cb-cost">💎 3</span></button>
+          <button class="action-btn" id="giveUpBtn" style="display:none;">🕊️ 転生ガチャ</button>
+        </div>
+        <button class="action-btn" id="dialogCloseBtn" style="display:none; margin-top:12px;">閉じる</button>
+      </div>
+    </div>
+
+    <div class="hp-row">
+      <button class="stat-help-btn" id="statHelpBtn" aria-label="詳しいステータス">？</button>
+      <div class="hp-card player" style="flex:1;">
+        <div class="label"><span class="name"><span data-xi="x_heart">🔵</span> プレイヤー</span><span id="playerHPText">100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
+        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
+      </div>
+      <div class="hp-card enemy" style="flex:1;">
+        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
+        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
+      </div>
+    </div>
+
+    <div class="action-row four six" id="skillRow">
+      <button class="action-btn special" id="specialBtn">🔒 メテオ</button>
+      <button class="action-btn accel" id="accelBtn">🔒 加速</button>
+      <button class="action-btn heal" id="healBtn">🔒 回復</button>
+      <button class="action-btn barrier" id="barrierBtn">🔒 バリア</button>
+      <button class="action-btn poison" id="poisonBtn">🔒 毒</button>
+      <button class="action-btn paralyze" id="paralyzeBtn">🔒 麻痺</button>
+      <button class="action-btn atkup" id="atkUpBtn">🔒 攻撃UP</button>
+      <button class="action-btn regen" id="regenBtn">🔒 リヒール</button>
+      <button class="action-btn silence" id="silenceBtn">🔒 魔法封じ</button>
+      <button class="action-btn death" id="deathBtn">🔒 即死魔法</button>
+      <button class="action-btn coinstrike" id="coinStrikeBtn">🔒 コイン攻撃</button>
+      <button class="action-btn zeni" id="zeniBtn">🔒 ゼニ投げ</button>
+      <button class="action-btn mystery" id="mysteryBtn">🔒 謎魔法</button>
+      <button class="action-btn comprush" id="compRushBtn">🔒 仲間特攻</button>
+      <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
+    </div>
+    <button class="skill-set-btn" id="skillSetBtn" style="display:none;">🎒 スキル入れ替え</button>
+    <div class="action-row pair tower-row">
+      <button class="share-btn tower-share" data-share="game">📤 シェア</button>
+      <button class="action-btn skip-action" id="stageSkipBtn">試練の塔</button>
+      <button class="action-btn reborn-action" id="rebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
+    </div>
+
+    <div class="hint-footer"></div>
+
+
+    <button class="debug-toggle" id="debugToggleBtn">🛠️ デバッグ一覧</button>
+    <div class="debug-panel" id="debugPanel" style="display:none;">
+    <div class="debug-row" id="debugRow">
+      <button data-debug="pause" id="debugPauseBtn" class="debug-pause-btn">⏸ 一時停止（T キー）</button>
+      <button class="dbg-now-bgm" id="dbgNowBgm">🎶 再生中：—</button>
+      <div class="dbg-now-desc" id="dbgNowDesc" style="display:none"></div>
+      <div class="debug-cat">💰 通貨</div>
+      <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
+      <div class="debug-cat">🗺️ 階層・敵</div>
+      <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群の階層へ</button>
+      <button class="debug-cat dbg-fold" id="dbgMonFold">🖼️ モンスターを選んで出現・削除 <b id="dbgMonFoldMark">▼ 開く</b></button>
+      <div id="dbgMonWrap" style="display:none">
+      <div class="dbg-mon" id="dbgMonGrid"></div>
+      <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgFilmBtn">🎬 撮影モード</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
+      </div>
+      <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
+      <div class="debug-cat">🎲 3択パワーアップ一覧（押すとその場で取得）</div>
+      <div class="dbg-pu" id="dbgPuGrid"></div>
+      <button class="debug-cat dbg-fold" id="debugEnemyCat">👾 特殊な敵（押すと出現） <b id="dbgEnemyFoldMark">▼ 開く</b></button>
+      <div class="dbg-fold-wrap" id="dbgEnemyWrap"></div>
+      <div class="debug-cat">⚔️ 戦闘テスト</div>
+      <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
+      <div class="debug-cat">🔓 解放・付与</div>
+      <button data-debug="size">📦 容量</button><button data-debug="arenaRect">⬛ 四角/丸</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="clearSubs">🚫 サブスク解除</button>
+      <div class="debug-cat">🪟 画面表示</div>
+      <button data-debug="rebirthShop">🛒 永続アイテム表示</button><button data-debug="loginBonus">🔮 帰還くじ表示</button><button data-debug="rewardAdReset">🎬 動画CTリセット</button>
+      <div class="debug-cat" id="debugBgmCat">🎵 BGM（押すと再生）</div>
+      <div class="debug-cat">💾 セーブ・システム</div>
+      <button data-debug="slots">💾 セーブ/ロード</button><button data-debug="reload">🔄 ゲームリロード</button><button data-debug="saveReset">🗑️ セーブリセット</button><button id="resetBtn">🔄 最初から全部やり直す</button>
+    </div>
+    <details class="bgm-info" id="bgmInfo"><summary>🎵 BGMの概要</summary><div id="bgmInfoList"></div></details>
+    <div class="speed-control">
+      <label for="speedRange">⚡ ゲーム速度</label>
+      <input id="speedRange" type="range" min="0.5" max="2.5" step="0.1" value="0.5">
+      <span class="speed-value" id="speedValue">0.5×</span>
+    </div>
+    </div>
+
+  </div>
+
+  <!-- ===== コイン強化タブ ===== -->
+  <div class="tab-page" data-tab="upgrade">
+    <div class="upgrade-panel">
+      <div class="shopkeeper" data-npc-tab="upgrade"></div>
+      <div class="upgrade-title">🟡 コイン強化（転生するとリセット・長押しで連続強化）</div>
+      <div class="sub-tabs" id="upgradeTabs"></div>
+      <div class="upgrade-list" id="upgradeList"></div>
+    </div>
+  </div>
+
+  <!-- ===== コインショップタブ ===== -->
+  <div class="tab-page" data-tab="coinshop">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="coinshop"></div>
+      <div class="skill-slot-head" id="skillSlotHead"></div>
+      <div class="skill-deck" id="skillDeck"></div>
+      <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn"></button>
+      <div class="skill-buy-list" id="skillLevelList"></div>
+      <div class="supergem-note">スキル（解放・Lv・装備）は転生でリセット。ジェムで増やしたスキル枠は転生後も継続（最大7つ）。</div>
+      <div class="title" id="coinShopTitle" style="margin-top:12px;">🟡 コインショップ（転生でリセット・戦闘中のみ使用可）</div>
+      <div class="shop-list" id="coinShopList"></div>
+    </div>
+  </div>
+
+  <!-- ===== アーティファクトタブ ===== -->
+  <div class="tab-page" data-tab="artifact">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="artifact"></div>
+      <div class="af-hero" id="artifactProgress"></div>
+      <div class="af-note">✨ 遺物は転生報酬やショップで手に入り、効果は永続。持っている遺物はすべて同時に効果を発揮します。</div>
+      <div class="sub-tabs af-tabs" id="artifactTabs"></div>
+      <div class="artifact-list" id="artifactList">
+        <span class="artifact-empty">まだ何も持っていません</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 仲間タブ ===== -->
+  <div class="tab-page" data-tab="companion">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="companion"></div>
+      <div class="cp-hero">
+        <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
+        <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
+      </div>
+      <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"><span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 200</span></button></div>
+      <div class="comp-full-note" id="compFullNote" style="display:none;">🐾 パーティが満員です（下の「パーティ枠を増やす」で召喚できるようになります）</div>
+      <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
+      <details class="cp-help"><summary>ⓘ 仲間のしくみ</summary>
+        <p>コインの「仲間召喚」で入手し、レベルもコインで上がります（長押しで連続レベルアップ）。それぞれ戦闘中に個性的な能力を発揮します。</p>
+        <p>召喚するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
+        <p>仲間・覚醒・召喚費用は転生ですべてリセットされます。</p>
+      </details>
+      <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
+      <div class="companion-list" id="companionList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ジェムショップタブ ===== -->
+  <div class="tab-page" data-tab="gemshop">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="gemshop"></div>
+      <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
+      <div class="title">🛒 ショップ（購入効果は転生後も継続）</div>
+      <div class="shop-list" id="shopList"></div>
+      <div id="rebirthShopSection">
+        <div class="title rs-sec-title">🌌 永続アイテム（長押しで連続購入）</div>
+        <div class="purchase-msg" id="rebirthShopMsg" style="display:none"></div>
+        <div class="sub-tabs" id="rebirthShopTabs"></div>
+        <div class="modal-shop-list two" id="rebirthShopList"></div>
+      </div>
+      <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span>円</div>
+      <button class="modal-shop-btn" id="gemReturnBtn" style="display:none; justify-content:center; margin-bottom:8px; border-color:var(--gold); color:var(--gold);"><span class="msb-name">↩️ 元の画面に戻る</span></button>
+      <div class="shop-list" id="supergemShopList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ガチャタブ ===== -->
+  <div class="tab-page" data-tab="gacha">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="gacha"></div>
+      <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
+      <div class="gacha-actions pull-row"><button class="gacha-pull" id="gachaBtn">✨ 1回召喚<br>💎 5</button><button class="gacha-pull" id="gacha10Btn" style="background:#3a2453; border-color:#c792ea; color:#e6c7ff;">🌟 10連召喚<br>💎 45</button></div>
+      <div class="gacha-result" id="gachaResult" style="display:none;"></div>
+      <div class="artifact-progress" id="evolutionProgress">取得数 <strong>0 / 0</strong>　取得率 <strong>0.0%</strong></div>
+      <div class="evolution-list" id="evolutionList"></div>
+    </div>
+  </div>
+
+  <!-- ===== 戦績タブ ===== -->
+  <div class="tab-page" data-tab="records">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="records"></div>
+      <div class="settings-row">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <label style="margin-bottom:0; white-space:nowrap;">👤 ユーザー名</label>
+          <input type="text" id="usernameInput" maxlength="12" placeholder="名無しの勇者" style="flex:1; min-width:0; background:var(--bg-soft); border:1px solid var(--ring); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.8rem;">
+          <button class="modal-shop-btn" id="usernameSaveBtn" style="width:auto; padding:8px 14px;">保存</button>
+        </div>
+      </div>
+      <div class="record-panel one">
+        <div class="record" data-goal-row="bestStage">BEST<strong id="bestStageNum" data-unit="階層">1</strong>到達階層<div class="rec-goal" data-goal="bestStage"></div></div>
+        <div class="record" data-goal-row="bestCoins">BEST<strong id="bestCoinsNum" data-unit="枚">0</strong>コイン所持数<div class="rec-goal" data-goal="bestCoins"></div></div>
+        <div class="record" data-goal-row="totalKills">TOTAL<strong id="totalKillsNum" data-unit="体">0</strong>キル<div class="rec-goal" data-goal="totalKills"></div></div>
+        <div class="record" data-goal-row="totalTaps">TOTAL<strong id="totalTapsNum" data-unit="回">0</strong>タップ<div class="rec-goal" data-goal="totalTaps"></div></div>
+        <div class="record" data-goal-row="totalBounces">TOTAL<strong id="totalBouncesNum" data-unit="回">0</strong>反射回数<div class="rec-goal" data-goal="totalBounces"></div></div>
+        <div class="record" data-goal-row="maxBounceChain">MAX<strong id="maxBounceChainNum" data-unit="連鎖">0</strong>反射連鎖<div class="rec-goal" data-goal="maxBounceChain"></div></div>
+        <div class="record" data-goal-row="reincarnations">TOTAL<strong id="rebornNum" data-unit="回">0</strong>転生回数<div class="rec-goal" data-goal="reincarnations"></div></div>
+        <div class="record" data-goal-row="totalSpent">TOTAL<strong id="totalSpentNum" data-unit="枚">0</strong>消費コイン<div class="rec-goal" data-goal="totalSpent"></div></div>
+        <div class="record" data-goal-row="maxDamage">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ<div class="rec-goal" data-goal="maxDamage"></div></div>
+        <div class="record" data-goal-row="maxDps">MAX<strong id="maxDpsNum" data-unit="DPS">0</strong>DPS<div class="rec-goal" data-goal="maxDps"></div></div>
+        <div class="record" data-goal-row="maxCombo">MAX<strong id="maxComboNum" data-unit="回">0</strong>コンボ<div class="rec-goal" data-goal="maxCombo"></div></div>
+        <div class="record" data-goal-row="bestTowerJump">MAX<strong id="bestTowerJumpNum" data-unit="階層">0</strong>試練の塔 ジャンプ<div class="rec-goal" data-goal="bestTowerJump"></div></div>
+        <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
+        <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
+        <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
+        <div class="record">EVADE<strong id="evasionNum">5%</strong>回避率</div>
+        <div class="record">BOSS<strong id="bossDmgNum">+0%</strong>ボス特攻</div>
+        <div class="record">COUNTER<strong id="counterNum">0%</strong>カウンター率</div>
+        <div class="record">START<strong id="startedAtText">-</strong>ゲーム開始日時</div>
+        <div class="record" data-goal-row="playTime">TOTAL<strong id="playTimeText">0時間00分00秒</strong>プレイ時間<div class="rec-goal" data-goal="playTime"></div></div>
+      </div>
+      <button class="share-btn" data-share="records" style="display:block; width:fit-content; margin:10px 0 0 auto;">📤 戦績をシェア</button>
+      <div class="title" style="margin-top:14px;"><span data-xi="x_book">📖</span> 敵図鑑 <span id="bestiaryCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="bestiary-list" id="bestiaryList"></div>
+      <div class="title" style="margin-top:14px;">🎵 BGM図鑑 <span id="bgmBookCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="modal-sub" style="margin:-4px 0 6px;">戦闘の曲は、その曲が流れている階層をクリアすると登録。ページの曲は一度聴くと登録されます。</div>
+      <div class="bgm-book-list" id="bgmBookList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ランキングタブ ===== -->
+  <div class="tab-page" data-tab="ranking">
+    <div class="artifact-panel">
+      <div class="shopkeeper" data-npc-tab="ranking"></div>
+      <div id="totalUserCount" style="text-align:center; font-size:14px; color:#9db0d8; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.04); border-radius:10px;">👥 累計プレイヤー数：--- 人</div>
+      <div class="gacha-actions rank-tabs">
+        <button class="gacha-pull rank-tab-btn active" id="rankDailyBtn" style="background:#142d39;">本日のクリア数</button>
+        <button class="gacha-pull rank-tab-btn" id="rankStageBtn" style="background:transparent;">到達階層</button>
+      </div>
+      <div class="title" id="rankingTitle">🏆 本日のクリア数ランキング</div>
+      <div id="rankDateNav" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;">
+        <button id="rankNextDayBtn" class="modal-shop-btn" style="width:auto; padding:6px 12px;">◀ 翌日</button>
+        <span id="rankDateLabel" style="font-size:0.8rem; color:var(--text-dim); min-width:90px; text-align:center;">本日</span>
+        <button id="rankPrevDayBtn" class="modal-shop-btn" style="width:auto; padding:6px 12px;">前日 ▶</button>
+      </div>
+      <div id="rankingList"></div>
+      <button class="share-btn" data-share="ranking" style="margin-top:10px;">📤 ランキングをシェア</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="game"><span class="tab-icon">🎮</span><span class="tab-label" data-i18n="tabGame">ゲーム</span></button>
+  <button class="tab-btn" data-tab="upgrade"><span class="tab-icon">⚔️</span><span class="tab-label" data-i18n="tabUpgrade">強化</span></button>
+  <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
+  <button class="tab-btn" data-tab="coinshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabShop">スキル</span></button>
+  <button class="tab-btn" data-tab="artifact"><span class="tab-icon">🏺</span><span class="tab-label" data-i18n="tabArtifact">遺物</span></button>
+  <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabGem">ショップ</span></button>
+  <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">進化</span></button>
+  <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
+  <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
+</div>
+
+<div class="modal-overlay" id="powerUpModal" style="z-index:72;">
+  <div class="modal-panel pu-panel">
+    <div class="pu-title">⚡ パワーアップ！</div>
+    <div class="pu-sub">ひとつ選んでください</div>
+    <div class="pu-list" id="powerUpList"></div>
+    <div class="pu-actions">
+      <button class="pu-act all" id="puAllBtn"></button>
+      <button class="pu-act" id="puRerollBtn"></button>
+      <button class="pu-act" id="puSlotBtn"></button>
+    </div>
+    <div class="pu-timer" id="puTimer"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="stageSkipModal">
+  <div class="modal-panel">
+    <div class="tower-head"><span data-xi="x_tower">🏰</span><h2>試練の塔</h2><span class="tower-gems">💎 <span id="stageSkipGems">0</span></span><div class="tower-best">🏆 自己ベスト <b id="towerBestJump">-</b></div></div>
+    <div class="modal-sub">ジェムを捧げて塔を登り、上の階層のボスに挑みます。勝てばその階層まで一気に進み、負けたら今の <b id="stageSkipOrigin">1</b>階層 に戻ります（転生はしません）。</div>
+    <div class="custom-skip">
+      <div class="custom-skip-title">🎯 登る階層を指定（ジェムは距離に応じて消費）</div>
+      <div class="custom-skip-row">
+        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦する階層">
+        <button class="modal-shop-btn" id="customSkipMaxBtn"><span class="msb-name">手持ちMAX</span></button>
+        <button class="modal-shop-btn" id="customSkipBtn"><span class="msb-name">挑戦</span><span class="msb-cost" id="customSkipCost">💎 -</span></button>
+      </div>
+      <div class="custom-skip-info" id="customSkipInfo">挑戦したい階層を入力してください</div>
+    </div>
+    <div class="modal-shop-list tower-floors" id="stageSkipList"></div>
+    <button class="modal-close-btn" id="stageSkipCloseBtn">塔を降りる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="skipRetryModal">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;"><span data-xi="x_break" data-xi-big>💔</span></div>
+    <h2>試練の塔 敗北…</h2>
+    <div class="modal-sub" id="skipRetryText"></div>
+    <div class="modal-shop-list" id="skipRetryActions">
+      <button class="modal-shop-btn" id="skipRetryBtn" style="justify-content:center;"></button>
+      <button class="modal-shop-btn" id="skipGiveUpBtn" style="justify-content:center;"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="statModal" style="z-index:70;">
+  <div class="modal-panel stat-panel">
+    <h2>📋 詳しいステータス</h2>
+    <div id="statModalBody"></div>
+    <button class="modal-close-btn" id="statModalCloseBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="skillSetModal" style="z-index:68;">
+  <div class="modal-panel" style="text-align:center;">
+    <h2>🎒 スキル入れ替え</h2>
+    <div class="modal-sub" id="skillSetHead"></div>
+    <div class="skill-set-grid" id="skillSetGrid"></div>
+    <div class="modal-shop-list"><button class="modal-close-btn" id="skillSetCloseBtn">閉じる</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="skillSlotModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;"><span data-xi="x_gem" data-xi-big>💎</span></div>
+    <h2>スキル枠を増やす</h2>
+    <div class="modal-sub" id="skillSlotModalText" style="color:var(--text); font-size:0.85rem; white-space:pre-line;"></div>
+    <div class="modal-shop-list">
+      <button class="modal-close-btn" id="skillSlotYesBtn"></button>
+      <button class="modal-shop-btn" id="skillSlotNoBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="shareModal" style="z-index:75;">
+  <div class="modal-panel" style="text-align:center;">
+    <h2>📤 シェア</h2>
+    <textarea id="shareText" readonly class="share-text"></textarea>
+    <div class="share-grid">
+      <a class="share-link x" id="shareXLink" target="_blank" rel="noopener">𝕏 でポスト</a>
+      <a class="share-link line" id="shareLineLink" target="_blank" rel="noopener">LINE で送る</a>
+      <button class="share-link copy" id="shareCopyBtn">📋 コピー</button>
+      <button class="share-link more" id="shareMoreBtn">その他のアプリ</button>
+    </div>
+    <div class="purchase-msg" id="shareMsg"></div>
+    <button class="modal-shop-btn" id="shareCloseBtn" style="justify-content:center;"><span class="msb-name">閉じる</span></button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chestModal" style="z-index:66;">
+  <div class="modal-panel chest-panel" style="text-align:center;">
+    <div class="chest-big" id="chestModalIcon"></div>
+    <h2 id="chestModalTitle">宝箱</h2>
+    <div class="modal-sub" id="chestModalText" style="color:var(--text); white-space:pre-line;"></div>
+    <div class="modal-shop-list" id="chestModalBtns"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
+    <h2>本当に転生しますか？</h2>
+    <div class="modal-sub" style="color:var(--text); font-size:0.85rem;">コイン・強化・仲間・階層の進行がリセットされます<br>（代わりにランダムなアーティファクトを1つ獲得できます）</div>
+    <div class="reborn-reward">転生報酬 <b>💎 <span id="rebornGemAmt">2</span></b></div>
+    <div class="modal-shop-list">
+      <button class="reward-ad-btn reborn-ad-btn" id="rebornAdBtn">🎬 動画を見て報酬3倍 <b>💎 <span id="rebornGemAmt3">6</span></b></button>
+      <button class="modal-close-btn" id="rebornConfirmOkBtn"><span data-xi="x_reborn">🌌</span> 転生する</button>
+      <button class="modal-shop-btn" id="rebornConfirmCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="gemShortModal" style="z-index:70;">
+  <div class="modal-panel" style="text-align:center;">
+    <div style="font-size:2.4rem;" id="gemShortIcon">💎</div>
+    <h2 id="gemShortTitle">ジェムが足りません</h2>
+    <div class="modal-sub" id="gemShortText" style="color:var(--text); font-size:0.85rem;"></div>
+    <div class="modal-shop-list">
+      <button class="modal-close-btn" id="gemShortGoBtn">🛒 ジェム購入ショップへ</button>
+      <button class="modal-shop-btn" id="gemShortCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rewardAdModal" style="z-index:75;">
+  <div class="modal-panel" style="text-align:center;">
+    <h2>🎬 リワード動画</h2>
+    <div class="modal-sub">最後まで視聴すると 💎<span id="rewardAdAmount">5</span> を獲得できます</div>
+    <div class="reward-ad-screen">
+      <div class="ad-icon">📺</div>
+      <div class="ad-count" id="rewardAdCount">再生中…</div>
+      <div class="reward-ad-progress" id="rewardAdProgress"></div>
+    </div>
+    <button class="modal-close-btn" id="rewardAdClaimBtn" style="display:none;"></button>
+    <button class="modal-shop-btn" id="rewardAdCloseBtn" style="justify-content:center; margin-top:8px;"><span class="msb-name">閉じる（報酬なし）</span></button>
+  </div>
+</div>
+
+<!-- 擬似インタースティシャル広告（ゲームオーバー後、リトライしなかった場合に表示） -->
+<div class="interstitial-ad" id="interstitialAd">
+  <div class="ia-top"><span class="ia-label">広告</span><button class="ia-close" id="interstitialCloseBtn">✕</button></div>
+  <div class="ia-body">
+    <div class="ia-icon" id="interstitialIcon">🎮</div>
+    <div class="ia-title" id="interstitialTitle">新作ゲーム配信中！</div>
+    <div class="ia-text" id="interstitialText">今すぐダウンロードして遊ぼう</div>
+    <div class="ia-cta">詳しく見る</div>
+  </div>
+  <div class="ia-note">※これはダミーの広告表示です</div>
+</div>
+
+<div class="modal-overlay" id="debugSlotModal" style="z-index:72;">
+  <div class="modal-panel">
+    <h2>💾 デバッグ：セーブスロット</h2>
+    <div class="modal-sub">現在の状態を好きなスロットに保存し、あとで選んでロードできます（ロードするとページを再読み込みします）</div>
+    <div class="modal-shop-list" id="debugSlotList"></div>
+    <button class="modal-close-btn" id="debugSlotCloseBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loginBonusModal">
+  <div class="modal-panel lb-panel" id="lbPanel" style="text-align:center;">
+    <div class="lb-rays"></div>
+    <div class="lb-confetti" id="lbConfetti"></div>
+    <div class="lb-content">
+      <h2 class="lb-title">🔮 帰還の反射くじ</h2>
+      <div class="modal-sub login-bonus-sparkle" id="loginBonusStreak">おかえり！</div>
+      <div class="lb-days" id="lbDays"></div>
+      <div class="lb-orb-wrap"><div class="lb-orb" id="lbOrb"><span data-xi="x_present" data-xi-big>🎁</span></div></div>
+      <div class="lb-rarity" id="lbRarity"></div>
+      <div id="loginSlotBox" class="login-slot-box">🟡 <span id="loginSlotNum">0</span></div>
+      <div class="lb-extras" id="loginBonusReward"></div>
+      <button class="modal-close-btn" id="loginBonusCloseBtn">抽選中……（タップでスキップ）</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-panel">
+    <div class="settings-game-head">
+      <div class="sgh-title" id="settingsGameTitle">放置系ハクスラ無限反射</div>
+      <div class="sgh-ver" id="settingsGameVersion"></div>
+    </div>
+    <h2 data-i18n="settingsTitle">⚙️ 設定</h2>
+    <div class="modal-sub" data-i18n="settingsSub">音量やヘルプの設定です</div>
+    <div class="shopkeeper compact" data-npc-tab="settings"></div>
+    <div class="settings-row">
+      <label><span data-i18n="bgmLabel">🎵 BGM音量　</span><span id="bgmVolVal">70%</span></label>
+      <input type="range" id="bgmVolRange" min="0" max="100" value="70">
+    </div>
+    <div class="settings-row">
+      <label><span data-i18n="sfxLabel">🔊 効果音音量　</span><span id="sfxVolVal">70%</span></label>
+      <input type="range" id="sfxVolRange" min="0" max="100" value="70">
+    </div>
+    <div class="settings-row">
+      <label><span data-i18n="vibrationLabel">📳 振動（対応スマホのみ）</span></label>
+      <button class="modal-shop-btn lang-btn" id="vibrationBtn"><span class="msb-name" id="vibrationState">ON</span></button>
+    </div>
+    <div class="settings-btn-row">
+      <button class="modal-shop-btn" id="howToPlayBtn"><span class="msb-name" data-i18n="howToPlayBtn">📖 遊び方</span></button>
+      <button class="modal-shop-btn" id="contactBtn"><span class="msb-name" data-i18n="contactBtn">✉️ お問い合わせ</span></button>
+      <button class="modal-shop-btn" id="termsBtn"><span class="msb-name" data-i18n="termsBtn">📜 利用規約</span></button>
+      <button class="modal-shop-btn" id="privacyBtn"><span class="msb-name" data-i18n="privacyBtn">🔒 プライバシーポリシー</span></button>
+      <button class="modal-shop-btn" id="faqBtn"><span class="msb-name">❓ よくある質問</span></button>
+      <button class="modal-shop-btn" id="creditsBtn"><span class="msb-name">🎬 スタッフロール</span></button>
+      <button class="modal-shop-btn" id="fundsActBtn"><span class="msb-name">💴 資金決済法に基づく表示</span></button>
+    </div>
+    <div class="settings-row">
+      <label data-i18n="langLabel">🌐 言語 / Language</label>
+      <div class="settings-btn-row">
+        <button class="modal-shop-btn lang-btn active" id="langJaBtn" data-lang="ja"><span class="msb-name">日本語</span></button>
+        <button class="modal-shop-btn lang-btn" id="langEnBtn" data-lang="en"><span class="msb-name">English</span></button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <label data-i18n="devLabel">👤 開発者</label>
+      <div class="settings-btn-row">
+        <a class="modal-shop-btn" href="https://x.com/Hisashi_vc" target="_blank" rel="noopener"><span class="msb-name">𝕏 X (Twitter)</span></a>
+        <a class="modal-shop-btn" href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener"><span class="msb-name">▶️ YouTube</span></a>
+      </div>
+      <div class="modal-sub" style="margin-top:6px;" data-i18n="contactRow">お問い合わせ: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a></div>
+    </div>
+    <button class="modal-close-btn" id="settingsCloseBtn" data-i18n="closeBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay credits-overlay" id="creditsModal" style="z-index:80;">
+  <div class="credits-view">
+    <div class="credits-roll" id="creditsRoll"></div>
+    <div class="credits-hint">押しっぱなしで早送り</div>
+    <button class="credits-close" id="creditsCloseBtn">✕ 閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-panel">
+    <h2 id="infoModalTitle">📖 遊び方</h2>
+    <div class="modal-sub" id="infoModalBody" style="white-space:pre-line; color:var(--text); font-size:0.82rem; line-height:1.6;"></div>
+    <button class="modal-close-btn" id="infoModalCloseBtn">閉じる</button>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+
+</body>
+</html>
