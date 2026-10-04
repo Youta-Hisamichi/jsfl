@@ -1067,7 +1067,8 @@ function drawObstacles() {
     const wt = now - (o.wobAt || 0);
     if (wt < 600 && o.wobAmp) { // 当たるとブルッ（減衰しながら伸び縮み）
       const k = o.wobAmp * Math.exp(-wt / 160) * Math.sin(wt / 26);
-      ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r));
+      if (o.kind === 'slime' || o.kind === 'bumper') { ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r)); } // やわらかい物はプルプル
+      else { const g = o.wobAmp * Math.exp(-wt / 90) * Math.sin(wt / 14); ctx.translate(g * 3, Math.abs(g) * -1); ctx.translate(o.x, o.y + o.r); ctx.rotate(g * 0.04); ctx.translate(-o.x, -(o.y + o.r)); } // 硬い物は小刻みにガタガタ
     }
     if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
       const pop = now - (o.popAt || 0) < 200 ? -Math.sin((now - o.popAt) / 200 * Math.PI) * 6 : 0, h = o.r * 0.9, bob = o.used ? 0 : Math.sin(now / 300 + o.seed * 6) * 1.5;
