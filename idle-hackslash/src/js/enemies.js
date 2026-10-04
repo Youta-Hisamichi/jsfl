@@ -779,7 +779,8 @@ const OBSTACLE_BOUNCE = {
   spikeBall: { speed: 1.1, wobble: 0.6 }, saw: { speed: 1.15, wobble: 0.1 }, gear: { speed: 1, wobble: 0.15 }, spikeLog: { speed: 0.85, wobble: 0.5 }, spikePillar: { speed: 0.9, wobble: 0.25 },
 };
 const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.kind] || { speed: 1, wobble: 0.3 };
-const FLOOR_OBSTACLES = new Set(['dash', 'portal']); // 床に置くもの（ぶつからずに上を通る）
+const FLOOR_OBSTACLES = new Set(['dash', 'portal']);
+const SAW_SELF_DMG = 0.08; // 回転ノコギリに自分や仲間がぶつかったときのダメージ（最大HP比） // 床に置くもの（ぶつからずに上を通る）
 // エリアごとの出やすさ（何も書いていない種類は共通の重み）
 const OBSTACLE_WEIGHTS = { rock: 18, crate: 11, barrel: 8, bumper: 9, slime: 6, egg: 6, qbox: 8, ice: 4, crystal: 4, techBox: 3, bomb: 6, spike: 7, dash: 6, portal: 4 };
 const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪原・市場・船・遺跡・魔塔
@@ -962,6 +963,17 @@ function obstacleBounce(ball) {
         const dmg = Math.max(1, Math.round(ball.maxHp * (ball.isBoss ? 0.02 : 0.06)));
         ball.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(ball, dmg, false, '#c0c8d8'); onPlayerHitEnemy(ball, dmg);
         spawnHitParticles(ball.x, ball.y, '#e0e6f0'); thump(900, 300, 0.06, 0.08, 'square');
+      } else if (o.sprite === 'saw' && ball.isPlayer && !ball.isClone && ball.hp > 0 && now - (ball.spikeAt || 0) > 600) { // 回転ノコギリは自分や仲間もケガをする
+        ball.spikeAt = now;
+        if (isMainPlayerBall(ball) && absorbWithBarrier(ball)) { updateHPUI(); }
+        else {
+          const dmg = Math.max(1, Math.round(ball.maxHp * SAW_SELF_DMG));
+          ball.hp -= dmg; ball.hurtAt = now;
+          spawnBlood(ball.x, ball.y, 6); spawnDamageText(ball.x, ball.y - ball.radius - 8, String(dmg), '#ffb3b3');
+          spawnHitParticles(ball.x, ball.y, '#ff6b6b'); playPlayerHitSound(); thump(900, 300, 0.06, 0.08, 'square');
+          updateHPUI();
+          if (isMainPlayerBall(ball) && ball.hp <= 0) { ball.hp = 0; onPlayerDeath(); return; }
+        }
       } else if (hard) { ball.wallSoundAt = now; thump(700, 400, 0.05, 0.06, 'square'); }
     } else if (o.kind === 'bomb' && (dot < -0.6 || (isMainPlayerBall(ball) && rushingNow)) && now - (o.hitAt || 0) > 250) { // 爆弾：2回当てると爆発
       o.hitAt = now; o.shakeAt = now; o.hp -= isMainPlayerBall(ball) && rushingNow ? 2 : 1;

@@ -702,25 +702,26 @@ function completeReincarnation() {
   saveGame();
   playRebirthSound();
   toastIcon.style.display = 'block';
-  toastIcon.innerHTML = xi('x_reborn');
+  toastIcon.innerHTML = xi(CHEST_ICON[pick.rarity]) || '🎁'; // 宝箱のレア度は転生時にわかる（中身は開けるまでお楽しみ）
   toastIcon.className = 'artifact-icon chest-shake';
   toast.classList.add('rebirth-reward'); // 背景に魔法陣
   toast.style.removeProperty('--chest-glow');
   toastBig.textContent = '輪廻転生……';
   toastBig.className = 'big reborn';
-  toastSub.textContent = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n転生ガチャの宝箱を手に入れた！\n（画面左下からいつでも開けられます）`;
+  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n<span class="chest-rarity" style="color:${RARITY_INFO[pick.rarity].color}">${rarityStars(pick.rarity)} ${RARITY_INFO[pick.rarity].label}の宝箱</span>を手に入れた！\n（画面左下の宝箱からいつでも開けられます）`;
   toast.classList.add('show');
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
   rebirthTimer = setTimeout(finishRebirth, 2800);
-  renderChestTray();
+  renderChestTray(pick.rarity);
 }
 // 左下にストックした転生ガチャの宝箱を開ける（戦闘は止めて、開封演出→中身を獲得）
 let rebirthChestFromTray = false, rebirthTrayPausedPhase = null;
-function openStockedRebirthChest() {
-  if (!Array.isArray(game.rebirthChests) || !game.rebirthChests.length || phase !== 'battle') return;
-  const pick = ARTIFACT_BY_ID[game.rebirthChests.shift()];
+function openStockedRebirthChest(rarity) {
+  if (!Array.isArray(game.rebirthChests) || phase !== 'battle') return;
+  const i = game.rebirthChests.findIndex(id => ARTIFACT_BY_ID[id] && ARTIFACT_BY_ID[id].rarity === rarity); if (i < 0) return;
+  const pick = ARTIFACT_BY_ID[game.rebirthChests.splice(i, 1)[0]];
   renderChestTray();
   if (!pick) { saveGame(); return; }
   gainArtifact(pick.id); renderArtifactList(); updateStatsUI(); saveGame();
