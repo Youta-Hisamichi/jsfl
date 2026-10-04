@@ -713,6 +713,7 @@ function completeReincarnation() {
   rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
 const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 1100;
+const REBIRTH_LEGEND_LOCK_MS = 3000; // レジェンドが出たら、この間は結果画面を閉じられない
 let rebirthChest = null;
 // 宝箱を開ける音：留め金が外れる「カチャッ」→ ふたがきしんで開く「ギィ…」→ 光があふれる「パァッ」
 function playChestOpenSound() {
@@ -739,7 +740,8 @@ function openRebirthChest() {
   void toastIcon.offsetWidth;
   toastIcon.style.transition = 'translate 0.9s cubic-bezier(.2,.8,.3,1)'; toastIcon.style.translate = '0px 0px'; // せり上がって定位置へ
   playChestOpenSound(); setTimeout(() => playGachaSound(pick.rarity), 260); // 宝箱が開く「ガチャッ…パカッ」→ レア度の音
-  rebirthSkippable = true;
+  rebirthSkippable = pick.rarity !== 'legendary';
+  if (!rebirthSkippable) setTimeout(() => { rebirthSkippable = true; }, REBIRTH_LEGEND_LOCK_MS); // レジェンドはしばらく余韻を味わえるよう、タップで閉じられない
   rebirthTimer = setTimeout(finishRebirth, 6500);
 }
 
