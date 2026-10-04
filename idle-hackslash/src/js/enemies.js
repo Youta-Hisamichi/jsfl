@@ -1040,6 +1040,9 @@ function hatchEgg(o) {
   spawnDamageText(o.x, o.y - 20, '🥚💥 やばいのが出てきた！', '#ff4f6d', 0.012, true);
   shakeScreen(); playWarningSound();
 }
+// 回転角は 0〜2π に収めてから使う（Date.now() をそのまま割った巨大な角度は、描画側の精度不足で回転が止まってしまう）
+let debugShowSpin = false; // デバッグ：回る障害物の回転角を表示
+function spinAngle(now, msPerRad) { return (now % (msPerRad * Math.PI * 2)) / msPerRad; }
 function drawObstacleSprite(key, x, y, size, rot) { // 障害物の画像（読み込めていなければ false）
   const img = OBSTACLE_IMGS[key];
   if (!img || !img.complete || !img.naturalWidth) return false;
@@ -1084,7 +1087,7 @@ function drawObstacles() {
     } else {
       const pulse = 1 + Math.sin(now / 250 + o.seed * 9) * 0.05 + (lit ? 0.15 : 0);
       ctx.shadowColor = '#7fb8ff'; ctx.shadowBlur = lit ? 24 : 10;
-      drawObstacleSprite('portal', o.x, o.y, o.r * 2.3 * pulse, now / 1200);
+      drawObstacleSprite('portal', o.x, o.y, o.r * 2.3 * pulse, spinAngle(now, 1200));
     }
     ctx.restore();
   }
@@ -1123,9 +1126,10 @@ function drawObstacles() {
       ctx.translate(o.x, o.y + o.r); ctx.scale(1 + squ, 1 - squ); ctx.translate(-o.x, -(o.y + o.r));
       drawObstacleSprite('slime', o.x, o.y, o.r * 2.3);
     } else if (o.kind === 'spike') { // トゲ（ノコギリと歯車は回る）
-      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 450 : o.sprite === 'gear' ? now / 900 : 0; // 刃は等間隔なので、速すぎる（1コマで刃の半分以上進む）と止まって見える。ゆっくりめに
+      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? spinAngle(now, 300) : o.sprite === 'gear' ? spinAngle(now, 900) : 0;
       if (lit) { ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 14; }
       drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.3, spin); // ノコギリ・歯車は画像ごと回す
+      if (debugShowSpin && spin) { ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3; const t = `回転 ${Math.round(spin * 180 / Math.PI)}°`; ctx.strokeText(t, o.x, o.y + o.r * 1.6); ctx.fillText(t, o.x, o.y + o.r * 1.6); } // デバッグ：今の回転角
       if (o.sprite === 'saw' && Math.random() < 0.3) { const a = spin + Math.random() * 6.28; crateShards.push({ x: o.x + Math.cos(a) * o.r * 1.1, y: o.y + Math.sin(a) * o.r * 1.1, vx: -Math.sin(a) * 3 + (Math.random() - 0.5), vy: Math.cos(a) * 3 - 1, rot: 0, vr: 0, w: 2, h: 2, life: 0.5, col: '#ffd76b' }); } // 火花
     } else if (o.kind === 'bomb') { // 爆弾（火がつくと赤く点滅して膨らむ）
       const fuse = o.fuseAt ? (now - o.fuseAt) / 700 : 0, blink = fuse && Math.floor(now / 70) % 2;
