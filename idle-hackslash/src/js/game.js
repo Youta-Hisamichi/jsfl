@@ -88,7 +88,7 @@ function step() {
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
@@ -122,7 +122,7 @@ function step() {
     } else {
       if (!playerAttackHits(e)) spawnMissText(e);
       else {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult)), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
@@ -171,7 +171,7 @@ function step() {
         const cloneX = clone.x, cloneY = clone.y;
         balls = balls.filter(ball => ball !== clone); // 外しても分身は消滅
         if (!playerAttackHits(e)) { spawnMissText(e); continue; }
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult)), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(clone.atk * comboMult * dashDmgMult(clone))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles(clone.x, clone.y, '#ffb35c');
@@ -200,7 +200,7 @@ function step() {
           if (cid === 'lumber' && Math.random() < 0.25) { hitMult = 2; hitLabel = '大振り！'; }
           if (cid === 'lancer' && e.isBoss) hitMult = 1.5;
           if (cid === 'samurai' && Math.random() < 0.25) { hitMult = 3; hitLabel = '居合・一閃！'; }
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult)), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult * dashDmgMult(comp))), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
           if (hitLabel) spawnDamageText(e.x, e.y - e.radius - 30, hitLabel, COMPANION_COLORS[cid], 0.02);
           e.hp -= dmg;
           trackDamage(dmg);
@@ -1398,6 +1398,12 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
       if (Math.abs(dx) > 6) ball.faceDir = dx > 0 ? 1 : -1;
     }
     flip = (ball.faceDir || base) !== base;
+  }
+  if (ball.dashPowerUntil > Date.now()) { // ダッシュパネルでダメージ倍増中：赤い炎のオーラ
+    const left = (ball.dashPowerUntil - Date.now()) / DASH_POWER_MS, p = 0.7 + Math.sin(Date.now() / 60) * 0.3;
+    const g = ctx.createRadialGradient(cx, cy, sz * 0.15, cx, cy, sz * 0.7);
+    g.addColorStop(0, `rgba(255,220,120,${0.5 * p * Math.min(1, left * 2)})`); g.addColorStop(0.6, `rgba(255,80,60,${0.35 * p * Math.min(1, left * 2)})`); g.addColorStop(1, 'rgba(255,60,60,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, sz * 0.7, 0, Math.PI * 2); ctx.fill();
   }
   if (ball.berserk) { // 発狂中：赤い怒りのオーラを背負い、小刻みに震える
     const p = 0.75 + Math.sin(Date.now() / 90) * 0.25, g = ctx.createRadialGradient(cx, cy, sz * 0.1, cx, cy, sz * 0.75);

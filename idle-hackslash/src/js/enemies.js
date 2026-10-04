@@ -780,6 +780,8 @@ const OBSTACLE_BOUNCE = {
 };
 const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.kind] || { speed: 1, wobble: 0.3 };
 const FLOOR_OBSTACLES = new Set(['dash', 'portal']);
+const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通った味方は3秒間ダメージ2倍
+function dashDmgMult(ball) { return ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1; }
 const SAW_SELF_DMG = 0.08; // 回転ノコギリに自分や仲間がぶつかったときのダメージ（最大HP比） // 床に置くもの（ぶつからずに上を通る）
 // エリアごとの出やすさ（何も書いていない種類は共通の重み）
 const OBSTACLE_WEIGHTS = { rock: 18, crate: 11, barrel: 8, bumper: 9, slime: 6, egg: 6, qbox: 8, ice: 4, crystal: 4, techBox: 3, bomb: 6, spike: 7, dash: 6, portal: 4 };
@@ -873,7 +875,11 @@ function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワー�
     const dir = dashPanelDir(o, now); // 今パネルが向いている方向へ飛ばす
     ball.vx = Math.cos(dir) * sp; ball.vy = Math.sin(dir) * sp;
     if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, Math.max(holdRush.speed, 11));
-    if (ball.isPlayer) { thump(400, 1400, 0.14, 0.07, 'sawtooth'); spawnDamageText(ball.x, ball.y - ball.radius - 12, '≫ ダッシュ！', '#ff6b6b', 0.03); }
+    if (ball.isPlayer) { // 自分や仲間はしばらくダメージ倍増
+      ball.dashPowerUntil = now + DASH_POWER_MS;
+      thump(400, 1400, 0.14, 0.07, 'sawtooth'); thump(800, 1600, 0.1, 0.05, 'square', 0.05);
+      spawnDamageText(ball.x, ball.y - ball.radius - 12, `≫ ダッシュ！ ダメージ×${DASH_DMG_MULT}`, '#ff6b6b', 0.025, true);
+    }
   } else if (o.kind === 'portal' && o.pair && now - (ball.warpAt || 0) > 1000) {
     const t = o.pair, sp = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / sp, uy = ball.vy / sp;
     ball.warpAt = now; o.flash = t.flash = now;
