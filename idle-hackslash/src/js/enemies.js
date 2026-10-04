@@ -793,9 +793,9 @@ function pickObstacleKind(rnd, zoneIdx) {
   for (const k in w) if ((t -= w[k]) < 0) return k;
   return 'rock';
 }
-function setupObstacles() {
+function setupObstacles(dropDebug) {
   obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
-  obstacles = [];
+  obstacles = dropDebug ? [] : obstacles.filter(o => o.debug && !o.broken); // デバッグで出した障害物は階層が変わっても出しっぱなし
   const zone = Math.floor((Math.max(1, game.stage) - 1) / 10); // エリア（出やすい種類が決まる）
   const block = Math.floor((Math.max(1, game.stage) - 1) / 2); // 2ステージごとに配置と種類が変わる
   const rnd = stageRand(block * 7 + 3), half = arena.radius;
@@ -813,7 +813,8 @@ function setupObstacles() {
     }
     return null;
   };
-  for (let guard = 0; obstacles.length < n && guard < 30; guard++) {
+  const kept = obstacles.length; // 残したデバッグ分は数に入れない
+  for (let guard = 0; obstacles.length - kept < n && guard < 30; guard++) {
     const kind = pickObstacleKind(rnd, zone);
     const r = half * (0.09 + rnd() * 0.06);
     const p = spot(r); if (!p) continue;
@@ -854,7 +855,7 @@ function debugSpawnObstacle(kind, sprite) {
     }
     return null;
   };
-  const make = () => { const p = spot(); if (!p) return null; const o = { x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
+  const make = () => { const p = spot(); if (!p) return null; const o = { debug: true, x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
   const o = make(); if (!o) return false;
   if (kind === 'portal') { const o2 = make(); if (!o2) { obstacles.pop(); return false; } o.pair = o2; o2.pair = o; }
   spawnHitParticles(o.x, o.y, '#ffffff');

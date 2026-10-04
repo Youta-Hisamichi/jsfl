@@ -2139,7 +2139,7 @@ renderDebugMonsters();
     const btn = ev.target.closest('[data-dbg-obs]'); if (!btn) return;
     const v = btn.dataset.dbgObs;
     if (v === 'clear') { obstacles = []; showNotice('DEBUG: 障害物を全部消しました'); return; }
-    if (v === 'reset') { setupObstacles(); showNotice('DEBUG: この階層の障害物の配置に戻しました'); return; }
+    if (v === 'reset') { setupObstacles(true); showNotice('DEBUG: この階層の障害物の配置に戻しました（デバッグで出した分は消去）'); return; }
     const [k, sp, name] = DEBUG_OBSTACLES[+v];
     if (getActiveTab() !== 'game') switchTab('game');
     showNotice(debugSpawnObstacle(k, sp) ? `DEBUG: ${name} を出現` : 'DEBUG: 空いている場所がありません');
