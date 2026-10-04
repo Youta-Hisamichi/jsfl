@@ -37,8 +37,6 @@ function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).flatMap
   let single = inlineAssets(bundle(minCss, jsFiles.map(f => minJs[f]).join(';\n')));
   single = '<!-- このファイルは自動生成です。編集は src/ で行い、tools/build.js で作り直してください -->\n' + minHtml(single);
   const kb = Buffer.byteLength(single);
-  single = single.split('@@BUILD_SIZE@@').join(String(kb).padStart('@@BUILD_SIZE@@'.length, '0'));
-  fs.writeFileSync(path.join(ROOT, 'index.html'), single);
 
   // ---- PWA版（dist/）----
   fs.rmSync(DIST, { recursive: true, force: true });
@@ -58,12 +56,26 @@ function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).flatMap
   put('manifest.webmanifest', JSON.stringify(manifest, null, 2));
   const pngIcons = path.join(ROOT, 'tools/icons'); // tools/make-icons.py で作った PNG アイコン
   for (const s of ['192', '512']) { const f = path.join(pngIcons, `icon-${s}.png`); if (fs.existsSync(f)) put(`icons/icon-${s}.png`, fs.readFileSync(f)); }
-  const version = crypto.createHash('sha1').update(files.map(f => f + fs.statSync(path.join(DIST, f)).size).join('|') + minJs[jsFiles[0]].length).digest('hex').slice(0, 10);
   const distHtml = html
     .replace('<link rel="stylesheet" href="style.css">', '<link rel="stylesheet" href="style.css">\n<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#1b2140">\n<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n<meta name="apple-mobile-web-app-capable" content="yes">')
-    .replace('</body>', `<script>if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }</script>\n</body>`)
-    .split('@@BUILD_SIZE@@').join('00000000000000');
+    .replace('</body>', `<script>if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }</script>\n</body>`);
   put('index.html', distHtml);
+  // ---- 容量レポート（デバッグ画面に表示）：dist/ の実ファイルを種類ごとに集計して JS に書き込む ----
+  const sizeOf = f => fs.statSync(path.join(DIST, f)).size;
+  const SW_EST = 12000; // sw.js はこの後で作るので概算
+  const groupOf = f => f.startsWith('js/') ? 'プログラム' : f === 'style.css' ? 'CSS' : f === 'index.html' ? 'HTML' : f.startsWith('icons/') || f.endsWith('.webmanifest') ? 'アプリ設定' :
+    ({ icons: 'アイコン', enemies: '敵', companions: '仲間', npc: 'NPC', floors: '床', bg: '背景', outer: '背景', obstacles: '障害物', ui: 'UI素材', misc: 'その他画像' })[f.split('/')[2]] || 'その他';
+  const groups = {};
+  for (const f of files) { const g = groupOf(f); groups[g] = groups[g] || [g, 0, 0]; groups[g][1] += sizeOf(f); groups[g][2]++; }
+  groups['アプリ設定'] = groups['アプリ設定'] || ['アプリ設定', 0, 0]; groups['アプリ設定'][1] += SW_EST; groups['アプリ設定'][2]++;
+  const report = { total: files.reduce((n, f) => n + sizeOf(f), 0) + SW_EST, files: files.length + 1, single: kb, at: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+    groups: Object.values(groups).sort((x, y) => y[1] - x[1]) };
+  const reportStr = JSON.stringify(JSON.stringify(report)).slice(1, -1).replace(/'/g, "\\'");
+  const fill = t => t.split('@@SIZE_REPORT@@').join(reportStr);
+  for (const f of files.filter(f => f.startsWith('js/'))) fs.writeFileSync(path.join(DIST, f), fill(fs.readFileSync(path.join(DIST, f), 'utf8')));
+  fs.writeFileSync(path.join(ROOT, 'index.html'), fill(single));
+  fs.writeFileSync(path.join(ROOT, '.build/dev.html'), fill(fs.readFileSync(path.join(ROOT, '.build/dev.html'), 'utf8')));
+  const version = crypto.createHash('sha1').update(files.map(f => f + fs.statSync(path.join(DIST, f)).size).join('|') + minJs[jsFiles[0]].length).digest('hex').slice(0, 10);
   const precache = ['./', ...files.filter(f => f !== 'sw.js')];
   put('sw.js', `// オフラインでも遊べるよう、ゲームのファイルを端末に保存しておく（版が変わったら入れ替え）
 const CACHE = 'mugen-hansha-${version}';

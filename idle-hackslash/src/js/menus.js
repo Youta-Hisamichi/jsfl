@@ -632,35 +632,34 @@ function updateStatsUI() {
 let dpr = Math.max(1, window.devicePixelRatio || 1);
 let size = 0;
 let arena = { x: 0, y: 0, radius: 0 };
-const BUILD_SIZE = '@@BUILD_SIZE@@'; // ビルド時に index.html のバイト数へ置き換わる（同じ文字数）
 // デバッグ：ゲームの容量（HTML本体・埋め込み画像・セーブデータ）を表示
+const SIZE_REPORT = '@@SIZE_REPORT@@'; // ビルド時にゲーム全体のファイル容量（JSON）へ置き換わる
+function getSizeReport() { try { return JSON.parse(SIZE_REPORT); } catch (err) { return null; } }
+const fmtBytes = n => n >= 1048576 ? (n / 1048576).toFixed(2) + ' MB' : (n / 1024).toFixed(1) + ' KB';
+function renderDebugSizeInfo() { // デバッグパネル上部に、ゲーム全体の容量をいつも表示
+  const el = document.getElementById('dbgSizeInfo'); if (!el) return;
+  const r = getSizeReport();
+  if (!r) { el.textContent = '📦 ゲーム容量：未ビルド（tools/build.js で計測）'; return; }
+  el.innerHTML = `📦 ゲーム全体：<b>${fmtBytes(r.total)}</b>（${r.files}ファイル）<br>` +
+    r.groups.map(([n, v]) => `${n} ${fmtBytes(v)}`).join('　') + `<br><span style="opacity:.7">1ファイル版 ${fmtBytes(r.single)}（1MB上限の ${(r.single / 1000000 * 100).toFixed(0)}%）・計測 ${r.at}</span>`;
+}
 async function showGameSize() {
-  const kb = n => (n / 1024).toFixed(1) + ' KB';
-  const LIMIT = 1000000;
-  let html = 0, how = '';
-  try { const r = await fetch(location.href, { cache: 'no-store' }); if (r.ok) { html = (await r.arrayBuffer()).byteLength; how = '実ファイル'; } } catch (err) {}
-  const built = parseInt(BUILD_SIZE, 10); // build.js が書き込んだ index.html の実サイズ
-  if (!html && built > 0) { html = built; how = 'ビルド時の実サイズ'; }
-  if (!html) { html = new Blob(['<!DOCTYPE html>' + document.documentElement.outerHTML]).size; how = '画面から概算（未ビルド）'; }
-  const imgOf = obj => (JSON.stringify(obj).match(/data:image[^"]*/g) || []).reduce((t, u) => t + u.length, 0);
-  const groups = [['アイコン', ICON_IMAGES], ['敵', ENEMY_SPRITES], ['仲間', COMPANION_SPRITES], ['NPC', NPC_SPRITES], ['床', FLOOR_TILES], ['背景', OUTER_TILES]].map(([n, o]) => [n, imgOf(o)]);
-  const imgTotal = groups.reduce((t, g) => t + g[1], 0);
+  const r = getSizeReport();
   let save = 0, ls = 0;
   try { save = (localStorage.getItem(SAVE_KEY) || '').length * 2; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); ls += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (err) {}
-  const lines = [
-    `📦 ゲーム容量（${how}）`,
-    `HTML本体: ${html.toLocaleString()} バイト（${kb(html)}）`,
-    `上限 1,000,000 バイトまで残り ${(LIMIT - html).toLocaleString()} バイト（使用 ${(html / LIMIT * 100).toFixed(1)}%）`,
-    `埋め込み画像 合計: ${kb(imgTotal)}（${(imgTotal / html * 100).toFixed(0)}%）`,
-    ...groups.map(([n, v]) => `　${n}: ${kb(v)}`),
-    `プログラム等（画像以外）: ${kb(html - imgTotal)}`,
-    `セーブデータ: ${kb(save)}（ローカル保存全体 ${kb(ls)}）`,
-  ];
+  const lines = r ? [
+    `📦 ゲーム全体の容量（PWA版 dist/）: ${r.total.toLocaleString()} バイト（${fmtBytes(r.total)}）・${r.files}ファイル`,
+    ...r.groups.map(([n, v, c]) => `　${n}: ${fmtBytes(v)}（${c}ファイル・${(v / r.total * 100).toFixed(0)}%）`),
+    `1ファイル版 index.html: ${fmtBytes(r.single)}（1MB上限の ${(r.single / 1000000 * 100).toFixed(0)}%。PWA版には上限なし）`,
+    `計測: ${r.at}（ビルド時）`,
+  ] : ['📦 未ビルドのため容量不明（tools/build.js を実行すると計測されます）'];
+  lines.push(`セーブデータ: ${fmtBytes(save)}（ローカル保存全体 ${fmtBytes(ls)}）`);
   const ta = document.getElementById('dbgMonList');
   ta.value = lines.join('\n'); ta.style.display = ''; ta.rows = lines.length + 1;
   ta.scrollIntoView({ block: 'center' });
-  showNotice(`📦 HTML ${kb(html)}（上限の ${(html / LIMIT * 100).toFixed(1)}%）`);
+  showNotice(r ? `📦 ゲーム全体 ${fmtBytes(r.total)}` : '📦 未ビルド');
 }
+renderDebugSizeInfo();
 // お試し：ゲームサークルを四角形（画面の横幅いっぱい）にする。デバッグの「⬛ 四角/丸」で切り替え
 let ARENA_RECT = true;
 try { const v = localStorage.getItem('arenaRect'); if (v !== null) ARENA_RECT = v === '1'; } catch (err) {}
