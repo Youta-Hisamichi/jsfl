@@ -305,7 +305,7 @@ function makeAddEnemy(mainEnemy) {
     isPlayer: false, isAdd: true,
     x: spot.x + (Math.random() - 0.5) * 30, y: spot.y + (Math.random() - 0.5) * 30,
     vx: Math.cos(angle) * 3.4, vy: Math.sin(angle) * 3.4,
-    radius: isSwarmStage(game.stage) && !SLIME_CLASS_EMOJIS.has(emoji) ? 15 : 11, maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
+    radius: SLIME_CLASS_EMOJIS.has(emoji) ? 13 : 15, // 雑魚も小さすぎない大きさに maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
     atk: Math.max(1, Math.round(mainEnemy.atk * 0.4)),
     color: '#ff9d4f', glow: 'rgba(255,157,79,0.5)', shape: 'emoji', emoji,
     movementStyle: pickEnemyMovementStyle(game.stage),

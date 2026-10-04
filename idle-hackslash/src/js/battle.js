@@ -14,8 +14,10 @@ const ENEMY_TRAITS = {
   'emoji:🦂': 'deathMagic',
   'emoji:🦇': 'merge',
 };
+const MULTIPLY_TRAITS = new Set(['split', 'splitMany', 'merge', 'stack', 'jumbo']); // 敵が増える特徴
+const MULTIPLY_TRAIT_CHANCE = 0.15; // その特徴を持つ敵が実際に使ってくる確率（デバッグで出した敵はいつも使う）
 const ENEMY_TRAIT_DESCS = {
-  charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すとたくさんに分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
+  charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すと2〜3体に分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
   attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
   mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', stack: '縦に積み重なっている。HPが減るたびに上から1体ずつ崩れ落ちて、別々に襲ってくる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
 };
@@ -24,10 +26,10 @@ const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 };
 const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
 const SPLIT_TIMES = 2;         // 分裂できる回数
 const SPLIT_CONFIG = {
-  spike:       { times: 2, children: 1, hpRate: 0.18 },
-  slimeOrange: { times: 2, children: 3, hpRate: 0.12 },
-  slimeGreen:  { times: 2, children: 5, hpRate: 0.08 },
-  slimeBlood:  { times: 2, children: 7, hpRate: 0.06 },
+  spike:       { times: 1, children: 1, hpRate: 0.18 }, // 分裂は1回だけ・増えても1〜2体（基本は1対1で戦う）
+  slimeOrange: { times: 1, children: 1, hpRate: 0.15 },
+  slimeGreen:  { times: 1, children: 2, hpRate: 0.1 },
+  slimeBlood:  { times: 1, children: 2, hpRate: 0.08 },
 };
 function getSplitConfig(enemy) { return SPLIT_CONFIG[enemy.shape] || SPLIT_CONFIG.spike; }
 const GROW_PER_HIT = 0.05;     // 被弾1回ごとの巨大化
@@ -40,13 +42,13 @@ function enemyDamageCut(e) { return 1 - (isMetalEnemy(e) ? 1 - METAL_DAMAGE_CUT 
 const ENEMY_DEATH_CHANCE = 0.12;
 const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
 const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
-const MERGE_MINIONS = 4;          // 手下がこの数集まると合体
+const MERGE_MINIONS = 3;          // 手下がこの数集まると合体
 const MERGE_MAX = 6;              // 合体の上限回数
-const JUMBO_CHIBIS = 8;           // 一緒に現れるチビスライムの数
+const JUMBO_CHIBIS = 3;           // 一緒に現れるチビスライムの数
 const JUMBO_GATHER_FRAMES = 300;  // 現れてからこの時間（ゲーム速度1倍のフレーム）で集まり始める
 const JUMBO_HP_PER_CHIBI = 0.45;  // チビ1体を取り込むごとに増える最大HP（元の最大HP比）
 const JUMBO_ATK_PER_CHIBI = 0.12; // チビ1体を取り込むごとに増える攻撃力
-const STACK_LAYERS = { slimeSnowman: ['slimeIce', 'slimeIce'], slimeDango: ['slimeMatcha', 'slimeIce', 'slimePink'] };
+const STACK_LAYERS = { slimeSnowman: ['slimeIce'], slimeDango: ['slimeMatcha', 'slimeIce'] };
 const STACK_CHILD_HP = 0.18; // 崩れ落ちた1体のHP（元の最大HP比）
 function updateStackSlime(e) {
   if (!e.stack) {
@@ -59,7 +61,7 @@ function updateStackSlime(e) {
     const key = e.stack.pop();
     const c = makeAddEnemy(e);
     c.shape = key; c.emoji = null; c.color = SHAPE_ENEMY_COLORS[key] || e.color; c.glow = e.glow;
-    c.radius = 11; c.maxHp = c.hp = Math.max(4, Math.round(e.maxHp * STACK_CHILD_HP));
+    c.radius = 14; c.maxHp = c.hp = Math.max(4, Math.round(e.maxHp * STACK_CHILD_HP));
     c.x = e.x; c.y = e.y - e.radius * 1.4;
     const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
     c.vx = Math.cos(a) * 4; c.vy = Math.sin(a) * 4;
@@ -153,7 +155,7 @@ function updateJumboSlime(e, speedMult) {
       const a = Math.PI * 2 * i / JUMBO_CHIBIS, r = arena.radius * (0.35 + Math.random() * 0.35);
       c.x = arena.x + Math.cos(a) * r; c.y = arena.y + Math.sin(a) * r;
       c.shape = 'slimeChibi'; c.emoji = null; c.color = e.color; c.glow = e.glow;
-      c.radius = 9; c.maxHp = c.hp = Math.max(4, Math.round(e.maxHp * 0.12));
+      c.radius = 11; c.maxHp = c.hp = Math.max(4, Math.round(e.maxHp * 0.12)); // チビスライム（小さいのが特徴）
       c.chibiOwner = e; c.isSplit = true; // 残っている間は次のステージに進まない
       adds.push(c);
     }
@@ -197,7 +199,7 @@ function updateJumboSlime(e, speedMult) {
     }
   }
 }
-const MAX_FREE_ADDS = 3;          // 通常ステージで同時に出る雑魚の最大数（本体は別）
+const MAX_FREE_ADDS = 1;          // 通常ステージで同時に出る雑魚の最大数（本体は別。基本は1対1、せいぜい2体）
 const SWARM_ADDS = 6;             // 大群ステージの雑魚の数（控えめ）
 function isSwarmStage(stage) { return stage >= 30 && stage % 20 === 15; } // 大群ステージ（序盤は無し。35, 55, 75…と20階層ごと） // 敵の即死魔法の成功率（バリアで防げる）
 let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
@@ -208,6 +210,7 @@ function getEnemyTrait(enemy) {
   if (!enemy || enemy.isPlayer || enemy.isAdd) return null;
   if (enemy.trait === undefined) {
     enemy.trait = ENEMY_TRAITS[getEnemyBookKey(enemy)] || null;
+    if (MULTIPLY_TRAITS.has(enemy.trait) && !enemy.isBoss && !enemy.forceTrait && Math.random() >= MULTIPLY_TRAIT_CHANCE) enemy.trait = null; // 分裂・増える系はたまにしか使ってこない
     enemy.traitCd = enemy.trait ? randTraitCd(enemy.trait) * 0.6 : 0;
     enemy.splitsLeft = enemy.trait === 'split' || enemy.trait === 'splitMany' ? getSplitConfig(enemy).times : 0;
     enemy.growScale = 1;
@@ -245,7 +248,7 @@ function enemySurvivesDefeat(enemy) {
     enemy.maxHp = Math.max(1, Math.ceil(enemy.maxHp * 0.6));
     enemy.hp = enemy.maxHp;
     enemy.traitLastHp = enemy.hp;
-    enemy.traitBaseRadius = Math.max(8, getTraitBaseRadius(enemy) * 0.75);
+    enemy.traitBaseRadius = Math.max(14, getTraitBaseRadius(enemy) * 0.9); // 分裂しても小さくなりすぎない
     enemy.radius = enemy.traitBaseRadius;
     for (let i = 0; i < cfg.children; i++) {
       const child = makeAddEnemy(enemy);
@@ -256,7 +259,7 @@ function enemySurvivesDefeat(enemy) {
       child.shape = enemy.shape; child.emoji = enemy.emoji; child.isSplit = true;
       child.color = enemy.color; child.glow = enemy.glow;
       child.maxHp = child.hp = Math.max(4, Math.round(origMaxHp * cfg.hpRate));
-      child.radius = Math.max(8, enemy.radius * (cfg.children > 1 ? 0.7 : 0.8));
+      child.radius = Math.max(13, enemy.radius * (cfg.children > 1 ? 0.85 : 0.9));
       adds.push(child);
     }
     spawnDamageText(enemy.x, enemy.y - enemy.radius - 24, cfg.children > 1 ? `${cfg.children + 1}分裂！` : '分裂！', enemy.color || '#7fd6ff', 0.014, true);
@@ -325,9 +328,9 @@ function updateEnemyTraits(a, e, speedMult) {
             mine.forEach(ad => { ad.merging = true; ad.traitFreeze = true; });
             spawnDamageText(e.x, e.y - e.radius - 22, '集まれ！', '#c792ea', 0.016);
           } else {
-            for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < 1; i++) {
               const m = makeAddEnemy(e);
-              m.emoji = e.emoji; m.shape = e.shape; m.radius = 9; m.mergeOwner = e;
+              m.emoji = e.emoji; m.shape = e.shape; m.radius = 13; m.mergeOwner = e;
               m.x = e.x + (Math.random() - 0.5) * 40; m.y = e.y + (Math.random() - 0.5) * 40;
               adds.push(m);
             }

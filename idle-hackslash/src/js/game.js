@@ -50,7 +50,7 @@ function step() {
     playSwarmSound();
   }
   const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
-  if (!e.isBoss && !swarm && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0009) { // 大群ステージは補充しない（全滅させたらクリア）
+  if (!e.isBoss && !swarm && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0005) { // 大群ステージは補充しない（全滅させたらクリア）
     adds.push(makeAddEnemy(e));
   }
 

@@ -701,6 +701,7 @@ debugRow.addEventListener('click', event => {
     else { if (game.stage % 10 === 0) game.stage++; forcedEnemyKey = key; }
     game.bestStage = Math.max(game.bestStage, game.stage);
     balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
+    balls.forEach(bl => { if (!bl.isPlayer) bl.forceTrait = true; }); // デバッグで出した敵は特徴をかならず使う
     forcedBossEmoji = null; forcedEnemyKey = null;
     refreshPlayerBallStats(true); updateStatsUI(); updateHPUI();
     if (kind === 'boss') showBossWarning();
