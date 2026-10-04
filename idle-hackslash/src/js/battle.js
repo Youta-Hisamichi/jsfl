@@ -1,6 +1,6 @@
 const ENEMY_TRAITS = {
-  'emoji:🥬': 'spinGuard', 'emoji:🧙': 'attackMagic', 'emoji:🪖': 'charge', 'emoji:🔪': 'charge', 'emoji:🌑': 'deathMagic', 'emoji:⚫': 'merge', 'emoji:🩶': 'grow', 'emoji:🩷': 'healMagic', 'emoji:🔷': 'split', 'emoji:🦕': 'homing', 'emoji:🟩': 'split', 'emoji:🐟': 'charge', 'emoji:🦒': 'grow', 'emoji:🥒': 'charge', 'emoji:🦎': 'charge', 'emoji:🦀': 'spinGuard', 'emoji:🥈': 'spinGuard', 'emoji:🌈': 'healMagic', 'emoji:🟨': 'split', 'emoji:🦋': 'merge', 'emoji:🔥': 'mines', 'emoji:💋': 'healMagic', 'emoji:🛡️': 'spinGuard', 'emoji:🗡️': 'charge', 'emoji:🪲': 'spinGuard', 'boss:💪': 'grow', 'emoji:🐻': 'mines', 'emoji:🦞': 'deathMagic', 'emoji:🦫': 'charge', 'boss:👁️': 'attackMagic', 'boss:🕸️': 'homing', 'boss:🪦': 'deathMagic', 'boss:🦍': 'charge',
-  'emoji:🧛': 'healMagic', 'emoji:🌕': 'charge', 'emoji:⚡': 'grow', 'emoji:💧': 'split', 'boss:⚰️': 'deathMagic', 'boss:⚔️': 'charge', 'boss:🫧': 'megaSlime', 'boss:😈': 'attackMagic',
+  'emoji:🥬': 'spinGuard', 'emoji:🧙': 'attackMagic', 'emoji:🪖': 'charge', 'emoji:🔪': 'charge', 'emoji:🌑': 'deathMagic', 'emoji:⚫': 'merge', 'emoji:🩶': 'grow', 'emoji:🩷': 'healMagic', 'emoji:🔷': 'split', 'emoji:🦕': 'homing', 'emoji:🟩': 'split', 'emoji:🐟': 'charge', 'emoji:🦒': 'grow', 'emoji:🥒': 'charge', 'emoji:🦎': 'charge', 'emoji:🦀': 'spinGuard', 'emoji:🥈': 'spinGuard', 'emoji:🌈': 'healMagic', 'emoji:🟨': 'split', 'emoji:🦋': 'merge', 'emoji:🔥': 'mines', 'emoji:💋': 'healMagic', 'emoji:🛡️': 'spinGuard', 'emoji:🗡️': 'charge', 'emoji:🪲': 'spinGuard', 'boss:💪': 'grow', 'emoji:🐻': 'berserk', 'emoji:🦞': 'deathMagic', 'emoji:🦫': 'charge', 'boss:👁️': 'attackMagic', 'boss:🕸️': 'homing', 'boss:🪦': 'deathMagic', 'boss:🦍': 'berserk',
+  'emoji:🧛': 'healMagic', 'emoji:🌕': 'berserk', 'emoji:⚡': 'grow', 'emoji:💧': 'split', 'boss:⚰️': 'deathMagic', 'boss:⚔️': 'charge', 'boss:🫧': 'megaSlime', 'boss:😈': 'attackMagic',
   'emoji:👑': 'spinGuard', 'emoji:🐧': 'attackMagic', 'emoji:🪼': 'healMagic', 'emoji:🛢️': 'mines', 
   'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
   'shape:spike': 'split',
@@ -18,13 +18,14 @@ const MULTIPLY_TRAITS = new Set(['split', 'splitMany', 'merge', 'stack', 'jumbo'
 const MULTIPLY_TRAIT_FROM = 20;    // この階層までは分裂・増える系を使ってこない
 const MULTIPLY_TRAIT_CHANCE = 0.15; // その特徴を持つ敵が実際に使ってくる確率（デバッグで出した敵はいつも使う）
 const ENEMY_TRAIT_DESCS = {
+  berserk: 'HPが半分を切るか時間が経つと発狂：動きが速くなり、クリティカルを連発して暴れる。そのかわり受けるダメージが1.5倍（防御ダウン）',
   charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すと2〜3体に分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
   attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
   mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', stack: '縦に積み重なっている。HPが減るたびに上から1体ずつ崩れ落ちて、別々に襲ってくる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
 };
-const ENEMY_TRAIT_LABELS = { stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
+const ENEMY_TRAIT_LABELS = { berserk: '発狂', stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
 const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
-const TRAIT_CD = { charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
+const TRAIT_CD = { berserk: [420, 600], charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
 const SPLIT_TIMES = 2;         // 分裂できる回数
 const SPLIT_CONFIG = {
   spike:       { times: 1, children: 1, hpRate: 0.18 }, // 分裂は1回だけ・増えても1〜2体（基本は1対1で戦う）
@@ -43,7 +44,11 @@ function enemyDamageCut(e) { return 1 - (isMetalEnemy(e) ? 1 - METAL_DAMAGE_CUT 
 const ENEMY_DEATH_CHANCE = 0.12;
 const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
 const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
-const MERGE_MINIONS = 3;          // 手下がこの数集まると合体
+const MERGE_MINIONS = 3;
+const BERSERK_FRAMES = 360;        // 発狂の長さ（約6秒）
+const BERSERK_ATK_MULT = 1.3;      // 発狂中の攻撃力
+const BERSERK_CRIT_CHANCE = 0.6;   // 発狂中のクリティカル率
+const BERSERK_DMG_TAKEN = 1.5;     // 発狂中に受けるダメージ（防御ダウン）          // 手下がこの数集まると合体
 const MERGE_MAX = 6;              // 合体の上限回数
 const JUMBO_CHIBIS = 3;           // 一緒に現れるチビスライムの数
 const JUMBO_GATHER_FRAMES = 300;  // 現れてからこの時間（ゲーム速度1倍のフレーム）で集まり始める
@@ -305,6 +310,26 @@ function updateEnemyTraits(a, e, speedMult) {
         playTone(180, 0.25, 'sawtooth', 0.14, 90);
       } else if (e.traitState === 'dash' && e.traitTimer <= 0) {
         e.traitState = null; e.dashing = false; e.traitCd = randTraitCd(trait);
+      }
+    } else if (trait === 'berserk') { // 発狂：速く・クリティカル連発で暴れるが、防御が下がる
+      if (!e.traitState && !disabled && (e.traitCd <= 0 || (!e.berserkHalf && e.hp <= e.maxHp * 0.5))) {
+        if (e.hp <= e.maxHp * 0.5) e.berserkHalf = true;
+        e.traitState = 'berserk'; e.traitTimer = BERSERK_FRAMES; e.berserk = true;
+        e.atk = Math.round(e.traitBaseAtk * BERSERK_ATK_MULT);
+        spawnDamageText(e.x, e.y - e.radius - 26, '発狂！！', '#ff2a2a', 0.012, true);
+        spawnHitParticles(e.x, e.y, '#ff2a2a'); spawnHitParticles(e.x, e.y, '#ff9a3c');
+        thump(110, 55, 0.5, 0.45, 'sawtooth'); thump(220, 90, 0.4, 0.25, 'square'); shakeScreen();
+      } else if (e.traitState === 'berserk') {
+        if (e.traitTimer <= 0) {
+          e.traitState = null; e.berserk = false; e.atk = e.traitBaseAtk; e.traitCd = randTraitCd(trait);
+          spawnDamageText(e.x, e.y - e.radius - 22, 'ハァ…ハァ…', '#ffb3b3', 0.02);
+        } else if (!e.traitFreeze) { // 自機めがけて荒々しく突っ込む
+          const ang = Math.atan2(a.y - e.y, a.x - e.x) + (Math.random() - 0.5) * 0.9;
+          e.vx += Math.cos(ang) * 0.45 * speedMult; e.vy += Math.sin(ang) * 0.45 * speedMult;
+          const sp = Math.hypot(e.vx, e.vy), cap = e.isBoss ? 7 : 8;
+          if (sp > cap) { e.vx *= cap / sp; e.vy *= cap / sp; }
+          if (Math.random() < 0.25) spawnHitParticles(e.x + (Math.random() - 0.5) * e.radius, e.y + (Math.random() - 0.5) * e.radius, Math.random() < 0.5 ? '#ff2a2a' : '#ff8a3c');
+        }
       }
     } else if (trait === 'spinGuard') {
       if (!e.traitState && e.traitCd <= 0) {

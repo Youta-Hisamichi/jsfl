@@ -380,7 +380,7 @@ function updateHPUI() {
   renderEnemyTraitBadge(en, enTrait);
 }
 // ステージ右上に、今の敵の特徴をアイコン＋短い文字で小さく表示
-const ENEMY_TRAIT_ICONS = { stack: '🍡', jumbo: '🫧', charge: '💨', spinGuard: '🛡️', split: '✂️', splitMany: '✂️', grow: '📈', attackMagic: '🔥', healMagic: '💚', homing: '🎯', mines: '🔥', deathMagic: '💀', merge: '🧩', megaSlime: '🫧' };
+const ENEMY_TRAIT_ICONS = { berserk: '😡', stack: '🍡', jumbo: '🫧', charge: '💨', spinGuard: '🛡️', split: '✂️', splitMany: '✂️', grow: '📈', attackMagic: '🔥', healMagic: '💚', homing: '🎯', mines: '🔥', deathMagic: '💀', merge: '🧩', megaSlime: '🫧' };
 const ENEMY_TRAIT_LABELS_EXTRA = { megaSlime: '叩くと分裂→合体' };
 function renderEnemyTraitBadge(en, trait) {
   const el = document.getElementById('enemyTraitBadge'); if (!el) return;
@@ -389,7 +389,8 @@ function renderEnemyTraitBadge(en, trait) {
     if (en.isBoss) tags.push([en.milestone && !game.skipChallenge ? `👑 ${en.milestone.label}` : '👑 ボス', 'warn']);
     if (en.isGiant) tags.push(['⬆️ 激デカ', 'warn']);
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
-    if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' ? 'warn' : '']);
+    if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
+    if (en.berserk) tags.push(['🔥 発狂中！防御ダウン', 'warn']);
     if (isSwarmStage(game.stage) && !en.isBoss) tags.push(['👥 大群', '']);
   }
   const key = en && getEnemySpriteKey(en), img = key && ENEMY_SPRITES[key];
@@ -1397,6 +1398,12 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
       if (Math.abs(dx) > 6) ball.faceDir = dx > 0 ? 1 : -1;
     }
     flip = (ball.faceDir || base) !== base;
+  }
+  if (ball.berserk) { // 発狂中：赤い怒りのオーラを背負い、小刻みに震える
+    const p = 0.75 + Math.sin(Date.now() / 90) * 0.25, g = ctx.createRadialGradient(cx, cy, sz * 0.1, cx, cy, sz * 0.75);
+    g.addColorStop(0, `rgba(255,40,40,${0.55 * p})`); g.addColorStop(0.6, `rgba(255,90,30,${0.3 * p})`); g.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, sz * 0.75, 0, Math.PI * 2); ctx.fill();
+    cx += (Math.random() - 0.5) * 3; cy += (Math.random() - 0.5) * 2;
   }
   ctx.imageSmoothingEnabled = sz * dpr < (img.naturalWidth || img.width || 64);
   if (squishy) { // 足元を支点に、横に広がる⇔縦に伸びるを繰り返してプヨプヨ（動くと大きく弾む）

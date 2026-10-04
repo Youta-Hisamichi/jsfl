@@ -512,7 +512,7 @@ function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, 
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
-function bossDamageMult(target) { return target && target.isBoss ? 1 + computeBonuses().bossDmg : 1; }
+function bossDamageMult(target) { return (target && target.isBoss ? 1 + computeBonuses().bossDmg : 1) * (target && target.berserk ? BERSERK_DMG_TAKEN : 1); } // ボス特攻・発狂中の防御ダウン
 function rollCrit(dmg, target, extraCritChance = 0) {
   dmg = Math.max(1, Math.round(dmg * bossDamageMult(target)));
   const b = computeBonuses();
@@ -524,7 +524,7 @@ const BOSS_CRIT_CHANCE = 0.15;  // ボスの発生率 15%
 const BOSS_CRIT_MULT = 2;       // ボスのダメージ 2倍
 const ENEMY_CRIT_MULT = 1.5;    // ダメージ 1.5倍
 function rollEnemyCrit(attacker, dmg) {
-  const crit = Math.random() < (attacker.isBoss ? BOSS_CRIT_CHANCE : ENEMY_CRIT_CHANCE);
+  const crit = Math.random() < (attacker.berserk ? BERSERK_CRIT_CHANCE : attacker.isBoss ? BOSS_CRIT_CHANCE : ENEMY_CRIT_CHANCE); // 発狂中はクリティカル連発
   const mult = attacker.isBoss ? BOSS_CRIT_MULT : ENEMY_CRIT_MULT;
   return { dmg: crit ? Math.round(dmg * mult) : dmg, crit };
 }
