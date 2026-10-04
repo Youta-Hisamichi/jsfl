@@ -796,8 +796,9 @@ function pickObstacleKind(rnd, zoneIdx) {
 function setupObstacles() {
   obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
   obstacles = [];
-  const zone = Math.floor((Math.max(1, game.stage) - 1) / 10); // 配置は10ステージのエリアごとに固定（ステージごとには変えない）
-  const rnd = stageRand(zone * 7 + 3), half = arena.radius;
+  const zone = Math.floor((Math.max(1, game.stage) - 1) / 10); // エリア（出やすい種類が決まる）
+  const block = Math.floor((Math.max(1, game.stage) - 1) / 2); // 2ステージごとに配置と種類が変わる
+  const rnd = stageRand(block * 7 + 3), half = arena.radius;
   const floorKey = getFloorKey(game.stage);
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
   const n = 3 + Math.floor(rnd() * 3); // 3〜5個
