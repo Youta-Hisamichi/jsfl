@@ -801,7 +801,9 @@ function setupObstacles() {
   const rnd = stageRand(block * 7 + 3), half = arena.radius;
   const floorKey = getFloorKey(game.stage);
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
-  const n = 3 + Math.floor(rnd() * 3); // 3〜5個
+  const early = game.stage <= 20, roll = rnd();
+  if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階層は必ずなし）
+  const n = early ? 1 + Math.floor(rnd() * 3) : 3 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は3〜5個
   const spot = r => { // 空いている場所を探す
     for (let tries = 0; tries < 60; tries++) {
       const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
