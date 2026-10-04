@@ -741,73 +741,222 @@ function drawCoinFx() {
   }
 }
 
-// ステージの障害物（岩の柱）：ステージごとに配置が決まる。キャラは跳ね返り、敵の弾は遮られる
+// ステージの障害物：エリア（10ステージ）ごとに配置が決まる。キャラは跳ね返り、敵の弾は遮られる
 let obstacles = [], obstacleStage = -1, crateShards = [];
 const CRATE_HP = 6, EGG_HP = 4, ROCK_HP = 16; // 岩は16回当てると砕けて宝箱
-const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🧛', '🌑']; // 卵から出てくるやばい敵 // 木箱の耐久（跳ね返り1回＝1、引っ張り攻撃＝2）
+const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🧛', '🌑']; // 卵から出てくるやばい敵
+const OBSTACLE_IMGS = {};
+Object.entries({
+  rock: 'assets/img/obstacles/rock.webp', mossRock: 'assets/img/obstacles/mossRock.webp', magmaRock: 'assets/img/obstacles/magmaRock.webp',
+  crate: 'assets/img/obstacles/crate.webp', barrel: 'assets/img/obstacles/barrel.webp', ice: 'assets/img/obstacles/ice.webp',
+  crystal: 'assets/img/obstacles/crystal.webp', techBox: 'assets/img/obstacles/techBox.webp', bomb: 'assets/img/obstacles/bomb.webp',
+  slime: 'assets/img/obstacles/slime.webp', dash: 'assets/img/obstacles/dash.webp', portal: 'assets/img/obstacles/portal.webp',
+  spikeBall: 'assets/img/obstacles/spikeBall.webp', saw: 'assets/img/obstacles/saw.webp', gear: 'assets/img/obstacles/gear.webp',
+  spikeLog: 'assets/img/obstacles/spikeLog.webp', spikePillar: 'assets/img/obstacles/spikePillar.webp', spring: 'assets/img/obstacles/spring.webp',
+  orb_pink: 'assets/img/obstacles/orb/pink.webp', orb_red: 'assets/img/obstacles/orb/red.webp', orb_orange: 'assets/img/obstacles/orb/orange.webp',
+  orb_yellow: 'assets/img/obstacles/orb/yellow.webp', orb_green: 'assets/img/obstacles/orb/green.webp', orb_cyan: 'assets/img/obstacles/orb/cyan.webp',
+  orb_blue: 'assets/img/obstacles/orb/blue.webp', orb_purple: 'assets/img/obstacles/orb/purple.webp', orb_violet: 'assets/img/obstacles/orb/violet.webp',
+  orb_black: 'assets/img/obstacles/orb/black.webp', orb_silver: 'assets/img/obstacles/orb/silver.webp', orb_gold: 'assets/img/obstacles/orb/gold.webp',
+  orb_rainbow: 'assets/img/obstacles/orb/rainbow.webp', orb_crystal: 'assets/img/obstacles/orb/crystal.webp', orb_galaxy: 'assets/img/obstacles/orb/galaxy.webp',
+}).forEach(([k, src]) => { const img = new Image(); img.src = src; OBSTACLE_IMGS[k] = img; });
+const ORB_COLORS = ['pink', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'violet', 'black', 'silver', 'gold', 'rainbow', 'crystal', 'galaxy'];
+const SPIKE_SPRITES = ['spikeBall', 'saw', 'gear', 'spikeLog', 'spikePillar'];
+// 壊せる障害物：耐久と、壊れたときの破片の色
+const BREAKABLES = {
+  crate:   { hp: CRATE_HP, cols: ['#b07a42', '#8a5a2c'] },
+  barrel:  { hp: 5,  cols: ['#a06a35', '#6d6d6d'] },
+  ice:     { hp: 5,  cols: ['#bfeaff', '#7cc8ff'] },
+  crystal: { hp: 8,  cols: ['#b57bff', '#6b3fc4'] },
+  techBox: { hp: 10, cols: ['#6fd6ff', '#4a5260'] },
+  egg:     { hp: EGG_HP, cols: ['#fff4d8', '#e8d8b0'] },
+};
+// 反射のクセ：speed＝跳ね返ったあとの速さの倍率（1より大きいと加速）、wobble＝当たったときのブルッと揺れる大きさ
+const OBSTACLE_BOUNCE = {
+  rock: { speed: 0.85, wobble: 0.12 }, mossRock: { speed: 0.72, wobble: 0.15 }, magmaRock: { speed: 1.08, wobble: 0.12 },
+  crate: { speed: 0.9, wobble: 0.6 }, barrel: { speed: 0.95, wobble: 0.85 }, ice: { speed: 1.2, wobble: 0.35 }, crystal: { speed: 1.05, wobble: 0.45 },
+  techBox: { speed: 0.95, wobble: 0.2 }, bomb: { speed: 0.8, wobble: 0.9 }, egg: { speed: 0.85, wobble: 0.8 }, qbox: { speed: 1, wobble: 0.5 },
+  bumper: { speed: 1, wobble: 1 }, slime: { speed: 1, wobble: 1.8 },
+  spikeBall: { speed: 1.1, wobble: 0.6 }, saw: { speed: 1.15, wobble: 0.1 }, gear: { speed: 1, wobble: 0.15 }, spikeLog: { speed: 0.85, wobble: 0.5 }, spikePillar: { speed: 0.9, wobble: 0.25 },
+};
+const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.kind] || { speed: 1, wobble: 0.3 };
+const FLOOR_OBSTACLES = new Set(['dash', 'portal']); // 床に置くもの（ぶつからずに上を通る）
+// エリアごとの出やすさ（何も書いていない種類は共通の重み）
+const OBSTACLE_WEIGHTS = { rock: 18, crate: 11, barrel: 8, bumper: 9, slime: 6, egg: 6, qbox: 8, ice: 4, crystal: 4, techBox: 3, bomb: 6, spike: 7, dash: 6, portal: 4 };
+const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪原・市場・船・遺跡・魔塔
+  { slime: 10, crate: 14 }, { slime: 8, spike: 10, rock: 22 }, { bomb: 9, dash: 9 }, { crate: 14, barrel: 12, dash: 9 }, { bomb: 9, portal: 7 },
+  { ice: 16, crystal: 6 }, { barrel: 14, crate: 14, qbox: 12 }, { barrel: 16, crate: 12 }, { crystal: 9, techBox: 6, spike: 10 }, { portal: 9, techBox: 7, crystal: 8 },
+];
 function stageRand(seed) { let x = seed * 9301 + 49297; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
+function pickObstacleKind(rnd, zoneIdx) {
+  const w = Object.assign({}, OBSTACLE_WEIGHTS, ZONE_OBSTACLE_BIAS[zoneIdx % ZONE_OBSTACLE_BIAS.length]);
+  let t = rnd() * Object.values(w).reduce((a, b) => a + b, 0);
+  for (const k in w) if ((t -= w[k]) < 0) return k;
+  return 'rock';
+}
 function setupObstacles() {
   obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
   obstacles = [];
   const zone = Math.floor((Math.max(1, game.stage) - 1) / 10); // 配置は10ステージのエリアごとに固定（ステージごとには変えない）
   const rnd = stageRand(zone * 7 + 3), half = arena.radius;
-  const n = 2 + Math.floor(rnd() * 3); // 2〜4個
-  for (let tries = 0; obstacles.length < n && tries < 60; tries++) {
+  const floorKey = getFloorKey(game.stage);
+  const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
+  const n = 3 + Math.floor(rnd() * 3); // 3〜5個
+  const spot = r => { // 空いている場所を探す
+    for (let tries = 0; tries < 60; tries++) {
+      const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
+      if (Math.hypot(x - arena.x, y - arena.y) < half * 0.22) continue; // 真ん中は空ける
+      if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + half * 0.22)) continue; // 間を通り抜けられるように
+      return { x, y };
+    }
+    return null;
+  };
+  for (let guard = 0; obstacles.length < n && guard < 30; guard++) {
+    const kind = pickObstacleKind(rnd, zone);
     const r = half * (0.09 + rnd() * 0.06);
-    const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
-    if (Math.hypot(x - arena.x, y - arena.y) < half * 0.22) continue; // 真ん中は空ける
-    if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + half * 0.22)) continue; // 間を通り抜けられるように
-    const k = rnd(), kind = k < 0.35 ? 'rock' : k < 0.57 ? 'crate' : k < 0.75 ? 'bumper' : k < 0.87 ? 'egg' : 'qbox'; // 岩・木箱（壊せる）・バンパー（加速して弾く）・卵（割れると何かが出てくる）
-    obstacles.push({ x, y, r: kind === 'bumper' ? r * 0.85 : r, seed: rnd(), kind, hp: kind === 'egg' ? EGG_HP : kind === 'rock' ? ROCK_HP : CRATE_HP, cracks: [] });
+    const p = spot(r); if (!p) continue;
+    const o = { x: p.x, y: p.y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] };
+    if (kind === 'rock') o.sprite = rockSprite;
+    else if (kind === 'bumper') { o.r = r * 0.85; o.sprite = 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
+    else if (kind === 'spike') { o.r = r * 0.9; o.sprite = SPIKE_SPRITES[Math.floor(rnd() * SPIKE_SPRITES.length)]; }
+    else if (kind === 'bomb') o.r = r * 0.85;
+    else if (kind === 'dash') o.dir = Math.floor(rnd() * 8) / 8 * Math.PI * 2;
+    else if (kind === 'portal') { // ワープゲートは2つ1組
+      const p2 = spot(r); if (!p2) continue;
+      const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
+      o.pair = o2; o2.pair = o; obstacles.push(o2);
+    }
+    else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
+    obstacles.push(o);
   }
 }
 let obstacleHalf = 0;
 function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
-function obstacleHit(x, y, r) { return obstacles.find(o => Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
+function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
+function shatterObstacle(o, count, cols) { // 破片を飛び散らせる
+  for (let i = 0; i < count; i++) { const a2 = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4.5; crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.5, h: 3 + Math.random() * 5, life: 1, col: cols[i % cols.length] }); }
+}
+function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワープゲート（上を通ると効果）
+  if (Math.hypot(ball.x - o.x, ball.y - o.y) > o.r * 0.9) return;
+  if (o.kind === 'dash' && now - (ball.dashAt || 0) > 450) {
+    ball.dashAt = now; o.flash = now;
+    const sp = Math.max(9, Math.hypot(ball.vx, ball.vy) * 1.2);
+    ball.vx = Math.cos(o.dir) * sp; ball.vy = Math.sin(o.dir) * sp;
+    if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, Math.max(holdRush.speed, 11));
+    if (ball.isPlayer) { thump(400, 1400, 0.14, 0.07, 'sawtooth'); spawnDamageText(ball.x, ball.y - ball.radius - 12, '≫ ダッシュ！', '#ff6b6b', 0.03); }
+  } else if (o.kind === 'portal' && o.pair && now - (ball.warpAt || 0) > 1000) {
+    const t = o.pair, sp = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / sp, uy = ball.vy / sp;
+    ball.warpAt = now; o.flash = t.flash = now;
+    spawnHitParticles(ball.x, ball.y, '#7fb8ff');
+    ball.x = t.x + ux * (t.r + ball.radius + 2); ball.y = t.y + uy * (t.r + ball.radius + 2);
+    spawnHitParticles(ball.x, ball.y, '#bcd8ff');
+    if (ball.isPlayer) { playTone(500, 0.18, 'sine', 0.08, 1500); setTimeout(() => playTone(1500, 0.12, 'sine', 0.06, 700), 90); }
+  }
+}
+function breakObstacleLoot(o) { // 壊れた障害物の中身
+  const x = o.x, y = o.y - 10, r = Math.random();
+  const coinsFor = m => Math.round(getEnemyStats(game.stage).hp * m + 10);
+  if (o.kind === 'crate') { // 超たまに激レア宝箱、たまにコイン、たいていはスカ
+    if (r < 0.03) { spawnDamageText(x, y, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
+    else if (r < 0.3) { const c = coinsFor(0.6); game.coins += c; spawnDamageText(x, y, '+' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
+    else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
+  } else if (o.kind === 'barrel') { // 樽：コインが出やすい
+    if (r < 0.6) { const c = coinsFor(0.9); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🛢️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
+    else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
+  } else if (o.kind === 'ice') { // 氷：経験値（たまにHP回復）
+    spawnExpGems(o.x, o.y, 10); spawnDamageText(x, y, '🧊 パリーン！', '#bfeaff', 0.018, true);
+    if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${h}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
+  } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
+    spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, '🔮 経験値ザクザク！', '#c79bff', 0.016, true);
+    if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
+  } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
+    const rar = r < 0.3 ? 'legendary' : 'epic';
+    spawnDamageText(x, y, rar === 'legendary' ? '🌈 激レア宝箱！！' : '📦 レア宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rar);
+  }
+  updateStatsUI();
+}
+function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな吹き飛ぶ
+  o.broken = true;
+  const R = o.r * 4.5;
+  shatterObstacle(o, 18, ['#ff9f43', '#3a3a44', '#ffd76b']);
+  for (let i = 0; i < 4; i++) spawnHitParticles(o.x + (Math.random() - 0.5) * R * 0.5, o.y + (Math.random() - 0.5) * R * 0.5, i % 2 ? '#ff9f43' : '#ffe36b');
+  spawnDamageText(o.x, o.y - 14, '💣 ドカーン！', '#ff9f43', 0.014, true);
+  thump(110, 30, 0.5, 0.55); playNoiseBurst(0.45, 0.35); shakeScreen();
+  bombBlasts.push({ x: o.x, y: o.y, R, t: Date.now() });
+  for (const e of [...balls, ...adds]) {
+    const d = Math.hypot(e.x - o.x, e.y - o.y);
+    if (d > R + (e.radius || 0)) continue;
+    applyHitKnockback(e, o, e.isPlayer ? 6 : 9);
+    if (e.isPlayer || e.isDying || e.hp <= 0 || e.spawnTimer > 0) continue;
+    const dmg = Math.max(1, Math.round(e.maxHp * (e.isBoss ? 0.08 : 0.3)));
+    e.hp -= dmg; trackDamage(dmg);
+    spawnAttackDamageText(e, dmg, false, '#ff9f43');
+    onPlayerHitEnemy(e, dmg);
+  }
+}
+let bombBlasts = [];
 function obstacleBounce(ball) {
+  const now = Date.now();
   for (const o of obstacles) {
+    if (o.broken) continue;
+    if (FLOOR_OBSTACLES.has(o.kind)) { obstacleFloorEffect(o, ball, now); continue; }
     const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 1, min = o.r + ball.radius * 0.8;
     if (d >= min) continue;
-    if (ball.isGiant && !ball.isPlayer && !o.broken) { smashObstacle(o); continue; } // 激デカボスは障害物を壊して突き進む
+    if (ball.isGiant && !ball.isPlayer) { smashObstacle(o); continue; } // 激デカボスは障害物を壊して突き進む
     const nx = dx / d, ny = dy / d;
     ball.x = o.x + nx * min; ball.y = o.y + ny * min;
     const dot = ball.vx * nx + ball.vy * ny;
     if (dot < 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; }
     if (ball.kbx || ball.kby) { const kd = ball.kbx * nx + ball.kby * ny; if (kd < 0) { ball.kbx -= 2 * kd * nx; ball.kby -= 2 * kd * ny; } }
-    const now = Date.now(), hard = dot < -0.6 && now - (ball.wallSoundAt || 0) > 150;
+    const hard = dot < -0.6 && now - (ball.wallSoundAt || 0) > 150;
+    if (dot < -0.3) { // ブルッと揺れる＋種類ごとに跳ね返りの速さが変わる（バンパーとスライムは下で個別に加速）
+      const info = obstacleBounceInfo(o);
+      o.wobAt = now; o.wobAmp = Math.min(1, Math.max(0.35, -dot / 8)) * info.wobble;
+      if (o.kind !== 'bumper' && o.kind !== 'slime' && info.speed !== 1) {
+        const sp = Math.hypot(ball.vx, ball.vy), ns = Math.min(15, sp * info.speed);
+        if (sp > 0.01) { ball.vx *= ns / sp; ball.vy *= ns / sp; }
+        if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.max(3, Math.min(16, holdRush.speed * info.speed));
+      }
+    }
     if (o.kind === 'qbox' && !o.used && isMainPlayerBall(ball)) { openQBox(o); continue; } // ハテナボックス：自キャラが当たると中身が飛び出す
     if (dot < -0.6 && isMainPlayerBall(ball)) game.totalBounces = (game.totalBounces || 0) + 1; // 障害物での反射も数える
-    if (o.kind === 'bumper') { // バンパー：勢いを増して弾き返す
-      const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = Math.min(14, Math.max(sp * 1.3, 6));
+    if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
+      const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));
       ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
-      if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, holdRush.speed / 0.72 * 1.1); // 摩擦の減速を打ち消して加速
+      if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, holdRush.speed / 0.72 * (o.kind === 'slime' ? 1 : 1.1)); // 摩擦の減速を打ち消して加速
       o.flash = now;
-      if (hard) { ball.wallSoundAt = now; thump(520, 900, 0.12, 0.08, 'square'); thump(260, 180, 0.15, 0.06, 'sine'); }
-    } else if ((o.kind === 'crate' || o.kind === 'egg') && (dot < -0.6 || (isMainPlayerBall(ball) && rushingNow)) && now - (o.hitAt || 0) > 250) { // 木箱：誰かが跳ね返るたびに傷み、3回で壊れる（引っ張り攻撃は一撃2回分）
+      if (hard) { ball.wallSoundAt = now; if (o.kind === 'slime') { thump(180, 420, 0.12, 0.1, 'sine'); } else { thump(520, 900, 0.12, 0.08, 'square'); thump(260, 180, 0.15, 0.06, 'sine'); } }
+    } else if (o.kind === 'spike') { // トゲ：ぶつかった敵だけが痛い（引っ張り攻撃で敵を叩きつけよう）
+      o.flash = now;
+      if (!ball.isPlayer && !ball.isDying && ball.hp > 0 && now - (ball.spikeAt || 0) > 500) {
+        ball.spikeAt = now;
+        const dmg = Math.max(1, Math.round(ball.maxHp * (ball.isBoss ? 0.02 : 0.06)));
+        ball.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(ball, dmg, false, '#c0c8d8'); onPlayerHitEnemy(ball, dmg);
+        spawnHitParticles(ball.x, ball.y, '#e0e6f0'); thump(900, 300, 0.06, 0.08, 'square');
+      } else if (hard) { ball.wallSoundAt = now; thump(700, 400, 0.05, 0.06, 'square'); }
+    } else if (o.kind === 'bomb' && (dot < -0.6 || (isMainPlayerBall(ball) && rushingNow)) && now - (o.hitAt || 0) > 250) { // 爆弾：2回当てると爆発
+      o.hitAt = now; o.shakeAt = now; o.hp -= isMainPlayerBall(ball) && rushingNow ? 2 : 1;
+      thump(300, 200, 0.06, 0.08, 'triangle');
+      if (o.hp <= 0) { o.fuseAt = now; o.hp = 999; } // 導火線に火がついて少し後に爆発
+    } else if (BREAKABLES[o.kind] && (dot < -0.6 || (isMainPlayerBall(ball) && rushingNow)) && now - (o.hitAt || 0) > 250) { // 壊せる障害物：跳ね返るたびに傷む（引っ張り攻撃は一撃2回分）
       o.hitAt = now; o.hp -= isMainPlayerBall(ball) && rushingNow ? 2 : 1; o.shakeAt = now;
       { // ぶつかった側からひびが1本増える
         const ang = Math.atan2(ball.y - o.y, ball.x - o.x), h = o.r * 0.9, pts = [[o.x + Math.cos(ang) * h * 0.9, o.y + Math.sin(ang) * h * 0.9]];
         for (let k = 1; k <= 3; k++) { const a2 = ang + Math.PI + (Math.random() - 0.5) * 1.6, l = h * 0.3 * k; pts.push([pts[0][0] + Math.cos(a2) * l + (Math.random() - 0.5) * 4, pts[0][1] + Math.sin(a2) * l + (Math.random() - 0.5) * 4]); }
         o.cracks.push(pts.map(([px, py]) => [px - o.x, py - o.y]));
       }
-      const egg = o.kind === 'egg';
-      spawnHitParticles(o.x, o.y, egg ? '#fff4d8' : '#c8955a');
-      if (egg) { thump(900, 600, 0.06, 0.08, 'triangle'); filteredNoise(0, 0.05, 0.2, 3000, 2); } // ピキッ
+      const egg = o.kind === 'egg', glassy = o.kind === 'ice' || o.kind === 'crystal';
+      spawnHitParticles(o.x, o.y, BREAKABLES[o.kind].cols[0]);
+      if (egg || glassy) { thump(900, 600, 0.06, 0.08, 'triangle'); filteredNoise(0, 0.05, 0.2, 3000, 2); } // ピキッ
       else { thump(160, 90, 0.12, 0.12, 'triangle'); filteredNoise(0, 0.08, 0.15, 900, 1.2); }
       if (o.hp <= 0 && egg) { hatchEgg(o); }
       else if (o.hp <= 0) {
         o.broken = true;
-        for (let i = 0; i < 14; i++) { // 砕け散る板切れ
-          const a2 = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4;
-          crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.6, h: 3 + Math.random() * 3, life: 1, col: Math.random() < 0.5 ? '#b07a42' : '#8a5a2c' });
-        }
-        for (let i = 0; i < 3; i++) spawnHitParticles(o.x + (Math.random() - 0.5) * o.r, o.y + (Math.random() - 0.5) * o.r, i ? '#a0703c' : '#e0b070');
+        shatterObstacle(o, 14, BREAKABLES[o.kind].cols);
+        for (let i = 0; i < 3; i++) spawnHitParticles(o.x + (Math.random() - 0.5) * o.r, o.y + (Math.random() - 0.5) * o.r, BREAKABLES[o.kind].cols[i % 2]);
         shakeScreenLight(); thump(120, 50, 0.25, 0.3);
-        const r = Math.random(); // 中身：超たまに激レア宝箱、たまにコイン、たいていはスカ
-        if (r < 0.03) { spawnDamageText(o.x, o.y - 10, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
-        else if (r < 0.3) { const coins = Math.round(getEnemyStats(game.stage).hp * 0.6 + 10); game.coins += coins; spawnDamageText(o.x, o.y - 10, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
-        else { spawnDamageText(o.x, o.y - 10, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
-        playNoiseBurst(0.25, 0.2); updateStatsUI();
+        if (glassy) filteredNoise(0, 0.3, 0.3, 4000, 1.5);
+        breakObstacleLoot(o);
+        playNoiseBurst(0.25, 0.2);
       }
     } else if (o.kind === 'rock' && dot < -0.6 && now - (o.hitAt || 0) > 120) { // 岩：誰が当たっても1ずつ削れ、16回で砕ける
       o.hitAt = now; o.hp--; o.shakeAt = now;
@@ -815,7 +964,7 @@ function obstacleBounce(ball) {
       if (o.hp % 4 === 0 && o.hp > 0) { const a = Math.random() * Math.PI * 2; o.cracks.push([[Math.cos(a) * o.r * 0.9, Math.sin(a) * o.r * 0.9], [Math.cos(a + 0.4) * o.r * 0.4, Math.sin(a + 0.4) * o.r * 0.4], [Math.cos(a + 2.5) * o.r * 0.3, Math.sin(a + 2.5) * o.r * 0.3]]); spawnHitParticles(o.x, o.y, '#9a9288'); }
       if (o.hp <= 0) {
         o.broken = true;
-        for (let i = 0; i < 18; i++) { const a2 = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4.5; crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.5, h: 4 + Math.random() * 5, life: 1, col: i % 2 ? '#8d867b' : '#5d574f' }); }
+        shatterObstacle(o, 18, o.sprite === 'magmaRock' ? ['#3a2a2a', '#ff6a2a'] : o.sprite === 'mossRock' ? ['#7d8a6c', '#5a8a3a'] : ['#8d867b', '#5d574f']);
         thump(80, 30, 0.4, 0.45); playNoiseBurst(0.35, 0.3); shakeScreenLight();
         let r = Math.random() * 100; const rar = ['rare', 'epic', 'legendary'].find((k, i) => (r -= [55, 35, 10][i]) < 0) || 'rare';
         spawnDamageText(o.x, o.y - 14, '🪨💥 岩が砕けた！ 宝箱！', '#ffd76b', 0.012, true);
@@ -823,6 +972,7 @@ function obstacleBounce(ball) {
       }
     } else if (hard) { ball.wallSoundAt = now; thump(ball.isPlayer ? 300 : 200, 120, 0.09, 0.08, 'triangle'); }
   }
+  for (const o of obstacles) if (o.kind === 'bomb' && o.fuseAt && !o.broken && now - o.fuseAt > 700) explodeBomb(o);
   if (obstacles.some(o => o.broken)) obstacles = obstacles.filter(o => !o.broken);
 }
 // ハテナボックス：1回当たると中身が出て、空箱（ただの硬いブロック）になる
@@ -839,9 +989,10 @@ function openQBox(o) {
 }
 function smashObstacle(o) { // 激デカボスに踏みつぶされて粉々になる
   if (o.kind === 'egg') { hatchEgg(o); return; }
+  if (o.kind === 'bomb') { explodeBomb(o); return; }
   o.broken = true;
-  const cols = o.kind === 'crate' ? ['#b07a42', '#8a5a2c'] : o.kind === 'bumper' ? ['#ff5cb8', '#ffd2f0'] : ['#8d867b', '#5d574f'];
-  for (let i = 0; i < 16; i++) { const a = Math.random() * Math.PI * 2, sp = 2.5 + Math.random() * 4.5; crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.5, h: 3 + Math.random() * 5, life: 1, col: cols[i % 2] }); }
+  const cols = BREAKABLES[o.kind] ? BREAKABLES[o.kind].cols : o.kind === 'bumper' ? ['#ff5cb8', '#ffd2f0'] : o.kind === 'slime' ? ['#4fd35a', '#a8f0a0'] : ['#8d867b', '#5d574f'];
+  shatterObstacle(o, 16, cols);
   spawnDamageText(o.x, o.y - 14, 'ドガァン！', '#ff9f43', 0.02, true);
   thump(90, 35, 0.4, 0.5); playNoiseBurst(0.35, 0.3); shakeScreen();
 }
@@ -861,37 +1012,64 @@ function hatchEgg(o) {
   spawnDamageText(o.x, o.y - 20, '🥚💥 やばいのが出てきた！', '#ff4f6d', 0.012, true);
   shakeScreen(); playWarningSound();
 }
-const crateImg = new Image(); crateImg.src = 'assets/img/ui/crate.webp';
+function drawObstacleSprite(key, x, y, size, rot) { // 障害物の画像（読み込めていなければ false）
+  const img = OBSTACLE_IMGS[key];
+  if (!img || !img.complete || !img.naturalWidth) return false;
+  ctx.imageSmoothingEnabled = !key.startsWith('orb_') ? false : true;
+  if (rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.drawImage(img, -size / 2, -size / 2, size, size); ctx.restore(); }
+  else ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+  ctx.imageSmoothingEnabled = true;
+  return true;
+}
+function drawObstacleCracks(o, h, dark) { // ぶつけるたびに増えるひび
+  if (!o.cracks || !o.cracks.length) return;
+  ctx.save(); ctx.beginPath(); ctx.arc(o.x, o.y, h, 0, Math.PI * 2); ctx.clip();
+  ctx.strokeStyle = dark; ctx.lineWidth = 1.8; ctx.lineJoin = 'round';
+  for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
+  ctx.restore();
+}
 function drawObstacles() {
   const now = Date.now();
-  for (const sh of crateShards) { // 飛び散った板切れ
+  bombBlasts = bombBlasts.filter(b => now - b.t < 450);
+  for (const b of bombBlasts) { // 爆風の輪
+    const k = (now - b.t) / 450;
+    ctx.save(); ctx.globalAlpha = 1 - k;
+    const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.R * (0.4 + k * 0.7));
+    g.addColorStop(0, 'rgba(255,240,180,0.9)'); g.addColorStop(0.5, 'rgba(255,140,40,0.6)'); g.addColorStop(1, 'rgba(255,60,20,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, b.R * (0.4 + k * 0.7), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  for (const sh of crateShards) { // 飛び散った破片
     sh.x += sh.vx; sh.y += sh.vy; sh.vy += 0.25; sh.vx *= 0.97; sh.rot += sh.vr; sh.life -= 0.025;
     ctx.save(); ctx.globalAlpha = Math.max(0, sh.life); ctx.translate(sh.x, sh.y); ctx.rotate(sh.rot);
-    ctx.fillStyle = sh.col; ctx.fillRect(-sh.w / 2, -sh.h / 2, sh.w, sh.h); ctx.strokeStyle = '#4a2e12'; ctx.lineWidth = 0.8; ctx.strokeRect(-sh.w / 2, -sh.h / 2, sh.w, sh.h);
+    ctx.fillStyle = sh.col; ctx.fillRect(-sh.w / 2, -sh.h / 2, sh.w, sh.h); ctx.strokeStyle = 'rgba(30,20,10,0.7)'; ctx.lineWidth = 0.8; ctx.strokeRect(-sh.w / 2, -sh.h / 2, sh.w, sh.h);
     ctx.restore();
   }
   crateShards = crateShards.filter(sh => sh.life > 0);
-  for (const o of obstacles) {
+  for (const o of obstacles) { // 床のもの（ダッシュパネル・ワープゲート）を先に描く
+    if (!FLOOR_OBSTACLES.has(o.kind)) continue;
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 3, o.y + o.r * 0.55, o.r * 1.05, o.r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); // 影
-    if (o.kind === 'crate') { // 木箱（ひびが増える）
-      const h = o.r * 0.9, sk = now - (o.shakeAt || 0) < 160 ? (Math.random() - 0.5) * 4 : 0; // 当たった瞬間ぐらつく
-      ctx.translate(sk, 0);
-      if (crateImg.complete && crateImg.naturalWidth) { ctx.imageSmoothingEnabled = false; ctx.drawImage(crateImg, o.x - h * 1.15, o.y - h * 1.2, h * 2.3, h * 2.3); ctx.imageSmoothingEnabled = true; } // UI素材の木箱
-      else {
-        ctx.fillStyle = '#b07a42'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
-        ctx.strokeStyle = '#5e3c1c'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
-        ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x - h, o.y - h); ctx.lineTo(o.x + h, o.y + h); ctx.moveTo(o.x + h, o.y - h); ctx.lineTo(o.x - h, o.y + h); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,230,180,0.25)'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 0.35);
-      }
-      if (o.cracks && o.cracks.length) { // 傷はぶつけるたびに増える
-        ctx.save(); ctx.beginPath(); ctx.rect(o.x - h, o.y - h, h * 2, h * 2); ctx.clip();
-        ctx.strokeStyle = '#2b1a0a'; ctx.lineWidth = 1.6; ctx.lineJoin = 'round';
-        for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
-        ctx.fillStyle = `rgba(30,15,5,${Math.min(0.35, (CRATE_HP - o.hp) * 0.06)})`; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2); // 傷むほど暗く
-        ctx.restore();
-      }
-    } else if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
+    const lit = now - (o.flash || 0) < 250;
+    if (o.kind === 'dash') {
+      ctx.globalAlpha = lit ? 1 : 0.8 + Math.sin(now / 200 + o.seed * 9) * 0.15;
+      if (!drawObstacleSprite('dash', o.x, o.y, o.r * 2.2, o.dir)) { ctx.fillStyle = '#c03030'; ctx.fillRect(o.x - o.r, o.y - o.r * 0.6, o.r * 2, o.r * 1.2); }
+    } else {
+      const pulse = 1 + Math.sin(now / 250 + o.seed * 9) * 0.05 + (lit ? 0.15 : 0);
+      ctx.shadowColor = '#7fb8ff'; ctx.shadowBlur = lit ? 24 : 10;
+      drawObstacleSprite('portal', o.x, o.y, o.r * 2.3 * pulse, now / 1200);
+    }
+    ctx.restore();
+  }
+  for (const o of obstacles) {
+    if (FLOOR_OBSTACLES.has(o.kind)) continue;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 3, o.y + o.r * 0.6, o.r * 1.05, o.r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); // 影
+    const wt = now - (o.wobAt || 0);
+    if (wt < 600 && o.wobAmp) { // 当たるとブルッ（減衰しながら伸び縮み）
+      const k = o.wobAmp * Math.exp(-wt / 160) * Math.sin(wt / 26);
+      ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r));
+    }
+    if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
       const pop = now - (o.popAt || 0) < 200 ? -Math.sin((now - o.popAt) / 200 * Math.PI) * 6 : 0, h = o.r * 0.9, bob = o.used ? 0 : Math.sin(now / 300 + o.seed * 6) * 1.5;
       ctx.translate(0, pop + bob);
       ctx.fillStyle = o.used ? '#8a5a2c' : '#ffbf1f'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
@@ -907,23 +1085,33 @@ function drawObstacles() {
       ctx.strokeStyle = '#8a7650'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.fillStyle = '#9c6fd0'; [[-0.3, -0.4, 0.14], [0.25, 0.05, 0.18], [-0.15, 0.45, 0.12], [0.35, -0.55, 0.1]].forEach(([dx, dy, rr]) => { ctx.beginPath(); ctx.arc(o.x + dx * o.r, o.y + dy * o.r, rr * o.r, 0, Math.PI * 2); ctx.fill(); }); // 怪しい模様
       if (o.cracks && o.cracks.length) { ctx.strokeStyle = '#3a2a10'; ctx.lineWidth = 1.6; for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px * 0.8, o.y + py * 0.9) : ctx.moveTo(o.x + px * 0.8, o.y + py * 0.9)); ctx.stroke(); } }
-    } else if (o.kind === 'bumper') { // バンパー（当たると光る）
+    } else if (o.kind === 'bumper') { // バンパー（オーブ。当たると光って膨らむ）
       const lit = now - (o.flash || 0) < 180;
-      const g = ctx.createRadialGradient(o.x - o.r * 0.3, o.y - o.r * 0.3, o.r * 0.1, o.x, o.y, o.r);
-      g.addColorStop(0, lit ? '#ffffff' : '#ffd2f0'); g.addColorStop(0.55, lit ? '#ffe36b' : '#ff5cb8'); g.addColorStop(1, '#a0186e');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * (lit ? 1.08 : 1), 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = lit ? '#fff6a0' : '#ffe0f4'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 0.62, 0, Math.PI * 2); ctx.stroke();
-      if (lit) { ctx.shadowColor = '#ffe36b'; ctx.shadowBlur = 16; ctx.stroke(); }
-    } else { // 岩
-      const g = ctx.createRadialGradient(o.x - o.r * 0.35, o.y - o.r * 0.4, o.r * 0.1, o.x, o.y, o.r);
-      g.addColorStop(0, '#b9b2a6'); g.addColorStop(0.6, '#7d766c'); g.addColorStop(1, '#4b463f');
-      ctx.fillStyle = g; ctx.beginPath();
-      for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI * 2, rr = o.r * (0.92 + 0.08 * Math.sin(i * 2.7 + o.seed * 20)); i ? ctx.lineTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr) : ctx.moveTo(o.x + Math.cos(a) * rr, o.y + Math.sin(a) * rr); }
-      ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = 'rgba(40,36,30,0.8)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.strokeStyle = 'rgba(40,36,30,0.5)'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(o.x - o.r * 0.2, o.y - o.r * 0.5); ctx.lineTo(o.x + o.r * 0.05, o.y - o.r * 0.1); ctx.lineTo(o.x - o.r * 0.1, o.y + o.r * 0.3); ctx.stroke();
-      if (o.cracks && o.cracks.length) { ctx.strokeStyle = '#2a2520'; ctx.lineWidth = 2; for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); } } // 4回ごとにひびが増える
+      if (lit) { ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 20; }
+      drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.15 * (lit ? 1.12 : 1));
+    } else if (o.kind === 'slime') { // スライム（ぷにぷに）
+      const squ = Math.sin(now / 400 + o.seed * 7) * 0.04; // ふだんもゆっくり呼吸
+      ctx.translate(o.x, o.y + o.r); ctx.scale(1 + squ, 1 - squ); ctx.translate(-o.x, -(o.y + o.r));
+      drawObstacleSprite('slime', o.x, o.y, o.r * 2.3);
+    } else if (o.kind === 'spike') { // トゲ（ノコギリと歯車は回る）
+      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 120 : o.sprite === 'gear' ? now / 600 : 0;
+      if (lit) { ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 14; }
+      drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.3, spin);
+    } else if (o.kind === 'bomb') { // 爆弾（火がつくと赤く点滅して膨らむ）
+      const fuse = o.fuseAt ? (now - o.fuseAt) / 700 : 0, blink = fuse && Math.floor(now / 70) % 2;
+      drawObstacleSprite('bomb', o.x, o.y, o.r * 2.3 * (1 + fuse * 0.25));
+      if (blink) { ctx.globalAlpha = 0.5; ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(o.x, o.y + o.r * 0.1, o.r * 0.95 * (1 + fuse * 0.25), 0, Math.PI * 2); ctx.fill(); }
+    } else if (o.kind === 'rock') { // 岩（苔むした岩・溶岩石もある）
+      if (!drawObstacleSprite(o.sprite || 'rock', o.x, o.y - o.r * 0.05, o.r * 2.3)) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fill(); }
+      drawObstacleCracks(o, o.r * 0.95, '#1e1a16');
+    } else { // 壊せる箱・樽・氷・水晶など
+      const box = o.kind === 'crate' || o.kind === 'techBox';
+      if (o.kind === 'techBox') { ctx.shadowColor = '#6fd6ff'; ctx.shadowBlur = 8 + Math.sin(now / 300) * 4; }
+      if (!drawObstacleSprite(o.sprite || o.kind, o.x, o.y, o.r * (box ? 2.2 : 2.3))) { ctx.fillStyle = BREAKABLES[o.kind].cols[0]; ctx.fillRect(o.x - o.r * 0.9, o.y - o.r * 0.9, o.r * 1.8, o.r * 1.8); }
+      ctx.shadowBlur = 0;
+      drawObstacleCracks(o, o.r * 0.95, o.kind === 'ice' ? '#ffffff' : o.kind === 'crystal' ? '#f0d8ff' : '#2b1a0a');
+      const max = BREAKABLES[o.kind].hp;
+      if (o.hp < max) { ctx.globalAlpha = Math.min(0.35, (max - o.hp) / max * 0.4); ctx.fillStyle = '#140a04'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 0.9, 0, Math.PI * 2); ctx.fill(); } // 傷むほど暗く
     }
     ctx.restore();
   }
