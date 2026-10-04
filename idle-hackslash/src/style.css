@@ -1222,3 +1222,4 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .toast .artifact-icon .go-banner { display: block; width: min(260px, 72vw); margin: 0 auto; filter: drop-shadow(0 0 10px rgba(160,90,255,0.55)); }
 .bcf-main .bcf-banner { display: block; width: min(300px, 80vw); margin: 0 auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
 .dbg-size { grid-column: 1 / -1; color: var(--text); text-align: left; margin: 4px 0 6px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); font-size: 0.8rem; line-height: 1.5; cursor: pointer; }
+.dbg-obs-img { width: 20px; height: 20px; vertical-align: middle; image-rendering: pixelated; }

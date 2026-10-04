@@ -2131,6 +2131,19 @@ renderDebugMonsters();
   document.getElementById('dbgMonFold').addEventListener('click', () => set(!wrap.classList.contains('open')));
   const ew = document.getElementById('dbgEnemyWrap'), em = document.getElementById('dbgEnemyFoldMark'); // 特殊な敵も最初は閉じておく
   document.getElementById('debugEnemyCat').addEventListener('click', () => { const o = !ew.classList.contains('open'); ew.classList.toggle('open', o); em.textContent = o ? '▲ 閉じる' : '▼ 開く'; });
+  const ow = document.getElementById('dbgObsWrap'), om = document.getElementById('dbgObsFoldMark'); // 障害物も最初は閉じておく
+  document.getElementById('dbgObsCat').addEventListener('click', () => { const o = !ow.classList.contains('open'); ow.classList.toggle('open', o); om.textContent = o ? '▲ 閉じる' : '▼ 開く'; });
+  ow.innerHTML = DEBUG_OBSTACLES.map(([k, sp, name], i) => `<button data-dbg-obs="${i}">${sp && OBSTACLE_IMGS[sp] ? `<img class="dbg-obs-img" src="${OBSTACLE_IMGS[sp].src}" alt="">` : k === 'egg' ? '🥚' : '❓'} ${name}</button>`).join('') +
+    '<button data-dbg-obs="clear">🧹 障害物を全部消す</button><button data-dbg-obs="reset">↩ この階層の配置に戻す</button>';
+  ow.addEventListener('click', ev => {
+    const btn = ev.target.closest('[data-dbg-obs]'); if (!btn) return;
+    const v = btn.dataset.dbgObs;
+    if (v === 'clear') { obstacles = []; showNotice('DEBUG: 障害物を全部消しました'); return; }
+    if (v === 'reset') { setupObstacles(); showNotice('DEBUG: この階層の障害物の配置に戻しました'); return; }
+    const [k, sp, name] = DEBUG_OBSTACLES[+v];
+    if (getActiveTab() !== 'game') switchTab('game');
+    showNotice(debugSpawnObstacle(k, sp) ? `DEBUG: ${name} を出現` : 'DEBUG: 空いている場所がありません');
+  });
 })();
 let dbgPuPool = [];
 function renderDebugPowerUps() {

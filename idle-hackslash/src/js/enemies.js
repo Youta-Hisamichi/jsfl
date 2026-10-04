@@ -835,6 +835,31 @@ function setupObstacles() {
 let obstacleHalf = 0;
 function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
+// デバッグ：好きな障害物を空いている場所に出す
+const DEBUG_OBSTACLES = [
+  ['rock', 'rock', '岩'], ['rock', 'mossRock', '苔むした岩'], ['rock', 'magmaRock', '溶岩石'], ['crate', 'crate', '木箱'], ['barrel', 'barrel', '樽'],
+  ['ice', 'ice', '氷'], ['crystal', 'crystal', '水晶'], ['techBox', 'techBox', '魔導コンテナ'], ['bomb', 'bomb', '爆弾'], ['slime', 'slime', 'スライム'],
+  ['bumper', 'orb_rainbow', 'バンパー（オーブ）'], ['spike', 'saw', 'ノコギリ'], ['spike', 'gear', '歯車'], ['spike', 'spikeBall', 'トゲ玉'], ['spike', 'spikeLog', 'トゲ丸太'], ['spike', 'spikePillar', 'トゲ柱'],
+  ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'ハテナボックス'],
+];
+function debugSpawnObstacle(kind, sprite) {
+  const half = arena.radius, r = half * 0.12;
+  const spot = () => {
+    for (let t = 0; t < 80; t++) {
+      const x = arena.x + (Math.random() * 2 - 1) * half * 0.75, y = arena.y + (Math.random() * 2 - 1) * half * 0.75;
+      if (Math.hypot(x - arena.x, y - arena.y) > half * 0.85) continue;
+      if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + 12)) continue;
+      if ([...balls, ...adds].some(b => Math.hypot(b.x - x, b.y - y) < b.radius + r + 6)) continue;
+      return { x, y };
+    }
+    return null;
+  };
+  const make = () => { const p = spot(); if (!p) return null; const o = { x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
+  const o = make(); if (!o) return false;
+  if (kind === 'portal') { const o2 = make(); if (!o2) { obstacles.pop(); return false; } o.pair = o2; o2.pair = o; }
+  spawnHitParticles(o.x, o.y, '#ffffff');
+  return true;
+}
 function shatterObstacle(o, count, cols) { // 破片を飛び散らせる
   for (let i = 0; i < count; i++) { const a2 = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4.5; crateShards.push({ x: o.x + (Math.random() - 0.5) * o.r, y: o.y + (Math.random() - 0.5) * o.r, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * o.r * 0.5, h: 3 + Math.random() * 5, life: 1, col: cols[i % cols.length] }); }
 }
