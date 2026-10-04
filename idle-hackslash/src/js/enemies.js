@@ -1098,7 +1098,7 @@ function drawObstacles() {
       ctx.translate(o.x, o.y + o.r); ctx.scale(1 + squ, 1 - squ); ctx.translate(-o.x, -(o.y + o.r));
       drawObstacleSprite('slime', o.x, o.y, o.r * 2.3);
     } else if (o.kind === 'spike') { // トゲ（ノコギリと歯車は回る）
-      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 120 : o.sprite === 'gear' ? now / 600 : 0;
+      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 380 : o.sprite === 'gear' ? now / 700 : 0; // 速すぎると刃が止まって見えるので、回っていると分かる速さに
       if (lit) { ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 14; }
       drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.3, spin);
     } else if (o.kind === 'bomb') { // 爆弾（火がつくと赤く点滅して膨らむ）

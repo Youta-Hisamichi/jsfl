@@ -15,6 +15,7 @@ const ENEMY_TRAITS = {
   'emoji:🦇': 'merge',
 };
 const MULTIPLY_TRAITS = new Set(['split', 'splitMany', 'merge', 'stack', 'jumbo']); // 敵が増える特徴
+const MULTIPLY_TRAIT_FROM = 20;    // この階層までは分裂・増える系を使ってこない
 const MULTIPLY_TRAIT_CHANCE = 0.15; // その特徴を持つ敵が実際に使ってくる確率（デバッグで出した敵はいつも使う）
 const ENEMY_TRAIT_DESCS = {
   charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すと2〜3体に分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
@@ -210,7 +211,7 @@ function getEnemyTrait(enemy) {
   if (!enemy || enemy.isPlayer || enemy.isAdd) return null;
   if (enemy.trait === undefined) {
     enemy.trait = ENEMY_TRAITS[getEnemyBookKey(enemy)] || null;
-    if (MULTIPLY_TRAITS.has(enemy.trait) && !enemy.isBoss && !enemy.forceTrait && Math.random() >= MULTIPLY_TRAIT_CHANCE) enemy.trait = null; // 分裂・増える系はたまにしか使ってこない
+    if (MULTIPLY_TRAITS.has(enemy.trait) && !enemy.isBoss && !enemy.forceTrait && (game.stage <= MULTIPLY_TRAIT_FROM || Math.random() >= MULTIPLY_TRAIT_CHANCE)) enemy.trait = null; // 分裂・増える系は序盤は使わず、それ以降もたまにしか使ってこない
     enemy.traitCd = enemy.trait ? randTraitCd(enemy.trait) * 0.6 : 0;
     enemy.splitsLeft = enemy.trait === 'split' || enemy.trait === 'splitMany' ? getSplitConfig(enemy).times : 0;
     enemy.growScale = 1;

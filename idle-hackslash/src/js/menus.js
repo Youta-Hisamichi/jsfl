@@ -760,6 +760,9 @@ function releaseCharge() {
   if (phase !== 'battle') return;
   if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
   if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
+  launchPull(ang, lv);
+}
+function launchPull(ang, lv) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
   const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp };
@@ -767,6 +770,20 @@ function releaseCharge() {
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
+}
+// 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
+const AUTO_PULL_IDLE_MS = 5000, AUTO_PULL_GAP_MS = [2500, 5000];
+let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
+['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
+function tickAutoPull() {
+  const now = Date.now();
+  if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') return;
+  if (now - lastUserInputAt < AUTO_PULL_IDLE_MS) { nextAutoPullAt = 0; return; }
+  if (holdRush && now < holdRush.until) return;
+  if (!nextAutoPullAt) { nextAutoPullAt = now + 600; return; }
+  if (now < nextAutoPullAt) return;
+  nextAutoPullAt = now + AUTO_PULL_GAP_MS[0] + Math.random() * (AUTO_PULL_GAP_MS[1] - AUTO_PULL_GAP_MS[0]);
+  launchPull(Math.random() * Math.PI * 2, 0.45 + Math.random() * 0.55);
 }
 // タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
 const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;

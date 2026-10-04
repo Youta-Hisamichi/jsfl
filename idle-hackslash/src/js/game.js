@@ -4,6 +4,7 @@ function step() {
   const b = computeBonuses();
   const speedMult = getEffectiveSpeed();
   tickObstacles();
+  tickAutoPull();
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   updateExpGems(speedMult);
