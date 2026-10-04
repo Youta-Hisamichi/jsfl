@@ -1123,25 +1123,10 @@ function drawObstacles() {
       ctx.translate(o.x, o.y + o.r); ctx.scale(1 + squ, 1 - squ); ctx.translate(-o.x, -(o.y + o.r));
       drawObstacleSprite('slime', o.x, o.y, o.r * 2.3);
     } else if (o.kind === 'spike') { // トゲ（ノコギリと歯車は回る）
-      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 200 : o.sprite === 'gear' ? now / 700 : 0;
+      const lit = now - (o.flash || 0) < 150, spin = o.sprite === 'saw' ? now / 450 : o.sprite === 'gear' ? now / 900 : 0; // 刃は等間隔なので、速すぎる（1コマで刃の半分以上進む）と止まって見える。ゆっくりめに
       if (lit) { ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 14; }
-      if (o.sprite === 'saw') { // 回転ノコギリ：残像・ハブの印・刃先の風切りで、回っているのがはっきり分かるように
-        ctx.globalAlpha = 0.25; drawObstacleSprite('saw', o.x, o.y, o.r * 2.3, spin - 0.22);
-        ctx.globalAlpha = 0.45; drawObstacleSprite('saw', o.x, o.y, o.r * 2.3, spin - 0.11);
-        ctx.globalAlpha = 1;
-      }
-      drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.3, spin);
-      if (o.sprite === 'saw') {
-        ctx.shadowBlur = 0; ctx.lineCap = 'round';
-        ctx.strokeStyle = '#ff5a3c'; ctx.lineWidth = Math.max(2, o.r * 0.12); // ハブの赤い印（これが回る）
-        ctx.beginPath(); ctx.moveTo(o.x + Math.cos(spin) * o.r * 0.12, o.y + Math.sin(spin) * o.r * 0.12); ctx.lineTo(o.x + Math.cos(spin) * o.r * 0.5, o.y + Math.sin(spin) * o.r * 0.5); ctx.stroke();
-        for (let k = 0; k < 3; k++) { // 刃先の外側をなぞる風切りの弧
-          const a = spin + k * Math.PI * 2 / 3;
-          ctx.strokeStyle = 'rgba(255,225,160,0.75)'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 1.22, a - 0.7, a); ctx.stroke();
-        }
-        if (Math.random() < 0.3) { const a = spin + Math.random() * 6.28; crateShards.push({ x: o.x + Math.cos(a) * o.r * 1.1, y: o.y + Math.sin(a) * o.r * 1.1, vx: -Math.sin(a) * 3 + (Math.random() - 0.5), vy: Math.cos(a) * 3 - 1, rot: 0, vr: 0, w: 2, h: 2, life: 0.5, col: '#ffd76b' }); } // 火花
-      }
+      drawObstacleSprite(o.sprite, o.x, o.y, o.r * 2.3, spin); // ノコギリ・歯車は画像ごと回す
+      if (o.sprite === 'saw' && Math.random() < 0.3) { const a = spin + Math.random() * 6.28; crateShards.push({ x: o.x + Math.cos(a) * o.r * 1.1, y: o.y + Math.sin(a) * o.r * 1.1, vx: -Math.sin(a) * 3 + (Math.random() - 0.5), vy: Math.cos(a) * 3 - 1, rot: 0, vr: 0, w: 2, h: 2, life: 0.5, col: '#ffd76b' }); } // 火花
     } else if (o.kind === 'bomb') { // 爆弾（火がつくと赤く点滅して膨らむ）
       const fuse = o.fuseAt ? (now - o.fuseAt) / 700 : 0, blink = fuse && Math.floor(now / 70) % 2;
       drawObstacleSprite('bomb', o.x, o.y, o.r * 2.3 * (1 + fuse * 0.25));
