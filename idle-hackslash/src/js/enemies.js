@@ -869,7 +869,8 @@ function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワー�
   if (o.kind === 'dash' && now - (ball.dashAt || 0) > 450) {
     ball.dashAt = now; o.flash = now;
     const sp = Math.max(9, Math.hypot(ball.vx, ball.vy) * 1.2);
-    ball.vx = Math.cos(o.dir) * sp; ball.vy = Math.sin(o.dir) * sp;
+    const dir = dashPanelDir(o, now); // 今パネルが向いている方向へ飛ばす
+    ball.vx = Math.cos(dir) * sp; ball.vy = Math.sin(dir) * sp;
     if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, Math.max(holdRush.speed, 11));
     if (ball.isPlayer) { thump(400, 1400, 0.14, 0.07, 'sawtooth'); spawnDamageText(ball.x, ball.y - ball.radius - 12, '≫ ダッシュ！', '#ff6b6b', 0.03); }
   } else if (o.kind === 'portal' && o.pair && now - (ball.warpAt || 0) > 1000) {
@@ -1043,6 +1044,8 @@ function hatchEgg(o) {
 }
 // 回転角は 0〜2π に収めてから使う（Date.now() をそのまま割った巨大な角度は、描画側の精度不足で回転が止まってしまう）
 function spinAngle(now, msPerRad) { return (now % (msPerRad * Math.PI * 2)) / msPerRad; }
+// ダッシュパネルはゆっくり回転し、乗った瞬間の矢印の向きへ加速する（パネルごとに回る向きが違う）
+function dashPanelDir(o, now) { return (o.dir || 0) + (o.seed < 0.5 ? 1 : -1) * spinAngle(now + o.seed * 9000, 700); }
 function drawObstacleSprite(key, x, y, size, rot) { // 障害物の画像（読み込めていなければ false）
   const img = OBSTACLE_IMGS[key];
   if (!img || !img.complete || !img.naturalWidth) return false;
@@ -1083,7 +1086,7 @@ function drawObstacles() {
     const lit = now - (o.flash || 0) < 250;
     if (o.kind === 'dash') {
       ctx.globalAlpha = lit ? 1 : 0.8 + Math.sin(now / 200 + o.seed * 9) * 0.15;
-      if (!drawObstacleSprite('dash', o.x, o.y, o.r * 2.2, o.dir)) { ctx.fillStyle = '#c03030'; ctx.fillRect(o.x - o.r, o.y - o.r * 0.6, o.r * 2, o.r * 1.2); }
+      if (!drawObstacleSprite('dash', o.x, o.y, o.r * 2.2, dashPanelDir(o, now))) { ctx.fillStyle = '#c03030'; ctx.fillRect(o.x - o.r, o.y - o.r * 0.6, o.r * 2, o.r * 1.2); }
     } else {
       const pulse = 1 + Math.sin(now / 250 + o.seed * 9) * 0.05 + (lit ? 0.15 : 0);
       ctx.shadowColor = '#7fb8ff'; ctx.shadowBlur = lit ? 24 : 10;
