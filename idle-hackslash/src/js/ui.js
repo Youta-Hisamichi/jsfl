@@ -965,7 +965,15 @@ function announceUpgradeLeap(id, from, to) {
   showNotice(`✨ ${UPGRADES[id].name} Lv.${lv} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
-  playStageClearSound();
+  playLeapSound(leap.every >= 100 ? 2 : 1);
+}
+// 大きな「飛躍！」文字を画面中央に出す
+function showLeapBanner(text, tier) {
+  const el = document.createElement('div');
+  el.className = 'leap-banner' + (tier >= 2 ? ' super' : '');
+  el.textContent = text;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
 }
 function levelUpUpgrade(id, x, y) {
   if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
@@ -1058,9 +1066,11 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
       const eq = getEquippedSkills();
       if (eq.length < getSkillSlots()) { eq.push(id); lastSetSkill = id; } // 空き枠があれば自動で装備
     } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
-    showNotice(!owned ? `${sk.icon} ${sk.name} スキルを解放！` : `${sk.icon} ${sk.name} スキルが Lv${game.skillLevels[id]} に！`);
-    showLevelUpPop(event.clientX, event.clientY, !owned ? '解放！' : `Lv${game.skillLevels[id]}！`);
-    playUpgradeSound();
+    const slv = game.skillLevels[id], leapTier = owned ? (slv % 100 === 0 ? 2 : slv % 10 === 0 ? 1 : 0) : 0; // 10の倍数で飛躍・100の倍数で超飛躍
+    showNotice(!owned ? `${sk.icon} ${sk.name} スキルを解放！` : leapTier ? `✨ ${sk.icon} ${sk.name} Lv${slv} ${leapTier >= 2 ? '超飛躍' : '飛躍'}！` : `${sk.icon} ${sk.name} スキルが Lv${slv} に！`);
+    showLevelUpPop(event.clientX, event.clientY, !owned ? '解放！' : `Lv${slv}！`);
+    if (leapTier) { showLeapBanner(leapTier >= 2 ? '超飛躍！！' : '飛躍！', leapTier); playLeapSound(leapTier); }
+    else playUpgradeSound();
     updateStatsUI();
     renderCoinShopList();
     saveGame();

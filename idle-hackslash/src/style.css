@@ -1256,3 +1256,8 @@ body.in-boss #stageSkipBtn { display: none !important; }
 .boss-final-panel.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .boss-final-panel b { color: #ff9aa5; font-size: 0.9rem; }
 body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが減るボス戦だけ */
+
+/* スキルの飛躍（Lv10の倍数）・超飛躍（Lv100の倍数） */
+.leap-banner { position: fixed; left: 50%; top: 42%; z-index: 120; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 900; font-style: italic; font-size: 2.6rem; letter-spacing: 0.06em; color: #fff3b0; text-shadow: 0 0 10px rgba(255,190,40,0.95), 0 0 24px rgba(255,140,0,0.7), 0 3px 0 #8a4b00; animation: leapBanner 1.5s cubic-bezier(.2,1.4,.4,1) forwards; }
+.leap-banner.super { font-size: 3.3rem; color: #ffe0ff; text-shadow: 0 0 12px rgba(255,92,214,0.95), 0 0 30px rgba(130,90,255,0.8), 0 3px 0 #5a1a6a; animation-duration: 2s; }
+@keyframes leapBanner { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-8deg); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(0); } 70% { opacity: 1; transform: translate(-50%, -55%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -75%) scale(1.05); } }

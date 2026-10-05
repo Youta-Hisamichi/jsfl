@@ -770,6 +770,14 @@ function playTowerStepsSound() {
     thump(140, 60, 0.09, 0.22, 'sine', d);
   }
 }
+// 飛躍の専用効果音：tier 1＝飛躍（キラッと上がる和音）、2＝超飛躍（さらに高く鳴り響くファンファーレ）
+function playLeapSound(tier = 1) {
+  if (!audioCtx) return;
+  const notes = tier >= 2 ? [523.3, 659.3, 784, 1046.5, 1318.5, 1568, 2093] : [659.3, 784, 987.8, 1318.5];
+  notes.forEach((f, i) => setTimeout(() => playTone(f, tier >= 2 ? 0.22 : 0.16, 'square', 0.07, f * 1.01), i * (tier >= 2 ? 70 : 60)));
+  const end = notes.length * (tier >= 2 ? 70 : 60);
+  setTimeout(() => { playTone(notes[notes.length - 1], 0.5, 'triangle', 0.1, notes[notes.length - 1] * 1.5); if (tier >= 2) { playTone(notes[notes.length - 3], 0.6, 'square', 0.05); playNoiseBurst(0.25, 0.08); } }, end);
+}
 // 震える障害物にぶつかったときの「ブルン」：低い音をビブラートで揺らしながら少し下げる（amt 0〜1 で大きさ）
 function playWobbleSound(amt = 1) {
   if (!audioCtx || isBattleSfxMuted()) return;
