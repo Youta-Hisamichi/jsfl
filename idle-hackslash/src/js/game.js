@@ -578,7 +578,7 @@ function tickBossTimer() {
   if (bossTimerFor !== boss) { bossTimerFor = boss; bossTimeLeftMs = BOSS_TIME_LIMIT_MS; bossTimerLastAt = now; return; }
   if (boss.spawnTimer > 0) { bossTimerLastAt = now; return; } // 出現演出中は数えない
   bossTimeLeftMs -= Math.min(100, now - bossTimerLastAt); bossTimerLastAt = now; // 一時停止中やタブ切り替え中は進まない
-  if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossFail('time'); }
+  if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossDefeated('time'); }
 }
 function drawBossTimer() { // カウントダウン。残りが少ないほど色が変わり、脈打ち、震えて焦らせる
   if (!bossTimerFor || !isBossFight() || filmMode) return;
@@ -603,6 +603,37 @@ function drawBossTimer() { // カウントダウン。残りが少ないほど�
   ctx.restore();
 }
 let lastBossTickSec = 0;
+// ボスに負けたら一度だけコンテニューの機会：動画を見るとHP全快・残り時間30秒に戻して続行。あきらめると前の階層ループへ
+const bossContModal = document.getElementById('bossContModal');
+let bossContReason = null;
+function bossDefeated(reason) {
+  const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
+  if (!boss || boss.continued) { bossFail(reason); return; }
+  bossContReason = reason; phase = 'paused'; homingMissiles = [];
+  playDeathSound();
+  document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
+  document.getElementById('bossContText').textContent = `${game.stage}階層のボス（残りHP ${Math.max(0, Math.round(boss.hp / boss.maxHp * 100))}%）\n動画を見るとHP全回復・残り時間${BOSS_TIME_LIMIT_MS / 1000}秒で続きから戦えます（1回まで）`;
+  document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー';
+  bossContModal.classList.add('show');
+}
+function bossContinue() {
+  bossContModal.classList.remove('show');
+  const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
+  if (boss) boss.continued = true;
+  const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = null; }
+  bossTimeLeftMs = BOSS_TIME_LIMIT_MS; bossTimerLastAt = Date.now(); lastBossTickSec = 0;
+  phase = 'battle'; bossContReason = null;
+  if (p) { spawnDamageText(p.x, p.y - p.radius - 20, '✨ コンテニュー！', '#7fe8ff', 0.012, true); spawnHitParticles(p.x, p.y, '#7fe8ff'); }
+  playHealSound(); updateHPUI();
+}
+document.getElementById('bossContAdBtn').addEventListener('click', () => {
+  if (isAdFree()) { bossContinue(); return; }
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); bossContinue(); });
+});
+document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
+  bossContModal.classList.remove('show'); phase = 'battle';
+  const r = bossContReason || 'death'; bossContReason = null; bossFail(r);
+});
 function bossFail(reason) {
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
@@ -640,7 +671,7 @@ function onPlayerDeath(forceRebirth = false, skipFx = false) {
   homingMissiles = [];
   if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
   if (!forceRebirth) { // 転生は手動だけ：ボス戦で倒れたら1つ前の階層をループ、それ以外では倒れない
-    if (isBossFight()) { bossFail('death'); return; }
+    if (isBossFight()) { bossDefeated('death'); return; }
     const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = p.hp; updateHPUI(); }
     return;
   }
