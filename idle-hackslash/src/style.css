@@ -1265,3 +1265,25 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 #upgradeList .upgrade-btn { position: relative; padding-left: 68px; min-height: 72px; text-align: center; }
 #upgradeList .upgrade-btn > .item-icon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 2.6rem; }
 #upgradeList .upgrade-btn > .item-icon .ico-img { width: 56px; height: 56px; border-radius: 8px; }
+
+/* ===== UIスキン：ファンタジーRPG風のボタン・枠・アイテムベース（素材75） ===== */
+.modal-overlay:not(#stageSkipModal) .modal-close-btn { border: 9px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 9px stretch; background: none; border-radius: 0; padding: 4px 8px; color: #fff; text-shadow: 0 1px 0 #0a2a6a, 0 0 4px rgba(0,30,90,0.6); }
+.modal-overlay:not(#stageSkipModal) .modal-close-btn:disabled, .modal-close-btn.is-disabled { border-image-source: url(assets/img/ui/skin/btn_gray.webp); }
+.modal-overlay:not(#stageSkipModal) .modal-shop-btn { border: 9px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 9px stretch; background: none; border-radius: 0; padding: 3px 6px; color: #3a2a14; }
+.modal-overlay:not(#stageSkipModal) .modal-shop-btn .msb-desc { color: #6a5838; }
+.modal-overlay:not(#stageSkipModal) .modal-shop-btn .msb-cost { color: #1a5f9a; }
+.modal-overlay:not(#stageSkipModal) .modal-panel { border: 18px solid transparent; border-image: url(assets/img/ui/skin/panel_navy.webp) 22 fill / 18px stretch; background: none; border-radius: 0; padding: 6px 8px; color: #eef0f6; --text: #eef0f6; --text-dim: #aab0c4; }
+.modal-overlay:not(#stageSkipModal) .modal-panel h2 { color: #ffd76b; text-shadow: 0 2px 0 #3a2a08; }
+#upgradeList .upgrade-btn { border: 12px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 12px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 0 2px 0 62px; }
+#upgradeList .upgrade-btn .upgrade-value { color: #6a5838; }
+#upgradeList .upgrade-btn .upgrade-value b, #upgradeList .upgrade-btn .cost { color: #a05a00; }
+#upgradeList .upgrade-btn > .item-icon { left: -4px; width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/skin/slot_gold.webp) center / 100% 100% no-repeat; }
+#upgradeList .upgrade-btn > .item-icon .ico-img { width: 48px; height: 48px; border-radius: 4px; }
+.upgrade-max-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #2a1a00; }
+.upgrade-max-btn.pct-btn { border-image-source: url(assets/img/ui/skin/btn_blue.webp); background: none; color: #fff; text-shadow: 0 1px 0 #0a2a6a; }
+.upgrade-max-btn.is-disabled { border-image-source: url(assets/img/ui/skin/btn_gray.webp); background: none; color: #e8e8e8; }
+.sk-card, .shop-btn { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 1px; }
+.sk-card { --text: #3a2a14; --text-dim: #6a5838; }
+.sk-card.equipped { border: 10px solid transparent; box-shadow: none; filter: drop-shadow(0 0 4px rgba(46,160,67,0.9)); }
+.shop-btn .shop-desc { color: #6a5838; }
+.shop-btn .cost { color: #1a5f9a; }
