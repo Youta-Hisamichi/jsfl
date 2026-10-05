@@ -1738,17 +1738,27 @@ function openChestBatchDialog(rarity) {
     const opened = results.length;
     playChestOpenSound(); if (rarity !== 'common') setTimeout(() => playGachaSound(rarity), 260);
     renderChestTray(); renderArtifactList(); updateStatsUI(); saveGame();
-    const cards = results.map((r, i) => {
-      const delay = `animation-delay:${Math.min(i, 20) * 0.05}s`;
-      if (r.coins != null) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン</div><div class="cl-n">${formatCoinNumber(r.coins)}</div></div>`;
-      const c = RARITY_INFO[r.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${r.rebirth ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(r.art)}</div><div class="cl-name">${r.art.name}</div><div class="cl-desc">${r.art.desc.replace(/（最大\d+個）/, '')}</div><div class="cl-n">${r.n > 1 ? '×' + r.n : ''}</div></div>`;
+    // 同じ中身はまとめて「×個数」と合計値で表示（コインは合計額、遺物は効果を個数ぶん足した値）
+    const groups = new Map();
+    for (const r of results) {
+      const key = r.coins != null ? 'coin' : r.art.id;
+      const g = groups.get(key) || { ...r, count: 0, coins: 0, n: 0, sure: 0 };
+      g.count++; if (r.coins != null) g.coins += r.coins; else { g.n += r.n; if (r.rebirth) g.sure++; }
+      groups.set(key, g);
+    }
+    const sumDesc = (desc, n) => desc.replace(/（最大\d+個）/, '').replace(/([+\-])(\d+(?:\.\d+)?)/g, (m, sg, v) => sg + Math.round(parseFloat(v) * n * 10) / 10);
+    const order = g => g.art ? -RARITY_ORDER.indexOf(g.art.rarity) : 1;
+    const cards = [...groups.values()].sort((x, y) => order(x) - order(y)).map((g, i) => {
+      const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
+      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン ×${g.count}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
+      const c = RARITY_INFO[g.art.rarity].color;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name} ×${g.n}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div></div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:3rem">🎉</span>';
     document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
-    document.getElementById('chestModalText').innerHTML = `${coinSum ? `<div style="font-weight:800;color:#d18b00">コイン合計 🟡 ${formatCoinNumber(coinSum)}</div>` : ''}<div class="chest-loot-grid">${cards.join('')}</div>`;
+    document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
