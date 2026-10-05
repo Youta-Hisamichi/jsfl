@@ -170,17 +170,6 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
-  boss9: { // ボス9：横スクロールシューティングの巨大戦艦戦のような、不気味な半音進行と重く刻むベースで迫る曲（ハ短調）
-    bpm: 144,
-    kickBoost: 1.5,
-    echo: { time: 0.26, feedback: 0.3, wet: 0.25 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.028, notes: 'C5 = = = C#5 = = = | D#5 = = C5 = = A#4 = | C5 = = = G5 = = F#5 | F5 = D#5 = D5 = C#5 = | C5 = = = C#5 = = = | D#5 = = F#5 = = G5 = | G#5 = G5 = F#5 = D#5 = | D5 = = = B4 = = =' },
-      { type: 'vrc6saw', gain: 0.015, notes: 'C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | C#4+F4+G#4 - - C#4+F4+G#4 - - C#4+F4+G#4 - | C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | C#4+F4+G#4 - - C#4+F4+G#4 - - C#4+F4+G#4 - | G#3+C4+D#4 - - G#3+C4+D#4 - - G#3+C4+D#4 - | G3+B3+D4 - - G3+B3+D4 - - G3+B3+D4 -' },
-      { type: 'vrc6saw', gain: 0.048, notes: 'C2 C2 C3 C2 C2 C3 C2 C2 | C#2 C#2 C#3 C#2 C#2 C#3 C#2 C#2 | C2 C2 C3 C2 C2 C3 C2 C2 | C2 C2 C3 C2 C2 C3 C2 C2 | C2 C2 C3 C2 C2 C3 C2 C2 | C#2 C#2 C#3 C#2 C#2 C#3 C#2 C#2 | G#1 G#1 G#2 G#1 G#1 G#2 G#1 G#1 | G1 G1 G2 G1 G1 G2 G1 G1' },
-    ],
-    drums: 'k - s k k - s h | k - s k k - s h | k - s k k - s h | k - s k k - s h | k - s k k - s h | k - s k k - s h | k - s k k - s h | k k s s ks ks ks ks',
-  },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
     kickBoost: 1.3,
@@ -519,7 +508,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6', 'boss7', 'boss8', 'boss9'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6', 'boss7', 'boss8'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -560,7 +549,6 @@ const BGM_INFO = [
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss7', name: 'ボス7 宿命の刃', desc: '半音でにじり寄る重いベースの刻みと畳みかける旋律、休む間のない緊迫した決闘。VRC6風チップチューン。ホ短調（ファミコンの忍者アクション系の作風）・BPM182' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
-  { key: 'boss9', name: 'ボス9 異層次元の巨大戦艦', desc: '不気味な半音進行の旋律と重く刻むベースで迫る、横スクロールシューティングの巨大戦艦戦のような曲。VRC6風チップチューン。ハ短調・BPM144' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
