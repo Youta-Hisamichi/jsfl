@@ -297,14 +297,15 @@ const BGM_SONGS = {
     ],
     drums: 'k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - s - h h',
   },
-  gemshop: {
-    bpm: 126,
+  gemshop: { // ショップ画面：オープンワールドRPGのお店のような、爪弾く分散和音と笛の明るく軽やかな旋律（ニ長調）
+    bpm: 112,
+    echo: { time: 0.27, feedback: 0.22, wet: 0.2 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = G5 = B5 A#5 B5 = | G5 = F#5 = E5 = D#5 E5 | C6 = B5 = G5 = E5 = | D#5 = F#5 = A5 = = = | A5 = C6 = E6 D#6 E6 = | B5 = G5 = E5 = G5 A#5 | A5 = = F5 C6 = A5 = | B5 A5 G5 F#5 D#5 = B4 =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'E4 G4 B4 G4 E4 G4 B4 G4 | E4 G4 B4 D#5 E5 B4 G4 E4 | C4 E4 G4 E4 C4 E4 G4 E4 | B3 D#4 F#4 A4 B4 A4 F#4 D#4 | A3 C4 E4 C4 A3 C4 E4 C4 | E4 G4 B4 G4 E4 G4 A#4 B4 | F4 A4 C5 A4 F4 A4 C5 A4 | B3 D#4 F#4 A4 D#5 A4 F#4 D#4' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'E2 - B1 - E2 - B1 - | E2 - B1 - E2 - D#2 - | C2 - G1 - C2 - G1 - | B1 - F#1 - B1 - A1 - | A1 - E2 - A1 - E2 - | E2 - B1 - E2 - G2 - | F2 - C2 - F2 - C2 - | B1 - D#2 - F#2 - D#2 -' },
+      { type: 'vrc6pulse25', gain: 0.024, notes: 'F#5 = A5 = D6 = C#6 B5 | A5 = F#5 = D5 = = = | B5 = D6 = G6 = F#6 E6 | E6 = = = C#6 = A5 = | F#5 A5 D6 = E6 F#6 = E6 | C#6 = A5 = F#5 = A5 = | B5 = G5 = B5 D6 = B5 | A5 = C#6 = E6 = D6 =' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'D4 A4 D5 A4 F#4 A4 D5 A4 | B3 F#4 B4 F#4 D4 F#4 B4 F#4 | G3 D4 G4 D4 B3 D4 G4 D4 | A3 E4 A4 E4 C#4 E4 A4 E4 | D4 A4 D5 A4 F#4 A4 D5 A4 | F#3 C#4 F#4 C#4 A3 C#4 F#4 C#4 | G3 D4 G4 D4 B3 D4 G4 D4 | A3 E4 A4 E4 C#4 E4 A4 E4' },
+      { type: 'triangle', gain: 0.06, notes: 'D2 - - - A1 - - - | B1 - - - F#1 - - - | G1 - - - D2 - - - | A1 - - - E2 - - - | D2 - - - A1 - - - | F#1 - - - C#2 - - - | G1 - - - D2 - - - | A1 - - - E2 - - -' },
     ],
-    drums: 'k - - h s - - h | k - - h s - h h | k - - h s - - h | k - - h s - h h | k - - h s - - h | k - - h s - h h | k - - h s - - h | k - s h s s h s',
+    drums: 'k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s - h h | k - h - s s s s',
   },
   tower: {
     bpm: 140,
@@ -546,7 +547,7 @@ const BGM_INFO = [
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 風見鶏の街', desc: '笛の旋律が6/8拍子でのどかに揺れる、アクションRPGの穏やかな街のような曲。ほんのりエコー付き。VRC6風チップチューン。ヘ長調' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
-  { key: 'gemshop', name: 'ページ ショップ 怪しげな行商人', desc: '和声的短音階とナポリの和音、忍び足のベースで少し怪しげな商人の店の曲。VRC6風チップチューン。ホ短調・BPM126' },
+  { key: 'gemshop', name: 'ページ ショップ 風の街の雑貨屋', desc: '爪弾くような分散和音に笛の旋律が明るく軽やかに乗る、オープンワールドRPGのお店のような曲。ほんのりエコー付き。VRC6風チップチューン。ニ長調・BPM112' },
   { key: 'tower', name: 'ページ 試練の塔 螺旋の階段', desc: '刻み続ける分散和音とうねるベースの不安感に、階段を登るように上がっていく旋律の高揚感を重ねた曲。VRC6風チップチューン。イ短調・BPM140' },
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
