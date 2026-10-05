@@ -475,7 +475,7 @@ function onStageClear() {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
   }
-  if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else playStageClearSound(); // ボスを倒したら通常戦闘BGMを次の曲へ
+  if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
   if (isBossStage) spawnDamageText(arena.x, arena.y, `+${5 * (msBoss ? msBoss.reward : 1)} 💎`, '#64e8ff');
