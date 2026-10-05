@@ -175,7 +175,7 @@ function renderBestiary() {
       ? `<span class="bst-face">${entry.icon}</span>`
       : `<span class="bst-face"><span class="bst-shape bst-${entry.shape}" style="background:${entry.color}"></span></span>`;
     if (!rec) return `<div class="bst-card unknown"><span class="bst-face">？</span><span class="bst-name">？？？</span><span class="bst-info">${entry.kind === 'boss' ? '👑 ボス' : '未発見'}</span></div>`;
-    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ${rec.firstStage}階層</span></div>`;
+    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ${rec.firstStage}階</span></div>`;
   }).join('');
 }
 
@@ -797,14 +797,14 @@ function pickObstacleKind(rnd, zoneIdx) {
 }
 function setupObstacles(dropDebug) {
   obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
-  obstacles = dropDebug ? [] : obstacles.filter(o => o.debug && !o.broken); // デバッグで出した障害物は階層が変わっても出しっぱなし
+  obstacles = dropDebug ? [] : obstacles.filter(o => o.debug && !o.broken); // デバッグで出した障害物は階が変わっても出しっぱなし
   const zone = Math.floor((Math.max(1, game.stage) - 1) / 10); // エリア（出やすい種類が決まる）
   const block = Math.floor((Math.max(1, game.stage) - 1) / 2); // 2ステージごとに配置と種類が変わる
   const rnd = stageRand(block * 7 + 3), half = arena.radius;
   const floorKey = getFloorKey(game.stage);
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
   const early = game.stage <= 20, roll = rnd();
-  if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階層は必ずなし）
+  if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階は必ずなし）
   const n = early ? 1 + Math.floor(rnd() * 3) : 3 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は3〜5個
   const spot = r => { // 空いている場所を探す
     for (let tries = 0; tries < 60; tries++) {

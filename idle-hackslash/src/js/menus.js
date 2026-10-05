@@ -326,17 +326,17 @@ function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
   const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage)));
   const baseAtk = Math.round(6 + stage * 2.4);
-  const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階層ごとの節目のボスは別格に強い
+  const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
   return {
     hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT * (ms ? ms.hp : 1)) : baseHp,
     atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1)) : baseAtk,
     isBoss, milestone: ms
   };
 }
-// 節目のボス：100階層ごと・1000階層ごとに、HP・攻撃力・大きさ・報酬が跳ね上がる
+// 節目のボス：100階ごと・1000階ごとに、HP・攻撃力・大きさ・報酬が跳ね上がる
 function getMilestoneBoss(stage) {
-  if (stage % 1000 === 0) return { label: `${stage}階層の覇王`, hp: 6, atk: 2.2, radius: 1.6, reward: 10 };
-  if (stage % 100 === 0) return { label: `${stage}階層の主`, hp: 3, atk: 1.5, radius: 1.3, reward: 4 };
+  if (stage % 1000 === 0) return { label: `${stage}階の覇王`, hp: 6, atk: 2.2, radius: 1.6, reward: 10 };
+  if (stage % 100 === 0) return { label: `${stage}階の主`, hp: 3, atk: 1.5, radius: 1.3, reward: 4 };
   return null;
 }
 
@@ -473,14 +473,14 @@ function renderRanking() {
   else if (rankingDateOffset === -2) rankDateLabel.textContent = '一昨日';
   else rankDateLabel.textContent = selectedKey;
 
-  rankingTitle.textContent = isDaily ? `🏆 ${rankDateLabel.textContent}のクリア数ランキング` : '🏆 到達階層ランキング';
+  rankingTitle.textContent = isDaily ? `🏆 ${rankDateLabel.textContent}のクリア数ランキング` : '🏆 到達階ランキング';
   const daysAgo = Math.max(0, daysBetweenKeys(selectedKey, todayKey));
   const rivalFactor = Math.max(0.3, 1 - daysAgo * 0.05); // 過去日ほどライバルのスコアも控えめに演出
   const entries = RIVALS.map((r, i) => ({ name: r.name, score: isDaily ? Math.round(getRivalDailyScore(r, i, selectedKey) * rivalFactor) : r.stageScore, isPlayer: false }));
   const myScore = isDaily ? getDailyClearsForDate(selectedKey) : game.bestStage;
   entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
   entries.sort((a, b) => b.score - a.score);
-  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達階層', score: isDaily ? myScore + ' クリア' : 'Stage ' + myScore };
+  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達階', score: isDaily ? myScore + ' クリア' : 'Stage ' + myScore };
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
   const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
   const shown = entries.slice(0, 100);
@@ -495,7 +495,7 @@ function renderRanking() {
 const geo = (start, mult) => lv => Math.round(start * Math.pow(mult, lv));
 const listThen = (list, mult) => lv => lv < list.length ? list[lv] : Math.round(list[list.length - 1] * Math.pow(mult, lv - list.length + 1));
 const RECORD_GOALS = {
-  bestStage: { get: () => game.bestStage || 1, goal: listThen([10, 20, 30, 50, 75, 100, 150, 200, 300, 500], 1.5), unit: '階層' },
+  bestStage: { get: () => game.bestStage || 1, goal: listThen([10, 20, 30, 50, 75, 100, 150, 200, 300, 500], 1.5), unit: '階' },
   bestCoins: { get: () => game.bestCoins || 0, goal: geo(1000, 10), unit: '枚' },
   totalKills: { get: () => game.totalKills || 0, goal: listThen([50, 100, 300, 1000, 3000, 10000], 3), unit: '体' },
   totalTaps: { get: () => game.totalTaps || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
@@ -506,7 +506,7 @@ const RECORD_GOALS = {
   maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
   maxDps: { get: () => game.maxDps || 0, goal: geo(100, 10), unit: 'DPS' },
   maxCombo: { get: () => game.maxCombo || 0, goal: listThen([5, 10, 20, 30, 50, 75, 100], 1.5), unit: '回' },
-  bestTowerJump: { get: () => game.bestTowerJump || 0, goal: listThen([50, 100, 200, 500, 1000], 2), unit: '階層' },
+  bestTowerJump: { get: () => game.bestTowerJump || 0, goal: listThen([50, 100, 200, 500, 1000], 2), unit: '階' },
   playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
@@ -611,7 +611,7 @@ function updateStatsUI() {
   stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
   updateSkipBtnVisibility();
   const skipHtml = game.skipChallenge
-    ? `${xi('x_attack')} 挑戦中：${game.skipChallenge.target}階層\n<small>負けたら ${game.skipChallenge.origin}階層 へ</small>`
+    ? `${xi('x_attack')} 挑戦中：${game.skipChallenge.target}階\n<small>負けたら ${game.skipChallenge.origin}階 へ</small>`
     : `${xi('x_tower')} 試練の塔`;
   if (stageSkipBtn.dataset.html !== skipHtml) { stageSkipBtn.innerHTML = skipHtml; stageSkipBtn.dataset.html = skipHtml; }
   updateSpecialButton();
@@ -704,7 +704,7 @@ const KILL_HITSTOP_DURATION = 3; // 撃破時のヒットストップの長さ�
 const KNOCKBACK_SHAKE_FRAMES = 12; // 撃破後、震えながら吹っ飛ぶ演出の長さ（短縮済み）
 let stageAnnounceText = ''; // サークル中央に表示するステージ数
 let stageAnnounceTimer = 0; // 表示残りフレーム
-const STAGE_ANNOUNCE_DURATION = 180; // 「〜階層」表示の長さ（約3秒・60fps）
+const STAGE_ANNOUNCE_DURATION = 180; // 「〜階」表示の長さ（約3秒・60fps）
 const KNOCKBACK_SPEED = 38; // 吹っ飛ぶ初速（サークル外まで爆発的に）
 const KNOCKBACK_DECEL = 0.985; // 吹っ飛び速度の減衰（ほぼ減速せず飛んでいく）
 

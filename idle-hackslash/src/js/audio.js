@@ -566,7 +566,7 @@ function renderBgmBook() {
   document.getElementById('bgmBookCount').textContent = `${BGM_INFO.filter(b => book[b.key]).length} / ${BGM_INFO.length}`;
   list.innerHTML = BGM_INFO.map(b => {
     const got = book[b.key];
-    if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れる階層をクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
+    if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れる階をクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
     const playing = bgmBookPreview === b.key;
     return `<div class="bgm-book-row ${playing ? 'playing' : ''}"><button class="bb-play" data-bgm-book="${b.key}">${playing ? '■' : '▶'}</button><div class="bb-info"><div class="bb-name">${b.name}</div><div class="bb-desc">${b.desc}</div></div></div>`;
   }).join('');
@@ -949,7 +949,7 @@ function showBossClearFx(stage) {
   const cols = ['#ffd76b', '#ff5c8a', '#64e8ff', '#7ee787', '#c792ea', '#ffffff'];
   let conf = '';
   for (let i = 0; i < 46; i++) conf += `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - 0.5) * 140}px;--rot:${Math.random() * 900 - 450}deg;animation-duration:${1.8 + Math.random() * 1.4}s;animation-delay:${0.2 + Math.random() * 0.5}s"></i>`;
-  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main"><img class="bcf-banner" src="assets/img/ui/questClear.webp" alt="BOSS DEFEATED!"></div><div class="bcf-sub">🎉 おめでとう！ ${stage}階層 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
+  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main"><img class="bcf-banner" src="assets/img/ui/questClear.webp" alt="BOSS DEFEATED!"></div><div class="bcf-sub">🎉 おめでとう！ ${stage}階 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
   wrapEl.appendChild(fx);
   setTimeout(() => fx.classList.add('out'), 3000);
   setTimeout(() => fx.remove(), 3600);

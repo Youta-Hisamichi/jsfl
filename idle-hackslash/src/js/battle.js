@@ -15,7 +15,7 @@ const ENEMY_TRAITS = {
   'emoji:🦇': 'merge',
 };
 const MULTIPLY_TRAITS = new Set(['split', 'splitMany', 'merge', 'stack', 'jumbo']); // 敵が増える特徴
-const MULTIPLY_TRAIT_FROM = 20;    // この階層までは分裂・増える系を使ってこない
+const MULTIPLY_TRAIT_FROM = 20;    // この階までは分裂・増える系を使ってこない
 const MULTIPLY_TRAIT_CHANCE = 0.15; // その特徴を持つ敵が実際に使ってくる確率（デバッグで出した敵はいつも使う）
 const ENEMY_TRAIT_DESCS = {
   berserk: 'HPが半分を切るか時間が経つと発狂：動きが速くなり、クリティカルを連発して暴れる。そのかわり受けるダメージが1.5倍（防御ダウン）',
@@ -207,7 +207,7 @@ function updateJumboSlime(e, speedMult) {
 }
 const MAX_FREE_ADDS = 1;          // 通常ステージで同時に出る雑魚の最大数（本体は別。基本は1対1、せいぜい2体）
 const SWARM_ADDS = 6;             // 大群ステージの雑魚の数（控えめ）
-function isSwarmStage(stage) { return stage >= 30 && stage % 20 === 15; } // 大群ステージ（序盤は無し。35, 55, 75…と20階層ごと） // 敵の即死魔法の成功率（バリアで防げる）
+function isSwarmStage(stage) { return stage >= 30 && stage % 20 === 15; } // 大群ステージ（序盤は無し。35, 55, 75…と20階ごと） // 敵の即死魔法の成功率（バリアで防げる）
 let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
 let enemyMines = [];           // 敵の炎の罠（カボチャヘッド）
 function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
@@ -1223,7 +1223,7 @@ function renderDebugSlots() {
     const slot = readDebugSlot(i);
     const g = slot && slot.data && slot.data.game;
     const info = g
-      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>${g.stage}階層　🟡 ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
+      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>${g.stage}階　🟡 ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
       : `<b>スロット${i}</b>　<span class="slot-empty">（空き）</span>`;
     const arm = kind => debugSlotArmed === `${kind}-${i}`;
     html += `<div class="slot-row"><div class="slot-info">${info}</div>`

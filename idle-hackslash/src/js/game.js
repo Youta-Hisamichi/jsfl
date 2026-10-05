@@ -60,7 +60,7 @@ function step() {
   if (swarm && !e.swarmStarted) { // 大群ステージ：開始時にまとめて出現し、減ったら補充
     e.swarmStarted = true;
     for (let i = 0; i < SWARM_ADDS; i++) adds.push(makeAddEnemy(e));
-    showNotice('⚠️ 大群の階層！ 敵を全部倒すと次の階層へ');
+    showNotice('⚠️ 大群の階！ 敵を全部倒すと次の階へ');
     playSwarmSound();
   }
   const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
@@ -488,9 +488,9 @@ function onStageClear() {
   game.dailyClears++;
   resetCombo();
   if (game.skipChallenge) {
-    showNotice(`🏰 試練の塔 突破！ ${game.stage}階層 のボスを撃破`);
+    showNotice(`🏰 試練の塔 突破！ ${game.stage}階 のボスを撃破`);
     const skipped = game.skipChallenge.target - game.skipChallenge.origin;
-    if (skipped > (game.bestTowerJump || 0)) { game.bestTowerJump = skipped; setTimeout(() => showNotice(`🏆 試練の塔 自己ベスト更新！ +${skipped}階層`), 2400); }
+    if (skipped > (game.bestTowerJump || 0)) { game.bestTowerJump = skipped; setTimeout(() => showNotice(`🏆 試練の塔 自己ベスト更新！ +${skipped}階`), 2400); }
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
   }
@@ -501,7 +501,7 @@ function onStageClear() {
     showNotice('🔁 自動でボスに再挑戦！');
   }
   game.bestStage = Math.max(game.bestStage, game.stage);
-  stageAnnounceText = game.stage + '階層' + (game.bossLoop && game.stage === game.bossLoop - 1 ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
+  stageAnnounceText = game.stage + '階' + (game.bossLoop && game.stage === game.bossLoop - 1 ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   meteors = []; adds = []; clearEnemyTraitObjects();
   for (const id in COMPANIONS) {
@@ -565,7 +565,7 @@ function endDeathFx() {
   clearTimeout(deathFxTimer);
   deathFx = null;
 }
-// ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階層をループ。「ボス再戦」で再挑戦 ----
+// ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
 const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
@@ -602,13 +602,13 @@ function drawBossTimer() { // カウントダウン。残りが少ないほど�
   ctx.restore();
 }
 let lastBossTickSec = 0;
-// ボスに負けたら一度だけコンテニューの機会：動画を見るとHP全快・残り時間30秒に戻して続行。あきらめると前の階層ループへ
+// ボスに負けたら一度だけコンテニューの機会：動画を見るとHP全快・残り時間30秒に戻して続行。あきらめると前の階ループへ
 const bossContModal = document.getElementById('bossContModal');
 let bossContReason = null;
 function bossDefeated(reason) {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (!boss) { bossFail(reason); return; }
-  if (boss.continued) { showBossFinalDefeat(reason); return; } // コンテニュー済み：少し間をおいて説明してから前の階層へ
+  if (boss.continued) { showBossFinalDefeat(reason); return; } // コンテニュー済み：少し間をおいて説明してから前の階へ
   bossContReason = reason; phase = 'paused'; homingMissiles = [];
   playDeathSound();
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
@@ -619,13 +619,13 @@ function bossDefeated(reason) {
   bossContModal.classList.add('show');
   startBossContCountdown();
 }
-// 2回目の敗北（コンテニュー済み）：同じ画面で「◯階層に戻って鍛え直します」と数秒見せてから自動で戻す
+// 2回目の敗北（コンテニュー済み）：同じ画面で「◯階に戻って鍛え直します」と数秒見せてから自動で戻す
 const BOSS_FINAL_MS = 2200;
-function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明パネルを少しだけ出して、そのまま前の階層へ（悲鳴は1回だけ・カウントダウンなし）
+function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明パネルを少しだけ出して、そのまま前の階へ（悲鳴は1回だけ・カウントダウンなし）
   phase = 'paused'; homingMissiles = [];
   playDeathSound();
   const back = Math.max(1, game.stage - 1), el = document.getElementById('bossFinalPanel');
-  el.innerHTML = `<b>${reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…'}</b><br>${back}階層に戻って鍛え直します`;
+  el.innerHTML = `<b>${reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…'}</b><br>${back}階に戻って鍛え直します`;
   el.classList.add('show');
   setTimeout(() => { el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
 }
@@ -665,7 +665,7 @@ document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   bossContModal.classList.remove('show'); phase = 'battle';
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r, true); // 悲鳴は敗北時に1回鳴らしているので、ここでは鳴らさない
 });
-// ボス戦のリタイヤ：その場で負けを認めて前の階層ループへ（コンテニュー画面は出さない）
+// ボス戦のリタイヤ：その場で負けを認めて前の階ループへ（コンテニュー画面は出さない）
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {
   ev.stopPropagation();
   if (!isBossFight() || phase !== 'battle' || game.skipChallenge) return;
@@ -688,8 +688,8 @@ function bossFail(reason, silent) {
   const p = balls.find(isMainPlayerBall); if (p) p.safeHp = p.hp;
   if (!silent) playDeathSound();
   spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : reason === 'retire' ? '🏳 リタイヤ' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
-  showNotice(reason === 'retire' ? `🏳 ${bossStage}階層のボス戦をリタイヤ。${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階層のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
-  stageAnnounceText = game.stage + '階層 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+  showNotice(reason === 'retire' ? `🏳 ${bossStage}階のボス戦をリタイヤ。${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
+  stageAnnounceText = game.stage + '階 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   startBgm('normal');
   updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
 }
@@ -713,7 +713,7 @@ function onPlayerDeath(forceRebirth = false, skipFx = false) {
   if (filmMode && !forceRebirth) { const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; updateHPUI(); } return; } // 撮影モード中はやられない
   homingMissiles = [];
   if (game.skipChallenge && !forceRebirth) { failSkipChallenge(); return; }
-  if (!forceRebirth) { // 転生は手動だけ：ボス戦で倒れたら1つ前の階層をループ、それ以外では倒れない
+  if (!forceRebirth) { // 転生は手動だけ：ボス戦で倒れたら1つ前の階をループ、それ以外では倒れない
     if (isBossFight()) { bossDefeated('death'); return; }
     const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = p.hp; updateHPUI(); }
     return;
@@ -768,7 +768,7 @@ function buildGameOverTips() {
 }
 let continueStopped = false;
 function renderContinueStopped() {
-  toastSub.innerHTML = `<span class="continue-count">⏸ カウント停止中</span>\n💎 ${getContinueCost()} で現在の階層をリトライ${gameOverTipsHtml}`;
+  toastSub.innerHTML = `<span class="continue-count">⏸ カウント停止中</span>\n💎 ${getContinueCost()} で現在の階をリトライ${gameOverTipsHtml}`;
 }
 function stopContinueCountdown() {
   if (continueStopped || !continueTimer || phase !== 'paused' || continueBtn.style.display === 'none') return;
@@ -785,7 +785,7 @@ function startContinueCountdown() {
   const updateContinue = () => {
     const seconds = Math.max(0, Math.ceil((continueDeadline - Date.now()) / 1000));
     if (seconds !== lastTickSec && seconds > 0) { lastTickSec = seconds; playCountdownTick(seconds); }
-    toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 ${getContinueCost()} で現在の階層をリトライ${gameOverTipsHtml}`;
+    toastSub.innerHTML = `<span class="continue-count">残り <b>${seconds}</b> 秒</span>\n💎 ${getContinueCost()} で現在の階をリトライ${gameOverTipsHtml}`;
     if (seconds <= 0) { clearInterval(continueTimer); reincarnateAfterAd(); }
   };
   updateContinue();
@@ -1026,12 +1026,12 @@ function renderStageSkipList() {
   updateCustomSkip();
   stageSkipGems.textContent = Math.floor(game.gems);
   stageSkipOrigin.textContent = game.stage;
-  document.getElementById('towerBestJump').textContent = game.bestTowerJump ? `+${game.bestTowerJump.toLocaleString('ja-JP')}階層` : 'まだ突破なし';
+  document.getElementById('towerBestJump').textContent = game.bestTowerJump ? `+${game.bestTowerJump.toLocaleString('ja-JP')}階` : 'まだ突破なし';
   stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
     const target = getSkipTargetStage(opt.skip);
     const es = getEnemyStats(target);
     const short = game.gems < opt.cost;
-    return `<button class="modal-shop-btn tower-floor ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name"><span class="tf-no">${target}F</span>👑 ${target}階層 のボス</span><span class="msb-desc">+${opt.skip}階層（${target - game.stage}階層先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+    return `<button class="modal-shop-btn tower-floor ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name"><span class="tf-no">${target}F</span>👑 ${target}階 のボス</span><span class="msb-desc">+${opt.skip}階（${target - game.stage}階先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
   }).reverse().join('');
 }
 function spawnNextEnemy() {
@@ -1087,10 +1087,10 @@ function startSkipChallenge(challenge) {
   playTowerStepsSound();
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
-  stageAnnounceText = target + '階層';
+  stageAnnounceText = target + '階';
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   spawnBossWithWarning();
-  showNotice(`⏭️ ${target}階層 のボスに挑戦！`);
+  showNotice(`⏭️ ${target}階 のボスに挑戦！`);
   updateStatsUI();
   updateHPUI();
   saveGame();
@@ -1104,10 +1104,10 @@ function failSkipChallenge() {
   resetCombo();
   playDeathSound();
   const retryCost = cost || 0;
-  skipRetryText.innerHTML = `${target}階層 のボスに敗北しました。<br>もう一度挑戦しますか？（所持ジェム: 💎${Math.floor(game.gems)}）`;
+  skipRetryText.innerHTML = `${target}階 のボスに敗北しました。<br>もう一度挑戦しますか？（所持ジェム: 💎${Math.floor(game.gems)}）`;
   skipRetryBtn.innerHTML = `<span class="msb-name">🔁 💎${retryCost} でリトライ</span>`;
   skipRetryBtn.classList.toggle('is-disabled', game.gems < retryCost);
-  skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて ${origin}階層 に戻る</span>`;
+  skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて ${origin}階 に戻る</span>`;
   skipRetryActions.style.visibility = 'hidden';
   const shownAt = skipRetryShownAt = Date.now();
   setTimeout(() => { if (skipRetryShownAt === shownAt) skipRetryActions.style.visibility = 'visible'; }, SKIP_RETRY_BUTTON_DELAY_MS);
@@ -1140,7 +1140,7 @@ function retrySkipChallenge() {
   skipRetryModal.classList.remove('show');
   revivePlayerInPlace();
   phase = 'battle';
-  showNotice(`🔁 ${target}階層 のボスに再挑戦！`);
+  showNotice(`🔁 ${target}階 のボスに再挑戦！`);
   updateStatsUI();
   updateHPUI();
   saveGame();
@@ -1153,9 +1153,9 @@ function giveUpSkipChallenge() {
   phase = 'battle';
   spawnNextEnemy();
   refreshPlayerBallStats(true);
-  stageAnnounceText = origin + '階層';
+  stageAnnounceText = origin + '階';
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
-  showNotice(`🏳️ ${target}階層 への挑戦をあきらめ、${origin}階層 に戻りました`, true);
+  showNotice(`🏳️ ${target}階 への挑戦をあきらめ、${origin}階 に戻りました`, true);
   startBgm(origin % 10 === 0 ? 'boss' : 'normal');
   updateStatsUI();
   updateHPUI();
@@ -1197,13 +1197,13 @@ function updateCustomSkip() {
   customSkipInfo.classList.remove('error');
   if (!customSkipInput.value) {
     customSkipCost.textContent = '💎 -';
-    customSkipInfo.textContent = `${game.stage + 1}階層 以降を入力（ボスの階層に切り上げ）`;
+    customSkipInfo.textContent = `${game.stage + 1}階 以降を入力（ボスの階に切り上げ）`;
     customSkipBtn.classList.add('is-disabled');
     return;
   }
   if (!target) {
     customSkipCost.textContent = '💎 -';
-    customSkipInfo.textContent = `現在の ${game.stage}階層 より先を入力してください`;
+    customSkipInfo.textContent = `現在の ${game.stage}階 より先を入力してください`;
     customSkipInfo.classList.add('error');
     customSkipBtn.classList.add('is-disabled');
     return;
@@ -1211,7 +1211,7 @@ function updateCustomSkip() {
   const cost = getCustomSkipCost(getCustomSkipInput() - game.stage);
   const es = getEnemyStats(target);
   customSkipCost.textContent = '💎 ' + cost.toLocaleString('ja-JP');
-  customSkipInfo.textContent = `👑 ${target}階層 のボス（${target - game.stage}階層先）HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}`;
+  customSkipInfo.textContent = `👑 ${target}階 のボス（${target - game.stage}階先）HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}`;
   customSkipBtn.classList.toggle('is-disabled', game.gems < cost);
 }
 customSkipInput.addEventListener('input', updateCustomSkip);
