@@ -171,7 +171,7 @@ function renderCompanionList() {
       : `<span class="msb-name">➕ パーティ枠を増やす（${lim} → ${lim + 1}人）</span><span class="msb-cost">💎 ${getPartySlotCost()}</span>`;
     psb.classList.toggle('is-disabled', lim >= COMPANION_PARTY_MAX || game.gems < getPartySlotCost());
   }
-  const RARITY_ORDER = { legendary: 4, epic: 3, rare: 2, common: 1 };
+  const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;
   const sorted = Object.entries(COMPANIONS).sort((x, y) => (owned(y[0]) - owned(x[0])) || (RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]));
   const mine = sorted.filter(([id]) => game.companions.recruited[id]), others = sorted.filter(([id]) => !game.companions.recruited[id]);
@@ -347,7 +347,7 @@ const SKIP_DROP_TABLE = [
   { minSkip: 100,  weights: [0, 60, 40, 0] },
   { minSkip: 0,    weights: [50, 50, 0, 0] },
 ];
-const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
+const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 function pickSkipDropRarity(skipped) {
   const row = SKIP_DROP_TABLE.find(t => skipped >= t.minSkip);
   let roll = Math.random() * 100;
@@ -387,13 +387,13 @@ function renderArtifactList() {
   const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
   const total = ARTIFACT_POOL.length;
   const rate = (total ? Math.floor(ownedKinds / total * 1000) / 10 : 0).toFixed(1);
-  const rarChips = ['legendary', 'epic', 'rare', 'common'].map(r => {
+  const rarChips = ['mythic', 'legendary', 'epic', 'rare', 'common'].map(r => {
     const all = ARTIFACT_POOL.filter(a => a.rarity === r), got = all.filter(a => game.ownedArtifacts[a.id] > 0).length;
     return `<span class="af-rchip" style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} <b>${got}/${all.length}</b></span>`;
   }).join('');
   artifactProgressEl.innerHTML = `<div class="af-ring" style="--p:${rate}"><span><b>${rate}</b>%</span></div><div class="af-hero-main"><div class="af-hero-title">遺物コレクション</div><div class="af-hero-count"><b>${ownedKinds}</b> / ${total} 種類</div><div class="af-rchips">${rarChips}</div></div>`;
   renderSubTabs(document.getElementById('artifactTabs'), ARTIFACT_FILTERS, artifactFilter, cat => { artifactFilter = cat; renderArtifactList(); });
-  const RANK = { legendary: 4, epic: 3, rare: 2, common: 1 };
+  const RANK = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const list = ARTIFACT_POOL.filter(a => artifactFilter === 'all' || (ARTIFACT_CATEGORY[a.id] || 'attack') === artifactFilter)
     .slice().sort((x, y) => ((game.ownedArtifacts[y.id] > 0) - (game.ownedArtifacts[x.id] > 0)) || (RANK[y.rarity] - RANK[x.rarity]));
   artifactListEl.innerHTML = list.map(a => {

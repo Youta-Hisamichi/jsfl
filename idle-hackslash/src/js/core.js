@@ -561,26 +561,31 @@ function ico(obj) { return obj && obj.img ? `<img class="ico-img" src="${obj.img
 const ARTIFACT_POOL = [
   { id: 'heart',  icon: '🗡️', name: '闘志の剣・小',   desc: '攻撃力 +5%', rarity: 'common' },
   { id: 'swordM', icon: '🗡️', name: '闘志の剣・中',   desc: '攻撃力 +30%', rarity: 'rare' },
-  { id: 'swordL', icon: '🗡️', name: '闘志の剣・大',   desc: '攻撃力 +100%', rarity: 'epic' },
+  { id: 'swordL', icon: '🗡️', name: '闘志の剣・大',   desc: '攻撃力 +150%', rarity: 'epic' },
   { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
   { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
-  { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +35%', rarity: 'epic' },
-  { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: 'メテオの待機時間 -15%（最大3個）', rarity: 'epic' },
-  { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +25%（最大3個）', rarity: 'epic' },
-  { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +5%（最大6個）', rarity: 'legendary' },
-  { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +50%（最大6個）', rarity: 'legendary' },
+  { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
+  { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: 'メテオの待機時間 -20%（最大3個）', rarity: 'epic' },
+  { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +40%（最大3個）', rarity: 'epic' },
+  { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +8%（最大6個）', rarity: 'legendary' },
+  { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +80%（最大6個）', rarity: 'legendary' },
   { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）', rarity: 'rare' },
   { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）', rarity: 'rare' },
-  { id: 'crest', icon: '👑', name: '覇王の紋章', desc: 'ボスへのダメージ +25%（最大4個）', rarity: 'epic' },
-  { id: 'gauntletCounter', icon: '🔄', name: '反撃の籠手', desc: 'カウンター率 +10%（最大4個）', rarity: 'epic' },
-  { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +25%（最大5個）', rarity: 'epic' },
-  { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +25%（最大5個）', rarity: 'epic' },
-  { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +40%（最大3個）', rarity: 'epic' },
+  { id: 'crest', icon: '👑', name: '覇王の紋章', desc: 'ボスへのダメージ +40%（最大4個）', rarity: 'epic' },
+  { id: 'gauntletCounter', icon: '🔄', name: '反撃の籠手', desc: 'カウンター率 +15%（最大4個）', rarity: 'epic' },
+  { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +40%（最大5個）', rarity: 'epic' },
+  { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +40%（最大5個）', rarity: 'epic' },
+  { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +60%（最大3個）', rarity: 'epic' },
   { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
   { id: 'pierceHoof', icon: '🐂', name: '貫きの蹄鉄', desc: '体当たりが敵を貫通し、跳ね返らずに連続攻撃（1個ごとに+1ヒット・最大3個）', rarity: 'epic' },
+  { id: 'swordX', icon: '⚔️', name: '闘志の剣・極', desc: '攻撃力 +400%', rarity: 'legendary' },
+  { id: 'aegis', icon: '🛡️', name: '不壊の大盾', desc: '最大HP +400%', rarity: 'legendary' },
+  { id: 'ragnarok', icon: '🌟', name: '神剣ラグナロク', desc: '攻撃力 +1500%', rarity: 'mythic' },
+  { id: 'yggdrasil', icon: '🌳', name: '世界樹の雫', desc: '最大HP +1500%・コイン獲得 +300%', rarity: 'mythic' },
+  { id: 'starCrown', icon: '👑', name: '星々の王冠', desc: '攻撃力・最大HP +800%・クリティカル率 +15%', rarity: 'mythic' },
 ];
 const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
 const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
@@ -593,14 +598,15 @@ const RARITY_INFO = {
   rare:      { label: 'レア',       stars: 2, color: '#64e8ff', needMult: 2 },
   epic:      { label: 'エピック',   stars: 3, color: '#c792ea', needMult: 2 },
   legendary: { label: 'レジェンド', stars: 4, color: '#ffd76b', needMult: 1 },
+  mythic:    { label: 'ミシック',   stars: 5, color: '#ff5cd6', needMult: 1 },
 };
-const RARITY_BG_ALPHA = { common: ['30', '10'], rare: ['44', '14'], epic: ['55', '18'], legendary: ['70', '22'] };
+const RARITY_BG_ALPHA = { common: ['30', '10'], rare: ['44', '14'], epic: ['55', '18'], legendary: ['70', '22'], mythic: ['80', '2a'] };
 function rarityBackground(rarity) {
   const c = RARITY_INFO[rarity].color;
   const [a1, a2] = RARITY_BG_ALPHA[rarity];
   return `linear-gradient(160deg, ${c}${a1}, ${c}${a2})`;
 }
-function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(4 - RARITY_INFO[rarity].stars); }
+function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(5 - RARITY_INFO[rarity].stars); }
 const GACHA_POOL = {
   power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
   vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },
@@ -723,9 +729,10 @@ ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
 Object.keys(SKILL_GACHA_SKILLS).forEach(id => { SKILL_GACHA_SKILLS[id].img = ICON_IMAGES['sk_' + id]; });
-const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 20 };
+const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 40 }; // ★5（ミシック）は宝箱からしか出ない
 const REBIRTH_SHOP_ITEMS = {};
 ARTIFACT_POOL.forEach(a => {
+  if (a.rarity === 'mythic') return;
   REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, img: a.img, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
     effect: () => { gainArtifact(a.id); } };
 });
@@ -753,7 +760,15 @@ function getRebirthMaxCount(id) {
   }
   return count;
 }
-const REBIRTH_REWARD_RARITY_WEIGHTS = { common: 66, rare: 27, epic: 6, legendary: 1 };
+// 宝箱のレア度の出る確率：★5=1/500、★4=1/100、★3=1/32、★2=1/6、残りが★1
+const CHEST_RARITY_ODDS = { mythic: 1 / 500, legendary: 1 / 100, epic: 1 / 32, rare: 1 / 6 };
+const REBIRTH_REWARD_RARITY_WEIGHTS = { mythic: 0.2, legendary: 1, epic: 3.125, rare: 16.667, common: 79.008 };
+function rollChestRarity(luck = 1, min = 'common') { // luck 倍だけ高レア度が出やすい（岩・ボスなど苦労して手に入れる宝箱用）
+  const order = ['common', 'rare', 'epic', 'legendary', 'mythic'];
+  let r = Math.random(), got = 'common';
+  for (const k of ['mythic', 'legendary', 'epic', 'rare']) { const p = Math.min(0.9, CHEST_RARITY_ODDS[k] * luck); if (r < p) { got = k; break; } r -= p; if (r < 0) break; }
+  return order.indexOf(got) < order.indexOf(min) ? min : got;
+}
 function pickWeightedArtifact(pool, weights) {
   const counts = {};
   pool.forEach(a => counts[a.rarity] = (counts[a.rarity] || 0) + 1);
@@ -1000,25 +1015,30 @@ function computeBonuses() {
     const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
     if (id === 'heart') b.atkMult += 0.05 * count;     // 闘志の剣（小・中・大）
     if (id === 'swordM') b.atkMult += 0.3 * count;
-    if (id === 'swordL') b.atkMult += 1.0 * count;
+    if (id === 'swordL') b.atkMult += 1.5 * count;
+    if (id === 'swordX') b.atkMult += 4 * count;
+    if (id === 'aegis') b.hpMult += 4 * count;
+    if (id === 'ragnarok') b.atkMult += 15 * count;
+    if (id === 'yggdrasil') { b.hpMult += 15 * count; b.coinMult += 3 * count; }
+    if (id === 'starCrown') { b.atkMult += 8 * count; b.hpMult += 8 * count; b.critChance += 0.15 * count; }
     if (id === 'ring') b.coinMult += 0.3 * count;
     if (id === 'book') { b.atkMult += 0.1 * count; b.hpMult += 0.1 * count; }
     if (id === 'armor') b.hpMult += 0.25 * count;
     if (id === 'compass') b.bounceCoinCount = count;
     if (id === 'calendar') b.loginBonusMult += 0.4 * count;
-    if (id === 'gauntlet') b.specialDmgMult += 0.35 * count;
-    if (id === 'hourglass') b.specialCooldownMult -= 0.15 * cap;
-    if (id === 'turbo') b.accelDmgMult += 0.25 * cap;
-    if (id === 'eye') b.critChance += 0.05 * cap;
-    if (id === 'fang') b.critMultBonus += 0.5 * cap;
+    if (id === 'gauntlet') b.specialDmgMult += 0.6 * count;
+    if (id === 'hourglass') b.specialCooldownMult -= 0.2 * cap;
+    if (id === 'turbo') b.accelDmgMult += 0.4 * cap;
+    if (id === 'eye') b.critChance += 0.08 * cap;
+    if (id === 'fang') b.critMultBonus += 0.8 * cap;
     if (id === 'lens') b.accuracy += 0.03 * cap;
     if (id === 'feather') b.evasion += 0.03 * cap;
-    if (id === 'crest') b.bossDmg += 0.25 * cap;
-    if (id === 'gauntletCounter') b.counter += 0.10 * cap;
+    if (id === 'crest') b.bossDmg += 0.4 * cap;
+    if (id === 'gauntletCounter') b.counter += 0.15 * cap;
     if (id === 'horn') b.tackleMult += 0.30 * cap;
-    if (id === 'banner') b.companionAtkMult += 0.25 * cap;
-    if (id === 'amulet') b.companionHpMult += 0.25 * cap;
-    if (id === 'pinchMask') b.pinchAtk += 0.40 * cap;
+    if (id === 'banner') b.companionAtkMult += 0.4 * cap;
+    if (id === 'amulet') b.companionHpMult += 0.4 * cap;
+    if (id === 'pinchMask') b.pinchAtk += 0.6 * cap;
     if (id === 'rebirthOrb') b.rebirthGems += 2 * cap;
   }
   b.atkMult += game.upgrades.atk * 0.15;

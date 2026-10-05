@@ -1232,3 +1232,5 @@ body.floor-bg .comp-sprite, body.floor-bg .stage-mark { image-rendering: pixelat
 .auto-toggle-btn { display: block; margin: 0 auto 8px; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #2ea043; background: rgba(46,160,67,0.15); color: var(--text); font-size: 0.78rem; font-weight: 800; cursor: pointer; }
 .auto-toggle-btn.off { border-color: #8a90a4; background: rgba(138,144,164,0.12); opacity: 0.85; }
 body.hp-safe .hp-card.player .hp-bar-track, body.hp-safe #playerHPText { visibility: hidden; }
+.af-card.r-mythic { box-shadow: 0 0 16px #ff5cd6aa, 0 0 4px #fff inset; }
+.chest-tray button[data-open-chest="mythic"] { box-shadow: 0 0 10px #ff5cd6; }

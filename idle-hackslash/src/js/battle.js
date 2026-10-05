@@ -1394,7 +1394,7 @@ function checkLoginBonus(awayMs) {
   const hcIdle = getHeldChests(), heldNow = CHEST_RARITIES.reduce((n, k) => n + (hcIdle[k] || 0), 0);
   let idleChests = Math.min(Math.floor(idleMin / IDLE_CHEST_EVERY_MIN), Math.max(0, CHEST_STOCK_MAX - heldNow));
   const idleChestRarities = {};
-  for (let i = 0; i < idleChests; i++) { const r = Math.random(), k = r < 0.03 ? 'legendary' : r < 0.15 ? 'epic' : r < 0.45 ? 'rare' : 'common'; idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; }
+  for (let i = 0; i < idleChests; i++) { const k = rollChestRarity(); idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; }
   game.coins += idleCoins;
   game.totalKills += idleKills;
   if (idleChests) renderChestTray();
@@ -1646,19 +1646,17 @@ window.addEventListener('pointerdown', () => {
 }, true);
 // 戦闘中に手に入れた宝箱はすぐ開けず、ステージ左下に並べておく。タップで開封
 // 宝箱にはレア度がある。ステージ左下にレア度ごとにまとめて「×個数」で表示し、タップで1個ずつ開封
-const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary'];
+const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数
-const CHEST_WEIGHTS = { common: 60, rare: 28, epic: 10, legendary: 2 };
-const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' };
-const CHEST_COIN_MULT = { common: 1, rare: 2.5, epic: 6, legendary: 15 };
-const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.85 };
-const CHEST_ART_WEIGHTS = { common: { common: 75, rare: 22, epic: 3, legendary: 0 }, rare: { common: 45, rare: 42, epic: 12, legendary: 1 }, epic: { common: 15, rare: 45, epic: 35, legendary: 5 }, legendary: { common: 0, rare: 20, epic: 55, legendary: 25 } };
+const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6', mythic: 'x_chest6' };
+const CHEST_COIN_MULT = { common: 1, rare: 3, epic: 10, legendary: 40, mythic: 200 };
+const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.9, mythic: 1 };
 function getHeldChests() { // 古いセーブ（個数だけ）はノーマルとして扱う
   if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
   return game.heldChests;
 }
 function dropTreasureChest(rarity) {
-  if (!rarity) { let r = Math.random() * 100; rarity = CHEST_RARITIES.find(k => (r -= CHEST_WEIGHTS[k]) < 0) || 'common'; }
+  if (!rarity) rarity = rollChestRarity();
   const hc = getHeldChests();
   if (CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0) >= CHEST_STOCK_MAX) { spawnDamageText(arena.x, arena.y + 30, `🎁 宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); return; }
   hc[rarity] = (hc[rarity] || 0) + 1;
@@ -1772,7 +1770,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中�
     if (!quiet) spawnCoinBurst(arena.x, arena.y + 20, bonus);
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `🟡 ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
-    const pick = pickWeightedArtifact(ARTIFACT_POOL, CHEST_ART_WEIGHTS[rarity]); // レア度の高い宝箱ほど良い遺物
+    const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
     for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
     loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}` };

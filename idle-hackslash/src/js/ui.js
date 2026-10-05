@@ -1226,11 +1226,12 @@ function playGachaSound(rarity) {
     common: [523.25, 659.25],
     rare: [523.25, 659.25, 783.99],
     epic: [440, 554.37, 659.25, 880],
-    legendary: [392, 523.25, 659.25, 783.99, 1046.5, 1318.5]
+    legendary: [392, 523.25, 659.25, 783.99, 1046.5, 1318.5],
+    mythic: [349.23, 440, 523.25, 698.46, 880, 1046.5, 1396.9, 1760]
   };
   const notes = tablesByRarity[rarity] || tablesByRarity.common;
   notes.forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.2), i * 90));
-  if (rarity === 'legendary' || rarity === 'epic') playNoiseBurst(0.3, 0.15);
+  if (rarity === 'legendary' || rarity === 'epic' || rarity === 'mythic') playNoiseBurst(0.3, 0.15);
 }
 function playGachaSummonSound() {
   [220, 277.18, 349.23, 440].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 1.5), i * 260));

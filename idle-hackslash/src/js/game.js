@@ -462,7 +462,7 @@ function onStageClear() {
   game.coins += coinGain;
   const giantKill = !!(defeated && defeated.isGiant);
   if (isBossStage) game.gems += (giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5) * (msBoss ? msBoss.reward : 1);
-  if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? 'legendary' : 'epic'); }
+  if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? rollChestRarity(20, 'epic') : rollChestRarity(5, 'rare')); }
   if (giantKill) {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
@@ -571,16 +571,29 @@ function tickBossTimer() {
   bossTimeLeftMs -= Math.min(100, now - bossTimerLastAt); bossTimerLastAt = now; // 一時停止中やタブ切り替え中は進まない
   if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossFail('time'); }
 }
-function drawBossTimer() {
+function drawBossTimer() { // 小数点つきのカウントダウン。残りが少ないほど色が変わり、脈打ち、震えて焦らせる
   if (!bossTimerFor || !isBossFight() || filmMode) return;
-  const s = Math.max(0, bossTimeLeftMs / 1000), urgent = s < 10;
+  const s = Math.max(0, bossTimeLeftMs / 1000), now = Date.now();
+  const lv = s < 5 ? 3 : s < 10 ? 2 : s < 15 ? 1 : 0;
+  const beat = lv ? Math.abs(Math.sin(now / (lv === 3 ? 90 : lv === 2 ? 160 : 260))) : 0;
+  const size = [18, 20, 24, 30][lv] * (1 + beat * [0, 0.06, 0.12, 0.22][lv]);
+  const col = lv === 3 ? (Math.floor(now / 120) % 2 ? '#ff2020' : '#ffffff') : ['#ffffff', '#ffe066', '#ff9f43', '#ff2020'][lv];
+  let x = arena.x, y = arena.y - arena.radius + 8;
+  if (lv >= 2) { x += (Math.random() - 0.5) * (lv === 3 ? 6 : 2.5); y += (Math.random() - 0.5) * (lv === 3 ? 4 : 1.5); }
+  if (lv === 3) { // 画面のふちを赤く明滅
+    ctx.save(); const g = ctx.createRadialGradient(arena.x, arena.y, arena.radius * 0.55, arena.x, arena.y, arena.radius * 1.15);
+    g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,0,0,${0.18 + beat * 0.22})`); ctx.fillStyle = g; arenaPath(); ctx.fill(); ctx.restore();
+  }
+  const sec = Math.ceil(s); // 1秒ごとにピッ（残り10秒から。5秒を切ると高く）
+  if (lv >= 2 && sec !== lastBossTickSec && sec > 0) { lastBossTickSec = sec; playTone(lv === 3 ? 1320 : 880, 0.07, 'square', 0.05); }
   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.font = `900 ${urgent ? 22 : 18}px sans-serif`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-  const t = `⏱ ${s.toFixed(urgent ? 1 : 0)}`, y = arena.y - arena.radius + 8;
-  ctx.fillStyle = urgent ? (Math.floor(Date.now() / 250) % 2 ? '#ff4040' : '#ffd0d0') : '#ffffff';
-  ctx.strokeText(t, arena.x, y); ctx.fillText(t, arena.x, y);
+  ctx.font = `900 ${Math.round(size)}px sans-serif`; ctx.lineWidth = 4 + lv; ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+  if (lv >= 2) { ctx.shadowColor = col; ctx.shadowBlur = 10 + beat * 12; }
+  const t = `⏱ ${s.toFixed(1)}`;
+  ctx.fillStyle = col; ctx.strokeText(t, x, y); ctx.fillText(t, x, y);
   ctx.restore();
 }
+let lastBossTickSec = 0;
 function bossFail(reason) {
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
@@ -807,7 +820,7 @@ function openStockedRebirthChest(rarity, mult = 1) {
   renderArtifactList(); updateStatsUI(); saveGame();
   rebirthTrayPausedPhase = phase; phase = 'paused'; rebirthChestFromTray = true;
   toastIcon.style.display = 'block';
-  toastIcon.innerHTML = xi({ common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' }[pick.rarity] || 'x_chest1');
+  toastIcon.innerHTML = xi(CHEST_ICON[pick.rarity] || 'x_chest1');
   toastIcon.className = 'artifact-icon chest-shake';
   toast.classList.add('rebirth-reward');
   toast.style.removeProperty('--chest-glow');
@@ -818,7 +831,7 @@ function openStockedRebirthChest(rarity, mult = 1) {
   rebirthSkippable = false;
   clearTimeout(rebirthTimer);
   rebirthChest = { pick, rebirthGemGain: 0, mult };
-  rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
+  rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' || pick.rarity === 'mythic' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
 const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 1100;
 const REBIRTH_LEGEND_LOCK_MS = 3000; // レジェンドが出たら、この間は結果画面を閉じられない
@@ -848,7 +861,7 @@ function openRebirthChest() {
   void toastIcon.offsetWidth;
   toastIcon.style.transition = 'translate 0.9s cubic-bezier(.2,.8,.3,1)'; toastIcon.style.translate = '0px 0px'; // せり上がって定位置へ
   playChestOpenSound(); setTimeout(() => playGachaSound(pick.rarity), 260); // 宝箱が開く「ガチャッ…パカッ」→ レア度の音
-  rebirthSkippable = pick.rarity !== 'legendary';
+  rebirthSkippable = pick.rarity !== 'legendary' && pick.rarity !== 'mythic';
   if (!rebirthSkippable) setTimeout(() => { rebirthSkippable = true; }, REBIRTH_LEGEND_LOCK_MS); // レジェンドはしばらく余韻を味わえるよう、タップで閉じられない
   rebirthTimer = setTimeout(finishRebirth, 6500);
 }

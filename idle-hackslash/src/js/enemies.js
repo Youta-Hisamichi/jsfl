@@ -893,7 +893,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   const x = o.x, y = o.y - 10, r = Math.random();
   const coinsFor = m => Math.round(getEnemyStats(game.stage).hp * m + 10);
   if (o.kind === 'crate') { // 超たまに激レア宝箱、たまにコイン、たいていはスカ
-    if (r < 0.03) { spawnDamageText(x, y, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
+    if (r < 0.04) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
     else if (r < 0.3) { const c = coinsFor(0.6); game.coins += c; spawnDamageText(x, y, '+' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
     else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'barrel') { // 樽：コインが出やすい
@@ -906,8 +906,8 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
     if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
-    const rar = r < 0.3 ? 'legendary' : 'epic';
-    spawnDamageText(x, y, rar === 'legendary' ? '🌈 激レア宝箱！！' : '📦 レア宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rar);
+    const rar = rollChestRarity(6, 'rare'); // 魔導コンテナは良い宝箱が出やすい
+    spawnDamageText(x, y, `📦 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.012, true); dropTreasureChest(rar);
   }
   updateStatsUI();
 }
@@ -1014,7 +1014,7 @@ function obstacleBounce(ball) {
         o.broken = true;
         shatterObstacle(o, 18, o.sprite === 'magmaRock' ? ['#3a2a2a', '#ff6a2a'] : o.sprite === 'mossRock' ? ['#7d8a6c', '#5a8a3a'] : ['#8d867b', '#5d574f']);
         thump(80, 30, 0.4, 0.45); playNoiseBurst(0.35, 0.3); shakeScreenLight();
-        let r = Math.random() * 100; const rar = ['rare', 'epic', 'legendary'].find((k, i) => (r -= [55, 35, 10][i]) < 0) || 'rare';
+        const rar = rollChestRarity(3, 'rare'); // 岩は苦労して砕くので良い宝箱が出やすい
         spawnDamageText(o.x, o.y - 14, '🪨💥 岩が砕けた！ 宝箱！', '#ffd76b', 0.012, true);
         dropTreasureChest(rar);
       }
@@ -1028,8 +1028,7 @@ function openQBox(o) {
   o.used = true; o.popAt = Date.now();
   playTone(988, 0.07, 'square', 0.08); setTimeout(() => playTone(1319, 0.2, 'square', 0.08), 70); // ピコーン
   const r = Math.random(), x = o.x, y = o.y - o.r - 10;
-  if (r < 0.05) { spawnDamageText(x, y, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
-  else if (r < 0.2) { spawnDamageText(x, y, '🎁 宝箱！', '#7fd6ff', 0.016, true); dropTreasureChest('rare'); }
+  if (r < 0.2) { const rar = rollChestRarity(2); spawnDamageText(x, y, `🎁 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
   else if (r < 0.55) { const coins = Math.round(getEnemyStats(game.stage).hp * 1.2 + 20); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
   else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
   else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${h}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
