@@ -567,7 +567,7 @@ function endDeathFx() {
 }
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
-const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
+const AUTO_BOSS_RETRY_LOOPS = 10; // ループを10周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
