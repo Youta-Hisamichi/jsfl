@@ -1729,6 +1729,7 @@ function openChestBatchDialog(rarity) {
       const before = game.coins, loot = openTreasureChest(rarity, mult, true);
       results.push(loot.art ? { art: loot.art, n: mult } : { coins: game.coins - before });
     }
+    if (!Array.isArray(game.rebirthChests)) game.rebirthChests = []; // 新しいセーブでは未作成
     for (let i = game.rebirthChests.length - 1; i >= 0; i--) { // 転生ガチャの宝箱（中身は抽選済みの遺物）
       const a = ARTIFACT_BY_ID[game.rebirthChests[i]]; if (!a || a.rarity !== rarity) continue;
       game.rebirthChests.splice(i, 1);
@@ -1755,6 +1756,7 @@ function openChestBatchDialog(rarity) {
       return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div></div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
+    { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? g.art.rarity : 'coin')); } // カードが並ぶのに合わせてポンポン
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁'; // 開けた宝箱（そのレア度の宝箱の絵）
     document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;

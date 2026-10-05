@@ -802,6 +802,17 @@ function playContinueTick(n) {
   if (urgent) hit(140, f * 1.26, 0.08); // 終盤は「ポポーン」と2連打で焦らせる
   thump(160, 55, 0.18, urgent ? 0.22 : 0.16);
 }
+// 宝箱の中身が並ぶときの「ポンポン」連鎖音：カードが出るたびに少しずつ高くなる。レア度が高いカードはキラッと重ねる
+function playLootPopChain(rarities, stepMs = 60) {
+  if (!audioCtx) return;
+  const scale = [523.3, 587.3, 659.3, 784, 880, 1046.5, 1174.7, 1318.5, 1568, 1760, 2093];
+  rarities.slice(0, 21).forEach((rar, i) => setTimeout(() => {
+    const f = scale[Math.min(scale.length - 1, i % 11)] * (i >= 11 ? 1.5 : 1);
+    playTone(f, 0.09, 'square', 0.06, f * 1.5); // ポン
+    playTone(f / 2, 0.07, 'triangle', 0.05);
+    if (rar === 'epic' || rar === 'legendary' || rar === 'mythic') setTimeout(() => playTone(f * 2, rar === 'mythic' ? 0.35 : 0.22, 'triangle', 0.06, f * 3), 40); // キラッ
+  }, i * stepMs));
+}
 // 震える障害物にぶつかったときの「ブルン」：低い音をビブラートで揺らしながら少し下げる（amt 0〜1 で大きさ）
 function playWobbleSound(amt = 1) {
   if (!audioCtx || isBattleSfxMuted()) return;
