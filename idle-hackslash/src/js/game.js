@@ -616,7 +616,7 @@ function bossDefeated(reason) {
   document.getElementById('bossContAdBtn').innerHTML = (isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー') + '<br><small>1回まで</small>';
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
-  bossContModal.classList.add('show');
+  bossContModal.classList.add('show'); refreshBgm();
   startBossContCountdown();
 }
 // 2回目の敗北（コンテニュー済み）：同じ画面で「◯階に戻って鍛え直します」と数秒見せてから自動で戻す
@@ -650,7 +650,7 @@ function startBossContCountdown() {
 }
 function bossContinue() {
   clearInterval(bossContTimer);
-  bossContModal.classList.remove('show');
+  bossContModal.classList.remove('show'); refreshBgm();
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (boss) boss.continued = true;
   const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = null; }
@@ -666,7 +666,7 @@ document.getElementById('bossContAdBtn').addEventListener('click', () => {
 document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   if (!bossContModal.classList.contains('show')) return;
   clearInterval(bossContTimer);
-  bossContModal.classList.remove('show'); phase = 'battle';
+  bossContModal.classList.remove('show'); phase = 'battle'; refreshBgm();
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r, true); // 悲鳴は敗北時に1回鳴らしているので、ここでは鳴らさない
 });
 // ボス戦のリタイヤ：その場で負けを認めて前の階ループへ（コンテニュー画面は出さない）

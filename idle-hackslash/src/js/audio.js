@@ -61,6 +61,15 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks ks ks ks',
   },
+  continue: { // ボス戦のコンテニュー画面：レトロなゲーセンのコンテニュー待ちのような、焦りをあおる短調の疾走曲（ハ短調・BPM150）
+    bpm: 150,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.024, notes: 'C5 = D#5 G5 C6 = G5 D#5 | C6 = = G#5 D#5 = C5 = | D6 = A#5 F5 D5 = F5 A#5 | B5 = = = D6 = G5 = | G5 C6 D#6 = D6 C6 G5 = | G#5 = C6 = D#6 = D6 C6 | C6 = G#5 F5 C5 = F5 G#5 | B5 = D6 = G6 = = =' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'C4 G4 D#4 G4 C4 G4 D#4 G4 | G#3 D#4 C4 D#4 G#3 D#4 C4 D#4 | A#3 F4 D4 F4 A#3 F4 D4 F4 | G3 D4 B3 D4 G3 D4 B3 D4 | C4 G4 D#4 G4 C4 G4 D#4 G4 | G#3 D#4 C4 D#4 G#3 D#4 C4 D#4 | F3 C4 G#3 C4 F3 C4 G#3 C4 | G3 D4 B3 D4 G3 D4 B3 D4' },
+      { type: 'vrc6saw', gain: 0.04, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2' },
+    ],
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+  },
   gameover: {
     bpm: 126,
     tracks: [
@@ -543,6 +552,7 @@ const BGM_INFO = [
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
+  { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
 let gameOverBgm = false;      // コンテニュー確認中
@@ -590,7 +600,8 @@ function updateSkipBtnVisibility() {
 function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
-  if (document.getElementById('creditsModal').classList.contains('show') || settingsModal.classList.contains('show')) type = 'settings'; // 設定画面・スタッフロール中（スタッフロールも設定画面の曲）
+  if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
+  else if (document.getElementById('creditsModal').classList.contains('show') || settingsModal.classList.contains('show')) type = 'settings'; // 設定画面・スタッフロール中（スタッフロールも設定画面の曲）
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
