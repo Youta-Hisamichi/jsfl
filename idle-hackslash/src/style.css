@@ -1338,3 +1338,17 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .af-card.not-owned .af-name, .af-card.not-owned .af-desc { opacity: 0.9; }
 .af-card.not-owned .af-icon .ico-img { filter: brightness(0) opacity(0.55); }
 .af-card:not(.not-owned) .af-stars, .evo-card:not(.unowned) .evo-stars { text-shadow: 0 0 2px #3a2a14, 0 0 1px #3a2a14; }
+/* 戦績ページ：UI素材（記録表＝羊皮紙、図鑑カード＝羊皮紙／未発見は鋼鉄、BGM図鑑＝羊皮紙プレート、ボタン＝青・金） */
+.tab-page[data-tab="records"] .settings-row .modal-shop-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #fff; padding: 2px 8px; text-shadow: 0 1px 0 #0a2a6a; }
+.record-panel { border: 14px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 14px stretch; background: none; border-radius: 0; gap: 0; }
+.record-panel .record { background: none; color: #5a4828; border-bottom: 1px solid rgba(90,72,40,0.25); --text: #3a2a14; --text-dim: #5a4828; }
+.record-panel .record strong { color: #3a2a14; }
+.share-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #fff; padding: 0 10px; text-shadow: 0 1px 0 #0a2a6a; }
+.bst-card { border: 9px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 16 fill / 9px stretch; background: none; border-radius: 0; padding: 0 2px; color: #3a2a14; --text: #3a2a14; --text-dim: #5a4828; }
+.bst-card.boss { box-shadow: none; filter: drop-shadow(0 0 4px #ba6cff); }
+.bst-card.unknown { border-image-source: url(assets/img/ui/skin/panel_steel.webp); opacity: 0.85; color: #e8eaf0; --text: #e8eaf0; --text-dim: #d0d4de; }
+.bgm-book-row { border: 9px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 9px stretch; background: none; border-radius: 0; padding: 0 2px; color: #3a2a14; --text: #3a2a14; --text-dim: #5a4828; }
+.bgm-book-row.locked { border-image-source: url(assets/img/ui/skin/plate_dark.webp); color: #e8eaf0; --text: #e8eaf0; --text-dim: #b8bccc; opacity: 0.9; }
+.bgm-book-row.playing { box-shadow: none; filter: drop-shadow(0 0 5px #ffd76b); }
+.bgm-book-row .bb-play { border: 7px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 7px stretch; background: none; border-radius: 0; color: #2a1a00; width: 44px; height: 36px; }
+.bgm-book-row.playing .bb-play { border-image-source: url(assets/img/ui/skin/btn_green.webp); background: none; color: #fff; }
