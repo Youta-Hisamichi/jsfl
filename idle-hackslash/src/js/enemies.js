@@ -820,10 +820,16 @@ function drawNatureSprite(o) {
 // 卵の見た目（13種×ひびの段階5枚）。床に合う色が出やすい
 const EGG_SKINS = ['white', 'brown', 'leaf', 'water', 'fire', 'dark', 'ice', 'obsidian', 'gold', 'amethyst', 'rainbow', 'moss', 'skull'];
 EGG_SKINS.forEach(k => { for (let i = 0; i < 5; i++) { const img = new Image(); img.src = `assets/img/obstacles/eggs/egg_${k}_${i}.webp`; OBSTACLE_IMGS[`egg_${k}_${i}`] = img; } });
-const EGG_SKIN_BY_FLOOR = { lawn: ['white', 'brown', 'leaf'], dirt: ['brown', 'leaf', 'moss'], desert: ['fire', 'gold', 'brown'], mossStone: ['moss', 'leaf'], town: ['white', 'gold'], snow: ['ice', 'water'], market: ['gold', 'rainbow', 'white'], woodFloor: ['water', 'brown'], ruins: ['moss', 'skull', 'amethyst'], tower: ['dark', 'amethyst', 'obsidian'], sea: ['water'], dungeon: ['skull', 'obsidian', 'fire'], dungeon2: ['dark', 'skull'], dryCrack: ['fire', 'obsidian'], mystic: ['rainbow', 'amethyst'] };
-function pickEggSkin(floorKey, rnd) {
-  const list = rnd() < 0.15 ? EGG_SKINS : (EGG_SKIN_BY_FLOOR[floorKey] || EGG_SKINS); // たまに珍しい色
-  return list[Math.floor(rnd() * list.length)];
+// 卵の中身は置いた時点で決まり、柄でわかる：宝箱の卵はレア度ごとの柄、やばい敵が入った卵は禍々しい柄
+const EGG_SKIN_BY_RARITY = { common: ['white', 'brown', 'moss'], rare: ['leaf', 'water', 'ice'], epic: ['fire', 'amethyst'], legendary: ['gold'], mythic: ['rainbow'] };
+const EGG_MONSTER_SKINS = ['skull', 'dark', 'obsidian'];
+const EGG_MONSTER_RATE = 0.7;
+function setupEggContents(o, rnd = Math.random) {
+  o.eggMonsterInside = rnd() < EGG_MONSTER_RATE;
+  if (o.eggMonsterInside) { o.eggSkin = EGG_MONSTER_SKINS[Math.floor(rnd() * EGG_MONSTER_SKINS.length)]; return; }
+  o.eggRarity = rollChestRarity();
+  const list = EGG_SKIN_BY_RARITY[o.eggRarity] || EGG_SKIN_BY_RARITY.common;
+  o.eggSkin = list[Math.floor(rnd() * list.length)];
 }
 const ORB_COLORS = ['pink', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'violet', 'black', 'silver', 'gold', 'rainbow', 'crystal', 'galaxy'];
 const SPIKE_SPRITES = ['spikeBall', 'saw', 'gear', 'spikeLog', 'spikePillar'];
@@ -923,7 +929,7 @@ function setupObstacles(dropDebug) {
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
     }
-    else if (kind === 'egg') o.eggSkin = pickEggSkin(floorKey, rnd);
+    else if (kind === 'egg') setupEggContents(o, rnd);
     else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
     else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
     if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8; // 当たり判定は幹・柱の根元
@@ -1105,7 +1111,7 @@ function obstacleBounce(ball) {
       spawnHitParticles(o.x, o.y, BREAKABLES[o.kind].cols[0]);
       if (egg || glassy) { thump(900, 600, 0.06, 0.08, 'triangle'); filteredNoise(0, 0.05, 0.2, 3000, 2); } // ピキッ
       else { thump(160, 90, 0.12, 0.12, 'triangle'); filteredNoise(0, 0.08, 0.15, 900, 1.2); }
-      if (o.hp <= 0 && egg) { hatchEgg(o); }
+      if (o.hp <= 0 && egg) { hatchEgg(o, !ball.isPlayer); } // 敵に割られたらアイテムは出ない
       else if (o.hp <= 0) {
         o.broken = true;
         shatterObstacle(o, 14, BREAKABLES[o.kind].cols);
@@ -1144,7 +1150,7 @@ function openQBox(o) {
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }
 function smashObstacle(o) { // 激デカボスに踏みつぶされて粉々になる
-  if (o.kind === 'egg') { hatchEgg(o); return; }
+  if (o.kind === 'egg') { hatchEgg(o, true); return; }
   if (o.kind === 'bomb') { explodeBomb(o); return; }
   o.broken = true;
   const cols = BREAKABLES[o.kind] ? BREAKABLES[o.kind].cols : o.kind === 'bumper' ? ['#ff5cb8', '#ffd2f0'] : o.kind === 'slime' ? ['#4fd35a', '#a8f0a0'] : ['#8d867b', '#5d574f'];
@@ -1153,12 +1159,17 @@ function smashObstacle(o) { // 激デカボスに踏みつぶされて粉々に�
   thump(90, 35, 0.4, 0.5); playNoiseBurst(0.35, 0.3); shakeScreen();
 }
 // 卵が割れる：たいていはやばい敵が飛び出す（倒すまで次のステージに進めない）。たまに宝箱
-function hatchEgg(o) {
+function hatchEgg(o, byEnemy = false) {
   o.broken = true;
   for (let i = 0; i < 12; i++) { const a2 = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3.5; crateShards.push({ x: o.x, y: o.y, vx: Math.cos(a2) * sp, vy: Math.sin(a2) * sp - 2, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5, w: 4 + Math.random() * 6, h: 3 + Math.random() * 4, life: 1, col: Math.random() < 0.5 ? '#fff4d8' : '#e8d8b0' }); }
   thump(700, 300, 0.12, 0.15, 'square'); playNoiseBurst(0.2, 0.18);
   const main = balls.find(b => !b.isPlayer && !b.isDying);
-  if (Math.random() < 0.3 || !main) { spawnDamageText(o.x, o.y - 14, '🥚 中から宝箱！', '#ffd76b', 0.016, true); dropTreasureChest(); return; }
+  if (!o.eggSkin) setupEggContents(o);
+  if (!o.eggMonsterInside || !main) {
+    if (byEnemy) { spawnDamageText(o.x, o.y - 14, '🥚 敵に割られた…', '#9aa0b4', 0.016, true); playTone(220, 0.18, 'triangle', 0.06, 150); return; } // 敵が割ったときはアイテムなし
+    const rar = o.eggRarity || 'common';
+    spawnDamageText(o.x, o.y - 14, `🥚 中から${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); return;
+  }
   const m = makeAddEnemy(main);
   m.emoji = EGG_MONSTERS[Math.floor(Math.random() * EGG_MONSTERS.length)]; m.shape = 'emoji';
   m.x = o.x; m.y = o.y; m.radius = 19;
@@ -1242,7 +1253,7 @@ function drawObstacles() {
     } else if (o.kind === 'egg') { // 卵（ひびが増え、割れそうになると震える）
       const wob = o.hp <= 1 ? Math.sin(now / 40) * 0.12 : now - (o.shakeAt || 0) < 200 ? Math.sin(now / 25) * 0.15 : 0;
       ctx.translate(o.x, o.y + o.r * 0.9); ctx.rotate(wob); ctx.translate(-o.x, -(o.y + o.r * 0.9));
-      const skin = o.eggSkin || (o.eggSkin = EGG_SKINS[Math.floor(o.seed * EGG_SKINS.length)]), stage = Math.max(0, Math.min(4, Math.round((EGG_HP - o.hp) / EGG_HP * 4)));
+      const skin = o.eggSkin || (setupEggContents(o), o.eggSkin), stage = Math.max(0, Math.min(4, Math.round((EGG_HP - o.hp) / EGG_HP * 4)));
       const eimg = OBSTACLE_IMGS[`egg_${skin}_${stage}`];
       if (eimg && eimg.complete && eimg.naturalWidth) { const h = o.r * 2.3, w = h * eimg.naturalWidth / eimg.naturalHeight; ctx.drawImage(eimg, o.x - w / 2, o.y + o.r * 0.95 - h, w, h); } // 画像があればひびの段階ごとの絵
       else {
