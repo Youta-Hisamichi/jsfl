@@ -911,7 +911,7 @@ upgradeList.addEventListener('click', event => {
     refreshPlayerBallStats(false);
     playUpgradeSound();
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
-    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${count}Lv`);
+    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${count}Lv` + leapPopLine(fromLv, game.upgrades[id]));
     updateStatsUI();
     updateHPUI();
     return;
@@ -957,6 +957,8 @@ setInterval(() => {
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
 }, 1500);
+// レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
+function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
 // 強化の飛躍（10/100/1000Lv到達）を演出
 function announceUpgradeLeap(id, from, to) {
   const leap = crossedUpgradeLeap(from, to);
@@ -985,7 +987,7 @@ function levelUpUpgrade(id, x, y) {
   announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
-  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${game.upgrades[id]}`);
+  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${game.upgrades[id]}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
   updateStatsUI();
   updateHPUI();
   return true;
