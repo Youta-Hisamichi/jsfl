@@ -1250,6 +1250,28 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
   startFlyout(enemy);
 }
 
+// 自キャラと仲間の衝突：ふだんは押し合うだけ。タックル中にぶつかると仲間を弾き飛ばし、その仲間が敵に当たると大ダメージ
+const ALLY_LAUNCH_MS = 1400, ALLY_LAUNCH_DMG_MULT = 4;
+function resolveAllyCollisions() {
+  const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
+  const now = Date.now(), tackling = rushingNow || (holdRush && holdRush.shot && now < holdRush.until);
+  for (const c of balls) {
+    if (!c.isCompanion || c.hp <= 0) continue;
+    const dx = c.x - pl.x, dy = c.y - pl.y, d = Math.hypot(dx, dy) || 1, min = (pl.radius + c.radius) * 0.85;
+    if (d >= min) continue;
+    const nx = dx / d, ny = dy / d, push = (min - d) / 2;
+    pl.x -= nx * push; pl.y -= ny * push; c.x += nx * push; c.y += ny * push;
+    if (tackling && !(c.launchUntil > now)) {
+      const sp = Math.max(10, Math.hypot(pl.vx, pl.vy) * 1.3);
+      c.vx = nx * sp; c.vy = ny * sp; c.launchUntil = now + ALLY_LAUNCH_MS; c.hitCooldown = 0;
+      spawnDamageText(c.x, c.y - c.radius - 14, '仲間シュート！', '#ffe066', 0.025, true);
+      spawnHitParticles(c.x, c.y, '#ffe066'); thump(500, 1200, 0.12, 0.1, 'square'); thump(160, 80, 0.15, 0.15);
+    } else if (!(c.launchUntil > now)) { // 軽くぶつかっただけなら互いに少し跳ね返る
+      const rv = (c.vx - pl.vx) * nx + (c.vy - pl.vy) * ny;
+      if (rv < 0) { c.vx -= rv * nx; c.vy -= rv * ny; }
+    }
+  }
+}
 function movePlayerSideBalls(list, speedMult, b) {
   const moveCtxPlayer = balls.find(x => isMainPlayerBall(x));
   const moveCtxEnemy = balls.find(x => !x.isPlayer && !x.isDying);
@@ -1267,6 +1289,14 @@ function movePlayerSideBalls(list, speedMult, b) {
     if (ball.dashing) { // 突進中はまっすぐ高速で進む
       ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
       wallBounce(ball);
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
+    if (ball.isCompanion && ball.launchUntil > Date.now()) { // 自キャラのタックルで弾き飛ばされた仲間はまっすぐ飛ぶ
+      ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
+      ball.vx *= 0.985; ball.vy *= 0.985;
+      wallBounce(ball);
+      if (Math.random() < 0.5) spawnHitParticles(ball.x, ball.y, '#ffe066');
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }

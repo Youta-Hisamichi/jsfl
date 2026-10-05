@@ -30,6 +30,7 @@ function step() {
     const swarmLeft = adds.filter(ad => ad.hp > 0 && (swarm || ad.isSplit)).length;
     if (swarmLeft > 0) {
       movePlayerSideBalls([...balls, ...adds], speedMult, b);
+  resolveAllyCollisions();
       if (!e.swarmNotified) { e.swarmNotified = true; showNotice(`残りの敵を全部倒せ！（あと ${swarmLeft} 体）`); }
       processAdds(a);
       return;
@@ -212,13 +213,18 @@ function step() {
           if (cid === 'lumber' && Math.random() < 0.25) { hitMult = 2; hitLabel = '大振り！'; }
           if (cid === 'lancer' && e.isBoss) hitMult = 1.5;
           if (cid === 'samurai' && Math.random() < 0.25) { hitMult = 3; hitLabel = '居合・一閃！'; }
-          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult * dashDmgMult(comp))), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
+          const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult * dashDmgMult(comp) * (comp.launchUntil > Date.now() ? ALLY_LAUNCH_DMG_MULT : 1))), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
           if (hitLabel) spawnDamageText(e.x, e.y - e.radius - 30, hitLabel, COMPANION_COLORS[cid], 0.02);
           e.hp -= dmg;
           trackDamage(dmg);
           spawnHitParticles(comp.x, comp.y, comp.color);
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
           onPlayerHitEnemy(e, dmg);
+          if (comp.launchUntil > Date.now()) { // 弾き飛ばされた仲間が直撃
+            comp.launchUntil = 0; e.vx += comp.vx * 0.6; e.vy += comp.vy * 0.6;
+            spawnDamageText(e.x, e.y - e.radius - 40, `💥 仲間シュート直撃！×${ALLY_LAUNCH_DMG_MULT}`, '#ffe066', 0.014, true);
+            shakeScreenLight(); thump(90, 40, 0.35, 0.4);
+          }
           playEnemyHitSound();
           if (cid === 'knight') {
             applyHitKnockback(e, comp, 7);
@@ -439,11 +445,14 @@ function renderStatModal() {
 document.getElementById('statHelpBtn').addEventListener('click', () => {
   renderStatModal();
   statModal.classList.add('show');
+  statPausedPhase = phase === 'battle' ? 'battle' : null; if (statPausedPhase) phase = 'paused'; // 見ている間はゲームを一時停止
   clearInterval(statModalTimer);
   statModalTimer = setInterval(() => { if (statModal.classList.contains('show')) renderStatModal(); else clearInterval(statModalTimer); }, 500);
 });
-document.getElementById('statModalCloseBtn').addEventListener('click', () => { statModal.classList.remove('show'); clearInterval(statModalTimer); });
-statModal.addEventListener('click', event => { if (event.target === statModal) { statModal.classList.remove('show'); clearInterval(statModalTimer); } });
+function closeStatModal() { statModal.classList.remove('show'); clearInterval(statModalTimer); if (statPausedPhase && phase === 'paused') phase = statPausedPhase; statPausedPhase = null; }
+let statPausedPhase = null;
+document.getElementById('statModalCloseBtn').addEventListener('click', closeStatModal);
+statModal.addEventListener('click', event => { if (event.target === statModal) closeStatModal(); });
 
 function onStageClear() {
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
@@ -571,7 +580,7 @@ function tickBossTimer() {
   bossTimeLeftMs -= Math.min(100, now - bossTimerLastAt); bossTimerLastAt = now; // 一時停止中やタブ切り替え中は進まない
   if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossFail('time'); }
 }
-function drawBossTimer() { // 小数点つきのカウントダウン。残りが少ないほど色が変わり、脈打ち、震えて焦らせる
+function drawBossTimer() { // カウントダウン。残りが少ないほど色が変わり、脈打ち、震えて焦らせる
   if (!bossTimerFor || !isBossFight() || filmMode) return;
   const s = Math.max(0, bossTimeLeftMs / 1000), now = Date.now();
   const lv = s < 5 ? 3 : s < 10 ? 2 : s < 15 ? 1 : 0;
@@ -589,7 +598,7 @@ function drawBossTimer() { // 小数点つきのカウントダウン。残り�
   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   ctx.font = `900 ${Math.round(size)}px sans-serif`; ctx.lineWidth = 4 + lv; ctx.strokeStyle = 'rgba(0,0,0,0.75)';
   if (lv >= 2) { ctx.shadowColor = col; ctx.shadowBlur = 10 + beat * 12; }
-  const t = `⏱ ${s.toFixed(1)}`;
+  const t = `⏱ ${Math.ceil(s)}`; // 整数で表示（残り0.1秒でも「1」）
   ctx.fillStyle = col; ctx.strokeText(t, x, y); ctx.fillText(t, x, y);
   ctx.restore();
 }
