@@ -512,7 +512,7 @@ document.getElementById('creditsBtn').addEventListener('click', () => {
   const roll = document.getElementById('creditsRoll');
   roll.innerHTML = `<div class="cr-title">${GAME_TITLE}</div><div class="cr-role">STAFF</div>`
     + CREDITS.map(([role, name]) => `<div class="cr-role">${role}</div><div class="cr-name">${name}</div>`).join('')
-    + `<div class="cr-end">Thank you for playing!</div><div class="cr-role">© ${new Date().getFullYear()} ${DEVELOPER_NAME}</div>`;
+    + `<div class="cr-end">Thank you for playing!</div><img class="cr-logo" src="assets/img/ui/hisashiApp.webp" alt=""><div class="cr-role">© ${new Date().getFullYear()} ${DEVELOPER_NAME}</div>`;
   roll.style.animation = 'none'; void roll.offsetWidth; roll.style.animation = '';
   creditsModal.classList.add('show');
   ensureAudio(); refreshBgm();

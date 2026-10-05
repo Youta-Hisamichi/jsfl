@@ -1294,3 +1294,9 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .shop-btn:not(.gb-btn):not(.sub-btn) .cost { color: #0d4f8a; }
 .shop-btn:not(.gb-btn):not(.sub-btn).is-disabled, .shop-btn:not(.gb-btn):not(.sub-btn):disabled { opacity: 0.85; }
 .shop-btn:not(.gb-btn):not(.sub-btn).is-disabled .item-icon, .shop-btn:not(.gb-btn):not(.sub-btn):disabled .item-icon { filter: grayscale(0.6); opacity: 0.7; }
+
+/* 開発者（ひさしApp）のアイコン */
+.dev-id { display: flex; align-items: center; gap: 10px; margin: 4px 0 8px; font-weight: 900; font-size: 1rem; }
+.dev-id img { width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 0 0 2px #ffd76b, 0 2px 6px rgba(0,0,0,0.35); }
+.dev-id small { display: block; font-size: 0.66rem; font-weight: 700; opacity: 0.7; }
+.cr-logo { display: block; width: 96px; height: 96px; margin: 18px auto 6px; border-radius: 50%; box-shadow: 0 0 0 3px #ffd76b, 0 0 18px rgba(255,215,107,0.6); }
