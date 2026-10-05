@@ -501,8 +501,12 @@ function onStageClear() {
     showNotice('🔁 自動でボスに再挑戦！');
   }
   game.bestStage = Math.max(game.bestStage, game.stage);
-  stageAnnounceText = game.stage + '階' + (game.bossLoop && game.stage === game.bossLoop - 1 ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
-  stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+  const stillLooping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
+  loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
+  if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
+    stageAnnounceText = game.stage + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
+    stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+  }
   meteors = []; adds = []; clearEnemyTraitObjects();
   for (const id in COMPANIONS) {
     if (game.companions.recruited[id]) {
@@ -567,6 +571,7 @@ function endDeathFx() {
 }
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
+let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引く）
 const AUTO_BOSS_RETRY_LOOPS = 10; // ループを10周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
@@ -693,7 +698,7 @@ function bossFail(reason, silent) {
   if (!silent) playDeathSound();
   spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : reason === 'retire' ? '🏳 リタイヤ' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
   showNotice(reason === 'retire' ? `🏳 ${bossStage}階のボス戦をリタイヤ。${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
-  stageAnnounceText = game.stage + '階 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+  stageAnnounceText = game.stage + '階 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION; loopAnnounceCount = 0;
   startBgm('normal');
   updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
 }
