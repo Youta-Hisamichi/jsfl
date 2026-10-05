@@ -488,6 +488,8 @@ function onStageClear() {
   ensureDailyClearReset();
   game.dailyClears++;
   resetCombo();
+  const wasTower = !!game.skipChallenge;
+  const easyBossKill = isBossStage && !game.bossLoop && bossTimeLeftMs >= BOSS_TIME_LIMIT_MS - TOWER_SUGGEST_FAST_KILL_MS; // ボスをあっさり倒した
   if (game.skipChallenge) {
     showNotice(`🏰 試練の塔 突破！ ${game.stage}階 のボスを撃破`);
     const skipped = game.skipChallenge.target - game.skipChallenge.origin;
@@ -504,7 +506,7 @@ function onStageClear() {
   game.bestStage = Math.max(game.bestStage, game.stage);
   const stillLooping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
-  if (!stillLooping && !game.skipChallenge) setTimeout(maybeSuggestTower, 1600); // 強すぎるなら試練の塔をおすすめ
+  if (easyBossKill && !wasTower && !stillLooping && Math.random() < TOWER_SUGGEST_CHANCE) setTimeout(maybeSuggestTower, 2200); // ボスをあっさり倒した直後に、たまに試練の塔をおすすめ
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
     stageAnnounceText = game.stage + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
@@ -1032,7 +1034,9 @@ function getCustomSkipCost(distance) {
 }
 // 雑魚道中で今の階より明らかに強いとき、試練の塔でのジャンプをおすすめする
 const TOWER_SUGGEST_MIN_JUMP = 30; // これより近いボスならおすすめしない
-const TOWER_SUGGEST_COOLDOWN_STAGES = 15; // 一度出したら、この階数進むまで出さない
+const TOWER_SUGGEST_COOLDOWN_STAGES = 40; // 一度出したら、この階数進むまで出さない
+const TOWER_SUGGEST_FAST_KILL_MS = 10000; // ボスを10秒以内に倒したら「あっさり」
+const TOWER_SUGGEST_CHANCE = 0.35; // そのうち出すのは35%
 let towerSuggestTarget = 0;
 function findRecommendedTowerStage() {
   const p = balls.find(isMainPlayerBall); if (!p) return 0;
