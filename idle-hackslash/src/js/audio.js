@@ -276,15 +276,15 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks',
   },
-  coinshop: { // スキル画面：迷宮RPGの拠点の街のような温かく優雅な旋律に、音ゲー風の4つ打ちとオクターブベース（ニ長調・BPM128）
-    bpm: 128,
+  coinshop: { // スキル画面：アクションRPGの穏やかな街のような、笛の旋律が6/8拍子でのどかに揺れる曲（ヘ長調・1小節6ステップ）
+    bpm: 132,
+    echo: { time: 0.34, feedback: 0.25, wet: 0.22 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.026, notes: 'A5 = F#5 A5 D6 = C#6 B5 | B5 = = F#5 D5 = F#5 B5 | G5 = B5 D6 E6 D6 B5 G5 | A5 = = = C#6 = E6 = | F#6 = E6 C#6 A5 = F#5 = | D6 = C#6 B5 F#5 = D5 F#5 | E5 G5 B5 E6 D6 = B5 G5 | A5 = C#6 E6 A5 = = =' },
-      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4 F#4 A4 D5 A4 F#4 D4 F#4 | B3 D4 F#4 B4 F#4 D4 B3 D4 | G3 B3 D4 G4 D4 B3 G3 B3 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | F#3 A3 C#4 F#4 C#4 A3 F#3 A3 | B3 D4 F#4 B4 F#4 D4 B3 D4 | E4 G4 B4 E5 B4 G4 E4 G4 | A3 C#4 E4 A4 E4 C#4 A3 C#4' },
-      { type: 'vrc6saw', gain: 0.04, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | F#1 F#2 F#1 F#2 F#1 F#2 F#1 F#2 | B1 B2 B1 B2 B1 B2 B1 B2 | E2 E3 E2 E3 E2 E3 E2 E3 | A1 A2 A1 A2 A1 A2 A1 A2' },
+      { type: 'vrc6pulse25', gain: 0.025, notes: 'C5 = F5 A5 = G5 | F5 = = D5 = = | D5 = F5 A#5 = A5 | G5 = = E5 = C5 | F5 = A5 C6 = A#5 | A5 = = E5 = = | G5 = A#5 D6 = C6 | C6 = = = = -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'F3 C4 F4 A4 F4 C4 | D3 A3 D4 F4 D4 A3 | A#2 F3 A#3 D4 A#3 F3 | C3 G3 C4 E4 C4 G3 | F3 C4 F4 A4 F4 C4 | A2 E3 A3 C4 A3 E3 | G2 D3 G3 A#3 G3 D3 | C3 G3 C4 E4 C4 G3' },
+      { type: 'triangle', gain: 0.06, notes: 'F1 = = C2 = = | D2 = = A1 = = | A#1 = = F1 = = | C2 = = G1 = = | F1 = = C2 = = | A1 = = E2 = = | G1 = = D2 = = | C2 = = G1 = =' },
     ],
-    drums: 'k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h ks ks ks ks',
-    kickBoost: 1.2,
+    drums: 'k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s s s',
   },
 
 
@@ -544,7 +544,7 @@ const BGM_INFO = [
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
-  { key: 'coinshop', name: 'ページ スキル 冒険者の街角', desc: '迷宮RPGの拠点の街のような温かく優雅な旋律と分散和音に、音ゲー風の4つ打ちとオクターブベースを重ねた曲。VRC6風チップチューン。ニ長調・BPM128' },
+  { key: 'coinshop', name: 'ページ スキル 風見鶏の街', desc: '笛の旋律が6/8拍子でのどかに揺れる、アクションRPGの穏やかな街のような曲。ほんのりエコー付き。VRC6風チップチューン。ヘ長調' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
   { key: 'gemshop', name: 'ページ ショップ 怪しげな行商人', desc: '和声的短音階とナポリの和音、忍び足のベースで少し怪しげな商人の店の曲。VRC6風チップチューン。ホ短調・BPM126' },
   { key: 'tower', name: 'ページ 試練の塔 螺旋の階段', desc: '刻み続ける分散和音とうねるベースの不安感に、階段を登るように上がっていく旋律の高揚感を重ねた曲。VRC6風チップチューン。イ短調・BPM140' },
