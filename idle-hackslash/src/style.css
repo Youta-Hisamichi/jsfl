@@ -1287,3 +1287,10 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .sk-card.equipped { border: 10px solid transparent; box-shadow: none; filter: drop-shadow(0 0 4px rgba(46,160,67,0.9)); }
 .shop-btn .shop-desc { color: #6a5838; }
 .shop-btn .cost { color: #1a5f9a; }
+/* 羊皮紙の上の文字は濃い色＋淡い縁取りで読みやすく（買えない商品も薄くしすぎない） */
+.shop-btn, .sk-card { text-shadow: 0 0 2px #fff6dc, 0 0 2px #fff6dc; }
+.shop-btn .shop-name { color: #2a1a06; font-weight: 900; }
+.shop-btn .shop-desc { color: #4a3818; }
+.shop-btn .cost { color: #0d4f8a; }
+.shop-btn.is-disabled, .shop-btn:disabled { opacity: 0.85; }
+.shop-btn.is-disabled .item-icon, .shop-btn:disabled .item-icon { filter: grayscale(0.6); opacity: 0.7; }
