@@ -966,7 +966,11 @@ function playDeathVoice() {
   v.noise.forEach(([d, len, fq]) => filteredNoise(0.04 + d, len, 0.25, fq, 1.5));
 }
 function playDeathSound() {
-  playDeathVoice();
+  // 悲鳴の代わりに、レトロゲームのやられ音：「ピロロロ…」と半音ずつ転げ落ちて、最後に「ポォン」と力尽きる
+  if (audioCtx && !isBattleSfxMuted()) {
+    [880, 830.6, 784, 740, 698.5, 659.3, 622.3, 587.3, 554.4, 523.3, 493.9, 466.2].forEach((f, i) => setTimeout(() => playTone(f, 0.07, 'square', 0.07, f * 0.94), 120 + i * 45));
+    setTimeout(() => playTone(196, 0.5, 'triangle', 0.14, 98), 120 + 12 * 45 + 20);
+  }
   thump(110, 28, 0.55, 0.85);                                  // 重い衝撃
   noiseSweep(0.45, 2600, 90, 'lowpass', 0.8, 0.7);              // 砕けるノイズ
   noiseSweep(0.12, 5000, 1500, 'bandpass', 1.2, 0.35);          // 打撃の破裂音
