@@ -1,4 +1,33 @@
 const ENEMY_SPRITES = {
+  b_fireDragon: 'assets/img/enemies/b_fireDragon.webp',
+  b_iceDragon: 'assets/img/enemies/b_iceDragon.webp',
+  b_golem: 'assets/img/enemies/b_golem.webp',
+  b_bloodLord: 'assets/img/enemies/b_bloodLord.webp',
+  b_seraph: 'assets/img/enemies/b_seraph.webp',
+  b_beholder: 'assets/img/enemies/b_beholder.webp',
+  b_kraken: 'assets/img/enemies/b_kraken.webp',
+  b_skullKing: 'assets/img/enemies/b_skullKing.webp',
+  b_cerberus: 'assets/img/enemies/b_cerberus.webp',
+  b_treant: 'assets/img/enemies/b_treant.webp',
+  b_siren: 'assets/img/enemies/b_siren.webp',
+  b_ogreKing: 'assets/img/enemies/b_ogreKing.webp',
+  b_darkWitch: 'assets/img/enemies/b_darkWitch.webp',
+  b_voidKnight: 'assets/img/enemies/b_voidKnight.webp',
+  b_mimic: 'assets/img/enemies/b_mimic.webp',
+  b_yukiOnna: 'assets/img/enemies/b_yukiOnna.webp',
+  b_mossGiant: 'assets/img/enemies/b_mossGiant.webp',
+  b_phoenix: 'assets/img/enemies/b_phoenix.webp',
+  b_iceQueen: 'assets/img/enemies/b_iceQueen.webp',
+  b_stormDragon: 'assets/img/enemies/b_stormDragon.webp',
+  b_voidEater: 'assets/img/enemies/b_voidEater.webp',
+  b_cursedBear: 'assets/img/enemies/b_cursedBear.webp',
+  b_libraKnight: 'assets/img/enemies/b_libraKnight.webp',
+  b_magmaGolem: 'assets/img/enemies/b_magmaGolem.webp',
+  b_crystalGolem: 'assets/img/enemies/b_crystalGolem.webp',
+  b_demonPrincess: 'assets/img/enemies/b_demonPrincess.webp',
+  b_skyWhale: 'assets/img/enemies/b_skyWhale.webp',
+  b_reaper2: 'assets/img/enemies/b_reaper2.webp',
+  b_deepOne: 'assets/img/enemies/b_deepOne.webp',
   goblinSlime: 'assets/img/enemies/goblinSlime.webp',
   witchSlime: 'assets/img/enemies/witchSlime.webp',
   vikingSlime: 'assets/img/enemies/vikingSlime.webp',
@@ -66,7 +95,7 @@ const ENEMY_SPRITES = {
 };
 const SHAPE_ENEMY_SPRITE = { spike: 'slime', slimeOrange: 'slimeOrange', slimeGreen: 'slimeGreen', slimeBlood: 'slimeBlood', slimeChibi: 'slime', slimeJumbo: 'slimeJumbo', slimeSnowman: 'slimeIce', slimeDango: 'slimeMatcha', slimeIce: 'slimeIce', slimePink: 'slimePink', slimeMatcha: 'slimeMatcha', diamond: 'flameWisp', square: 'worm' };
 const EMOJI_ENEMY_SPRITE = { '🥬': 'goblinSlime', '🧙': 'witchSlime', '🪖': 'vikingSlime', '🔪': 'knifeGoblin', '🌑': 'darkMage', '⚫': 'slimeBlack', '🩶': 'slimeGray', '🩷': 'slimePinkS', '🔷': 'slimeBlueS', '🦕': 'fatDragon', '🪙': 'slimeGold', '🟩': 'slimeGreenS', '🐟': 'fishman', '🦒': 'longSlime', '🥒': 'cucumber', '🦎': 'swordLizard', '🦀': 'crabGirl', '🥈': 'slimeSilver', '🌈': 'slimeRainbow', '🟨': 'slimeYellow', '🦋': 'blueBat', '🔥': 'fireSpirit', '💋': 'succubus', '🛡️': 'ironKnight', '🗡️': 'wolfSword', '🪲': 'stagKnight', '🐻': 'flameBear', '🦞': 'scorpion', '🦫': 'marmot', '🧛': 'vampire', '🌕': 'werewolf', '⚡': 'franken', '💧': 'slimeGirl', '👑': 'slimeKing', '🐧': 'penguinMage', '🪼': 'jellyDiva', '🛢️': 'barrelCat', '👺': 'goblin', '💀': 'skeleton', '👻': 'ghost', '🎃': 'pumpkin', '🐉': 'dragon', '🦂': 'cobra', '🦇': 'bat', '👾': 'metalSlime', '🧟': 'zombie', '🦖': 'salamander', '🐲': 'wyvern' };
-const BOSS_ENEMY_SPRITE = { '⚔️': 'darkKnight', '🫧': 'slimeJumbo', '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor' };
+const BOSS_ENEMY_SPRITE = { '⚔️': 'darkKnight', '🫧': 'slimeJumbo', '💪': 'muscleSlime', '👁️': 'eyeGirl', '🕸️': 'spiderGirl', '🪦': 'wellGhost', '🦍': 'gorillaTaur', '⚰️': 'reaper', '😈': 'demonKing', '👹': 'demon', '💀': 'lich', '🦖': 'blackDragon', '🐲': 'blueDragon', '🦔': 'livingArmor', '🌋': 'b_fireDragon', '🧊': 'b_iceDragon', '🗿': 'b_golem', '🩸': 'b_bloodLord', '😇': 'b_seraph', '👀': 'b_beholder', '🐙': 'b_kraken', '☠️': 'b_skullKing', '🐺': 'b_cerberus', '🌳': 'b_treant', '🧜': 'b_siren', '🪓': 'b_ogreKing', '🔮': 'b_darkWitch', '🖤': 'b_voidKnight', '📦': 'b_mimic', '🏮': 'b_yukiOnna', '🪨': 'b_mossGiant', '🪶': 'b_phoenix', '❄️': 'b_iceQueen', '🌊': 'b_stormDragon', '🌌': 'b_voidEater', '🧸': 'b_cursedBear', '⚜️': 'b_libraKnight', '☄️': 'b_magmaGolem', '🧿': 'b_crystalGolem', '💘': 'b_demonPrincess', '🐋': 'b_skyWhale', '🕯️': 'b_reaper2', '🦑': 'b_deepOne' };
 const ENEMY_SPRITE_SCALE = 3.2; // ドット絵の描画サイズ（半径比）
 document.getElementById('stageBossMark').src = ENEMY_SPRITES.demon; // ステージ進行ゲージのゴール（ボス）アイコン
 const enemySpriteImgs = {};
@@ -244,16 +273,16 @@ function makeBall(isPlayer) {
 }
 // ステージごとの敵は固定。10ステージ単位のエリア（床の景色）に合った顔ぶれで、1〜9番目が通常の敵、10番目がボス
 const STAGE_ZONES = [
-  { name: '草原',   normal: ['shape:spike', 'emoji:🔷', 'emoji:🟩', 'emoji:🦫', 'shape:slimeOrange', 'emoji:🥬', 'emoji:🦋', 'emoji:🟨', 'emoji:👺'], boss: '💪' },
-  { name: '森',     normal: ['emoji:🔪', 'shape:slimeGreen', 'emoji:🦎', 'emoji:🦒', 'emoji:🪲', 'shape:slimeChibi', 'emoji:🩷', 'emoji:🦇', 'emoji:🐻'], boss: '🦍' },
-  { name: '砂漠',   normal: ['emoji:🦂', 'emoji:🪙', 'emoji:🦞', 'shape:diamond', 'emoji:🔥', 'emoji:🦕', 'shape:slimeBlood', 'emoji:⚫', 'emoji:🦖'], boss: '🦔' },
-  { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️'], boss: '🕸️' },
-  { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:💋', 'emoji:🧛'], boss: '🪦' },
-  { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:👑'], boss: '🫧' },
-  { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👹' }, // 百目の少女は削除
-  { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲' },
-  { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️' },
-  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈' },
+  { name: '草原',   normal: ['shape:spike', 'emoji:🔷', 'emoji:🟩', 'emoji:🦫', 'shape:slimeOrange', 'emoji:🥬', 'emoji:🦋', 'emoji:🟨', 'emoji:👺'], boss: '💪', extraBosses: ['🌳', '🪶'] },
+  { name: '森',     normal: ['emoji:🔪', 'shape:slimeGreen', 'emoji:🦎', 'emoji:🦒', 'emoji:🪲', 'shape:slimeChibi', 'emoji:🩷', 'emoji:🦇', 'emoji:🐻'], boss: '🦍', extraBosses: ['🗿', '🐺', '🪨'] },
+  { name: '砂漠',   normal: ['emoji:🦂', 'emoji:🪙', 'emoji:🦞', 'shape:diamond', 'emoji:🔥', 'emoji:🦕', 'shape:slimeBlood', 'emoji:⚫', 'emoji:🦖'], boss: '🦔', extraBosses: ['🌋', '☄️'] },
+  { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️'], boss: '🕸️', extraBosses: ['🪓', '🖤'] },
+  { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:💋', 'emoji:🧛'], boss: '🪦', extraBosses: ['🏮', '💘', '🕯️'] },
+  { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:👑'], boss: '🫧', extraBosses: ['🧊', '❄️'] },
+  { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👹', extraBosses: ['📦', '🧸'] }, // 百目の少女は削除
+  { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲', extraBosses: ['🐙', '🧜', '🌊', '🐋', '🦑'] },
+  { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️', extraBosses: ['👀', '☠️', '⚜️', '🧿'] },
+  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈', extraBosses: ['🩸', '😇', '🔮', '🌌'] },
 ];
 const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
@@ -270,7 +299,11 @@ function getStageEnemyKey(stage) { // そのステージの通常の敵（削除
 }
 function getStageBossEmoji(stage) {
   const n = Math.floor((Math.max(10, stage) - 1) / 10);
-  const list = n < STAGE_ZONES.length ? [getStageZone(stage).boss] : [...STAGE_ZONES.map(z => z.boss), ...LATE_BOSSES].slice(n % (STAGE_ZONES.length + LATE_BOSSES.length));
+  // 1周目のエリアは、転生するたびにそのエリアのボス候補（追加ボス→元のボス）が順番に入れ替わる
+  const zoneOpts = z => [...(z.extraBosses || []), z.boss].filter(e => !isEnemyRemoved('boss:' + e));
+  const lateAll = [...STAGE_ZONES.flatMap(z => [z.boss, ...(z.extraBosses || [])]), ...LATE_BOSSES];
+  const opts = zoneOpts(getStageZone(stage));
+  const list = n < STAGE_ZONES.length ? (opts.length ? [opts[(game.reincarnations || 0) % opts.length]] : []) : lateAll.slice(n % lateAll.length);
   const all = [...list, ...BOSS_EMOJIS];
   return all.find(e => !isEnemyRemoved('boss:' + e)) || all[0];
 }
