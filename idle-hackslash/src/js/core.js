@@ -393,9 +393,10 @@ rankNextDayBtn.addEventListener('click', () => {
   renderRanking();
 });
 
-settingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); renderShopkeeper('settings'); });
-settingsCloseBtn.addEventListener('click', () => { settingsModal.classList.remove('show'); });
-settingsModal.addEventListener('click', event => { if (event.target === settingsModal) settingsModal.classList.remove('show'); });
+settingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); renderShopkeeper('settings'); if (typeof refreshBgm === 'function') refreshBgm(); });
+function closeSettingsModal() { settingsModal.classList.remove('show'); if (typeof refreshBgm === 'function') refreshBgm(); }
+settingsCloseBtn.addEventListener('click', closeSettingsModal);
+settingsModal.addEventListener('click', event => { if (event.target === settingsModal) closeSettingsModal(); });
 
 bgmVolRange.addEventListener('input', () => {
   game.bgmVolume = Number(bgmVolRange.value) / 100;
