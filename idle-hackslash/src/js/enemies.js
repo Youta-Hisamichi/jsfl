@@ -249,9 +249,9 @@ const STAGE_ZONES = [
   { name: '砂漠',   normal: ['emoji:🦂', 'emoji:🪙', 'emoji:🦞', 'shape:diamond', 'emoji:🔥', 'emoji:🦕', 'shape:slimeBlood', 'emoji:⚫', 'emoji:🦖'], boss: '🦔' },
   { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️'], boss: '🕸️' },
   { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:💋', 'emoji:🧛'], boss: '🪦' },
-  { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:💧', 'emoji:👑'], boss: '🫧' },
+  { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:👑'], boss: '🫧' },
   { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👁️' },
-  { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:💧', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲' },
+  { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲' },
   { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️' },
   { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈' },
 ];
