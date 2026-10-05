@@ -608,14 +608,36 @@ const bossContModal = document.getElementById('bossContModal');
 let bossContReason = null;
 function bossDefeated(reason) {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
-  if (!boss || boss.continued) { bossFail(reason); return; }
+  if (!boss) { bossFail(reason); return; }
+  if (boss.continued) { showBossFinalDefeat(reason); return; } // コンテニュー済み：少し間をおいて説明してから前の階層へ
   bossContReason = reason; phase = 'paused'; homingMissiles = [];
   playDeathSound();
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = `${game.stage}階層のボス（残りHP ${Math.max(0, Math.round(boss.hp / boss.maxHp * 100))}%）\n動画を見るとHP全回復・残り時間${BOSS_TIME_LIMIT_MS / 1000}秒で続きから戦えます（1回まで）`;
   document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー';
+  document.getElementById('bossContAdBtn').style.display = '';
+  document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめて前の階層へ</span>';
   bossContModal.classList.add('show');
   startBossContCountdown();
+}
+// 2回目の敗北（コンテニュー済み）：同じ画面で「◯階層に戻って鍛え直します」と数秒見せてから自動で戻す
+const BOSS_FINAL_SECONDS = 4;
+function showBossFinalDefeat(reason) {
+  bossContReason = reason; phase = 'paused'; homingMissiles = [];
+  playDeathSound();
+  const back = Math.max(1, game.stage - 1);
+  document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…';
+  document.getElementById('bossContText').textContent = `コンテニューは使い切りました。\n${back}階層に戻って鍛え直します。\n（「👑 ボス再戦」でいつでも再挑戦できます）`;
+  document.getElementById('bossContAdBtn').style.display = 'none';
+  document.getElementById('bossContGiveUpBtn').innerHTML = `<span class="msb-name">OK（${back}階層へ）</span>`;
+  bossContModal.classList.add('show');
+  clearInterval(bossContTimer); bossContLeft = BOSS_FINAL_SECONDS;
+  const el = document.getElementById('bossContCount'); el.textContent = bossContLeft;
+  bossContTimer = setInterval(() => {
+    if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
+    bossContLeft--; el.textContent = Math.max(0, bossContLeft);
+    if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
+  }, 1000);
 }
 // 10秒のカウントダウン。0になったら自動であきらめる（動画を見ている間は止まる）
 const BOSS_CONT_SECONDS = 10;
