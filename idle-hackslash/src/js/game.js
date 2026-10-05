@@ -554,6 +554,7 @@ function endDeathFx() {
 const BOSS_TIME_LIMIT_MS = 30000;
 const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
+function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function tickBossTimer() {
   const now = Date.now(), boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0);
@@ -1653,7 +1654,7 @@ function drawBall(ball) {
     ctx.restore();
   }
 
-  if (!ball.isClone && !ball.isCompanion && !ball.isDying) {
+  if (!ball.isClone && !ball.isCompanion && !ball.isDying && !(ball.isPlayer && !isPlayerHpShown())) { // 自キャラのHPゲージはボス戦だけ
     const barWidth = ball.radius * 2;
     const barHeight = 5;
     const barX = ball.x - ball.radius;
