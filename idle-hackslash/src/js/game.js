@@ -614,7 +614,7 @@ function bossDefeated(reason) {
   playDeathSound();
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = '';
-  document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー（1回まで）' : '🎬 動画を見てコンテニュー（1回まで）';
+  document.getElementById('bossContAdBtn').innerHTML = (isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー') + '<br><small>1回まで</small>';
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
   bossContModal.classList.add('show');
