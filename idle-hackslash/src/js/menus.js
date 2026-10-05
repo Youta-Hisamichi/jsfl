@@ -605,6 +605,12 @@ function updateStatsUI() {
   stageProgressText.textContent = stageInCycle + ' / 10';
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
   stagePlayerMark.style.left = (stageInCycle / 10 * 100) + '%';
+  const BOSS_ICON_FLIP = new Set(['demon', 'blackDragon', 'blueDragon']); // 右を向いている絵は反転して左（自キャラ側）を向かせる
+  { // ゴールのボスアイコンは、その10階で待ち構えるボスの絵（自キャラの来る左を向かせる）
+    const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), key = BOSS_ENEMY_SPRITE[em], el = document.getElementById('stageBossMark');
+    const src = (key && ENEMY_SPRITES[key]) || ENEMY_SPRITES.demon;
+    if (el && el.dataset.boss !== src) { el.dataset.boss = src; el.src = src; el.style.transform = `translate(-50%, -58%)${BOSS_ICON_FLIP.has(key) || (!key && true) ? ' scaleX(-1)' : ''}`; }
+  }
 
   renderTabLists(); // 各ページの一覧は開いているページだけ描き直す（他は開いたときに描く）
   rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
@@ -787,7 +793,7 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
 const AUTO_PULL_AIM_RATE = 0.33; // オートの体当たりで敵を狙う割合
 const AUTO_PULL_IDLE_MS = 4000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
-['pointerdown', 'pointerup', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
+['pointerdown', 'pointerup', 'pointermove'].forEach(t => document.addEventListener(t, ev => { if (ev.target === canvas && (t !== 'pointermove' || ev.buttons)) lastUserInputAt = Date.now(); }, true)); // AUTOが解けるのはゲームステージ（サークル）を触ったときだけ
 function tickAutoPull() {
   const now = Date.now();
   if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') return;

@@ -263,15 +263,16 @@ const BGM_SONGS = {
     ],
     drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
   },
-  upgrade: {
-    bpm: 150,
+  upgrade: { // 重厚なHD-2D風ファンタジー：ホルン風の主旋律＋ハープのアルペジオ＋厚い和音と低音、ティンパニ風の太鼓（ニ短調）
+    bpm: 112,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 A5 D6 A5 F#5 A5 D6 E6 | E6 = C#6 A5 E5 = A5 C#6 | D6 C#6 B5 F#5 D5 F#5 B5 D6 | B5 = G5 = D6 = B5 = | F#6 = E6 D6 A5 = D6 F#6 | E6 = C#6 A5 E6 = F#6 E6 | D6 = B5 G5 C#6 = A5 E6 | D6 = = = A5 = D6 =' },
-      { type: 'vrc6pulse12', gain: 0.02, notes: 'A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - - A6 - A6 - - | A6 - A6 - A6 A6 A6 A6' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | G1 G2 G1 G2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3' },
+      { type: 'vrc6pulse25', gain: 0.034, notes: 'A4 = D5 = E5 F5 = A5 | A#5 = = A5 G5 = F5 G5 | A5 = = = C6 = A5 = | G5 = = = E5 = C5 = | D5 = F5 = A5 = D6 = | C6 = A#5 = A5 G5 = D5 | F5 = G5 = E5 = C#5 = | D5 = = = = = = =' },
+      { type: 'vrc6pulse12', gain: 0.018, notes: 'D4 F4 A4 D5 A4 F4 D4 F4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | F4 A4 C5 F5 C5 A4 F4 A4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F4 A4 D5 A4 F4 D4 F4 | G3 A#3 D4 G4 D4 A#3 G3 A#3 | A#3 D4 F4 A#4 A3 C#4 E4 A4 | D4 F4 A4 D5 F5 D5 A4 F4' },
+      { type: 'triangle', gain: 0.026, notes: 'D3+F3+A3 = = = = = = = | A#2+D3+F3 = = = = = = = | F3+A3+C4 = = = = = = = | C3+E3+G3 = = = = = = = | D3+F3+A3 = = = = = = = | G2+A#2+D3 = = = = = = = | A#2+D3+F3 = = = A2+C#3+E3 = = = | D3+F3+A3 = = = = = = =' },
+      { type: 'vrc6saw', gain: 0.055, notes: 'D2 = D2 = D3 = D2 = | A#1 = A#1 = A#2 = A#1 = | F1 = F1 = F2 = F1 = | C2 = C2 = C3 = C2 = | D2 = D2 = D3 = D2 = | G1 = G1 = G2 = G1 = | A#1 = A#2 = A1 = A2 = | D2 = D3 = D2 = A1 =' },
     ],
-    kickBoost: 1.15, // 槌を振り下ろすような力強さ
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+    kickBoost: 1.3, // ティンパニのように重く
+    drums: 'k - h k s - h - | k - h k s - h - | k - h k s - h - | k - h k s k s s | k - h k s - h - | k - h k s - h - | k - h k s - h k | k k s s ks ks ks ks',
   },
   companion: {
     bpm: 140,
@@ -535,7 +536,7 @@ const BGM_INFO = [
   { key: 'boss9', name: 'ボス9 要塞の救出劇', desc: '休まず刻むオスティナートのベースとティンパニのような重いキック、追い立てられるように駆け上がる勇ましい旋律。囚われた仲間を取り戻す空中要塞の決戦。VRC6風チップチューン。ニ短調（90年代冒険アニメ映画の救出シーンの作風）・BPM168' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
-  { key: 'upgrade', name: 'ページ 強化 鍛冶屋の工房', desc: '金床を打つ高い刻みと8分で突き進むベースの、テンションの上がる鍛冶場の曲。VRC6風チップチューン。ニ長調・BPM150' },
+  { key: 'upgrade', name: 'ページ 強化 鍛冶屋の誓い', desc: 'ホルン風の主旋律にハープのアルペジオと厚い和音、ティンパニ風の太鼓が重なる重厚なHD-2Dファンタジー風の曲。VRC6風チップチューン。ニ短調・BPM112' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
