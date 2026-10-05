@@ -912,6 +912,27 @@ function showUpgradeLevelUpPop(id, x, y, text) {
   if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
   showLevelUpPop(x, y, text);
 }
+// オート強化：ONにすると、たまったコインで攻撃力・最大HPのうち安い方を自動で上げ続ける（放置向け）
+const AUTO_UPGRADE_IDS = ['atk', 'hp'];
+function renderAutoUpgradeBtn() {
+  const b = document.getElementById('autoUpgradeBtn'); if (!b) return;
+  b.textContent = game.autoUpgrade ? '🤖 オート強化 ON（攻撃力・HPを自動で強化）' : '🤖 オート強化 OFF（タップでON）';
+  b.classList.toggle('off', !game.autoUpgrade);
+}
+document.getElementById('autoUpgradeBtn').addEventListener('click', () => { game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame(); });
+setInterval(() => {
+  if (!game.autoUpgrade || phase !== 'battle') return;
+  let bought = 0;
+  for (let n = 0; n < 20; n++) {
+    const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
+    if (!id || game.coins < getUpgradeCost(id)) break;
+    spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
+  }
+  if (!bought) return;
+  refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
+  const pl = balls.find(isMainPlayerBall);
+  if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
+}, 1500);
 function levelUpUpgrade(id, x, y) {
   if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
   if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', x, y); return false; }
@@ -2297,6 +2318,7 @@ updateCompRushButton();
 updateNovaButton();
 currentLang = game.language || 'ja';
 applyLanguage(currentLang);
+renderAutoUpgradeBtn();
 checkLoginBonus(game.lastSeenAt ? Date.now() - game.lastSeenAt : 0);
 game.lastSeenAt = Date.now();
 if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開

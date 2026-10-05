@@ -479,7 +479,12 @@ function onStageClear() {
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
   }
-  if (!filmMode && !(game.bossLoop && game.stage === game.bossLoop - 1)) game.stage++; // 撮影モード中・ボスに負けたあとのループ中は同じステージを繰り返す
+  const looping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
+  if (!filmMode && !looping) game.stage++; // 撮影モード中・ボスに負けたあとのループ中は同じステージを繰り返す
+  if (looping && !filmMode && game.autoBossRetry !== false && ++game.bossLoopClears >= AUTO_BOSS_RETRY_LOOPS) { // 放置でも先へ：ループを何周かしたら自動でボスに再挑戦
+    game.bossLoopClears = 0; game.stage = game.bossLoop; game.bossLoop = 0;
+    showNotice('🔁 自動でボスに再挑戦！');
+  }
   game.bestStage = Math.max(game.bestStage, game.stage);
   stageAnnounceText = game.stage + '階層' + (game.bossLoop && game.stage === game.bossLoop - 1 ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
@@ -547,6 +552,7 @@ function endDeathFx() {
 }
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階層をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
+const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function tickBossTimer() {
@@ -569,7 +575,7 @@ function drawBossTimer() {
 }
 function bossFail(reason) {
   const bossStage = game.stage;
-  game.bossLoop = bossStage; game.stage = Math.max(1, bossStage - 1);
+  game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
   bossTimerFor = null;
   for (const id in COMPANIONS) if (game.companions.recruited[id]) { game.companions.alive[id] = true; game.companions.hp[id] = getCompanionMaxHP(id); }
@@ -593,7 +599,10 @@ function retryBoss() {
 }
 function updateBossRetryBtn() {
   const btn = document.getElementById('bossRetryBtn'); if (!btn) return;
-  btn.style.display = game.bossLoop && !gameOverBgm && !rebirthFlow ? '' : 'none';
+  const show = game.bossLoop && !gameOverBgm && !rebirthFlow;
+  btn.style.display = show ? '' : 'none';
+  const auto = document.getElementById('autoBossBtn');
+  if (auto) { auto.style.display = show ? '' : 'none'; auto.textContent = game.autoBossRetry !== false ? `🔁 自動再戦 ON（あと${Math.max(0, AUTO_BOSS_RETRY_LOOPS - (game.bossLoopClears || 0))}周）` : '🔁 自動再戦 OFF'; auto.classList.toggle('off', game.autoBossRetry === false); }
   if (game.bossLoop) btn.innerHTML = `👑 ボス再戦<small>${game.bossLoop}階層</small>`;
 }
 function onPlayerDeath(forceRebirth = false, skipFx = false) {
@@ -1027,6 +1036,7 @@ function giveUpSkipChallenge() {
   saveGame();
 }
 document.getElementById('bossRetryBtn').addEventListener('click', () => retryBoss());
+document.getElementById('autoBossBtn').addEventListener('click', () => { game.autoBossRetry = game.autoBossRetry === false; updateBossRetryBtn(); saveGame(); });
 stageSkipBtn.addEventListener('click', event => {
   if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
   if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今は塔に挑めません', event.clientX, event.clientY); return; }

@@ -1272,6 +1272,10 @@ function clearSave() {
 
 // 帰還の反射くじ：10分以上離れて戻ると引ける。離れていた時間が長いほど報酬・レア度・サプライズ宝箱の確率が上がる
 const RETURN_MIN_MS = 10 * 60 * 1000;
+const IDLE_REWARD_MAX_MS = 8 * 60 * 60 * 1000; // 放置中の戦果は最大8時間ぶん
+const IDLE_KILLS_PER_MIN = 3;                   // 放置中は1分に3体倒している扱い
+const IDLE_COIN_RATE = 0.5;                     // 放置中のコインは実際に戦うときの半分
+const IDLE_CHEST_EVERY_MIN = 30;                // 30分ごとに宝箱1個
 const LOGIN_BONUS_TABLE = [
   { min: 10, label: '10分', coins: 60, gems: 0, chest: 0.05 },
   { min: 30, label: '30分', coins: 120, gems: 1, chest: 0.1 },
@@ -1381,6 +1385,17 @@ function checkLoginBonus(awayMs) {
   const bonusPotion = rIdx >= 2 ? 1 : 0;
   const bonusArtifact = rarity === 'legendary' ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
   const fakeOut = rIdx >= 2 && Math.random() < 0.5;
+  // 放置中の戦果：離れている間も自キャラは戦い続けていた（最大8時間ぶん）
+  const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
+  const idleKills = Math.floor(idleMin * IDLE_KILLS_PER_MIN);
+  const idleCoins = Math.round(idleKills * (30 + game.stage * 8) * b.coinMult * IDLE_COIN_RATE);
+  const hcIdle = getHeldChests(), heldNow = CHEST_RARITIES.reduce((n, k) => n + (hcIdle[k] || 0), 0);
+  let idleChests = Math.min(Math.floor(idleMin / IDLE_CHEST_EVERY_MIN), Math.max(0, CHEST_STOCK_MAX - heldNow));
+  const idleChestRarities = {};
+  for (let i = 0; i < idleChests; i++) { const r = Math.random(), k = r < 0.03 ? 'legendary' : r < 0.15 ? 'epic' : r < 0.45 ? 'rare' : 'common'; idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; }
+  game.coins += idleCoins;
+  game.totalKills += idleKills;
+  if (idleChests) renderChestTray();
   game.lastSeenAt = Date.now();
   game.coins += bonusCoins;
   game.gems += bonusGems;
@@ -1453,6 +1468,8 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
+  if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ 🟡 +${formatCoinNumber(idleCoins)}` });
+  if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
   if (chest) chips.push({ special: true, html: `🎁 サプライズ宝箱！ ${chestArtifact ? `${ico(chestArtifact)} 遺物「${chestArtifact.name}」` : `💎 ジェム +${chestGems}`}` });
   if (bonusGems - chestGems) chips.push(`💎 +${bonusGems - chestGems} ジェム`);
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);

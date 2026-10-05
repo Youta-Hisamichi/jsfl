@@ -946,7 +946,7 @@ const SPRITE_TAILWIND_MS = 1500;
 
 const game = {
   stage: 1, coins: 0, gems: 0, superGems: 0,
-  reincarnations: 0, rebirthLv: 0, bossLoop: 0, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
+  reincarnations: 0, rebirthLv: 0, bossLoop: 0, bossLoopClears: 0, autoBossRetry: true, autoUpgrade: false, bestStage: 1, totalKills: 0, totalTaps: 0, maxCombo: 0, bestCoins: 0, username: '',
   upgrades: newUpgradeLevels(),
   coinCloneSlots: 0,
   shopOwned: {},
