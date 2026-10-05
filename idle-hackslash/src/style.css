@@ -1306,3 +1306,19 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .companion-card button.cc-max-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #2a1a00; padding: 0 2px; }
 .companion-card button.cc-max-btn.cc-pct-btn { border-image-source: url(assets/img/ui/skin/btn_blue.webp); background: none; color: #fff; text-shadow: 0 1px 0 #0a2a6a; }
 .companion-card button.cc-lvup.is-disabled, .companion-card button.cc-max-btn.is-disabled { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 8px stretch; background: none; color: #e8e8e8; text-shadow: none; opacity: 0.85; }
+/* 進化ページ：UI素材（召喚ボタン＝青／金、コレクション＝羊皮紙、カード＝羊皮紙＋金スロット・未入手は鋼鉄＋銀スロット） */
+.gacha-actions.pull-row #gachaBtn, .gacha-actions.pull-row #gacha10Btn { border: 10px solid transparent; border-radius: 0; box-shadow: none; padding: 2px 4px; background: none !important; }
+.gacha-actions.pull-row #gachaBtn { border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 10px stretch; text-shadow: 0 1px 0 #0a2a6a, 0 0 4px rgba(0,30,90,0.6); }
+.gacha-actions.pull-row #gacha10Btn { border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 10px stretch; color: #2a1400 !important; text-shadow: 0 1px 0 #fff2b0; }
+.gacha-actions.pull-row #gachaBtn.is-disabled, .gacha-actions.pull-row #gacha10Btn.is-disabled { border-image-source: url(assets/img/ui/skin/btn_gray.webp); color: #eee !important; text-shadow: none; filter: none; opacity: 0.85; }
+#evolutionProgress { border: 12px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 12px stretch; background: none; border-radius: 0; color: #4a3818; padding: 0 4px; }
+#evolutionProgress strong { color: #a05a00; }
+.evo-card { border: 9px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 16 fill / 9px stretch; background: none; border-radius: 0; box-shadow: none; padding: 8px 0 0; color: #3a2a14; filter: drop-shadow(0 0 3px var(--rc)); }
+.evo-card .evo-desc { color: #5a4828; }
+.evo-card .evo-ico { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/skin/slot_gold.webp) center / 100% 100% no-repeat; }
+.evo-card .evo-ico .ico-img { width: 34px; height: 34px; }
+.evo-card .evo-lv { top: -9px; left: -9px; }
+.evo-card.unowned { border: 9px solid transparent; border-image: url(assets/img/ui/skin/panel_steel.webp) 16 fill / 9px stretch; background: none; filter: none; color: #e8eaf0; }
+.evo-card.unowned .evo-desc { color: #d0d4de; }
+.evo-card.unowned .evo-ico { background-image: url(assets/img/ui/skin/slot_silver.webp); filter: none; }
+.evo-card.unowned .evo-ico .ico-img { filter: grayscale(1) brightness(0.45); }
