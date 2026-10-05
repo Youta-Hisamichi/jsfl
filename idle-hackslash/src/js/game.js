@@ -616,7 +616,7 @@ function bossDefeated(reason) {
   document.getElementById('bossContText').textContent = '';
   document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー（1回まで）' : '🎬 動画を見てコンテニュー（1回まで）';
   document.getElementById('bossContAdBtn').style.display = '';
-  document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめて前の階層へ</span>';
+  document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
   bossContModal.classList.add('show');
   startBossContCountdown();
 }
