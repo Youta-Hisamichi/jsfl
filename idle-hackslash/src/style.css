@@ -1322,3 +1322,19 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .evo-card.unowned .evo-desc { color: #d0d4de; }
 .evo-card.unowned .evo-ico { background-image: url(assets/img/ui/skin/slot_silver.webp); filter: none; }
 .evo-card.unowned .evo-ico .ico-img { filter: grayscale(1) brightness(0.45); }
+/* 遺物ページ：UI素材（コレクション＝紺の金縁パネル、所持＝羊皮紙＋金スロット、未所持＝鋼鉄＋銀スロット） */
+.af-hero { border: 16px solid transparent; border-image: url(assets/img/ui/skin/panel_navy.webp) 22 fill / 16px stretch; background: none; border-radius: 0; padding: 0 4px; color: #eef0f6; --text: #eef0f6; --text-dim: #b8bed0; }
+.af-card { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; background: none; border-radius: 0; padding: 4px 0 2px; color: #3a2a14; --text: #3a2a14; --text-dim: #5a4828; filter: drop-shadow(0 0 3px var(--rc)); }
+.af-card.r-legendary, .af-card.r-mythic { box-shadow: none; filter: drop-shadow(0 0 6px var(--rc)); }
+.af-card .af-icon { width: 60px; height: 60px; border-radius: 0; background: url(assets/img/ui/skin/slot_gold.webp) center / 100% 100% no-repeat; }
+.af-card .af-icon .ico-img { width: 42px; height: 42px; border-radius: 4px; }
+.af-card .af-count { top: -6px; right: -6px; }
+.af-card.not-owned { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_steel.webp) 18 fill / 10px stretch; background: none; filter: none; color: #eef0f6; --text: #eef0f6; --text-dim: #d4d8e2; }
+.af-card.not-owned .af-icon { background-image: url(assets/img/ui/skin/slot_silver.webp); }
+#artifactList .af-card { padding: 8px 0 0; border-radius: 0; overflow: visible; }
+#artifactList .af-card .af-icon { width: 48px; height: 48px; border-radius: 0; }
+#artifactList .af-card .af-icon .ico-img { width: 34px; height: 34px; }
+#artifactList .af-card .af-count { top: -8px; left: -8px; overflow: visible; }
+.af-card.not-owned .af-name, .af-card.not-owned .af-desc { opacity: 0.9; }
+.af-card.not-owned .af-icon .ico-img { filter: brightness(0) opacity(0.55); }
+.af-card:not(.not-owned) .af-stars, .evo-card:not(.unowned) .evo-stars { text-shadow: 0 0 2px #3a2a14, 0 0 1px #3a2a14; }
