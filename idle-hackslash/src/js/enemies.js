@@ -758,6 +758,65 @@ Object.entries({
   orb_black: 'assets/img/obstacles/orb/black.webp', orb_silver: 'assets/img/obstacles/orb/silver.webp', orb_gold: 'assets/img/obstacles/orb/gold.webp',
   orb_rainbow: 'assets/img/obstacles/orb/rainbow.webp', orb_crystal: 'assets/img/obstacles/orb/crystal.webp', orb_galaxy: 'assets/img/obstacles/orb/galaxy.webp',
 }).forEach(([k, src]) => { const img = new Image(); img.src = src; OBSTACLE_IMGS[k] = img; });
+// 自然・遺跡の素材（木・柱・草むらなど）
+const NATURE_KEYS = ['d_grass1', 'd_grass2', 'd_grass3', 'd_fern', 'd_flowerW', 'd_flowerP', 'd_flowerY', 'd_flowerB', 'd_flowerR', 'd_flowerR2', 'd_flowerV', 'd_leaves', 'd_pebbles', 'd_reeds', 'd_lily',
+  'b_bush', 'b_bush2', 'b_bush3', 'b_pot', 'b_jar', 'b_sack', 'b_hay', 'b_stump', 'b_ruin', 'b_flowerbox',
+  't_oak', 't_pine', 't_tree', 't_sakura', 't_autumn', 't_dead', 't_darkpine', 't_willow', 't_palm', 't_snowpine', 't_cactus',
+  'p_pillar', 'p_pillar2', 'p_moss', 'p_statue', 'p_lantern', 'p_fountain'];
+NATURE_KEYS.forEach(k => { const img = new Image(); img.src = `assets/img/obstacles/nature/${k}.webp`; OBSTACLE_IMGS[k] = img; });
+// 床ごとに生える木・立つ柱
+const TREE_BY_FLOOR = { lawn: ['t_oak', 't_tree', 't_sakura'], dirt: ['t_oak', 't_autumn', 't_tree', 't_pine'], desert: ['t_palm', 't_cactus', 't_dead'], mossStone: ['t_pine', 't_darkpine', 't_willow'], town: ['t_tree', 't_sakura'], snow: ['t_snowpine', 't_dead'], market: ['t_tree', 't_autumn'], woodFloor: ['t_pine', 't_oak'], ruins: ['t_dead', 't_willow', 't_darkpine'], tower: ['t_darkpine', 't_dead'] };
+const PILLAR_BY_FLOOR = { town: ['p_lantern', 'p_statue'], market: ['p_fountain', 'p_statue', 'p_lantern'], ruins: ['p_pillar', 'p_moss', 'p_pillar2'], tower: ['p_pillar2', 'p_statue', 'p_lantern'], mossStone: ['p_moss', 'p_pillar'] };
+const NATURE_SPRITE_SETS = { bush: ['b_bush', 'b_bush2', 'b_bush3', 'b_flowerbox'], pot: ['b_pot', 'b_jar', 'b_sack'], hay: ['b_hay'], stump: ['b_stump'], ruin: ['b_ruin'] };
+const NATURE_KINDS = new Set(['tree', 'pillar', ...Object.keys(NATURE_SPRITE_SETS)]);
+function natureSpriteFor(kind, floorKey, rnd) {
+  const list = kind === 'tree' ? (TREE_BY_FLOOR[floorKey] || ['t_oak', 't_pine', 't_tree']) : kind === 'pillar' ? (PILLAR_BY_FLOOR[floorKey] || ['p_pillar', 'p_pillar2', 'p_moss', 'p_statue']) : NATURE_SPRITE_SETS[kind];
+  return list[Math.floor(rnd() * list.length)];
+}
+// すり抜ける飾り（草・花・小石など）：床ごとの種類。キャラが通るとゆれる
+const DECO_BY_FLOOR = {
+  lawn: ['d_grass1', 'd_grass2', 'd_grass3', 'd_fern', 'd_flowerW', 'd_flowerP', 'd_flowerY', 'd_flowerB', 'd_flowerR'],
+  dirt: ['d_grass1', 'd_grass3', 'd_fern', 'd_leaves', 'd_pebbles', 'd_flowerR2', 'd_flowerV'],
+  desert: ['d_pebbles', 'd_grass1'], mossStone: ['d_fern', 'd_leaves', 'd_pebbles', 'd_grass2'], town: ['d_flowerP', 'd_flowerY', 'd_pebbles'],
+  snow: ['d_pebbles'], market: ['d_flowerW', 'd_flowerP', 'd_flowerY', 'd_flowerB', 'd_flowerR'], ruins: ['d_fern', 'd_leaves', 'd_pebbles', 'd_grass1'],
+  tower: ['d_pebbles'], sea: ['d_reeds', 'd_lily'], dungeon: ['d_pebbles'], dungeon2: ['d_pebbles'], wasteland: ['d_pebbles'], dryCrack: ['d_pebbles'],
+};
+let decorations = [];
+function setupDecorations(rnd, floorKey) {
+  decorations = [];
+  const list = DECO_BY_FLOOR[floorKey]; if (!list) return;
+  const half = arena.radius, n = list.length <= 2 ? 3 + Math.floor(rnd() * 3) : 5 + Math.floor(rnd() * 5);
+  for (let t = 0; decorations.length < n && t < 80; t++) {
+    const x = arena.x + (rnd() * 2 - 1) * half * 0.86, y = arena.y + (rnd() * 2 - 1) * half * 0.86, r = half * (0.05 + rnd() * 0.03);
+    if (decorations.some(d => Math.hypot(d.x - x, d.y - y) < d.r + r + 6)) continue;
+    decorations.push({ x, y, r, sprite: list[Math.floor(rnd() * list.length)], flip: rnd() < 0.5, seed: rnd() });
+  }
+}
+function drawDecorations() {
+  const now = Date.now();
+  for (const d of decorations) {
+    if (now - (d.swayAt || 0) > 500 && [...balls, ...adds].some(b => Math.hypot(b.x - d.x, b.y - d.y) < d.r + b.radius * 0.7)) d.swayAt = now; // キャラが通るとゆれる
+    const img = OBSTACLE_IMGS[d.sprite]; if (!img || !img.complete || !img.naturalWidth) continue;
+    const t = now - (d.swayAt || 0), sway = t < 900 ? Math.exp(-t / 260) * Math.sin(t / 55) * 0.35 : Math.sin(now / 900 + d.seed * 9) * 0.03;
+    const w = d.r * 2.2, h = w * img.naturalHeight / img.naturalWidth;
+    ctx.save(); ctx.translate(d.x, d.y + h * 0.4); ctx.rotate(sway); if (d.flip) ctx.scale(-1, 1);
+    ctx.drawImage(img, -w / 2, -h, w, h);
+    ctx.restore();
+  }
+}
+// 縦長の絵（木・柱）は根元を当たり判定の円に合わせ、横長・丸い物は円に収める
+function drawNatureSprite(o) {
+  const img = OBSTACLE_IMGS[o.sprite]; if (!img || !img.complete || !img.naturalWidth) return false;
+  const ar = img.naturalWidth / img.naturalHeight;
+  if (o.kind === 'tree' || o.kind === 'pillar') {
+    const h = o.r * (o.kind === 'tree' ? 4.6 : 4.2) / Math.max(1, ar * 1.2), w = h * ar;
+    ctx.drawImage(img, o.x - w / 2, o.y + o.r * 0.85 - h, w, h);
+  } else {
+    const box = o.r * 2.4, w = ar >= 1 ? box : box * ar, h = ar >= 1 ? box / ar : box;
+    ctx.drawImage(img, o.x - w / 2, o.y + o.r * 0.9 - h, w, h);
+  }
+  return true;
+}
 const ORB_COLORS = ['pink', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'violet', 'black', 'silver', 'gold', 'rainbow', 'crystal', 'galaxy'];
 const SPIKE_SPRITES = ['spikeBall', 'saw', 'gear', 'spikeLog', 'spikePillar'];
 // 壊せる障害物：耐久と、壊れたときの破片の色
@@ -768,6 +827,11 @@ const BREAKABLES = {
   crystal: { hp: 8,  cols: ['#b57bff', '#6b3fc4'] },
   techBox: { hp: 10, cols: ['#6fd6ff', '#4a5260'] },
   egg:     { hp: EGG_HP, cols: ['#fff4d8', '#e8d8b0'] },
+  bush:    { hp: 3,  cols: ['#3f9a3a', '#7fd06a', '#2c6e2a'] },
+  pot:     { hp: 2,  cols: ['#8aa0c8', '#5a6478', '#c8a070'] },
+  hay:     { hp: 2,  cols: ['#e8c25a', '#c89a30'] },
+  stump:   { hp: 6,  cols: ['#a0703c', '#6d4a24'] },
+  ruin:    { hp: 12, cols: ['#9a9a90', '#5d6a4a', '#7a7a70'] },
 };
 // 反射のクセ：speed＝跳ね返ったあとの速さの倍率（1より大きいと加速）、wobble＝当たったときのブルッと揺れる大きさ
 const OBSTACLE_BOUNCE = {
@@ -775,6 +839,7 @@ const OBSTACLE_BOUNCE = {
   crate: { speed: 0.9, wobble: 0.6 }, barrel: { speed: 0.95, wobble: 0.85 }, ice: { speed: 1.2, wobble: 0.35 }, crystal: { speed: 1.05, wobble: 0.45 },
   techBox: { speed: 0.95, wobble: 0.2 }, bomb: { speed: 0.8, wobble: 0.9 }, egg: { speed: 0.85, wobble: 0.8 }, qbox: { speed: 1, wobble: 0.5 },
   bumper: { speed: 1, wobble: 1 }, slime: { speed: 1, wobble: 1.8 },
+  tree: { speed: 0.82, wobble: 0.9 }, pillar: { speed: 0.92, wobble: 0.12 }, bush: { speed: 0.75, wobble: 1.2 }, pot: { speed: 0.95, wobble: 0.6 }, hay: { speed: 0.7, wobble: 1.1 }, stump: { speed: 0.88, wobble: 0.2 }, ruin: { speed: 0.9, wobble: 0.15 },
   spikeBall: { speed: 1.1, wobble: 0.6 }, saw: { speed: 1.15, wobble: 0.1 }, gear: { speed: 1, wobble: 0.15 }, spikeLog: { speed: 0.85, wobble: 0.5 }, spikePillar: { speed: 0.9, wobble: 0.25 },
 };
 const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.kind] || { speed: 1, wobble: 0.3 };
@@ -784,9 +849,9 @@ function dashDmgMult(ball) { return ball && ball.dashPowerUntil > Date.now() ? D
 const SAW_SELF_DMG = 0.08; // 回転ノコギリに自分や仲間がぶつかったときのダメージ（最大HP比） // 床に置くもの（ぶつからずに上を通る）
 // エリアごとの出やすさ（何も書いていない種類は共通の重み）
 const OBSTACLE_WEIGHTS = { rock: 18, crate: 11, barrel: 8, bumper: 9, slime: 6, egg: 6, qbox: 8, ice: 4, crystal: 4, techBox: 3, bomb: 6, spike: 7, dash: 6, portal: 4 };
-const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪原・市場・船・遺跡・魔塔
-  { slime: 10, crate: 14 }, { slime: 8, spike: 10, rock: 22 }, { bomb: 9, dash: 9 }, { crate: 14, barrel: 12, dash: 9 }, { bomb: 9, portal: 7 },
-  { ice: 16, crystal: 6 }, { barrel: 14, crate: 14, qbox: 12 }, { barrel: 16, crate: 12 }, { crystal: 9, techBox: 6, spike: 10 }, { portal: 9, techBox: 7, crystal: 8 },
+const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪原・市場・船・遺跡・魔塔（木・柱・草むらなどはエリアに合うところだけ）
+  { slime: 10, crate: 14, tree: 14, bush: 12, hay: 6 }, { slime: 8, spike: 10, rock: 22, tree: 22, bush: 10, stump: 9 }, { bomb: 9, dash: 9, tree: 10, pot: 8 }, { crate: 14, barrel: 12, dash: 9, tree: 10, pillar: 6, stump: 6 }, { bomb: 9, portal: 7, pillar: 10, pot: 8 },
+  { ice: 16, crystal: 6, tree: 14 }, { barrel: 14, crate: 14, qbox: 12, pot: 14, hay: 7, pillar: 6 }, { barrel: 16, crate: 12, pot: 6 }, { crystal: 9, techBox: 6, spike: 10, pillar: 18, ruin: 12, tree: 5 }, { portal: 9, techBox: 7, crystal: 8, pillar: 12, ruin: 7 },
 ];
 function stageRand(seed) { let x = seed * 9301 + 49297; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
 function pickObstacleKind(rnd, zoneIdx) {
@@ -803,6 +868,7 @@ function setupObstacles(dropDebug) {
   const rnd = stageRand(block * 7 + 3), half = arena.radius;
   const floorKey = getFloorKey(game.stage);
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
+  setupDecorations(stageRand(block * 13 + 5), floorKey);
   const early = game.stage <= 20, roll = rnd();
   if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階は必ずなし）
   const n = early ? 1 + Math.floor(rnd() * 3) : 2 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は2〜4個（多すぎると窮屈）
@@ -849,7 +915,9 @@ function setupObstacles(dropDebug) {
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
     }
+    else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
     else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
+    if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8; // 当たり判定は幹・柱の根元
     obstacles.push(o);
   }
 }
@@ -861,6 +929,8 @@ const DEBUG_OBSTACLES = [
   ['rock', 'rock', '岩'], ['rock', 'mossRock', '苔むした岩'], ['rock', 'magmaRock', '溶岩石'], ['crate', 'crate', '木箱'], ['barrel', 'barrel', '樽'],
   ['ice', 'ice', '氷'], ['crystal', 'crystal', '水晶'], ['techBox', 'techBox', '魔導コンテナ'], ['bomb', 'bomb', '爆弾'], ['slime', 'slime', 'ゼリー'],
   ['bumper', 'orb_rainbow', 'バンパー（オーブ）'], ['spike', 'saw', 'ノコギリ'], ['spike', 'gear', '歯車'], ['spike', 'spikeBall', 'トゲ玉'], ['spike', 'spikeLog', 'トゲ丸太'], ['spike', 'spikePillar', 'トゲ柱'],
+  ['tree', 't_oak', '木'], ['tree', 't_sakura', '桜'], ['tree', 't_snowpine', '雪の木'], ['tree', 't_cactus', 'サボテン'], ['pillar', 'p_pillar', '石柱'], ['pillar', 'p_statue', '石像'], ['pillar', 'p_lantern', '石灯籠'],
+  ['bush', 'b_bush', '草むら'], ['pot', 'b_pot', '壺'], ['hay', 'b_hay', '干し草'], ['stump', 'b_stump', '切り株'], ['ruin', 'b_ruin', '崩れた柱'],
   ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'ハテナボックス'],
 ];
 function debugSpawnObstacle(kind, sprite) {
@@ -922,6 +992,18 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
     spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
     if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
+  } else if (o.kind === 'pot') { // 壺・袋：割るとコインが出ることが多い
+    if (r < 0.75) { const c = coinsFor(0.7); game.coins += c; spawnCoinBurst(o.x, o.y, c, 5); spawnDamageText(x, y, '🏺 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
+    else { spawnDamageText(x, y, 'からっぽ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
+  } else if (o.kind === 'bush' || o.kind === 'hay') { // 草むら・干し草：たまにコイン、たまにHP回復
+    if (r < 0.35) { const c = coinsFor(0.4); game.coins += c; spawnDamageText(x, y, '🌿 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
+    else if (r < 0.55) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.1); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${h}`, '#5fe08a', 0.016, true); updateHPUI(); } }
+    else spawnDamageText(x, y, 'ガサッ', '#9fd08a', 0.02);
+  } else if (o.kind === 'stump') { // 切り株：コイン
+    const c = coinsFor(1); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🪵 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true);
+  } else if (o.kind === 'ruin') { // 崩れた柱：たまに宝箱
+    if (r < 0.15) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
+    else { const c = coinsFor(1.2); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🏛️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
     const rar = rollChestRarity(6, 'rare'); // 魔導コンテナは良い宝箱が出やすい
     spawnDamageText(x, y, `📦 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.012, true); dropTreasureChest(rar);
@@ -1114,6 +1196,7 @@ function drawObstacles() {
     ctx.restore();
   }
   crateShards = crateShards.filter(sh => sh.life > 0);
+  drawDecorations(); // すり抜ける草花・小石
   for (const o of obstacles) { // 床のもの（ダッシュパネル・ワープゲート）を先に描く
     if (!FLOOR_OBSTACLES.has(o.kind)) continue;
     ctx.save();
@@ -1135,7 +1218,8 @@ function drawObstacles() {
     const wt = now - (o.wobAt || 0);
     if (wt < 600 && o.wobAmp) { // 当たるとブルッ（減衰しながら伸び縮み）
       const k = o.wobAmp * Math.exp(-wt / 160) * Math.sin(wt / 26);
-      if (o.kind === 'slime' || o.kind === 'bumper') { ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r)); } // やわらかい物はプルプル
+      if (o.kind === 'tree' || o.kind === 'bush' || o.kind === 'hay') { ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.09); ctx.translate(-o.x, -(o.y + o.r)); } // 木や草むらは根元からワサッとゆれる
+      else if (o.kind === 'slime' || o.kind === 'bumper') { ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r)); } // やわらかい物はプルプル
       else { const g = o.wobAmp * Math.exp(-wt / 90) * Math.sin(wt / 14); ctx.translate(g * 3, Math.abs(g) * -1); ctx.translate(o.x, o.y + o.r); ctx.rotate(g * 0.04); ctx.translate(-o.x, -(o.y + o.r)); } // 硬い物は小刻みにガタガタ
     }
     if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
@@ -1171,6 +1255,10 @@ function drawObstacles() {
       const fuse = o.fuseAt ? (now - o.fuseAt) / 700 : 0, blink = fuse && Math.floor(now / 70) % 2;
       drawObstacleSprite('bomb', o.x, o.y, o.r * 2.3 * (1 + fuse * 0.25));
       if (blink) { ctx.globalAlpha = 0.5; ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(o.x, o.y + o.r * 0.1, o.r * 0.95 * (1 + fuse * 0.25), 0, Math.PI * 2); ctx.fill(); }
+    } else if (NATURE_KINDS.has(o.kind)) { // 木・柱・草むら・壺など
+      if (!drawNatureSprite(o)) { ctx.fillStyle = '#4a7a3a'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fill(); }
+      const bk = BREAKABLES[o.kind];
+      if (bk) { drawObstacleCracks(o, o.r * 0.95, o.kind === 'ruin' ? '#1e1a16' : '#2b1a0a'); if (o.hp < bk.hp) { ctx.globalAlpha = Math.min(0.3, (bk.hp - o.hp) / bk.hp * 0.35); ctx.fillStyle = '#140a04'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 0.9, 0, Math.PI * 2); ctx.fill(); } }
     } else if (o.kind === 'rock') { // 岩（苔むした岩・溶岩石もある）
       if (!drawObstacleSprite(o.sprite || 'rock', o.x, o.y - o.r * 0.05, o.r * 2.3)) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fill(); }
       drawObstacleCracks(o, o.r * 0.95, '#1e1a16');
