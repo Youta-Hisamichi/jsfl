@@ -1967,7 +1967,7 @@ const FLOOR_TILES = { // 床タイル
 const FLOOR_NORMAL = ['lawn', 'dirt', 'desert', 'mossStone', 'town', 'snow', 'market', 'woodFloor', 'ruins', 'tower']; // 通常ステージの床（エリア＝10ステージごとに次へ）
 const FLOOR_BOSS = ['redCarpet', 'dryCrack', 'panel', 'blueTile', 'wasteland', 'brick', 'sea', 'dungeon2', 'mystic', 'dungeon', 'other']; // ボスステージの床
 const FLOOR_TILE_PX = 42;
-const FLOOR_SPAN = { lawn: 3, dirt: 3, desert: 3, mossStone: 3, woodFloor: 3, redCarpet: 4, dryCrack: 3, panel: 3, blueTile: 3, wasteland: 3, sea: 3, brick: 3 }; // 1枚の画像が床タイル何枚分か（マップチップは大きめ）
+const FLOOR_SPAN = Object.fromEntries(Object.keys(FLOOR_TILES).map(k => [k, 8])); // 床の画像は8×8枚のタイルを並べたもの（地形・床タイル集から作成）
 const floorImgs = {};
 for (const k in FLOOR_TILES) { const img = new Image(); img.src = FLOOR_TILES[k]; floorImgs[k] = img; }
 function getFloorKey(stage) {
