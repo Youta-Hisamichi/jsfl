@@ -540,7 +540,7 @@ function drawEnemyTraitEffects() {
 }
 
 // 攻撃予兆：敵が足元に赤い予告エリア（扇・円・直線）を出してから攻撃する。範囲の外へ動けば回避でき、攻撃後の隙は大ダメージのチャンス
-const TG_WIND = 32, TG_STUN = 45, TG_STUN_DMG = 2, TG_DMG = 1.6;
+const TG_WIND = 32, TG_STUN = 100, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙は約1.7秒、その間はどの攻撃もダメージ3倍
 const TG_KINDS = ['fan', 'circle', 'line'];
 function tgKindFor(e) {
   if (e.isBoss) return TG_KINDS[Math.floor(Math.random() * 3)];
@@ -573,7 +573,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     e.tgTimer -= speedMult;
     if (e.tgTimer <= 0) {
       e.dashing = false; e.vx *= 0.2; e.vy *= 0.2;
-      if (e.tgBig) { e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！', '#ffd76b', 0.02); }
+      if (e.tgBig) { e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！ チャンス！', '#ffd76b', 0.016, true); }
       else e.traitState = null;
     }
     return false;
@@ -594,7 +594,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, isBig ? '大技！' : '！', '#ff4d4d', 0.025, true);
+    spawnDamageText(e.x, e.y - e.radius - 22, isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
     playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
     return false;
   }
@@ -620,7 +620,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
   } else if (tg.big) { // 大技の後だけ隙ができる
     e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！', '#ffd76b', 0.02);
+    spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！ チャンス！', '#ffd76b', 0.016, true);
   } else { e.traitState = null; e.traitFreeze = false; }
   if (hit) {
     applyHitKnockback(a, e, 5);
@@ -762,10 +762,17 @@ function drawEnemyTelegraphs() {
       ctx.fillStyle = 'rgba(255,230,180,0.55)'; ctx.fill();
       ctx.restore();
     }
-    if (e.traitState === 'tgStun') { // 隙：頭の上で星が回る
-      ctx.save(); ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const r = e.radius * ENEMY_SPRITE_SCALE / 2;
+    if (e.traitState === 'tgStun') { // 隙：黄色く光る輪・回る星・「スキ！×3」と残り時間のゲージ
+      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const r = e.radius * ENEMY_SPRITE_SCALE / 2, left = Math.max(0, e.tgTimer / TG_STUN), p = 0.6 + Math.sin(now / 80) * 0.4;
+      ctx.strokeStyle = `rgba(255,215,90,${0.5 + p * 0.4})`; ctx.lineWidth = 3 + p * 2; ctx.shadowColor = '#ffd76b'; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.arc(e.x, e.y, r * 0.75 + p * 3, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.font = '12px sans-serif';
       for (let i = 0; i < 3; i++) { const an = now / 220 + i * Math.PI * 2 / 3; ctx.fillText('⭐', e.x + Math.cos(an) * r * 0.7, e.y - r - 6 + Math.sin(an) * 4); }
+      const ly = e.y - r - 34;
+      ctx.font = `900 ${Math.round(15 + p * 3)}px sans-serif`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.fillStyle = '#ffd76b';
+      ctx.strokeText(`スキ！×${TG_STUN_DMG}`, e.x, ly); ctx.fillText(`スキ！×${TG_STUN_DMG}`, e.x, ly);
+      const bw = 44; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x - bw / 2, ly + 11, bw, 4); ctx.fillStyle = '#ffd76b'; ctx.fillRect(e.x - bw / 2, ly + 11, bw * left, 4); // 隙の残り時間
       ctx.restore();
     }
   }

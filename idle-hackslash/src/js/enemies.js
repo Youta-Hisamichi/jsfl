@@ -512,7 +512,7 @@ function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, 
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
-function bossDamageMult(target) { return (target && target.isBoss ? 1 + computeBonuses().bossDmg : 1) * (target && target.berserk ? BERSERK_DMG_TAKEN : 1); } // ボス特攻・発狂中の防御ダウン
+function bossDamageMult(target) { return (target && target.isBoss ? 1 + computeBonuses().bossDmg : 1) * (target && target.berserk ? BERSERK_DMG_TAKEN : 1) * (isTelegraphStunned(target) ? TG_STUN_DMG : 1); } // ボス特攻・発狂中の防御ダウン
 function rollCrit(dmg, target, extraCritChance = 0) {
   dmg = Math.max(1, Math.round(dmg * bossDamageMult(target)));
   const b = computeBonuses();

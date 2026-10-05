@@ -835,7 +835,7 @@ function doTapSlash() {
 function playerHitEnemyBy(en, pl, mult, color, knock) {
   if (!en || en.hp <= 0 || en.isDying) return false;
   if (!playerAttackHits(en)) { spawnMissText(en); return false; }
-  const m = mult * (isTelegraphStunned(en) ? TG_STUN_DMG : 1);
+  const m = mult; // 隙の3倍は rollCrit の中でかかる
   const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * dashDmgMult(pl))), en);
   en.hp -= dmg; trackDamage(dmg);
   spawnHitParticles(en.x, en.y, color || '#ffe08a');
