@@ -249,12 +249,12 @@ const BGM_SONGS = {
     ],
     drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
   },
-  upgrade: { // 音ゲーの選曲画面風：明るい四つ打ちハウス、裏打ちベースと跳ねるシンセのフック、ワクワクする長調ループ（ヘ長調）
-    bpm: 132,
+  upgrade: { // 古典RPG（ダンジョン探索）のバロック風旋律を音ゲー風にアレンジ：チェンバロ調の分散和音の主旋律＋対旋律、五度圏の進行、四つ打ちのビート（ニ短調）
+    bpm: 140,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'C6 - A5 C6 - F6 E6 C6 | D6 - A5 D6 - F6 E6 D6 | A#5 - F5 A#5 - D6 C6 A#5 | C6 = E6 = G6 = E6 = | C6 - A5 C6 - F6 E6 C6 | D6 - A5 D6 - F6 G6 A6 | A#6 = A6 = G6 = F6 = | E6 = G6 = C7 = = =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'F4 A4 C5 A4 F5 C5 A4 C5 | D4 F4 A4 F4 D5 A4 F4 A4 | A#3 D4 F4 D4 A#4 F4 D4 F4 | C4 E4 G4 E4 C5 G4 E4 G4 | F4 A4 C5 A4 F5 C5 A4 C5 | D4 F4 A4 F4 D5 A4 F4 A4 | A#3 D4 F4 D4 A#4 F4 D4 F4 | C4 E4 G4 C5 E5 G5 C6 G5' },
-      { type: 'vrc6saw', gain: 0.046, notes: '- F2 - F2 - F2 - F3 | - D2 - D2 - D2 - D3 | - A#1 - A#1 - A#1 - A#2 | - C2 - C2 - C2 - C3 | - F2 - F2 - F2 - F3 | - D2 - D2 - D2 - D3 | - A#1 - A#1 - A#1 - A#2 | - C2 - C2 C3 C2 E2 G2' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 E5 F5 D5 A5 F5 D5 A4 | G5 A5 A#5 G5 D6 A#5 G5 D5 | E5 F5 G5 E5 C6 G5 E5 C5 | F5 G5 A5 F5 C6 A5 F5 C5 | D6 C6 A#5 A5 G5 F5 E5 D5 | E5 F5 G5 A#5 A5 G5 F5 E5 | C#5 D5 E5 G5 F5 E5 D5 C#5 | D5 = A4 = D5 = = =' },
+      { type: 'vrc6pulse12', gain: 0.02, notes: 'A4 = F4 = D4 = F4 = | A#4 = G4 = D4 = G4 = | C5 = G4 = E4 = G4 = | C5 = A4 = F4 = A4 = | A#4 = F4 = D4 = F4 = | A#4 = G4 = D4 = G4 = | A4 = E4 = C#4 = E4 = | F4 = D4 = A3 = D4 =' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'D2 D3 D2 D3 D2 D3 C2 C3 | G1 G2 G1 G2 G1 G2 A1 A2 | C2 C3 C2 C3 C2 C3 B1 B2 | F1 F2 F1 F2 F1 F2 E1 E2 | A#1 A#2 A#1 A#2 A#1 A#2 A1 A2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 C#2 E2 | D2 D3 D2 D3 A1 A2 D2 =' },
     ],
     drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s s | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
   },
@@ -519,7 +519,7 @@ const BGM_INFO = [
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
-  { key: 'upgrade', name: 'ページ 強化 セレクト・ビート', desc: '明るい四つ打ちと裏打ちのベースに、跳ねるシンセのフックが乗る音ゲーの選曲画面風のループ。ワクワクする長調。VRC6風チップチューン。ヘ長調・BPM132' },
+  { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
