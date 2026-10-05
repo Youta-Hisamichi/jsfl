@@ -901,7 +901,7 @@ function setupObstacles(dropDebug) {
   } else { // 黄金角で回した点対称のペア
     for (let i = 0; i < 4; i++) { const a = rot + i * GOLDEN_ANGLE, rr = half * (i % 2 ? 0.66 : 0.66 / PHI * 1.05); cands.push({ a, rr }, { a: a + Math.PI, rr }); }
   }
-  const baseR = half * (0.09 + rnd() * 0.06); // 同じ配置内は同じ大きさでそろえる
+  const baseR = half * (0.075 + rnd() * 0.05); // 同じ配置内は同じ大きさでそろえる
   const spot = r => { // 候補を順に試して、空いている場所を返す
     while (cands.length) {
       const c = cands.shift();
@@ -929,7 +929,7 @@ function setupObstacles(dropDebug) {
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
     }
-    else if (kind === 'egg') { setupEggContents(o, rnd); o.r = r * 0.72; } // 卵は小さめ
+    else if (kind === 'egg') { setupEggContents(o, rnd); o.r = r * 0.87; } // 卵は小さめ
     else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
     else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
     if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8; // 当たり判定は幹・柱の根元
@@ -949,7 +949,7 @@ const DEBUG_OBSTACLES = [
   ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'ハテナボックス'],
 ];
 function debugSpawnObstacle(kind, sprite) {
-  const half = arena.radius, r = half * 0.12;
+  const half = arena.radius, r = half * 0.1;
   const spot = () => {
     for (let t = 0; t < 80; t++) {
       const x = arena.x + (Math.random() * 2 - 1) * half * 0.75, y = arena.y + (Math.random() * 2 - 1) * half * 0.75;
@@ -960,7 +960,7 @@ function debugSpawnObstacle(kind, sprite) {
     }
     return null;
   };
-  const make = () => { const p = spot(); if (!p) return null; const o = { debug: true, x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'egg') o.r = r * 0.72; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
+  const make = () => { const p = spot(); if (!p) return null; const o = { debug: true, x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'egg') o.r = r * 0.87; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
   const o = make(); if (!o) return false;
   if (kind === 'portal') { const o2 = make(); if (!o2) { obstacles.pop(); return false; } o.pair = o2; o2.pair = o; }
   spawnHitParticles(o.x, o.y, '#ffffff');
