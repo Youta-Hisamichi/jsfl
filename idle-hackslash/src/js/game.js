@@ -667,7 +667,7 @@ function bossContinue() {
 }
 document.getElementById('bossContAdBtn').addEventListener('click', () => {
   if (isAdFree()) { bossContinue(); return; }
-  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); bossContinue(); });
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); bossContinue(); }, '、HP全回復でボス戦をコンテニューできます');
 });
 document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   if (!bossContModal.classList.contains('show')) return;
@@ -685,6 +685,7 @@ function updateBossRetireBtn() {
   const b = document.getElementById('bossRetireBtn'); if (!b) return;
   const show = isBossFight() && !game.skipChallenge && phase === 'battle';
   if ((b.style.display !== 'none') !== show) b.style.display = show ? '' : 'none';
+  document.body.classList.toggle('in-boss', show); // ボス戦中は試練の塔ボタンを隠してリタイヤに場所をゆずる
 }
 function bossFail(reason) {
   const bossStage = game.stage;

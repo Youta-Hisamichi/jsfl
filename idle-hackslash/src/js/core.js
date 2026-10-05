@@ -271,8 +271,9 @@ function updateRewardAdButtons() {
     }
   });
 }
-function playRewardedVideo(onComplete) {
+function playRewardedVideo(onComplete, rewardText) { // rewardText：この動画で何がもらえるか（省略時はジェム）
   const startedAt = Date.now();
+  document.getElementById('rewardAdText').innerHTML = `最後まで視聴すると${rewardText || ` 💎${REWARD_AD_GEMS} を獲得できます`}`;
   rewardAdClaimBtn.style.display = 'none';
   rewardAdCloseBtn.style.display = 'flex';
   rewardAdProgress.style.width = '0%';

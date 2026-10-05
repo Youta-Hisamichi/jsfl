@@ -1705,7 +1705,7 @@ function openChestDialog(rarity) {
     showChestResult(rarity, openTreasureChest(rarity, mult), mult);
   };
   document.getElementById('chestOpenBtn').onclick = () => open(1);
-  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { open(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); open(3); }); };
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { open(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); open(3); }, '、宝箱の中身が3倍になります'); };
 }
 // 宝箱ボタン：そのレア度の宝箱（転生ガチャの分も）を一気に全部開けて、結果をカードで並べて見せる
 function openChestBatchDialog(rarity) {
@@ -1751,7 +1751,7 @@ function openChestBatchDialog(rarity) {
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
   document.getElementById('chestOpenBtn').onclick = () => openAll(1);
-  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }); };
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }, '、宝箱の中身が3倍になります'); };
 }
 function openAllChestDialog() { // まとめて開封
   const hc = getHeldChests(), total = CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0);
@@ -1780,7 +1780,7 @@ function openAllChestDialog() { // まとめて開封
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
   document.getElementById('chestOpenBtn').onclick = () => openAll(1);
-  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }); };
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }, '、宝箱の中身が3倍になります'); };
 }
 function rebirthChestCount(rarity) { return Array.isArray(game.rebirthChests) ? game.rebirthChests.filter(id => ARTIFACT_BY_ID[id] && ARTIFACT_BY_ID[id].rarity === rarity).length : 0; }
 function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開けるか、開けずに戻るか
@@ -1796,7 +1796,7 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   document.getElementById('rbOpenBtn').onclick = () => { closeChestDialog(); openStockedRebirthChest(rarity, 1); };
   document.getElementById('rbAdBtn').onclick = () => { // 動画を見ると中身の遺物が3個に
     if (isAdFree()) { closeChestDialog(); openStockedRebirthChest(rarity, 3); return; }
-    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); closeChestDialog(); openStockedRebirthChest(rarity, 3); });
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); closeChestDialog(); openStockedRebirthChest(rarity, 3); }, '、宝箱の中身が3倍になります');
   };
   chestModal.classList.add('show');
 }

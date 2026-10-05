@@ -1606,7 +1606,7 @@ function doSelfRebirth(mult) {
 document.getElementById('rebornConfirmOkBtn').addEventListener('click', () => doSelfRebirth(1));
 document.getElementById('rebornAdBtn').addEventListener('click', () => {
   if (isAdFree()) { doSelfRebirth(3); return; } // 紋章（サブスク）加入中は動画なし
-  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); });
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); }, '、転生報酬のジェムが3倍になります');
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', () => rebornConfirmModal.classList.remove('show'));
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) rebornConfirmModal.classList.remove('show'); });

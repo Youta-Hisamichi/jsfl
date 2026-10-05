@@ -1249,4 +1249,5 @@ body.user-paused .pause-badge { display: flex; border-radius: 12px; }
 .boss-cont-count { font-size: 2.4rem; font-weight: 900; color: #ff5c6c; line-height: 1; margin: 2px 0 6px; text-shadow: 0 0 10px rgba(255,92,108,0.5); }
 .boss-cont-count.tick { animation: bcTick 0.35s ease-out; }
 @keyframes bcTick { from { transform: scale(1.5); } to { transform: scale(1); } }
-.boss-retire-btn { position: absolute; right: 46px; bottom: 6px; z-index: 8; height: 34px; padding: 0 10px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,0.7); background: rgba(120,20,30,0.75); color: #fff; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
+.boss-retire-btn { background: linear-gradient(180deg, #8a2a34, #5a141c); color: #fff; border-color: #ffb3b8; } /* 誤タップしないよう、ゲーム画面の外（転生ボタンの横）に置く */
+body.in-boss #stageSkipBtn { display: none !important; }
