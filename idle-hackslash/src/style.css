@@ -1244,3 +1244,5 @@ body.hp-safe .hp-card.player { display: none; } /* 雑魚戦はHPが減らない
 @keyframes clPop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
 .cl-card .cl-tag { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; font-weight: 900; color: #fff; background: #b06cff; border-radius: 999px; padding: 0 5px; }
 .cl-card .cl-desc { font-size: 0.56rem; line-height: 1.25; margin-top: 2px; color: var(--rc); font-weight: 700; word-break: break-all; }
+.game-pause-btn { position: absolute; right: 6px; bottom: 6px; z-index: 8; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.7); background: rgba(8,11,18,0.6); color: #fff; font-size: 0.95rem; line-height: 1; cursor: pointer; }
+body.user-paused .pause-badge { display: flex; border-radius: 12px; }

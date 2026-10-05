@@ -474,8 +474,10 @@ function setUserPaused(on) {
   document.body.classList.toggle('user-paused', on);
   const dbtn = document.getElementById('debugPauseBtn');
   if (dbtn) dbtn.textContent = on ? '▶ 再開（T キー）' : '⏸ 一時停止（T キー）';
+  const gbtn = document.getElementById('gamePauseBtn'); if (gbtn) gbtn.textContent = on ? '▶' : '⏸';
   if (audioCtx) { if (on) audioCtx.suspend(); else audioCtx.resume(); } // BGM・効果音も止める
 }
+document.getElementById('gamePauseBtn').addEventListener('click', ev => { ev.stopPropagation(); setUserPaused(!userPaused); });
 document.addEventListener('keydown', ev => {
   if (ev.key !== 't' && ev.key !== 'T') return;
   if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return; // 文字入力中は無視
