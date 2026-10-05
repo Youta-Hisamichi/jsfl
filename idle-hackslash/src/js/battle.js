@@ -1419,7 +1419,7 @@ function checkLoginBonus(awayMs) {
   panel.className = 'modal-panel lb-panel';
   panel.style.setProperty('--lb', '#ffd76b');
   orb.style.setProperty('--orb', '#ffd76b');
-  orb.className = 'lb-orb shaking';
+  orb.className = 'lb-orb shaking'; orb.innerHTML = xi('x_present') || '🎁'; // 抽選中はプレゼント箱
   rarityEl.className = 'lb-rarity'; rarityEl.innerHTML = '';
   document.getElementById('lbConfetti').innerHTML = '';
   loginBonusStreak.textContent = `おかえり！ 離れていた時間 ${formatAway(awayMs)}`;
@@ -1445,8 +1445,13 @@ function checkLoginBonus(awayMs) {
     if (cyc < 14) later(cycle, 60 + cyc * 12);
   };
   later(cycle, 200);
+  // 結果が出たら、プレゼント箱を「手に入った一番良い宝箱」の絵に（宝箱がなければコイン）
+  const gotChests = [chestArtifact && chestArtifact.rarity, bonusArtifact && bonusArtifact.rarity, ...CHEST_RARITIES.filter(k => idleChestRarities[k])].filter(Boolean);
+  const bestChest = CHEST_RARITIES.filter(k => gotChests.includes(k)).pop();
+  const orbIcon = bestChest ? (xi(CHEST_ICON[bestChest]) || '🎁') : (xi('x_up_coin') || '🟡');
   const showRarity = (r, withUp) => {
     const info = RARITY_INFO[r];
+    orb.innerHTML = orbIcon;
     panel.style.setProperty('--lb', info.color);
     orb.style.setProperty('--orb', info.color);
     orb.className = 'lb-orb burst';
