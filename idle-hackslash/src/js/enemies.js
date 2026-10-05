@@ -903,7 +903,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     spawnExpGems(o.x, o.y, 10); spawnDamageText(x, y, '🧊 パリーン！', '#bfeaff', 0.018, true);
     if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${h}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
-    spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, '🔮 経験値ザクザク！', '#c79bff', 0.016, true);
+    spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
     if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
     const rar = r < 0.3 ? 'legendary' : 'epic';
@@ -1031,7 +1031,7 @@ function openQBox(o) {
   if (r < 0.05) { spawnDamageText(x, y, '🌈 激レア宝箱！！', '#ffd76b', 0.012, true); dropTreasureChest('legendary'); }
   else if (r < 0.2) { spawnDamageText(x, y, '🎁 宝箱！', '#7fd6ff', 0.016, true); dropTreasureChest('rare'); }
   else if (r < 0.55) { const coins = Math.round(getEnemyStats(game.stage).hp * 1.2 + 20); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
-  else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, '💎 経験値ザクザク！', '#7ee7ff', 0.016, true); }
+  else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
   else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${h}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }

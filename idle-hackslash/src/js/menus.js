@@ -784,6 +784,7 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
   ctx.restore();
 }
 // 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
+const AUTO_PULL_AIM_RATE = 0.33; // オートの体当たりで敵を狙う割合
 const AUTO_PULL_IDLE_MS = 3000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
 ['pointerdown', 'pointerup', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
@@ -795,7 +796,14 @@ function tickAutoPull() {
   if (!nextAutoPullAt) { nextAutoPullAt = now + 600; return; }
   if (now < nextAutoPullAt) return;
   nextAutoPullAt = now + AUTO_PULL_GAP_MS[0] + Math.random() * (AUTO_PULL_GAP_MS[1] - AUTO_PULL_GAP_MS[0]);
-  launchPull(Math.random() * Math.PI * 2, 0.45 + Math.random() * 0.55);
+  let ang = Math.random() * Math.PI * 2;
+  if (Math.random() < AUTO_PULL_AIM_RATE) { // 3回に1回くらいは一番近い敵を狙う
+    const pl = balls.find(isMainPlayerBall);
+    const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
+    const t = pl && nearestOf(pl, foes);
+    if (t) ang = Math.atan2(t.y - pl.y, t.x - pl.x);
+  }
+  launchPull(ang, 0.45 + Math.random() * 0.55);
 }
 // タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
 const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;

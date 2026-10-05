@@ -171,6 +171,7 @@ let powerUpPending = false;
 // レベル：敵を倒すと経験値。ゲージがMAXになるとレベルアップして3択パワーアップ（転生でLv1に戻る）
 function getLvNeed(lv) { return 30 + lv * 15; }
 function renderLvGauge() {
+  { const row = document.querySelector('.lv-row'); if (row) row.style.display = EXP_ENABLED ? '' : 'none'; }
   const lv = game.pLv || 1, ex = game.pExp || 0, need = getLvNeed(lv);
   document.getElementById('pLvNum').textContent = lv;
   const f = document.getElementById('pLvFill'); f.style.width = Math.min(100, ex / need * 100) + '%'; f.classList.toggle('full', powerUpPending);
@@ -198,7 +199,14 @@ function gainExp(n) {
 }
 // 経験値は敵を倒すと出る「経験値ジェム」を拾って得る（近づくと吸い寄せられる・しばらくすると自動で飛んでくる）
 let expGems = [], lastKillPos = null;
+// 経験値とレベルアップ3択は一旦お休み（true に戻すと経験値ダイヤ・Lvバー・3択パワーアップが復活）
+const EXP_ENABLED = false;
 function spawnExpGems(x, y, total) {
+  if (!EXP_ENABLED) { // 経験値の代わりに少しのコインにする（ハテナボックス・氷・水晶などの中身）
+    const c = Math.max(1, Math.round(total * (5 + game.stage) * computeBonuses().coinMult * 0.5));
+    if (total <= 4) return; // 雑魚を倒したときの経験値ぶんは無し
+    game.coins += c; spawnCoinBurst(x, y, c, 5); updateStatsUI(); return;
+  }
   const n = Math.min(8, Math.max(1, Math.round(total / 6)));
   for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 2.5; expGems.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, v: total / n, born: Date.now(), big: total >= 30 }); }
 }
@@ -246,7 +254,7 @@ function drawExpGems() {
   }
   ctx.restore();
 }
-function checkPowerUp(isBoss) { const p = lastKillPos || arena; spawnExpGems(p.x, p.y, isBoss ? 40 : 12); }
+function checkPowerUp(isBoss) { if (!EXP_ENABLED) return; const p = lastKillPos || arena; spawnExpGems(p.x, p.y, isBoss ? 40 : 12); }
 function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に剣
   return `<span class="ico-combo"><img class="ico-img" src="${ICON_IMAGES.tab_companion}" alt=""><span class="ico-badge">⚔️</span></span>`;
 }
