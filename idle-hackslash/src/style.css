@@ -676,12 +676,15 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .battle-notice.at-tap { transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
 .clone-counter { position: absolute; right: 2%; top: 2%; z-index: 2; color: #b9e0ff; background: rgba(8,11,18,.75); border: 1px solid rgba(134,197,255,.55); padding: 4px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; pointer-events: none; }
 .boss-warning {
-  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-  font-size: 1.9rem; font-weight: 900; letter-spacing: 0.08em; color: #ff3b4a;
-  text-shadow: 0 0 10px rgba(255,59,74,0.9), 0 0 22px rgba(255,59,74,0.6);
-  opacity: 0; pointer-events: none; z-index: 6; transition: opacity 0.15s ease, transform 0.15s ease;
+  position: absolute; top: 40%; left: 0; right: 0; transform: translateY(-50%) scaleY(0.2);
+  text-align: center; pointer-events: none; z-index: 6; opacity: 0; transition: opacity 0.2s ease, transform 0.25s cubic-bezier(.3,1.6,.5,1);
+  background: linear-gradient(180deg, rgba(60,0,8,0) 0%, rgba(60,0,8,0.78) 18%, rgba(60,0,8,0.78) 82%, rgba(60,0,8,0) 100%); padding: 2px 0;
 }
-.boss-warning.show { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: warnFlash 0.4s ease-in-out infinite alternate; }
+.boss-warning.show { opacity: 1; transform: translateY(-50%) scaleY(1); }
+.boss-warning .bw-main { font-size: 2.1rem; font-weight: 900; letter-spacing: 0.14em; color: #ff3b4a; text-shadow: 0 0 10px rgba(255,59,74,0.9), 0 0 22px rgba(255,59,74,0.6); animation: warnFlash 0.35s ease-in-out infinite alternate; }
+.boss-warning .bw-sub { font-size: 0.85rem; font-weight: 800; color: #ffd0d0; letter-spacing: 0.06em; margin-bottom: 2px; }
+.boss-warning .bw-band { height: 8px; margin: 3px 0; background: repeating-linear-gradient(-45deg, #ffcc00 0 10px, #1a1a1a 10px 20px); background-size: 28px 8px; animation: bwScroll 0.6s linear infinite; opacity: 0.9; }
+@keyframes bwScroll { from { background-position: 0 0; } to { background-position: 28px 0; } }
 @keyframes warnFlash { from { opacity: 1; } to { opacity: 0.45; } }
 .loot-popup { position: absolute; left: 50%; top: 24%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; text-align: center; min-width: 58%; max-width: 86%; padding: 10px 14px; border-radius: 14px; background: rgba(8,11,18,0.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); text-shadow: 0 1px 2px rgba(0,0,0,0.8); border: 2px solid #ffd76b; color: #fff; opacity: 0; }
 .loot-popup .lp-title { font-size: 0.7rem; font-weight: 800; color: #ffd76b; letter-spacing: 0.05em; }

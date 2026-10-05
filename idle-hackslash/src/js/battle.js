@@ -1325,13 +1325,15 @@ function daysBetweenKeys(a, b) {
   const db = new Date(by, bm - 1, bd);
   return Math.round((db - da) / 86400000);
 }
+const BOSS_WARNING_MS = 2900, BOSS_ENTRANCE_FRAMES = 55; // 警告の長さ・ボスが降ってきて着地するまで
 function showBossWarning() {
   const ms = game.stage % 10 === 0 && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは特別な警告
-  bossWarning.textContent = ms ? `⚠ ${ms.label} ⚠` : 'WARNING';
+  const em = forcedBossEmoji || getStageBossEmoji(game.stage), name = (BOSS_ENEMY_NAMES && BOSS_ENEMY_NAMES[em]) || 'ボス';
+  bossWarning.innerHTML = `<div class="bw-band"></div><div class="bw-main">${ms ? `⚠ ${ms.label} ⚠` : 'WARNING'}</div><div class="bw-sub">${name} が接近中！</div><div class="bw-band"></div>`;
   bossWarning.classList.add('show');
-  if (ms) { shakeScreen(); setTimeout(playWarningSound, 600); }
-  playWarningSound();
-  setTimeout(() => bossWarning.classList.remove('show'), 1800);
+  if (ms) shakeScreen();
+  playWarningSound(); setTimeout(playWarningSound, 900); setTimeout(playWarningSound, 1800); // 警報を3回鳴らす
+  setTimeout(() => bossWarning.classList.remove('show'), BOSS_WARNING_MS);
 }
 
 function ensureDailyClearReset() {

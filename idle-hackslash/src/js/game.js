@@ -42,8 +42,15 @@ function step() {
   let battleEnded = false;
   if (e.spawnTimer > 0) {
     e.spawnTimer = Math.max(0, e.spawnTimer - speedMult);
-    const t = 1 - e.spawnTimer / 24;
-    e.radius = Math.max(4, e.baseRadius * t);
+    if (e.entrance) { // ボスは上空から落ちてきて、地響きとともに着地
+      const t = 1 - e.spawnTimer / e.entrance.total;
+      e.radius = e.baseRadius; e.vx = 0; e.vy = 0;
+      e.y = e.entrance.ty - (1 - t) * (1 - t) * arena.radius * 1.6;
+      if (e.spawnTimer <= 0) { e.y = e.entrance.ty; e.entrance = null; bossLandingFx(e); }
+    } else {
+      const t = 1 - e.spawnTimer / 24;
+      e.radius = Math.max(4, e.baseRadius * t);
+    }
     e.hitCooldown = Math.max(e.hitCooldown || 0, 10); // 出現中は無敵気味に
     if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); return; } // 完全出現までは攻撃判定なし
   }
@@ -942,17 +949,38 @@ function spawnNextEnemy() {
   }
   balls = [...allies, makeBall(false)];
 }
+function bossLandingFx(e) { // ボス着地：地響き・砂煙・名乗り
+  shakeScreen(); thump(70, 28, 0.7, 0.65); thump(140, 50, 0.4, 0.35, 'sawtooth'); playNoiseBurst(0.5, 0.35);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; spawnHitParticles(e.x + Math.cos(a) * e.radius * 1.2, e.y + e.radius * 0.6 + Math.sin(a) * e.radius * 0.35, i % 2 ? '#c8b89a' : '#8d7f68'); }
+  bossLandRing = { x: e.x, y: e.y + e.radius * 0.6, r: e.radius, t: Date.now() };
+  const name = e.milestone && !game.skipChallenge ? e.milestone.label : (BOSS_ENEMY_NAMES[e.emoji] || 'ボス');
+  spawnDamageText(e.x, e.y - e.radius - 30, `👑 ${name}`, '#ffd76b', 0.01, true);
+}
+let bossLandRing = null;
+function drawBossEntrance() { // 落下中の影（だんだん大きく濃く）と、着地の衝撃波
+  for (const e of balls) {
+    if (!e.entrance) continue;
+    const t = 1 - e.spawnTimer / e.entrance.total, gy = e.entrance.ty + e.baseRadius * 0.7;
+    ctx.save(); ctx.fillStyle = `rgba(0,0,0,${0.15 + 0.45 * t})`;
+    ctx.beginPath(); ctx.ellipse(e.x, gy, e.baseRadius * (0.4 + 0.9 * t), e.baseRadius * (0.15 + 0.3 * t), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  if (bossLandRing) {
+    const k = (Date.now() - bossLandRing.t) / 600; if (k > 1) { bossLandRing = null; return; }
+    ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#ffe2b0'; ctx.lineWidth = 6 * (1 - k) + 1;
+    ctx.beginPath(); ctx.ellipse(bossLandRing.x, bossLandRing.y, bossLandRing.r * (1 + k * 3), bossLandRing.r * (0.35 + k), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+}
 function spawnBossWithWarning() {
   showBossWarning();
   balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
   setTimeout(() => {
     spawnNextEnemy();
     const bossBall = balls.find(ball => ball.isBoss);
-    if (bossBall) { bossBall.spawnTimer = 24; bossBall.baseRadius = bossBall.radius; }
+    if (bossBall) { bossBall.spawnTimer = BOSS_ENTRANCE_FRAMES; bossBall.baseRadius = bossBall.radius; bossBall.entrance = { ty: bossBall.y, total: BOSS_ENTRANCE_FRAMES }; playTone(900, 0.9, 'sine', 0.06, 200); } // 上空から落ちてくる
     refreshPlayerBallStats(false); // ボス出現時（スキップ挑戦含む）も自機のHPは回復しない
     updateHPUI();
     startBgm('boss');
-  }, 1850);
+  }, BOSS_WARNING_MS + 50);
 }
 function startSkipChallenge(challenge) {
   const { target, cost } = challenge;

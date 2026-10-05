@@ -5,6 +5,7 @@ function draw() {
   ctx.clearRect(0, 0, size, size);
   drawArenaFloor();
   drawObstacles();
+  drawBossEntrance();
   arenaPath();
   ctx.strokeStyle = 'rgba(150,160,190,0.35)';
   ctx.lineWidth = 2;
