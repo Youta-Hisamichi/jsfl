@@ -550,7 +550,7 @@ const PLAYER_BASE_CLASH = 10;
 const ENEMY_BASE_CLASH = 10;
 const ENEMY_CLASH_PER_STAGE = 0.01;   // ステージごとに敵の迫り合い +1%
 const BOSS_CLASH_MULT = 1.3;          // ボスは1.3倍
-function getPlayerClash() { return PLAYER_BASE_CLASH * (1 + 0.1 * (game.upgrades.clash || 0)); }
+function getPlayerClash() { return PLAYER_BASE_CLASH; }
 function getEnemyClash(enemy) {
   return ENEMY_BASE_CLASH * (1 + (game.stage - 1) * ENEMY_CLASH_PER_STAGE) * (enemy && enemy.isBoss ? BOSS_CLASH_MULT : 1);
 }

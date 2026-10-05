@@ -643,23 +643,27 @@ function getEvolveNeed(id) {
 
 const UPGRADES = {
   atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25, group: 'attack' },
-  crit: { icon: '🎯', name: '会心率', desc: '+1%', baseCost: 40, group: 'attack', max: 30 },
-  critDmg: { icon: '💥', name: '会心ダメージ', desc: '+5%', baseCost: 40, group: 'attack' },
-  accuracy: { icon: '🔍', name: '命中', desc: '+0.5%', baseCost: 35, group: 'attack', max: 20 },
-  bossDmg: { icon: '👑', name: 'ボス特攻', desc: '+3%', baseCost: 45, group: 'attack' },
   hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
-  clash: { icon: '🤜', name: '迫り合い', desc: '+10%（衝突時に攻撃できる確率アップ）', baseCost: 30, group: 'defense' },
-  evasion: { icon: '🍃', name: '回避', desc: '+0.5%', baseCost: 35, group: 'defense', max: 20 },
-  coin: { icon: '🟡', name: 'コイン獲得', desc: '+5%', baseCost: 40, group: 'economy' },
   compAtk: { icon: '🐾', name: '仲間の攻撃力', desc: '+8%', baseCost: 40, group: 'companion' },
 };
-const UPGRADE_GROUPS = [
-  { id: 'attack', label: `${xi('x_up_attack')} 攻撃` },
-  { id: 'defense', label: `${xi('x_up_defense')} 防御` },
-  { id: 'economy', label: `${xi('x_up_coin')} コイン` },
-  { id: 'companion', label: `${xi('x_up_companion')} 仲間` },
+const UPGRADE_LEAPS = [
+  { every: 1000, mult: 3, name: '超大飛躍', color: '#ff5cd6' },
+  { every: 100, mult: 1.5, name: '大飛躍', color: '#e08a00' },
+  { every: 10, mult: 1.1, name: 'プチ飛躍', color: '#2a9d55' },
 ];
-let upgradeCategory = 'attack'; // 強化ページで表示中のカテゴリ
+// そのレベルで到達済みの飛躍倍率。プチ飛躍は+10%ずつ加算、大飛躍×1.5・超大飛躍×3は掛け算（インフレしすぎないように）
+function upgradeLeapMult(level) {
+  const n1000 = Math.floor(level / 1000), n100 = Math.floor(level / 100) - n1000, n10 = Math.floor(level / 10) - Math.floor(level / 100);
+  return (1 + 0.1 * n10) * Math.pow(1.5, n100) * Math.pow(3, n1000);
+}
+// from→to のレベルアップで到達した最大の飛躍（なければ null）
+function crossedUpgradeLeap(from, to) {
+  return UPGRADE_LEAPS.find(l => Math.floor(to / l.every) > Math.floor(from / l.every)) || null;
+}
+function nextUpgradeLeap(level) {
+  const target = (Math.floor(level / 10) + 1) * 10;
+  return { target, leap: UPGRADE_LEAPS.find(l => target % l.every === 0) };
+}
 function newUpgradeLevels() { const o = {}; for (const id in UPGRADES) o[id] = 0; return o; }
 function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
 const SHOP_ITEMS = {
@@ -1040,17 +1044,15 @@ function computeBonuses() {
     if (id === 'pinchMask') b.pinchAtk += 0.6 * cap;
     if (id === 'rebirthOrb') b.rebirthGems += 2 * cap;
   }
-  b.atkMult += game.upgrades.atk * 0.15;
-  b.hpMult += game.upgrades.hp * 0.20;
   const up = game.upgrades;
-  b.critChance += (up.crit || 0) * 0.01;
-  b.critMultBonus += (up.critDmg || 0) * 0.05;
-  b.accuracy += (up.accuracy || 0) * 0.005;
-  b.evasion += (up.evasion || 0) * 0.005;
+  b.atkMult += (up.atk || 0) * 0.15;
+  b.hpMult += (up.hp || 0) * 0.20;
   b.tackleMult += (up.tackle || 0) * 0.08;
-  b.bossDmg += (up.bossDmg || 0) * 0.03;
-  b.coinMult += (up.coin || 0) * 0.05;
   b.companionAtkMult += (up.compAtk || 0) * 0.08;
+  // 強化の飛躍：10Lvごとにプチ飛躍・100Lvごとに大飛躍・1000Lvごとに超大飛躍（倍率で掛かる）
+  b.atkMult *= upgradeLeapMult(up.atk || 0);
+  b.hpMult *= upgradeLeapMult(up.hp || 0);
+  b.companionAtkMult *= upgradeLeapMult(up.compAtk || 0);
   if (game.shopOwned.sword) b.atkMult += 0.25;
   if (game.shopOwned.shield) b.hpMult += 0.25;
   if (game.shopOwned.fairy) b.coinMult += 0.30;
@@ -1120,23 +1122,13 @@ function getMaxAffordableUpgradeLevels(id, coins) {
 function getUpgradeStatValue(id) {
   if (id === 'atk') return getPlayerAtk();
   if (id === 'hp') return getPlayerMaxHP();
-  if (id === 'clash') return getPlayerClash();
   const b = computeBonuses();
-  if (id === 'crit') return Math.min(1, CRIT_CHANCE + b.critChance);
-  if (id === 'critDmg') return CRIT_MULT + b.critMultBonus;
-  if (id === 'accuracy') return PLAYER_BASE_ACCURACY + b.accuracy;
-  if (id === 'evasion') return PLAYER_BASE_EVASION + b.evasion;
   if (id === 'tackle') return b.tackleMult;
-  if (id === 'bossDmg') return b.bossDmg;
-  if (id === 'coin') return b.coinMult;
   if (id === 'compAtk') return b.companionAtkMult;
   return 0;
 }
 function formatUpgradeStat(id, v) {
-  if (id === 'clash') return +v.toFixed(1);
-  if (id === 'crit' || id === 'accuracy' || id === 'evasion') return +(v * 100).toFixed(1) + '%';
-  if (id === 'critDmg' || id === 'tackle' || id === 'coin' || id === 'compAtk') return '×' + +v.toFixed(2);
-  if (id === 'bossDmg') return '+' + +(v * 100).toFixed(0) + '%';
+  if (id === 'tackle' || id === 'compAtk') return '×' + +v.toFixed(2);
   return formatCoinNumber(Math.round(v));
 }
 function renderUpgradeList() {
@@ -1152,21 +1144,19 @@ function renderUpgradeList() {
     const cost = getUpgradeCost(id);
     const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
     const pctCount = getMaxAffordableUpgradeLevels(id, game.coins * PCT_BUDGET);
+    const nl = nextUpgradeLeap(level);
+    const leapTag = `<span class="upgrade-leap" style="color:${nl.leap.color}">次の${nl.leap.name}（${nl.leap.every === 10 ? '+10%' : '×' + nl.leap.mult}）まで あと${nl.target - level}Lv</span>`;
     const now = getUpgradeStatValue(id);
     game.upgrades[id] = level + 1;
     const next = getUpgradeStatValue(id);
     game.upgrades[id] = level;
     return `<div class="upgrade-row">
-      <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span><span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
+      <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
       <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${pctCount} Lv.</span></button>
       <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
     </div>`;
   };
-  renderSubTabs(document.getElementById('upgradeTabs'), UPGRADE_GROUPS, upgradeCategory, cat => {
-    upgradeCategory = cat;
-    renderUpgradeList();
-  });
-  upgradeList.innerHTML = Object.entries(UPGRADES).filter(([, u]) => u.group === upgradeCategory).map(row).join('');
+  upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');
 }
 function renderShopList() {
   shopList.innerHTML = Object.entries(SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {

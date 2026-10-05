@@ -335,14 +335,14 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
-  settings: { // 設定画面：古典RPGのメニュー画面のような、ハープの分散和音と笛の旋律が流れる落ち着いた曲（ホ短調ドリア風）
-    bpm: 92,
+  settings: { // 設定画面：ゴシックホラー城アクションの名前入力・パスワード画面のような、チェンバロ風の分散和音と妖しい旋律（ニ短調・和声的短音階）
+    bpm: 112,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.026, notes: 'E5 = = F#5 G5 = B5 = | A5 = = G5 F#5 = D5 = | G5 = = A5 B5 = D6 = | C#6 = = B5 A5 = = = | B5 = = A5 G5 = E5 = | F#5 = = G5 A5 = F#5 = | G5 = F#5 = E5 = D#5 = | E5 = = = = = = =' },
-      { type: 'vrc6pulse12', gain: 0.017, notes: 'E4 B4 E5 G5 B5 G5 E5 B4 | D4 A4 D5 F#5 A5 F#5 D5 A4 | G3 D4 G4 B4 D5 B4 G4 D4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | E4 B4 E5 G5 B5 G5 E5 B4 | D4 A4 D5 F#5 A5 F#5 D5 A4 | C4 G4 C5 E5 B3 F#4 B4 D#5 | E4 B4 E5 G5 B5 G5 E5 B4' },
-      { type: 'vrc6saw', gain: 0.032, notes: 'E2 = = = = = = = | D2 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | E2 = = = = = = = | D2 = = = = = = = | C2 = = = B1 = = = | E2 = = = = = = =' },
+      { type: 'vrc6pulse25', gain: 0.026, notes: 'D5 = = F5 A5 = D6 = | C6 = A#5 A5 G5 = E5 = | F5 = = D5 A#5 = A5 G5 | A5 = = = C#5 = E5 = | G5 = A#5 = D6 = C6 A#5 | A5 = F5 = D5 = F5 A5 | G#5 = = B5 D6 = C6 B5 | A5 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.017, notes: 'D4 F4 A4 D5 A4 F4 D4 F4 | C4 E4 G4 C5 G4 E4 C4 E4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | A3 C#4 E4 A4 E4 C#4 A3 C#4 | G3 A#3 D4 G4 D4 A#3 G3 A#3 | F3 A3 D4 F4 D4 A3 F3 A3 | E3 G#3 B3 D4 B3 G#3 E3 G#3 | A3 C#4 E4 G4 E4 C#4 A3 C#4' },
+      { type: 'vrc6saw', gain: 0.034, notes: 'D2 = = = A1 = = = | C2 = = = G1 = = = | A#1 = = = F1 = = = | A1 = = = E1 = = = | G1 = = = D2 = = = | F1 = = = A1 = = = | E1 = = = G#1 = = = | A1 = = = A1 = A2 =' },
     ],
-    drums: 'h - - - h - - - | h - - - h - - - | h - - - h - - - | h - - - h - - - | h - - - h - - - | h - - - h - - - | h - - - h - - - | h - - - h - - -',
+    drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h h | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s s s s',
   },
   credits: {
     bpm: 96,
@@ -540,7 +540,7 @@ const BGM_INFO = [
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
-  { key: 'settings', name: 'ページ 設定 旅の手帖', desc: 'ハープの分散和音にのせて笛のような旋律がゆったり流れる、古典RPGのメニュー画面のような落ち着いた曲。VRC6風チップチューン。ホ短調ドリア風・BPM92' },
+  { key: 'settings', name: 'ページ 設定 刻印の扉', desc: 'チェンバロ風の分散和音に妖しい旋律が重なる、ゴシックホラー城アクションの名前入力・パスワード画面のような曲。VRC6風チップチューン。ニ短調・BPM112' },
   { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];

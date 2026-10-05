@@ -124,6 +124,7 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .upgrade-btn { color: var(--text); background: var(--bg-soft); border: 1px solid var(--ring); border-radius: 9px; padding: 7px 5px; font-size: 0.68rem; cursor: pointer; }
 .upgrade-btn .upgrade-value { display: block; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
 .upgrade-btn .upgrade-value b { color: var(--gold); }
+.upgrade-btn .upgrade-leap { display: block; font-size: 0.7rem; font-weight: bold; margin-top: 2px; }
 .interstitial-ad { position: fixed; inset: 0; z-index: 95; display: none; flex-direction: column; background: linear-gradient(160deg, #1b2a4a, #0b1020); color: #fff; padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); }
 .interstitial-ad.show { display: flex; animation: iaFadeIn 0.25s ease-out; }
 @keyframes iaFadeIn { from { opacity: 0; } to { opacity: 1; } }

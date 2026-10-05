@@ -905,7 +905,9 @@ upgradeList.addEventListener('click', event => {
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
     const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
     spendCoins(totalCost);
+    const fromLv = game.upgrades[id];
     game.upgrades[id] += count;
+    announceUpgradeLeap(id, fromLv, game.upgrades[id]);
     refreshPlayerBallStats(false);
     playUpgradeSound();
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
@@ -948,12 +950,23 @@ setInterval(() => {
     const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
     if (!id || game.coins < getUpgradeCost(id)) break;
     spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
+    announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   }
   if (!bought) return;
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
 }, 1500);
+// 強化の飛躍（10/100/1000Lv到達）を演出
+function announceUpgradeLeap(id, from, to) {
+  const leap = crossedUpgradeLeap(from, to);
+  if (!leap) return;
+  const lv = Math.floor(to / leap.every) * leap.every;
+  showNotice(`✨ ${UPGRADES[id].name} Lv.${lv} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
+  const pl = balls.find(isMainPlayerBall);
+  if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
+  playStageClearSound();
+}
 function levelUpUpgrade(id, x, y) {
   if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
   if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', x, y); return false; }
@@ -961,6 +974,7 @@ function levelUpUpgrade(id, x, y) {
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
   spendCoins(cost);
   game.upgrades[id]++;
+  announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
   showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${game.upgrades[id]}`);
@@ -2260,6 +2274,7 @@ loadGame();
 delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
+if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
