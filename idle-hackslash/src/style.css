@@ -1242,3 +1242,4 @@ body.hp-safe .hp-card.player { display: none; } /* 雑魚戦はHPが減らない
 .cl-card .cl-name { font-size: 0.62rem; font-weight: 800; line-height: 1.2; margin-top: 3px; color: var(--text); word-break: break-all; }
 .cl-card .cl-n { font-size: 0.8rem; font-weight: 900; color: var(--rc); }
 @keyframes clPop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+.cl-card .cl-tag { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; font-weight: 900; color: #fff; background: #b06cff; border-radius: 999px; padding: 0 5px; }
