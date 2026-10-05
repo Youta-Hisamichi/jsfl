@@ -705,6 +705,8 @@ debugRow.addEventListener('click', event => {
     saveGame();
   }
   if (action === 'pause') { setUserPaused(!userPaused); return; }
+  if (action.startsWith('chest:')) { const k = action.slice(6), hc = getHeldChests(); hc[k] = (hc[k] || 0) + 5; renderChestTray(k); saveGame(); showNotice(`DEBUG: ${RARITY_INFO[k].label}の宝箱 +5（${hc[k]}個）`); return; }
+  if (action === 'chestClear') { game.heldChests = {}; game.rebirthChests = []; renderChestTray(); saveGame(); showNotice('DEBUG: 宝箱を全部消しました'); return; }
   if (action.startsWith('enemy:')) {
     const key = action.slice(6);
     const [kind, val] = key.split(':');
