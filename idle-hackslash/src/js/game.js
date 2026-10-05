@@ -640,11 +640,11 @@ function startBossContCountdown() {
   clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
   const el = document.getElementById('bossContCount');
   const show = () => { el.textContent = bossContLeft; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
-  show();
+  show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
     if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
     if (rewardAdModal.classList.contains('show')) return; // 動画中は止める
-    bossContLeft--; show(); playTone(bossContLeft <= 3 ? 1100 : 760, 0.06, 'square', 0.05);
+    bossContLeft--; show(); if (bossContLeft > 0) playContinueTick(bossContLeft);
     if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
   }, 1000);
 }

@@ -817,6 +817,14 @@ function drawNatureSprite(o) {
   }
   return true;
 }
+// 卵の見た目（13種×ひびの段階5枚）。床に合う色が出やすい
+const EGG_SKINS = ['white', 'brown', 'leaf', 'water', 'fire', 'dark', 'ice', 'obsidian', 'gold', 'amethyst', 'rainbow', 'moss', 'skull'];
+EGG_SKINS.forEach(k => { for (let i = 0; i < 5; i++) { const img = new Image(); img.src = `assets/img/obstacles/eggs/egg_${k}_${i}.webp`; OBSTACLE_IMGS[`egg_${k}_${i}`] = img; } });
+const EGG_SKIN_BY_FLOOR = { lawn: ['white', 'brown', 'leaf'], dirt: ['brown', 'leaf', 'moss'], desert: ['fire', 'gold', 'brown'], mossStone: ['moss', 'leaf'], town: ['white', 'gold'], snow: ['ice', 'water'], market: ['gold', 'rainbow', 'white'], woodFloor: ['water', 'brown'], ruins: ['moss', 'skull', 'amethyst'], tower: ['dark', 'amethyst', 'obsidian'], sea: ['water'], dungeon: ['skull', 'obsidian', 'fire'], dungeon2: ['dark', 'skull'], dryCrack: ['fire', 'obsidian'], mystic: ['rainbow', 'amethyst'] };
+function pickEggSkin(floorKey, rnd) {
+  const list = rnd() < 0.15 ? EGG_SKINS : (EGG_SKIN_BY_FLOOR[floorKey] || EGG_SKINS); // たまに珍しい色
+  return list[Math.floor(rnd() * list.length)];
+}
 const ORB_COLORS = ['pink', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'violet', 'black', 'silver', 'gold', 'rainbow', 'crystal', 'galaxy'];
 const SPIKE_SPRITES = ['spikeBall', 'saw', 'gear', 'spikeLog', 'spikePillar'];
 // 壊せる障害物：耐久と、壊れたときの破片の色
@@ -915,6 +923,7 @@ function setupObstacles(dropDebug) {
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
     }
+    else if (kind === 'egg') o.eggSkin = pickEggSkin(floorKey, rnd);
     else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
     else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
     if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8; // 当たり判定は幹・柱の根元
@@ -1233,12 +1242,17 @@ function drawObstacles() {
     } else if (o.kind === 'egg') { // 卵（ひびが増え、割れそうになると震える）
       const wob = o.hp <= 1 ? Math.sin(now / 40) * 0.12 : now - (o.shakeAt || 0) < 200 ? Math.sin(now / 25) * 0.15 : 0;
       ctx.translate(o.x, o.y + o.r * 0.9); ctx.rotate(wob); ctx.translate(-o.x, -(o.y + o.r * 0.9));
+      const skin = o.eggSkin || (o.eggSkin = EGG_SKINS[Math.floor(o.seed * EGG_SKINS.length)]), stage = Math.max(0, Math.min(4, Math.round((EGG_HP - o.hp) / EGG_HP * 4)));
+      const eimg = OBSTACLE_IMGS[`egg_${skin}_${stage}`];
+      if (eimg && eimg.complete && eimg.naturalWidth) { const h = o.r * 2.3, w = h * eimg.naturalWidth / eimg.naturalHeight; ctx.drawImage(eimg, o.x - w / 2, o.y + o.r * 0.95 - h, w, h); } // 画像があればひびの段階ごとの絵
+      else {
       const g = ctx.createRadialGradient(o.x - o.r * 0.3, o.y - o.r * 0.5, o.r * 0.1, o.x, o.y, o.r * 1.2);
       g.addColorStop(0, '#ffffff'); g.addColorStop(0.7, '#f3e6c4'); g.addColorStop(1, '#c9b48a');
       ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(o.x, o.y - o.r * 0.1, o.r * 0.82, o.r * 1.05, 0, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#8a7650'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.fillStyle = '#9c6fd0'; [[-0.3, -0.4, 0.14], [0.25, 0.05, 0.18], [-0.15, 0.45, 0.12], [0.35, -0.55, 0.1]].forEach(([dx, dy, rr]) => { ctx.beginPath(); ctx.arc(o.x + dx * o.r, o.y + dy * o.r, rr * o.r, 0, Math.PI * 2); ctx.fill(); }); // 怪しい模様
       if (o.cracks && o.cracks.length) { ctx.strokeStyle = '#3a2a10'; ctx.lineWidth = 1.6; for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px * 0.8, o.y + py * 0.9) : ctx.moveTo(o.x + px * 0.8, o.y + py * 0.9)); ctx.stroke(); } }
+      }
     } else if (o.kind === 'bumper') { // バンパー（オーブ。当たると光って膨らむ）
       const lit = now - (o.flash || 0) < 180;
       if (lit) { ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 20; }

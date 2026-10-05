@@ -778,6 +778,19 @@ function playLeapSound(tier = 1) {
   const end = notes.length * (tier >= 2 ? 70 : 60);
   setTimeout(() => { playTone(notes[notes.length - 1], 0.5, 'triangle', 0.1, notes[notes.length - 1] * 1.5); if (tier >= 2) { playTone(notes[notes.length - 3], 0.6, 'square', 0.05); playNoiseBurst(0.25, 0.08); } }, end);
 }
+// コンテニューのカウントダウン：レトロなゲーセン風に、数字ごとに太い「ポーン」を鳴らす（残り3以下は高く強く・2連打）
+function playContinueTick(n) {
+  if (!audioCtx) return;
+  const urgent = n <= 3, f = urgent ? 1046.5 : 784;
+  const hit = (delay, freq, g) => setTimeout(() => {
+    playTone(freq, 0.26, 'square', g, freq * 0.98);
+    playTone(freq / 2, 0.3, 'triangle', g * 1.3);
+    playTone(freq * 1.5, 0.12, 'square', g * 0.4);
+  }, delay);
+  hit(0, f, urgent ? 0.11 : 0.085);
+  if (urgent) hit(140, f * 1.26, 0.08); // 終盤は「ポポーン」と2連打で焦らせる
+  thump(160, 55, 0.18, urgent ? 0.22 : 0.16);
+}
 // 震える障害物にぶつかったときの「ブルン」：低い音をビブラートで揺らしながら少し下げる（amt 0〜1 で大きさ）
 function playWobbleSound(amt = 1) {
   if (!audioCtx || isBattleSfxMuted()) return;
