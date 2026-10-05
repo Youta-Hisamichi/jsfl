@@ -1750,9 +1750,9 @@ function openChestBatchDialog(rarity) {
     const order = g => g.art ? -RARITY_ORDER.indexOf(g.art.rarity) : 1;
     const cards = [...groups.values()].sort((x, y) => order(x) - order(y)).map((g, i) => {
       const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
-      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン ×${g.count}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
+      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン${g.count > 1 ? ' ×' + g.count : ''}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       const c = RARITY_INFO[g.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name} ×${g.n}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div></div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div></div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     document.getElementById('chestModalIcon').className = 'chest-big';

@@ -770,6 +770,19 @@ function playTowerStepsSound() {
     thump(140, 60, 0.09, 0.22, 'sine', d);
   }
 }
+// 震える障害物にぶつかったときの「ブルン」：低い音をビブラートで揺らしながら少し下げる（amt 0〜1 で大きさ）
+function playWobbleSound(amt = 1) {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const t0 = audioCtx.currentTime, dur = 0.22 + amt * 0.12;
+  const osc = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), depth = audioCtx.createGain(), g = audioCtx.createGain();
+  osc.type = 'triangle'; osc.frequency.setValueAtTime(190, t0); osc.frequency.exponentialRampToValueAtTime(95, t0 + dur);
+  lfo.frequency.setValueAtTime(22, t0); lfo.frequency.linearRampToValueAtTime(9, t0 + dur); // だんだんゆっくり揺れる
+  depth.gain.setValueAtTime(45, t0); depth.gain.exponentialRampToValueAtTime(4, t0 + dur);
+  lfo.connect(depth); depth.connect(osc.frequency);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime((0.1 + amt * 0.08) * game.sfxVolume, t0 + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(t0); lfo.start(t0); osc.stop(t0 + dur + 0.02); lfo.stop(t0 + dur + 0.02);
+}
 function thump(f0, f1, dur, gainAmt, type = 'sine', delay = 0) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const t0 = audioCtx.currentTime + delay;

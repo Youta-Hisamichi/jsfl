@@ -393,8 +393,9 @@ rankNextDayBtn.addEventListener('click', () => {
   renderRanking();
 });
 
-settingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); renderShopkeeper('settings'); if (typeof refreshBgm === 'function') refreshBgm(); });
-function closeSettingsModal() { settingsModal.classList.remove('show'); if (typeof refreshBgm === 'function') refreshBgm(); }
+let settingsPausedPhase = null; // 設定画面を開いている間はゲームを一時停止
+settingsBtn.addEventListener('click', () => { if (!settingsModal.classList.contains('show')) { settingsPausedPhase = phase === 'battle' ? 'battle' : null; if (settingsPausedPhase) phase = 'paused'; } settingsModal.classList.add('show'); renderShopkeeper('settings'); if (typeof refreshBgm === 'function') refreshBgm(); });
+function closeSettingsModal() { settingsModal.classList.remove('show'); if (settingsPausedPhase && phase === 'paused') phase = settingsPausedPhase; settingsPausedPhase = null; if (typeof refreshBgm === 'function') refreshBgm(); }
 settingsCloseBtn.addEventListener('click', closeSettingsModal);
 settingsModal.addEventListener('click', event => { if (event.target === settingsModal) closeSettingsModal(); });
 

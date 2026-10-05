@@ -1047,6 +1047,7 @@ function obstacleBounce(ball) {
     if (dot < -0.3) { // ブルッと揺れる＋種類ごとに跳ね返りの速さが変わる（バンパーとスライムは下で個別に加速）
       const info = obstacleBounceInfo(o);
       o.wobAt = now; o.wobAmp = Math.min(1, Math.max(0.35, -dot / 8)) * info.wobble;
+      if (info.wobble >= 0.5 && o.kind !== 'bumper' && now - (o.wobSoundAt || 0) > 180) { o.wobSoundAt = now; playWobbleSound(Math.min(1, -dot / 8)); } // 震える物は「ブルン」
       if (o.kind !== 'bumper' && o.kind !== 'slime' && info.speed !== 1) {
         const sp = Math.hypot(ball.vx, ball.vy), ns = Math.min(15, sp * info.speed);
         if (sp > 0.01) { ball.vx *= ns / sp; ball.vy *= ns / sp; }
