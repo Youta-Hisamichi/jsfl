@@ -335,14 +335,14 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
-  settings: { // 設定画面：ソシャゲRPGのトーナメント戦の待機ページのような、試合前の高揚感と緊張感のあるアップテンポ曲（ト長調）
-    bpm: 132,
+  settings: { // 設定画面：古典RPGのエンディング（旅の終わりを振り返る）ような、ゆったり懐かしく温かい曲（ニ長調・16小節）
+    bpm: 84,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.026, notes: 'D5 = G5 = A5 B5 = D6 | B5 = = A5 G5 = E5 = | E5 = G5 = C6 = B5 A5 | A5 = = = F#5 = A5 = | B5 = D6 = G6 = F#6 E6 | E6 = C6 = A5 = B5 C6 | D6 = E6 = C6 = G5 = | A5 = B5 C6 D6 = = =' },
-      { type: 'vrc6pulse12', gain: 0.016, notes: 'G4 B4 D5 G5 D5 B4 G4 B4 | E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | G4 B4 D5 G5 D5 B4 G4 B4 | A3 C4 E4 A4 E4 C4 A3 C4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 C5 A4 F#4 D4 F#4' },
-      { type: 'vrc6saw', gain: 0.036, notes: 'G1 G2 G1 G2 G1 G2 G1 G2 | E1 E2 E1 E2 E1 E2 E1 E2 | C1 C2 C1 C2 C1 C2 C1 C2 | D1 D2 D1 D2 D1 D2 D1 D2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | C1 C2 C1 C2 C1 C2 C1 C2 | D1 D2 D1 D2 D1 D2 D1 D2' },
+      { type: 'vrc6pulse25', gain: 0.027, notes: 'F#5 = = = E5 F#5 A5 = | E5 = = = = = C#5 = | D5 = = = C#5 D5 F#5 = | C#5 = = = = = A4 = | B4 = = = D5 = G5 = | F#5 = = = E5 = D5 = | E5 = = = F#5 = G5 = | A5 = = = = = = = | B5 = = = A5 = G5 = | A5 = = = E5 = C#6 = | A5 = = = G#5 = F#5 = | F#5 = = = = = D5 = | G5 = = = F#5 = E5 = | E5 = F#5 = G5 = C#5 = | D5 = = = = = = = | - - - - A4 = D5 =' },
+      { type: 'vrc6pulse12', gain: 0.015, notes: 'D4 = A4 = F#4 = A4 = | A3 = E4 = C#4 = E4 = | B3 = F#4 = D4 = F#4 = | F#3 = C#4 = A3 = C#4 = | G3 = D4 = B3 = D4 = | D4 = A4 = F#4 = A4 = | E4 = B4 = G4 = B4 = | A3 = E4 = C#4 = E4 = | G3 = D4 = B3 = D4 = | A3 = E4 = C#4 = E4 = | F#3 = C#4 = A3 = C#4 = | B3 = F#4 = D4 = F#4 = | E4 = B4 = G4 = B4 = | A3 = E4 = C#4 = E4 = | D4 = A4 = F#4 = A4 = | D4 = A4 = F#4 = A4 =' },
+      { type: 'vrc6saw', gain: 0.032, notes: 'D2 = = = A1 = = = | A1 = = = E2 = = = | B1 = = = F#2 = = = | F#1 = = = C#2 = = = | G1 = = = D2 = = = | D2 = = = A1 = = = | E2 = = = B1 = = = | A1 = = = E2 = = = | G1 = = = D2 = = = | A1 = = = E2 = = = | F#1 = = = C#2 = = = | B1 = = = F#2 = = = | E2 = = = B1 = = = | A1 = = = E2 = = = | D2 = = = A1 = = = | D2 = = = A1 = = =' },
     ],
-    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k k s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
+    drums: 'k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - - - | k - - - s - s s',
   },
   credits: {
     bpm: 96,
@@ -540,7 +540,7 @@ const BGM_INFO = [
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
-  { key: 'settings', name: 'ページ 設定 決戦前のロビー', desc: '試合開始を待つ高揚感と緊張感が詰まった、ソシャゲRPGのトーナメント戦の待機ページのような曲。VRC6風チップチューン。ト長調・BPM132' },
+  { key: 'settings', name: 'ページ 設定 この旅路の果てに', desc: '長い旅を終えて歩んだ道を振り返るような、古典RPGのエンディング風の懐かしく温かい曲。VRC6風チップチューン。ニ長調・BPM84' },
   { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
