@@ -1756,7 +1756,7 @@ function openChestBatchDialog(rarity) {
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     document.getElementById('chestModalIcon').className = 'chest-big';
-    document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:3rem">🎉</span>';
+    document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁'; // 開けた宝箱（そのレア度の宝箱の絵）
     document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
     document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
