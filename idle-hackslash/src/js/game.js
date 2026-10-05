@@ -584,14 +584,14 @@ function drawBossTimer() { // カウントダウン。残りが少ないほど�
   if (!bossTimerFor || !isBossFight() || filmMode) return;
   const s = Math.max(0, bossTimeLeftMs / 1000), now = Date.now();
   const lv = s < 5 ? 3 : s < 10 ? 2 : s < 15 ? 1 : 0;
-  const beat = lv ? Math.abs(Math.sin(now / (lv === 3 ? 90 : lv === 2 ? 160 : 260))) : 0;
-  const size = [18, 20, 24, 30][lv] * (1 + beat * [0, 0.06, 0.12, 0.22][lv]);
-  const col = lv === 3 ? (Math.floor(now / 120) % 2 ? '#ff2020' : '#ffffff') : ['#ffffff', '#ffe066', '#ff9f43', '#ff2020'][lv];
+  const beat = lv ? Math.abs(Math.sin(now / (lv === 3 ? 150 : lv === 2 ? 180 : 260))) : 0;
+  const size = [18, 20, 24, 28][lv] * (1 + beat * [0, 0.06, 0.1, 0.14][lv]);
+  const col = lv === 3 ? (Math.floor(now / 350) % 2 ? '#ff3b3b' : '#ff9a9a') : ['#ffffff', '#ffe066', '#ff9f43', '#ff3b3b'][lv]; // 終盤もチカチカしすぎないように
   let x = arena.x, y = arena.y - arena.radius + 8;
-  if (lv >= 2) { x += (Math.random() - 0.5) * (lv === 3 ? 6 : 2.5); y += (Math.random() - 0.5) * (lv === 3 ? 4 : 1.5); }
+  if (lv >= 2) { x += (Math.random() - 0.5) * (lv === 3 ? 3 : 2); y += (Math.random() - 0.5) * (lv === 3 ? 2 : 1); }
   if (lv === 3) { // 画面のふちを赤く明滅
     ctx.save(); const g = ctx.createRadialGradient(arena.x, arena.y, arena.radius * 0.55, arena.x, arena.y, arena.radius * 1.15);
-    g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,0,0,${0.18 + beat * 0.22})`); ctx.fillStyle = g; arenaPath(); ctx.fill(); ctx.restore();
+    g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,0,0,${0.08 + beat * 0.08})`); ctx.fillStyle = g; arenaPath(); ctx.fill(); ctx.restore();
   }
   const sec = Math.ceil(s); // 1秒ごとにピッ（残り10秒から。5秒を切ると高く）
   if (lv >= 2 && sec !== lastBossTickSec && sec > 0) { lastBossTickSec = sec; playTone(lv === 3 ? 1320 : 880, 0.07, 'square', 0.05); }
