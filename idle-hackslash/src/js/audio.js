@@ -346,16 +346,6 @@ const BGM_SONGS = {
     drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k k s k s s ks ks',
     kickBoost: 1.6, // 低音を響かせる
   },
-  credits: { // スタッフロール：エコーのかかったワルツ（3/4拍子＝1小節6ステップ・ヘ長調）。ズン・チャッ・チャッの伴奏に旋律がゆったり舞う
-    bpm: 150,
-    echo: { time: 0.4, feedback: 0.38, wet: 0.42 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.026, notes: 'C5 = = = F5 = | A5 = = = G5 F5 | D5 = = = A5 = | F5 = = = = = | D5 = = = A#5 = | A5 = G5 = E5 = | F5 = = = A5 = | G5 = = = = = | C6 = = = A5 = | C#6 = = = E5 = | D6 = = = F5 = | B5 = = = D5 = | A#5 = A5 = G5 = | E5 = G5 = A#5 = | A5 = = = = = | F5 = = = - -' },
-      { type: 'vrc6pulse12', gain: 0.012, notes: '- - A4+C5 = A4+C5 = | - - A4+C5 = A4+C5 = | - - F4+A4 = F4+A4 = | - - F4+A4 = F4+A4 = | - - D4+F4 = D4+F4 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - C#4+E4 = C#4+E4 = | - - F4+A4 = F4+A4 = | - - B3+D4 = B3+D4 = | - - D4+F4 = D4+F4 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - A4+C5 = A4+C5 =' },
-      { type: 'vrc6saw', gain: 0.036, notes: 'F2 = = = - - | F2 = = = - - | D2 = = = - - | D2 = = = - - | A#1 = = = - - | C2 = = = - - | F2 = = = - - | C2 = = = - - | F2 = = = - - | A1 = = = - - | D2 = = = - - | G1 = = = - - | A#1 = = = - - | C2 = = = - - | F2 = = = - - | F2 = = = - -' },
-    ],
-    drums: 'k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - s -',
-  },
 };
 function parseSongTrack(str) {
   const tokens = str.split(/\s+/).filter(t => t && t !== '|');
@@ -553,7 +543,6 @@ const BGM_INFO = [
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
-  { key: 'credits', name: 'スタッフロール 星降る夜のワルツ', desc: 'ズン・チャッ・チャッの3拍子にのせて旋律がゆったり舞う、深いエコーのかかったワルツ。VRC6風チップチューン。ヘ長調・BPM150（3/4拍子）' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
 let gameOverBgm = false;      // コンテニュー確認中
@@ -601,8 +590,7 @@ function updateSkipBtnVisibility() {
 function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
-  if (document.getElementById('creditsModal').classList.contains('show')) type = 'credits'; // スタッフロール中
-  else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
+  if (document.getElementById('creditsModal').classList.contains('show') || settingsModal.classList.contains('show')) type = 'settings'; // 設定画面・スタッフロール中（スタッフロールも設定画面の曲）
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
