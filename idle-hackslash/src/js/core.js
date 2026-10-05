@@ -707,14 +707,22 @@ const SKILL_GACHA_SKILLS = {
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
   skillNova:     { icon: '💥', name: '全体攻撃', desc: 'サークル内の敵すべてに大ダメージ（大群向き）' }
 };
-const SKILL_MAX_LEVEL = 10;
+const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
 const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
 const SKILL_GACHA_BASE_COST = 100, SKILL_GACHA_COST_GROWTH = 1.15; // 1回ごとに値上げ（転生でリセット）
 function getSkillLevel(id) {
   if (!game.shopOwned[id]) return 0;
   return Math.max(1, Math.min(SKILL_MAX_LEVEL, (game.skillLevels && game.skillLevels[id]) || 1));
 }
-function skillCd(id, base) { return Math.round(base * (1 - SKILL_CD_CUT_PER_LV * (Math.max(1, getSkillLevel(id)) - 1))); }
+// 待機時間：Lv10までは -6%ずつ（Lv10で -54%）、その先はゆるやかに減って最大 -85%
+function skillCdCut(lv) { return lv <= 10 ? SKILL_CD_CUT_PER_LV * (lv - 1) : 0.54 + 0.31 * (1 - Math.pow(0.985, lv - 10)); }
+function skillCd(id, base) { return Math.round(base * (1 - skillCdCut(Math.max(1, getSkillLevel(id))))); }
+// スキルの威力：Lvごとに+10%、10Lvごとに飛躍（×1.5）、100Lvごとに超飛躍（×3）
+function skillPower(id) {
+  const lv = game.shopOwned && game.shopOwned[id] ? getSkillLevel(id) : 1;
+  const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100;
+  return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100);
+}
 function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
 const SUPERGEM_SHOP_ITEMS = {
@@ -1182,5 +1190,9 @@ function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equ
 function isSkillEquipped(id) { return getEquippedSkills().includes(id); }
 const SKILL_ORDER = Object.keys(SKILL_GACHA_SKILLS);
 function getSkillBasePrice(id) { return Math.round(100 * Math.pow(1.3, Math.max(0, SKILL_ORDER.indexOf(id))) / 10) * 10; }
-function getSkillBuyCost(id) { return coinPrice(Math.round(getSkillBasePrice(id) * Math.pow(2.5, game.shopOwned[id] ? getSkillLevel(id) : 0))); } // 解放 → Lvアップごとに×2.5
+function getSkillBuyCost(id) { // 解放 → Lv10まではLvアップごとに×2.5、その先は多項式でゆるやかに増える（高Lvまで届くように）
+  const lv = game.shopOwned[id] ? getSkillLevel(id) : 0;
+  const mult = Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1);
+  return coinPrice(Math.round(getSkillBasePrice(id) * mult));
+}
 let lastSetSkill = null; // 直前にセットしたスキル（その枠だけアニメさせる）

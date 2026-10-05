@@ -39,7 +39,7 @@ function renderSkillGacha() {
     const on = isSkillEquipped(id);
     const buyLabel = !owned ? `解放 🟡${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`;
     const equipBtn = owned ? `<button class="sk-equip ${on ? 'on' : ''} " data-skill-equip="${id}">${on ? '✓ 装備中' : eq.length >= slots ? '入れ替え' : '装備する'}</button>` : '';
-    return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（待機 -${Math.round(SKILL_CD_CUT_PER_LV * (lv - 1) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
+    return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
   }).join('');
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   updateSkillButtonVisibility();

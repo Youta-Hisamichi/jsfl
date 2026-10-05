@@ -1655,7 +1655,7 @@ specialBtn.addEventListener('click', event => {
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
   const b = computeBonuses();
-  const multiplier = (game.shopOwned.meteor ? 1.5 : 1) * b.specialMult * b.specialDmgMult;
+  const multiplier = (game.shopOwned.meteor ? 1.5 : 1) * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
   const damage = Math.round(enemy.maxHp * 0.35 * multiplier);
   lastSpecialAt = Date.now();
   meteors.push({
@@ -1822,7 +1822,7 @@ novaBtn.addEventListener('click', event => {
   thump(90, 30, 0.6, 0.8); noiseSweep(0.5, 3000, 120, 'lowpass', 0.8, 0.6);
   let hitCount = 0;
   for (const en of targets()) {
-    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * NOVA_DMG_MULT)), en);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * NOVA_DMG_MULT * skillPower('skillNova'))), en);
     en.hp -= dmg;
     trackDamage(dmg);
     hitCount++;
@@ -1869,7 +1869,7 @@ compRushBtn.addEventListener('click', event => {
     const ang = Math.atan2(enemy.y - comp.y, enemy.x - comp.x);
     comp.vx = Math.cos(ang) * 12; comp.vy = Math.sin(ang) * 12;
     for (let k = 0; k < 6; k++) particles.push({ x: comp.x, y: comp.y, vx: Math.cos(ang) * (3 + k), vy: Math.sin(ang) * (3 + k), life: 0.8, color: COMPANION_COLORS[comp.companionId] || '#8fe3a0', decay: 0.05 });
-    const { dmg } = rollCrit(Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT)), enemy);
+    const { dmg } = rollCrit(Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush'))), enemy);
     total += dmg;
   });
   enemy.hp -= total;

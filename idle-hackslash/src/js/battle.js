@@ -834,7 +834,7 @@ function updatePoison() {
   if (now >= pz.nextTick) {
     pz.nextTick += POISON_TICK_MS;
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-    const dmg = Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * POISON_DMG_MULT * pz.stacks * bossDamageMult(enemy)));
+    const dmg = Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * POISON_DMG_MULT * skillPower('skillPoison') * pz.stacks * bossDamageMult(enemy)));
     enemy.hp -= dmg;
     trackDamage(dmg);
     spawnDamageText(enemy.x + (Math.random() - 0.5) * 20, enemy.y - enemy.radius - 4, '☠ ' + dmg, '#7ee787');
@@ -895,7 +895,7 @@ function castParalyze(enemy) {
   const dur = enemy.isBoss ? PARALYZE_BOSS_MS : PARALYZE_MS;
   enemy.paralyzedUntil = Date.now() + dur;
   lightningFx = { x: enemy.x, y: enemy.y, until: Date.now() + 350 };
-  const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT)), enemy);
+  const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT * skillPower('skillParalyze'))), enemy);
   enemy.hp -= dmg;
   trackDamage(dmg);
   spawnAttackDamageText(enemy, dmg, crit, '#fff1a8');
