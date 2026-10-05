@@ -924,7 +924,14 @@ function playChainSound(n) {
 }
 function playStageClearSound() {
   if (activeTabCache !== 'game') return; // ゲーム画面以外ではクリア音を鳴らさない
-  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.16), i * 110));
+  // 階段をのぼる：コツ・コツ・コツと足音を刻みながら、1段ごとに音が1つずつ上がる（最後は踊り場で軽く響く）
+  const steps = [392, 440, 493.9, 523.3, 587.3, 659.3];
+  steps.forEach((f, i) => setTimeout(() => {
+    playFootstep(0.3 + i * 0.12, 0.3);
+    playTone(f, 0.09, 'square', 0.07, f * 1.02);
+    playTone(f / 2, 0.08, 'triangle', 0.06);
+  }, i * 95));
+  setTimeout(() => playTone(783.99, 0.3, 'triangle', 0.12, 1046.5), steps.length * 95 + 30);
 }
 function playWarningSound() {
   [200, 160, 200, 160].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'square', 0.22), i * 220));
@@ -1137,7 +1144,7 @@ function getEffectiveSpeed() {
 }
 
 const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🧛', '🌕', '⚡', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '💋', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫'];
-const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '👁️', '🕸️', '🪦', '🦍', '💪', '🫧'];
+const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '😈', '🕸️', '🪦', '🦍', '💪', '🫧'];
 const TACKLE_TRADE_BOSS = '🦔';
 let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
 let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定

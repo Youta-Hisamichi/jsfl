@@ -209,7 +209,7 @@ function makeBall(isPlayer) {
     const filmKind = filmMode && filmMode.key.split(':')[0];
     if (es.isBoss) { isEmoji = true; emoji = forcedBossEmoji || (filmKind === 'boss' ? filmMode.key.split(':')[1] : null) || getStageBossEmoji(game.stage); }
     else { // ステージごとに決まった敵（撮影モード中は選んだ敵）
-      const [kind, val] = (filmKind && filmKind !== 'boss' ? filmMode.key : getStageEnemyKey(game.stage)).split(':');
+      const [kind, val] = (filmKind && filmKind !== 'boss' ? filmMode.key : getStageEnemyKey(loopEnemyStage())).split(':');
       if (kind === 'shape') { const c = SHAPE_ENEMY_COLORS[val] || '#ff5c6c'; style = { color: c, glow: c + '8c', shape: val }; }
       else { isEmoji = true; emoji = val; }
     }
@@ -250,13 +250,19 @@ const STAGE_ZONES = [
   { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️'], boss: '🕸️' },
   { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:💋', 'emoji:🧛'], boss: '🪦' },
   { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:👑'], boss: '🫧' },
-  { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👁️' },
+  { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👹' }, // 百目の少女は削除
   { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲' },
   { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️' },
   { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈' },
 ];
 const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
+// ボス前のループ中は、そのエリア（10階）で出てきた雑魚からランダム（強さは今の階のまま）
+function loopEnemyStage() {
+  if (!(game.bossLoop && game.stage === game.bossLoop - 1)) return game.stage;
+  const base = game.bossLoop - 10;
+  return Math.max(1, base + 1 + Math.floor(Math.random() * 9));
+}
 function getStageEnemyKey(stage) { // そのステージの通常の敵（削除中なら同じエリアの次の敵）
   const z = getStageZone(stage), i = (Math.max(1, stage) - 1) % 10;
   for (let k = 0; k < z.normal.length; k++) { const key = z.normal[(i + k) % z.normal.length]; if (!isEnemyRemoved(key)) return key; }
