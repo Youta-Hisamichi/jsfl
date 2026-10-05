@@ -1367,3 +1367,17 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .rank-row.top2 .rank-score, .rank-row.top3 .rank-score { color: #ffe9a0; }
 .rank-row.me { filter: drop-shadow(0 0 5px #4fa8ff); }
 .rank-row.top2 .rank-name, .rank-row.top3 .rank-name { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); } .rank-row.top1 .rank-name, .rank-row.top1 .rank-score { color: #2a1400; }
+/* ===== ゲームページ：UI素材（ヘッダー・ステージ進捗・HPパネル・ゲージ・スキルボタン） ===== */
+.top-header { border: 12px solid transparent; border-image: url(assets/img/ui/skin/panel_navy.webp) 20 fill / 12px stretch; background: none !important; border-radius: 0; box-shadow: none; color: #eef0f6; --text: #eef0f6; }
+.exp-wrap { border: 12px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 12px stretch; background: none; border-radius: 0; padding: 0 4px; color: #3a2a14; --text-dim: #5a4828; }
+.hp-card { border: 14px solid transparent; border-image: url(assets/img/ui/skin/panel_navy.webp) 20 fill / 14px stretch; background: none; border-radius: 0; padding: 0 2px; color: #eef0f6; --text: #eef0f6; --text-dim: #b8bed0; }
+/* ゲージ：金縁の黒い溝に、光沢のある液体が入っている見た目 */
+.hp-bar-track, .exp-track { height: 12px; border-radius: 3px; border: 2px solid #b8913c; background: linear-gradient(180deg, #0a0c14, #1c2030); box-shadow: inset 0 2px 3px rgba(0,0,0,0.8), 0 0 0 1px #3a2a10; }
+.hp-bar-fill, .exp-fill { border-radius: 1px; box-shadow: inset 0 3px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.3); }
+.hp-card.player .hp-bar-fill { background: linear-gradient(180deg, #7fd0ff, #2f7fe0 60%, #1d55b0); }
+.hp-card.enemy .hp-bar-fill { background: linear-gradient(180deg, #ff8a8a, #e03a3a 60%, #a01c1c); }
+/* スキルボタン：暗い鉄のプレート（色付きの文字はそのまま） */
+#skillRow .action-btn { border: 9px solid transparent; border-image: url(assets/img/ui/skin/plate_dark.webp) 13 fill / 9px stretch; background: none !important; border-radius: 0; padding: 0 2px; text-shadow: 0 1px 2px #000; }
+#skillRow .action-btn.buffing { filter: drop-shadow(0 0 5px currentColor); }
+.skill-set-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 0 12px; }
+.boss-retire-btn { border: 9px solid transparent !important; border-image: url(assets/img/ui/skin/btn_red.webp) 13 fill / 9px stretch !important; background: none !important; border-radius: 0 !important; padding: 0 12px !important; }

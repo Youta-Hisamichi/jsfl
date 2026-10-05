@@ -161,15 +161,15 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s k - k s h | k h s k - k s h | k h s k - k s h | k h s k s s ks s | k h s k - k s h | k h s k - k s h | k h s k - k s h | ks s ks s ks ks ks ks',
   },
-  boss: { // 音ゲー（ユーロビート／トランス）風：四つ打ちキック＋裏打ちベース、きらめくアルペジオとキャッチーな主旋律（イ短調）
-    bpm: 156,
+  boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
+    bpm: 168,
+    kickBoost: 1.3,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.032, notes: 'E5 = A5 = C6 = B5 A5 | A5 = G5 = F5 = E5 = | D5 = G5 = B5 = A5 G5 | G5 = E5 = B4 = = = | E5 E5 A5 = C6 = E6 = | D6 = C6 = A5 = F5 = | G5 = B5 = D6 = B5 G5 | G#5 = B5 = E6 = = =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | G4 B4 D5 G5 D5 B4 G4 B4 | E4 G4 B4 E5 B4 G4 E4 G4 | A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | G4 B4 D5 G5 D5 B4 G4 B4 | E4 G#4 B4 E5 G#5 E5 B4 G#4' },
-      { type: 'vrc6saw', gain: 0.05, notes: '- A2 - A2 - A2 - A3 | - F2 - F2 - F2 - F3 | - G2 - G2 - G2 - G3 | - E2 - E2 - E2 - E3 | - A2 - A2 - A2 - A3 | - F2 - F2 - F2 - F3 | - G2 - G2 - G2 - G3 | - E2 - E2 E3 E2 E3 E2' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'C5 C5 - C5 D#5 - C5 F5 | - F#5 G5 - F#5 F5 D#5 C5 | A#4 A#4 - A#4 C5 - A#4 D#5 | - D5 D#5 - D5 C5 A#4 G4 | C5 C5 - C5 D#5 - G5 A#5 | - B5 C6 - A#5 G5 F5 D#5 | F5 = D#5 = D5 = D#5 F5 | G5 - G5 - G5 G5 B5 D6' },
+      { type: 'vrc6saw', gain: 0.016, notes: 'C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | C4+D#4+G4 - - C4+D#4+G4 - - C4+D#4+G4 - | G#3+C4+D#4 - - G#3+C4+D#4 - - G#3+C4+D#4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | G3+B3+D4 - - G3+B3+D4 - - G3+B3+D4 -' },
+      { type: 'vrc6saw', gain: 0.045, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | G1 G2 G1 G2 G1 G2 F2 D2' },
     ],
-    kickBoost: 1.2,
-    drums: 'k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks ks | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | ks ks ks ks ks ks ks ks',
+    drums: 'k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks ks ks ks',
   },
 
   boss7: {
@@ -532,7 +532,7 @@ const BGM_INFO = [
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
-  { key: 'boss', name: 'ボス1 ステップ・オーバードライブ', desc: '四つ打ちのキックと裏打ちのベースに、きらめくアルペジオとキャッチーな主旋律が乗る音ゲー（ユーロビート／トランス）風のボス曲。VRC6風チップチューン。イ短調・BPM156' },
+  { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
   { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
