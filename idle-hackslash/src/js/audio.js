@@ -170,6 +170,16 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
+  battle30: { // 戦闘30：横スクロールシューティングの1面のような、勇ましいシンセブラスの旋律と刻み続けるベースで進撃する曲（ニ短調）
+    bpm: 136,
+    echo: { time: 0.22, feedback: 0.2, wet: 0.18 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.028, notes: 'D5 = = A5 = = G5 F5 | E5 = F5 = G5 = A5 = | A#5 = = A5 = = G5 A5 | F5 = = = = = D5 E5 | F5 = = C6 = = A#5 A5 | G5 = A5 = A#5 = C6 = | D6 = = C#6 = = A5 = | A5 = = = E5 = C#5 =' },
+      { type: 'triangle', gain: 0.03, notes: 'D4+F4+A4 = = = = = = = | C4+E4+G4 = = = = = = = | A#3+D4+F4 = = = = = = = | D4+F4+A4 = = = = = = = | F3+A3+C4 = = = = = = = | C4+E4+G4 = = = = = = = | A3+C#4+E4 = = = = = = = | A3+C#4+E4 = = = = = = =' },
+      { type: 'vrc6saw', gain: 0.042, notes: 'D2 D2 D3 D2 D2 D2 D3 D2 | C2 C2 C3 C2 C2 C2 C3 C2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | D2 D2 D3 D2 D2 D2 D3 D2 | F2 F2 F3 F2 F2 F2 F3 F2 | C2 C2 C3 C2 C2 C2 C3 C2 | A1 A1 A2 A1 A1 A1 A2 A1 | A1 A1 A2 A1 A1 A1 A2 A1' },
+    ],
+    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s s ks s ks ks',
+  },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
     kickBoost: 1.3,
@@ -494,7 +504,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -540,6 +550,7 @@ const BGM_INFO = [
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle29', name: '戦闘29 草むらの飛び出し', desc: '跳ねるベースに乗って旋律が駆け上がる、携帯モンスターRPGの野生戦のような疾走曲。VRC6風チップチューン。ト短調・BPM172' },
+  { key: 'battle30', name: '戦闘30 宇宙の侵攻戦線', desc: '勇ましいシンセブラスの旋律と刻み続けるベースで進撃する、横スクロールシューティングの1面のような曲。VRC6風チップチューン。ニ短調・BPM136' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
