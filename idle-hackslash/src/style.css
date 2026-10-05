@@ -1282,15 +1282,15 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .upgrade-max-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #2a1a00; }
 .upgrade-max-btn.pct-btn { border-image-source: url(assets/img/ui/skin/btn_blue.webp); background: none; color: #fff; text-shadow: 0 1px 0 #0a2a6a; }
 .upgrade-max-btn.is-disabled { border-image-source: url(assets/img/ui/skin/btn_gray.webp); background: none; color: #e8e8e8; }
-.sk-card, .shop-btn { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 1px; }
+.sk-card, .shop-btn:not(.gb-btn):not(.sub-btn) { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 1px; }
 .sk-card { --text: #3a2a14; --text-dim: #6a5838; }
 .sk-card.equipped { border: 10px solid transparent; box-shadow: none; filter: drop-shadow(0 0 4px rgba(46,160,67,0.9)); }
-.shop-btn .shop-desc { color: #6a5838; }
-.shop-btn .cost { color: #1a5f9a; }
+.shop-btn:not(.gb-btn):not(.sub-btn) .shop-desc { color: #6a5838; }
+.shop-btn:not(.gb-btn):not(.sub-btn) .cost { color: #1a5f9a; }
 /* 羊皮紙の上の文字は濃い色＋淡い縁取りで読みやすく（買えない商品も薄くしすぎない） */
-.shop-btn, .sk-card { text-shadow: 0 0 2px #fff6dc, 0 0 2px #fff6dc; }
-.shop-btn .shop-name { color: #2a1a06; font-weight: 900; }
-.shop-btn .shop-desc { color: #4a3818; }
-.shop-btn .cost { color: #0d4f8a; }
-.shop-btn.is-disabled, .shop-btn:disabled { opacity: 0.85; }
-.shop-btn.is-disabled .item-icon, .shop-btn:disabled .item-icon { filter: grayscale(0.6); opacity: 0.7; }
+.shop-btn:not(.gb-btn):not(.sub-btn), .sk-card { text-shadow: 0 0 2px #fff6dc, 0 0 2px #fff6dc; }
+.shop-btn:not(.gb-btn):not(.sub-btn) .shop-name { color: #2a1a06; font-weight: 900; }
+.shop-btn:not(.gb-btn):not(.sub-btn) .shop-desc { color: #4a3818; }
+.shop-btn:not(.gb-btn):not(.sub-btn) .cost { color: #0d4f8a; }
+.shop-btn:not(.gb-btn):not(.sub-btn).is-disabled, .shop-btn:not(.gb-btn):not(.sub-btn):disabled { opacity: 0.85; }
+.shop-btn:not(.gb-btn):not(.sub-btn).is-disabled .item-icon, .shop-btn:not(.gb-btn):not(.sub-btn):disabled .item-icon { filter: grayscale(0.6); opacity: 0.7; }
