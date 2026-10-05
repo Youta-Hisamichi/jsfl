@@ -1738,7 +1738,7 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
   document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStars(rarity)} ${info.label}の宝箱</span>`;
-  document.getElementById('chestModalText').textContent = `残り ${n} 個\n中身は${info.label}の遺物（開けるまでお楽しみ）`;
+  document.getElementById('chestModalText').textContent = `残り ${n} 個`;
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbOpenBtn">開ける</button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
   document.getElementById('rbOpenBtn').onclick = () => { closeChestDialog(); openStockedRebirthChest(rarity); };
