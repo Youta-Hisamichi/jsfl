@@ -78,7 +78,8 @@ function step() {
   const collided = (piercing || rushPierce) ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
   const stunMult = collided && isTelegraphStunned(e) ? TG_STUN_DMG : 1; // 攻撃後の隙は大ダメージ
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
+  const styleMult = collided ? (rushingNow ? b.rushDmgUp : b.meleeMult) || 1 : 1; // 強化：体当たり／接近戦
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * styleMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
   if (stunMult > 1 && a.hitCooldown === 0 && e.hitCooldown === 0) spawnDamageText(e.x, e.y - e.radius - 40, `スキあり！×${TG_STUN_DMG}`, '#ffd76b', 0.02, true); // リセット前の連打ボーナスでダメージを計算する
   if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット

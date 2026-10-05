@@ -2310,6 +2310,7 @@ delete game.artifactSlots; delete game.extraArtifactSlots;
 if (game.evolutions) delete game.evolutions.swift;
 if (game.gachaShards) delete game.gachaShards.swift;
 if (!game.upgrades) game.upgrades = newUpgradeLevels();
+for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0; // 追加された強化は0から
 for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0;
 for (const id in GACHA_POOL) {
   if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;

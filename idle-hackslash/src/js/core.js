@@ -645,6 +645,8 @@ function getEvolveNeed(id) {
 const UPGRADES = {
   atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25, group: 'attack' },
   hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
+  melee: { icon: '🗡️', name: '接近戦', desc: '+10%（通常の衝突）', baseCost: 30, group: 'attack' },
+  rush: { icon: '💨', name: '体当たり', desc: '+12%（引っぱり攻撃）', baseCost: 30, group: 'attack' },
   compAtk: { icon: '🐾', name: '仲間の攻撃力', desc: '+8%', baseCost: 40, group: 'companion' },
 };
 const UPGRADE_LEAPS = [
@@ -735,7 +737,7 @@ function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult <
 ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
-UPGRADES.compAtk.img = ICON_IMAGES.tab_companion; // 仲間の攻撃力は仲間タブと同じ絵
+UPGRADES.compAtk.img = ICON_IMAGES.tab_companion; UPGRADES.melee.img = ICON_IMAGES.x_attack; UPGRADES.rush.img = ICON_IMAGES.up_clash; // 仲間の攻撃力は仲間タブと同じ絵
 Object.keys(SKILL_GACHA_SKILLS).forEach(id => { SKILL_GACHA_SKILLS[id].img = ICON_IMAGES['sk_' + id]; });
 const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 40 }; // ★5（ミシック）は宝箱からしか出ない
 const REBIRTH_SHOP_ITEMS = {};
@@ -1051,6 +1053,8 @@ function computeBonuses() {
   b.hpMult += (up.hp || 0) * 0.20;
   b.tackleMult += (up.tackle || 0) * 0.08;
   b.companionAtkMult += (up.compAtk || 0) * 0.08;
+  b.meleeMult = (1 + (up.melee || 0) * 0.10) * upgradeLeapMult(up.melee || 0); // 接近戦：ふつうの衝突ダメージ
+  b.rushDmgUp = (1 + (up.rush || 0) * 0.12) * upgradeLeapMult(up.rush || 0); // 体当たり：引っぱり攻撃のダメージ
   // 強化の飛躍：10Lvごとにプチ飛躍・100Lvごとに大飛躍・1000Lvごとに超大飛躍（倍率で掛かる）
   b.atkMult *= upgradeLeapMult(up.atk || 0);
   b.hpMult *= upgradeLeapMult(up.hp || 0);
@@ -1126,11 +1130,13 @@ function getUpgradeStatValue(id) {
   if (id === 'hp') return getPlayerMaxHP();
   const b = computeBonuses();
   if (id === 'tackle') return b.tackleMult;
+  if (id === 'melee') return b.meleeMult;
+  if (id === 'rush') return b.rushDmgUp;
   if (id === 'compAtk') return b.companionAtkMult;
   return 0;
 }
 function formatUpgradeStat(id, v) {
-  if (id === 'tackle' || id === 'compAtk') return '×' + +v.toFixed(2);
+  if (id === 'tackle' || id === 'compAtk' || id === 'melee' || id === 'rush') return '×' + +v.toFixed(2);
   return formatCoinNumber(Math.round(v));
 }
 function renderUpgradeList() {
