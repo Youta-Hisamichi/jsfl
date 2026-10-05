@@ -790,13 +790,14 @@ function completeReincarnation() {
 }
 // 左下にストックした転生ガチャの宝箱を開ける（戦闘は止めて、開封演出→中身を獲得）
 let rebirthChestFromTray = false, rebirthTrayPausedPhase = null;
-function openStockedRebirthChest(rarity) {
+function openStockedRebirthChest(rarity, mult = 1) {
   if (!Array.isArray(game.rebirthChests) || phase !== 'battle') return;
   const i = game.rebirthChests.findIndex(id => ARTIFACT_BY_ID[id] && ARTIFACT_BY_ID[id].rarity === rarity); if (i < 0) return;
   const pick = ARTIFACT_BY_ID[game.rebirthChests.splice(i, 1)[0]];
   renderChestTray();
   if (!pick) { saveGame(); return; }
-  gainArtifact(pick.id); renderArtifactList(); updateStatsUI(); saveGame();
+  for (let i = 0; i < mult; i++) gainArtifact(pick.id);
+  renderArtifactList(); updateStatsUI(); saveGame();
   rebirthTrayPausedPhase = phase; phase = 'paused'; rebirthChestFromTray = true;
   toastIcon.style.display = 'block';
   toastIcon.innerHTML = xi({ common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6' }[pick.rarity] || 'x_chest1');
@@ -809,7 +810,7 @@ function openStockedRebirthChest(rarity) {
   toast.classList.add('show');
   rebirthSkippable = false;
   clearTimeout(rebirthTimer);
-  rebirthChest = { pick, rebirthGemGain: 0 };
+  rebirthChest = { pick, rebirthGemGain: 0, mult };
   rebirthTimer = setTimeout(openRebirthChest, pick.rarity === 'legendary' ? REBIRTH_CHEST_MS : REBIRTH_CHEST_SHORT_MS); // レジェンドはじっくり、それ以外は一瞬だけ宝箱を見せる
 }
 const REBIRTH_CHEST_MS = 1400, REBIRTH_CHEST_SHORT_MS = 1100;
@@ -826,7 +827,7 @@ function playChestOpenSound() {
 }
 function openRebirthChest() {
   if (!rebirthChest) return;
-  const { pick, rebirthGemGain } = rebirthChest;
+  const { pick, rebirthGemGain, mult = 1 } = rebirthChest;
   rebirthChest = null;
   clearTimeout(rebirthTimer);
   toastIcon.innerHTML = ico(pick);
@@ -834,7 +835,7 @@ function openRebirthChest() {
   toastIcon.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color);
   toast.style.setProperty('--chest-glow', RARITY_INFO[pick.rarity].color); // 開封したらレア度の色に光る
   const rar = RARITY_INFO[pick.rarity];
-  toastSub.innerHTML = `<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + ' を獲得！\n（' + pick.desc + '）' + (rebirthGemGain ? '\n+' + rebirthGemGain + ' 💎' : '');
+  toastSub.innerHTML = `<span class="chest-rarity" style="color:${rar.color}">${rarityStars(pick.rarity)} ${rar.label}</span>\n` + pick.name + (mult > 1 ? ` ×${mult}` : '') + ' を獲得！\n（' + pick.desc + '）' + (rebirthGemGain ? '\n+' + rebirthGemGain + ' 💎' : '');
   const dx = toast.clientWidth / 2 - (toastIcon.offsetLeft + toastIcon.offsetWidth / 2), dy = toast.clientHeight / 2 - (toastIcon.offsetTop + toastIcon.offsetHeight / 2);
   toastIcon.style.transition = 'none'; toastIcon.style.translate = `${dx}px ${dy}px`; // 魔法陣の中心から
   void toastIcon.offsetWidth;

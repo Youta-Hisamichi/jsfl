@@ -1689,8 +1689,8 @@ function openChestDialog(rarity) {
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
   document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱</span>`;
-  document.getElementById('chestModalText').textContent = `残り ${getHeldChests()[rarity]} 個\n動画を見ると中身が3倍に！`;
-  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍開封' : '🎬 動画を見て3倍開封'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestModalText').textContent = `残り ${getHeldChests()[rarity]} 個`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
   chestModal.classList.add('show');
   const open = mult => {
@@ -1739,9 +1739,13 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   document.getElementById('chestModalIcon').className = 'chest-big shake';
   document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStars(rarity)} ${info.label}の宝箱</span>`;
   document.getElementById('chestModalText').textContent = `残り ${n} 個`;
-  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbOpenBtn">開ける</button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="rbOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
-  document.getElementById('rbOpenBtn').onclick = () => { closeChestDialog(); openStockedRebirthChest(rarity); };
+  document.getElementById('rbOpenBtn').onclick = () => { closeChestDialog(); openStockedRebirthChest(rarity, 1); };
+  document.getElementById('rbAdBtn').onclick = () => { // 動画を見ると中身の遺物が3個に
+    if (isAdFree()) { closeChestDialog(); openStockedRebirthChest(rarity, 3); return; }
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); closeChestDialog(); openStockedRebirthChest(rarity, 3); });
+  };
   chestModal.classList.add('show');
 }
 function closeChestDialog() {
