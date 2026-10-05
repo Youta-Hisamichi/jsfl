@@ -625,7 +625,7 @@ function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明�
   phase = 'paused'; homingMissiles = [];
   playDeathSound();
   const back = Math.max(1, game.stage - 1), el = document.getElementById('bossFinalPanel');
-  el.innerHTML = `<b>${reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…'}</b><br>${back}階に戻って鍛え直します`;
+  el.innerHTML = `<b>${reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…'}</b><br>${back}階に戻って鍛え直します`;
   el.classList.add('show');
   setTimeout(() => { el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
 }
