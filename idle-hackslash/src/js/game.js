@@ -621,13 +621,17 @@ function bossDefeated(reason) {
 }
 // 2回目の敗北（コンテニュー済み）：同じ画面で「◯階に戻って鍛え直します」と数秒見せてから自動で戻す
 const BOSS_FINAL_MS = 2200;
+let knockoutFx = null; // 2回目の敗北で吹っ飛ぶ自キャラの演出
 function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明パネルを少しだけ出して、そのまま前の階へ（悲鳴は1回だけ・カウントダウンなし）
   phase = 'paused'; homingMissiles = [];
   playDeathSound();
   const back = Math.max(1, game.stage - 1), el = document.getElementById('bossFinalPanel');
   el.innerHTML = `<b>${reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…'}</b><br>${back}階に戻って鍛え直します`;
   el.classList.add('show');
-  setTimeout(() => { el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
+  // 自キャラがクルクル回りながら吹っ飛ぶ（ボスと反対側へ）
+  const pl = balls.find(isMainPlayerBall), boss = balls.find(b => !b.isPlayer && b.isBoss);
+  if (pl) knockoutFx = { ball: pl, start: performance.now(), dir: boss ? (pl.x >= boss.x ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1) };
+  setTimeout(() => { knockoutFx = null; el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
 }
 // 10秒のカウントダウン。0になったら自動であきらめる（動画を見ている間は止まる）
 const BOSS_CONT_SECONDS = 10;
@@ -1646,6 +1650,13 @@ function drawBall(ball) {
     ball.color = Math.floor(Date.now() / 90) % 2 ? '#ff4f6b' : ball.baseColor;
   } else if (ball.baseColor) {
     ball.color = ball.baseColor; delete ball.baseColor;
+  }
+  if (knockoutFx && ball === knockoutFx.ball) { // 放物線を描いて吹っ飛びながらクルクル回る
+    const t = Math.min(1, (performance.now() - knockoutFx.start) / 1700);
+    const lim = arena.radius * 0.88; // 画面の外へ消えないように枠内に収める
+    const x = Math.max(arena.x - lim, Math.min(arena.x + lim, ball.x + knockoutFx.dir * t * arena.radius * 0.9));
+    const y = Math.max(arena.y - lim, Math.min(arena.y + lim, ball.y - Math.sin(t * Math.PI) * arena.radius * 0.35 + t * arena.radius * 0.25));
+    ctx.translate(x, y); ctx.rotate(knockoutFx.dir * (1 - Math.pow(1 - t, 2)) * Math.PI * 8); ctx.scale(1 - t * 0.25, 1 - t * 0.25); ctx.translate(-ball.x, -ball.y); // だんだん回転がゆるむ
   }
   if (ball.isDying) {
     const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
