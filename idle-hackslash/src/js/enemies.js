@@ -805,7 +805,7 @@ function setupObstacles(dropDebug) {
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
   const early = game.stage <= 20, roll = rnd();
   if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階は必ずなし）
-  const n = early ? 1 + Math.floor(rnd() * 3) : 3 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は3〜5個
+  const n = early ? 1 + Math.floor(rnd() * 3) : 2 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は2〜4個（多すぎると窮屈）
   // 配置は黄金比に基づく：黄金角（137.5°）の螺旋・黄金比半径の正多角形・点対称の黄金角ペアのいずれか
   const PHI = (1 + Math.sqrt(5)) / 2, GOLDEN_ANGLE = Math.PI * 2 / (PHI * PHI);
   const rot = block * GOLDEN_ANGLE; // 2ステージごとに黄金角ずつ回して配置を変える
@@ -844,6 +844,7 @@ function setupObstacles(dropDebug) {
     else if (kind === 'bomb') o.r = r * 0.85;
     else if (kind === 'dash') o.dir = Math.atan2(arena.y - p.y, arena.x - p.x) + Math.PI / 2; // 渦を描く向き（接線方向）
     else if (kind === 'portal') { // ワープゲートは2つ1組
+      if (n - (obstacles.length - kept) < 2) continue; // 上限を超えないように
       const p2 = spot(r); if (!p2) continue;
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
