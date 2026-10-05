@@ -1235,3 +1235,10 @@ body.hp-safe .hp-card.player { display: none; } /* 雑魚戦はHPが減らない
 .hp-row .atk-tag { display: none; } /* ATK・命中・回避は「？」ボタンの詳しいステータスで見られる */
 .af-card.r-mythic { box-shadow: 0 0 16px #ff5cd6aa, 0 0 4px #fff inset; }
 .chest-tray button[data-open-chest="mythic"] { box-shadow: 0 0 10px #ff5cd6; }
+.chest-loot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; max-height: 42vh; overflow-y: auto; padding: 4px; margin-top: 4px; }
+.cl-card { position: relative; border: 2px solid var(--rc); border-radius: 10px; padding: 6px 4px 4px; background: color-mix(in srgb, var(--rc) 14%, transparent); text-align: center; animation: clPop 0.35s cubic-bezier(.34,1.56,.64,1) both; box-shadow: 0 0 8px color-mix(in srgb, var(--rc) 40%, transparent); }
+.cl-card .cl-ico { font-size: 1.8rem; line-height: 1; height: 36px; display: flex; align-items: center; justify-content: center; }
+.cl-card .cl-ico .ico-img { width: 36px; height: 36px; border-radius: 6px; }
+.cl-card .cl-name { font-size: 0.62rem; font-weight: 800; line-height: 1.2; margin-top: 3px; color: var(--text); word-break: break-all; }
+.cl-card .cl-n { font-size: 0.8rem; font-weight: 900; color: var(--rc); }
+@keyframes clPop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }

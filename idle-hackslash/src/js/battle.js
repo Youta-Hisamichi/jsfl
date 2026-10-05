@@ -1675,9 +1675,8 @@ document.getElementById('chestTray').addEventListener('click', ev => {
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
   const k = b.dataset.openChest;
   if (phase !== 'battle') return;
-  if (rebirthChestCount(k) > 0) { openRebirthChestDialog(k); return; } // 転生ガチャの宝箱が先（中身は遺物）
-  if (!(getHeldChests()[k] > 0)) return;
-  openChestDialog(k);
+  if (!((getHeldChests()[k] || 0) + rebirthChestCount(k))) return;
+  openChestBatchDialog(k); // そのレア度の宝箱を一気に全部開ける
 });
 // 宝箱ダイアログ：開けるまで・閉じるまで戦闘は止まる。動画を見ると中身3倍
 const chestModal = document.getElementById('chestModal');
@@ -1700,6 +1699,49 @@ function openChestDialog(rarity) {
   };
   document.getElementById('chestOpenBtn').onclick = () => open(1);
   document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { open(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); open(3); }); };
+}
+// 宝箱ボタン：そのレア度の宝箱（転生ガチャの分も）を一気に全部開けて、結果をカードで並べて見せる
+function openChestBatchDialog(rarity) {
+  const hc = getHeldChests(), nNormal = hc[rarity] || 0, nRebirth = rebirthChestCount(rarity), total = nNormal + nRebirth;
+  if (!total) return;
+  const info = RARITY_INFO[rarity];
+  chestPausedPhase = phase; phase = 'paused';
+  document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
+  document.getElementById('chestModalIcon').className = 'chest-big shake';
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱 ×${total}</span>`;
+  document.getElementById('chestModalText').textContent = nRebirth ? `（うち転生ガチャの宝箱 ${nRebirth}個）` : '';
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">${total}個 まとめて開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestCancelBtn').onclick = closeChestDialog;
+  chestModal.classList.add('show');
+  const openAll = mult => {
+    let coins = 0; const arts = {}; let opened = 0;
+    while ((hc[rarity] || 0) > 0) { // ふつうの宝箱
+      hc[rarity]--; opened++;
+      const before = game.coins, loot = openTreasureChest(rarity, mult, true);
+      if (loot.art) arts[loot.art.id] = (arts[loot.art.id] || 0) + mult; else coins += game.coins - before;
+    }
+    for (let i = game.rebirthChests.length - 1; i >= 0; i--) { // 転生ガチャの宝箱（中身は抽選済みの遺物）
+      const a = ARTIFACT_BY_ID[game.rebirthChests[i]]; if (!a || a.rarity !== rarity) continue;
+      game.rebirthChests.splice(i, 1); opened++;
+      for (let j = 0; j < mult; j++) gainArtifact(a.id);
+      arts[a.id] = (arts[a.id] || 0) + mult;
+    }
+    playChestOpenSound(); if (rarity !== 'common') setTimeout(() => playGachaSound(rarity), 260);
+    renderChestTray(); renderArtifactList(); updateStatsUI(); saveGame();
+    const cards = Object.entries(arts).sort((x, y) => RARITY_ORDER.indexOf(ARTIFACT_BY_ID[y[0]].rarity) - RARITY_ORDER.indexOf(ARTIFACT_BY_ID[x[0]].rarity)).map(([id, n], i) => {
+      const a = ARTIFACT_BY_ID[id], c = RARITY_INFO[a.rarity].color;
+      return `<div class="cl-card" style="--rc:${c};animation-delay:${Math.min(i, 12) * 0.06}s"><div class="cl-ico">${ico(a)}</div><div class="cl-name">${a.name}</div><div class="cl-n">×${n}</div></div>`;
+    });
+    if (coins) cards.push(`<div class="cl-card coin" style="--rc:#d18b00;animation-delay:${Math.min(cards.length, 12) * 0.06}s"><div class="cl-ico">🟡</div><div class="cl-name">コイン</div><div class="cl-n">${formatCoinNumber(coins)}</div></div>`);
+    document.getElementById('chestModalIcon').className = 'chest-big';
+    document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:3rem">🎉</span>';
+    document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱 ${opened}個 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
+    document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
+    document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
+    document.getElementById('chestCloseBtn').onclick = closeChestDialog;
+  };
+  document.getElementById('chestOpenBtn').onclick = () => openAll(1);
+  document.getElementById('chestAdBtn').onclick = () => { if (isAdFree()) { openAll(3); return; } playRewardedVideo(() => { rewardAdModal.classList.remove('show'); openAll(3); }); };
 }
 function openAllChestDialog() { // まとめて開封
   const hc = getHeldChests(), total = CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0);
