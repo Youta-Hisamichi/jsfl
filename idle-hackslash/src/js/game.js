@@ -1617,7 +1617,7 @@ const SPRITE_FACING = {
   worm: 1, cobra: 1, salamander: 1, flameWisp: 0, lich: 1, 
   blueDragon: 1, blackDragon: 1, wyvern: 1, 
   vampire: 0, werewolf: 0, franken: 0, slimeGirl: 0, reaper: 0, demonKing: 0,
-  goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: 0, darkMage: 0, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: 0, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: -1, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: -1, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: 0,
+  goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: 0, darkMage: 0, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: -1, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: -1, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: -1, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: 0,
   slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, 
 };
 const isSlimeSprite = key => /slime/i.test(key) && key !== 'slimeGirl'; // スライム系（プヨプヨ揺らす）
