@@ -615,8 +615,25 @@ function bossDefeated(reason) {
   document.getElementById('bossContText').textContent = `${game.stage}階層のボス（残りHP ${Math.max(0, Math.round(boss.hp / boss.maxHp * 100))}%）\n動画を見るとHP全回復・残り時間${BOSS_TIME_LIMIT_MS / 1000}秒で続きから戦えます（1回まで）`;
   document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー';
   bossContModal.classList.add('show');
+  startBossContCountdown();
+}
+// 10秒のカウントダウン。0になったら自動であきらめる（動画を見ている間は止まる）
+const BOSS_CONT_SECONDS = 10;
+let bossContTimer = null, bossContLeft = 0;
+function startBossContCountdown() {
+  clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
+  const el = document.getElementById('bossContCount');
+  const show = () => { el.textContent = bossContLeft; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
+  show();
+  bossContTimer = setInterval(() => {
+    if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
+    if (rewardAdModal.classList.contains('show')) return; // 動画中は止める
+    bossContLeft--; show(); playTone(bossContLeft <= 3 ? 1100 : 760, 0.06, 'square', 0.05);
+    if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
+  }, 1000);
 }
 function bossContinue() {
+  clearInterval(bossContTimer);
   bossContModal.classList.remove('show');
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (boss) boss.continued = true;
@@ -631,6 +648,8 @@ document.getElementById('bossContAdBtn').addEventListener('click', () => {
   playRewardedVideo(() => { rewardAdModal.classList.remove('show'); bossContinue(); });
 });
 document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
+  if (!bossContModal.classList.contains('show')) return;
+  clearInterval(bossContTimer);
   bossContModal.classList.remove('show'); phase = 'battle';
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r);
 });
