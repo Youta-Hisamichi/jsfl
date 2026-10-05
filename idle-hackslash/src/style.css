@@ -1301,3 +1301,8 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .dev-id img { width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 0 0 2px #ffd76b, 0 2px 6px rgba(0,0,0,0.35); }
 .dev-id small { display: block; font-size: 0.66rem; font-weight: 700; opacity: 0.7; }
 .cr-logo { display: block; width: 96px; height: 96px; margin: 18px auto 6px; border-radius: 50%; box-shadow: 0 0 0 3px #ffd76b, 0 0 18px rgba(255,215,107,0.6); }
+/* 仲間ページのレベルアップ系ボタン：強化ページと同じ素材（Lvアップ＝羊皮紙、10%＝青、MAX＝金、押せない＝灰） */
+.companion-card button.cc-lvup { border: 9px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 9px stretch; background: none; border-radius: 0; box-shadow: none; color: #3a2a14; padding: 0 2px; text-shadow: 0 0 2px #fff6dc; }
+.companion-card button.cc-max-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #2a1a00; padding: 0 2px; }
+.companion-card button.cc-max-btn.cc-pct-btn { border-image-source: url(assets/img/ui/skin/btn_blue.webp); background: none; color: #fff; text-shadow: 0 1px 0 #0a2a6a; }
+.companion-card button.cc-lvup.is-disabled, .companion-card button.cc-max-btn.is-disabled { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 8px stretch; background: none; color: #e8e8e8; text-shadow: none; opacity: 0.85; }
