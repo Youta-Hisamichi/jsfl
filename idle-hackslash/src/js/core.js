@@ -226,7 +226,7 @@ function switchTab(name) {
   if (name !== 'game' && typeof gameOverBgm !== 'undefined' && (gameOverBgm || (phase === 'paused' && deathFx))) return;
   activeTabCache = name;
   document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
-  if (name !== 'game' && typeof userPaused !== 'undefined' && userPaused) setUserPaused(false); // 他のページへ移ったら一時停止を解除
+  if (typeof userPaused !== 'undefined' && userPaused && typeof audioCtx !== 'undefined' && audioCtx) { if (name === 'game') audioCtx.suspend(); else audioCtx.resume(); } // 一時停止は保ったまま、他のページでは音だけ鳴らす
   renderShopkeeper(name);
   renderDirtyTabList(name);
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
