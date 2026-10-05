@@ -282,7 +282,7 @@ const STAGE_ZONES = [
   { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:💋', 'emoji:👺'], boss: '👹', extraBosses: ['📦', '🧸'] }, // 百目の少女は削除
   { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈'], boss: '🐲', extraBosses: ['🐙', '🧜', '🌊', '🐋', '🦑'] },
   { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉'], boss: '⚔️', extraBosses: ['👀', '☠️', '⚜️', '🧿'] },
-  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '😈', extraBosses: ['🩸', '😇', '🔮', '🌌'] },
+  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:💋', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉'], boss: '🩸', extraBosses: ['😇', '🔮', '🌌'] },
 ];
 const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
