@@ -613,8 +613,8 @@ function bossDefeated(reason) {
   bossContReason = reason; phase = 'paused'; homingMissiles = [];
   playDeathSound();
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
-  document.getElementById('bossContText').textContent = `${game.stage}階層のボス（残りHP ${Math.max(0, Math.round(boss.hp / boss.maxHp * 100))}%）\n動画を見るとHP全回復・残り時間${BOSS_TIME_LIMIT_MS / 1000}秒で続きから戦えます（1回まで）`;
-  document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー';
+  document.getElementById('bossContText').textContent = '';
+  document.getElementById('bossContAdBtn').textContent = isAdFree() ? '🎁 紋章特典でコンテニュー（1回まで）' : '🎬 動画を見てコンテニュー（1回まで）';
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめて前の階層へ</span>';
   bossContModal.classList.add('show');
