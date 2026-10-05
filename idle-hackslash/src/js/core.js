@@ -99,7 +99,7 @@ const debugToggleBtn = document.getElementById('debugToggleBtn');
 function setDebugOpen(open) {
   document.getElementById('debugPanel').style.display = open ? '' : 'none';
   debugToggleBtn.classList.toggle('open', open);
-  debugToggleBtn.textContent = open ? '🛠️ デバッグ一覧を閉じる' : '🛠️ デバッグ一覧';
+  debugToggleBtn.textContent = open ? 'デバッグ ×' : 'デバッグ';
   try { localStorage.setItem('circle-battle-idle-debug-open', open ? '1' : '0'); } catch (err) { /* 保存できなくても動作は続ける */ }
 }
 debugToggleBtn.addEventListener('click', () => setDebugOpen(document.getElementById('debugPanel').style.display === 'none'));

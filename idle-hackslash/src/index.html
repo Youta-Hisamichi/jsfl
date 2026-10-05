@@ -107,12 +107,12 @@
       <button class="action-btn skip-action" id="stageSkipBtn">試練の塔</button>
       <button class="action-btn reborn-action" id="rebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
       <button class="action-btn boss-retire-btn" id="bossRetireBtn" style="display:none;">🏳 リタイヤ</button>
+      <button class="debug-toggle" id="debugToggleBtn">デバッグ</button>
     </div>
 
     <div class="hint-footer"></div>
 
 
-    <button class="debug-toggle" id="debugToggleBtn">🛠️ デバッグ一覧</button>
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
       <button data-debug="pause" id="debugPauseBtn" class="debug-pause-btn">⏸ 一時停止（T キー）</button>
@@ -177,6 +177,8 @@
       <div class="skill-deck" id="skillDeck"></div>
       <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn"></button>
       <div class="skill-buy-list" id="skillLevelList"></div>
+      <div class="title" style="margin-top:12px;">🗡️ サブウェポン（持っているだけで自動で発動・転生でリセット）</div>
+      <div class="skill-buy-list" id="weaponList"></div>
       <div class="supergem-note">スキル（解放・Lv・装備）は転生でリセット。ジェムで増やしたスキル枠は転生後も継続（最大7つ）。</div>
       <div class="title" id="coinShopTitle" style="margin-top:12px;">🟡 コインショップ（転生でリセット・戦闘中のみ使用可）</div>
       <div class="shop-list" id="coinShopList"></div>

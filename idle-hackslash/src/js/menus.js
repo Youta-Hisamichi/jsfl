@@ -42,6 +42,13 @@ function renderSkillGacha() {
     return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
   }).join('');
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
+  const wList = document.getElementById('weaponList'); // サブウェポン：持っているだけで自動で発動（装備枠は使わない）
+  const wHtml = Object.entries(WEAPONS).map(([id, W]) => {
+    const lv = getWeaponLv(id), cost = getWeaponBuyCost(id);
+    const pw = weaponDmg(1, Math.max(1, lv));
+    return `<div class="sk-card ${lv ? 'equipped' : 'locked'}"><div class="sk-top"><span class="item-icon">${W.icon}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}（自動で発動）</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? 'Lv↑' : '獲得'} 🟡${formatCoinNumber(cost)}</button></div></div>`;
+  }).join('');
+  if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）
@@ -604,7 +611,7 @@ function updateStatsUI() {
   const stageInCycle = ((game.stage - 1) % 10) + 1;
   stageProgressText.textContent = stageInCycle + ' / 10';
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
-  { const p = stageInCycle / 10; stagePlayerMark.style.left = `calc(${p * 100}% - ${p * 36}px)`; } // ボス到達時もボスの絵に重ならないよう手前で止める
+  { const p = stageInCycle / 10; stagePlayerMark.style.left = p >= 1 ? "calc(100% - 30px)" : `${p * 100}%`; } // 自キャラはゲージの先端に。ボスの階だけボスの絵と重ならないよう手前にずらす
   const BOSS_ICON_FLIP = new Set(['demon', 'blackDragon', 'blueDragon', 'livingArmor']); // 右を向いている絵は反転して左（自キャラ側）を向かせる
   { // ゴールのボスアイコンは、その10階で待ち構えるボスの絵（自キャラの来る左を向かせる）
     const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), key = BOSS_ENEMY_SPRITE[em], el = document.getElementById('stageBossMark');
@@ -791,7 +798,7 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
   ctx.restore();
 }
 // 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
-const AUTO_PULL_AIM_RATE = 0.33; // オートの体当たりで敵を狙う割合
+const AUTO_PULL_AIM_RATE = 0.9; // オートの体当たりは基本的に敵めがけて突っ込む（たまに気まぐれな方向）
 const AUTO_PULL_IDLE_MS = 4000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
 ['pointerdown', 'pointerup', 'pointermove'].forEach(t => document.addEventListener(t, ev => { if (ev.target === canvas && (t !== 'pointermove' || ev.buttons)) lastUserInputAt = Date.now(); }, true)); // AUTOが解けるのはゲームステージ（サークル）を触ったときだけ
@@ -804,7 +811,7 @@ function tickAutoPull() {
   if (now < nextAutoPullAt) return;
   nextAutoPullAt = now + AUTO_PULL_GAP_MS[0] + Math.random() * (AUTO_PULL_GAP_MS[1] - AUTO_PULL_GAP_MS[0]);
   let ang = Math.random() * Math.PI * 2;
-  if (Math.random() < AUTO_PULL_AIM_RATE) { // 3回に1回くらいは一番近い敵を狙う
+  if (Math.random() < AUTO_PULL_AIM_RATE) { // ほとんどは一番近い敵を狙う
     const pl = balls.find(isMainPlayerBall);
     const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
     const t = pl && nearestOf(pl, foes);
@@ -881,7 +888,8 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
 }
 // 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
-const WEAPON_MAX_LV = 5;
+const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（数・範囲はLv5で頭打ち、威力は伸び続ける）
+const WEAPON_SHAPE_LV = 5;
 const WEAPONS = {
   boomerang: { icon: '🪃', name: 'ブーメラン', desc: '弧を描いて飛び、手元に戻ってくる', cd: 110 },
   cross:     { icon: '✝️', name: '十字架', desc: 'まっすぐ飛んで減速し、反転して戻ってくる', cd: 130 },
@@ -894,8 +902,19 @@ const WEAPONS = {
 };
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
-function weaponCount(lv) { return 1 + Math.floor((lv - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3
-function weaponDmg(base, lv) { return base * (1 + 0.3 * (lv - 1)); }
+function weaponCount(lv) { return 1 + Math.floor((Math.min(lv, WEAPON_SHAPE_LV) - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3（それ以上は増えない）
+function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100); } // 10Lvごとに飛躍・100Lvごとに超飛躍
+function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
+// ボスを倒した・リタイヤしたときに、ランダムなサブウェポンが1つ手に入る（未所持を優先）
+function grantRandomWeapon(reason) {
+  if (!game.weapons) game.weapons = {};
+  const ids = Object.keys(WEAPONS), fresh = ids.filter(k => !getWeaponLv(k));
+  const id = (fresh.length ? fresh : ids)[Math.floor(Math.random() * (fresh.length ? fresh : ids).length)];
+  game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 30;
+  const W = WEAPONS[id];
+  setTimeout(() => showNotice(`${W.icon} ${reason}サブウェポン「${W.name}」${game.weapons[id] > 1 ? 'が Lv' + game.weapons[id] + ' に！' : 'を手に入れた！（自動で発動）'}`), 1400);
+  if (typeof renderCoinShopList === 'function') renderCoinShopList();
+}
 function weaponFoes() { return [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)]; }
 function weaponAimAngle(pl, spread) {
   const en = nearestOf(pl, weaponFoes());
@@ -931,7 +950,7 @@ function fireWeapon(id, lv, pl) {
     for (let i = 0; i < n; i++) {
       const en = foes[i], rr = arena.radius * 0.8 * Math.sqrt(Math.random()), aa = Math.random() * Math.PI * 2;
       const x = en && Math.random() < 0.75 ? en.x : arena.x + Math.cos(aa) * rr, y = en && Math.random() < 0.75 ? en.y : arena.y + Math.sin(aa) * rr;
-      const R = 24 + lv * 3;
+      const R = 24 + Math.min(lv, WEAPON_SHAPE_LV) * 3;
       for (const f of weaponFoes()) if (Math.hypot(f.x - x, f.y - y) < R + f.radius) playerHitEnemyBy(f, pl, weaponDmg(1.5, lv), '#fff27a');
       weaponFx.push({ kind: 'bolt', x, y, R, start: Date.now(), seed: Math.random() * 1000 });
     }
@@ -953,7 +972,7 @@ function updateWeapons(pl, speedMult) {
   for (const id in WEAPONS) {
     const lv = getWeaponLv(id); if (!lv || id === 'shield') continue;
     weaponCd[id] = (weaponCd[id] ?? WEAPONS[id].cd * 0.5) - speedMult;
-    if (weaponCd[id] <= 0) { weaponCd[id] = WEAPONS[id].cd * (1 - 0.06 * (lv - 1)); fireWeapon(id, lv, pl); }
+    if (weaponCd[id] <= 0) { weaponCd[id] = WEAPONS[id].cd * (1 - 0.06 * (Math.min(lv, WEAPON_SHAPE_LV) - 1)); fireWeapon(id, lv, pl); }
   }
   const foes = weaponFoes();
   let hits = 0;

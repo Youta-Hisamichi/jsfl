@@ -1173,7 +1173,7 @@ function saveGame() {
   if (suppressAutoSave) return;
   try {
     const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, savedAt: Date.now() };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data, (k, v) => typeof v === 'number' && !isFinite(v) && !Number.isNaN(v) ? (v > 0 ? Number.MAX_VALUE : -Number.MAX_VALUE) : v)); // 桁あふれで無限大になっても、保存で0（null）に化けないように
   } catch (err) { /* 保存できない環境では無視 */ }
 }
 function loadGame() {
@@ -1303,15 +1303,16 @@ function pickLoginRarity(tier = 0) {
   if (roll < 45) return 'rare';
   return 'common';
 }
+// 大きな数の単位（万〜無量大数）。JSの数は倍精度なので21億で負になることはない。無量大数を超えたら指数表記
+const BIG_UNITS = ['万', '億', '兆', '京', '垓', '秭', '穣', '溝', '澗', '正', '載', '極', '恒河沙', '阿僧祇', '那由他', '不可思議', '無量大数'].map((symbol, i) => ({ value: Math.pow(10, 4 * (i + 1)), symbol }));
 function formatCoinNumber(num) {
-  num = Math.floor(num || 0);
+  num = Number(num) || 0;
+  if (!isFinite(num)) num = num < 0 ? -Number.MAX_VALUE : Number.MAX_VALUE;
+  if (num < 0) return '-' + formatCoinNumber(-num);
+  num = Math.floor(num);
   if (num < 10000) return num.toLocaleString('ja-JP');
-  const units = [
-    { value: 1e4, symbol: '万' },
-    { value: 1e8, symbol: '億' },
-    { value: 1e12, symbol: '兆' },
-    { value: 1e16, symbol: '京' },
-  ];
+  if (num >= 1e72) { const e = Math.floor(Math.log10(num)); return (num / Math.pow(10, e)).toFixed(2) + 'e' + e; } // 無量大数の1万倍以上
+  const units = BIG_UNITS;
   let idx = units.length - 1;
   while (idx > 0 && num < units[idx].value) idx--;
   while (true) {

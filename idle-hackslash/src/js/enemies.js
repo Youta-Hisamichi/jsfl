@@ -393,12 +393,12 @@ const STAGE_ZONES = [
   { name: '森',     normal: ['emoji:🔪', 'shape:slimeGreen', 'emoji:🦎', 'emoji:🦒', 'emoji:🪲', 'shape:slimeChibi', 'emoji:🩷', 'emoji:🦇', 'emoji:🐻', 'emoji:m_stumpling', 'emoji:m_treeling', 'emoji:m_treeGuard', 'emoji:m_maneater', 'emoji:m_dinoPlant', 'emoji:m_acorn', 'emoji:m_direWolf', 'emoji:m_boar', 'emoji:m_redBoar', 'emoji:m_owl', 'emoji:m_hornet', 'emoji:m_woodSpirit', 'emoji:m_mossMonk', 'emoji:m_rose', 'emoji:m_maneater2', 'emoji:m_worm'], boss: '🦍', extraBosses: ['🗿', '🐺', '🪨'] },
   { name: '砂漠',   normal: ['emoji:🦂', 'emoji:🪙', 'emoji:🦞', 'shape:diamond', 'emoji:🔥', 'emoji:🦕', 'shape:slimeBlood', 'emoji:⚫', 'emoji:🦖', 'emoji:m_flameY', 'emoji:m_fireKid', 'emoji:m_cactusKid', 'emoji:m_scorpionS', 'emoji:m_cactusFlower', 'emoji:m_magmaKid', 'emoji:m_tornado', 'emoji:m_griffon', 'emoji:m_hawk', 'emoji:m_tortoise', 'emoji:m_serpent', 'emoji:m_blackSpider'], boss: '🦔', extraBosses: ['🌋', '☄️'] },
   { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️', 'emoji:m_goblinSpear', 'emoji:m_redGoblin', 'emoji:m_blueGoblin', 'emoji:m_orcKnight', 'emoji:m_rat', 'emoji:m_ironMask', 'emoji:m_redArmor', 'emoji:m_axeArmor', 'emoji:m_spearArmor', 'emoji:m_archer', 'emoji:m_cannoneer', 'emoji:m_eagle'], boss: '🖤', extraBosses: ['🪓'] },
-  { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:🧛', 'emoji:m_shadowFlame', 'emoji:m_darkKid', 'emoji:m_ghoul', 'emoji:m_sheetGhost', 'emoji:m_shade', 'emoji:m_willWisp', 'emoji:m_candle', 'emoji:m_purpleBat', 'emoji:m_redBat', 'emoji:m_vampBat', 'emoji:m_assassin', 'emoji:m_shinobi', 'emoji:m_cultist', 'emoji:m_plagueDoc'], boss: '🪦', extraBosses: ['🏮', '💘', '🕯️'] },
+  { name: '夜の町', normal: ['emoji:🎃', 'emoji:👻', 'emoji:🛢️', 'emoji:🧟', 'shape:slimeDango', 'emoji:⚡', 'emoji:🌕', 'emoji:m_shadowFlame', 'emoji:m_darkKid', 'emoji:m_ghoul', 'emoji:m_sheetGhost', 'emoji:m_shade', 'emoji:m_willWisp', 'emoji:m_candle', 'emoji:m_purpleBat', 'emoji:m_redBat', 'emoji:m_vampBat', 'emoji:m_assassin', 'emoji:m_shinobi', 'emoji:m_cultist', 'emoji:m_plagueDoc'], boss: '🏮', extraBosses: ['💘', '🕯️'] },
   { name: '雪原',   normal: ['shape:slimeIce', 'shape:slimeSnowman', 'emoji:🐧', 'emoji:🔷', 'emoji:🦋', 'emoji:🌈', 'emoji:🧙', 'emoji:👑', 'emoji:m_blueFireKid', 'emoji:m_whiteWolf', 'emoji:m_crystalSoldier', 'emoji:m_snowGolem', 'emoji:m_crystalBeast', 'emoji:m_cloud', 'emoji:m_frostCloud', 'emoji:m_blueDrake', 'emoji:m_crystalTortoise'], boss: '🫧', extraBosses: ['🧊', '❄️'] },
   { name: '市場',   normal: ['shape:slimePink', 'emoji:🥬', 'emoji:🛢️', 'shape:slimeMatcha', 'emoji:🔪', 'emoji:🪙', 'emoji:🥒', 'emoji:👺', 'emoji:m_dropSlime', 'emoji:m_ghostMush', 'emoji:m_jackO', 'emoji:m_scarecrow', 'emoji:m_scarecrow2', 'emoji:m_bookEye', 'emoji:m_mimicS', 'emoji:m_chestKid', 'emoji:m_witchKid', 'emoji:m_automaton', 'emoji:m_hippoChick', 'emoji:m_rockling'], boss: '👹', extraBosses: ['📦', '🧸'] }, // 百目の少女は削除
   { name: '船',     normal: ['emoji:🐟', 'emoji:🦀', 'emoji:🔷', 'emoji:🪼', 'emoji:🦞', 'emoji:🪖', 'emoji:🐧', 'emoji:🌈', 'emoji:m_crab', 'emoji:m_hermit', 'emoji:m_blueHermit', 'emoji:m_jelly', 'emoji:m_squid', 'emoji:m_octopus', 'emoji:m_dragonfly', 'emoji:m_moth', 'emoji:m_maneater3'], boss: '🐲', extraBosses: ['🐙', '🧜', '🌊', '🐋', '🦑'] },
   { name: '遺跡',   normal: ['emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉', 'emoji:m_skelSword', 'emoji:m_skelShield', 'emoji:m_skelDagger', 'emoji:m_mummy', 'emoji:m_bigBat', 'emoji:m_spider', 'emoji:m_clayGolem', 'emoji:m_mudGolem', 'emoji:m_redDrake', 'emoji:m_greenDrake', 'emoji:m_spikeBeast', 'emoji:m_purpleSpider'], boss: '⚔️', extraBosses: ['👀', '☠️', '⚜️', '🧿'] },
-  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🧛', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉', 'emoji:m_crystalElem', 'emoji:m_darkBall', 'emoji:m_voidBall', 'emoji:m_starKid', 'emoji:m_blackHole', 'emoji:m_blackMage'], boss: '🩸', extraBosses: ['😇', '🔮', '🌌'] },
+  { name: '魔塔',   normal: ['emoji:🌑', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉', 'emoji:m_crystalElem', 'emoji:m_darkBall', 'emoji:m_voidBall', 'emoji:m_starKid', 'emoji:m_blackHole', 'emoji:m_blackMage'], boss: '🩸', extraBosses: ['😇', '🔮', '🌌'] },
 ];
 const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
@@ -760,8 +760,8 @@ function spawnReceivedDamageText(target, dmg, crit, attacker) {
   bloodDrain(attacker, dmg);
   spawnBlood(target.x, target.y, 8);
   const y = target.y - target.radius - 8;
-  if (!crit) { spawnDamageText(target.x, y, String(dmg), '#ffb3b3'); return; }
-  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + dmg, '#ff3b4a', 0.014, true);
+  if (!crit) { spawnDamageText(target.x, y, formatCoinNumber(dmg), '#ffb3b3'); return; }
+  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + formatCoinNumber(dmg), '#ff3b4a', 0.014, true);
   spawnHitParticles(target.x, target.y, '#ff3b4a');
   spawnHitParticles(target.x, target.y, '#ff9aa5');
   playEnemyCritSound();
@@ -770,7 +770,7 @@ function spawnReceivedDamageText(target, dmg, crit, attacker) {
 function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
   { const pl = balls.find(isMainPlayerBall); if (pl) pl.hitAt = Date.now(); }
   const y = target.y - target.radius - (offsetY || 8);
-  if (!crit) { spawnDamageText(target.x, y, String(dmg), color); return; }
+  if (!crit) { spawnDamageText(target.x, y, formatCoinNumber(dmg), color); return; }
   spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + dmg, '#ff7a3d', 0.014, true);
   spawnHitParticles(target.x, target.y, '#ff7a3d');
   spawnHitParticles(target.x, target.y, '#ffd76b');
@@ -898,7 +898,7 @@ function drawCoinFx() {
 // ステージの障害物：エリア（10ステージ）ごとに配置が決まる。キャラは跳ね返り、敵の弾は遮られる
 let obstacles = [], obstacleStage = -1, crateShards = [];
 const CRATE_HP = 6, EGG_HP = 4, ROCK_HP = 16; // 岩は16回当てると砕けて宝箱
-const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🧛', '🌑']; // 卵から出てくるやばい敵
+const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🌑']; // 卵から出てくるやばい敵
 const OBSTACLE_IMGS = {};
 Object.entries({
   rock: 'assets/img/obstacles/rock.webp', mossRock: 'assets/img/obstacles/mossRock.webp', magmaRock: 'assets/img/obstacles/magmaRock.webp',
@@ -1160,7 +1160,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'ice') { // 氷：経験値（たまにHP回復）
     spawnExpGems(o.x, o.y, 10); spawnDamageText(x, y, '🧊 パリーン！', '#bfeaff', 0.018, true);
-    if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${h}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
+    if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
     spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
     if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
@@ -1169,7 +1169,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     else { spawnDamageText(x, y, 'からっぽ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'bush' || o.kind === 'hay') { // 草むら・干し草：たまにコイン、たまにHP回復
     if (r < 0.35) { const c = coinsFor(0.4); game.coins += c; spawnDamageText(x, y, '🌿 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
-    else if (r < 0.55) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.1); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${h}`, '#5fe08a', 0.016, true); updateHPUI(); } }
+    else if (r < 0.55) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.1); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${formatCoinNumber(h)}`, '#5fe08a', 0.016, true); updateHPUI(); } }
     else spawnDamageText(x, y, 'ガサッ', '#9fd08a', 0.02);
   } else if (o.kind === 'stump') { // 切り株：コイン
     const c = coinsFor(1); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🪵 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true);
@@ -1247,7 +1247,7 @@ function obstacleBounce(ball) {
         else {
           const dmg = Math.max(1, Math.round(ball.maxHp * SAW_SELF_DMG));
           ball.hp -= dmg; ball.hurtAt = now;
-          spawnBlood(ball.x, ball.y, 6); spawnDamageText(ball.x, ball.y - ball.radius - 8, String(dmg), '#ffb3b3');
+          spawnBlood(ball.x, ball.y, 6); spawnDamageText(ball.x, ball.y - ball.radius - 8, formatCoinNumber(dmg), '#ffb3b3');
           spawnHitParticles(ball.x, ball.y, '#ff6b6b'); playPlayerHitSound(); thump(900, 300, 0.06, 0.08, 'square');
           updateHPUI();
           if (isMainPlayerBall(ball) && ball.hp <= 0) { ball.hp = 0; onPlayerDeath(); return; }
@@ -1303,7 +1303,7 @@ function openQBox(o) {
   if (r < 0.2) { const rar = rollChestRarity(2); spawnDamageText(x, y, `🎁 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
   else if (r < 0.55) { const coins = Math.round(getEnemyStats(game.stage).hp * 1.2 + 20); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
   else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
-  else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${h}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
+  else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }
 function smashObstacle(o) { // 激デカボスに踏みつぶされて粉々になる

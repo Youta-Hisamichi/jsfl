@@ -161,15 +161,6 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s k - k s h | k h s k - k s h | k h s k - k s h | k h s k s s ks s | k h s k - k s h | k h s k - k s h | k h s k - k s h | ks s ks s ks ks ks ks',
   },
-  battle29: { // 戦闘29：携帯モンスターRPGの野生戦のような、跳ねるベースと駆け上がる旋律の疾走曲（ト短調）
-    bpm: 172,
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'G5 = A#5 = D6 = C6 A#5 | A5 = F5 = A5 = C6 = | A#5 = G5 = D5 = G5 A#5 | A5 = = = F5 G5 A5 C6 | D6 = C6 = A#5 = A5 G5 | F5 = A5 = C6 = D#6 = | D6 = C6 A#5 A5 G5 F#5 G5 | A5 = F#5 = D5 = = =' },
-      { type: 'vrc6pulse12', gain: 0.013, notes: '- G3+A#3+D4 - G3+A#3+D4 - G3+A#3+D4 - G3+A#3+D4 | - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 | - D#3+G3+A#3 - D#3+G3+A#3 - D#3+G3+A#3 - D#3+G3+A#3 | - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 | - G3+A#3+D4 - G3+A#3+D4 - G3+A#3+D4 - G3+A#3+D4 | - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 - F3+A3+C4 | - D#3+G3+A#3 - D#3+G3+A#3 - D#3+G3+A#3 - D#3+G3+A#3 | - D3+F#3+A3 - D3+F#3+A3 - D3+F#3+A3 - D3+F#3+A3' },
-      { type: 'triangle', gain: 0.07, notes: 'G1 G2 G1 G2 G1 G2 G1 G2 | F1 F2 F1 F2 F1 F2 F1 F2 | D#1 D#2 D#1 D#2 D#1 D#2 D#1 D#2 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2 | F1 F2 F1 F2 F1 F2 F1 F2 | D#1 D#2 D#1 D#2 D#1 D#2 D#1 D#2 | D2 D3 D2 D3 D2 D3 D2 D3' },
-    ],
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
-  },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
     kickBoost: 1.3,
@@ -305,14 +296,15 @@ const BGM_SONGS = {
     ],
     drums: 'k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - - - h - | k - h - s - h h',
   },
-  gemshop: { // ショップ画面：携帯RPGの活気ある港町のような、裏拍のブラスと歩くベースで弾むアップテンポ曲（変ロ長調）
-    bpm: 140,
+  gemshop: { // ショップ画面：南国の漁村のような、ギターを爪弾く6/8拍子の分散和音に笛ののどかな旋律が乗る曲（ニ長調・1小節6ステップ）
+    bpm: 132,
+    echo: { time: 0.3, feedback: 0.25, wet: 0.22 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.025, notes: 'D5 = F5 A#5 = A5 F5 = | G5 = = A#5 = D6 = C6 | A#5 = G5 = D#5 = G5 A#5 | A5 = = = F5 = C6 = | D6 = C6 A#5 = A5 A#5 = | F5 = = A5 = D6 = F6 | D#6 = D6 C6 = A#5 G5 = | A5 = A#5 C6 = D6 = =' },
-      { type: 'vrc6saw', gain: 0.014, notes: '- D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 | - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 | - D#4+G4+A#4 - D#4+G4+A#4 - D#4+G4+A#4 - D#4+G4+A#4 | - C4+F4+A4 - C4+F4+A4 - C4+F4+A4 - C4+F4+A4 | - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D#4+G4+A#4 - D#4+G4+A#4 - D#4+G4+A#4 - D#4+G4+A#4 | - C4+F4+A4 - C4+F4+A4 - C4+F4+A4 - C4+F4+A4' },
-      { type: 'triangle', gain: 0.07, notes: 'A#1 - D2 - F2 - G2 - | G1 - A#1 - D2 - E2 - | D#2 - G2 - A#1 - C2 - | F1 - A1 - C2 - D2 - | A#1 - D2 - F2 - G2 - | D2 - F2 - A1 - B1 - | D#2 - G2 - A#1 - C2 - | F1 - A1 - C2 - D2 -' },
+      { type: 'vrc6pulse25', gain: 0.024, notes: 'F#5 = = E5 F#5 A5 | B5 = = A5 = F#5 | E5 = = D5 E5 F#5 | A5 = = = = = | D6 = = C#6 B5 A5 | B5 = = A5 = F#5 | G5 = F#5 E5 = D5 | E5 = = = = -' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: 'D3 A3 D4 F#4 D4 A3 | G2 D3 G3 B3 G3 D3 | E3 B3 E4 G4 E4 B3 | A2 E3 A3 C#4 A3 E3 | B2 F#3 B3 D4 B3 F#3 | G2 D3 G3 B3 G3 D3 | E3 B3 E4 G4 E4 B3 | A2 E3 A3 C#4 A3 E3' },
+      { type: 'triangle', gain: 0.06, notes: 'D2 = = - - - | G1 = = - - - | E2 = = - - - | A1 = = - - - | B1 = = - - - | G1 = = - - - | E2 = = - - - | A1 = = - - -' },
     ],
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+    drums: 'k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s - h | k - h s s -',
   },
   tower: {
     bpm: 140,
@@ -494,7 +486,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle17', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -539,7 +531,6 @@ const BGM_INFO = [
   { key: 'battle24', name: '戦闘24 裏通りの拳', desc: '刻むロックベースとパワーコードのリフ、ブルージーな音を混ぜた熱い旋律の街の殴り合い。VRC6風チップチューン。イ短調（ベルトスクロールアクション系の作風）・BPM156' },
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
-  { key: 'battle29', name: '戦闘29 草むらの飛び出し', desc: '跳ねるベースに乗って旋律が駆け上がる、携帯モンスターRPGの野生戦のような疾走曲。VRC6風チップチューン。ト短調・BPM172' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
@@ -555,7 +546,7 @@ const BGM_INFO = [
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 出撃前の兵装選択', desc: 'シンコペーションの和音の刻みと疾走するベースに、勇ましい旋律が乗る、シューティングの装備選択画面のような出撃前の高揚感あふれる曲。VRC6風チップチューン。ホ短調・BPM152' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
-  { key: 'gemshop', name: 'ページ ショップ 波止場の市場通り', desc: '裏拍で鳴るブラスと歩くようなベースが弾む、携帯RPGの活気ある港町のような曲。VRC6風チップチューン。変ロ長調・BPM140' },
+  { key: 'gemshop', name: 'ページ ショップ 潮風の漁村', desc: 'ギターを爪弾くような6/8拍子の分散和音に、笛ののどかな旋律が乗る、南国の漁村のような穏やかな曲。ほんのりエコー付き。VRC6風チップチューン。ニ長調' },
   { key: 'tower', name: 'ページ 試練の塔 螺旋の階段', desc: '刻み続ける分散和音とうねるベースの不安感に、階段を登るように上がっていく旋律の高揚感を重ねた曲。VRC6風チップチューン。イ短調・BPM140' },
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
@@ -1156,8 +1147,8 @@ function getEffectiveSpeed() {
   return Date.now() < accelEndAt ? 2.5 : gameSpeed;
 }
 
-const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🧛', '🌕', '⚡', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫', 'm_flameY', 'm_dropSlime', 'm_shadowFlame', 'm_sproutling', 'm_rockling', 'm_stumpling', 'm_crystalElem', 'm_redMush', 'm_blueMush', 'm_seedling', 'm_treeling', 'm_leafling', 'm_fireKid', 'm_blueFireKid', 'm_darkKid', 'm_treeGuard', 'm_maneater', 'm_cactusKid', 'm_dinoPlant', 'm_redMush2', 'm_greenMush', 'm_ghostMush', 'm_acorn', 'm_greenSprout', 'm_goblinSpear', 'm_redGoblin', 'm_blueGoblin', 'm_skelSword', 'm_skelShield', 'm_skelDagger', 'm_orcKnight', 'm_ghoul', 'm_mummy', 'm_sheetGhost', 'm_shade', 'm_willWisp', 'm_candle', 'm_purpleBat', 'm_redBat', 'm_direWolf', 'm_whiteWolf', 'm_boar', 'm_redBoar', 'm_rat', 'm_whiteRat', 'm_squirrel', 'm_chick', 'm_owl', 'm_hippoChick', 'm_bigBat', 'm_vampBat', 'm_hornet', 'm_bee', 'm_blueButterfly', 'm_moth', 'm_dragonfly', 'm_spider', 'm_scorpionS', 'm_crab', 'm_hermit', 'm_blueHermit', 'm_jelly', 'm_squid', 'm_octopus', 'm_woodSpirit', 'm_mossMonk', 'm_rose', 'm_maneater2', 'm_maneater3', 'm_sproutSlime', 'm_cactusFlower', 'm_jackO', 'm_scarecrow', 'm_scarecrow2', 'm_bookEye', 'm_mimicS', 'm_chestKid', 'm_clayGolem', 'm_crystalSoldier', 'm_mudGolem', 'm_snowGolem', 'm_crystalBeast', 'm_magmaKid', 'm_tornado', 'm_cloud', 'm_frostCloud', 'm_darkBall', 'm_voidBall', 'm_starKid', 'm_blackHole', 'm_ironMask', 'm_redArmor', 'm_axeArmor', 'm_spearArmor', 'm_assassin', 'm_shinobi', 'm_witchKid', 'm_cultist', 'm_plagueDoc', 'm_blackMage', 'm_archer', 'm_cannoneer', 'm_automaton', 'm_redDrake', 'm_blueDrake', 'm_greenDrake', 'm_griffon', 'm_eagle', 'm_hawk', 'm_tortoise', 'm_crystalTortoise', 'm_spikeBeast', 'm_serpent', 'm_worm', 'm_blackSpider', 'm_purpleSpider'];
-const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '🪦', '🦍', '💪', '🫧', '🌋', '🧊', '🗿', '🩸', '😇', '👀', '🐙', '☠️', '🐺', '🌳', '🧜', '🪓', '🔮', '🖤', '📦', '🏮', '🪨', '🪶', '❄️', '🌊', '🌌', '🧸', '⚜️', '☄️', '🧿', '💘', '🐋', '🕯️', '🦑'];
+const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🌕', '⚡', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫', 'm_flameY', 'm_dropSlime', 'm_shadowFlame', 'm_sproutling', 'm_rockling', 'm_stumpling', 'm_crystalElem', 'm_redMush', 'm_blueMush', 'm_seedling', 'm_treeling', 'm_leafling', 'm_fireKid', 'm_blueFireKid', 'm_darkKid', 'm_treeGuard', 'm_maneater', 'm_cactusKid', 'm_dinoPlant', 'm_redMush2', 'm_greenMush', 'm_ghostMush', 'm_acorn', 'm_greenSprout', 'm_goblinSpear', 'm_redGoblin', 'm_blueGoblin', 'm_skelSword', 'm_skelShield', 'm_skelDagger', 'm_orcKnight', 'm_ghoul', 'm_mummy', 'm_sheetGhost', 'm_shade', 'm_willWisp', 'm_candle', 'm_purpleBat', 'm_redBat', 'm_direWolf', 'm_whiteWolf', 'm_boar', 'm_redBoar', 'm_rat', 'm_whiteRat', 'm_squirrel', 'm_chick', 'm_owl', 'm_hippoChick', 'm_bigBat', 'm_vampBat', 'm_hornet', 'm_bee', 'm_blueButterfly', 'm_moth', 'm_dragonfly', 'm_spider', 'm_scorpionS', 'm_crab', 'm_hermit', 'm_blueHermit', 'm_jelly', 'm_squid', 'm_octopus', 'm_woodSpirit', 'm_mossMonk', 'm_rose', 'm_maneater2', 'm_maneater3', 'm_sproutSlime', 'm_cactusFlower', 'm_jackO', 'm_scarecrow', 'm_scarecrow2', 'm_bookEye', 'm_mimicS', 'm_chestKid', 'm_clayGolem', 'm_crystalSoldier', 'm_mudGolem', 'm_snowGolem', 'm_crystalBeast', 'm_magmaKid', 'm_tornado', 'm_cloud', 'm_frostCloud', 'm_darkBall', 'm_voidBall', 'm_starKid', 'm_blackHole', 'm_ironMask', 'm_redArmor', 'm_axeArmor', 'm_spearArmor', 'm_assassin', 'm_shinobi', 'm_witchKid', 'm_cultist', 'm_plagueDoc', 'm_blackMage', 'm_archer', 'm_cannoneer', 'm_automaton', 'm_redDrake', 'm_blueDrake', 'm_greenDrake', 'm_griffon', 'm_eagle', 'm_hawk', 'm_tortoise', 'm_crystalTortoise', 'm_spikeBeast', 'm_serpent', 'm_worm', 'm_blackSpider', 'm_purpleSpider'];
+const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '🦍', '💪', '🫧', '🌋', '🧊', '🗿', '🩸', '😇', '👀', '🐙', '☠️', '🐺', '🌳', '🧜', '🪓', '🔮', '🖤', '📦', '🏮', '🪨', '🪶', '❄️', '🌊', '🌌', '🧸', '⚜️', '☄️', '🧿', '💘', '🐋', '🕯️', '🦑'];
 const TACKLE_TRADE_BOSS = '🦔';
 let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
 let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定

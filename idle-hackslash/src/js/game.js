@@ -476,6 +476,7 @@ function onStageClear() {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
   }
+  if (isBossStage) grantRandomWeapon('ボス撃破！ ');
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
@@ -691,6 +692,7 @@ function updateBossRetireBtn() {
   document.body.classList.toggle('in-boss', show); // ボス戦中は試練の塔ボタンを隠してリタイヤに場所をゆずる
 }
 function bossFail(reason, silent) {
+  if (reason === 'retire') grantRandomWeapon('リタイヤ報酬：');
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();

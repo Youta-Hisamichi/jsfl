@@ -1381,3 +1381,12 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 #skillRow .action-btn.buffing { filter: drop-shadow(0 0 5px currentColor); }
 .skill-set-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 0 12px; }
 .boss-retire-btn { border: 9px solid transparent !important; border-image: url(assets/img/ui/skin/btn_red.webp) 13 fill / 9px stretch !important; background: none !important; border-radius: 0 !important; padding: 0 12px !important; }
+/* 上部のコイン・ジェムの帯：縦幅を詰める */
+.top-header { border-width: 7px; border-image-width: 7px; padding: 0 8px; min-height: 0; line-height: 1.1; }
+.top-header .th-gear { padding: 0 2px; font-size: 0.95rem; line-height: 1; }
+.top-header .th-gear .ico-img { width: 1.2em; height: 1.2em; }
+.top-header .th-item.gem { padding: 0 3px 0 6px; }
+
+/* デバッグボタンは転生ボタンの右に小さく */
+.tower-row .debug-toggle { display: inline-block; flex: 0 0 auto; margin: 0; align-self: center; padding: 4px 10px; }
+.sk-card.equipped { border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; }

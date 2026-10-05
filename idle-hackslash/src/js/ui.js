@@ -1055,6 +1055,19 @@ coinShopList.addEventListener('click', event => {
   updateHPUI();
 });
 
+document.getElementById('weaponList').addEventListener('click', event => {
+  const b = event.target.closest('[data-weapon-buy]'); if (!b) return;
+  const id = b.dataset.weaponBuy, cost = getWeaponBuyCost(id);
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+  spendCoins(cost);
+  if (!game.weapons) game.weapons = {};
+  const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20;
+  const leap = lv % 100 === 0 ? 2 : lv % 10 === 0 ? 1 : 0;
+  showLevelUpPop(event.clientX, event.clientY, lv === 1 ? '獲得！' : `Lv${lv}！`);
+  if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else playUpgradeSound();
+  showNotice(`${WEAPONS[id].icon} ${WEAPONS[id].name} ${lv === 1 ? 'を獲得！（自動で発動）' : 'が Lv' + lv + ' に！'}`);
+  updateStatsUI(); renderCoinShopList(); saveGame();
+});
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
   const equip = event.target.closest('[data-skill-equip]');
