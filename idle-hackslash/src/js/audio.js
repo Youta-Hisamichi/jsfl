@@ -152,22 +152,17 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s k - k s h | k h s k - k s h | k h s k - k s h | k h s k s s ks s | k h s k - k s h | k h s k - k s h | k h s k - k s h | ks s ks s ks ks ks ks',
   },
-  boss: {
-    bpm: 164,
+  boss: { // 音ゲー（ユーロビート／トランス）風：四つ打ちキック＋裏打ちベース、きらめくアルペジオとキャッチーな主旋律（イ短調）
+    bpm: 156,
     tracks: [
-      { type: 'sawtooth', gain: 0.032, notes:
-        'A4 = = = C5 = B4 = | A4 = E4 = F4 = E4 = | F4 = A4 = C5 = D5 = | E5 = = = G#4 = B4 = | ' +
-        'A5 = = G5 F5 = E5 = | F5 E5 D5 = C5 = B4 = | A#4 = D5 = F5 = A#5 = | G#5 = = = E5 = B4 =' },
-      { type: 'square', gain: 0.05, notes:
-        'A2 A2 A3 A2 C3 A2 E3 A2 | A2 A2 A3 A2 C3 A2 E3 A2 | F2 F2 F3 F2 A2 F2 C3 F2 | E2 E2 E3 E2 G#2 E2 B2 E2 | ' +
-        'A2 A2 A3 A2 C3 A2 E3 A2 | A2 A2 A3 A2 C3 A2 E3 A2 | A#2 A#2 A#3 A#2 D3 A#2 F3 A#2 | E2 E2 E3 E2 G#2 E2 B2 E2' },
-      { type: 'triangle', gain: 0.024, notes:
-        'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | F3+A3+C4 = = = = = = = | E3+G#3+B3 = = = = = = = | ' +
-        'A3+C4+E4 = = = = = = = | A3+C4+E4 = = = = = = = | A#3+D4+F4 = = = = = = = | E3+G#3+B3 = = = = = = =' },
+      { type: 'vrc6pulse25', gain: 0.032, notes: 'E5 = A5 = C6 = B5 A5 | A5 = G5 = F5 = E5 = | D5 = G5 = B5 = A5 G5 | G5 = E5 = B4 = = = | E5 E5 A5 = C6 = E6 = | D6 = C6 = A5 = F5 = | G5 = B5 = D6 = B5 G5 | G#5 = B5 = E6 = = =' },
+      { type: 'vrc6pulse12', gain: 0.018, notes: 'A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | G4 B4 D5 G5 D5 B4 G4 B4 | E4 G4 B4 E5 B4 G4 E4 G4 | A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | G4 B4 D5 G5 D5 B4 G4 B4 | E4 G#4 B4 E5 G#5 E5 B4 G#4' },
+      { type: 'vrc6saw', gain: 0.05, notes: '- A2 - A2 - A2 - A3 | - F2 - F2 - F2 - F3 | - G2 - G2 - G2 - G3 | - E2 - E2 - E2 - E3 | - A2 - A2 - A2 - A3 | - F2 - F2 - F2 - F3 | - G2 - G2 - G2 - G3 | - E2 - E2 E3 E2 E3 E2' },
     ],
-    drums: 'k h k s k h k s | k h k s k h k s | k h k s k h k s | k k s h k k s s | ' +
-           'k h k s k h k s | k h k s k h k s | k h k s k h k s | s s s s ks ks ks ks',
+    kickBoost: 1.2,
+    drums: 'k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks ks | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | ks ks ks ks ks ks ks ks',
   },
+
   boss7: {
     bpm: 182,
     tracks: [
@@ -263,15 +258,14 @@ const BGM_SONGS = {
     ],
     drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
   },
-  upgrade: { // 迷宮探索RPG風（FM音源っぽい疾走感）：シンコペーションで刻むベース＋駆け上がる主旋律、ホ短調ドリア風の高揚感
-    bpm: 156,
+  upgrade: { // 音ゲーの選曲画面風：明るい四つ打ちハウス、裏打ちベースと跳ねるシンセのフック、ワクワクする長調ループ（ヘ長調）
+    bpm: 132,
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.032, notes: 'E5 = = B4 E5 = F#5 G5 | G5 = E5 = C6 = B5 A5 | A5 = = F#5 D5 = E5 F#5 | F#5 = D5 = B4 = D5 F#5 | G5 = = E5 B5 = A5 G5 | G5 = E5 = C6 = D6 E6 | E6 = D6 C6 B5 = A5 = | B5 = = = D#6 = B5 =' },
-      { type: 'vrc6pulse12', gain: 0.019, notes: 'E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | D4 F#4 A4 D5 A4 F#4 D4 F#4 | B3 D4 F#4 B4 F#4 D4 B3 D4 | E4 G4 B4 E5 B4 G4 E4 G4 | C4 E4 G4 C5 G4 E4 C4 E4 | A3 C4 E4 A4 B3 D#4 F#4 B4 | B3 D#4 F#4 B4 D#5 B4 F#4 D#4' },
-      { type: 'vrc6saw', gain: 0.052, notes: 'E2 E2 E3 E2 - E2 E3 D3 | C2 C2 C3 C2 - C2 C3 B2 | D2 D2 D3 D2 - D2 D3 C3 | B1 B1 B2 B1 - B1 B2 A2 | E2 E2 E3 E2 - E2 E3 D3 | C2 C2 C3 C2 - C2 C3 D3 | A1 A1 A2 A1 B1 B1 B2 B1 | B1 B2 B1 B2 B1 B2 D#2 F#2' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'C6 - A5 C6 - F6 E6 C6 | D6 - A5 D6 - F6 E6 D6 | A#5 - F5 A#5 - D6 C6 A#5 | C6 = E6 = G6 = E6 = | C6 - A5 C6 - F6 E6 C6 | D6 - A5 D6 - F6 G6 A6 | A#6 = A6 = G6 = F6 = | E6 = G6 = C7 = = =' },
+      { type: 'vrc6pulse12', gain: 0.018, notes: 'F4 A4 C5 A4 F5 C5 A4 C5 | D4 F4 A4 F4 D5 A4 F4 A4 | A#3 D4 F4 D4 A#4 F4 D4 F4 | C4 E4 G4 E4 C5 G4 E4 G4 | F4 A4 C5 A4 F5 C5 A4 C5 | D4 F4 A4 F4 D5 A4 F4 A4 | A#3 D4 F4 D4 A#4 F4 D4 F4 | C4 E4 G4 C5 E5 G5 C6 G5' },
+      { type: 'vrc6saw', gain: 0.046, notes: '- F2 - F2 - F2 - F3 | - D2 - D2 - D2 - D3 | - A#1 - A#1 - A#1 - A#2 | - C2 - C2 - C2 - C3 | - F2 - F2 - F2 - F3 | - D2 - D2 - D2 - D3 | - A#1 - A#1 - A#1 - A#2 | - C2 - C2 C3 C2 E2 G2' },
     ],
-    kickBoost: 1.1,
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
+    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s s | k h s h k h s h | k h s h k h s h | k h s h k h s h | k k s s ks ks ks ks',
   },
   companion: {
     bpm: 140,
@@ -524,7 +518,7 @@ const BGM_INFO = [
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
-  { key: 'boss', name: 'ボス1 ダーク', desc: '緊張感のあるダーク。イ短調のフリギア進行・BPM164' },
+  { key: 'boss', name: 'ボス1 ステップ・オーバードライブ', desc: '四つ打ちのキックと裏打ちのベースに、きらめくアルペジオとキャッチーな主旋律が乗る音ゲー（ユーロビート／トランス）風のボス曲。VRC6風チップチューン。イ短調・BPM156' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
   { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
@@ -535,7 +529,7 @@ const BGM_INFO = [
   { key: 'boss9', name: 'ボス9 要塞の救出劇', desc: '休まず刻むオスティナートのベースとティンパニのような重いキック、追い立てられるように駆け上がる勇ましい旋律。囚われた仲間を取り戻す空中要塞の決戦。VRC6風チップチューン。ニ短調（90年代冒険アニメ映画の救出シーンの作風）・BPM168' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
-  { key: 'upgrade', name: 'ページ 強化 迷宮の鍛冶場', desc: 'シンコペーションで刻むベースと駆け上がる主旋律の、迷宮探索RPG風の疾走曲。少しドキドキする高揚感。VRC6風チップチューン。ホ短調・BPM156' },
+  { key: 'upgrade', name: 'ページ 強化 セレクト・ビート', desc: '明るい四つ打ちと裏打ちのベースに、跳ねるシンセのフックが乗る音ゲーの選曲画面風のループ。ワクワクする長調。VRC6風チップチューン。ヘ長調・BPM132' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 軍師の作戦室', desc: 'マーチのスネアとブラス風の和声で作戦を練る勇壮な行進曲。VRC6風チップチューン。変ロ長調（シミュレーションRPGの出撃準備系の作風）・BPM126' },
   { key: 'artifact', name: 'ページ 遺物 古の書庫', desc: '忍び足のようなピチカート風ベースと好奇心をくすぐる旋律。VRC6風チップチューン。ニ短調（ファンタジーRPGの古代図書館系の作風）・BPM126' },
