@@ -1740,7 +1740,7 @@ function openChestBatchDialog(rarity) {
       const delay = `animation-delay:${Math.min(i, 20) * 0.05}s`;
       if (r.coins != null) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン</div><div class="cl-n">${formatCoinNumber(r.coins)}</div></div>`;
       const c = RARITY_INFO[r.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${r.rebirth ? '<span class="cl-tag">転生</span>' : ''}<div class="cl-ico">${ico(r.art)}</div><div class="cl-name">${r.art.name}</div><div class="cl-n">${r.n > 1 ? '×' + r.n : ''}</div></div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${r.rebirth ? '<span class="cl-tag">転生</span>' : ''}<div class="cl-ico">${ico(r.art)}</div><div class="cl-name">${r.art.name}</div><div class="cl-desc">${r.art.desc.replace(/（最大\d+個）/, '')}</div><div class="cl-n">${r.n > 1 ? '×' + r.n : ''}</div></div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     document.getElementById('chestModalIcon').className = 'chest-big';
