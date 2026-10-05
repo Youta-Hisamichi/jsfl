@@ -68,6 +68,7 @@ function draw() {
   drawExpGems();
   drawEnemyTraitEffects();
   drawNovaFx();
+  drawBlastFx();
   drawMysteryFx();
 
   drawTapBonus();
@@ -523,6 +524,7 @@ function fullReset() {
   lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
   lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
   lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
+  lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
   game.startedAt = Date.now();
   game.playTimeMs = 0;
   particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
@@ -821,6 +823,8 @@ debugRow.addEventListener('click', event => {
     updateCompRushButton();
     lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
     updateNovaButton();
+    lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
+    updateBlastButton();
     updateDeathButton();
     updateCoinStrikeButton();
     updateZeniButton();
@@ -1809,7 +1813,7 @@ const MYSTERY_EFFECTS = [
   { w: 8,  name: '🤔 何も起きなかった…', color: '#9aa3b8', fn: () => {} },
   { w: 8,  name: '😱 敵が回復してしまった！', color: '#ff6b6b', fn: ({ enemy }) => { enemy.hp = Math.min(enemy.maxHp, enemy.hp + Math.round(enemy.maxHp * 0.3)); } },
   { w: 8,  name: '💫 自分にダメージ！', color: '#ff6b6b', fn: ({ player }) => { const d = Math.min(player.hp - 1, Math.round(player.maxHp * 0.2)); if (d > 0) { player.hp -= d; spawnDamageText(player.x, player.y - player.radius - 14, '-' + d, '#ff6b6b', 0.02); } } },
-  { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = lastCompRushAt = lastNovaAt = 0; updateStatsUI(); } },
+  { w: 8,  name: '🌀 すべてのスキルが回復！', color: '#c792ea', fn: () => { lastSpecialAt = lastAccelAt = lastHealAt = lastBarrierAt = lastHomingAt = lastPoisonAt = lastParalyzeAt = lastSleepAt = lastAtkUpAt = lastRegenAt = lastSilenceAt = lastSacrificeAt = lastDeathAt = lastCoinStrikeAt = lastZeniAt = lastCompRushAt = lastNovaAt = lastBlastAt = 0; updateStatsUI(); } },
 ];
 novaBtn.addEventListener('click', event => {
   const targets = () => [...balls.filter(x => !x.isPlayer && !x.isDying && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
@@ -1846,6 +1850,49 @@ novaBtn.addEventListener('click', event => {
   updateStatsUI();
   updateHPUI();
 });
+// 大爆発：画面全体を白く飛ばす閃光と、炎の火球が広がる
+blastBtn.addEventListener('click', event => {
+  const targets = () => [...balls.filter(x => !x.isPlayer && !x.isDying && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
+  if (game.shopOwned.skillBlast && !targets().length && Date.now() - lastBlastAt >= skillCd('skillBlast', SKILL_BLAST_COOLDOWN)) { showTapError('敵がいません', event.clientX, event.clientY); return; }
+  const ctxs = beginSkill(event, 'skillBlast', 'blast', SKILL_BLAST_COOLDOWN, lastBlastAt, v => { lastBlastAt = v; }, updateBlastButton, false);
+  if (!ctxs) return;
+  const { player } = ctxs;
+  blastFx = { start: Date.now() };
+  shakeScreen(); hitStopFrames = Math.max(hitStopFrames, 6);
+  thump(70, 22, 0.9, 1); thump(140, 40, 0.6, 0.6, 'sawtooth'); noiseSweep(1.1, 4000, 60, 'lowpass', 1, 0.9); playNoiseBurst(0.6, 0.4);
+  let hitCount = 0;
+  for (const en of targets()) {
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * BLAST_DMG_MULT * skillPower('skillBlast'))), en);
+    en.hp -= dmg; trackDamage(dmg); hitCount++;
+    spawnAttackDamageText(en, dmg, crit, '#ff6b3d', en.isAdd ? 6 : undefined);
+    for (let k = 0; k < 3; k++) spawnHitParticles(en.x + (Math.random() - 0.5) * en.radius, en.y + (Math.random() - 0.5) * en.radius, k % 2 ? '#ffd76b' : '#ff6b3d');
+    applyHitKnockback(en, player, 12);
+    if (en.isAdd) {
+      if (en.hp <= 0) { recordBestiaryKill(en); const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain; spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b'); }
+    } else {
+      onPlayerHitEnemy(en, dmg);
+      if (en.hp <= 0) triggerEnemyDefeat(en, player.x, player.y);
+    }
+  }
+  adds = adds.filter(ad => ad.hp > 0);
+  spawnDamageText(arena.x, arena.y - 30, `💣 大爆発！！（${hitCount}体）`, '#ff6b3d', 0.01, true);
+  updateBlastButton(); updateStatsUI(); updateHPUI();
+});
+function drawBlastFx() {
+  if (!blastFx) return;
+  const t = (Date.now() - blastFx.start) / 1100;
+  if (t >= 1) { blastFx = null; return; }
+  ctx.save();
+  arenaPath(); ctx.clip();
+  const R = arena.radius * 1.6 * Math.min(1, t * 2.2);
+  const g = ctx.createRadialGradient(arena.x, arena.y, 0, arena.x, arena.y, Math.max(1, R));
+  g.addColorStop(0, `rgba(255,255,230,${0.95 * (1 - t)})`); g.addColorStop(0.35, `rgba(255,200,80,${0.85 * (1 - t)})`); g.addColorStop(0.7, `rgba(255,90,30,${0.6 * (1 - t)})`); g.addColorStop(1, 'rgba(120,20,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2);
+  if (t < 0.18) { ctx.globalAlpha = 1 - t / 0.18; ctx.fillStyle = '#ffffff'; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); } // 一瞬真っ白に
+  ctx.globalAlpha = 1 - t; ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 14 * (1 - t) + 2; ctx.shadowColor = '#ff9f43'; ctx.shadowBlur = 30;
+  ctx.beginPath(); ctx.arc(arena.x, arena.y, Math.max(1, arena.radius * 1.5 * t), 0, Math.PI * 2); ctx.stroke(); // 衝撃波の輪
+  ctx.restore();
+}
 function drawNovaFx() {
   if (!novaFx) return;
   const t = (Date.now() - novaFx.start) / 600;
@@ -2170,7 +2217,7 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
   const span = btn.querySelector('.tab-icon');
   if (src && span) span.innerHTML = `<img class="ico-img" src="${src}" alt="">`;
 });
-const SKILL_BUTTON_KEYS = { specialBtn: 'skillSpecial', accelBtn: 'skillAccel', healBtn: 'skillHeal', barrierBtn: 'skillBarrier', poisonBtn: 'skillPoison', paralyzeBtn: 'skillParalyze', atkUpBtn: 'skillAtkUp', regenBtn: 'skillRegen', silenceBtn: 'skillSilence', deathBtn: 'skillDeath', coinStrikeBtn: 'skillCoinStrike', zeniBtn: 'skillZeni', mysteryBtn: 'skillMystery', compRushBtn: 'skillCompRush', novaBtn: 'skillNova' };
+const SKILL_BUTTON_KEYS = { specialBtn: 'skillSpecial', accelBtn: 'skillAccel', healBtn: 'skillHeal', barrierBtn: 'skillBarrier', poisonBtn: 'skillPoison', paralyzeBtn: 'skillParalyze', atkUpBtn: 'skillAtkUp', regenBtn: 'skillRegen', silenceBtn: 'skillSilence', deathBtn: 'skillDeath', coinStrikeBtn: 'skillCoinStrike', zeniBtn: 'skillZeni', mysteryBtn: 'skillMystery', compRushBtn: 'skillCompRush', novaBtn: 'skillNova', blastBtn: 'skillBlast' };
 function decorateSkillButton(btn) {
   const node = btn.firstChild;
   if (!node || node.nodeType !== 3) return; // すでに画像化済み

@@ -635,6 +635,7 @@ function updateStatsUI() {
   updateMysteryButton();
   updateCompRushButton();
   updateNovaButton();
+  updateBlastButton();
 }
 
 let dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -1380,6 +1381,10 @@ const SKILL_NOVA_COOLDOWN = 40 * 1000;
 const NOVA_DMG_MULT = 4; // 敵1体あたり攻撃力の何倍か
 let lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
 let novaFx = null; // 全体攻撃の衝撃波 { start }
+const SKILL_BLAST_COOLDOWN = 90 * 1000;
+const BLAST_DMG_MULT = 15; // 大爆発：敵1体あたり攻撃力の15倍（ボスは2割増しの手応え演出のみ）
+let lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
+let blastFx = null; // 大爆発の閃光 { start }
 function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
 function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {
   if (!game.shopOwned[skillKey]) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return null; }

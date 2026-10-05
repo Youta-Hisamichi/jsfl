@@ -209,6 +209,7 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .action-btn.mystery { border-color: #7fe0ff; color: #7fe0ff; }
 .action-btn.comprush { border-color: #8fe3a0; color: #b8f5c6; }
 .action-btn.nova { border-color: #ff9f43; color: #ffc98a; }
+.action-btn.blast { border-color: #ff5a2a; color: #ffb08a; }
 .action-btn.coinstrike.buffing { background: rgba(255,215,107,0.15); }
 .action-btn.paralyze { border-color: #ffe14f; color: #fff1a8; }
 .action-btn.sleep { border-color: #a5a8ff; color: #d4d6ff; }
