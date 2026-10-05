@@ -1352,3 +1352,18 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .bgm-book-row.playing { box-shadow: none; filter: drop-shadow(0 0 5px #ffd76b); }
 .bgm-book-row .bb-play { border: 7px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 7px stretch; background: none; border-radius: 0; color: #2a1a00; width: 44px; height: 36px; }
 .bgm-book-row.playing .bb-play { border-image-source: url(assets/img/ui/skin/btn_green.webp); background: none; color: #fff; }
+/* ランキングページ：UI素材（切替タブ＝青／灰、日付ボタン＝羊皮紙、1〜3位＝金・銀・銅、4〜10位＝羊皮紙、11位以下＝羊皮紙プレート） */
+.rank-tabs .rank-tab-btn { border: 9px solid transparent !important; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 9px stretch !important; background: none !important; border-radius: 0 !important; color: #eee !important; padding: 2px 4px; }
+.rank-tabs .rank-tab-btn.active { border-image-source: url(assets/img/ui/skin/btn_blue.webp) !important; color: #fff !important; text-shadow: 0 1px 0 #0a2a6a; }
+#rankDateNav .modal-shop-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #3a2a14; padding: 0 6px !important; }
+.rank-row { border: 8px solid transparent; border-image: url(assets/img/ui/skin/plate_parch.webp) 13 fill / 8px stretch; background: none; border-radius: 0; margin-bottom: 3px; padding: 0 4px; color: #3a2a14; --text-dim: #6a5838; }
+.rank-row:last-child { border-bottom: 8px solid transparent; }
+.rank-row .rank-score { color: #a05a00; }
+.rank-row.top10 { border: 10px solid transparent; border-image: url(assets/img/ui/skin/panel_parch2.webp) 16 fill / 10px stretch; background: none !important; box-shadow: none; padding: 0 4px; }
+.rank-row.top1, .rank-row.top2, .rank-row.top3 { border: 10px solid transparent; background: none !important; border-radius: 0; padding: 2px 6px; }
+.rank-row.top1 { border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 10px stretch; filter: drop-shadow(0 0 6px rgba(255,200,61,0.7)); box-shadow: none; }
+.rank-row.top2 { border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 10px stretch; box-shadow: none; color: #fff; }
+.rank-row.top3 { border-image: url(assets/img/ui/skin/btn_brown.webp) 13 fill / 10px stretch; box-shadow: none; color: #fff2dc; }
+.rank-row.top2 .rank-score, .rank-row.top3 .rank-score { color: #ffe9a0; }
+.rank-row.me { filter: drop-shadow(0 0 5px #4fa8ff); }
+.rank-row.top2 .rank-name, .rank-row.top3 .rank-name { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); } .rank-row.top1 .rank-name, .rank-row.top1 .rank-score { color: #2a1400; }
