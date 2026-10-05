@@ -1717,7 +1717,7 @@ function openChestBatchDialog(rarity) {
   document.getElementById('chestModalIcon').className = 'chest-big shake';
   document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱 ×${total}</span>`;
   document.getElementById('chestModalText').textContent = nRebirth ? `（うち転生ガチャの宝箱 ${nRebirth}個）` : '';
-  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">${total}個 まとめて開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">${total > 1 ? `${total}個 まとめて開ける` : '開ける'}</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
   chestModal.classList.add('show');
   const openAll = mult => {
@@ -1745,7 +1745,7 @@ function openChestBatchDialog(rarity) {
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:3rem">🎉</span>';
-    document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱 ${opened}個 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
+    document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
     document.getElementById('chestModalText').innerHTML = `${coinSum ? `<div style="font-weight:800;color:#d18b00">コイン合計 🟡 ${formatCoinNumber(coinSum)}</div>` : ''}<div class="chest-loot-grid">${cards.join('')}</div>`;
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
