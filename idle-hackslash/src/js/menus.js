@@ -408,7 +408,7 @@ function renderArtifactList() {
     const limit = ARTIFACT_STACK_LIMIT[a.id];
     const cur = owned ? getArtifactCurrentText(a.id) : '';
     return `<button class="af-card r-${a.rarity} ${owned ? '' : 'not-owned'}" style="--rc:${rar.color}" data-artifact="${a.id}">
-      <span class="af-icon">${ico(a)}</span>${owned ? `<span class="af-count">×${count}${limit ? `<small>/${limit}</small>` : ''}</span>` : '<span class="af-count none">未入手</span>'}
+      <span class="af-icon">${owned ? ico(a) : '<span class="af-q">？</span>'}</span>${owned ? `<span class="af-count">×${count}${limit ? `<small>/${limit}</small>` : ''}</span>` : '<span class="af-count none">未入手</span>'}
       <span class="af-name">${a.name}</span>
       <span class="af-stars">${rarityStars(a.rarity)} ${rar.label}</span>
       <span class="af-desc">${a.desc}</span>

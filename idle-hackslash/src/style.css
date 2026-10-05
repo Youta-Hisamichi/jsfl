@@ -1390,3 +1390,4 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 /* デバッグボタンは転生ボタンの右に小さく */
 .tower-row .debug-toggle { display: inline-block; flex: 0 0 auto; margin: 0; align-self: center; padding: 4px 10px; }
 .sk-card.equipped { border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; }
+.af-card .af-q { font-size: 1.6rem; font-weight: 900; color: #d8dce8; text-shadow: 0 2px 0 #222, 0 0 6px rgba(255,255,255,0.35); line-height: 1; }
