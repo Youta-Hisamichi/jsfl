@@ -785,7 +785,7 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
 }
 // 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
 const AUTO_PULL_AIM_RATE = 0.33; // オートの体当たりで敵を狙う割合
-const AUTO_PULL_IDLE_MS = 3000, AUTO_PULL_GAP_MS = [2500, 5000];
+const AUTO_PULL_IDLE_MS = 4000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
 ['pointerdown', 'pointerup', 'pointermove', 'keydown', 'wheel'].forEach(t => document.addEventListener(t, ev => { if (t !== 'pointermove' || ev.buttons) lastUserInputAt = Date.now(); }, true));
 function tickAutoPull() {
