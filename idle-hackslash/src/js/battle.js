@@ -1671,16 +1671,7 @@ function renderChestTray(newRarity) {
   const hc = getHeldChests(), cnt = k => (hc[k] || 0) + rebirthChestCount(k); // 転生ガチャの宝箱も同じレア度のボタンに加算
   el.innerHTML = CHEST_RARITIES.filter(k => cnt(k) > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${cnt(k)}</b></button>`).join('');
 }
-// 宝箱ボタンはふだん静止。長い間タップされないときだけ、たまに動いて気づかせる
-const CHEST_NUDGE_IDLE_MS = 60000, CHEST_NUDGE_EVERY_MS = 12000;
-let chestTrayTapAt = Date.now(), chestNudgeAt = 0;
-setInterval(() => {
-  const el = document.getElementById('chestTray'), now = Date.now();
-  if (!el || !el.children.length || now - chestTrayTapAt < CHEST_NUDGE_IDLE_MS || now - chestNudgeAt < CHEST_NUDGE_EVERY_MS) return;
-  chestNudgeAt = now; el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
-}, 1000);
 document.getElementById('chestTray').addEventListener('click', ev => {
-  chestTrayTapAt = Date.now(); document.getElementById('chestTray').classList.remove('nudge');
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
   const k = b.dataset.openChest;
   if (phase !== 'battle') return;

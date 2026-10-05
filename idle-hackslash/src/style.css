@@ -707,9 +707,6 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .chest-tray .chest-all { width: auto; min-width: 40px; height: 34px; padding: 0 6px; font-size: 0.56rem; font-weight: 900; line-height: 1.1; color: #fff; background: linear-gradient(180deg, #ff9f43, #e0602c); border-color: #fff3c4; }
 .chest-tray button b { position: absolute; right: -8px; bottom: -8px; font-size: 0.74rem; font-weight: 900; color: #fff; background: #10131c; border: 2px solid #fff; line-height: 1.25; box-shadow: 0 0 0 2px #10131c, 0 2px 4px rgba(0,0,0,0.7); text-shadow: -1px -1px 0 #10131c, 1px -1px 0 #10131c, -1px 1px 0 #10131c, 1px 1px 0 #10131c, 0 1px 3px rgba(0,0,0,0.8); color: #fff; border-radius: 999px; padding: 0 5px; }
 .chest-tray .tray-new { animation: chestIn 0.45s cubic-bezier(.34,1.56,.64,1); }
-.chest-tray.nudge button { animation: chestNudge 0.9s ease-in-out; } /* 長いこと開けられていないときだけ、たまにピョコッと動く */
-@keyframes chestNudge { 0%, 100% { transform: translateY(0) rotate(0); } 20% { transform: translateY(-6px) rotate(-8deg); } 40% { transform: translateY(0) rotate(6deg); } 60% { transform: translateY(-3px) rotate(-4deg); } 80% { transform: translateY(0) rotate(2deg); } }
-@keyframes chestBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes chestIn { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 body.gameover-lock .chest-tray { opacity: 0.35; pointer-events: none; }
 .enemy-trait-badge { position: absolute; right: 6px; top: 6px; z-index: 4; pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
