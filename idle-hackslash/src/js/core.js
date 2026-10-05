@@ -861,8 +861,6 @@ const COMPANIONS = {
             trait: '【蘇生】12秒ごとに倒れた仲間を1人復活、いなければ仲間全員のHPを20%回復' },
   dragon: { icon: '🐉', name: '覇竜バハムート', stat: 'atk', desc: '攻撃力上昇',   rarity: 'legendary', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
             trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（激レア）' },
-  lumber: { icon: '🪓', name: 'きこりのジャック', stat: 'hp',  desc: '最大HP上昇',     rarity: 'common', weight: 30, recruitCost: 60, baseBonus: 0.05, perLevel: 0.02, levelCostBase: 15,
-            trait: '【大振り】当てたとき25%でダメージ2倍' },
   thief:  { icon: '🗡️', name: '身軽な盗賊', stat: 'speed', desc: '移動速度上昇',   rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.06, perLevel: 0.03, levelCostBase: 20,
             trait: '【盗む】当てるたびに30%の確率でコインを盗む' },
   lancer: { icon: '🔱', name: '勇猛な槍兵', stat: 'atk',   desc: '攻撃力上昇',     rarity: 'rare', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
@@ -914,7 +912,6 @@ const COMPANION_SPRITES = {
   dragon: 'assets/img/companions/dragon.webp',
 };
 Object.assign(COMPANION_SPRITES, {
-  lumber: 'assets/img/companions/lumber.webp',
   thief: 'assets/img/companions/thief.webp',
   lancer: 'assets/img/companions/lancer.webp',
   samurai: 'assets/img/companions/samurai.webp',

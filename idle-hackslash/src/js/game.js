@@ -210,7 +210,6 @@ function step() {
         if (playerAttackHits(e)) {
           const cid = comp.companionId;
           let hitMult = 1, hitLabel = '';
-          if (cid === 'lumber' && Math.random() < 0.25) { hitMult = 2; hitLabel = '大振り！'; }
           if (cid === 'lancer' && e.isBoss) hitMult = 1.5;
           if (cid === 'samurai' && Math.random() < 0.25) { hitMult = 3; hitLabel = '居合・一閃！'; }
           const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult * dashDmgMult(comp) * (comp.launchUntil > Date.now() ? ALLY_LAUNCH_DMG_MULT : 1))), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
@@ -1561,7 +1560,7 @@ function updateBarrierButton() {
 }
 
 const SPRITE_FACING = {
-  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: 0, knight: 0, archer: 0, witch: 0, sprite: 1, golem: 1, monk: 0, bard: 0, ninja: 0, priest: 0, dragon: 1, lumber: 0, thief: 0, lancer: 0, samurai: 0, sage: 0, angel: 1,
+  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: 0, knight: 0, archer: 0, witch: 0, sprite: 1, golem: 1, monk: 0, bard: 0, ninja: 0, priest: 0, dragon: 1, thief: 0, lancer: 0, samurai: 0, sage: 0, angel: 1,
   paladin: 0, dragoon: 0, summoner: 0, alchemist: 0, gunner: 0, pirate: 0, darkKnight: -1,
   slime: 0, metalSlime: 0, goblin: 1, skeleton: 1, zombie: 1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
   worm: 1, cobra: 1, salamander: 1, flameWisp: 0, lich: 1, 

@@ -2263,7 +2263,8 @@ if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
-if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) delete game.companions[k].cook; // 削除した仲間（陽気な料理人）
+if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
+if (game.companionBook) delete game.companionBook.lumber; if (game.companionUnlocks) delete game.companionUnlocks.lumber; // 削除した仲間（陽気な料理人）
 if (game.companionBook) delete game.companionBook.cook;
 for (const id in COMPANIONS) { // あとから追加した仲間の項目を古いセーブにも用意
   if (game.companions.level && game.companions.level[id] === undefined) game.companions.level[id] = 0;

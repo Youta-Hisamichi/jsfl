@@ -327,7 +327,7 @@ function makeClone(x, y) {
   };
 }
 
-const COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', lumber: '#c98b4f', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
+const COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
 const COMPANION_MOVEMENT = {
   paladin: { style: 'guard', speedFactor: 0.85 }, dragoon: { style: 'hunter', speedFactor: 1.2 }, summoner: { style: 'kite', speedFactor: 1 }, alchemist: { style: 'kite', speedFactor: 0.95 }, gunner: { style: 'kite', speedFactor: 1 }, pirate: { style: 'hunter', speedFactor: 1.1 },
   heroine: { style: 'guard', speedFactor: 0.9 }, mage: { style: 'kite', speedFactor: 1 }, ranger: { style: 'kite', speedFactor: 1.1 }, warrior: { style: 'guard', speedFactor: 0.85 }, cat: { style: 'hop', speedFactor: 1.2 },
@@ -341,7 +341,6 @@ const COMPANION_MOVEMENT = {
   ninja:  { style: 'hunter', speedFactor: 1.6 },
   priest: { style: 'escort', speedFactor: 0.8 },
   dragon: { style: 'swoop', speedFactor: 1.2 },
-  lumber: { style: 'hop', speedFactor: 0.8 },
   thief:  { style: 'zigzag', speedFactor: 1.7 },
   lancer: { style: 'hunter', speedFactor: 1.1 },
   samurai:{ style: 'hunter', speedFactor: 1.3 },
