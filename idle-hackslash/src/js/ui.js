@@ -98,7 +98,7 @@ function draw() {
   }
 
   drawArenaOverlays();
-  drawBossTimer();
+  drawBossTimer(); updateBossRetireBtn();
   drawAutoLabel();
 }
 function drawDamageTexts() {

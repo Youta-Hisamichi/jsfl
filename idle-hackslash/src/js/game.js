@@ -675,6 +675,17 @@ document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   bossContModal.classList.remove('show'); phase = 'battle';
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r);
 });
+// ボス戦のリタイヤ：その場で負けを認めて前の階層ループへ（コンテニュー画面は出さない）
+document.getElementById('bossRetireBtn').addEventListener('click', ev => {
+  ev.stopPropagation();
+  if (!isBossFight() || phase !== 'battle' || game.skipChallenge) return;
+  bossFail('retire');
+});
+function updateBossRetireBtn() {
+  const b = document.getElementById('bossRetireBtn'); if (!b) return;
+  const show = isBossFight() && !game.skipChallenge && phase === 'battle';
+  if ((b.style.display !== 'none') !== show) b.style.display = show ? '' : 'none';
+}
 function bossFail(reason) {
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
@@ -685,8 +696,8 @@ function bossFail(reason) {
   refreshPlayerBallStats(true);
   const p = balls.find(isMainPlayerBall); if (p) p.safeHp = p.hp;
   playDeathSound();
-  spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
-  showNotice(`${bossStage}階層のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
+  spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : reason === 'retire' ? '🏳 リタイヤ' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
+  showNotice(reason === 'retire' ? `🏳 ${bossStage}階層のボス戦をリタイヤ。${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階層のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
   stageAnnounceText = game.stage + '階層 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   startBgm('normal');
   updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
