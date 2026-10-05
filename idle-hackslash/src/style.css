@@ -1251,3 +1251,6 @@ body.user-paused .pause-badge { display: flex; border-radius: 12px; }
 @keyframes bcTick { from { transform: scale(1.5); } to { transform: scale(1); } }
 .boss-retire-btn { background: linear-gradient(180deg, #8a2a34, #5a141c); color: #fff; border-color: #ffb3b8; } /* 誤タップしないよう、ゲーム画面の外（転生ボタンの横）に置く */
 body.in-boss #stageSkipBtn { display: none !important; }
+.boss-final-panel { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) scale(0.9); z-index: 7; padding: 10px 16px; border-radius: 12px; background: rgba(10,8,20,0.62); border: 1px solid rgba(255,120,130,0.5); color: #fff; font-size: 0.8rem; line-height: 1.5; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.25s, transform 0.25s; white-space: nowrap; }
+.boss-final-panel.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.boss-final-panel b { color: #ff9aa5; font-size: 0.9rem; }

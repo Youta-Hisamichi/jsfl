@@ -621,23 +621,14 @@ function bossDefeated(reason) {
   startBossContCountdown();
 }
 // 2回目の敗北（コンテニュー済み）：同じ画面で「◯階層に戻って鍛え直します」と数秒見せてから自動で戻す
-const BOSS_FINAL_SECONDS = 4;
-function showBossFinalDefeat(reason) {
-  bossContReason = reason; phase = 'paused'; homingMissiles = [];
+const BOSS_FINAL_MS = 2200;
+function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明パネルを少しだけ出して、そのまま前の階層へ（悲鳴は1回だけ・カウントダウンなし）
+  phase = 'paused'; homingMissiles = [];
   playDeathSound();
-  const back = Math.max(1, game.stage - 1);
-  document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…';
-  document.getElementById('bossContText').textContent = `コンテニューは使い切りました。\n${back}階層に戻って鍛え直します。\n（「👑 ボス再戦」でいつでも再挑戦できます）`;
-  document.getElementById('bossContAdBtn').style.display = 'none';
-  document.getElementById('bossContGiveUpBtn').innerHTML = `<span class="msb-name">OK（${back}階層へ）</span>`;
-  bossContModal.classList.add('show');
-  clearInterval(bossContTimer); bossContLeft = BOSS_FINAL_SECONDS;
-  const el = document.getElementById('bossContCount'); el.textContent = bossContLeft;
-  bossContTimer = setInterval(() => {
-    if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
-    bossContLeft--; el.textContent = Math.max(0, bossContLeft);
-    if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
-  }, 1000);
+  const back = Math.max(1, game.stage - 1), el = document.getElementById('bossFinalPanel');
+  el.innerHTML = `<b>${reason === 'time' ? '⏱ またしても時間切れ…' : 'またしてもボスに敗北…'}</b><br>${back}階層に戻って鍛え直します`;
+  el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
 }
 // 10秒のカウントダウン。0になったら自動であきらめる（動画を見ている間は止まる）
 const BOSS_CONT_SECONDS = 10;
@@ -673,7 +664,7 @@ document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   if (!bossContModal.classList.contains('show')) return;
   clearInterval(bossContTimer);
   bossContModal.classList.remove('show'); phase = 'battle';
-  const r = bossContReason || 'death'; bossContReason = null; bossFail(r);
+  const r = bossContReason || 'death'; bossContReason = null; bossFail(r, true); // 悲鳴は敗北時に1回鳴らしているので、ここでは鳴らさない
 });
 // ボス戦のリタイヤ：その場で負けを認めて前の階層ループへ（コンテニュー画面は出さない）
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {
@@ -687,7 +678,7 @@ function updateBossRetireBtn() {
   if ((b.style.display !== 'none') !== show) b.style.display = show ? '' : 'none';
   document.body.classList.toggle('in-boss', show); // ボス戦中は試練の塔ボタンを隠してリタイヤに場所をゆずる
 }
-function bossFail(reason) {
+function bossFail(reason, silent) {
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
@@ -696,7 +687,7 @@ function bossFail(reason) {
   spawnNextEnemy();
   refreshPlayerBallStats(true);
   const p = balls.find(isMainPlayerBall); if (p) p.safeHp = p.hp;
-  playDeathSound();
+  if (!silent) playDeathSound();
   spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : reason === 'retire' ? '🏳 リタイヤ' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
   showNotice(reason === 'retire' ? `🏳 ${bossStage}階層のボス戦をリタイヤ。${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階層のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階層で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
   stageAnnounceText = game.stage + '階層 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
