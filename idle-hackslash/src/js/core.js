@@ -734,6 +734,7 @@ function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult <
 ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
+UPGRADES.compAtk.img = ICON_IMAGES.tab_companion; // 仲間の攻撃力は仲間タブと同じ絵
 Object.keys(SKILL_GACHA_SKILLS).forEach(id => { SKILL_GACHA_SKILLS[id].img = ICON_IMAGES['sk_' + id]; });
 const REBIRTH_ARTIFACT_COST = { common: 5, rare: 8, epic: 12, legendary: 40 }; // ★5（ミシック）は宝箱からしか出ない
 const REBIRTH_SHOP_ITEMS = {};

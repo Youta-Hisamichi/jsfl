@@ -346,14 +346,15 @@ const BGM_SONGS = {
     drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k k s k s s ks ks',
     kickBoost: 1.6, // 低音を響かせる
   },
-  credits: {
-    bpm: 96,
+  credits: { // スタッフロール：エコーのかかったワルツ（3/4拍子＝1小節6ステップ・ヘ長調）。ズン・チャッ・チャッの伴奏に旋律がゆったり舞う
+    bpm: 150,
+    echo: { time: 0.4, feedback: 0.38, wet: 0.42 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 = = = A5 = D6 = | C#6 = = = B5 = A5 = | B5 = = = F#5 = D6 = | D6 = = = C#6 = B5 = | G5 = = = B5 = E6 = | E6 = = = D6 = C#6 = | C#6 = A5 = D6 = F#6 = | G6 = F#6 = E6 = = =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'D4 A4 D5 F#5 A5 F#5 D5 A4 | C#4 A4 C#5 E5 A5 E5 C#5 A4 | B3 F#4 B4 D5 F#5 D5 B4 F#4 | G3 D4 G4 B4 D5 B4 G4 D4 | E4 B4 E5 G5 B5 G5 E5 B4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | F#3 C#4 F#4 A4 B3 F#4 B4 D5 | G3 D4 G4 B4 A3 E4 A4 C#5' },
-      { type: 'vrc6saw', gain: 0.045, notes: 'D2 = = = = = = = | C#2 = = = = = = = | B1 = = = = = = = | G1 = = = = = = = | E2 = = = = = = = | A1 = = = = = = = | F#1 = = = B1 = = = | G1 = = = A1 = = =' },
+      { type: 'vrc6pulse25', gain: 0.026, notes: 'C5 = = = F5 = | A5 = = = G5 F5 | D5 = = = A5 = | F5 = = = = = | D5 = = = A#5 = | A5 = G5 = E5 = | F5 = = = A5 = | G5 = = = = = | C6 = = = A5 = | C#6 = = = E5 = | D6 = = = F5 = | B5 = = = D5 = | A#5 = A5 = G5 = | E5 = G5 = A#5 = | A5 = = = = = | F5 = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: '- - A4+C5 = A4+C5 = | - - A4+C5 = A4+C5 = | - - F4+A4 = F4+A4 = | - - F4+A4 = F4+A4 = | - - D4+F4 = D4+F4 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - C#4+E4 = C#4+E4 = | - - F4+A4 = F4+A4 = | - - B3+D4 = B3+D4 = | - - D4+F4 = D4+F4 = | - - E4+G4 = E4+G4 = | - - A4+C5 = A4+C5 = | - - A4+C5 = A4+C5 =' },
+      { type: 'vrc6saw', gain: 0.036, notes: 'F2 = = = - - | F2 = = = - - | D2 = = = - - | D2 = = = - - | A#1 = = = - - | C2 = = = - - | F2 = = = - - | C2 = = = - - | F2 = = = - - | A1 = = = - - | D2 = = = - - | G1 = = = - - | A#1 = = = - - | C2 = = = - - | F2 = = = - - | F2 = = = - -' },
     ],
-    drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - s s',
+    drums: 'k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - s -',
   },
 };
 function parseSongTrack(str) {
@@ -405,7 +406,7 @@ function getPceWave(type) {
   }
   return m[type];
 }
-function playSongNote(time, freq, dur, type, gain) {
+function playSongNote(time, freq, dur, type, gain, dest) {
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   const fm = FM_PRESETS[type];
@@ -426,8 +427,17 @@ function playSongNote(time, freq, dur, type, gain) {
   g.gain.linearRampToValueAtTime(vol, time + 0.008);
   g.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol * 0.55), time + Math.min(dur * 0.5, 0.18));
   g.gain.exponentialRampToValueAtTime(0.0001, time + dur * 0.97);
-  osc.connect(g); g.connect(audioCtx.destination);
+  osc.connect(g); g.connect(dest || audioCtx.destination);
   osc.start(time); osc.stop(time + dur);
+}
+// 曲ごとのエコー（残響）：song.echo = { time: 秒, feedback: 0〜1, wet: 0〜1 }
+function makeSongEchoBus(echo) {
+  const input = audioCtx.createGain(), delay = audioCtx.createDelay(2), fb = audioCtx.createGain(), wet = audioCtx.createGain(), tone = audioCtx.createBiquadFilter();
+  delay.delayTime.value = echo.time; fb.gain.value = echo.feedback; wet.gain.value = echo.wet;
+  tone.type = 'lowpass'; tone.frequency.value = 2600; // 跳ね返りはこもらせて奥行きを出す
+  input.connect(audioCtx.destination);
+  input.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay); tone.connect(wet); wet.connect(audioCtx.destination);
+  return input;
 }
 function playSongDrum(time, kind, boost = 1) {
   const v = bgmVol();
@@ -456,12 +466,12 @@ let songTimer = null, songState = null;
 function startSong(type, startStep = 0) {
   const song = prepareSong(BGM_SONGS[type]);
   stopSong();
-  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2 };
+  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2, bus: song.echo ? makeSongEchoBus(song.echo) : null };
   const tick = () => {
     const s = songState;
     if (!s) return;
     while (s.next < audioCtx.currentTime + 0.15) {
-      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain));
+      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, s.bus));
       const dr = s.song.drumSteps[s.step];
       if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost);
       s.next += s.stepDur;
@@ -543,7 +553,7 @@ const BGM_INFO = [
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
-  { key: 'credits', name: 'スタッフロール 旅の終わりに', desc: '大きく広がる分散和音とゆったり歌う旋律の感動的なバラード。VRC6風チップチューン。ニ長調（壮大なRPGのエンディング系の作風）・BPM96' },
+  { key: 'credits', name: 'スタッフロール 星降る夜のワルツ', desc: 'ズン・チャッ・チャッの3拍子にのせて旋律がゆったり舞う、深いエコーのかかったワルツ。VRC6風チップチューン。ヘ長調・BPM150（3/4拍子）' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
 let gameOverBgm = false;      // コンテニュー確認中
