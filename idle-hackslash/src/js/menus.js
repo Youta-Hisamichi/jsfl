@@ -604,7 +604,7 @@ function updateStatsUI() {
   const stageInCycle = ((game.stage - 1) % 10) + 1;
   stageProgressText.textContent = stageInCycle + ' / 10';
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
-  stagePlayerMark.style.left = (stageInCycle / 10 * 100) + '%';
+  { const p = stageInCycle / 10; stagePlayerMark.style.left = `calc(${p * 100}% - ${p * 36}px)`; } // ボス到達時もボスの絵に重ならないよう手前で止める
   const BOSS_ICON_FLIP = new Set(['demon', 'blackDragon', 'blueDragon', 'livingArmor']); // 右を向いている絵は反転して左（自キャラ側）を向かせる
   { // ゴールのボスアイコンは、その10階で待ち構えるボスの絵（自キャラの来る左を向かせる）
     const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), key = BOSS_ENEMY_SPRITE[em], el = document.getElementById('stageBossMark');
