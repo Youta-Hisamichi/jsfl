@@ -801,9 +801,10 @@ function setupDecorations(rnd, floorKey) {
 function drawDecorations() {
   const now = Date.now();
   for (const d of decorations) {
-    if (now - (d.swayAt || 0) > 500 && [...balls, ...adds].some(b => Math.hypot(b.x - d.x, b.y - d.y) < d.r + b.radius * 0.7)) d.swayAt = now; // キャラが通るとゆれる
+    const still = d.sprite === 'd_pebbles'; // 小石は揺れない
+    if (!still && now - (d.swayAt || 0) > 500 && [...balls, ...adds].some(b => Math.hypot(b.x - d.x, b.y - d.y) < d.r + b.radius * 0.7)) d.swayAt = now; // キャラが通るとゆれる
     const img = OBSTACLE_IMGS[d.sprite]; if (!img || !img.complete || !img.naturalWidth) continue;
-    const t = now - (d.swayAt || 0), sway = t < 900 ? Math.exp(-t / 260) * Math.sin(t / 55) * 0.35 : Math.sin(now / 900 + d.seed * 9) * 0.03;
+    const t = now - (d.swayAt || 0), sway = still ? 0 : t < 900 ? Math.exp(-t / 260) * Math.sin(t / 55) * 0.35 : Math.sin(now / 900 + d.seed * 9) * 0.03;
     const w = d.r * 2.2, h = w * img.naturalHeight / img.naturalWidth;
     ctx.save(); ctx.translate(d.x, d.y + h * 0.4); ctx.rotate(sway); if (d.flip) ctx.scale(-1, 1);
     ctx.drawImage(img, -w / 2, -h, w, h);
