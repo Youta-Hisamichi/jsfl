@@ -806,26 +806,43 @@ function setupObstacles(dropDebug) {
   const early = game.stage <= 20, roll = rnd();
   if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階は必ずなし）
   const n = early ? 1 + Math.floor(rnd() * 3) : 3 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は3〜5個
-  const spot = r => { // 空いている場所を探す
-    for (let tries = 0; tries < 60; tries++) {
-      const x = arena.x + (rnd() * 2 - 1) * half * 0.72, y = arena.y + (rnd() * 2 - 1) * half * 0.72;
-      if (Math.hypot(x - arena.x, y - arena.y) < half * 0.22) continue; // 真ん中は空ける
+  // 配置は黄金比に基づく：黄金角（137.5°）の螺旋・黄金比半径の正多角形・点対称の黄金角ペアのいずれか
+  const PHI = (1 + Math.sqrt(5)) / 2, GOLDEN_ANGLE = Math.PI * 2 / (PHI * PHI);
+  const rot = block * GOLDEN_ANGLE; // 2ステージごとに黄金角ずつ回して配置を変える
+  const layout = ['spiral', 'ring', 'mirror'][Math.floor(rnd() * 3)];
+  const ringR = half * 0.72 / PHI * 1.3; // ≒0.58（外周と中心のあいだを黄金比で分割）
+  const cands = [];
+  if (layout === 'spiral') { // ひまわりの種の並び（フィロタキシス）
+    const m = n + 8;
+    for (let i = 0; i < m; i++) { const rr = half * (0.34 + 0.34 * Math.sqrt((i + 0.5) / m)); cands.push({ a: rot + i * GOLDEN_ANGLE, rr }); }
+  } else if (layout === 'ring') { // 黄金比半径の円周に等間隔
+    for (let i = 0; i < n; i++) cands.push({ a: rot + i / n * Math.PI * 2, rr: ringR });
+    for (let i = 0; i < n; i++) cands.push({ a: rot + (i + 0.5) / n * Math.PI * 2, rr: ringR / PHI * 1.1 }); // 予備：内側の黄金比の円
+  } else { // 黄金角で回した点対称のペア
+    for (let i = 0; i < 4; i++) { const a = rot + i * GOLDEN_ANGLE, rr = half * (i % 2 ? 0.66 : 0.66 / PHI * 1.05); cands.push({ a, rr }, { a: a + Math.PI, rr }); }
+  }
+  const baseR = half * (0.09 + rnd() * 0.06); // 同じ配置内は同じ大きさでそろえる
+  const spot = r => { // 候補を順に試して、空いている場所を返す
+    while (cands.length) {
+      const c = cands.shift();
+      const x = arena.x + Math.cos(c.a) * c.rr, y = arena.y + Math.sin(c.a) * c.rr;
+      if (Math.abs(x - arena.x) > half * 0.74 || Math.abs(y - arena.y) > half * 0.74) continue;
       if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + half * 0.22)) continue; // 間を通り抜けられるように
       return { x, y };
     }
     return null;
   };
   const kept = obstacles.length; // 残したデバッグ分は数に入れない
-  for (let guard = 0; obstacles.length - kept < n && guard < 30; guard++) {
+  for (let guard = 0; obstacles.length - kept < n && guard < 30 && cands.length; guard++) {
     const kind = pickObstacleKind(rnd, zone);
-    const r = half * (0.09 + rnd() * 0.06);
+    const r = baseR;
     const p = spot(r); if (!p) continue;
     const o = { x: p.x, y: p.y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] };
     if (kind === 'rock') o.sprite = rockSprite;
     else if (kind === 'bumper') { o.r = r * 0.85; o.sprite = 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
     else if (kind === 'spike') { o.r = r * 0.9; o.sprite = SPIKE_SPRITES[Math.floor(rnd() * SPIKE_SPRITES.length)]; }
     else if (kind === 'bomb') o.r = r * 0.85;
-    else if (kind === 'dash') o.dir = Math.floor(rnd() * 8) / 8 * Math.PI * 2;
+    else if (kind === 'dash') o.dir = Math.atan2(arena.y - p.y, arena.x - p.x) + Math.PI / 2; // 渦を描く向き（接線方向）
     else if (kind === 'portal') { // ワープゲートは2つ1組
       const p2 = spot(r); if (!p2) continue;
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
