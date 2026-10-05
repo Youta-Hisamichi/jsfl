@@ -929,7 +929,7 @@ function setupObstacles(dropDebug) {
       const o2 = { x: p2.x, y: p2.y, r, seed: rnd(), kind, hp: 1, cracks: [] };
       o.pair = o2; o2.pair = o; obstacles.push(o2);
     }
-    else if (kind === 'egg') setupEggContents(o, rnd);
+    else if (kind === 'egg') { setupEggContents(o, rnd); o.r = r * 0.72; } // 卵は小さめ
     else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
     else if (BREAKABLES[kind] && kind !== 'egg') o.sprite = kind;
     if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8; // 当たり判定は幹・柱の根元
@@ -960,7 +960,7 @@ function debugSpawnObstacle(kind, sprite) {
     }
     return null;
   };
-  const make = () => { const p = spot(); if (!p) return null; const o = { debug: true, x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
+  const make = () => { const p = spot(); if (!p) return null; const o = { debug: true, x: p.x, y: p.y, r, seed: Math.random(), kind, sprite, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] }; if (kind === 'dash') o.dir = Math.floor(Math.random() * 8) / 8 * Math.PI * 2; if (kind === 'egg') o.r = r * 0.72; if (kind === 'bumper') o.sprite = 'orb_' + ORB_COLORS[Math.floor(Math.random() * ORB_COLORS.length)]; obstacles.push(o); return o; };
   const o = make(); if (!o) return false;
   if (kind === 'portal') { const o2 = make(); if (!o2) { obstacles.pop(); return false; } o.pair = o2; o2.pair = o; }
   spawnHitParticles(o.x, o.y, '#ffffff');
