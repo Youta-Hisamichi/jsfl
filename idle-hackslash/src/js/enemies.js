@@ -842,7 +842,7 @@ function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
   ['rock', 'rock', '岩'], ['rock', 'mossRock', '苔むした岩'], ['rock', 'magmaRock', '溶岩石'], ['crate', 'crate', '木箱'], ['barrel', 'barrel', '樽'],
-  ['ice', 'ice', '氷'], ['crystal', 'crystal', '水晶'], ['techBox', 'techBox', '魔導コンテナ'], ['bomb', 'bomb', '爆弾'], ['slime', 'slime', 'スライム'],
+  ['ice', 'ice', '氷'], ['crystal', 'crystal', '水晶'], ['techBox', 'techBox', '魔導コンテナ'], ['bomb', 'bomb', '爆弾'], ['slime', 'slime', 'ゼリー'],
   ['bumper', 'orb_rainbow', 'バンパー（オーブ）'], ['spike', 'saw', 'ノコギリ'], ['spike', 'gear', '歯車'], ['spike', 'spikeBall', 'トゲ玉'], ['spike', 'spikeLog', 'トゲ丸太'], ['spike', 'spikePillar', 'トゲ柱'],
   ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'ハテナボックス'],
 ];
