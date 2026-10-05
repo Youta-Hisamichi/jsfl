@@ -504,6 +504,7 @@ function onStageClear() {
   game.bestStage = Math.max(game.bestStage, game.stage);
   const stillLooping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
+  if (!stillLooping && !game.skipChallenge) setTimeout(maybeSuggestTower, 1600); // 強すぎるなら試練の塔をおすすめ
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
     stageAnnounceText = game.stage + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
@@ -1029,6 +1030,45 @@ function getCustomSkipCost(distance) {
   const [xl, yl] = pts[pts.length - 1];
   return Math.ceil(yl + (d - xl) * 0.25);
 }
+// 雑魚道中で今の階より明らかに強いとき、試練の塔でのジャンプをおすすめする
+const TOWER_SUGGEST_MIN_JUMP = 30; // これより近いボスならおすすめしない
+const TOWER_SUGGEST_COOLDOWN_STAGES = 15; // 一度出したら、この階数進むまで出さない
+let towerSuggestTarget = 0;
+function findRecommendedTowerStage() {
+  const p = balls.find(isMainPlayerBall); if (!p) return 0;
+  const atk = getPlayerAtk(), hp = getPlayerMaxHP();
+  let best = 0;
+  for (let t = Math.ceil((game.stage + 1) / 10) * 10; t <= game.stage + 5000; t += 10) {
+    const es = getEnemyStats(t);
+    if (es.hp > atk * 10 || es.atk > hp * 0.12) break; // 10発前後で倒せて、被ダメも小さいボスまで
+    best = t;
+  }
+  return best - game.stage >= TOWER_SUGGEST_MIN_JUMP ? best : 0;
+}
+function maybeSuggestTower() {
+  if (game.skipChallenge || game.bossLoop || isBossFight() || phase !== 'battle' || getActiveTab() !== 'game' || userPaused) return;
+  if (game.stage % 10 === 0 || game.stage < (game.towerSuggestNext || 0)) return;
+  if (document.querySelector('.modal-overlay.show')) return; // 他のダイアログ中は出さない
+  const target = findRecommendedTowerStage(); if (!target) return;
+  game.towerSuggestNext = game.stage + TOWER_SUGGEST_COOLDOWN_STAGES;
+  towerSuggestTarget = target;
+  const cost = getCustomSkipCost(target - game.stage);
+  document.getElementById('towerSuggestText').innerHTML = `今のあなたなら <b>${target}階</b> のボスも倒せそう！\n試練の塔で <b>+${(target - game.stage).toLocaleString('ja-JP')}階</b> 一気にジャンプしませんか？\n\n必要：💎 ${cost}（所持 💎 ${Math.floor(game.gems)}）`;
+  document.getElementById('towerSuggestGoBtn').textContent = `💎${cost} で ${target}階 に挑戦！`;
+  playTowerGateSound();
+  towerSuggestModal.classList.add('show'); phase = 'paused'; // 見ている間は一時停止
+}
+const towerSuggestModal = document.getElementById('towerSuggestModal');
+function closeTowerSuggest() { towerSuggestModal.classList.remove('show'); if (phase === 'paused') phase = 'battle'; }
+document.getElementById('towerSuggestLaterBtn').addEventListener('click', closeTowerSuggest);
+document.getElementById('towerSuggestGoBtn').addEventListener('click', () => {
+  const target = towerSuggestTarget, cost = getCustomSkipCost(target - game.stage);
+  closeTowerSuggest();
+  if (!target || target <= game.stage) return;
+  if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => { switchTab('game'); renderStageSkipList(); stageSkipModal.classList.add('show'); } }); return; }
+  if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) return;
+  startSkipChallenge({ target, cost });
+});
 function getSkipTargetStage(skip) {
   return Math.ceil((game.stage + skip) / 10) * 10; // 基準ステージ数先の、最初のボスステージ
 }
