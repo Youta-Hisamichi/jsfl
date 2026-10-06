@@ -2452,15 +2452,35 @@ if (document.readyState === 'complete') setTimeout(preloadUiImages, 300); else w
 
 // 棺桶の絵（ドット絵を一度だけ作ってキャッシュ）と、引っぱるロープ
 let coffinSprite = null;
-function getCoffinSprite() {
+function getCoffinSprite() { // 斜め上から見た（クォータービューの）棺桶のドット絵
   if (coffinSprite) return coffinSprite;
-  const W = 16, H = 26, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const W = 40, H = 34, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
-  const shape = (inset, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(W * 0.3 + inset * 0.6, inset); c.lineTo(W * 0.7 - inset * 0.6, inset); c.lineTo(W - inset, H * 0.27); c.lineTo(W * 0.8 - inset * 0.6, H - inset); c.lineTo(W * 0.2 + inset * 0.6, H - inset); c.lineTo(inset, H * 0.27); c.closePath(); c.fill(); };
-  shape(0, '#2a1508'); shape(1, '#d9a331'); shape(2, '#5a3216'); shape(3, '#7a4a22');
-  c.fillStyle = '#9a6430'; c.fillRect(5, 4, 2, 18); // ツヤ
-  c.fillStyle = '#2a1508'; c.fillRect(7, 6, 3, 13); c.fillRect(4, 9, 9, 3); // 十字の影
-  c.fillStyle = '#f2c14e'; c.fillRect(7, 5, 2, 13); c.fillRect(4, 8, 8, 2); // 金の十字
+  const base = [[-0.3, -1], [0.3, -1], [0.52, -0.5], [0.38, 1], [-0.38, 1], [-0.52, -0.5]]; // 上から見た棺の形（頭が上）
+  const ang = -0.95, ca = Math.cos(ang), sa = Math.sin(ang), L = 15, SQ = 0.62, TH = 6;
+  const P = (x, y) => { const rx = (x * ca - y * sa) * L, ry = (x * sa + y * ca) * L * SQ; return [W / 2 + rx, H / 2 - 3 + ry]; };
+  const lid = base.map(([x, y]) => P(x, y));
+  const poly = (pts, col) => { c.fillStyle = col; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fill(); };
+  // 側面（ふたを下へ押し出す）
+  for (let i = 0; i < lid.length; i++) {
+    const a = lid[i], b = lid[(i + 1) % lid.length];
+    const face = [a, b, [b[0], b[1] + TH], [a[0], a[1] + TH]];
+    const nx = b[1] - a[1], shade = nx > 0 ? '#3e2210' : '#5a3216';
+    poly(face, '#1e0f05');
+    poly(face.map(([x, y], k) => [x + (k < 2 ? 0 : 0), y + (k < 2 ? 1 : -1)]), shade);
+    c.strokeStyle = '#c8901e'; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1] + TH * 0.55); c.lineTo(b[0], b[1] + TH * 0.55); c.stroke(); // 側面の金の帯
+  }
+  poly(lid.map(([x, y]) => [x, y]), '#1e0f05');
+  // ふた：金の縁 → 木の板
+  const shrink = (pts, k) => { const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cy = pts.reduce((s, p) => s + p[1], 0) / pts.length; return pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]); };
+  poly(shrink(lid, 0.97), '#e0a72e');
+  poly(shrink(lid, 0.84), '#6b3d1a');
+  poly(shrink(lid, 0.72), '#7d4a22');
+  // 金の十字（ふたの面に沿って）
+  const cross = (x0, y0, x1, y1) => { const a = P(x0, y0), b = P(x1, y1); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); };
+  c.lineCap = 'square';
+  c.strokeStyle = '#3a1e08'; c.lineWidth = 3.4; cross(0, -0.62, 0, 0.45); cross(-0.26, -0.28, 0.26, -0.28);
+  c.strokeStyle = '#f5c84a'; c.lineWidth = 2.2; cross(0, -0.62, 0, 0.45); cross(-0.26, -0.28, 0.26, -0.28);
   return (coffinSprite = cv);
 }
 function drawCoffin(ball, appear) {
@@ -2471,10 +2491,15 @@ function drawCoffin(ball, appear) {
     const mx = (lead.x + ball.x) / 2, my = (lead.y + ball.y) / 2 + 6;
     ctx.beginPath(); ctx.moveTo(lead.x, lead.y); ctx.quadraticCurveTo(mx, my, ball.x, ball.y); ctx.stroke(); ctx.restore();
   }
-  const img = getCoffinSprite(), h = pl.radius * 2.5 * (0.6 + 0.4 * appear), w = h * img.width / img.height;
+  const img = getCoffinSprite(), w = pl.radius * 3.6 * (0.6 + 0.4 * appear), h = w * img.height / img.width;
   ctx.save(); ctx.translate(ball.x, ball.y); // 回さずに元の絵の向きのまま
   ctx.imageSmoothingEnabled = false; ctx.globalAlpha = Math.min(1, appear * 1.5);
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(2, 3, w * 0.45, h * 0.45, 0, 0, Math.PI * 2); ctx.fill(); // 影
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(1, h * 0.32, w * 0.42, h * 0.2, 0, 0, Math.PI * 2); ctx.fill(); // 影
   ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  const left = game.companions.downStages && game.companions.downStages[ball.companionId]; // 復活まであと何階
+  if (left) {
+    ctx.font = '900 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.strokeText(left, 0, -h / 2 + 2); ctx.fillStyle = '#fff2b0'; ctx.fillText(left, 0, -h / 2 + 2);
+  }
   ctx.restore(); ctx.imageSmoothingEnabled = true;
 }
