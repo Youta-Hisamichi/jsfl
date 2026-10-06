@@ -1417,3 +1417,39 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .top-header .th-gear { padding: 0 2px; display: inline-flex; align-items: center; }
 .top-header .th-gear .ico-img { width: 1.85em; height: 1.85em; }
 .top-header .th-item.gem { padding: 1px 3px 1px 7px; }
+
+/* ===== ゲーム画面下部のボタン帯（素材画像） ===== */
+.cmd-bar { position: relative; margin: 2px -16px 6px; padding: 8px 8px 10px; background: url(assets/img/ui/bar/bar_bg.webp) center / cover no-repeat; border-radius: 0; }
+.cmd-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,12,24,0.15), rgba(10,12,24,0.35)); pointer-events: none; }
+.cmd-bar > * { position: relative; }
+.cmd-bar .tower-row { display: flex !important; align-items: center; justify-content: space-between; gap: 2px; margin: 0; min-height: 0; }
+.cmd-bar .tower-row > button { container-type: inline-size; position: relative !important; transform: none !important; margin: 0 !important; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background-color: transparent !important; border-image: none !important; background-size: 100% 100% !important; background-repeat: no-repeat !important; font-family: inherit; cursor: pointer; display: flex; flex-direction: column; justify-content: center; line-height: 1.05; transition: transform 0.08s; animation: none !important; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); }
+.cmd-bar .tower-row > button:active { transform: scale(0.95) !important; }
+.cmd-bar .bb-main { display: block; font-weight: 900; font-size: clamp(0.78rem, 3.9vw, 1.05rem); color: #fff; letter-spacing: 0.02em; text-shadow: 0 0 2px #000, 0 2px 2px rgba(0,0,0,0.85); white-space: nowrap; }
+.cmd-bar .bb-sub { display: block; font-weight: 800; font-size: clamp(0.38rem, 1.8vw, 0.5rem); color: #f0f0f0; letter-spacing: 0.04em; text-shadow: 0 1px 1px rgba(0,0,0,0.9); white-space: nowrap; margin-top: 1px; }
+.cmd-bar .tower-share { flex: 0 0 23%; aspect-ratio: 438 / 237; background-image: url(assets/img/ui/bar/btn_share.webp) !important; align-items: flex-start; justify-content: flex-start !important; }
+.cmd-bar .tower-share .bb-main { margin-left: 41cqw; }
+.cmd-bar .tower-share .bb-main { font-size: 15cqw; }
+.cmd-bar .tower-share .bb-main { margin-top: 14cqw; }
+.cmd-bar .tower-share .bb-sub { position: absolute; left: 0; right: 0; bottom: 12%; text-align: center; color: #3a4a6a; text-shadow: 0 1px 0 rgba(255,255,255,0.6); font-size: 6.5cqw; }
+.cmd-bar #stageSkipBtn, .cmd-bar #bossRetireBtn { flex: 0 0 27%; aspect-ratio: 456 / 225; background-image: url(assets/img/ui/bar/btn_tower.webp) !important; align-items: flex-start; }
+.cmd-bar #stageSkipBtn > span, .cmd-bar #rebornBtn > span { margin-left: 35cqw; }
+.cmd-bar #stageSkipBtn .bb-main, .cmd-bar #rebornBtn .bb-main { font-size: 12.5cqw; }
+.cmd-bar #stageSkipBtn .bb-sub, .cmd-bar #rebornBtn .bb-sub { font-size: 6cqw; }
+.cmd-bar #stageSkipBtn .bb-main { color: #ffe6a8; }
+.cmd-bar #bossRetireBtn { padding-left: 0 !important; text-indent: 0; font-weight: 900; color: #fff; font-size: clamp(0.75rem, 3.6vw, 1rem); }
+.cmd-bar #rebornBtn { flex: 0 0 29%; aspect-ratio: 507 / 204; background-image: url(assets/img/ui/bar/btn_reborn.webp) !important; align-items: flex-start; }
+.cmd-bar #rebornBtn[style*="none"] { display: none !important; }
+.cmd-bar #stageSkipBtn[style*="none"], .cmd-bar #bossRetireBtn[style*="none"] { display: none !important; }
+body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
+.cmd-bar .debug-toggle { flex: 0 0 19%; aspect-ratio: 363 / 150; background-image: url(assets/img/ui/bar/dbg_strip.webp) !important; flex-direction: row !important; align-items: center; justify-content: flex-start !important; color: #fff; overflow: hidden; }
+.cmd-bar .debug-toggle .bb-gear { margin-left: 3cqw; }
+.cmd-bar .debug-toggle .bb-gear { width: 26%; height: auto; flex: 0 0 auto; }
+.cmd-bar .debug-toggle .bb-main { font-size: 10.5cqw; }
+.cmd-bar .debug-toggle .bb-sub { font-size: 7cqw; }
+.cmd-bar .debug-toggle .bb-text { display: flex; flex-direction: column; margin-left: 2px; }
+.cmd-bar .debug-toggle:not(.open) { opacity: 0.85; }
+.cmd-bar #autoBossBtn { width: min(330px, 78vw); aspect-ratio: 1002 / 288; margin: 0 auto 6px; padding: 9% 0 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.9rem, 4.2vw, 1.15rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
+.cmd-bar #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
+.cmd-bar #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
+.cmd-bar #autoBossBtn[style*="none"] { display: none !important; }

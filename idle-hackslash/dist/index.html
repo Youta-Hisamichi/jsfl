@@ -106,13 +106,15 @@
     </div>
     <button class="skill-set-btn" id="skillSetBtn" style="display:none;">🎒 スキル入れ替え</button>
     <button class="action-btn boss-retry-action" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
+    <div class="cmd-bar">
     <button class="auto-toggle-btn" id="autoBossBtn" style="display:none;">🔁 自動再戦 ON</button>
     <div class="action-row pair tower-row">
-      <button class="share-btn tower-share" data-share="game">📤 シェア</button>
-      <button class="action-btn skip-action" id="stageSkipBtn">試練の塔</button>
-      <button class="action-btn reborn-action" id="rebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
+      <button class="share-btn tower-share" data-share="game"><span class="bb-main">シェア</span><span class="bb-sub">SHARE PROGRESS</span></button>
+      <button class="action-btn skip-action" id="stageSkipBtn"><span class="bb-main">試練の塔</span><span class="bb-sub">TRIAL TOWER</span></button>
+      <button class="action-btn reborn-action" id="rebornBtn" style="display:none;"><span class="bb-main">転生する</span><span class="bb-sub">REINCARNATION</span></button>
       <button class="action-btn boss-retire-btn" id="bossRetireBtn" style="display:none;">🏳 リタイヤ</button>
-      <button class="debug-toggle" id="debugToggleBtn">デバッグ</button>
+      <button class="debug-toggle" id="debugToggleBtn"><img class="bb-gear" src="assets/img/ui/bar/dbg_gear.webp" alt=""><span class="bb-text"><span class="bb-main">デバッグ</span><span class="bb-sub">DEBUG</span></span></button>
+    </div>
     </div>
 
     <div class="hint-footer"></div>
