@@ -1030,6 +1030,54 @@ function pickObstacleKind(rnd, zoneIdx) {
   for (const k in w) if ((t -= w[k]) < 0) return k;
   return 'rock';
 }
+// 特殊配置ステージ：序盤以外でときどき、障害物の並びが個性的な階になる（2ステージ1組、ボス階は除く）
+const SPECIAL_LAYOUT_RATE = 0.18;
+const SPECIAL_LAYOUTS = {
+  pinball:  { name: '🎯 ピンボール場', pts: () => [[0, -0.5], [-0.28, -0.18], [0.28, -0.18], [-0.56, 0.16], [0, 0.16], [0.56, 0.16], [-0.28, 0.5], [0.28, 0.5]].map(p => [...p, 'bumper']) },
+  bombs:    { name: '💣 爆弾畑', pts: () => { const a = []; for (const y of [-0.48, 0, 0.48]) for (const x of [-0.48, 0, 0.48]) if (x || y) a.push([x, y, 'bomb']); return a; } },
+  eggs:     { name: '🥚 タマゴの巣', pts: () => layoutRing(7, 0.5, 'egg') },
+  warp:     { name: '🌀 ワープ迷宮', pts: () => layoutRing(6, 0.56, 'portal') },
+  circuit:  { name: '⚡ 加速サーキット', pts: () => layoutRing(8, 0.58, 'dash') },
+  treasure: { name: '💰 宝の山', pts: () => [[0, 0, 'qbox'], ...layoutRing(6, 0.34, i => ['crate', 'barrel', 'qbox'][i % 3])] },
+  saws:     { name: '⚙️ 回転ノコの間', pts: () => [[-0.5, -0.5, 'spike', 'saw'], [0.5, -0.5, 'spike', 'gear'], [-0.5, 0.5, 'spike', 'gear'], [0.5, 0.5, 'spike', 'saw'], [0, 0, 'spike', 'spikeBall']] },
+  jelly:    { name: '🍮 ぷるぷるゼリー畑', pts: () => [...layoutRing(6, 0.55, 'slime'), [0, 0, 'slime']] },
+  ice:      { name: '🧊 氷の十字路', pts: () => { const a = []; for (const t of [0.22, 0.46, 0.68]) a.push([t, 0, 'ice'], [-t, 0, 'ice'], [0, t, 'ice'], [0, -t, 'ice']); return a; } },
+  grove:    { name: '🌳 木立の広場', pts: () => layoutRing(8, 0.62, 'tree') },
+  corridor: { name: '🏛️ 柱の回廊', pts: () => [-0.55, -0.18, 0.18, 0.55].flatMap(y => [[-0.36, y, 'pillar'], [0.36, y, 'pillar']]) },
+  crystal:  { name: '💎 結晶の間', pts: () => [...layoutRing(6, 0.48, 'crystal'), [0, 0, 'crystal']] },
+  smile:    { name: '😊 にっこり岩', pts: () => [[-0.26, -0.3, 'rock'], [0.26, -0.3, 'rock'], ...[-0.5, -0.25, 0, 0.25, 0.5].map(x => [x, 0.22 + 0.36 * (1 - (x / 0.55) ** 2) * 0.6, 'rock'])] },
+  heart:    { name: '💗 ハートのバンパー', pts: () => { const a = []; for (let i = 0; i < 10; i++) { const t = i / 10 * Math.PI * 2, x = 16 * Math.sin(t) ** 3, y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); a.push([x / 17 * 0.62, y / 17 * 0.62 - 0.04, 'bumper', 'orb_pink']); } return a; } },
+};
+function layoutRing(n, rr, kind) { const a = []; for (let i = 0; i < n; i++) { const t = -Math.PI / 2 + i / n * Math.PI * 2; a.push([Math.cos(t) * rr, Math.sin(t) * rr, typeof kind === 'function' ? kind(i) : kind]); } return a; }
+function pickSpecialLayout(block, zone) {
+  if (game.stage <= 20 || game.stage % 10 === 0 || game.skipChallenge) return null;
+  const r = stageRand(block * 17 + 11); r();
+  if (r() >= SPECIAL_LAYOUT_RATE) return null;
+  const keys = Object.keys(SPECIAL_LAYOUTS);
+  return keys[Math.floor(r() * keys.length)];
+}
+let specialLayoutShownStage = -1;
+function setupSpecialLayout(key, half, rockSprite, floorKey, rnd) {
+  const L = SPECIAL_LAYOUTS[key], baseR = half * 0.085;
+  const made = [];
+  for (const [px, py, kind, sprite] of L.pts()) {
+    const x = arena.x + px * half, y = arena.y + py * half, r = baseR;
+    const o = { x, y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [], special: true };
+    if (kind === 'rock') o.sprite = rockSprite;
+    else if (kind === 'bumper') { o.r = r * 0.8; o.sprite = sprite || 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
+    else if (kind === 'spike') { o.r = r * 0.9; o.sprite = sprite || SPIKE_SPRITES[Math.floor(rnd() * SPIKE_SPRITES.length)]; }
+    else if (kind === 'bomb') o.r = r * 0.85;
+    else if (kind === 'dash') o.dir = Math.atan2(y - arena.y, x - arena.x) + Math.PI / 2; // 時計回りに周回させる
+    else if (kind === 'egg') { setupEggContents(o, rnd); o.r = r * 0.87; }
+    else if (kind === 'slime') o.r = r * 0.7;
+    else if (NATURE_KINDS.has(kind)) o.sprite = natureSpriteFor(kind, floorKey, rnd);
+    else if (BREAKABLES[kind]) o.sprite = kind;
+    if (kind === 'tree' || kind === 'pillar') o.r = r * 0.8;
+    made.push(o); obstacles.push(o);
+  }
+  if (key === 'warp') for (let i = 0; i < 3; i++) { made[i].pair = made[i + 3]; made[i + 3].pair = made[i]; } // 向かい合うゲート同士がつながる
+  if (specialLayoutShownStage !== game.stage) { specialLayoutShownStage = game.stage; spawnDamageText(arena.x, arena.y - half * 0.45, '特殊ステージ ' + L.name, '#ffe36b', 0.008, true); }
+}
 function setupObstacles(dropDebug) {
   obstacleStage = game.stage + (game.skipChallenge ? 0.5 : 0);
   obstacles = dropDebug ? [] : obstacles.filter(o => o.debug && !o.broken); // デバッグで出した障害物は階が変わっても出しっぱなし
@@ -1040,6 +1088,8 @@ function setupObstacles(dropDebug) {
   const rockSprite = /lawn|dirt|market/.test(floorKey) ? 'mossRock' : /dryCrack|dungeon|wasteland|desert/.test(floorKey) ? 'magmaRock' : 'rock';
   setupDecorations(stageRand(block * 13 + 5), floorKey);
   const early = game.stage <= 20, roll = rnd();
+  const special = pickSpecialLayout(block, zone);
+  if (special) { setupSpecialLayout(special, half, rockSprite, floorKey, rnd); return; }
   if (early && (game.stage <= 2 || roll < 0.4)) return; // 序盤は障害物なしのステージも（最初の2階は必ずなし）
   const n = early ? 1 + Math.floor(rnd() * 3) : 2 + Math.floor(rnd() * 3); // 序盤は1〜3個、それ以降は2〜4個（多すぎると窮屈）
   // 配置は黄金比に基づく：黄金角（137.5°）の螺旋・黄金比半径の正多角形・点対称の黄金角ペアのいずれか
@@ -1190,6 +1240,7 @@ function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな
   spawnDamageText(o.x, o.y - 14, '💣 ドカーン！', '#ff9f43', 0.014, true);
   thump(110, 30, 0.5, 0.55); playNoiseBurst(0.45, 0.35); shakeScreen();
   bombBlasts.push({ x: o.x, y: o.y, R, t: Date.now() });
+  for (const b of obstacles) if (b.kind === 'bomb' && !b.broken && !b.fuseAt && Math.hypot(b.x - o.x, b.y - o.y) < R + b.r) b.fuseAt = Date.now() - 450; // 近くの爆弾に誘爆
   for (const e of [...balls, ...adds]) {
     const d = Math.hypot(e.x - o.x, e.y - o.y);
     if (d > R + (e.radius || 0)) continue;

@@ -905,14 +905,15 @@ function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
 function weaponCount(lv) { return 1 + Math.floor((Math.min(lv, WEAPON_SHAPE_LV) - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3（それ以上は増えない）
 function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100); } // 10Lvごとに飛躍・100Lvごとに超飛躍
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
-// ボスを倒した・リタイヤしたときに、ランダムなサブウェポンが1つ手に入る（未所持を優先）
+// ボスを倒した・リタイヤしたときに、まだ持っていないサブウェポンが1つ手に入る（Lvは上げない。強化はスキル画面で）
 function grantRandomWeapon(reason) {
   if (!game.weapons) game.weapons = {};
-  const ids = Object.keys(WEAPONS), fresh = ids.filter(k => !getWeaponLv(k));
-  const id = (fresh.length ? fresh : ids)[Math.floor(Math.random() * (fresh.length ? fresh : ids).length)];
-  game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 30;
+  const fresh = Object.keys(WEAPONS).filter(k => !getWeaponLv(k));
+  if (!fresh.length) return; // 全部持っていたら何もしない
+  const id = fresh[Math.floor(Math.random() * fresh.length)];
+  game.weapons[id] = 1; weaponCd[id] = 30;
   const W = WEAPONS[id];
-  setTimeout(() => showNotice(`${W.icon} ${reason}サブウェポン「${W.name}」${game.weapons[id] > 1 ? 'が Lv' + game.weapons[id] + ' に！' : 'を手に入れた！（自動で発動）'}`), 1400);
+  setTimeout(() => showNotice(`${W.icon} ${reason}サブウェポン「${W.name}」を手に入れた！（自動で発動）`), 1400);
   if (typeof renderCoinShopList === 'function') renderCoinShopList();
 }
 function weaponFoes() { return [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)]; }
