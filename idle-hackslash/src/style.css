@@ -1622,3 +1622,42 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .cmd-bar .tower-row { position: relative; }
 .cmd-bar .tower-row > button.tower-share { position: absolute !important; left: 0; top: 50%; transform: translateY(-50%) !important; width: 14%; flex: none; } /* シェアは小さく左端に（他のボタンは中央のまま） */
 .cmd-bar .tower-row > button.tower-share:active { transform: translateY(-50%) scale(0.95) !important; }
+/* ===== 試練の塔（見本準拠：城の塔つき石板＋魔法陣、レア度で色の違う枠） ===== */
+#stageSkipModal .modal-panel { position: relative; display: flex; flex-direction: column; gap: 8px; max-height: 94vh; overflow: visible; max-width: 420px; padding: 0 4px 2px; border-style: solid; border-color: transparent; border-width: calc(min(92vw, 420px) * 0.27) calc(min(92vw, 420px) * 0.05) calc(min(92vw, 420px) * 0.05); border-image: url(assets/img/ui/tower/panel_frame.webp) 172 34 34 34 fill / calc(min(92vw, 420px) * 0.27) calc(min(92vw, 420px) * 0.053) calc(min(92vw, 420px) * 0.053) stretch; background: none; box-shadow: none; border-radius: 0; color: #eef1f6; }
+#stageSkipModal .modal-panel::before { content: ''; position: absolute; left: 9%; width: 82%; top: -3%; aspect-ratio: 1; background: url(assets/img/ui/tower/circle.webp) center / contain no-repeat; opacity: 0.6; pointer-events: none; z-index: 0; }
+#stageSkipModal .modal-panel > * { position: relative; z-index: 1; flex: none; }
+#stageSkipModal .tower-head { margin: calc(min(92vw, 420px) * -0.2) 0 0; text-align: center; }
+#stageSkipModal .tower-title { margin: 0; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-weight: 900; font-size: 2.2rem; letter-spacing: 0.08em; line-height: 1.1; background: linear-gradient(180deg, #fff6d8 0%, #f4d58a 45%, #b8862e 70%, #f1d27e 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(1px 0 0 #3a2610) drop-shadow(-1px 0 0 #3a2610) drop-shadow(0 1px 0 #3a2610) drop-shadow(0 -1px 0 #3a2610) drop-shadow(0 3px 2px rgba(0,0,0,0.8)); text-shadow: none; }
+#stageSkipModal .tower-gems { display: inline-flex; align-items: center; gap: 4px; margin: 10px 0 2px; padding: 2px 16px; border-radius: 999px; background: linear-gradient(180deg, #2a3446, #161c28); border: 1.5px solid #4a5a74; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.5); color: #8fe8ff; font-weight: 900; font-size: 1.05rem; }
+#stageSkipModal .tower-gems .ico-img { width: 1.1em; height: 1.1em; }
+#stageSkipModal .tower-best { font-size: 0.86rem; color: #f0e2b8; text-shadow: 0 1px 2px #000; }
+#stageSkipModal .tower-best b { font-size: 1rem; }
+#stageSkipModal .modal-sub { margin: 0 4px; font-size: 0.68rem; color: #e4e8f0; text-shadow: 0 1px 2px #000; }
+#stageSkipModal .custom-skip { margin: 0 2px; padding: 8px 10px; border-radius: 10px; background: rgba(16,20,28,0.78); border: 1.5px solid #b08a3e; box-shadow: inset 0 0 0 1px rgba(255,220,140,0.15), 0 2px 6px rgba(0,0,0,0.5); }
+#stageSkipModal .custom-skip-title { font-size: 0.74rem; font-weight: 900; color: #ffe39a; }
+#stageSkipModal .custom-skip-row { gap: 6px; }
+#stageSkipModal .custom-skip-row input { background: #1a1f29; border: 1.5px solid #4c566a; border-radius: 6px; color: #fff; box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); }
+#stageSkipModal #customSkipMaxBtn, #stageSkipModal #customSkipBtn { border-radius: 6px; padding: 6px 10px; font-weight: 900; color: #f4f6fa; text-shadow: 0 1px 2px #000; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.35), 0 2px 3px rgba(0,0,0,0.5); }
+#stageSkipModal #customSkipMaxBtn { background: linear-gradient(180deg, #34477a, #1c2a52); border: 1.5px solid #e2c06a; }
+#stageSkipModal #customSkipBtn { background: linear-gradient(180deg, #6c717c, #3e434d); border: 1.5px solid #9aa0aa; display: inline-flex; gap: 6px; align-items: center; }
+#stageSkipModal #customSkipBtn .msb-cost { color: #c8f2ff; }
+#stageSkipModal #customSkipBtn.is-disabled { filter: grayscale(0.4) brightness(0.85); }
+#stageSkipModal .tower-floors { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0 2px; }
+#stageSkipModal .tower-floor { display: flex; align-items: center; gap: 4px; width: 100%; min-height: 58px; padding: 0 2px; border-style: solid; border-color: transparent; border-width: 9px 16px; border-image: url(assets/img/ui/tower/row_bronze.webp) 24 58 fill / 9px 20px stretch; background: none; box-shadow: none; border-radius: 0; color: #fff; text-align: left; cursor: pointer; font-family: inherit; }
+#stageSkipModal .tower-floor.tf-red { border-image-source: url(assets/img/ui/tower/row_red.webp); }
+#stageSkipModal .tower-floor.tf-orange { border-image-source: url(assets/img/ui/tower/row_orange.webp); }
+#stageSkipModal .tower-floor.tf-gold { border-image-source: url(assets/img/ui/tower/row_gold.webp); }
+#stageSkipModal .tower-floor.tf-silver { border-image-source: url(assets/img/ui/tower/row_silver.webp); }
+#stageSkipModal .tower-floor.is-disabled { filter: grayscale(0.6) brightness(0.8); }
+#stageSkipModal .tower-floor .tf-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+#stageSkipModal .tower-floor .tf-top { display: flex; align-items: center; gap: 6px; }
+#stageSkipModal .tower-floor .tf-no { flex: none; padding: 0 6px; border-radius: 4px; background: #11151c; border: 1px solid #5a6272; color: #d9c48a; font-size: 0.62rem; font-weight: 900; min-width: 0; margin: 0; }
+#stageSkipModal .tower-floor .tf-name { color: #ffe39a; font-weight: 900; font-size: 0.76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; }
+#stageSkipModal .tower-floor .tf-desc { align-self: flex-start; max-width: 100%; padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,0.45); color: #dfe4ec; font-size: 0.54rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#stageSkipModal .tower-floor .tf-boss { flex: none; width: 40px; height: 44px; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6)); margin: -6px 0; }
+#stageSkipModal .tower-floor .tf-cost { flex: none; display: inline-flex; align-items: center; gap: 2px; color: #a8ecff; font-weight: 900; font-size: 0.9rem; text-shadow: 0 1px 2px #000; }
+#stageSkipModal .tower-floor .tf-cost .ico-img { width: 1em; height: 1em; }
+#stageSkipModal .modal-close-btn { align-self: center; width: 62%; margin: 2px 0 0; padding: 8px; border-radius: 8px; background: linear-gradient(180deg, #8a8578, #5a564c); border: 2px solid #c9bfa2; color: #fff4d6; font-weight: 900; font-size: 1rem; letter-spacing: 0.1em; text-shadow: 0 1px 2px #000; box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -3px 0 rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.5); }
+/* 自動再戦：文字の上下の余白を詰めて縦幅を縮める */
+.boss-retry-row #autoBossBtn { border-width: 9px 14px !important; border-image: url(assets/img/ui/bar/panel_auto.webp) 70 fill / 9px 14px stretch !important; line-height: 1.02; padding: 0 4px !important; }
+.boss-retry-row #autoBossBtn small { display: block; line-height: 1; margin: 0; }

@@ -59,8 +59,13 @@ function step() {
   const swarm = !e.isBoss && isSwarmStage(game.stage);
   if (swarm && !e.swarmStarted) { // 大群ステージ：開始時にまとめて出現し、減ったら補充
     e.swarmStarted = true;
-    for (let i = 0; i < SWARM_ADDS; i++) adds.push(makeAddEnemy(e));
-    showNotice('⚠️ 大群の階！ 敵を全部倒すと次の階へ');
+    const n = getStageEnemyCount(game.stage);
+    for (let i = 0; i < n - 1; i++) { // 本体と同じくらいの強さの敵が一緒に出る
+      const ad = makeAddEnemy(e);
+      ad.maxHp = ad.hp = Math.max(6, Math.round(e.maxHp * 0.6)); ad.atk = Math.max(1, Math.round(e.atk * 0.7)); ad.radius = Math.max(ad.radius, 17); ad.isSwarmMate = true;
+      adds.push(ad);
+    }
+    showNotice(`⚠️ 敵が${n}体！ 全部倒すと次の階へ`);
     playSwarmSound();
   }
   const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
@@ -409,7 +414,7 @@ function renderEnemyTraitBadge(en, trait) {
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
     if (en.berserk) tags.push(['🔥 発狂中！防御ダウン', 'warn']);
-    if (isSwarmStage(game.stage) && !en.isBoss) tags.push(['👥 大群', '']);
+    if (isSwarmStage(game.stage) && !en.isBoss) tags.push([`👥 ${getStageEnemyCount(game.stage)}体`, '']);
   }
   const key = en && getEnemySpriteKey(en), img = key && ENEMY_SPRITES[key];
   const head = tags.length ? `<span class="etb-head">${img ? `<img src="${img}" alt="">` : '👾'}敵の特徴</span>` : ''; // 誰の情報か分かるよう、敵の顔つきの見出し
@@ -510,7 +515,7 @@ function onStageClear() {
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
   if (easyBossKill && !wasTower && !stillLooping && Math.random() < TOWER_SUGGEST_CHANCE) setTimeout(maybeSuggestTower, 2200); // ボスをあっさり倒した直後に、たまに試練の塔をおすすめ
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
-    stageAnnounceText = formatStageNumber(game.stage) + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
+    stageAnnounceText = formatStageNumber(game.stage) + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) ? ` 敵${getStageEnemyCount(game.stage)}体！` : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   }
   meteors = []; adds = []; clearEnemyTraitObjects();
@@ -1140,7 +1145,9 @@ function renderStageSkipList() {
     const target = getSkipTargetStage(opt.skip);
     const es = getEnemyStats(target);
     const short = game.gems < opt.cost;
-    return `<button class="modal-shop-btn tower-floor ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span><span class="msb-name"><span class="tf-no">${target}F</span>👑 ${target}階 のボス</span><span class="msb-desc">+${opt.skip}階（${target - game.stage}階先）　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span><span class="msb-cost">💎 ${opt.cost}</span></button>`;
+    const bossKey = BOSS_ENEMY_SPRITE[getStageBossEmoji(target)];
+    const tier = ['bronze', 'silver', 'gold', 'orange', 'red'][i] || 'bronze'; // 遠い階ほど豪華な枠
+    return `<button class="tower-floor tf-${tier} ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span class="tf-main"><span class="tf-top"><span class="tf-no">${formatStageNumber(target)}F</span><span class="tf-name">👑 ${formatStageNumber(target)}階のボス</span></span><span class="tf-desc">+${formatStageNumber(target - game.stage)}階先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span>${bossKey ? enemySpriteHtml(bossKey, 'tf-boss') : '<span class="tf-boss"></span>'}<span class="tf-cost">${xi('x_gem') || '💎'}${opt.cost}</span></button>`;
   }).reverse().join('');
 }
 function spawnNextEnemy() {

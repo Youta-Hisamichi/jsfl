@@ -207,8 +207,17 @@ function updateJumboSlime(e, speedMult) {
   }
 }
 const MAX_FREE_ADDS = 1;          // 通常ステージで同時に出る雑魚の最大数（本体は別。基本は1対1、せいぜい2体）
-const SWARM_ADDS = 6;             // 大群ステージの雑魚の数（控えめ）
-function isSwarmStage(stage) { return stage >= 30 && stage % 20 === 15; } // 大群ステージ（序盤は無し。35, 55, 75…と20階ごと） // 敵の即死魔法の成功率（バリアで防げる）
+// 複数の敵が出る階：階が進むほど出やすく、数も増える（序盤はたまに2〜3体、ずっと先では最大10体）
+const MULTI_FROM_STAGE = 15, MULTI_MAX = 10;
+function stageHashRand(stage, salt) { let h = (stage * 2654435761 + salt * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; h = Math.imul(h, 3266489917) >>> 0; h ^= h >>> 16; return (h >>> 0) / 4294967296; } // 階ごとに決まった乱数
+function getStageEnemyCount(stage) {
+  if (stage < MULTI_FROM_STAGE || stage % 10 === 0) return 1; // ボスの階は1体
+  const chance = Math.min(0.4, 0.12 + stage / 2500);
+  if (stageHashRand(stage, 1) >= chance) return 1;
+  const maxN = Math.min(MULTI_MAX, 2 + Math.floor(Math.sqrt(stage / 40)));
+  return 2 + Math.floor((maxN - 1) * Math.pow(stageHashRand(stage, 2), 1.6)); // 少ない数ほど出やすい
+}
+function isSwarmStage(stage) { return getStageEnemyCount(stage) >= 2; } // 大群ステージ（序盤は無し。35, 55, 75…と20階ごと） // 敵の即死魔法の成功率（バリアで防げる）
 let enemyShots = [];           // 敵の弾（攻撃魔法・ホーミング弾）
 let enemyMines = [];           // 敵の炎の罠（カボチャヘッド）
 function clearEnemyTraitObjects() { enemyShots = []; enemyMines = []; }
