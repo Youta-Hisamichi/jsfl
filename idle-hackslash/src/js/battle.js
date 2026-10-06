@@ -1001,10 +1001,10 @@ function drawBossWeakPoints() {
     const g = ctx.createRadialGradient(wx, wy, 0, wx, wy, r * 3.2);
     g.addColorStop(0, 'rgba(255,60,40,0.9)'); g.addColorStop(1, 'rgba(255,0,0,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(wx, wy, r * 3.2, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = '#ff2a2a'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.55 + pulse * 0.15; // 本体も半透明にしてボスの絵を隠しすぎない
+    ctx.fillStyle = '#ff2a2a'; ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(wx, wy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(wx - r * 0.3, wy - r * 0.3, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.arc(wx - r * 0.3, wy - r * 0.3, r * 0.35, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
 }
@@ -1344,6 +1344,14 @@ function pickLoginRarity(tier = 0) {
 }
 // 大きな数の単位（万〜無量大数）。JSの数は倍精度なので21億で負になることはない。無量大数を超えたら指数表記
 const BIG_UNITS = ['万', '億', '兆', '京', '垓', '秭', '穣', '溝', '澗', '正', '載', '極', '恒河沙', '阿僧祇', '那由他', '不可思議', '無量大数'].map((symbol, i) => ({ value: Math.pow(10, 4 * (i + 1)), symbol }));
+// 階数：万・億を付けつつ1の位まで省略しない（例 1億2345万6789）
+function formatStageNumber(num) {
+  let n = Math.max(0, Math.floor(Number(num) || 0));
+  if (n < 10000 || !Number.isSafeInteger(n)) return n < 10000 ? String(n) : formatCoinNumber(n);
+  const parts = [];
+  for (let i = -1; n > 0; i++) { const g = n % 10000; n = Math.floor(n / 10000); if (g) parts.unshift(g + (i >= 0 ? BIG_UNITS[i].symbol : '')); }
+  return parts.join('');
+}
 function formatCoinNumber(num) {
   num = Number(num) || 0;
   if (!isFinite(num)) num = num < 0 ? -Number.MAX_VALUE : Number.MAX_VALUE;

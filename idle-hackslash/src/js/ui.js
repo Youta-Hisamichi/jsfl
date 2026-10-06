@@ -132,6 +132,8 @@ function drawArenaOverlays() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold 34px "Hiragino Sans", sans-serif';
+    const maxW = arena.radius * 1.7, tw = ctx.measureText(stageAnnounceText).width; // 桁が多いときは枠に収まるよう縮める
+    if (tw > maxW) ctx.scale(maxW / tw, maxW / tw);
     ctx.strokeStyle = 'rgba(0,0,0,0.7)';
     ctx.lineWidth = 6;
     ctx.strokeText(stageAnnounceText, 0, 0);
@@ -889,7 +891,7 @@ debugRow.addEventListener('click', event => {
     game.bestStage = Math.max(game.bestStage, game.stage);
     balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
     refreshPlayerBallStats(true); updateHPUI();
-    stageAnnounceText = formatCoinNumber(game.stage) + '階 大群！';
+    stageAnnounceText = formatStageNumber(game.stage) + '階 大群！';
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     startBgm('normal');
   }

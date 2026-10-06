@@ -510,7 +510,7 @@ function onStageClear() {
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
   if (easyBossKill && !wasTower && !stillLooping && Math.random() < TOWER_SUGGEST_CHANCE) setTimeout(maybeSuggestTower, 2200); // ボスをあっさり倒した直後に、たまに試練の塔をおすすめ
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
-    stageAnnounceText = formatCoinNumber(game.stage) + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
+    stageAnnounceText = formatStageNumber(game.stage) + '階' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) && game.stage % 10 !== 0 ? ' 大群！' : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   }
   meteors = []; adds = []; clearEnemyTraitObjects();
@@ -758,7 +758,7 @@ function bossFail(reason, silent) {
   if (!silent) playDeathSound();
   spawnDamageText(arena.x, arena.y - 30, reason === 'time' ? '⏱ 時間切れ…' : reason === 'retire' ? '🏳 リタイヤ' : '💀 ボスに敗北…', '#ff6b6b', 0.008, true);
   showNotice(reason === 'retire' ? `🏳 ${bossStage}階のボス戦をリタイヤ。${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）` : `${bossStage}階のボスに${reason === 'time' ? '時間切れで' : ''}敗北… ${game.stage}階で鍛え直そう（「👑 ボス再戦」でいつでも再挑戦）`);
-  stageAnnounceText = formatCoinNumber(game.stage) + '階 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION; loopAnnounceCount = 0;
+  stageAnnounceText = formatStageNumber(game.stage) + '階 ループ中'; stageAnnounceTimer = STAGE_ANNOUNCE_DURATION; loopAnnounceCount = 0;
   startBgm('normal');
   updateBossRetryBtn(); updateStatsUI(); updateHPUI(); saveGame();
 }
@@ -1196,7 +1196,7 @@ function startSkipChallenge(challenge) {
   playTowerStepsSound();
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
-  stageAnnounceText = formatCoinNumber(target) + '階';
+  stageAnnounceText = formatStageNumber(target) + '階';
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   spawnBossWithWarning();
   showNotice(`⏭️ ${target}階 のボスに挑戦！`);
@@ -1262,7 +1262,7 @@ function giveUpSkipChallenge() {
   phase = 'battle';
   spawnNextEnemy();
   refreshPlayerBallStats(true);
-  stageAnnounceText = formatCoinNumber(origin) + '階';
+  stageAnnounceText = formatStageNumber(origin) + '階';
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
   showNotice(`🏳️ ${target}階 への挑戦をあきらめ、${origin}階 に戻りました`, true);
   startBgm(origin % 10 === 0 ? 'boss' : 'normal');
