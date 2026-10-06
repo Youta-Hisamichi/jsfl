@@ -1674,3 +1674,6 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .bstz-name { margin-top: 6px; font-size: 1.2rem; font-weight: 900; color: #ffe39a; text-shadow: 0 2px 0 #000; }
 .bstz-info { margin-top: 2px; font-size: 0.85rem; color: #c9d0e0; }
 .bstz-hint { margin-top: 6px; font-size: 0.68rem; color: #8a92a8; }
+/* ボス再戦の列はHPゲージのすぐ下に、転生・試練の塔の列もその下に詰める */
+.boss-retry-row { margin-top: -22px !important; margin-bottom: 0 !important; }
+.boss-retry-row:has(> button:not([style*="none"])) ~ .cmd-bar { margin-top: -10px !important; }
