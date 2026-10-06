@@ -142,22 +142,31 @@ function drawArenaOverlays() {
   }
 }
 
+const SIM_STEP_MS = 1000 / 60, SIM_MAX_CATCHUP = 4; // 1ステップの長さと、1回の描画で追いつく最大ステップ数
+let simAcc = 0, lastSimAt = 0;
 function loop() {
   battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
   try {
     if (userPaused || stageSkipModal.classList.contains('show')) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
     if (activeTabCache !== 'game') { drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // drawFlyouts は画面全体の重ね描きを消すため（残像が残らないように）
-    if (hitStopFrames <= 0) {
-      if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
-      else updateDeathFx();
-    } else {
-      hitStopFrames--;
+    // 固定ステップ：描画が重くて fps が落ちてもゲームの進み（1秒＝60ステップ）は変わらない。120Hz の画面でも速くなりすぎない
+    const now = performance.now();
+    simAcc += Math.min(SIM_MAX_CATCHUP * SIM_STEP_MS, now - (lastSimAt || now - SIM_STEP_MS)); lastSimAt = now;
+    let steps = 0;
+    while (simAcc >= SIM_STEP_MS && steps < SIM_MAX_CATCHUP) {
+      simAcc -= SIM_STEP_MS; steps++;
+      if (hitStopFrames <= 0) {
+        if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
+        else updateDeathFx();
+      } else {
+        hitStopFrames--;
+      }
+      updateFlyouts();
+      updateCoinFx();
+      updateTackleHold();
+      if (activeTabCache !== 'game' || userPaused) break;
     }
-    updateFlyouts();
-    updateCoinFx();
-    updateTackleHold();
-    draw();
-    drawFlyouts();
+    if (steps) { draw(); drawFlyouts(); } // 進んでいないフレームは描き直さない
   } catch (err) {
     console.error('ゲームループ内でエラーが発生しました:', err);
   }

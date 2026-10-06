@@ -1958,10 +1958,12 @@ function updateFlyouts() {
   const far = Math.max(window.innerWidth, window.innerHeight) * 1.5;
   flyouts = flyouts.filter(f => f.flyLife > 0 && Math.hypot(f.x - arena.x, f.y - arena.y) < far);
 }
-let flyoutDirty = true;
+let flyoutDirty = true, flyoutColX = 0;
 function drawFlyouts() {
-  const dprNow = renderDpr();
-  const w = Math.round(window.innerWidth * dprNow), h = Math.round(window.innerHeight * dprNow);
+  const dprNow = Math.min(1.5, renderDpr()); // 画面全体に重ねるので解像度は控えめに
+  const colW = Math.min(window.innerWidth, 760), colX = Math.round((window.innerWidth - colW) / 2); // 横長の画面ではゲームの列の周りだけ
+  if (flyoutColX !== colX || flyoutCanvas.style.width !== colW + 'px') { flyoutColX = colX; flyoutCanvas.style.left = colX + 'px'; flyoutCanvas.style.width = colW + 'px'; }
+  const w = Math.round(colW * dprNow), h = Math.round(window.innerHeight * dprNow);
   const empty = !flyouts.length && !damageTexts.length && !coinFx.length;
   if (empty && !flyoutDirty && flyoutCanvas.width === w) return; // 何も描いていない画面全体の消去を毎フレームしない（スマホで重いため）
   if (flyoutCanvas.width !== w || flyoutCanvas.height !== h) { flyoutCanvas.width = w; flyoutCanvas.height = h; }
@@ -1972,7 +1974,7 @@ function drawFlyouts() {
   const rect = canvas.getBoundingClientRect();
   if (rect.width < 10 || !size) return; // ゲームタブが非表示のときは描かない
   const k = rect.width / size;
-  flyoutCtx.setTransform(dprNow * k, 0, 0, dprNow * k, rect.left * dprNow, rect.top * dprNow);
+  flyoutCtx.setTransform(dprNow * k, 0, 0, dprNow * k, (rect.left - flyoutColX) * dprNow, rect.top * dprNow);
   const mainCtx = ctx;
   ctx = flyoutCtx;
   try {
