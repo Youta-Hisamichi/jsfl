@@ -1412,3 +1412,8 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .boss-retry-action:active { transform: scale(0.96); }
 /* デバッグボタンは行の右端に寄せる */
 .tower-row .debug-toggle { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+/* ヘッダー：中身が枠の飾りに被らないよう上下に余白、設定の歯車は大きめ */
+.top-header { border-width: 9px; border-image-width: 9px; padding: 5px 10px; line-height: 1.2; align-items: center; }
+.top-header .th-gear { padding: 0 2px; display: inline-flex; align-items: center; }
+.top-header .th-gear .ico-img { width: 1.85em; height: 1.85em; }
+.top-header .th-item.gem { padding: 1px 3px 1px 7px; }
