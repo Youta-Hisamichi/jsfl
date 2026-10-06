@@ -2391,6 +2391,7 @@ if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止
 if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
+['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
 if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
