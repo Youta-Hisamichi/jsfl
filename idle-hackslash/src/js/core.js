@@ -695,7 +695,6 @@ const SKILL_GACHA_SKILLS = {
   skillPoison:   { icon: '☠️', name: '毒',       desc: '当てた敵を毒状態に' },
   skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
   skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '取得したら転生まで常に攻撃力1.5倍（セット不要）' },
-  skillRegen:    { icon: '🌿', name: 'リヒール', desc: '取得したら転生まで常にHPが少しずつ自動回復（セット不要）' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
   skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 敵めがけてコインを投げまくる（当たるとコイン獲得）・討伐コイン1.5倍' },
   skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
@@ -703,7 +702,7 @@ const SKILL_GACHA_SKILLS = {
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
   skillBlast:    { icon: '💣', name: '大爆発', desc: '画面全体を吹き飛ばす大爆発！敵すべてに超特大ダメージ（待機長め）' }
 };
-const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova']; // 削除したスキル（古いセーブからも外す）
+const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen']; // 削除したスキル（古いセーブからも外す）
 const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
 const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
 const SKILL_GACHA_BASE_COST = 100, SKILL_GACHA_COST_GROWTH = 1.15; // 1回ごとに値上げ（転生でリセット）

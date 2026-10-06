@@ -87,9 +87,9 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .exp-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 4px; }
 .exp-track { background: var(--bg); border-radius: 999px; height: 8px; overflow: hidden; border: 1px solid var(--ring); }
 
-.stage-track-wrap { position: relative; margin: 8px 16px 4px 4px; }
+.stage-track-wrap { position: relative; margin: 8px 20px 4px 4px; }
 .stage-mark { position: absolute; top: 50%; width: 24px; height: 24px; transform: translate(-50%, -58%); image-rendering: pixelated; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); transition: left 0.25s ease-out; }
-.stage-mark-boss { left: 100%; width: 36px; height: 36px; } /* 向きはボスごとにJSで合わせる */
+.stage-mark-boss { left: 100%; width: 44px; height: 44px; } /* 向きはボスごとにJSで合わせる */
 .stage-mark-player { z-index: 1; transform: translate(-50%, -58%) scaleX(-1); } /* 自キャラの絵は左向きなので、右（ボス）へ進む向きに反転 */
 .exp-fill { height: 100%; background: linear-gradient(90deg, var(--exp), #4fd67e); border-radius: 999px; transition: width 0.2s ease-out; width: 0%; }
 

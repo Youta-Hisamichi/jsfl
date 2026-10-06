@@ -662,7 +662,7 @@ function updateStatsUI() {
   { // ゴールのボスアイコンは、その10階で待ち構えるボスの絵（自キャラの来る左を向かせる）
     const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), key = BOSS_ENEMY_SPRITE[em], el = document.getElementById('stageBossMark');
     const src = (key && ENEMY_SPRITES[key]) || ENEMY_SPRITES.demon;
-    if (el && el.dataset.boss !== src) { el.dataset.boss = src; el.src = src; el.style.transform = `translate(-50%, -58%)${BOSS_ICON_FLIP.has(key) || (!key && true) ? ' scaleX(-1)' : ''}`; }
+    if (el && el.dataset.boss !== src) { el.dataset.boss = src; el.src = src; el.style.transform = `translate(-50%, -72%)${BOSS_ICON_FLIP.has(key) || (!key && true) ? ' scaleX(-1)' : ''}`; }
   }
 
   renderTabLists(); // 各ページの一覧は開いているページだけ描き直す（他は開いたときに描く）
