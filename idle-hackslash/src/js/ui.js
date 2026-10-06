@@ -2575,3 +2575,51 @@ window.addEventListener('load', fitCmdBarText);
     tag.append(k, n); row.insertBefore(tag, row.firstChild);
   });
 })();
+
+// ===== 録画（音声付き）：PCのChromeはタブ全体を録画、それ以外はゲーム画面＋ゲームの音を録画して動画ファイルで保存 =====
+let recState = null;
+const recDestFor = ctx => { if (!ctx.__recDest) ctx.__recDest = ctx.createMediaStreamDestination(); return ctx.__recDest; };
+(function patchAudioForRec() { // 録画中はスピーカーへ出る音を録音にも分ける
+  const orig = AudioNode.prototype.connect;
+  AudioNode.prototype.connect = function (dest, ...rest) {
+    const r = orig.call(this, dest, ...rest);
+    try { if (dest && dest === this.context.destination) orig.call(this, recDestFor(this.context)); } catch (e) { /* 録音できなくても音は鳴らす */ }
+    return r;
+  };
+})();
+function pickRecMime() { return ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || ''; }
+async function startRecording() {
+  ensureAudio();
+  let stream = null, mode = '';
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && !/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 60, displaySurface: 'browser' }, audio: { suppressLocalAudioPlayback: false }, preferCurrentTab: true, selfBrowserSurface: 'include', systemAudio: 'include' }); mode = 'タブ'; }
+    catch (e) { stream = null; }
+  }
+  if (!stream) { // ゲーム画面だけ＋ゲームの音
+    const v = canvas.captureStream(60), a = audioCtx ? recDestFor(audioCtx).stream : null;
+    stream = new MediaStream([...v.getVideoTracks(), ...(a ? a.getAudioTracks() : [])]); mode = 'ゲーム画面';
+  } else if (!stream.getAudioTracks().length && audioCtx) stream.addTrack(recDestFor(audioCtx).stream.getAudioTracks()[0]); // タブの音が取れないときはゲームの音を足す
+  const mime = pickRecMime(), chunks = [];
+  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : undefined);
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    stream.getTracks().forEach(t => { if (t.kind === 'video' || mode === 'タブ') t.stop(); });
+    const type = rec.mimeType || 'video/webm', ext = type.includes('mp4') ? 'mp4' : 'webm';
+    const url = URL.createObjectURL(new Blob(chunks, { type }));
+    const a = document.createElement('a'); a.href = url; a.download = `hackslash-${dateKey(new Date())}-${Date.now() % 100000}.${ext}`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    showNotice(`🎥 録画を保存しました（.${ext}）`, false, 2500);
+  };
+  stream.getVideoTracks()[0].addEventListener('ended', () => stopRecording()); // 共有を止めたら録画も終わる
+  rec.start(500);
+  recState = { rec, start: Date.now(), mode };
+  updateRecBtn();
+}
+function stopRecording() { if (!recState) return; const r = recState.rec; recState = null; if (r.state !== 'inactive') r.stop(); updateRecBtn(); }
+function updateRecBtn() {
+  const b = document.getElementById('dbgRecBtn'), i = document.getElementById('dbgRecInfo'); if (!b) return;
+  b.textContent = recState ? '⏹ 録画停止して保存' : '🎥 録画開始';
+  if (i) i.textContent = recState ? `● 録画中（${recState.mode}） ${Math.floor((Date.now() - recState.start) / 1000)}秒` : 'PCのChromeは「このタブ」を選ぶと音声付きで画面全体を録画';
+}
+document.getElementById('dbgRecBtn').addEventListener('click', () => { if (recState) stopRecording(); else startRecording().catch(err => showNotice('録画を開始できませんでした：' + err.message, true, 3000)); });
+setInterval(() => { if (recState) updateRecBtn(); }, 1000); updateRecBtn();
