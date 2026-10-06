@@ -825,10 +825,26 @@ function autoAimAngle() { // 狙った敵が動いたら矢印も追いかける
 }
 let autoAim = null;        // { ang, lv, start }：AUTOが狙いを付けている最中
 ['pointerdown', 'pointerup', 'pointermove'].forEach(t => document.addEventListener(t, ev => { if (ev.target === canvas && (t !== 'pointermove' || ev.buttons)) lastUserInputAt = Date.now(); }, true)); // AUTOが解けるのはゲームステージ（サークル）を触ったときだけ
+// AUTO中、近くに敵がいるとときどき近接攻撃（タップの切り払い）を数回くり出す
+const AUTO_SLASH_CHANCE = 0.25, AUTO_SLASH_CHECK_MS = 700, AUTO_SLASH_HITS = [2, 4], AUTO_SLASH_GAP_MS = 140;
+let autoSlashCheckAt = 0, autoSlashLeft = 0, autoSlashNextAt = 0;
+function tickAutoSlash(now) {
+  if (autoAim || rushingNow) { autoSlashLeft = 0; return; }
+  if (autoSlashLeft > 0) { if (now >= autoSlashNextAt) { autoSlashLeft--; autoSlashNextAt = now + AUTO_SLASH_GAP_MS; doTapSlash(); } return; }
+  if (now < autoSlashCheckAt) return;
+  autoSlashCheckAt = now + AUTO_SLASH_CHECK_MS;
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
+  const near = nearestOf(pl, foes);
+  if (!near || Math.hypot(near.x - pl.x, near.y - pl.y) > pl.radius + (near.radius || 0) + SLASH_RANGE) return; // 届く距離にいるときだけ
+  if (Math.random() >= AUTO_SLASH_CHANCE) return;
+  autoSlashLeft = AUTO_SLASH_HITS[0] + Math.floor(Math.random() * (AUTO_SLASH_HITS[1] - AUTO_SLASH_HITS[0] + 1)); autoSlashNextAt = now;
+}
 function tickAutoPull() {
   const now = Date.now();
   if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') { autoAim = null; return; }
   if (now - lastUserInputAt < AUTO_PULL_IDLE_MS) { nextAutoPullAt = 0; autoAim = null; return; }
+  tickAutoSlash(now);
   if (autoAim) { if (now - autoAim.start >= AUTO_AIM_MS) { const ang = autoAimAngle(), lv = autoAim.lv; autoAim = null; launchPull(ang, lv); } return; }
   if (holdRush && now < holdRush.until) return;
   if (!nextAutoPullAt) { nextAutoPullAt = now + 600; return; }

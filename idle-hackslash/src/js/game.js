@@ -619,8 +619,19 @@ function bossDefeated(reason) {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (!boss) { bossFail(reason); return; }
   if (boss.continued) { showBossFinalDefeat(reason); return; } // コンテニュー済み：少し間をおいて説明してから前の階へ
+  if (bossKoPending) return; // 吹っ飛び演出中の二重呼び出しを防ぐ
   bossContReason = reason; phase = 'paused'; homingMissiles = [];
   playDeathSound();
+  // まず自キャラがクルクル回りながら吹っ飛び、少し間をおいてからGAME OVERパネルを出す
+  const pl = balls.find(isMainPlayerBall);
+  if (pl) knockoutFx = { ball: pl, start: performance.now(), dir: pl.x >= boss.x ? 1 : -1 };
+  bossKoPending = true; shakeScreen();
+  setTimeout(() => { bossKoPending = false; showBossContModal(reason); }, BOSS_KO_MS);
+}
+const BOSS_KO_MS = 1400;
+let bossKoPending = false;
+function showBossContModal(reason) {
+  if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = '';
   document.getElementById('bossContAdBtn').innerHTML = (isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー') + '<br><small>1回まで</small>';
@@ -631,7 +642,7 @@ function bossDefeated(reason) {
 }
 // 2回目の敗北（コンテニュー済み）：同じ画面で「◯階に戻って鍛え直します」と数秒見せてから自動で戻す
 const BOSS_FINAL_MS = 2200;
-let knockoutFx = null; // 2回目の敗北で吹っ飛ぶ自キャラの演出
+let knockoutFx = null; // ボスに負けたときに吹っ飛ぶ自キャラの演出
 function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明パネルを少しだけ出して、そのまま前の階へ（悲鳴は1回だけ・カウントダウンなし）
   phase = 'paused'; homingMissiles = [];
   playDeathSound();
@@ -659,7 +670,7 @@ function startBossContCountdown() {
   }, 1000);
 }
 function bossContinue() {
-  clearInterval(bossContTimer);
+  clearInterval(bossContTimer); knockoutFx = null;
   bossContModal.classList.remove('show'); refreshBgm();
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (boss) boss.continued = true;
@@ -675,7 +686,7 @@ document.getElementById('bossContAdBtn').addEventListener('click', () => {
 });
 document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   if (!bossContModal.classList.contains('show')) return;
-  clearInterval(bossContTimer);
+  clearInterval(bossContTimer); knockoutFx = null;
   bossContModal.classList.remove('show'); phase = 'battle'; refreshBgm();
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r, true); // 悲鳴は敗北時に1回鳴らしているので、ここでは鳴らさない
 });
