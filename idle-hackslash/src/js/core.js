@@ -985,7 +985,8 @@ const game = {
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
   totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
-  skillSlots: 1, equippedSkills: [], // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
+  skillSlots: 1, equippedSkills: [], weaponSlots: 1, // サブウェポン枠（ジェムで最大4・転生しても残る）
+  // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
   skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
   bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
   bgmBook: {}, // BGM図鑑 { 曲キー: 登録したステージ }（転生しても残る）

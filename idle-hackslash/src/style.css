@@ -1485,3 +1485,9 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .boss-retry-row #bossRetryBtn { margin: 0 !important; width: min(200px, 50vw) !important; flex: 0 0 auto; }
 .boss-retry-row #autoBossBtn { margin: 0 !important; flex: 0 1 auto; font-size: clamp(0.62rem, 2.9vw, 0.78rem) !important; white-space: normal !important; text-align: center; }
 .boss-retry-row #autoBossBtn small { display: block; margin: 0; }
+/* サブウェポンの装備枠 */
+.weapon-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 2px 2px 6px; font-size: 0.8rem; color: var(--text-dim); }
+.weapon-slot-head b { color: var(--text); }
+.weapon-slot-head button { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; color: #fff; font-weight: 800; font-size: 0.74rem; padding: 0 6px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.weapon-slot-head button.is-disabled { filter: grayscale(0.7); opacity: 0.7; }
+.weapon-slot-head .ws-max { color: var(--gold); font-weight: 800; }

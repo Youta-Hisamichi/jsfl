@@ -933,7 +933,7 @@ function completeReincarnation() {
   game.companionSummons = 0; game.bossJoinSince = 0;
   game.skillGachaPulls = 0;
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.runBuffs = {}; weaponProj = []; weaponFx = [];
+  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.equippedWeapons = []; game.runBuffs = {}; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);

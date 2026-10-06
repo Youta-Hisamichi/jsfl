@@ -456,7 +456,7 @@ function applyPowerUp(c) {
     showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
   }
   else if (c.kind === 'buff') { if (!game.runBuffs) game.runBuffs = {}; game.runBuffs[c.id] = Math.min(RUN_BUFF_MAX, getRunBuff(c.id) + 1); }
-  else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; }
+  else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; autoEquipWeapon(c.id); }
   else if (c.kind === 'heal') { const PU_HEAL = 0.3; const pl = balls.find(isMainPlayerBall); if (pl && pl.hp > 0) { const h = Math.min(pl.maxHp - pl.hp, Math.round(pl.maxHp * PU_HEAL)); pl.hp += h; spawnDamageText(pl.x, pl.y - pl.radius - 14, '+' + h + ' HP', '#5fe0a8', 0.012); } balls.forEach(b => { if (b.isCompanion && b.hp > 0) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * PU_HEAL); }); playHealSound(); }
   else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
@@ -488,7 +488,7 @@ function fullReset() {
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
-  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.equippedSkills = [];
+  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -1059,17 +1059,37 @@ coinShopList.addEventListener('click', event => {
   updateHPUI();
 });
 
+document.getElementById('weaponSlotHead').addEventListener('click', event => { // サブウェポンの装備枠を増やす
+  if (!event.target.closest('[data-weapon-slot]')) return;
+  const slots = getWeaponSlots(), cost = getWeaponSlotCost();
+  if (slots >= WEAPON_SLOT_MAX) return;
+  if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('coinshop') }); return; }
+  game.gems -= cost; game.weaponSlots = slots + 1;
+  showNotice(`🗡️ サブウェポン枠が ${game.weaponSlots} つになりました`); playRegisterSound();
+  updateStatsUI(); renderCoinShopList(); saveGame();
+});
 document.getElementById('weaponList').addEventListener('click', event => {
+  const eb = event.target.closest('[data-weapon-equip]');
+  if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
+    if (skillSwapLocked(event)) return;
+    const id = eb.dataset.weaponEquip, eq = getEquippedWeapons();
+    if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
+    else if (eq.length >= getWeaponSlots()) { const out = eq.pop(); eq.push(id); showNotice(`${WEAPONS[out].name} と入れ替えて ${WEAPONS[id].name} を装備`); }
+    else eq.push(id);
+    weaponCd[id] = 20; playTone(880, 0.06, 'triangle', 0.1);
+    renderCoinShopList(); saveGame();
+    return;
+  }
   const b = event.target.closest('[data-weapon-buy]'); if (!b) return;
   const id = b.dataset.weaponBuy, cost = getWeaponBuyCost(id);
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
   spendCoins(cost);
   if (!game.weapons) game.weapons = {};
-  const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20;
+  const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   const leap = lv % 100 === 0 ? 2 : lv % 10 === 0 ? 1 : 0;
   showLevelUpPop(event.clientX, event.clientY, lv === 1 ? '獲得！' : `Lv${lv}！`);
   if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else playUpgradeSound();
-  showNotice(`${WEAPONS[id].icon} ${WEAPONS[id].name} ${lv === 1 ? 'を獲得！（自動で発動）' : 'が Lv' + lv + ' に！'}`);
+  showNotice(`${WEAPONS[id].icon} ${WEAPONS[id].name} ${lv === 1 ? (getEquippedWeapons().includes(id) ? 'を獲得！（装備して自動で発動）' : 'を獲得！（枠がいっぱい：装備で入れ替え）') : 'が Lv' + lv + ' に！'}`);
   updateStatsUI(); renderCoinShopList(); saveGame();
 });
 document.getElementById('skillLevelList').addEventListener('click', event => {

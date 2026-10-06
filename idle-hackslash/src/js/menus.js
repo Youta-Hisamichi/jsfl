@@ -42,11 +42,16 @@ function renderSkillGacha() {
     return `<div class="sk-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns"><button class="${maxed || game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}">${buyLabel}</button>${equipBtn}</div></div>`;
   }).join('');
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
-  const wList = document.getElementById('weaponList'); // サブウェポン：持っているだけで自動で発動（装備枠は使わない）
+  const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
+  const weq = getEquippedWeapons(), wslots = getWeaponSlots();
+  const wHead = document.getElementById('weaponSlotHead');
+  const wHeadHtml = `<span>装備枠 <b>${weq.length} / ${wslots}</b></span>` + (wslots < WEAPON_SLOT_MAX ? `<button class="${game.gems < getWeaponSlotCost() ? 'is-disabled' : ''}" data-weapon-slot="1">＋枠を増やす 💎${getWeaponSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  if (wHead && wHead.dataset.html !== wHeadHtml) { wHead.innerHTML = wHeadHtml; wHead.dataset.html = wHeadHtml; }
   const wHtml = Object.entries(WEAPONS).map(([id, W]) => {
-    const lv = getWeaponLv(id), cost = getWeaponBuyCost(id);
+    const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
-    return `<div class="sk-card ${lv ? 'equipped' : 'locked'}"><div class="sk-top"><span class="item-icon">${W.icon}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}（自動で発動）</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? 'Lv↑' : '獲得'} 🟡${formatCoinNumber(cost)}</button></div></div>`;
+    const equipBtn = lv ? `<button class="sk-equip ${on ? 'on' : ''}" data-weapon-equip="${id}">${on ? '✓ 装備中' : weq.length >= wslots ? '入れ替え' : '装備する'}</button>` : '';
+    return `<div class="sk-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${W.icon}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
   }).join('');
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   updateSkillButtonVisibility();
@@ -972,6 +977,17 @@ const WEAPONS = {
 };
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
+// サブウェポンの装備枠（最初は1つ。ジェムで増やせて転生後も継続）
+const WEAPON_SLOT_MAX = 4;
+function getWeaponSlots() { return Math.max(1, Math.min(WEAPON_SLOT_MAX, game.weaponSlots || 1)); }
+function getWeaponSlotCost() { return gemPrice(20 * Math.pow(2, getWeaponSlots() - 1)); } // 20→40→80
+function getEquippedWeapons() {
+  if (!Array.isArray(game.equippedWeapons)) game.equippedWeapons = Object.keys(WEAPONS).filter(getWeaponLv).slice(0, getWeaponSlots()); // 旧セーブは持っている物から枠の数だけ
+  game.equippedWeapons = game.equippedWeapons.filter(id => WEAPONS[id] && getWeaponLv(id));
+  return game.equippedWeapons;
+}
+function equippedWeaponLv(id) { return getEquippedWeapons().includes(id) ? getWeaponLv(id) : 0; }
+function autoEquipWeapon(id) { const eq = getEquippedWeapons(); if (!eq.includes(id) && eq.length < getWeaponSlots()) eq.push(id); } // 空き枠があれば自動で装備
 function weaponCount(lv) { return 1 + Math.floor((Math.min(lv, WEAPON_SHAPE_LV) - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3（それ以上は増えない）
 function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100); } // 10Lvごとに飛躍・100Lvごとに超飛躍
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
@@ -981,9 +997,9 @@ function grantRandomWeapon(reason) {
   const fresh = Object.keys(WEAPONS).filter(k => !getWeaponLv(k));
   if (!fresh.length) return; // 全部持っていたら何もしない
   const id = fresh[Math.floor(Math.random() * fresh.length)];
-  game.weapons[id] = 1; weaponCd[id] = 30;
+  game.weapons[id] = 1; weaponCd[id] = 30; autoEquipWeapon(id);
   const W = WEAPONS[id];
-  setTimeout(() => showNotice(`${W.icon} ${reason}サブウェポン「${W.name}」を手に入れた！（自動で発動）`), 1400);
+  setTimeout(() => showNotice(`${W.icon} ${reason}サブウェポン「${W.name}」を手に入れた！${getEquippedWeapons().includes(id) ? '（装備して自動で発動）' : '（スキルページで装備できます）'}`), 1400);
   if (typeof renderCoinShopList === 'function') renderCoinShopList();
 }
 function weaponFoes() { return [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)]; }
@@ -1041,7 +1057,7 @@ function updateWeapons(pl, speedMult) {
     }
   }
   for (const id in WEAPONS) {
-    const lv = getWeaponLv(id); if (!lv || id === 'shield') continue;
+    const lv = equippedWeaponLv(id); if (!lv || id === 'shield') continue;
     weaponCd[id] = (weaponCd[id] ?? WEAPONS[id].cd * 0.5) - speedMult;
     if (weaponCd[id] <= 0) { weaponCd[id] = WEAPONS[id].cd * (1 - 0.06 * (Math.min(lv, WEAPON_SHAPE_LV) - 1)); fireWeapon(id, lv, pl); }
   }
@@ -1110,7 +1126,7 @@ function updateWeapons(pl, speedMult) {
   }
   weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < 350);
   // 回転シールド
-  const slv = getWeaponLv('shield');
+  const slv = equippedWeaponLv('shield');
   if (slv) {
     shieldAngle += 0.06 * speedMult;
     const n = [0, 1, 2, 2, 3, 4][slv], R = pl.radius + 30;
@@ -1164,7 +1180,7 @@ function drawWeapons() {
     else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); }
     ctx.restore();
   }
-  const slv = getWeaponLv('shield');
+  const slv = equippedWeaponLv('shield');
   if (slv && pl && pl.hp > 0) {
     const n = [0, 1, 2, 2, 3, 4][slv], R = pl.radius + 30;
     ctx.font = '17px sans-serif';
