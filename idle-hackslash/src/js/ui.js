@@ -38,16 +38,12 @@ function draw() {
     if (ball.isCompanion) {
       if (ball.hp <= 0) {
         if (!ball.fallenAt) ball.fallenAt = Date.now();
-        const t = (Date.now() - ball.fallenAt) / 600;
-        if (t >= 1) continue;
-        ctx.save();
-        ctx.globalAlpha = 1 - t;
-        ctx.translate(0, t * 12);
-        drawBall(ball);
-        ctx.restore();
+        const t = (Date.now() - ball.fallenAt) / 400;
+        if (t < 1) { ctx.save(); ctx.globalAlpha = 1 - t; ctx.translate(0, t * 12); drawBall(ball); ctx.restore(); }
+        drawCoffin(ball, Math.min(1, t));
         continue;
       }
-      ball.fallenAt = 0;
+      ball.fallenAt = 0; ball.coffinAt = 0;
     }
     drawBall(ball);
   }
@@ -2453,3 +2449,32 @@ function preloadUiImages() {
   preloadedImgs = PRELOAD_IMGS.map(p => { const img = new Image(); img.decoding = 'async'; img.src = base + p + '.webp'; if (img.decode) img.decode().catch(() => {}); return img; });
 }
 if (document.readyState === 'complete') setTimeout(preloadUiImages, 300); else window.addEventListener('load', () => setTimeout(preloadUiImages, 300));
+
+// 棺桶の絵（ドット絵を一度だけ作ってキャッシュ）と、引っぱるロープ
+let coffinSprite = null;
+function getCoffinSprite() {
+  if (coffinSprite) return coffinSprite;
+  const W = 16, H = 26, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const shape = (inset, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(W * 0.3 + inset * 0.6, inset); c.lineTo(W * 0.7 - inset * 0.6, inset); c.lineTo(W - inset, H * 0.27); c.lineTo(W * 0.8 - inset * 0.6, H - inset); c.lineTo(W * 0.2 + inset * 0.6, H - inset); c.lineTo(inset, H * 0.27); c.closePath(); c.fill(); };
+  shape(0, '#2a1508'); shape(1, '#d9a331'); shape(2, '#5a3216'); shape(3, '#7a4a22');
+  c.fillStyle = '#9a6430'; c.fillRect(5, 4, 2, 18); // ツヤ
+  c.fillStyle = '#2a1508'; c.fillRect(7, 6, 3, 13); c.fillRect(4, 9, 9, 3); // 十字の影
+  c.fillStyle = '#f2c14e'; c.fillRect(7, 5, 2, 13); c.fillRect(4, 8, 8, 2); // 金の十字
+  return (coffinSprite = cv);
+}
+function drawCoffin(ball, appear) {
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const lead = coffinLeader(ball, pl);
+  if (lead) { // ロープ
+    ctx.save(); ctx.strokeStyle = 'rgba(120,90,50,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]);
+    const mx = (lead.x + ball.x) / 2, my = (lead.y + ball.y) / 2 + 6;
+    ctx.beginPath(); ctx.moveTo(lead.x, lead.y); ctx.quadraticCurveTo(mx, my, ball.x, ball.y); ctx.stroke(); ctx.restore();
+  }
+  const img = getCoffinSprite(), h = pl.radius * 2.5 * (0.6 + 0.4 * appear), w = h * img.width / img.height;
+  ctx.save(); ctx.translate(ball.x, ball.y); ctx.rotate((ball.coffinAng || -Math.PI / 2) + Math.PI / 2);
+  ctx.imageSmoothingEnabled = false; ctx.globalAlpha = Math.min(1, appear * 1.5);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(2, 3, w * 0.45, h * 0.45, 0, 0, Math.PI * 2); ctx.fill(); // 影
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore(); ctx.imageSmoothingEnabled = true;
+}

@@ -1611,14 +1611,31 @@ function resolveAllyCollisions() {
     }
   }
 }
+// 棺桶：倒れた順に1列につながって、主人公（または前の棺桶）からロープで引っぱられる
+const COFFIN_ROPE = 40;
+function coffinLeader(ball, pl) {
+  const dead = balls.filter(x => x.isCompanion && x.hp <= 0).sort((a, b) => (a.coffinAt || 0) - (b.coffinAt || 0));
+  const i = dead.indexOf(ball);
+  return i > 0 ? dead[i - 1] : pl;
+}
+function dragCoffin(ball, pl) {
+  if (!ball.coffinAt) { ball.coffinAt = Date.now(); spawnHitParticles(ball.x, ball.y, '#d9a331'); }
+  const lead = pl && coffinLeader(ball, pl); if (!lead) return;
+  const dx = ball.x - lead.x, dy = ball.y - lead.y, d = Math.hypot(dx, dy) || 1;
+  const rope = COFFIN_ROPE + (lead === pl ? pl.radius * 0.6 : 0);
+  if (d > rope) { ball.x = lead.x + dx / d * rope; ball.y = lead.y + dy / d * rope; } // ロープがピンと張ったら引きずられる
+  ball.coffinAng = Math.atan2(lead.y - ball.y, lead.x - ball.x); // 頭を引っぱられる方へ
+  ball.vx = ball.vy = 0;
+}
 function movePlayerSideBalls(list, speedMult, b) {
   const moveCtxPlayer = balls.find(x => isMainPlayerBall(x));
   const moveCtxEnemy = balls.find(x => !x.isPlayer && !x.isDying);
   for (const ball of list) {
     if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
     moveHitKnock(ball, speedMult);
-    if (ball.isCompanion && ball.hp <= 0) { // 倒れた仲間は動かない（画面からも消える。蘇生されたら復帰）
+    if (ball.isCompanion && ball.hp <= 0) { // 倒れた仲間は棺桶になって、主人公にロープで引きずられる（蘇生されたら復帰）
       if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
+      dragCoffin(ball, moveCtxPlayer);
       continue;
     }
     if (!ball.isPlayer && (isDisabled(ball) || ball.traitFreeze)) { // 麻痺・眠り中・溜め／詠唱中の敵はその場で動けない
