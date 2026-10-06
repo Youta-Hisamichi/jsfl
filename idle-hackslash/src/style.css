@@ -1448,10 +1448,10 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .debug-toggle .bb-sub { font-size: 7cqw; }
 .cmd-bar .debug-toggle .bb-text { display: flex; flex-direction: column; margin-left: 2px; }
 .cmd-bar .debug-toggle:not(.open) { opacity: 0.85; }
-.cmd-bar #autoBossBtn { width: min(230px, 56vw); aspect-ratio: 1002 / 203; margin: -6px auto 6px; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.7rem, 3.2vw, 0.85rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
-.cmd-bar #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
-.cmd-bar #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
-.cmd-bar #autoBossBtn[style*="none"] { display: none !important; }
+.boss-retry-row #autoBossBtn { width: min(230px, 56vw); aspect-ratio: 1002 / 203; margin: -6px auto 6px; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.7rem, 3.2vw, 0.85rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
+.boss-retry-row #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
+.boss-retry-row #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
+.boss-retry-row #autoBossBtn[style*="none"] { display: none !important; }
 .cmd-bar .tower-row > button { -webkit-text-size-adjust: none; text-size-adjust: none; overflow: hidden; }
 .cmd-bar .tower-share .bb-main { max-width: 55cqw; }
 .cmd-bar .tower-row { justify-content: center; gap: 6px; }
@@ -1476,5 +1476,12 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 #bossContModal .go-giveup-btn { aspect-ratio: 760 / 90; background-image: url(assets/img/ui/go/btn_giveup.webp); justify-content: center; }
 #bossContModal .go-giveup-btn .msb-name { color: #3a2410; font-weight: 900; font-size: 4.6cqw; text-shadow: 0 1px 0 rgba(255,235,200,0.5); }
 /* 自動再戦：幅は文字に合わせる（枠は9分割で伸び縮みさせて飾りをゆがめない） */
-.cmd-bar #autoBossBtn { width: fit-content !important; aspect-ratio: auto !important; padding: 7px 16px !important; background: none !important; border: 16px solid transparent !important; border-image: url(assets/img/ui/bar/panel_auto.webp) 70 fill / 16px stretch !important; margin: -6px auto 6px !important; white-space: nowrap; line-height: 1.1; }
-.cmd-bar #autoBossBtn { padding: 0 6px !important; }
+.boss-retry-row #autoBossBtn { width: fit-content !important; aspect-ratio: auto !important; padding: 7px 16px !important; background: none !important; border: 16px solid transparent !important; border-image: url(assets/img/ui/bar/panel_auto.webp) 70 fill / 16px stretch !important; margin: -6px auto 6px !important; white-space: nowrap; line-height: 1.1; }
+.boss-retry-row #autoBossBtn { padding: 0 6px !important; }
+body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス戦中はスキル入れ替え不可 */
+/* 自動再戦（左）とボス再戦（右）を横並び */
+.boss-retry-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: -10px 0 6px; }
+.boss-retry-row:not(:has(> button:not([style*="none"]))) { display: none; }
+.boss-retry-row #bossRetryBtn { margin: 0 !important; width: min(200px, 50vw) !important; flex: 0 0 auto; }
+.boss-retry-row #autoBossBtn { margin: 0 !important; flex: 0 1 auto; font-size: clamp(0.62rem, 2.9vw, 0.78rem) !important; white-space: normal !important; text-align: center; }
+.boss-retry-row #autoBossBtn small { display: block; margin: 0; }

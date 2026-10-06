@@ -1100,6 +1100,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     return;
   }
   if (equip) {
+    if (skillSwapLocked(event)) return;
     const id = equip.dataset.skillEquip;
     if (PASSIVE_SKILLS.includes(id)) { showNotice(`${SKILL_GACHA_SKILLS[id].name} は取得するだけで常に効きます（セット不要）`); return; }
     const eq = getEquippedSkills();
@@ -1130,6 +1131,7 @@ document.getElementById('skillDeck').addEventListener('click', event => {
   }
   const card = event.target.closest('[data-skill-equip]');
   if (!card) return;
+  if (skillSwapLocked(event)) return;
   const eq = getEquippedSkills();
   const i = eq.indexOf(card.dataset.skillEquip);
   if (i >= 0) eq.splice(i, 1);
@@ -1147,10 +1149,17 @@ function renderSkillSetModal() {
     return `<button class="ss-card ${eq.includes(id) ? 'on' : ''}" data-skill-set="${id}">${ico(sk)}<span>${sk.name}</span><span class="ss-lv">${lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv}</span></button>`;
   }).join('');
 }
-document.getElementById('skillSetBtn').addEventListener('click', () => { renderSkillSetModal(); skillSetModal.classList.add('show'); });
+// ボス戦中はスキルの入れ替え禁止
+function skillSwapLocked(event) {
+  if (!isBossFight()) return false;
+  showTapError('ボス戦中はスキルを入れ替えられません', event && event.clientX, event && event.clientY);
+  return true;
+}
+document.getElementById('skillSetBtn').addEventListener('click', event => { if (skillSwapLocked(event)) return; renderSkillSetModal(); skillSetModal.classList.add('show'); });
 document.getElementById('skillSetCloseBtn').addEventListener('click', () => skillSetModal.classList.remove('show'));
 document.getElementById('skillSetGrid').addEventListener('click', event => {
   const card = event.target.closest('[data-skill-set]'); if (!card) return;
+  if (skillSwapLocked(event)) { skillSetModal.classList.remove('show'); return; }
   const id = card.dataset.skillSet, eq = getEquippedSkills();
   if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
   else if (eq.length >= getSkillSlots()) { const out = eq.pop(); eq.push(id); showNotice(`${SKILL_GACHA_SKILLS[out].name} と入れ替えて ${SKILL_GACHA_SKILLS[id].name} をセット`); }
@@ -2353,6 +2362,7 @@ if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止
 if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
+REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
 if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
 if (game.companionBook) delete game.companionBook.lumber; if (game.companionUnlocks) delete game.companionUnlocks.lumber; // 削除した仲間（陽気な料理人）
