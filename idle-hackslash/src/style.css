@@ -1494,7 +1494,6 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 
 /* ===== 戦績ページ（見本のデザイン） ===== */
 .tab-page[data-tab="records"] > .artifact-panel { background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat, radial-gradient(120% 60% at 50% 0%, #26304e 0%, #151b2e 55%, #0f1424 100%) !important; border: 1px solid #3a4568 !important; border-image: none !important; border-radius: 14px; color: #e8ecf6; --text: #e8ecf6; --text-dim: #aeb6cc; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
-.tab-page[data-tab="records"] .shopkeeper .sk-img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; background: radial-gradient(circle at 50% 40%, #4a3a2a, #1e1610); border: 3px solid #c9a24a; box-shadow: 0 0 0 2px #5a4318, 0 3px 8px rgba(0,0,0,0.6); padding: 2px; }
 .tab-page[data-tab="records"] .shopkeeper .sk-bubble { background: rgba(14,20,38,0.92); border: 1px solid #4a5678; color: #f0f2f8; border-radius: 8px; }
 .tab-page[data-tab="records"] .shopkeeper .sk-bubble::before { border-right-color: #4a5678; }
 .tab-page[data-tab="records"] .shopkeeper .sk-bubble::after { border-right-color: rgba(14,20,38,0.92); }
