@@ -1521,4 +1521,6 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel,
 .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel { position: relative; isolation: isolate; }
 .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel::before,
-.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { content: ''; position: absolute; inset: 0; background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat; z-index: -1; pointer-events: none; opacity: 0.55; filter: brightness(0.35) saturate(0.6); mix-blend-mode: multiply; }
+.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { content: ''; position: absolute; inset: 0; background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat; z-index: -1; pointer-events: none; opacity: 1; }
+/* 明るいテーマでは線を暗くして見えるように */
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel::before, :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
