@@ -381,8 +381,8 @@ function updateHPUI() {
   document.body.classList.toggle('player-pinch', p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
   document.body.classList.toggle('player-critical', p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);
   enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
-  playerHPText.textContent = Math.max(0, Math.round(p.hp));
-  enemyHPText.textContent = en.megaPhase && en.megaPhase !== 'mega' ? '∞' : Math.max(0, Math.round(en.hp));
+  playerHPText.textContent = formatCoinNumber(Math.max(0, Math.round(p.hp))); // 万・億などの単位を付ける
+  enemyHPText.textContent = en.megaPhase && en.megaPhase !== 'mega' ? '∞' : formatCoinNumber(Math.max(0, Math.round(en.hp)));
   playerAtkNum.textContent = p.atk;
   playerAccNum.textContent = +(getPlayerAccuracy() * 100).toFixed(1) + '%';
   playerEvaNum.textContent = +(getPlayerEvasion() * 100).toFixed(1) + '%';
