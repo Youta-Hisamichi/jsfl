@@ -1419,8 +1419,7 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .top-header .th-item.gem { padding: 1px 3px 1px 7px; }
 
 /* ===== ゲーム画面下部のボタン帯（素材画像） ===== */
-.cmd-bar { position: relative; margin: 2px -16px 6px; padding: 8px 8px 10px; background: url(assets/img/ui/bar/bar_bg.webp) center / cover no-repeat; border-radius: 0; }
-.cmd-bar::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,12,24,0.15), rgba(10,12,24,0.35)); pointer-events: none; }
+.cmd-bar { position: relative; margin: 2px 0 6px; padding: 0; }
 .cmd-bar > * { position: relative; }
 .cmd-bar .tower-row { display: flex !important; align-items: center; justify-content: space-between; gap: 2px; margin: 0; min-height: 0; }
 .cmd-bar .tower-row > button { container-type: inline-size; position: relative !important; transform: none !important; margin: 0 !important; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background-color: transparent !important; border-image: none !important; background-size: 100% 100% !important; background-repeat: no-repeat !important; font-family: inherit; cursor: pointer; display: flex; flex-direction: column; justify-content: center; line-height: 1.05; transition: transform 0.08s; animation: none !important; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); }
