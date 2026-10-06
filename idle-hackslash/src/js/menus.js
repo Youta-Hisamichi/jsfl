@@ -533,7 +533,7 @@ const RECORD_GOALS = {
   playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
-function getRecordGoalReward(lv) { return Math.min(30, 3 + lv * 2); } // 3→5→7…（最大30）
+function getRecordGoalReward(lv) { return 1; } // どの段階も💎1つ
 function isRecordGoalReady(key) { const g = RECORD_GOALS[key]; return g.get() >= g.goal(getRecordGoalLevel(key)); }
 let recordGoalsSig = '';
 function renderRecordGoals(force) {
