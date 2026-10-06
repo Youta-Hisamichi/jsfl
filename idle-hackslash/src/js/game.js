@@ -21,6 +21,7 @@ function step() {
 
   if (!e) {
     movePlayerSideBalls(balls, speedMult, b);
+    resolveAllyCollisions(); // 主人公と仲間はすり抜けずにぶつかる
     return;
   }
 
@@ -36,6 +37,7 @@ function step() {
       return;
     }
     movePlayerSideBalls(balls, speedMult, b); // 演出中も自機側は動かし続ける
+    resolveAllyCollisions(); // 主人公と仲間はすり抜けずにぶつかる
     if (e.shakeTimer <= 0) onStageClear();
     return;
   }
@@ -53,7 +55,7 @@ function step() {
       e.radius = Math.max(4, e.baseRadius * t);
     }
     e.hitCooldown = Math.max(e.hitCooldown || 0, 10); // 出現中は無敵気味に
-    if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); return; } // 完全出現までは攻撃判定なし
+    if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); resolveAllyCollisions(); return; } // 完全出現までは攻撃判定なし
   }
 
   const swarm = !e.isBoss && isSwarmStage(game.stage);
@@ -74,6 +76,7 @@ function step() {
   }
 
   movePlayerSideBalls([...balls, ...adds], speedMult, b);
+  resolveAllyCollisions(); // 主人公と仲間はすり抜けずにぶつかる
   if (updateEnemyTraits(a, e, speedMult)) { onPlayerDeath(); return; }
   if (updateEnemyTelegraph(a, e, speedMult)) { onPlayerDeath(); return; }
   tickEnemyAtkPhase(e, speedMult);

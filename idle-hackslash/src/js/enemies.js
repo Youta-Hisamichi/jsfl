@@ -1634,13 +1634,13 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
 }
 
 // 自キャラと仲間の衝突：ふだんは押し合うだけ。タックル中にぶつかると仲間を弾き飛ばし、その仲間が敵に当たると大ダメージ
-const ALLY_LAUNCH_MS = 1400, ALLY_LAUNCH_DMG_MULT = 4;
+const ALLY_LAUNCH_MS = 1400, ALLY_LAUNCH_DMG_MULT = 4, ALLY_BODY_RATIO = 0.95; // 体の重なりはほぼ許さない
 function resolveAllyCollisions() {
   const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
   const now = Date.now(), tackling = rushingNow || (holdRush && holdRush.shot && now < holdRush.until);
   for (const c of balls) {
     if (!c.isCompanion || c.hp <= 0) continue;
-    const dx = c.x - pl.x, dy = c.y - pl.y, d = Math.hypot(dx, dy) || 1, min = (pl.radius + c.radius) * 0.85;
+    const dx = c.x - pl.x, dy = c.y - pl.y, d = Math.hypot(dx, dy) || 1, min = (pl.radius + c.radius) * ALLY_BODY_RATIO;
     if (d >= min) continue;
     const nx = dx / d, ny = dy / d, push = (min - d) / 2;
     pl.x -= nx * push; pl.y -= ny * push; c.x += nx * push; c.y += ny * push;
@@ -1653,6 +1653,17 @@ function resolveAllyCollisions() {
       const rv = (c.vx - pl.vx) * nx + (c.vy - pl.vy) * ny;
       if (rv < 0) { c.vx -= rv * nx; c.vy -= rv * ny; }
     }
+  }
+  // 仲間同士もすり抜けずに押し合う
+  const mates = balls.filter(c => c.isCompanion && c.hp > 0);
+  for (let i = 0; i < mates.length; i++) for (let j = i + 1; j < mates.length; j++) {
+    const a = mates[i], c = mates[j];
+    const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy) || 1, min = (a.radius + c.radius) * ALLY_BODY_RATIO;
+    if (d >= min) continue;
+    const nx = dx / d, ny = dy / d, push = (min - d) / 2;
+    a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
+    const rv = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny;
+    if (rv < 0) { a.vx += rv * nx * 0.5; a.vy += rv * ny * 0.5; c.vx -= rv * nx * 0.5; c.vy -= rv * ny * 0.5; }
   }
 }
 // 棺桶：倒れた順に1列につながって、主人公（または前の棺桶）からロープで引っぱられる
