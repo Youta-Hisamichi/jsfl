@@ -2498,8 +2498,8 @@ function drawCoffin(ball, appear) {
   ctx.drawImage(img, -w / 2, -h / 2, w, h);
   const left = game.companions.downStages && game.companions.downStages[ball.companionId]; // 復活まであと何階
   if (left) {
-    ctx.font = '900 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.strokeText(left, 0, -h / 2 + 2); ctx.fillStyle = '#fff2b0'; ctx.fillText(left, 0, -h / 2 + 2);
+    ctx.globalAlpha = 0.7; ctx.font = '700 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; // 控えめに
+    ctx.strokeText(left, 0, -h / 2 + 4); ctx.fillStyle = '#d8d2c4'; ctx.fillText(left, 0, -h / 2 + 4);
   }
   ctx.restore(); ctx.imageSmoothingEnabled = true;
 }
