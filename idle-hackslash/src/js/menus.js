@@ -819,23 +819,32 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
 const AUTO_PULL_AIM_RATE = 0.5; // オートの体当たりは2回に1回くらい敵めがけて突っ込む（残りは気まぐれな方向）
 const AUTO_PULL_IDLE_MS = 4000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
+const AUTO_AIM_MS = 650; // AUTOの体当たり：矢印を出して狙う時間
+function autoAimAngle() { // 狙った敵が動いたら矢印も追いかける
+  const t = autoAim && autoAim.target, pl = balls.find(isMainPlayerBall);
+  if (t && pl && t.hp > 0 && !t.isDying) autoAim.ang = Math.atan2(t.y - pl.y, t.x - pl.x);
+  return autoAim ? autoAim.ang : 0;
+}
+let autoAim = null;        // { ang, lv, start }：AUTOが狙いを付けている最中
 ['pointerdown', 'pointerup', 'pointermove'].forEach(t => document.addEventListener(t, ev => { if (ev.target === canvas && (t !== 'pointermove' || ev.buttons)) lastUserInputAt = Date.now(); }, true)); // AUTOが解けるのはゲームステージ（サークル）を触ったときだけ
 function tickAutoPull() {
   const now = Date.now();
-  if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') return;
-  if (now - lastUserInputAt < AUTO_PULL_IDLE_MS) { nextAutoPullAt = 0; return; }
+  if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') { autoAim = null; return; }
+  if (now - lastUserInputAt < AUTO_PULL_IDLE_MS) { nextAutoPullAt = 0; autoAim = null; return; }
+  if (autoAim) { if (now - autoAim.start >= AUTO_AIM_MS) { const ang = autoAimAngle(), lv = autoAim.lv; autoAim = null; launchPull(ang, lv); } return; }
   if (holdRush && now < holdRush.until) return;
   if (!nextAutoPullAt) { nextAutoPullAt = now + 600; return; }
   if (now < nextAutoPullAt) return;
   nextAutoPullAt = now + AUTO_PULL_GAP_MS[0] + Math.random() * (AUTO_PULL_GAP_MS[1] - AUTO_PULL_GAP_MS[0]);
-  let ang = Math.random() * Math.PI * 2;
+  let ang = Math.random() * Math.PI * 2, target = null;
   if (Math.random() < AUTO_PULL_AIM_RATE) { // ほとんどは一番近い敵を狙う
     const pl = balls.find(isMainPlayerBall);
     const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
     const t = pl && nearestOf(pl, foes);
-    if (t) ang = Math.atan2(t.y - pl.y, t.x - pl.x);
+    if (t) { ang = Math.atan2(t.y - pl.y, t.x - pl.x); target = t; }
   }
-  launchPull(ang, 0.45 + Math.random() * 0.55);
+  autoAim = { ang, target, lv: 0.45 + Math.random() * 0.55, start: now }; // すぐには飛ばず、矢印を伸ばして狙ってから発射
+  thump(320, 760, 0.14, 0.04, 'triangle');
 }
 // タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
 const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;
@@ -1129,12 +1138,17 @@ function tickChargeSound() {
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
   const pl = balls.find(isMainPlayerBall);
-  if (!chargeHold || !pl || !getPullVec()) return;
-  const lv = getChargeLevel(), full = lv >= 1, now = Date.now();
+  if (!pl) return;
+  if (autoAim && isAutoMode()) { const t = Math.min(1, (Date.now() - autoAim.start) / AUTO_AIM_MS); drawPullArrow(pl, autoAimAngle(), autoAim.lv * (0.25 + 0.75 * t)); return; } // AUTOも指と同じ矢印で狙いを付ける
+  if (!chargeHold || !getPullVec()) return;
+  drawPullArrow(pl, getPullAngle(), getChargeLevel());
+}
+function drawPullArrow(pl, a, lv) {
+  const full = lv >= 1, now = Date.now();
   if (lv < PULL_MIN) return;
   ctx.save();
   ctx.lineCap = 'round';
-  const a = getPullAngle(), ux = Math.cos(a), uy = Math.sin(a), col = full ? '#ff4f6d' : lv > 0.5 ? '#ffb35c' : '#ffe08a';
+  const ux = Math.cos(a), uy = Math.sin(a), col = full ? '#ff4f6d' : lv > 0.5 ? '#ffb35c' : '#ffe08a';
   // 引っ張っている側（ゴムのような線）
   ctx.setLineDash([]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.35)';
   ctx.beginPath(); ctx.moveTo(pl.x, pl.y); ctx.lineTo(pl.x - ux * (pl.radius + 40 * lv), pl.y - uy * (pl.radius + 40 * lv)); ctx.stroke();

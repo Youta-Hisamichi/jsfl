@@ -224,14 +224,16 @@ const BGM_SONGS = {
     ],
     drums: 'kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh kh s s | kh h s h kh h s h | kh h s h kh h s h | kh h s h kh h s h | s s s s ks ks ks ks',
   },
-  boss4: {
-    bpm: 158,
+  boss10: { // ボス9：重いオルガンの和音と、半音でにじり寄るベースの執拗なオスティナート。黒い甲冑の魔導師と対峙するような不気味で荘厳な決戦（ハ短調）
+    bpm: 154,
     tracks: [
-      { type: 'sawtooth', gain: 0.032, notes: 'D5 = = = A5 = = = | G5 = F5 = E5 = C5 = | D5 = F5 = A#5 = A5 G5 | A5 = = = - - E5 = | F5 = G5 = A5 = D6 = | C6 = A#5 = A5 = G5 = | F5 = G5 = A#5 = D6 = | C#6 = = = A5 = E5 =' },
-      { type: 'triangle', gain: 0.12, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | C3 C4 C3 C4 C3 C4 C3 C4 | A#2 A#3 A#2 A#3 A#2 A#3 A#2 A#3 | A2 A3 A2 A3 A2 A3 C#3 E3 | D2 D3 D2 D3 D2 D3 F3 D3 | C3 C4 C3 C4 C3 C4 E3 C3 | A#2 A#3 A#2 A#3 D3 D4 F3 A#3 | A2 A3 A2 A3 C#3 C#4 E3 E4' },
-      { type: 'triangle', gain: 0.022, notes: 'D4+F4+A4 = = = = = = = | C4+E4+G4 = = = = = = = | A#3+D4+F4 = = = = = = = | A3+C#4+E4 = = = = = = = | D4+F4+A4 = = = = = = = | C4+E4+G4 = = = = = = = | A#3+D4+F4 = = = = = = = | A3+C#4+E4 = = = = = = =' },
+      { type: 'vrc6saw', gain: 0.03, notes: 'G5 = = = = = = = | G#5 = G5 = F5 = D#5 = | F5 = = = = = = = | G#5 = G5 = F5 = C#5 = | C5 = = = D#5 = G5 = | C6 = = = B5 = G5 = | G#5 = = = F5 = D5 = | B4 = D5 = F5 = G5 B5 | C6 = = = D#6 = = = | D#6 = C6 = G#5 = D#5 = | F5 = = = G#5 = C6 = | B5 = = = D6 = = = | C6 = D#6 = G6 = = = | G#6 = = = F6 = C#6 = | D6 = F6 = A#5 = D6 = | B5 = = = = = - -' },
+      { type: 'pceorgan', gain: 0.018, notes: 'C4+D#4+G4 = = = C4+D#4+G4 = = = | C4+D#4+G4 = = = C4+D#4+G4 = = = | C#4+F4+G#4 = = = C#4+F4+G#4 = = = | C#4+F4+G#4 = = = C#4+F4+G#4 = = = | C4+D#4+G4 = = = C4+D#4+G4 = = = | C4+D#4+G4 = = = C4+D#4+G4 = = = | B3+D4+F4 = = = B3+D4+F4 = = = | B3+D4+G4 = = = B3+D4+G4 = = = | C4+D#4+G#4 = = = C4+D#4+G#4 = = = | C4+D#4+G#4 = = = C4+D#4+G#4 = = = | C4+F4+G#4 = = = C4+F4+G#4 = = = | B3+D4+G4 = = = B3+D4+G4 = = = | C4+D#4+G4 = = = C4+D#4+G4 = = = | C#4+F4+G#4 = = = C#4+F4+G#4 = = = | D4+F4+A#4 = = = D4+F4+A#4 = = = | B3+D4+G4 = = = B3+D4+G4 = = =' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: 'C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C#4 F4 G#4 F4 C#4 F4 G#4 F4 | C#4 F4 G#4 F4 C#4 F4 G#4 F4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | B3 D4 F4 D4 B3 D4 F4 D4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | C4 F4 G#4 F4 C4 F4 G#4 F4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C#4 F4 G#4 F4 C#4 F4 G#4 F4 | D4 F4 A#4 F4 D4 F4 A#4 F4 | B3 D4 G4 D4 B3 D4 G4 D4' },
+      { type: 'triangle', gain: 0.12, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | F2 F3 F2 F3 F2 F3 F2 F3 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | A#2 A#3 A#2 A#3 A#2 A#3 A#2 A#3 | G1 G2 G1 G2 B1 D2 F2 G2' },
     ],
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks',
+    kickBoost: 1.15,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks',
   },
   boss5: {
     bpm: 176,
@@ -507,7 +509,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss4', 'boss5', 'boss6', 'boss7', 'boss8'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss7', 'boss8', 'boss10'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -542,11 +544,11 @@ const BGM_INFO = [
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
-  { key: 'boss4', name: 'ボス4 宿敵', desc: '重厚な下降進行Dm-C-B♭-A。ニ短調（FF系の作風）・BPM158' },
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss7', name: 'ボス7 宿命の刃', desc: '半音でにじり寄る重いベースの刻みと畳みかける旋律、休む間のない緊迫した決闘。VRC6風チップチューン。ホ短調（ファミコンの忍者アクション系の作風）・BPM182' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
+  { key: 'boss10', name: 'ボス9 黒き甲冑の魔導師', desc: '重いパイプオルガンの和音と、オクターブで執拗に刻むベースのオスティナート、短2度でにじり寄る不気味な旋律。VRC6風チップチューン。ハ短調（ファンタジーRPGの黒い甲冑の宿敵との決戦系の作風）・BPM154' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
