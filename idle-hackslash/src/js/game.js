@@ -103,7 +103,7 @@ function step() {
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
@@ -137,7 +137,7 @@ function step() {
     } else {
       if (!playerAttackHits(e)) spawnMissText(e);
       else {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');

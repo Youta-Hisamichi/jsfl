@@ -969,6 +969,45 @@ function castSleep(enemy) {
   for (let i = 0; i < 10; i++) particles.push({ x: enemy.x + (Math.random() - 0.5) * 30, y: enemy.y, vx: (Math.random() - 0.5) * 1.2, vy: -0.6 - Math.random(), life: 1, color: '#c9cbff', decay: 0.02 });
   playSleepSound();
 }
+// ボスの弱点：体の外周を赤く光る点がゆっくり回る。その方向からぶつかると大ダメージ、当てると別の場所へ移る
+const WEAK_DMG_MULT = 3, WEAK_ARC = 0.55, WEAK_ROT = 0.0005, WEAK_DIST = 1.3; // 当たり判定の角度幅（ラジアン）・回る速さ（ラジアン/ミリ秒）
+function bossWeakAngle(e) {
+  if (e.weakBase === undefined) { e.weakBase = Math.random() * Math.PI * 2; e.weakT0 = Date.now(); e.weakDir = Math.random() < 0.5 ? 1 : -1; }
+  return e.weakBase + (Date.now() - e.weakT0) * WEAK_ROT * e.weakDir;
+}
+function bossWeakHit(e, src) { // src（自キャラ・飛び道具）が弱点に当たったら倍率を返す
+  if (!e || !e.isBoss || e.isDying || !src) return 1;
+  const wa = bossWeakAngle(e);
+  let da = Math.atan2(src.y - e.y, src.x - e.x) - wa; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+  if (Math.abs(da) > WEAK_ARC) return 1;
+  const wx = e.x + Math.cos(wa) * e.radius * WEAK_DIST, wy = e.y + Math.sin(wa) * e.radius * WEAK_DIST;
+  spawnDamageText(wx, wy - 18, `WEAK!! ×${WEAK_DMG_MULT}`, '#ff4040', 0.02, true);
+  for (let i = 0; i < 3; i++) spawnHitParticles(wx, wy, i ? '#ff6a4a' : '#ffffff');
+  playCritSound();
+  hitStopFrames = Math.max(hitStopFrames || 0, 6);
+  e.weakBase = wa + Math.PI * (0.6 + Math.random() * 0.8) * (Math.random() < 0.5 ? 1 : -1); e.weakT0 = Date.now(); e.weakDir = -e.weakDir; e.weakPopAt = Date.now(); // 反対側あたりへ移動
+  return WEAK_DMG_MULT;
+}
+function drawBossWeakPoints() {
+  const now = Date.now();
+  for (const e of balls) {
+    if (!e.isBoss || e.isPlayer || e.isDying || e.hp <= 0 || e.spawnTimer > 0) continue;
+    const wa = bossWeakAngle(e), wx = e.x + Math.cos(wa) * e.radius * WEAK_DIST, wy = e.y + Math.sin(wa) * e.radius * WEAK_DIST; // 絵の外周あたり
+    const pop = e.weakPopAt ? Math.min(1, (now - e.weakPopAt) / 350) : 1; // 移った直後はふわっと現れる
+    const pulse = 0.5 + 0.5 * Math.sin(now / 140);
+    const r = (5 + e.radius * 0.06 + pulse * 2) * pop;
+    ctx.save();
+    ctx.globalAlpha = 0.35 + pulse * 0.25;
+    const g = ctx.createRadialGradient(wx, wy, 0, wx, wy, r * 3.2);
+    g.addColorStop(0, 'rgba(255,60,40,0.9)'); g.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(wx, wy, r * 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ff2a2a'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(wx, wy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(wx - r * 0.3, wy - r * 0.3, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
 function onPlayerHitEnemy(enemy, dmg) {
   focusHpEnemy(enemy);
   spawnBlood(enemy.x, enemy.y);

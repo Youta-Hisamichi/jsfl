@@ -917,15 +917,15 @@ function doTapSlash(auto = false) {
     if (d > R + en.radius) continue;
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
-    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6)) hits++;
+    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6, pl)) hits++;
   }
   if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
 // 自キャラの攻撃（切り払い・武器スキル）で敵に攻撃力×mult のダメージ。命中したら true
-function playerHitEnemyBy(en, pl, mult, color, knock) {
+function playerHitEnemyBy(en, pl, mult, color, knock, from) {
   if (!en || en.hp <= 0 || en.isDying) return false;
   if (!playerAttackHits(en)) { spawnMissText(en); return false; }
-  const m = mult; // 隙の3倍は rollCrit の中でかかる
+  const m = mult * bossWeakHit(en, from); // 隙の3倍は rollCrit の中でかかる。弱点に当たると大ダメージ
   const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * dashDmgMult(pl))), en);
   en.hp -= dmg; trackDamage(dmg);
   spawnHitParticles(en.x, en.y, color || '#ffe08a');
@@ -1072,7 +1072,7 @@ function updateWeapons(pl, speedMult) {
     for (const f of foes) {
       if (f.hp <= 0 || p.hit.has(f) || Math.hypot(f.x - p.x, f.y - p.y) > p.r + f.radius) continue;
       p.hit.add(f);
-      if (playerHitEnemyBy(f, pl, p.dmg * (mult || 1), '#ffe08a')) hits++;
+      if (playerHitEnemyBy(f, pl, p.dmg * (mult || 1), '#ffe08a', 0, p)) hits++;
       if (once) { if (p.pierce > 0) p.pierce--; else { p.life = 0; return; } }
     }
   };
