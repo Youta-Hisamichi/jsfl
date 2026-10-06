@@ -758,7 +758,6 @@ function updateBossRetryBtn() {
   btn.style.display = show ? '' : 'none';
   const auto = document.getElementById('autoBossBtn');
   if (auto) { auto.style.display = show ? '' : 'none'; auto.textContent = game.autoBossRetry !== false ? `🔁 自動再戦 ON（あと${Math.max(0, AUTO_BOSS_RETRY_LOOPS - (game.bossLoopClears || 0))}周）` : '🔁 自動再戦 OFF'; auto.classList.toggle('off', game.autoBossRetry === false); }
-  if (game.bossLoop) btn.textContent = '👑 ボス再戦';
 }
 function onPlayerDeath(forceRebirth = false, skipFx = false) {
   if (filmMode && !forceRebirth) { const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; updateHPUI(); } return; } // 撮影モード中はやられない

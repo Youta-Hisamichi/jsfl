@@ -1406,3 +1406,8 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .rg-claim-all b { color: #0a5a8a; }
 .rg-claim-all small { font-size: 0.72rem; font-weight: 700; }
 @keyframes rgPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+/* ボス再戦ボタン（画像） */
+.boss-retry-action { background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; width: min(300px, 82vw) !important; max-width: none; border-image: none !important; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.45)); transition: transform 0.1s; }
+.boss-retry-action img { display: block; width: 100%; height: auto; pointer-events: none; }
+.boss-retry-action:active { transform: scale(0.96); }
