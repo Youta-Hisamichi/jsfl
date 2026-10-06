@@ -1091,7 +1091,7 @@ function getCustomSkipCost(distance) {
 const TOWER_SUGGEST_MIN_JUMP = 30; // これより近いボスならおすすめしない
 const TOWER_SUGGEST_COOLDOWN_STAGES = 40; // 一度出したら、この階数進むまで出さない
 const TOWER_SUGGEST_FAST_KILL_MS = 10000; // ボスを10秒以内に倒したら「あっさり」
-const TOWER_SUGGEST_CHANCE = 0.35; // そのうち出すのは35%
+const TOWER_SUGGEST_CHANCE = 0; // 試練の塔の自動おすすめは一旦停止中（戻すときは0.35）
 let towerSuggestTarget = 0;
 function findRecommendedTowerStage() {
   const p = balls.find(isMainPlayerBall); if (!p) return 0;
