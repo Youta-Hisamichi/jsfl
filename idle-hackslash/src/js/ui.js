@@ -2398,6 +2398,8 @@ if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクロ�
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
+if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
+updateSkillButtonVisibility(); // セーブを読み込んだ後に、装備中スキルのボタンを出す
 if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
 if (game.companionBook) delete game.companionBook.lumber; if (game.companionUnlocks) delete game.companionUnlocks.lumber; // 削除した仲間（陽気な料理人）
 if (game.companionBook) delete game.companionBook.cook;
