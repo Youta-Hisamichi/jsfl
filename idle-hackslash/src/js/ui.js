@@ -2472,7 +2472,7 @@ function drawCoffin(ball, appear) {
     ctx.beginPath(); ctx.moveTo(lead.x, lead.y); ctx.quadraticCurveTo(mx, my, ball.x, ball.y); ctx.stroke(); ctx.restore();
   }
   const img = getCoffinSprite(), h = pl.radius * 2.5 * (0.6 + 0.4 * appear), w = h * img.width / img.height;
-  ctx.save(); ctx.translate(ball.x, ball.y); ctx.rotate((ball.coffinAng || -Math.PI / 2) + Math.PI / 2);
+  ctx.save(); ctx.translate(ball.x, ball.y); // 回さずに元の絵の向きのまま
   ctx.imageSmoothingEnabled = false; ctx.globalAlpha = Math.min(1, appear * 1.5);
   ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(2, 3, w * 0.45, h * 0.45, 0, 0, Math.PI * 2); ctx.fill(); // 影
   ctx.drawImage(img, -w / 2, -h / 2, w, h);

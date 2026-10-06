@@ -616,7 +616,7 @@ function makeCompanionBall(id) {
     x: arena.x + Math.cos(angle) * dist, y: arena.y + Math.sin(angle) * dist,
     vx: Math.cos(angle + 1.4) * speed, vy: Math.sin(angle + 1.4) * speed,
     radius: COMPANION_RADIUS[id] || 11, atk: getCompanionBallAtk(id),
-    hp: maxHP, maxHp: maxHP,
+    hp: game.companions.alive[id] === false ? 0 : maxHP, maxHp: maxHP, // 棺桶中の仲間は倒れたまま
     color: COMPANION_COLORS[id] || '#ffffff', glow: (COMPANION_COLORS[id] || '#ffffff') + '88',
     icon: c.icon, hitCooldown: 0,
     movementStyle: move.style, speedFactor: move.speedFactor,
@@ -1634,7 +1634,7 @@ function movePlayerSideBalls(list, speedMult, b) {
     if (ball.isDying) continue; // 撃破されて吹っ飛び中の敵は updateFlyouts で動かす（壁で跳ね返らない）
     moveHitKnock(ball, speedMult);
     if (ball.isCompanion && ball.hp <= 0) { // 倒れた仲間は棺桶になって、主人公にロープで引きずられる（蘇生されたら復帰）
-      if (game.companions.alive[ball.companionId]) { game.companions.alive[ball.companionId] = false; game.companions.hp[ball.companionId] = 0; }
+      if (game.companions.alive[ball.companionId]) markCompanionDead(ball.companionId);
       dragCoffin(ball, moveCtxPlayer);
       continue;
     }

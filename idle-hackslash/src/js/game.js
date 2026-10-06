@@ -281,8 +281,7 @@ function step() {
         }
 
         if (comp.hp <= 0) {
-          game.companions.alive[comp.companionId] = false;
-          game.companions.hp[comp.companionId] = 0;
+          markCompanionDead(comp.companionId);
           spawnDamageText(comp.x, comp.y, '倒れた', '#ff9999');
         }
 
@@ -515,7 +514,7 @@ function onStageClear() {
   }
   meteors = []; adds = []; clearEnemyTraitObjects();
   for (const id in COMPANIONS) {
-    if (game.companions.recruited[id]) {
+    if (game.companions.recruited[id] && canCompanionRevive(id)) {
       game.companions.alive[id] = true;
       game.companions.hp[id] = getCompanionMaxHP(id);
     }
@@ -727,13 +726,31 @@ function tryBossCompanionJoin() {
   if (typeof renderCompanionList === 'function') renderCompanionList();
   saveGame();
 }
+// 倒れた仲間は3階ぶん棺桶のまま（蘇生スキルなどで起こした場合は別）
+const COMPANION_DOWN_STAGES = 3;
+function markCompanionDead(id) {
+  const cp = game.companions;
+  if (cp.alive[id] === false) return;
+  cp.alive[id] = false; cp.hp[id] = 0;
+  cp.downStages = cp.downStages || {}; cp.downStages[id] = COMPANION_DOWN_STAGES;
+}
+function canCompanionRevive(id) { // 階を進むたびに1つ減らし、0になったら復活
+  const cp = game.companions;
+  if (cp.alive[id] !== false || !cp.downStages || !cp.downStages[id]) return true;
+  cp.downStages[id]--;
+  if (cp.downStages[id] > 0) return false;
+  delete cp.downStages[id];
+  const b = balls.find(x => x.isCompanion && x.companionId === id);
+  if (b) { spawnHitParticles(b.x, b.y, '#7fe8ff'); spawnDamageText(b.x, b.y - 24, '✨ 復活！', '#7fe8ff', 0.014, true); }
+  return true;
+}
 function bossFail(reason, silent) {
   if (reason === 'retire') grantRandomWeapon('リタイヤ報酬：');
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
   bossTimerFor = null;
-  for (const id in COMPANIONS) if (game.companions.recruited[id]) { game.companions.alive[id] = true; game.companions.hp[id] = getCompanionMaxHP(id); }
+  for (const id in COMPANIONS) if (game.companions.recruited[id] && canCompanionRevive(id)) { game.companions.alive[id] = true; game.companions.hp[id] = getCompanionMaxHP(id); }
   spawnNextEnemy();
   refreshPlayerBallStats(true);
   const p = balls.find(isMainPlayerBall); if (p) p.safeHp = p.hp;
@@ -1132,7 +1149,7 @@ function spawnNextEnemy() {
   for (const comp of allies) {
     if (!comp.isCompanion) continue;
     comp.maxHp = getCompanionBallMaxHP(comp.companionId);
-    comp.hp = comp.maxHp;
+    comp.hp = game.companions.alive[comp.companionId] === false ? 0 : comp.maxHp; // 棺桶のままの仲間は起きない
   }
   balls = [...allies, makeBall(false)];
 }
