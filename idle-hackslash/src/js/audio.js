@@ -1125,12 +1125,14 @@ function playBarrierSound() {
 function playBarrierHitSound() { playTone(1200, 0.05, 'sine', 0.1, 800); }
 function playMissSound() { playTone(900, 0.08, 'sine', 0.08, 1500); }
 // クリティカル専用：こちらの会心は「ズバァン！＋キィィン」と鋭い斬撃と金属の響きが駆け上がる
-function playCritSound() {
+function playCritSound() { // 会心の一撃：一瞬ためてから「ズバァン！」と炸裂し、レトロな「ピロリン↑」で決める
   if (!audioCtx || isBattleSfxMuted()) return;
-  filteredNoise(0, 0.07, 0.35, 3500, 0.7, 'highpass');                  // ズバッ（鋭い切り裂き）
-  thump(140, 45, 0.22, 0.45);                                          // 重い手応え
-  thump(900, 2400, 0.09, 0.07, 'square', 0.02);                        // キュイッと駆け上がる
-  [2637, 3520, 4699].forEach((f, i) => thump(f, f * 0.99, 0.35 - i * 0.07, 0.035, 'sine', 0.06 + i * 0.02)); // キィィン（金属の余韻）
+  filteredNoise(0, 0.05, 0.4, 5000, 0.6, 'highpass');                  // パシッ（閃光のような鋭い一撃）
+  filteredNoise(0.02, 0.18, 0.35, 1800, 0.9, 'bandpass');              // ズバァッ（大きく切り裂く）
+  thump(220, 38, 0.32, 0.6);                                           // ドンッ（腹に響く重い手応え）
+  thump(120, 55, 0.12, 0.2, 'square', 0.01);                           // ガツッという芯
+  [1047, 1319, 1568, 2093].forEach((f, i) => thump(f, f, 0.06, 0.05, 'square', 0.05 + i * 0.035)); // ピロリン↑（会心のファンファーレ）
+  [3136, 4186].forEach((f, i) => thump(f, f * 0.995, 0.4, 0.03, 'sine', 0.19 + i * 0.03)); // キラーン（余韻）
 }
 // 敵の会心を受けた時：鈍く重い「ドゴォッ」と下がるうなり
 function playEnemyCritSound() {

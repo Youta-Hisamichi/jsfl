@@ -771,7 +771,7 @@ function spawnAttackDamageText(target, dmg, crit, color, offsetY) {
   { const pl = balls.find(isMainPlayerBall); if (pl) pl.hitAt = Date.now(); }
   const y = target.y - target.radius - (offsetY || 8);
   if (!crit) { spawnDamageText(target.x, y, formatCoinNumber(dmg), color); return; }
-  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + dmg, '#ff7a3d', 0.014, true);
+  spawnDamageText(target.x, y - 6, (currentLang === 'en' ? 'CRITICAL!' : 'クリティカル！') + '\n' + formatCoinNumber(dmg), '#ff7a3d', 0.014, true);
   spawnHitParticles(target.x, target.y, '#ff7a3d');
   spawnHitParticles(target.x, target.y, '#ffd76b');
   playCritSound();
