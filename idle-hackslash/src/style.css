@@ -1619,4 +1619,6 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 /* ゲーム画面以外のページ：左右の余白をほぼ無くす（外側16px→4px、パネル内14px→6px） */
 .tab-page.active:not([data-tab="game"]) { margin-left: -12px; margin-right: -12px; }
 .tab-page:not([data-tab="game"]) > .upgrade-panel, .tab-page:not([data-tab="game"]) > .artifact-panel { padding-left: 6px !important; padding-right: 6px !important; }
-.cmd-bar .tower-share { flex-basis: 19%; align-self: center; } /* シェアは控えめな大きさに */
+.cmd-bar .tower-row { position: relative; }
+.cmd-bar .tower-row > button.tower-share { position: absolute !important; left: 0; top: 50%; transform: translateY(-50%) !important; width: 14%; flex: none; } /* シェアは小さく左端に（他のボタンは中央のまま） */
+.cmd-bar .tower-row > button.tower-share:active { transform: translateY(-50%) scale(0.95) !important; }
