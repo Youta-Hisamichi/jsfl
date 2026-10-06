@@ -624,7 +624,7 @@ function updateTabBadges() {
 function updateStatsUI() {
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
   updateTabBadges();
-  stageNumEl.textContent = game.stage;
+  stageNumEl.textContent = formatCoinNumber(game.stage); // 万・億などの単位を付ける
   superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
   rebornNumEl.textContent = formatCoinNumber(game.reincarnations);
   { const el = document.getElementById('rebirthLvNum'); if (el) { el.textContent = game.rebirthLv || 0; document.getElementById('rebirthLvBonus').textContent = `攻撃力・HP +${Math.round((game.rebirthLv || 0) * REBIRTH_LV_BONUS * 100)}%`; } }
