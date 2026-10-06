@@ -1448,7 +1448,7 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .debug-toggle .bb-sub { font-size: 7cqw; }
 .cmd-bar .debug-toggle .bb-text { display: flex; flex-direction: column; margin-left: 2px; }
 .cmd-bar .debug-toggle:not(.open) { opacity: 0.85; }
-.cmd-bar #autoBossBtn { width: min(230px, 56vw); aspect-ratio: 1002 / 288; margin: -10px auto 4px; padding: 9% 0 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.7rem, 3.2vw, 0.85rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
+.cmd-bar #autoBossBtn { width: min(230px, 56vw); aspect-ratio: 1002 / 203; margin: -6px auto 6px; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.7rem, 3.2vw, 0.85rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
 .cmd-bar #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
 .cmd-bar #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
 .cmd-bar #autoBossBtn[style*="none"] { display: none !important; }
