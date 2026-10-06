@@ -1524,3 +1524,28 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { content: ''; position: absolute; inset: 0; background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat; z-index: -1; pointer-events: none; opacity: 1; }
 /* 明るいテーマでは線を暗くして見えるように */
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel::before, :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
+/* 戦績の「受け取る」ボタン（素材画像：宝石つきの茶色いボタン＋右の矢印） */
+.tab-page[data-tab="records"] .rec-goal .rg-claim { flex: 0 0 auto; width: 112px; aspect-ratio: 480 / 164; margin-right: 16px; padding: 0 0 0 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/claim_btn.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 0.72rem; text-shadow: 0 0 2px #000, 0 1px 2px rgba(0,0,0,0.8); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); animation: none; white-space: nowrap; }
+.tab-page[data-tab="records"] .rec-goal .rg-claim b { margin-left: 24px; margin-right: 3px; font-size: 1.1em; }
+.tab-page[data-tab="records"] .rec-goal .rg-claim::after { content: ''; position: absolute; right: -15px; top: 50%; width: 12px; height: 18px; transform: translateY(-50%); border: none; background: url(assets/img/ui/claim_arrow.webp) center / contain no-repeat; animation: claimArrow 0.9s ease-in-out infinite; }
+@keyframes claimArrow { 50% { transform: translate(3px, -50%); } }
+.tab-page[data-tab="records"] .rec-goal .rg-claim:active { transform: scale(0.95); }
+/* リトライ待ちでないときは、下部ボタン帯を上の敵HPゲージにぐっと近づける */
+.cmd-bar { margin-top: -20px; }
+.boss-retry-row:has(> button:not([style*="none"])) ~ .cmd-bar { margin-top: 2px; }
+/* 設定画面の背景にも魔法陣 */
+#settingsModal .modal-panel { position: relative; isolation: isolate; }
+#settingsModal .modal-panel::before { content: ''; position: absolute; inset: 0; background: url(assets/img/ui/magic_circle.webp) 50% 20px / 110% auto no-repeat; z-index: -1; pointer-events: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #settingsModal .modal-panel::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
+/* ショップ・進化ページの案内キャラは右向き */
+.shopkeeper[data-npc-tab="gemshop"] .sk-img, .shopkeeper[data-npc-tab="gacha"] .sk-img { transform: scaleX(-1); }
+/* ゲーム画面左上の階の数字を大きく */
+#stageNum { font-size: 1.45em; line-height: 1; vertical-align: -0.08em; margin-right: 1px; }
+.shopkeeper[data-npc-tab="gemshop"] .sk-img.hop, .shopkeeper[data-npc-tab="gacha"] .sk-img.hop { animation: skHopFlip 0.35s ease-out; }
+@keyframes skHopFlip { 0%, 100% { transform: scaleX(-1); } 40% { transform: scaleX(-1) translateY(-8px) scale(1.05); } }
+/* 宝箱開封：遺物の効果の推移（前 → 後） */
+.cl-trans { margin-top: 3px; font-size: 0.62rem; font-weight: 700; color: #2ea043; line-height: 1.3; }
+.cl-trans s { color: #8a90a4; font-weight: 600; }
+.cl-trans b { color: #1fa055; font-weight: 900; }
+.cl-trans-inline { display: block; font-size: 0.7rem; color: #2ea043; font-weight: 700; }
+.cl-trans-inline s { color: #8a90a4; }

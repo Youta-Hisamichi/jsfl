@@ -559,7 +559,7 @@ function renderRecordGoals(force) {
     if (!el) return;
     const g = RECORD_GOALS[key], reward = getRecordGoalReward(lv);
     el.innerHTML = `<div class="rg-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div><span class="rg-text">次の目標 <b>${formatCoinNumber(target)}</b>${g.unit}</span>`
-      + (done ? `<button class="rg-claim" data-goal-claim="${key}">💎${reward} 受け取る</button>` : `<span class="rg-reward">報酬 💎${reward}</span>`);
+      + (done ? `<button class="rg-claim" data-goal-claim="${key}"><b>${reward}</b> 受け取る</button>` : `<span class="rg-reward">報酬 💎${reward}</span>`);
     el.parentElement.classList.toggle('goal-ready', done);
   });
 }

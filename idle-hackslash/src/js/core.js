@@ -825,6 +825,16 @@ const ARTIFACT_CURRENT = {
   feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
   banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
 };
+function artifactTextFor(id, count) { // 指定した所持数のときの効果の文
+  const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
+  return ARTIFACT_CURRENT[id] && cap > 0 ? ARTIFACT_CURRENT[id](cap) : '';
+}
+function artifactTransitionHtml(id, beforeCount) { // 宝箱開封時の「前 → 後」の効果の推移
+  const after = game.ownedArtifacts[id] || 0, b = artifactTextFor(id, beforeCount), a = artifactTextFor(id, after);
+  if (!a) return '';
+  if (b === a) return `<div class="cl-trans">${a}（上限）</div>`;
+  return `<div class="cl-trans">${b ? `<s>${b}</s> → ` : ''}<b>${a}</b></div>`;
+}
 function getArtifactCurrentText(id) {
   const count = game.ownedArtifacts[id] || 0;
   const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;

@@ -1730,6 +1730,7 @@ function openChestBatchDialog(rarity) {
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
   chestModal.classList.add('show');
   const openAll = mult => {
+    const ownedBefore = { ...game.ownedArtifacts }; // 効果の推移を見せるため開封前の所持数を覚える
     const results = []; // 宝箱1個ごとの中身（カードも1個ずつ並べる）
     while ((hc[rarity] || 0) > 0) { // ふつうの宝箱
       hc[rarity]--;
@@ -1760,7 +1761,7 @@ function openChestBatchDialog(rarity) {
       const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
       if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン${g.count > 1 ? ' ×' + g.count : ''}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       const c = RARITY_INFO[g.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div></div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? g.art.rarity : 'coin')); } // カードが並ぶのに合わせてポンポン
@@ -1783,7 +1784,7 @@ function openAllChestDialog() { // まとめて開封
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で全部3倍' : '🎬 動画を見て全部3倍'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま全部開ける</span></button>`;
   chestModal.classList.add('show');
   const openAll = mult => {
-    let coins = 0; const arts = {};
+    let coins = 0; const arts = {}; const ownedBefore = { ...game.ownedArtifacts };
     for (const k of CHEST_RARITIES) {
       while (hc[k] > 0) {
         hc[k]--;
@@ -1792,7 +1793,7 @@ function openAllChestDialog() { // まとめて開封
       }
     }
     playChestOpenSound(); renderChestTray(); renderArtifactList(); updateStatsUI(); saveGame();
-    const list = Object.entries(arts).map(([id, n]) => { const a = ARTIFACT_POOL.find(x => x.id === id); return `<span style="color:${RARITY_INFO[a.rarity].color}">${a.icon} ${a.name} ×${n}</span>`; }).join('<br>');
+    const list = Object.entries(arts).map(([id, n]) => { const a = ARTIFACT_POOL.find(x => x.id === id); const tr = artifactTransitionHtml(id, ownedBefore[id] || 0).replace(/<\/?div[^>]*>/g, ''); return `<span style="color:${RARITY_INFO[a.rarity].color}">${a.icon} ${a.name} ×${n}</span>${tr ? `<span class="cl-trans-inline">${tr}</span>` : ''}`; }).join('<br>');
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:4rem">🎉</span>';
     document.getElementById('chestModalTitle').textContent = `🎁 ${total}個 開封！${mult > 1 ? '（3倍）' : ''}`;
@@ -1844,9 +1845,10 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中�
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `🟡 ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
+    const beforeN = game.ownedArtifacts[pick.id] || 0;
     for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}` };
+    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` };
     if (!quiet) renderArtifactList();
   }
   if (!quiet) { updateStatsUI(); saveGame(); }
