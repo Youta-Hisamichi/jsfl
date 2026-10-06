@@ -1400,3 +1400,9 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .af-total-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .af-total-item b { color: #7dffa0; white-space: nowrap; }
 .af-total-empty { font-size: 0.72rem; color: #b8bed0; }
+
+/* 戦績：報酬を全部受け取る */
+.rg-claim-all { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 8px 0 4px; padding: 4px 10px; font-size: 0.95rem; font-weight: 900; color: #2a1a00; text-shadow: 0 1px 0 #fff2b0; border: 10px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 10px stretch; border-radius: 0; background: none; cursor: pointer; animation: rgPulse 1.4s ease-in-out infinite; }
+.rg-claim-all b { color: #0a5a8a; }
+.rg-claim-all small { font-size: 0.72rem; font-weight: 700; }
+@keyframes rgPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }

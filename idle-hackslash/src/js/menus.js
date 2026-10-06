@@ -541,6 +541,7 @@ function renderRecordGoals(force) {
   const tabBtn = document.querySelector('.tab-btn[data-tab="records"]');
   if (tabBtn) tabBtn.classList.toggle('has-reward', ready); // 受け取れる報酬があれば戦績タブに印
   if (getActiveTab() !== 'records' && !force) return;
+  updateClaimAllBtn();
   const rows = Object.entries(RECORD_GOALS).map(([key, g]) => {
     const lv = getRecordGoalLevel(key), target = g.goal(lv), v = g.get();
     return [key, lv, target, Math.min(1, v / target), v >= target];
@@ -557,6 +558,30 @@ function renderRecordGoals(force) {
     el.parentElement.classList.toggle('goal-ready', done);
   });
 }
+function getAllRecordGoalRewards() { // 今受け取れる報酬の合計（1つの項目で何段も達成していればその分も）
+  let total = 0, count = 0;
+  for (const key in RECORD_GOALS) {
+    const g = RECORD_GOALS[key], v = g.get();
+    for (let lv = getRecordGoalLevel(key), n = 0; n < 200 && v >= g.goal(lv); lv++, n++) { total += getRecordGoalReward(lv); count++; }
+  }
+  return { total, count };
+}
+function updateClaimAllBtn() {
+  const btn = document.getElementById('rgClaimAll'); if (!btn) return;
+  const { total, count } = getAllRecordGoalRewards();
+  btn.style.display = count ? '' : 'none';
+  if (count) btn.innerHTML = `🎁 全部受け取る <b>💎${formatCoinNumber(total)}</b><small>（${count}件）</small>`;
+}
+document.getElementById('rgClaimAll').addEventListener('click', event => {
+  const { total, count } = getAllRecordGoalRewards();
+  if (!count) return;
+  if (!game.recordGoals) game.recordGoals = {};
+  for (const key in RECORD_GOALS) { const g = RECORD_GOALS[key], v = g.get(); let n = 0; while (n++ < 200 && v >= g.goal(getRecordGoalLevel(key))) game.recordGoals[key] = getRecordGoalLevel(key) + 1; }
+  game.gems += total;
+  playRegisterSound();
+  showTapError(`💎+${formatCoinNumber(total)} まとめてゲット！`, event.clientX, event.clientY);
+  updateStatsUI(); renderRecordGoals(true); saveGame();
+});
 function claimRecordGoal(key, x, y) {
   if (!RECORD_GOALS[key] || !isRecordGoalReady(key)) return false;
   const reward = getRecordGoalReward(getRecordGoalLevel(key));
