@@ -981,7 +981,7 @@ function bossWeakHit(e, src) { // src（自キャラ・飛び道具）が弱点�
   let da = Math.atan2(src.y - e.y, src.x - e.x) - wa; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
   if (Math.abs(da) > WEAK_ARC) return 1;
   const wx = e.x + Math.cos(wa) * e.radius * WEAK_DIST, wy = e.y + Math.sin(wa) * e.radius * WEAK_DIST;
-  spawnDamageText(wx, wy - 18, `WEAK!! ×${WEAK_DMG_MULT}`, '#ff4040', 0.02, true);
+  spawnDamageText(wx, wy - 18, `超クリティカル！！ ×${WEAK_DMG_MULT}`, '#ff4040', 0.02, true);
   for (let i = 0; i < 3; i++) spawnHitParticles(wx, wy, i ? '#ff6a4a' : '#ffffff');
   playCritSound();
   hitStopFrames = Math.max(hitStopFrames || 0, 6);
