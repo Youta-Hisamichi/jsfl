@@ -1153,7 +1153,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     saveGame();
   }
 });
-document.getElementById('skillDeck').addEventListener('click', event => {
+(document.getElementById('skillDeck') || document.createElement('div')).addEventListener('click', event => { // スロット一覧は廃止（残しても害なし）
   if (event.target.closest('.deck-card.locked')) { openSkillSlotConfirm(); return; }
   if (event.target.closest('.deck-card.empty')) {
     const list = document.getElementById('skillLevelList');
@@ -1215,6 +1215,9 @@ document.getElementById('skillSlotYesBtn').addEventListener('click', event => {
   document.getElementById('skillSlotBtn').dispatchEvent(new MouseEvent('click', { clientX: event.clientX, clientY: event.clientY, bubbles: true }));
 });
 document.getElementById('skillSlotNoBtn').addEventListener('click', () => skillSlotModal.classList.remove('show'));
+document.getElementById('skillSlotHead').addEventListener('click', event => { // 見出しの「＋枠を増やす」
+  if (event.target.closest('[data-skill-slot-add]')) document.getElementById('skillSlotBtn').dispatchEvent(new MouseEvent('click', { clientX: event.clientX, clientY: event.clientY, bubbles: true }));
+});
 document.getElementById('skillSlotBtn').addEventListener('click', event => {
   const slots = getSkillSlots();
   if (slots >= SKILL_SLOT_MAX) { showTapError('スキル枠は最大です', event.clientX, event.clientY); return; }

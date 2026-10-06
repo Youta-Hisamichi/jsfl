@@ -2,34 +2,10 @@ function renderSkillGacha() {
   const head = document.getElementById('skillSlotHead');
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
-  if (head) head.textContent = `🎒 装備中のスキル ${eq.length} / ${slots}`;
-  const deck = document.getElementById('skillDeck');
-  if (deck) {
-    let dh = '';
-    for (let i = 0; i < SKILL_SLOT_MAX; i++) {
-      const id = eq[i];
-      if (id && SKILL_GACHA_SKILLS[id]) {
-        const sk = SKILL_GACHA_SKILLS[id];
-        const lv = getSkillLevel(id);
-        dh += `<button class="deck-card" data-skill-equip="${id}" title="タップで外す">${ico(sk)}<span class="dc-name">${sk.name}</span><span class="dc-lv">${lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv}</span></button>`;
-      } else if (i < slots) dh += `<div class="deck-card empty"><span class="dc-plus">＋</span><span class="dc-name">空き枠</span></div>`;
-      else if (i === slots) dh += `<div class="deck-card locked"><span class="dc-plus">🔒</span><span class="dc-name">未開放</span><span class="dc-lv">💎${getSkillSlotCost()}</span></div>`; // 未開放は次の1枠だけ表示
-    }
-    if (deck.dataset.html !== dh) { deck.innerHTML = dh; deck.dataset.html = dh; }
-    if (lastSetSkill) {
-      const card = deck.querySelector(`[data-skill-equip="${lastSetSkill}"]`);
-      if (card) { card.classList.remove('just-set'); void card.offsetWidth; card.classList.add('just-set'); }
-      lastSetSkill = null;
-    }
-  }
-  const sb = document.getElementById('skillSlotBtn');
-  if (sb) {
-    const html = slots >= SKILL_SLOT_MAX
-      ? `<span class="msb-name">🎒 スキル枠 ${slots} / ${SKILL_SLOT_MAX}（最大）</span>`
-      : `<span class="msb-name">➕ スキル枠を増やす（${slots} → ${slots + 1}）</span><span class="msb-cost">💎 ${getSkillSlotCost()}</span>`;
-    if (sb.dataset.html !== html) { sb.innerHTML = html; sb.dataset.html = html; }
-    sb.classList.toggle('is-disabled', slots >= SKILL_SLOT_MAX || game.gems < getSkillSlotCost());
-  }
+  // サブウェポンと同じシンプルな見出し：装備数／枠数と「＋枠を増やす」だけ（スロット一覧は出さない）
+  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1">＋枠を増やす 💎${getSkillSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
+  lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
   const lvHtml = Object.entries(SKILL_GACHA_SKILLS).map(([id, sk]) => {
     const owned = !!game.shopOwned[id];
