@@ -65,7 +65,7 @@ function updateSkillButtonVisibility() {
     if (btn) btn.style.display = isSkillEquipped(keys[btnId]) && !PASSIVE_SKILLS.includes(keys[btnId]) ? '' : 'none'; // 常時発動のスキルはボタンなし
   }
   const ssb = document.getElementById('skillSetBtn');
-  if (ssb) { ssb.style.display = SKILL_ORDER.some(id => game.shopOwned[id]) ? '' : 'none'; ssb.classList.toggle('is-disabled', typeof isBossFight === 'function' && isBossFight()); } // ボス戦中は入れ替え不可
+  if (ssb) ssb.style.display = 'none'; // ゲーム画面のスキル入れ替えボタンは使わない（スキルページで入れ替え）
 }
 function renderCoinShopList() {
   renderSkillGacha();
