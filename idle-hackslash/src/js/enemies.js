@@ -233,6 +233,7 @@ function buildSlimeVariants() {
       const r = px[i] / 255, g = px[i + 1] / 255, b = px[i + 2] / 255;
       const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l0 = (mx + mn) / 2 * dark, dd = mx - mn;
       if (dd < 0.08) continue; // 白・黒・灰色（目やハイライト）はそのまま
+      if (r > b) continue; // 赤い口・目の縁など、青くない部分はそのまま
       const l = l0 < 0.18 ? l0 : l0 * (1 - lift) + lift; // 輪郭の暗い線はそのまま、体だけ明るく
       const sat = Math.min(1, dd / (1 - Math.abs((mx + mn) - 1))) * satMul;
       const q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat, pp = 2 * l - q;
