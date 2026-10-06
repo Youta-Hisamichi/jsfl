@@ -1448,7 +1448,7 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .debug-toggle .bb-sub { font-size: 7cqw; }
 .cmd-bar .debug-toggle .bb-text { display: flex; flex-direction: column; margin-left: 2px; }
 .cmd-bar .debug-toggle:not(.open) { opacity: 0.85; }
-.cmd-bar #autoBossBtn { width: min(330px, 78vw); aspect-ratio: 1002 / 288; margin: 0 auto 6px; padding: 9% 0 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.9rem, 4.2vw, 1.15rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
+.cmd-bar #autoBossBtn { width: min(230px, 56vw); aspect-ratio: 1002 / 288; margin: -10px auto 4px; padding: 9% 0 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/bar/panel_auto.webp) center / 100% 100% no-repeat !important; color: #fff3cf; font-weight: 900; font-size: clamp(0.7rem, 3.2vw, 0.85rem); text-shadow: 0 0 2px #000, 0 2px 3px rgba(0,0,0,0.8); filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); }
 .cmd-bar #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
 .cmd-bar #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
 .cmd-bar #autoBossBtn[style*="none"] { display: none !important; }
@@ -1460,3 +1460,18 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .dbg-mini { background-image: none !important; aspect-ratio: auto; flex: none; width: auto; overflow: visible; opacity: 1; display: flex !important; align-items: center; gap: 3px; margin: 4px 0 0 auto !important; padding: 2px 8px !important; font-size: 0.62rem !important; font-weight: 700; color: var(--text-dim); background: rgba(0,0,0,0.06) !important; border: 1px solid var(--ring) !important; border-radius: 999px !important; position: static !important; transform: none !important; }
 .cmd-bar .dbg-mini .bb-gear { width: 13px !important; height: 13px; margin: 0 !important; }
 .cmd-bar .dbg-mini.open { color: var(--text); }
+
+/* ===== ボス敗北（GAME OVER）ダイアログ：素材画像 ===== */
+#bossContModal .go-panel { container-type: inline-size; width: min(430px, 94vw); max-width: none; background: url(assets/img/ui/go/dialog.webp) center / 100% 100% no-repeat !important; border: none !important; border-image: none !important; box-shadow: none !important; border-radius: 0; padding: 6cqw 9cqw 8cqw !important; color: #fff; aspect-ratio: 820 / 678; display: flex; flex-direction: column; justify-content: center; overflow: visible; max-height: none; }
+#bossContModal .go-logo { display: block; width: 100%; margin: 0 0 1cqw; filter: drop-shadow(0 0 8px rgba(160,90,255,0.45)); }
+#bossContModal h2 { color: #ffe6b0; font-size: 5.4cqw; line-height: 1.3; margin: 0 0 1cqw; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
+#bossContModal .boss-cont-count { display: flex; justify-content: center; align-items: center; height: 19cqw; margin: 1cqw 0 3cqw; text-shadow: none; }
+#bossContModal .boss-cont-count img { height: 100%; width: auto; filter: drop-shadow(0 0 8px rgba(255,60,90,0.55)); }
+#bossContModal .go-btns { display: flex; flex-direction: column; gap: 3cqw; }
+#bossContModal .go-ad-btn, #bossContModal .go-giveup-btn { width: 100%; border: none; cursor: pointer; padding: 0; background-color: transparent; background-repeat: no-repeat; background-size: 100% 100%; display: flex; align-items: center; transition: transform 0.08s; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); font-family: inherit; }
+#bossContModal .go-ad-btn:active, #bossContModal .go-giveup-btn:active { transform: scale(0.97); }
+#bossContModal .go-ad-btn { aspect-ratio: 760 / 138; background-image: url(assets/img/ui/go/btn_ad.webp); justify-content: center; }
+#bossContModal .go-ad-text { display: flex; flex-direction: column; align-items: center; margin-left: 22cqw; color: #fff; font-weight: 900; font-size: 4.8cqw; line-height: 1.25; text-shadow: 0 0 3px #000, 0 2px 3px rgba(0,0,0,0.8); }
+#bossContModal .go-ad-text small { font-size: 3.4cqw; font-weight: 700; }
+#bossContModal .go-giveup-btn { aspect-ratio: 760 / 90; background-image: url(assets/img/ui/go/btn_giveup.webp); justify-content: center; }
+#bossContModal .go-giveup-btn .msb-name { color: #3a2410; font-weight: 900; font-size: 4.6cqw; text-shadow: 0 1px 0 rgba(255,235,200,0.5); }

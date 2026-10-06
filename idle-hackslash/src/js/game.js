@@ -635,7 +635,7 @@ function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = '';
-  document.getElementById('bossContAdBtn').innerHTML = (isAdFree() ? '🎁 紋章特典でコンテニュー' : '🎬 動画を見てコンテニュー') + '<br><small>1回まで</small>';
+  document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
   bossContModal.classList.add('show'); refreshBgm();
@@ -661,7 +661,7 @@ let bossContTimer = null, bossContLeft = 0;
 function startBossContCountdown() {
   clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
   const el = document.getElementById('bossContCount');
-  const show = () => { el.textContent = bossContLeft; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
+  const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.innerHTML = `<img src="assets/img/ui/go/n${n}.webp" alt="${n}">`; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
   show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
     if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
