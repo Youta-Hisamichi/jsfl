@@ -109,8 +109,6 @@ function updateCompSummonVisibility() {
   cgb.classList.toggle('is-disabled', game.coins < cost1);
   cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 ${formatCoinNumber(cost1)}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
-  const note = document.getElementById('compFullNote');
-  if (note) note.style.display = full ? '' : 'none';
 }
 function renderRebirthShopList() {
   const newTabIds = (Array.isArray(game.rebirthShopNew) ? game.rebirthShopNew : []).filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[id]));
