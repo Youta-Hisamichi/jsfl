@@ -1391,3 +1391,12 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .tower-row .debug-toggle { display: inline-block; flex: 0 0 auto; margin: 0; align-self: center; padding: 4px 10px; }
 .sk-card.equipped { border-image: url(assets/img/ui/skin/panel_parch2.webp) 18 fill / 10px stretch; }
 .af-card .af-q { font-size: 1.6rem; font-weight: 900; color: #d8dce8; text-shadow: 0 2px 0 #222, 0 0 6px rgba(255,255,255,0.35); line-height: 1; }
+
+/* 遺物の効果の合計 */
+.af-total { margin: 0 0 8px; padding: 8px 10px; border: 14px solid transparent; border-image: url(assets/img/ui/skin/plate_dark.webp) 22 fill / 14px stretch; color: #eef0f6; }
+.af-total-title { font-size: 0.75rem; font-weight: 800; color: #ffe36b; margin: -6px 0 4px; }
+.af-total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+.af-total-item { display: flex; justify-content: space-between; gap: 6px; font-size: 0.72rem; color: #c8cede; min-width: 0; }
+.af-total-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.af-total-item b { color: #7dffa0; white-space: nowrap; }
+.af-total-empty { font-size: 0.72rem; color: #b8bed0; }

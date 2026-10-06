@@ -390,6 +390,23 @@ function gainArtifact(id) {
 }
 let artifactFilter = 'all';
 const ARTIFACT_FILTERS = [{ id: 'all', label: 'すべて' }, ...REBIRTH_SHOP_CATEGORIES];
+// 遺物だけで合計どれくらい強くなっているか（ページ上部にまとめて表示）
+function renderArtifactTotal() {
+  const b = applyArtifactBonuses(baseBonuses());
+  const fmtMult = m => '×' + (m >= 100 ? formatCoinNumber(Math.round(m)) : (Math.round(m * 100) / 100).toString());
+  const pct = v => '+' + (Math.round(v * 1000) / 10) + '%';
+  const rows = [
+    ['⚔️', '攻撃力', b.atkMult > 1 && fmtMult(b.atkMult)], ['❤️', '最大HP', b.hpMult > 1 && fmtMult(b.hpMult)], ['🟡', 'コイン', b.coinMult > 1 && fmtMult(b.coinMult)],
+    ['🎯', '会心率', b.critChance > 0 && pct(b.critChance)], ['💥', '会心ダメージ', b.critMultBonus > 0 && pct(b.critMultBonus)], ['👑', 'ボスへのダメージ', b.bossDmg > 0 && pct(b.bossDmg)],
+    ['🌟', '必殺ダメージ', b.specialDmgMult > 1 && fmtMult(b.specialDmgMult)], ['⏳', '必殺の待ち時間', b.specialCooldownMult < 1 && '-' + Math.round((1 - b.specialCooldownMult) * 100) + '%'], ['🚀', '加速ダメージ', b.accelDmgMult > 1 && fmtMult(b.accelDmgMult)],
+    ['🐗', '体当たり', b.tackleMult > 1 && fmtMult(b.tackleMult)], ['🔍', '命中', b.accuracy > 0 && pct(b.accuracy)], ['🪶', '回避', b.evasion > 0 && pct(b.evasion)], ['🛡️', '反撃', b.counter > 0 && pct(b.counter)],
+    ['😤', 'ピンチ時の攻撃', b.pinchAtk > 0 && pct(b.pinchAtk)], ['🚩', '仲間の攻撃', b.companionAtkMult > 1 && fmtMult(b.companionAtkMult)], ['🧿', '仲間のHP', b.companionHpMult > 1 && fmtMult(b.companionHpMult)],
+    ['🧭', '跳ね返りコイン', b.bounceCoinCount > 0 && '+' + b.bounceCoinCount + '枚'], ['📅', 'ログインボーナス', b.loginBonusMult > 1 && fmtMult(b.loginBonusMult)], ['💎', '転生ジェム', b.rebirthGems > 0 && '+' + b.rebirthGems],
+  ].filter(r => r[2]);
+  document.getElementById('artifactTotal').innerHTML = `<div class="af-total-title">✨ 遺物の効果 合計</div>` + (rows.length
+    ? `<div class="af-total-grid">${rows.map(([i, n, v]) => `<div class="af-total-item"><span>${i} ${n}</span><b>${v}</b></div>`).join('')}</div>`
+    : '<div class="af-total-empty">まだ効果はありません（遺物を集めると強くなります）</div>');
+}
 function renderArtifactList() {
   const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
   const total = ARTIFACT_POOL.length;
@@ -399,6 +416,7 @@ function renderArtifactList() {
     return `<span class="af-rchip" style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} <b>${got}/${all.length}</b></span>`;
   }).join('');
   artifactProgressEl.innerHTML = `<div class="af-ring" style="--p:${rate}"><span><b>${rate}</b>%</span></div><div class="af-hero-main"><div class="af-hero-title">遺物コレクション</div><div class="af-hero-count"><b>${ownedKinds}</b> / ${total} 種類</div><div class="af-rchips">${rarChips}</div></div>`;
+  renderArtifactTotal();
   renderSubTabs(document.getElementById('artifactTabs'), ARTIFACT_FILTERS, artifactFilter, cat => { artifactFilter = cat; renderArtifactList(); });
   const RANK = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const list = ARTIFACT_POOL.filter(a => artifactFilter === 'all' || (ARTIFACT_CATEGORY[a.id] || 'attack') === artifactFilter)

@@ -1024,8 +1024,8 @@ const game = {
 // 転生Lv：転生前に進んだ階が深いほど多く上がる（10階ごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
 const REBIRTH_LV_BONUS = 0.03;
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
-function computeBonuses() {
-  const b = { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 };
+function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }
+function applyArtifactBonuses(b) {
   for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
     if (!ARTIFACT_BY_ID[id]) continue;
     const count = game.ownedArtifacts[id] || 0;
@@ -1058,6 +1058,10 @@ function computeBonuses() {
     if (id === 'pinchMask') b.pinchAtk += 0.6 * cap;
     if (id === 'rebirthOrb') b.rebirthGems += 2 * cap;
   }
+  return b;
+}
+function computeBonuses() {
+  const b = applyArtifactBonuses(baseBonuses());
   const up = game.upgrades;
   b.atkMult += (up.atk || 0) * 0.15;
   b.hpMult += (up.hp || 0) * 0.20;
