@@ -79,7 +79,8 @@ function step() {
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
   const stunMult = collided && isTelegraphStunned(e) ? TG_STUN_DMG : 1; // 攻撃後の隙は大ダメージ
   const styleMult = collided ? (rushingNow ? b.rushDmgUp : b.meleeMult) || 1 : 1; // 強化：体当たり／接近戦
-  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * styleMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
+  const autoMult = collided && !rushingNow && isAutoMode() ? AUTO_ATK_MULT : 1; // 放置（AUTO）中のふつうの衝突は控えめ
+  const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * styleMult * autoMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
   if (stunMult > 1 && a.hitCooldown === 0 && e.hitCooldown === 0) spawnDamageText(e.x, e.y - e.radius - 40, `スキあり！×${TG_STUN_DMG}`, '#ffd76b', 0.02, true); // リセット前の連打ボーナスでダメージを計算する
   if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
@@ -1957,13 +1958,17 @@ function updateFlyouts() {
   const far = Math.max(window.innerWidth, window.innerHeight) * 1.5;
   flyouts = flyouts.filter(f => f.flyLife > 0 && Math.hypot(f.x - arena.x, f.y - arena.y) < far);
 }
+let flyoutDirty = true;
 function drawFlyouts() {
-  const dprNow = Math.max(1, window.devicePixelRatio || 1);
+  const dprNow = renderDpr();
   const w = Math.round(window.innerWidth * dprNow), h = Math.round(window.innerHeight * dprNow);
+  const empty = !flyouts.length && !damageTexts.length && !coinFx.length;
+  if (empty && !flyoutDirty && flyoutCanvas.width === w) return; // 何も描いていない画面全体の消去を毎フレームしない（スマホで重いため）
   if (flyoutCanvas.width !== w || flyoutCanvas.height !== h) { flyoutCanvas.width = w; flyoutCanvas.height = h; }
   flyoutCtx.setTransform(1, 0, 0, 1, 0, 0);
   flyoutCtx.clearRect(0, 0, w, h);
-  if (!flyouts.length && !damageTexts.length && !coinFx.length) return;
+  flyoutDirty = !empty;
+  if (empty) return;
   const rect = canvas.getBoundingClientRect();
   if (rect.width < 10 || !size) return; // ゲームタブが非表示のときは描かない
   const k = rect.width / size;

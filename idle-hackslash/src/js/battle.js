@@ -1868,7 +1868,7 @@ function showTapError(text, clientX, clientY) {
 function resizeCanvas() {
   const rect = wrap.getBoundingClientRect();
   if (rect.width < 10) return;
-  dpr = Math.max(1, window.devicePixelRatio || 1);
+  dpr = renderDpr();
   const newSize = rect.width;
   const oldSize = size;
   size = newSize;

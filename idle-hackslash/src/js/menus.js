@@ -686,7 +686,9 @@ function updateStatsUI() {
   updateBlastButton();
 }
 
-let dpr = Math.max(1, window.devicePixelRatio || 1);
+const RENDER_DPR_MAX = 2; // 高解像度スマホでも描画は最大2倍まで（3倍近い端末で描く画素が半分ほどに減り軽くなる）
+function renderDpr() { return Math.min(RENDER_DPR_MAX, Math.max(1, window.devicePixelRatio || 1)); }
+let dpr = renderDpr();
 let size = 0;
 let arena = { x: 0, y: 0, radius: 0 };
 // デバッグ：ゲームの容量（HTML本体・埋め込み画像・セーブデータ）を表示
@@ -818,10 +820,12 @@ function releaseCharge() {
   if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
   launchPull(ang, lv);
 }
-function launchPull(ang, lv) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
+// 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
+const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
+function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
   const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
-  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp };
+  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
   if (lv >= 1) shakeScreenLight();
@@ -855,7 +859,7 @@ const AUTO_SLASH_CHANCE = 0.25, AUTO_SLASH_CHECK_MS = 700, AUTO_SLASH_HITS = [2,
 let autoSlashCheckAt = 0, autoSlashLeft = 0, autoSlashNextAt = 0;
 function tickAutoSlash(now) {
   if (autoAim || rushingNow) { autoSlashLeft = 0; return; }
-  if (autoSlashLeft > 0) { if (now >= autoSlashNextAt) { autoSlashLeft--; autoSlashNextAt = now + AUTO_SLASH_GAP_MS; doTapSlash(); } return; }
+  if (autoSlashLeft > 0) { if (now >= autoSlashNextAt) { autoSlashLeft--; autoSlashNextAt = now + AUTO_SLASH_GAP_MS; doTapSlash(true); } return; }
   if (now < autoSlashCheckAt) return;
   autoSlashCheckAt = now + AUTO_SLASH_CHECK_MS;
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
@@ -870,7 +874,7 @@ function tickAutoPull() {
   if (phase !== 'battle' || chargeHold || playerDrag || getActiveTab() !== 'game') { autoAim = null; return; }
   if (now - lastUserInputAt < AUTO_PULL_IDLE_MS) { nextAutoPullAt = 0; autoAim = null; return; }
   tickAutoSlash(now);
-  if (autoAim) { if (now - autoAim.start >= AUTO_AIM_MS) { const ang = autoAimAngle(), lv = autoAim.lv; autoAim = null; launchPull(ang, lv); } return; }
+  if (autoAim) { if (now - autoAim.start >= AUTO_AIM_MS) { const ang = autoAimAngle(), lv = autoAim.lv; autoAim = null; launchPull(ang, lv, true); } return; }
   if (holdRush && now < holdRush.until) return;
   if (!nextAutoPullAt) { nextAutoPullAt = now + 600; return; }
   if (now < nextAutoPullAt) return;
@@ -888,7 +892,7 @@ function tickAutoPull() {
 // タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
 const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;
 let slashFx = [], lastSlashAt = 0, slashSide = 1;
-function doTapSlash() {
+function doTapSlash(auto = false) {
   const now = Date.now();
   if (now - lastSlashAt < SLASH_GAP_MS) return;
   lastSlashAt = now;
@@ -907,7 +911,7 @@ function doTapSlash() {
     if (d > R + en.radius) continue;
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
-    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')), '#ffe08a', 1.6)) hits++;
+    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6)) hits++;
   }
   if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
@@ -1212,7 +1216,7 @@ const RUN_BUFFS = {
   slash: { icon: '🗡️', name: '近距離攻撃強化', desc: 'タップの切り払いのダメージ+30%・範囲+6' },
 };
 function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
-function getRushDmgMult() { return rushingNow && holdRush ? (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) : 1; }
+function getRushDmgMult() { return rushingNow && holdRush ? (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
