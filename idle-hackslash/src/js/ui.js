@@ -149,7 +149,7 @@ function drawArenaOverlays() {
 function loop() {
   battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
   try {
-    if (userPaused) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; }
+    if (userPaused || stageSkipModal.classList.contains('show')) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
     if (activeTabCache !== 'game') { drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // drawFlyouts は画面全体の重ね描きを消すため（残像が残らないように）
     if (hitStopFrames <= 0) {
       if (phase === 'battle') { updateRegen(); step(); updateBattleFx(); updateHomingMissiles(getEffectiveSpeed()); updatePoison(); updateCompanionAbilities(); }
