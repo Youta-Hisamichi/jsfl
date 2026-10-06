@@ -51,7 +51,7 @@ function renderSkillGacha() {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = lv ? `<button class="sk-equip ${on ? 'on' : ''}" data-weapon-equip="${id}">${on ? '✓ 装備中' : weq.length >= wslots ? '入れ替え' : '装備する'}</button>` : '';
-    return `<div class="sk-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
+    return `<div class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="wp-buy ${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
   }).join('');
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   updateSkillButtonVisibility();
