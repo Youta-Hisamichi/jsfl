@@ -954,8 +954,9 @@ function playStageClearSound() {
     if (i === notes.length - 1) { playTone(f * 1.5, 0.12, 'sine', 0.05); setTimeout(() => playTone(f * 2, 0.08, 'square', 0.025), 40); } // 最後だけ和音ときらめき
   }, i * 55));
 }
+const WARNING_BEEPS = 3, WARNING_BEEP_GAP_MS = 420;
 function playWarningSound() {
-  [200, 160, 200, 160].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'square', 0.22), i * 220));
+  for (let i = 0; i < WARNING_BEEPS; i++) setTimeout(() => { playTone(200, 0.14, 'square', 0.22); setTimeout(() => playTone(160, 0.14, 'square', 0.22), 150); }, i * WARNING_BEEP_GAP_MS); // 「ビーボー」を3回鳴らしたらボス出現
 }
 // やられボイス：のこぎり波の声帯音をフォルマント（母音の共鳴）フィルタに通して「ぐわぁっ」などをしゃべらせる
 const VOWEL_F = { a: [800, 1200, 2600], i: [300, 2300, 3000], u: [350, 1300, 2500], e: [500, 1800, 2500], o: [500, 850, 2500] };
