@@ -318,6 +318,19 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
+  rebirth: { // 転生：パイプオルガンの和音と鐘、ティンパニが響く荘厳な曲（ニ短調→最後はニ長調）
+    bpm: 76,
+    echo: { time: 0.42, feedback: 0.38, wet: 0.34 },
+    kickBoost: 1.5, // ティンパニ
+    tracks: [
+      { type: 'pceorgan', gain: 0.032, notes: 'A5 = = = D6 = = = | F6 = = = E6 D6 = = | D6 = = = G5 = A5 A#5 | C#6 = = = A5 = = = | D6 = = = F6 = = = | A6 = = = G6 F6 = = | E6 = C6 = G5 = = = | A5 = C#6 = E6 = = = | F6 = = = D6 = = = | E6 = = = G6 = = = | C6 = = = E6 = A6 = | F6 = = = D6 = = = | G6 = = = F6 = D6 = | E6 = = = C#6 = A5 = | D6 = = = F6 = E6 = | F#6 = = = = = = =' },
+      { type: 'pceorgan', gain: 0.016, notes: 'D4+F4+A4 = = = D4+F4+A4 = = = | D4+F4+A#4 = = = D4+F4+A#4 = = = | D4+G4+A#4 = = = D4+G4+A#4 = = = | C#4+E4+A4 = = = C#4+E4+A4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | C4+F4+A4 = = = C4+F4+A4 = = = | C4+E4+G4 = = = C4+E4+G4 = = = | C#4+E4+A4 = = = C#4+E4+A4 = = = | D4+F4+A#4 = = = D4+F4+A#4 = = = | C4+E4+G4 = = = C4+E4+G4 = = = | C4+E4+A4 = = = C4+E4+A4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | D4+G4+A#4 = = = D4+G4+A#4 = = = | C#4+E4+A4 = = = C#4+E4+A4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | D4+F#4+A4 = = = D4+F#4+A4 = = =' },
+      { type: 'fmbell', gain: 0.012, notes: 'D5 - F5 - A5 - F5 - | D5 - F5 - A#5 - F5 - | D5 - G5 - A#5 - G5 - | C#5 - E5 - A5 - E5 - | D5 - F5 - A5 - F5 - | C5 - F5 - A5 - F5 - | C5 - E5 - G5 - E5 - | C#5 - E5 - A5 - E5 - | D5 - F5 - A#5 - F5 - | C5 - E5 - G5 - E5 - | C5 - E5 - A5 - E5 - | D5 - F5 - A5 - F5 - | D5 - G5 - A#5 - G5 - | C#5 - E5 - A5 - E5 - | D5 - F5 - A5 - F5 - | D5 - F#5 - A5 - F#5 -' },
+      { type: 'pceorgan', gain: 0.04, notes: 'D2 = = = = = = = | A#1 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D2 = = = = = = = | F1 = = = = = = = | C2 = = = = = = = | A1 = = = = = = = | A#1 = = = = = = = | C2 = = = = = = = | A1 = = = = = = = | D2 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D2 = = = = = = = | D2 = = = = = = =' },
+      { type: 'triangle', gain: 0.06, notes: 'D1 = = = = = = = | A#0 = = = = = = = | G0 = = = = = = = | A0 = = = = = = = | D1 = = = = = = = | F0 = = = = = = = | C1 = = = = = = = | A0 = = = = = = = | A#0 = = = = = = = | C1 = = = = = = = | A0 = = = = = = = | D1 = = = = = = = | G0 = = = = = = = | A0 = = = = = = = | D1 = = = = = = = | D1 = = = = = = =' },
+    ],
+    drums: 'k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - k k k k | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k k k k k - - -',
+  },
   records: {
     bpm: 132,
     tracks: [
@@ -379,6 +392,7 @@ const FM_PRESETS = {
   vrc7bass:  { ratio: 1, index: 4.5, indexEnd: 0.8, decay: 0.06 }, // はじくようなシンセベース
 };
 const PCE_WAVETABLES = {
+  pceorgan: i => Math.round(15.5 + 9 * Math.sin(Math.PI * 2 * i / 32) + 4.5 * Math.sin(Math.PI * 4 * i / 32) + 2 * Math.sin(Math.PI * 8 * i / 32)), // 倍音を重ねたパイプオルガン
   pcelead:  i => i < 10 ? 31 : i < 18 ? 20 : i < 24 ? 8 : 0,          // 段々の矩形：鼻にかかった明るいリード
   pcebass:  i => Math.round(15.5 + 15.5 * Math.sin(Math.PI * 2 * i / 32) + 6 * Math.sin(Math.PI * 4 * i / 32)), // 太いベース
   pcebrass: i => 31 - i,                                               // のこぎり波：ギターのパワーコード代わり
@@ -545,6 +559,7 @@ const BGM_INFO = [
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
+  { key: 'rebirth', name: '転生 輪廻の大聖堂', desc: '転生の演出中に流れる。パイプオルガンの和音と鐘の分散和音、ティンパニが深い残響の中に響く荘厳な曲。ニ短調→最後はニ長調・BPM76' },
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
@@ -598,7 +613,7 @@ function refreshBgm() {
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
-  else if (rebirthRewardBgm) { stopBgm(); return; } // 転生報酬はBGMなし（効果音だけ）
+  else if (rebirthRewardBgm) type = 'rebirth'; // 転生の演出中は荘厳な曲
   else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
   else {
     const tab = getActiveTab();

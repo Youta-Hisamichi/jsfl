@@ -798,7 +798,7 @@ function drawAutoLabel() { // オート中は自キャラの近くに AUTO と�
   ctx.restore();
 }
 // 放置オート：しばらく操作がないと、ときどき勝手にランダムな向きへ引っ張り攻撃する（敵は狙わない）
-const AUTO_PULL_AIM_RATE = 0.9; // オートの体当たりは基本的に敵めがけて突っ込む（たまに気まぐれな方向）
+const AUTO_PULL_AIM_RATE = 0.5; // オートの体当たりは2回に1回くらい敵めがけて突っ込む（残りは気まぐれな方向）
 const AUTO_PULL_IDLE_MS = 4000, AUTO_PULL_GAP_MS = [2500, 5000];
 let lastUserInputAt = Date.now(), nextAutoPullAt = 0;
 ['pointerdown', 'pointerup', 'pointermove'].forEach(t => document.addEventListener(t, ev => { if (ev.target === canvas && (t !== 'pointermove' || ev.buttons)) lastUserInputAt = Date.now(); }, true)); // AUTOが解けるのはゲームステージ（サークル）を触ったときだけ
