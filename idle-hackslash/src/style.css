@@ -1432,9 +1432,9 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .cmd-bar .tower-share .bb-main { margin-top: 14cqw; }
 .cmd-bar .tower-share .bb-sub { position: absolute; left: 0; right: 0; bottom: 12%; text-align: center; color: #3a4a6a; text-shadow: 0 1px 0 rgba(255,255,255,0.6); font-size: 6.5cqw; }
 .cmd-bar #stageSkipBtn, .cmd-bar #bossRetireBtn { flex: 0 0 27%; aspect-ratio: 456 / 225; background-image: url(assets/img/ui/bar/btn_tower.webp) !important; align-items: flex-start; }
-.cmd-bar #stageSkipBtn > span, .cmd-bar #rebornBtn > span { margin-left: 35cqw; }
-.cmd-bar #stageSkipBtn .bb-main, .cmd-bar #rebornBtn .bb-main { font-size: 12.5cqw; }
-.cmd-bar #stageSkipBtn .bb-sub, .cmd-bar #rebornBtn .bb-sub { font-size: 6cqw; }
+.cmd-bar #stageSkipBtn > span, .cmd-bar #rebornBtn > span, .cmd-bar #bossRetireBtn > span { margin-left: 35cqw; max-width: 60cqw; }
+.cmd-bar #stageSkipBtn .bb-main, .cmd-bar #rebornBtn .bb-main, .cmd-bar #bossRetireBtn .bb-main { font-size: 12.5cqw; }
+.cmd-bar #stageSkipBtn .bb-sub, .cmd-bar #rebornBtn .bb-sub, .cmd-bar #bossRetireBtn .bb-sub { font-size: 6cqw; }
 .cmd-bar #stageSkipBtn .bb-main { color: #ffe6a8; }
 .cmd-bar #bossRetireBtn { padding-left: 0 !important; text-indent: 0; font-weight: 900; color: #fff; font-size: clamp(0.75rem, 3.6vw, 1rem); }
 .cmd-bar #rebornBtn { flex: 0 0 29%; aspect-ratio: 507 / 204; background-image: url(assets/img/ui/bar/btn_reborn.webp) !important; align-items: flex-start; }
@@ -1452,3 +1452,5 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar #autoBossBtn small { font-size: 0.8em; font-weight: 700; margin-left: 2px; }
 .cmd-bar #autoBossBtn.off { opacity: 0.75; color: #c8ccd8; }
 .cmd-bar #autoBossBtn[style*="none"] { display: none !important; }
+.cmd-bar .tower-row > button { -webkit-text-size-adjust: none; text-size-adjust: none; overflow: hidden; }
+.cmd-bar .tower-share .bb-main { max-width: 55cqw; }

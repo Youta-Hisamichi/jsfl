@@ -2503,3 +2503,20 @@ function drawCoffin(ball, appear) {
   }
   ctx.restore(); ctx.imageSmoothingEnabled = true;
 }
+
+// 下部ボタン帯：端末の文字サイズ設定などで文字がはみ出すときは、ボタンに収まるまで縮める
+function fitCmdBarText() {
+  document.querySelectorAll('.cmd-bar .tower-row > button').forEach(btn => {
+    if (!btn.offsetWidth) return;
+    const room = btn.clientWidth * (btn.classList.contains('tower-share') ? 0.55 : btn.classList.contains('debug-toggle') ? 0.45 : 0.6);
+    btn.querySelectorAll('.bb-main, .bb-sub').forEach(el => {
+      const ribbon = btn.classList.contains('tower-share') && el.classList.contains('bb-sub'); // シェアの下のリボン文字は中央ぞろえ
+      el.style.transform = ''; el.style.transformOrigin = ribbon ? 'center' : 'left center';
+      const w = el.scrollWidth, r = ribbon ? btn.clientWidth * 0.8 : room;
+      if (w > r) el.style.transform = `scaleX(${(r / w).toFixed(3)})`;
+    });
+  });
+}
+if (window.ResizeObserver) { const ro = new ResizeObserver(() => requestAnimationFrame(fitCmdBarText)); document.querySelectorAll('.cmd-bar .tower-row > button').forEach(b => ro.observe(b)); }
+new MutationObserver(() => requestAnimationFrame(fitCmdBarText)).observe(document.querySelector('.cmd-bar .tower-row'), { childList: true, subtree: true, characterData: true });
+window.addEventListener('load', fitCmdBarText);
