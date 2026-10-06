@@ -1297,12 +1297,10 @@ function formatAway(ms) { const m = Math.floor(ms / 60000), h = Math.floor(m / 6
 const LOGIN_RARITY_MULT = { common: 1, rare: 1.5, epic: 2.5, legendary: 5 };
 const LOGIN_RARITY_EXTRA_GEMS = { common: 0, rare: 0, epic: 1, legendary: 3 };
 function pickLoginRarity(tier = 0) {
-  // 確率（%）：レジェンド 1%〜4%、エピック 6%〜12%、レア 25%。長く離れていたほど少しだけ上がる
-  const leg = 1 + tier * 0.6, epic = 6 + tier * 1.2, rare = 25;
-  const roll = Math.random() * 100;
-  if (roll < leg) return 'legendary';
-  if (roll < leg + epic) return 'epic';
-  if (roll < leg + epic + rare) return 'rare';
+  // レア度が1つ上がるごとに1/10：コモン約90%・レア約9%・エピック約0.9%・レジェンド約0.09%
+  const w = { common: 1, rare: 0.1, epic: 0.01, legendary: 0.001 };
+  let r = Math.random() * Object.values(w).reduce((a, b) => a + b, 0);
+  for (const k of ['legendary', 'epic', 'rare']) { if (r < w[k]) return k; r -= w[k]; }
   return 'common';
 }
 // 大きな数の単位（万〜無量大数）。JSの数は倍精度なので21億で負になることはない。無量大数を超えたら指数表記

@@ -782,7 +782,7 @@ function getRebirthMaxCount(id) {
   return count;
 }
 // 宝箱のレア度の出る確率：★5=1/500、★4=1/100、★3=1/32、★2=1/6、残りが★1
-const CHEST_RARITY_ODDS = { mythic: 1 / 500, legendary: 1 / 100, epic: 1 / 32, rare: 1 / 6 };
+const CHEST_RARITY_ODDS = (() => { const w = [1, 0.1, 0.01, 0.001, 0.0001], t = w.reduce((a, b) => a + b, 0); return { rare: w[1] / t, epic: w[2] / t, legendary: w[3] / t, mythic: w[4] / t }; })(); // レア度が1つ上がるごとに1/10（コモン約90%・レア9%・エピック0.9%・レジェンド0.09%・ミシック0.009%）
 const REBIRTH_REWARD_RARITY_WEIGHTS = { mythic: 0.2, legendary: 1, epic: 3.125, rare: 16.667, common: 79.008 };
 function rollChestRarity(luck = 1, min = 'common') { // luck 倍だけ高レア度が出やすい（岩・ボスなど苦労して手に入れる宝箱用）
   const order = ['common', 'rare', 'epic', 'legendary', 'mythic'];
