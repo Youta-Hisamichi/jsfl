@@ -1517,3 +1517,8 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .tab-page[data-tab="records"] .rec-goal .rg-reward { color: #2a7ad0; }
 .tab-page[data-tab="records"] .rec-goal .rg-claim { position: relative; padding: 4px 14px 4px 12px; border-radius: 999px; background: linear-gradient(180deg, #e0894a, #a8481c); border: 1.5px solid #f4c27a; color: #fff; font-size: 0.68rem; box-shadow: 0 2px 0 #5a2408, 0 0 8px rgba(255,150,80,0.5); text-shadow: 0 1px 1px rgba(0,0,0,0.6); }
 .tab-page[data-tab="records"] .rec-goal .rg-claim::after { content: ''; position: absolute; right: -9px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-left-color: #f4c27a; }
+/* 各ページの背景にうっすら魔法陣（中身より下・パネルの地より上に重ねる） */
+.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel,
+.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel { position: relative; isolation: isolate; }
+.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel::before,
+.tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { content: ''; position: absolute; inset: 0; background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat; z-index: -1; pointer-events: none; opacity: 0.55; filter: brightness(0.35) saturate(0.6); mix-blend-mode: multiply; }
