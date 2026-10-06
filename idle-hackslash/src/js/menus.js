@@ -51,7 +51,7 @@ function renderSkillGacha() {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = lv ? `<button class="sk-equip ${on ? 'on' : ''}" data-weapon-equip="${id}">${on ? '✓ 装備中' : weq.length >= wslots ? '入れ替え' : '装備する'}</button>` : '';
-    return `<div class="sk-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${W.icon}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
+    return `<div class="sk-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
   }).join('');
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   updateSkillButtonVisibility();
@@ -976,6 +976,10 @@ const WEAPONS = {
   thunder:   { icon: '🪄', name: '雷の杖', desc: 'ランダムに雷を落とす', cd: 95 },
   dove:      { icon: '🕊️', name: '鳩', desc: '鳩が飛び立ち、敵めがけてホーミング', cd: 100 },
 };
+// サブウェポンの画像（一覧のアイコンと、飛んでいく弾の絵）
+const WEAPON_IMGS = {};
+for (const id of [...Object.keys(WEAPONS), 'buckler']) { const img = new Image(); img.src = `assets/img/weapons/${id}.webp`; WEAPON_IMGS[id] = img; if (WEAPONS[id]) WEAPONS[id].img = img.src; }
+function drawWeaponImg(id, size) { const img = WEAPON_IMGS[id]; if (!img || !img.complete || !img.naturalWidth) return false; ctx.drawImage(img, -size / 2, -size / 2, size, size); return true; }
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
 // サブウェポンの装備枠（最初は1つ。ジェムで増やせて転生後も継続）
@@ -1175,17 +1179,17 @@ function drawWeapons() {
       ctx.scale(sx, 1); ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = '#ffcf3d'; ctx.fill();
       ctx.lineWidth = 1.5; ctx.strokeStyle = '#b8860b'; ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(-1.6, -1.6, 2.2, 0, Math.PI * 2); ctx.fill();
-    } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 絵文字の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); }
-    else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); }
-    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); }
-    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); }
+    } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? 1 : -1, 1); /* 画像の鳩は右向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
+    else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 24)) { ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
+    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 20)) { ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); } }
+    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
     ctx.restore();
   }
   const slv = equippedWeaponLv('shield');
   if (slv && pl && pl.hp > 0) {
     const n = [0, 1, 2, 2, 3, 4][slv], R = pl.radius + 30;
     ctx.font = '17px sans-serif';
-    for (let i = 0; i < n; i++) { const a = shieldAngle + Math.PI * 2 * i / n; ctx.fillText('🛡️', pl.x + Math.cos(a) * R, pl.y + Math.sin(a) * R); }
+    for (let i = 0; i < n; i++) { const a = shieldAngle + Math.PI * 2 * i / n; ctx.save(); ctx.translate(pl.x + Math.cos(a) * R, pl.y + Math.sin(a) * R); if (!drawWeaponImg('buckler', 24)) ctx.fillText('🛡️', 0, 0); ctx.restore(); }
   }
   ctx.restore();
 }
