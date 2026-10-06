@@ -1475,3 +1475,6 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 #bossContModal .go-ad-text small { font-size: 3.4cqw; font-weight: 700; }
 #bossContModal .go-giveup-btn { aspect-ratio: 760 / 90; background-image: url(assets/img/ui/go/btn_giveup.webp); justify-content: center; }
 #bossContModal .go-giveup-btn .msb-name { color: #3a2410; font-weight: 900; font-size: 4.6cqw; text-shadow: 0 1px 0 rgba(255,235,200,0.5); }
+/* 自動再戦：幅は文字に合わせる（枠は9分割で伸び縮みさせて飾りをゆがめない） */
+.cmd-bar #autoBossBtn { width: fit-content !important; aspect-ratio: auto !important; padding: 7px 16px !important; background: none !important; border: 16px solid transparent !important; border-image: url(assets/img/ui/bar/panel_auto.webp) 70 fill / 16px stretch !important; margin: -6px auto 6px !important; white-space: nowrap; line-height: 1.1; }
+.cmd-bar #autoBossBtn { padding: 0 6px !important; }
