@@ -508,7 +508,7 @@ function renderRanking() {
   const myScore = isDaily ? getDailyClearsForDate(selectedKey) : game.bestStage;
   entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
   entries.sort((a, b) => b.score - a.score);
-  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達階', score: isDaily ? myScore + ' クリア' : 'Stage ' + myScore };
+  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達階', score: isDaily ? myScore + ' クリア' : myScore + ' 階' };
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
   const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
   const shown = entries.slice(0, 100);
@@ -517,7 +517,7 @@ function renderRanking() {
     const wall = RANK_WALLS[i] && i < shown.length ? `<div class="rank-wall ${RANK_WALLS[i][1]}"><span><i>${wi[RANK_WALLS[i][1]]}</i>${RANK_WALLS[i][0]}<i>${wi[RANK_WALLS[i][1]]}</i></span></div>` : '';
     const cls = i < 3 ? `top${i + 1}` : i < 10 ? 'top10' : '';
     const no = i < 3 ? `<span class="rank-medal">${RANK_ICONS[i]}</span>` : `${i + 1}<small>位</small>`;
-    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : 'Stage ' + entry.score}</span></div>`.replace(/^/, wall);
+    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : entry.score + ' 階'}</span></div>`.replace(/^/, wall);
   }).join('');
 }
 
