@@ -332,10 +332,14 @@ function getEarlyHpRate(stage) {
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
   return EARLY_HP_MIN_RATE + (1 - EARLY_HP_MIN_RATE) * t * t;
 }
+// 階が進むほど敵が指数的に強くなる（インフレ）。桁あふれしないよう指数は一定の階で頭打ち
+const ENEMY_INFLATION = 1.006, ENEMY_INFLATION_CAP_STAGE = 20000;
+function enemyInflation(stage) { return Math.pow(ENEMY_INFLATION, Math.min(Math.max(0, stage - 1), ENEMY_INFLATION_CAP_STAGE)); }
 function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
-  const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage)));
-  const baseAtk = Math.round(6 + stage * 2.4);
+  const inf = enemyInflation(stage);
+  const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage) * inf));
+  const baseAtk = Math.round((6 + stage * 2.4) * inf);
   const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
   return {
     hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT * (ms ? ms.hp : 1)) : baseHp,
