@@ -722,6 +722,11 @@ debugRow.addEventListener('click', event => {
     bossTimerFor = boss; boss.continued = action === 'bossContFinal';
     bossDefeated('death'); return;
   }
+  if (action === 'artifactAll') { // 遺物を全種類1つ以上にする（上限のあるものは上限まで）
+    ARTIFACT_POOL.forEach(a => { const lim = ARTIFACT_STACK_LIMIT[a.id]; game.ownedArtifacts[a.id] = Math.max(game.ownedArtifacts[a.id] || 0, lim || 1); });
+    refreshPlayerBallStats(false); renderArtifactList(); updateStatsUI(); saveGame();
+    showNotice(`DEBUG: 遺物${ARTIFACT_POOL.length}種をコンプしました`); return;
+  }
   if (action === 'bookAll') { // 図鑑のキャラ（モンスター）と曲をすべて登録済みにする
     if (!game.bestiary) game.bestiary = {};
     ENEMY_BOOK.forEach(e => { if (!game.bestiary[e.key]) game.bestiary[e.key] = { kills: 1, firstStage: game.stage }; });
