@@ -717,6 +717,14 @@ debugRow.addEventListener('click', event => {
     bossTimerFor = boss; boss.continued = action === 'bossContFinal';
     bossDefeated('death'); return;
   }
+  if (action === 'bookAll') { // 図鑑のキャラ（モンスター）と曲をすべて登録済みにする
+    if (!game.bestiary) game.bestiary = {};
+    ENEMY_BOOK.forEach(e => { if (!game.bestiary[e.key]) game.bestiary[e.key] = { kills: 1, firstStage: game.stage }; });
+    if (!game.bgmBook) game.bgmBook = {};
+    BGM_INFO.forEach(b => { if (!game.bgmBook[b.key]) game.bgmBook[b.key] = game.stage; });
+    renderBestiary(); renderBgmBook(); saveGame();
+    showNotice(`DEBUG: 図鑑のキャラ${ENEMY_BOOK.length}体・曲${BGM_INFO.length}曲を全開放しました`); return;
+  }
   if (action === 'chestClear') { game.heldChests = {}; game.rebirthChests = []; renderChestTray(); saveGame(); showNotice('DEBUG: 宝箱を全部消しました'); return; }
   if (action.startsWith('enemy:')) {
     const key = action.slice(6);
