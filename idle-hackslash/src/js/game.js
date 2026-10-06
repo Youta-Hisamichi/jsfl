@@ -1617,7 +1617,7 @@ function updateBarrierButton() {
 }
 
 const SPRITE_FACING = {
-  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: 0, knight: 0, archer: 0, witch: 0, sprite: 1, golem: 1, monk: 0, bard: 0, ninja: 0, priest: 0, dragon: 1, thief: 0, lancer: 0, samurai: 0, sage: 0, angel: 1,
+  hero: -1, heroine: 0, mage: 0, ranger: 0, warrior: 0, cat: -1, knight: 0, archer: 0, witch: 0, sprite: 1, golem: 1, monk: 0, bard: 0, ninja: 0, priest: 0, dragon: 1, thief: 0, lancer: 0, samurai: 0, sage: 0, angel: 1,
   paladin: 0, dragoon: 0, summoner: 0, alchemist: 0, gunner: 0, pirate: 0, darkKnight: -1, b_fireDragon: -1, b_iceDragon: -1, b_golem: 0, b_bloodLord: 0, b_seraph: 0, b_beholder: 0, b_kraken: 0, b_skullKing: 0, b_cerberus: 0, b_treant: 0, b_siren: 0, b_ogreKing: 0, b_darkWitch: 0, b_voidKnight: -1, b_mimic: -1, b_yukiOnna: 0, b_mossGiant: 0, b_phoenix: 0, b_iceQueen: 0, b_stormDragon: 0, b_voidEater: 0, b_cursedBear: 0, b_libraKnight: 0, b_magmaGolem: 0, b_crystalGolem: 0, b_demonPrincess: 0, b_skyWhale: -1, b_reaper2: 0, b_deepOne: 0,
   slime: 0, metalSlime: 0, goblin: 1, skeleton: 1, zombie: 1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
   worm: 1, cobra: 1, salamander: 1, flameWisp: 0, lich: 1, 
