@@ -1172,7 +1172,7 @@ function renderUpgradeList() {
     const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
     const pctCount = getMaxAffordableUpgradeLevels(id, game.coins * PCT_BUDGET);
     const nl = nextUpgradeLeap(level);
-    const leapTag = `<span class="upgrade-leap" style="color:${nl.leap.color}">次の${nl.leap.name}（${nl.leap.every === 10 ? '+10%' : '×' + nl.leap.mult}）まで あと${nl.target - level}Lv</span>`;
+    const leapTag = nl.target - level === 1 ? `<span class="upgrade-leap leap-next" style="--lc:${nl.leap.color}">✨ 次で${nl.leap.name}！（${nl.leap.every === 10 ? '+10%' : '×' + nl.leap.mult}）</span>` : ''; // あと1回で飛躍するときだけ知らせる
     const now = getUpgradeStatValue(id);
     game.upgrades[id] = level + 1;
     const next = getUpgradeStatValue(id);
