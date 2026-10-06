@@ -911,11 +911,25 @@ function playSnesSlash(i) {
 }
 const ATTACK_SOUNDS = SNES_SLASHES.map((_, i) => () => playSnesSlash(i));
 let lastAttackSound = -1;
+function playPlayerAttackSound() { if (rushingNow) playRushHitSound(); else playEnemyHitSound(); } // 自キャラの攻撃：体当たりは打撃音、接近戦は斬撃音
 function playEnemyHitSound() {
   let i = Math.floor(Math.random() * ATTACK_SOUNDS.length);
   if (i === lastAttackSound) i = (i + 1) % ATTACK_SOUNDS.length; // 同じ音が続かないように
   lastAttackSound = i;
   ATTACK_SOUNDS[i]();
+}
+// 体当たり（引っぱり攻撃）が当たった音：剣の斬撃とは違う、体ごとぶつかる重い「ドゴッ」
+function playRushHitSound() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const t0 = audioCtx.currentTime, v = game.sfxVolume ?? 0.7;
+  const len = Math.floor(audioCtx.sampleRate * 0.16), buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const n = audioCtx.createBufferSource(); n.buffer = buf;
+  const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(2400, t0); lp.frequency.exponentialRampToValueAtTime(300, t0 + 0.14);
+  const g = audioCtx.createGain(); g.gain.setValueAtTime(0.5 * v, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+  n.connect(lp); lp.connect(g); g.connect(audioCtx.destination); n.start(t0);
+  thump(170, 42, 0.26, 0.55); // 腹に響く低音
+  thump(95, 60, 0.07, 0.18, 'square'); // ゴツッという芯
 }
 function playPlayerHitSound() { playNoiseBurst(0.1, 0.28); playTone(150, 0.16, 'sawtooth', 0.22, 70); }
 function playPlayerWallSound() { playTone(560, 0.07, 'sine', 0.07, 760); }

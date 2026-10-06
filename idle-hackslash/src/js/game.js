@@ -109,7 +109,7 @@ function step() {
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
-        playEnemyHitSound();
+        playPlayerAttackSound();
         applyHitKnockback(e, a, 3.2);
       } else if (!enemyAttackHits(e)) {
         spawnEvadeText(a); // 回避したらバリアも消費しない
@@ -143,7 +143,7 @@ function step() {
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
-        playEnemyHitSound();
+        playPlayerAttackSound();
         applyHitKnockback(e, a, 3.2);
       }
       if (!isDisabled(e) && !isRampage() && isEnemyAttacking(e)) { // 敵が攻撃フェーズのときだけ、ぶつかると反撃される
