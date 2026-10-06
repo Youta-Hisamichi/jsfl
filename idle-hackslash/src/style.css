@@ -1549,3 +1549,45 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .cl-trans b { color: #1fa055; font-weight: 900; }
 .cl-trans-inline { display: block; font-size: 0.7rem; color: #2ea043; font-weight: 700; }
 .cl-trans-inline s { color: #8a90a4; }
+
+/* ===== ランキングページ（見本のデザイン） ===== */
+.tab-page[data-tab="ranking"] > .artifact-panel { background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat, radial-gradient(120% 60% at 50% 0%, #26304e 0%, #151b2e 55%, #0f1424 100%) !important; border: 1px solid #3a4568 !important; border-image: none !important; border-radius: 14px; color: #e8ecf6; --text: #e8ecf6; --text-dim: #aeb6cc; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
+.tab-page[data-tab="ranking"] > .artifact-panel::before { display: none; }
+.tab-page[data-tab="ranking"] .shopkeeper .sk-bubble { background: linear-gradient(180deg, #f4e6c4, #e2cc9a); border: 1px solid #a8854a; color: #3a2814; border-radius: 4px; }
+.tab-page[data-tab="ranking"] .shopkeeper .sk-bubble::before { border-right-color: #a8854a; }
+.tab-page[data-tab="ranking"] .shopkeeper .sk-bubble::after { border-right-color: #ecdcb2; }
+.tab-page[data-tab="ranking"] .shopkeeper .sk-name { color: #5a3a14; }
+.tab-page[data-tab="ranking"] #totalUserCount { background: none !important; color: #e8ecf6 !important; font-weight: 700; padding: 2px 8px 8px !important; }
+/* タブ：フォルダの見出し風 */
+.tab-page[data-tab="ranking"] .rank-tabs { gap: 6px; margin-bottom: 0; align-items: flex-end; }
+.tab-page[data-tab="ranking"] .rank-tabs .rank-tab-btn { border: 2px solid #5a6688 !important; border-bottom: none !important; border-image: none !important; border-radius: 6px 6px 0 0 !important; background: linear-gradient(180deg, #3a4258, #23293a) !important; color: #e8ecf6 !important; padding: 10px 0 !important; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
+.tab-page[data-tab="ranking"] .rank-tabs .rank-tab-btn.active { background: linear-gradient(180deg, #2a8ae8, #0c4fa8) !important; border-color: #8ac4ff !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 -2px 10px rgba(80,160,255,0.35); }
+/* 一覧の枠（タブとつながる紺の板） */
+.tab-page[data-tab="ranking"] #rankingTitle { margin: 0; padding: 8px 10px 4px; background: rgba(10,14,28,0.85); border: 2px solid #5a6688; border-bottom: none; color: #dfe4f0; font-weight: 700; }
+.tab-page[data-tab="ranking"] #rankDateNav { margin: 0 !important; padding: 4px 0 10px; background: rgba(10,14,28,0.85); border-left: 2px solid #5a6688; border-right: 2px solid #5a6688; }
+.tab-page[data-tab="ranking"] #rankingList { padding: 4px 6px 8px; background: rgba(10,14,28,0.85); border: 2px solid #5a6688; border-top: none; border-radius: 0 0 8px 8px; }
+.tab-page[data-tab="ranking"] #rankDateNav .modal-shop-btn { border: 2px solid #6a7698 !important; border-image: none !important; background: linear-gradient(180deg, #3a4462, #1e2438) !important; color: #e8ecf6 !important; border-radius: 6px !important; font-weight: 800; }
+.tab-page[data-tab="ranking"] #rankDateLabel { color: #fff !important; font-weight: 800; font-size: 0.9rem !important; background: rgba(0,0,0,0.35); padding: 5px 0; border-radius: 4px; }
+/* 順位の行 */
+.tab-page[data-tab="ranking"] .rank-row { border: 2px solid #8a8f9a !important; border-image: none !important; border-radius: 6px !important; background: linear-gradient(180deg, #d8d6cf, #b8b5ac) !important; margin-bottom: 5px; padding: 6px 12px !important; color: #2a2620; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 3px rgba(0,0,0,0.5); filter: none; gap: 0; }
+.tab-page[data-tab="ranking"] .rank-row .rank-no { width: 3.2em; padding-right: 8px; margin-right: 12px; border-right: 2px solid rgba(80,74,64,0.35); color: #3a3428; font-weight: 800; }
+.tab-page[data-tab="ranking"] .rank-row .rank-no small { font-size: 0.75em; }
+.tab-page[data-tab="ranking"] .rank-row .rank-name { color: #2a2620 !important; text-shadow: none !important; }
+.tab-page[data-tab="ranking"] .rank-row .rank-score { padding-left: 12px; border-left: 2px solid rgba(80,74,64,0.35); color: #2a2620 !important; font-weight: 800; }
+.tab-page[data-tab="ranking"] .rank-row.top1, .tab-page[data-tab="ranking"] .rank-row.top2, .tab-page[data-tab="ranking"] .rank-row.top3 { padding: 10px 14px !important; font-size: 0.98rem; border-width: 2px !important; }
+.tab-page[data-tab="ranking"] .rank-row.top1 .rank-no, .tab-page[data-tab="ranking"] .rank-row.top2 .rank-no, .tab-page[data-tab="ranking"] .rank-row.top3 .rank-no, .tab-page[data-tab="ranking"] .rank-row.top1 .rank-score, .tab-page[data-tab="ranking"] .rank-row.top2 .rank-score, .tab-page[data-tab="ranking"] .rank-row.top3 .rank-score { border: none; }
+.tab-page[data-tab="ranking"] .rank-row.top1 { background: linear-gradient(180deg, #a8683a 0%, #7a4220 50%, #5a2e14 100%) !important; border-color: #f0c070 !important; box-shadow: 0 0 10px rgba(255,190,90,0.6), inset 0 1px 0 rgba(255,230,180,0.6), inset 0 0 12px rgba(255,180,90,0.35); }
+.tab-page[data-tab="ranking"] .rank-row.top2 { background: linear-gradient(180deg, #4a6a8a 0%, #2c4560 50%, #1c2c40 100%) !important; border-color: #9ab8d8 !important; box-shadow: 0 0 8px rgba(130,180,230,0.45), inset 0 1px 0 rgba(200,225,255,0.5); }
+.tab-page[data-tab="ranking"] .rank-row.top3 { background: linear-gradient(180deg, #6a4430 0%, #4a2c1c 50%, #321c10 100%) !important; border-color: #c08a5a !important; box-shadow: 0 0 8px rgba(200,130,80,0.4), inset 0 1px 0 rgba(255,200,160,0.4); }
+.tab-page[data-tab="ranking"] .rank-row.top1 .rank-name, .tab-page[data-tab="ranking"] .rank-row.top2 .rank-name, .tab-page[data-tab="ranking"] .rank-row.top3 .rank-name, .tab-page[data-tab="ranking"] .rank-row.top1 .rank-score, .tab-page[data-tab="ranking"] .rank-row.top2 .rank-score, .tab-page[data-tab="ranking"] .rank-row.top3 .rank-score { color: #fff4e0 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important; }
+.tab-page[data-tab="ranking"] .rank-row.top10 { background: linear-gradient(180deg, #dcd9d0, #bdb9ae) !important; }
+.tab-page[data-tab="ranking"] .rank-row.top10 .rank-no { color: #3a3428; }
+.tab-page[data-tab="ranking"] .rank-row.me { box-shadow: 0 0 0 2px #4fa8ff, 0 0 10px rgba(79,168,255,0.7) !important; outline: none; }
+/* 壁：見本の色合い（高さは今と同じくらい） */
+.tab-page[data-tab="ranking"] .rank-wall { margin: 8px 0; padding: 6px 10px; border-radius: 6px; border: 2px solid var(--wb); background: var(--wbg); box-shadow: 0 0 10px var(--wg), inset 0 1px 0 rgba(255,255,255,0.25); }
+.tab-page[data-tab="ranking"] .rank-wall span { display: inline-flex; align-items: center; gap: 10px; padding: 2px 16px; border-radius: 999px; background: linear-gradient(180deg, #2a2a30, #121216); border: 1.5px solid var(--wb); color: var(--wt); font-size: 0.82rem; letter-spacing: 0.06em; font-family: serif; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="ranking"] .rank-wall span i { font-style: normal; font-size: 1rem; filter: drop-shadow(0 1px 1px #000); }
+.tab-page[data-tab="ranking"] .rank-wall.w-god { --wb: #8a8a84; --wg: rgba(0,0,0,0.4); --wt: #ffd08a; --wbg: repeating-linear-gradient(90deg, transparent 0 58px, rgba(0,0,0,0.35) 58px 60px), linear-gradient(180deg, #8a8880, #5e5c56); }
+.tab-page[data-tab="ranking"] .rank-wall.w-pro { --wb: #b88ae8; --wg: rgba(170,110,255,0.55); --wt: #e8d0ff; --wbg: repeating-linear-gradient(60deg, transparent 0 22px, rgba(255,255,255,0.08) 22px 23px), repeating-linear-gradient(-60deg, transparent 0 22px, rgba(255,255,255,0.08) 22px 23px), linear-gradient(180deg, #7a4ab8, #4a2478); }
+.tab-page[data-tab="ranking"] .rank-wall.w-master { --wb: #7ab8f0; --wg: rgba(80,160,255,0.6); --wt: #e8f2ff; --wbg: repeating-linear-gradient(45deg, transparent 0 20px, rgba(160,210,255,0.12) 20px 21px), repeating-linear-gradient(-45deg, transparent 0 20px, rgba(160,210,255,0.12) 20px 21px), linear-gradient(180deg, #3a6a9a, #1e3a5e); }
+.tab-page[data-tab="ranking"] .rank-wall.w-class { --wb: #d8b070; --wg: rgba(220,170,80,0.45); --wt: #f4dca0; --wbg: repeating-linear-gradient(0deg, transparent 0 9px, rgba(60,40,10,0.25) 9px 10px), repeating-linear-gradient(90deg, transparent 0 9px, rgba(60,40,10,0.25) 9px 10px), linear-gradient(180deg, #b08a4a, #7a5a28); }
