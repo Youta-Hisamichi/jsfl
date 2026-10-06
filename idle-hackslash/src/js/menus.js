@@ -350,12 +350,12 @@ function getMilestoneBoss(stage) {
   return null;
 }
 
-const SKIP_DROP_TABLE = [
-  { minSkip: 1000, weights: [0, 0, 0, 100] },
-  { minSkip: 500,  weights: [0, 0, 50, 50] },
-  { minSkip: 200,  weights: [0, 20, 60, 20] },
-  { minSkip: 100,  weights: [0, 60, 40, 0] },
-  { minSkip: 0,    weights: [50, 50, 0, 0] },
+const SKIP_DROP_TABLE = [ // 試練の塔の遺物は★3（エピック）以上。[コモン, レア, エピック, レジェンド, ミシック]
+  { minSkip: 1000, weights: [0, 0, 0, 70, 30] },
+  { minSkip: 500,  weights: [0, 0, 30, 60, 10] },
+  { minSkip: 200,  weights: [0, 0, 60, 36, 4] },
+  { minSkip: 100,  weights: [0, 0, 80, 20, 0] },
+  { minSkip: 0,    weights: [0, 0, 100, 0, 0] },
 ];
 const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 function pickSkipDropRarity(skipped) {
@@ -367,24 +367,23 @@ function pickSkipDropRarity(skipped) {
   }
   return RARITY_ORDER[row.weights.findIndex(w => w > 0)];
 }
-function dropSkipArtifact(skipped) {
+function dropSkipArtifact(skipped) { // 中身は見せずに宝箱へ封入（宝箱ボタンから開けると分かる）
   const rarity = pickSkipDropRarity(skipped);
   const pool = ARTIFACT_POOL.filter(a => a.rarity === rarity);
   const available = pool.filter(a => !ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]);
   const list = available.length ? available : pool;
   const pick = list[Math.floor(Math.random() * list.length)];
-  gainArtifact(pick.id);
+  if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
+  game.rebirthChests.push(pick.id); // 転生ガチャの宝箱と同じしくみ：中身は決まっているが、開けるまで秘密
   const info = RARITY_INFO[rarity];
-  spawnDamageText(arena.x, arena.y - 30, `${rarityStars(rarity)}\n${pick.icon} ${pick.name}`, info.color, TREASURE_TEXT_DECAY, true);
+  spawnDamageText(arena.x, arena.y - 30, `${rarityStars(rarity)}\n🎁 ${info.label}の宝箱`, info.color, TREASURE_TEXT_DECAY, true);
   for (let i = 0; i < 16; i++) {
     const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3;
     particles.push({ x: arena.x, y: arena.y - 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: info.color, decay: 0.015 });
   }
   playGachaSound(rarity);
-  showLootPopup('🏺 試練の塔 報酬（遺物）', `${ico(pick)} ${pick.name}`, `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}</span>　${pick.desc}　所持 x${game.ownedArtifacts[pick.id]}`, info.color);
-  showNotice(`🏺 試練の塔 報酬：${rarityStars(rarity)} ${pick.icon} ${pick.name} を獲得！（${pick.desc}）`, false, TREASURE_NOTICE_MS, true);
-  renderArtifactList();
-  updateStatsUI();
+  showNotice(`🏺 試練の塔 報酬：${rarityStars(rarity)} ${info.label}の宝箱（遺物入り）を獲得！ 左下の宝箱をタップで開封`, false, TREASURE_NOTICE_MS, true);
+  renderChestTray(rarity);
   saveGame();
 }
 

@@ -1457,7 +1457,7 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .tower-row { justify-content: center; gap: 6px; }
 .cmd-bar .tower-share { flex-basis: 27%; } .cmd-bar #stageSkipBtn, .cmd-bar #bossRetireBtn { flex-basis: 33%; } .cmd-bar #rebornBtn { flex-basis: 35%; }
 /* デバッグを開くボタン：ボタン帯の1行下に小さく */
-.cmd-bar .dbg-mini { background-image: none !important; aspect-ratio: auto; flex: none; width: auto; overflow: visible; opacity: 1; display: flex !important; align-items: center; gap: 3px; margin: 4px 0 0 auto !important; padding: 2px 8px !important; font-size: 0.62rem !important; font-weight: 700; color: var(--text-dim); background: rgba(0,0,0,0.06) !important; border: 1px solid var(--ring) !important; border-radius: 999px !important; position: static !important; transform: none !important; }
+.cmd-bar .dbg-mini { background-image: none !important; aspect-ratio: auto; flex: none; width: auto; overflow: visible; opacity: 1; display: flex !important; align-items: center; gap: 3px; margin: 4px auto 0 !important; padding: 2px 8px !important; font-size: 0.62rem !important; font-weight: 700; color: var(--text-dim); background: rgba(0,0,0,0.06) !important; border: 1px solid var(--ring) !important; border-radius: 999px !important; position: static !important; transform: none !important; }
 .cmd-bar .dbg-mini .bb-gear { width: 13px !important; height: 13px; margin: 0 !important; }
 .cmd-bar .dbg-mini.open { color: var(--text); }
 
