@@ -87,9 +87,9 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .exp-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 4px; }
 .exp-track { background: var(--bg); border-radius: 999px; height: 8px; overflow: hidden; border: 1px solid var(--ring); }
 
-.stage-track-wrap { position: relative; margin: 8px 12px 4px 4px; }
+.stage-track-wrap { position: relative; margin: 8px 16px 4px 4px; }
 .stage-mark { position: absolute; top: 50%; width: 24px; height: 24px; transform: translate(-50%, -58%); image-rendering: pixelated; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); transition: left 0.25s ease-out; }
-.stage-mark-boss { left: 100%; width: 26px; height: 26px; } /* 向きはボスごとにJSで合わせる */
+.stage-mark-boss { left: 100%; width: 36px; height: 36px; } /* 向きはボスごとにJSで合わせる */
 .stage-mark-player { z-index: 1; transform: translate(-50%, -58%) scaleX(-1); } /* 自キャラの絵は左向きなので、右（ボス）へ進む向きに反転 */
 .exp-fill { height: 100%; background: linear-gradient(90deg, var(--exp), #4fd67e); border-radius: 999px; transition: width 0.2s ease-out; width: 0%; }
 
@@ -1592,4 +1592,11 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .tab-page[data-tab="ranking"] .rank-wall.w-master { --wb: #7ab8f0; --wg: rgba(80,160,255,0.6); --wt: #e8f2ff; --wbg: repeating-linear-gradient(45deg, transparent 0 20px, rgba(160,210,255,0.12) 20px 21px), repeating-linear-gradient(-45deg, transparent 0 20px, rgba(160,210,255,0.12) 20px 21px), linear-gradient(180deg, #3a6a9a, #1e3a5e); }
 .tab-page[data-tab="ranking"] .rank-wall.w-class { --wb: #d8b070; --wg: rgba(220,170,80,0.45); --wt: #f4dca0; --wbg: repeating-linear-gradient(0deg, transparent 0 9px, rgba(60,40,10,0.25) 9px 10px), repeating-linear-gradient(90deg, transparent 0 9px, rgba(60,40,10,0.25) 9px 10px), linear-gradient(180deg, #b08a4a, #7a5a28); }
 .pu-icon .ico-img, .pu-zoom-icon .ico-img { width: 1.3em; height: 1.3em; object-fit: contain; vertical-align: middle; }
-#weaponList .sk-top .ico-img { object-fit: contain; border-radius: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+#weaponList .sk-top .ico-img { width: 3.4rem; height: 3.4rem; object-fit: contain; border-radius: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+/* ゲーム画面下のHPゲージ：余白を詰めて縦幅を最小に */
+.hp-row .hp-card { border-width: 7px 9px; border-image-width: 7px 9px; padding: 0 2px; }
+.hp-row .hp-card .label { margin-bottom: 1px; line-height: 1.15; font-size: 0.74rem; }
+.hp-row .hp-bar-track { height: 10px; }
+/* スキルボタン：上のHPゲージにほぼくっつけ、下は少し余白 */
+#skillRow:has(> .action-btn:not([style*="none"])) { margin-top: -10px; }
+#skillRow:has(> .action-btn:not([style*="none"])) ~ .cmd-bar { margin-top: -4px; }
