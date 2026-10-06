@@ -58,6 +58,7 @@ function draw() {
   drawTackleEffects();
   drawRampageGauge();
   drawChargeRing();
+  drawReflectCue();
   drawSlashFx();
   drawWeapons();
   tickChargeSound();

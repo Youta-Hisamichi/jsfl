@@ -808,14 +808,42 @@ function releaseCharge() {
 }
 // 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
 const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
+// 反射チェイン：引っ張りで飛んでいる最中、跳ね返った直後に「跳ね返る向き」へ引っ張り直すと連鎖して威力が上がる
+const REFLECT_WINDOW_MS = 450, REFLECT_ANGLE = 0.7, REFLECT_STEP = 0.6, REFLECT_MAX = 10; // 受付時間・許容角度（約40°）・1連鎖ごとの倍率・最大連鎖
+function reflectChainMult() { return holdRush && holdRush.chain ? 1 + REFLECT_STEP * holdRush.chain : 1; }
 function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
-  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
+  let chain = 0;
+  const prev = holdRush;
+  if (!auto && prev && prev.shot && !prev.used && prev.bounceAt && Date.now() - prev.bounceAt <= REFLECT_WINDOW_MS) {
+    let da = ang - Math.atan2(prev.buy, prev.bux); while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+    if (Math.abs(da) <= REFLECT_ANGLE) chain = Math.min(REFLECT_MAX, (prev.chain || 0) + 1);
+  }
+  if (chain) lv = Math.max(lv, prev.charge || 0); // 連鎖中は弱い引っ張りでも前の威力を引き継ぐ
+  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = (6 + 8 * lv) * (1 + 0.06 * chain);
+  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto, chain, wallChain: prev && chain ? prev.wallChain : 0 };
+  if (chain) {
+    spawnDamageText(pl.x, pl.y - pl.radius - 26, `反射チェイン ×${chain}！ 威力×${(1 + REFLECT_STEP * chain).toFixed(1)}`, chain >= 5 ? '#ff4f6d' : '#7ee7ff', 0.02, true);
+    for (let i = 0; i < 10; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#7ee7ff' : '#ffffff');
+    hitStopFrames = Math.max(hitStopFrames || 0, 4);
+    shakeScreenLight();
+    playChainSound(chain + 1);
+  }
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
+}
+function drawReflectCue() { // 跳ね返った直後：引っ張り直す向きを矢印で示す（受付時間だけ）
+  if (!holdRush || !holdRush.shot || holdRush.auto || holdRush.used || !holdRush.bounceAt) return;
+  const t = (Date.now() - holdRush.bounceAt) / REFLECT_WINDOW_MS; if (t > 1) return;
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const a = Math.atan2(holdRush.buy, holdRush.bux), L = pl.radius + 26 + 14 * t;
+  ctx.save(); ctx.globalAlpha = 1 - t; ctx.translate(pl.x, pl.y); ctx.rotate(a);
+  ctx.strokeStyle = '#7ee7ff'; ctx.fillStyle = '#7ee7ff'; ctx.lineWidth = 3; ctx.shadowColor = '#7ee7ff'; ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.arc(0, 0, pl.radius + 6 + 10 * t, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(L + 10, 0); ctx.lineTo(L - 2, -8); ctx.lineTo(L - 2, 8); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 function isAutoMode() { return phase === 'battle' && !chargeHold && !playerDrag && getActiveTab() === 'game' && Date.now() - lastUserInputAt >= AUTO_PULL_IDLE_MS; }
 function drawAutoLabel() { // オート中は自キャラの近くに AUTO と表示
@@ -1217,7 +1245,7 @@ const RUN_BUFFS = {
   slash: { icon: '🗡️', name: '近距離攻撃強化', desc: 'タップの切り払いのダメージ+30%・範囲+6' },
 };
 function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
-function getRushDmgMult() { return rushingNow && holdRush ? (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
+function getRushDmgMult() { return rushingNow && holdRush ? reflectChainMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
@@ -1286,6 +1314,7 @@ function moveHoldRush(ball, speedMult) {
   if (holdRush && holdRush.shot) { // 引っ張り発射：まっすぐ飛んで壁・敵で跳ね返り、終わり際に減速
     const cur = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / cur, uy = ball.vy / cur;
     if (holdRush.ux !== undefined && ux * holdRush.ux + uy * holdRush.uy < 0.95) { // 壁や敵で跳ね返ったら摩擦で減速
+      holdRush.bounceAt = Date.now(); holdRush.bux = ux; holdRush.buy = uy; // 反射チェインの受付開始（この向きへ引っ張り直す）
       holdRush.speed *= 0.72;
       if (holdRush.speed < 3) holdRush.until = Date.now();
     }
