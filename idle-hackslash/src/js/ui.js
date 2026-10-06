@@ -889,7 +889,7 @@ debugRow.addEventListener('click', event => {
     game.bestStage = Math.max(game.bestStage, game.stage);
     balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
     refreshPlayerBallStats(true); updateHPUI();
-    stageAnnounceText = game.stage + '階 大群！';
+    stageAnnounceText = formatCoinNumber(game.stage) + '階 大群！';
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     startBgm('normal');
   }
