@@ -1184,12 +1184,8 @@ function renderSkillSetModal() {
     return `<button class="ss-card ${eq.includes(id) ? 'on' : ''}" data-skill-set="${id}">${ico(sk)}<span>${sk.name}</span><span class="ss-lv">${lv >= SKILL_MAX_LEVEL ? 'Lv MAX' : 'Lv' + lv}</span></button>`;
   }).join('');
 }
-// ボス戦中はスキルの入れ替え禁止
-function skillSwapLocked(event) {
-  if (!isBossFight()) return false;
-  showTapError('ボス戦中はスキルを入れ替えられません', event && event.clientX, event && event.clientY);
-  return true;
-}
+// スキル・サブウェポンの入れ替えはボス戦中も自由（制限するときはここで true を返す）
+function skillSwapLocked(event) { return false; }
 document.getElementById('skillSetBtn').addEventListener('click', event => { if (skillSwapLocked(event)) return; renderSkillSetModal(); skillSetModal.classList.add('show'); });
 document.getElementById('skillSetCloseBtn').addEventListener('click', () => skillSetModal.classList.remove('show'));
 document.getElementById('skillSetGrid').addEventListener('click', event => {
