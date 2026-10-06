@@ -2550,3 +2550,19 @@ function fitCmdBarText() {
 if (window.ResizeObserver) { const ro = new ResizeObserver(() => requestAnimationFrame(fitCmdBarText)); document.querySelectorAll('.cmd-bar .tower-row > button').forEach(b => ro.observe(b)); }
 new MutationObserver(() => requestAnimationFrame(fitCmdBarText)).observe(document.querySelector('.cmd-bar .tower-row'), { childList: true, subtree: true, characterData: true });
 window.addEventListener('load', fitCmdBarText);
+
+// 戦績の各行：先頭の「BEST」などと項目名を1つの札（タグ）にまとめる（見た目用）
+(function wrapRecordTags() {
+  document.querySelectorAll('.record-panel.one .record').forEach(row => {
+    if (row.querySelector('.rec-tag')) return;
+    const nodes = [...row.childNodes];
+    const kind = nodes.find(n => n.nodeType === 3 && n.textContent.trim());
+    const strong = row.querySelector('strong');
+    const after = nodes.slice(nodes.indexOf(strong) + 1).find(n => (n.nodeType === 3 && n.textContent.trim()) || (n.nodeType === 1 && n.tagName === 'SPAN'));
+    const tag = document.createElement('span'); tag.className = 'rec-tag';
+    const k = document.createElement('span'); k.className = 'rec-k'; k.textContent = kind ? kind.textContent.trim() : ''; if (kind) kind.remove();
+    const n = document.createElement('span'); n.className = 'rec-n';
+    if (after) { if (after.nodeType === 3) { n.textContent = after.textContent.trim(); after.remove(); } else n.appendChild(after); }
+    tag.append(k, n); row.insertBefore(tag, row.firstChild);
+  });
+})();

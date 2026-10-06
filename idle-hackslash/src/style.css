@@ -1491,3 +1491,29 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .weapon-slot-head button { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; color: #fff; font-weight: 800; font-size: 0.74rem; padding: 0 6px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 .weapon-slot-head button.is-disabled { filter: grayscale(0.7); opacity: 0.7; }
 .weapon-slot-head .ws-max { color: var(--gold); font-weight: 800; }
+
+/* ===== 戦績ページ（見本のデザイン） ===== */
+.tab-page[data-tab="records"] > .artifact-panel { background: radial-gradient(120% 60% at 50% 0%, #26304e 0%, #151b2e 55%, #0f1424 100%) !important; border: 1px solid #3a4568 !important; border-image: none !important; border-radius: 14px; color: #e8ecf6; --text: #e8ecf6; --text-dim: #aeb6cc; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
+.tab-page[data-tab="records"] .shopkeeper .sk-img { width: 58px; height: 58px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; background: radial-gradient(circle at 50% 40%, #4a3a2a, #1e1610); border: 3px solid #c9a24a; box-shadow: 0 0 0 2px #5a4318, 0 3px 8px rgba(0,0,0,0.6); padding: 2px; }
+.tab-page[data-tab="records"] .shopkeeper .sk-bubble { background: rgba(14,20,38,0.92); border: 1px solid #4a5678; color: #f0f2f8; border-radius: 8px; }
+.tab-page[data-tab="records"] .shopkeeper .sk-bubble::before { border-right-color: #4a5678; }
+.tab-page[data-tab="records"] .shopkeeper .sk-bubble::after { border-right-color: rgba(14,20,38,0.92); }
+.tab-page[data-tab="records"] .shopkeeper .sk-name { color: #e8c46a; }
+.tab-page[data-tab="records"] .settings-row label { color: #dfe4f0; }
+.tab-page[data-tab="records"] #usernameInput { background: rgba(8,12,24,0.85) !important; border: 1px solid #5a6688 !important; color: #f0f2f8 !important; border-radius: 4px !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); }
+.tab-page[data-tab="records"] .record-panel.one .record { grid-template-columns: minmax(0, 46%) 1fr; column-gap: 10px; padding: 9px 10px 8px; color: #5a4828; }
+.tab-page[data-tab="records"] .rec-tag { position: relative; display: flex; align-items: center; gap: 0; min-height: 22px; padding: 2px 18px 2px 8px; background: linear-gradient(180deg, #ead9b4, #d4bd8c); color: #4a3418; font-size: 0.66rem; font-weight: 700; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%); box-shadow: inset 0 -1px 0 rgba(90,60,20,0.25); }
+.tab-page[data-tab="records"] .rec-tag .rec-k { flex: 0 0 4.4em; letter-spacing: 0.02em; }
+.tab-page[data-tab="records"] .rec-tag .rec-n { flex: 1; min-width: 0; font-weight: 700; line-height: 1.2; }
+.tab-page[data-tab="records"] .rec-tag .rec-n span { font-size: 0.6rem; opacity: 1 !important; }
+.tab-page[data-tab="records"] .record-panel.one .record strong { order: 0; font-size: 1.02rem; font-weight: 900; color: #2a1c0c; }
+.tab-page[data-tab="records"] .record-panel.one .record .rec-goal { margin-top: 6px; gap: 8px; font-size: 0.64rem; }
+.tab-page[data-tab="records"] .rec-goal .rg-bar { height: 9px; background: linear-gradient(180deg, #1a1d2a, #2c3044); border: 1px solid #4a3c22; box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); }
+.tab-page[data-tab="records"] .rec-goal .rg-bar i { position: relative; background: linear-gradient(90deg, #3fe0ff, #6aa8ff 45%, #b07cff); box-shadow: 0 0 6px rgba(120,170,255,0.8); }
+.tab-page[data-tab="records"] .rec-goal .rg-bar i::after { content: ''; position: absolute; right: -2px; top: 50%; width: 10px; height: 10px; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle, #fff 0 25%, rgba(200,230,255,0.8) 40%, rgba(150,200,255,0) 70%); }
+.tab-page[data-tab="records"] .record.goal-ready .rg-bar i { background: linear-gradient(90deg, #ffb14f, #ff7a6a 50%, #ff5f9f); box-shadow: 0 0 6px rgba(255,140,120,0.8); }
+.tab-page[data-tab="records"] .rec-goal .rg-text { color: #5a4828; }
+.tab-page[data-tab="records"] .rec-goal .rg-text b { color: #2a1c0c; font-weight: 700; }
+.tab-page[data-tab="records"] .rec-goal .rg-reward { color: #2a7ad0; }
+.tab-page[data-tab="records"] .rec-goal .rg-claim { position: relative; padding: 4px 14px 4px 12px; border-radius: 999px; background: linear-gradient(180deg, #e0894a, #a8481c); border: 1.5px solid #f4c27a; color: #fff; font-size: 0.68rem; box-shadow: 0 2px 0 #5a2408, 0 0 8px rgba(255,150,80,0.5); text-shadow: 0 1px 1px rgba(0,0,0,0.6); }
+.tab-page[data-tab="records"] .rec-goal .rg-claim::after { content: ''; position: absolute; right: -9px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-left-color: #f4c27a; }
