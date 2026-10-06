@@ -351,9 +351,20 @@ function renderBestiary() {
       ? `<span class="bst-face">${entry.icon}</span>`
       : `<span class="bst-face"><span class="bst-shape bst-${entry.shape}" style="background:${entry.color}"></span></span>`;
     if (!rec) return `<div class="bst-card unknown"><span class="bst-face">？</span><span class="bst-name">？？？</span><span class="bst-info">${entry.kind === 'boss' ? '👑 ボス' : '未発見'}</span></div>`;
-    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ${rec.firstStage}階</span></div>`;
+    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}" data-bst-zoom="${entry.key}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ${rec.firstStage}階</span></div>`;
   }).join('');
 }
+
+// 図鑑の敵をタップすると大きく表示（もう一度タップで閉じる）
+document.getElementById('bestiaryList').addEventListener('click', ev => {
+  const card = ev.target.closest('[data-bst-zoom]'); if (!card) return;
+  const entry = ENEMY_BOOK_BY_KEY[card.dataset.bstZoom], rec = (game.bestiary || {})[card.dataset.bstZoom]; if (!entry || !rec) return;
+  const face = card.querySelector('.bst-face');
+  let ov = document.getElementById('bstZoom');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'bstZoom'; ov.className = 'bst-zoom'; ov.addEventListener('click', () => ov.classList.remove('show')); document.body.appendChild(ov); }
+  ov.innerHTML = `<div class="bstz-card ${entry.kind === 'boss' ? 'boss' : ''}"><div class="bstz-face">${face ? face.innerHTML : ''}</div><div class="bstz-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</div><div class="bstz-info">撃破 ${formatCoinNumber(rec.kills)}体　初撃破 ${formatStageNumber(rec.firstStage)}階</div><div class="bstz-hint">タップで閉じる</div></div>`;
+  ov.classList.add('show');
+});
 
 const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit'];
 function pickEnemyMovementStyle(stage) {
