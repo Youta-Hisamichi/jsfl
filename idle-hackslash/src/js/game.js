@@ -477,6 +477,7 @@ function onStageClear() {
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
   }
   if (isBossStage) grantRandomWeapon('ボス撃破！ ');
+  if (isBossStage && !game.skipChallenge) setTimeout(tryBossCompanionJoin, 2600); // ボスを倒すと仲間がランダムで加わる（最大3人）
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
@@ -702,6 +703,30 @@ function updateBossRetireBtn() {
   if ((b.style.display !== 'none') !== show) b.style.display = show ? '' : 'none';
   document.body.classList.toggle('in-boss', show); // ボス戦中は試練の塔ボタンを隠してリタイヤに場所をゆずる
 }
+// ボス撃破で仲間が加わる：1人目は最初のボスですぐ、2人目・3人目はボスを何体か倒した後に確率で（だんだん出にくく）
+const BOSS_JOIN_MAX = 3;
+const BOSS_JOIN_RULES = [{ wait: 0, chance: 1 }, { wait: 2, chance: 0.5 }, { wait: 4, chance: 0.25 }]; // wait＝前の加入から倒すボスの数
+function tryBossCompanionJoin() {
+  const have = getCompanionTotal();
+  if (have >= BOSS_JOIN_MAX) return;
+  game.bossJoinSince = (game.bossJoinSince || 0) + 1;
+  const rule = BOSS_JOIN_RULES[have];
+  if (game.bossJoinSince <= rule.wait || Math.random() >= rule.chance) return;
+  game.bossJoinSince = 0;
+  if (getPartyLimit() <= have) game.companionSlots = have + 1; // 枠が足りなければ3人まではタダで広げる
+  let id = pickCompanionId();
+  for (let i = 0; i < 30 && getCompanionCount(id) > 0; i++) id = pickCompanionId(); // できるだけまだいない仲間を
+  const r = grantCompanion(id);
+  refreshCompanionBalls(); refreshPlayerBallStats(false);
+  const c = COMPANIONS[r.id], pl = balls.find(isMainPlayerBall);
+  const cb = balls.find(b => b.isCompanion && b.companionId === r.id);
+  if (cb) { spawnHitParticles(cb.x, cb.y, '#ff9a4f'); spawnHitParticles(cb.x, cb.y, '#ffe36b'); }
+  spawnDamageText(pl ? pl.x : arena.x, (pl ? pl.y : arena.y) - 50, `🐾 ${c.name} が仲間に加わった！`, '#ffb35c', 0.01, true);
+  showNotice(`🐾 ボスを倒して、${c.icon} ${c.name} が仲間に加わった！（${getCompanionTotal()}/${BOSS_JOIN_MAX}）`, false, 2600);
+  [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'square', 0.06), i * 90)); // 仲間加入のファンファーレ
+  if (typeof renderCompanionList === 'function') renderCompanionList();
+  saveGame();
+}
 function bossFail(reason, silent) {
   if (reason === 'retire') grantRandomWeapon('リタイヤ報酬：');
   const bossStage = game.stage;
@@ -888,7 +913,7 @@ function completeReincarnation() {
   coinFx = []; coinDisplayHold = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
-  game.companionSummons = 0;
+  game.companionSummons = 0; game.bossJoinSince = 0;
   game.skillGachaPulls = 0;
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
   game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.runBuffs = {}; weaponProj = []; weaponFx = [];
