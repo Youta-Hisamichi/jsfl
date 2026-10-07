@@ -1770,6 +1770,11 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .mini-btn.img-btn { position: relative; display: block; padding: 0 !important; min-height: 0; background: none !important; border: none !important; border-radius: 0; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
 .mini-btn.img-btn img { display: block; height: 46px; width: auto; }
 .mini-btn.img-btn[style*="none"] { display: none !important; }
+/* 画面下の試練の塔／リタイヤ・転生ボタンの列 */
+.cmd-bar .bottom-btn-row { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 6px 0 2px; }
+.cmd-bar .bottom-btn-row .mini-btn.img-btn { flex: 0 0 auto !important; aspect-ratio: auto !important; width: auto !important; height: auto !important; background-image: none !important; overflow: visible; }
+.cmd-bar .bottom-btn-row .mini-btn.img-btn > span { margin-left: 0 !important; max-width: none !important; }
+.cmd-bar .bottom-btn-row .mini-btn.img-btn img { height: 50px; }
 .img-btn-tag { position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); white-space: nowrap; font-size: 0.56rem; font-weight: 900; color: #fff; background: #b0525e; border-radius: 6px; padding: 0 4px; } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */

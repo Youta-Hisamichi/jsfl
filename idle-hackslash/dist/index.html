@@ -39,18 +39,11 @@
     <div class="exp-wrap">
       <div class="exp-label" style="justify-content:center; gap:6px;"><span><b id="stageNum">1</b>階　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
       <div class="stage-gauge-row">
-        <div class="gauge-side gauge-left">
-          <button class="mini-btn mini-tower img-btn" id="stageSkipBtn"><img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"></button>
-          <button class="mini-btn mini-retire img-btn" id="bossRetireBtn" style="display:none;"><img src="assets/img/ui/bar/btn_retire.webp" alt="リタイヤ"></button>
-        </div>
       <div class="stage-track-wrap">
         <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
         <img class="stage-mark stage-mark-boss" id="stageBossMark" alt="">
         <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
       </div>
-        <div class="gauge-side gauge-right">
-          <button class="mini-btn mini-reborn img-btn" id="rebornBtn" style="display:none;"><img src="assets/img/ui/bar/btn_reborn.webp" alt="転生"></button>
-        </div>
       </div>
       <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
     </div>
@@ -119,6 +112,11 @@
       <button class="action-btn boss-retry-action" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
     </div>
     <div class="cmd-bar">
+    <div class="bottom-btn-row">
+      <button class="mini-btn mini-tower img-btn" id="stageSkipBtn"><img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"></button>
+      <button class="mini-btn mini-retire img-btn" id="bossRetireBtn" style="display:none;"><img src="assets/img/ui/bar/btn_retire.webp" alt="リタイヤ"></button>
+      <button class="mini-btn mini-reborn img-btn" id="rebornBtn" style="display:none;"><img src="assets/img/ui/bar/btn_reborn.webp" alt="転生"></button>
+    </div>
     <button class="debug-toggle dbg-mini" id="debugToggleBtn"><img class="bb-gear" src="assets/img/ui/bar/dbg_gear.webp" alt="">デバッグ</button>
     </div>
 
