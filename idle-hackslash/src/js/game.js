@@ -213,7 +213,7 @@ function step() {
     for (const comp of companionsInPlay) {
       if (comp.hitCooldown > 0) continue;
       if (resolveBallCollision(comp, e)) {
-        comp.hitCooldown = 30;
+        comp.hitCooldown = Math.max(6, Math.round(30 / (b.companionSpeedMult || 1))); // 強化「仲間の攻撃頻度」で次の攻撃までが短くなる
         const combo = registerHit();
         const comboMult = getComboMultiplier(b.comboGrowth);
         if (combo >= 2) playChainSound(combo);
@@ -646,8 +646,26 @@ function bossDefeated(reason) {
 const BOSS_KO_MS = 1400;
 const GAMEOVER_REBORN_STAGE = 100; // この階以上でゲームオーバーになったら転生を勧める
 let bossKoPending = false;
+// ゲームオーバーの画面はゲーム画面でだけ出す：他のページを見ている間は保留し、ゲーム画面に戻ったら出す
+let deferredGameOver = null; // { kind: 'cont'（コンテニュー画面）| 'final'（コンテニュー後の敗北の転生確認）, reason }
+function suspendGameOverForTab() { // ゲーム画面から離れるとき
+  if (bossContModal.classList.contains('show')) {
+    clearInterval(bossContTimer); bossContModal.classList.remove('show');
+    if (typeof rebornConfirmModal !== 'undefined') { rebornConfirmModal.classList.remove('show'); rebornCtx = null; }
+    deferredGameOver = { kind: 'cont', reason: bossContReason || 'death' };
+  } else if (typeof rebornConfirmModal !== 'undefined' && rebornConfirmModal.classList.contains('show') && rebornCtx && rebornCtx.from === 'final') {
+    rebornConfirmModal.classList.remove('show');
+    deferredGameOver = { kind: 'final', reason: rebornCtx.reason }; rebornCtx = null;
+  }
+}
+function resumeGameOverForTab() { // ゲーム画面に戻ったとき
+  const d = deferredGameOver; if (!d) return; deferredGameOver = null;
+  if (d.kind === 'cont') showBossContModal(d.reason);
+  else openRebornConfirm({ from: 'final', reason: d.reason });
+}
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
+  if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
@@ -670,7 +688,10 @@ function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明�
   const pl = balls.find(isMainPlayerBall), boss = balls.find(b => !b.isPlayer && b.isBoss);
   if (pl) knockoutFx = { ball: pl, start: performance.now(), dir: boss ? (pl.x >= boss.x ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1) };
   setTimeout(() => {
-    if (game.stage >= GAMEOVER_REBORN_STAGE) { openRebornConfirm({ from: 'final', reason }); return; } // コンテニューしても負けた：転生するか確認
+    if (game.stage >= GAMEOVER_REBORN_STAGE) { // コンテニューしても負けた：転生するか確認（他のページを見ているときは戻ってから）
+      if (getActiveTab() !== 'game') deferredGameOver = { kind: 'final', reason }; else openRebornConfirm({ from: 'final', reason });
+      return;
+    }
     knockoutFx = null; el.classList.remove('show'); phase = 'battle'; bossFail(reason, true);
   }, BOSS_FINAL_MS);
 }

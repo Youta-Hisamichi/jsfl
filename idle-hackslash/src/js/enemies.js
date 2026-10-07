@@ -697,6 +697,12 @@ function refreshPlayerBallStats(healFull) {
   else p.hp = Math.min(newMax, p.hp + (newMax - p.maxHp > 0 ? newMax - p.maxHp : 0));
   p.maxHp = newMax;
   p.atk = getPlayerAtk();
+  for (const c of balls) { // 仲間の攻撃力・HPも強化に合わせて更新（HPの減り具合は保つ）
+    if (!c.isCompanion || !c.companionId || !COMPANIONS[c.companionId]) continue;
+    const mx = getCompanionMaxHP(c.companionId);
+    if (c.maxHp > 0 && c.hp > 0) c.hp = Math.min(mx, Math.round(c.hp * mx / c.maxHp));
+    c.maxHp = mx; c.atk = getCompanionAtk(c.companionId);
+  }
 }
 
 function normalizeSpeed(ball, targetSpeed) {

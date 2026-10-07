@@ -1779,6 +1779,7 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .cmd-bar .bottom-btn-row .mini-btn.img-btn { flex: 0 0 auto !important; aspect-ratio: auto !important; width: auto !important; height: auto !important; background-image: none !important; overflow: visible; }
 .cmd-bar .bottom-btn-row .mini-btn.img-btn > span { margin-left: 0 !important; max-width: none !important; }
 .cmd-bar .bottom-btn-row .mini-btn.img-btn img { height: 50px; }
+.cmd-bar .bottom-btn-row #stageSkipBtn img { height: 64px; } /* 試練の塔は少し大きく */
 .img-btn-tag { position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); white-space: nowrap; font-size: 0.56rem; font-weight: 900; color: #fff; background: #b0525e; border-radius: 6px; padding: 0 4px; } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */

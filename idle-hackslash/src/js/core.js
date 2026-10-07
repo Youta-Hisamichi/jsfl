@@ -225,6 +225,7 @@ function renderDirtyTabList(name) {
 }
 function switchTab(name) {
   if (name !== 'game' && typeof gameOverBgm !== 'undefined' && (gameOverBgm || (phase === 'paused' && deathFx))) return;
+  if (name !== 'game' && typeof suspendGameOverForTab === 'function') suspendGameOverForTab(); // ゲームオーバー画面は他のページに持ち出さない
   activeTabCache = name;
   document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
   if (typeof userPaused !== 'undefined' && userPaused && typeof audioCtx !== 'undefined' && audioCtx) { if (name === 'game') audioCtx.suspend(); else audioCtx.resume(); } // 一時停止は保ったまま、他のページでは音だけ鳴らす
@@ -236,6 +237,7 @@ function switchTab(name) {
   if (name === 'records') { renderBestiary(); renderBgmBook(); updateStatsUI(); renderRecordGoals(true); } // 戦績の目標は開いたときに必ず描く（他のページでは戦闘が止まって更新されないため）
   else if (bgmBookPreview) bgmBookPreview = null; // 戦績ページを離れたら試聴をやめる
   if (name === 'game') resizeCanvas();
+  if (name === 'game' && typeof resumeGameOverForTab === 'function') resumeGameOverForTab();
   if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
   if (name === 'gemshop') renderRebirthShopList();
   refreshBgm();
@@ -664,6 +666,9 @@ function getEvolveNeed(id) {
 const UPGRADES = {
   atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25, group: 'attack' },
   hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
+  cAtk: { icon: '🚩', name: '仲間の攻撃力', desc: '+15%', baseCost: 40, group: 'companion' },
+  cSpd: { icon: '💨', name: '仲間の攻撃頻度', desc: '+5%', baseCost: 60, group: 'companion' },
+  cHp: { icon: '🧿', name: '仲間の最大HP', desc: '+20%', baseCost: 40, group: 'companion' },
 };
 const UPGRADE_LEAPS = [
   { every: 1000, mult: 2, name: '超大飛躍', color: '#ff5cd6' },
@@ -1104,6 +1109,10 @@ function computeBonuses() {
   b.atkMult *= upgradeLeapMult(up.atk || 0);
   b.hpMult *= upgradeLeapMult(up.hp || 0);
   b.companionAtkMult *= upgradeLeapMult(up.compAtk || 0);
+  // 強化：仲間の攻撃力・攻撃頻度・最大HP（飛躍も効く）
+  b.companionAtkMult *= (1 + (up.cAtk || 0) * 0.15) * upgradeLeapMult(up.cAtk || 0);
+  b.companionHpMult *= (1 + (up.cHp || 0) * 0.20) * upgradeLeapMult(up.cHp || 0);
+  b.companionSpeedMult = (1 + (up.cSpd || 0) * 0.05) * upgradeLeapMult(up.cSpd || 0);
   if (game.shopOwned.sword) b.atkMult += 0.25;
   if (game.shopOwned.shield) b.hpMult += 0.25;
   if (game.shopOwned.fairy) b.coinMult += 0.30;
@@ -1184,10 +1193,14 @@ function getUpgradeStatValue(id) {
   if (id === 'melee') return b.meleeMult;
   if (id === 'rush') return b.rushDmgUp;
   if (id === 'compAtk') return b.companionAtkMult;
+  const L = game.upgrades[id] || 0; // 仲間の強化は、この強化だけの倍率を見せる
+  if (id === 'cAtk') return (1 + L * 0.15) * upgradeLeapMult(L);
+  if (id === 'cHp') return (1 + L * 0.20) * upgradeLeapMult(L);
+  if (id === 'cSpd') return (1 + L * 0.05) * upgradeLeapMult(L);
   return 0;
 }
 function formatUpgradeStat(id, v) {
-  if (id === 'tackle' || id === 'compAtk' || id === 'melee' || id === 'rush') return '×' + +v.toFixed(2);
+  if (id === 'tackle' || id === 'compAtk' || id === 'melee' || id === 'rush' || id === 'cAtk' || id === 'cHp' || id === 'cSpd') return '×' + (v >= 1000 ? formatCoinNumber(Math.round(v)) : +v.toFixed(2));
   return formatCoinNumber(Math.round(v));
 }
 function renderUpgradeList() {
