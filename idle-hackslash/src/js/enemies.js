@@ -1634,7 +1634,7 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
 }
 
 // 自キャラと仲間の衝突：ふだんは押し合うだけ。タックル中にぶつかると仲間を弾き飛ばし、その仲間が敵に当たると大ダメージ
-const ALLY_LAUNCH_MS = 1400, ALLY_LAUNCH_DMG_MULT = 4, ALLY_BODY_RATIO = 0.95; // 体の重なりはほぼ許さない
+const ALLY_LAUNCH_MS = 1400, ALLY_LAUNCH_DMG_MULT = 4, ALLY_BODY_RATIO = 0.95, ALLY_LAUNCH_SPEED = 20; // 体の重なりはほぼ許さない
 function resolveAllyCollisions() {
   const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
   const now = Date.now(), tackling = rushingNow || (holdRush && holdRush.shot && now < holdRush.until);
@@ -1645,7 +1645,7 @@ function resolveAllyCollisions() {
     const nx = dx / d, ny = dy / d, push = (min - d) / 2;
     pl.x -= nx * push; pl.y -= ny * push; c.x += nx * push; c.y += ny * push;
     if (tackling && !(c.launchUntil > now)) {
-      const sp = Math.max(10, Math.hypot(pl.vx, pl.vy) * 1.3);
+      const sp = ALLY_LAUNCH_SPEED; // ぶつかった速さに関係なく、いつも高速で吹っ飛ばす
       c.vx = nx * sp; c.vy = ny * sp; c.launchUntil = now + ALLY_LAUNCH_MS; c.hitCooldown = 0;
       spawnDamageText(c.x, c.y - c.radius - 14, '仲間シュート！', '#ffe066', 0.025, true);
       spawnHitParticles(c.x, c.y, '#ffe066'); thump(500, 1200, 0.12, 0.1, 'square'); thump(160, 80, 0.15, 0.15);
@@ -1705,7 +1705,7 @@ function movePlayerSideBalls(list, speedMult, b) {
     }
     if (ball.isCompanion && ball.launchUntil > Date.now()) { // 自キャラのタックルで弾き飛ばされた仲間はまっすぐ飛ぶ
       ball.x += ball.vx * speedMult; ball.y += ball.vy * speedMult;
-      ball.vx *= 0.985; ball.vy *= 0.985;
+      ball.vx *= 0.993; ball.vy *= 0.993; // 高速のまま飛んでいく
       wallBounce(ball);
       if (Math.random() < 0.5) spawnHitParticles(ball.x, ball.y, '#ffe066');
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
