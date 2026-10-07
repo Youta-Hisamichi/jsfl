@@ -300,7 +300,9 @@ function getEarlyPlayerHpRate(stage) {
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
   return EARLY_PLAYER_HP_MIN_RATE + (1 - EARLY_PLAYER_HP_MIN_RATE) * t;
 }
-const BOSS_HP_MULT = 6;    // ボスのHP倍率（通常敵比）
+const BOSS_HP_MULT = 8;    // ボスのHP倍率（通常敵比）の基本
+// ボスは階が進むほど（インフレが進むほど）雑魚との差が開く：1階付近×8 → 100階×9 → 500階×15 → 1000階×35 前後
+function bossHpMult(stage) { return BOSS_HP_MULT * Math.pow(enemyInflation(stage), 0.25); }
 const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
 const EARLY_HP_MIN_RATE = 0.1;
 const EARLY_HP_UNTIL_STAGE = 20;
@@ -319,7 +321,7 @@ function getEnemyStats(stage) {
   const baseAtk = Math.round((6 + stage * 2.4) * inf);
   const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
   return {
-    hp: isBoss ? Math.round(baseHp * BOSS_HP_MULT * (ms ? ms.hp : 1)) : baseHp,
+    hp: isBoss ? Math.round(baseHp * bossHpMult(stage) * (ms ? ms.hp : 1)) : baseHp,
     atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1)) : baseAtk,
     isBoss, milestone: ms
   };
