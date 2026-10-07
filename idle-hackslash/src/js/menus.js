@@ -1247,28 +1247,30 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中の可愛い魔法のチャージ音：やわらかい鈴の音が「キラキラ…」と鳴り続け、引くほど高く速くなる
-const CHARGE_TWINKLE = [0, 4, 7, 12, 16, 19, 24, 28, 31, 36]; // 長調の分散和音
-function chargeBell(freq, gain, at = 0) {
-  const t = audioCtx.currentTime + at, v = (game.sfxVolume ?? 0.7);
-  const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain();
-  o.type = 'sine'; o2.type = 'triangle'; o.frequency.setValueAtTime(freq, t); o2.frequency.setValueAtTime(freq * 2, t);
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain * v, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-  o.connect(g); o2.connect(g); g.connect(audioCtx.destination); o.start(t); o2.start(t); o.stop(t + 0.25); o2.stop(t + 0.25);
-}
+let chargeHum = null; // 引っ張り中のチャージ音：あたたかい重低音が「ドゥゥン…」と脈打ちながら、引くほど少しずつ高く・濃くなる
 function updateChargeHum(lv) {
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { chargeHum = null; return; }
-  const now = Date.now();
-  if (!chargeHum) chargeHum = { next: now, i: 0 };
-  if (now < chargeHum.next) return;
-  const top = Math.max(2, Math.round(lv * (CHARGE_TWINKLE.length - 1))); // 引くほど高い音まで届く
-  const semi = CHARGE_TWINKLE[chargeHum.i % (top + 1)];
-  chargeBell(784 * Math.pow(2, semi / 12) / 2, 0.035 + lv * 0.025); // ソの音を基準に、鈴のように
-  chargeHum.i++;
-  chargeHum.next = now + (170 - lv * 110); // 引くほど速くキラキラ
+  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.06); setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.o3.stop(); h.lfo.stop(); } catch (e) {} }, 400); chargeHum = null; } return; }
+  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
+  if (!chargeHum) {
+    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), o3 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), pulse = audioCtx.createGain(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    o1.type = 'sine'; o2.type = 'sine'; o3.type = 'triangle'; lfo.type = 'sine';
+    f.type = 'lowpass'; f.frequency.value = 500; f.Q.value = 0.7; g.gain.value = 0.0001; pulse.gain.value = 0.75;
+    lfo.connect(lg); lg.connect(pulse.gain); // 音量をゆっくり脈打たせる（音程は揺らさない）
+    o1.connect(pulse); o2.connect(pulse); o3.connect(pulse); pulse.connect(f); f.connect(g); g.connect(audioCtx.destination);
+    const b0 = 49 + lv * 33; o1.frequency.value = b0; o2.frequency.value = b0 * 2.003; o3.frequency.value = b0 * 3; lfo.frequency.value = 2.2; // 最初から目標の高さで鳴らす（音程がすべらないように）
+    o1.start(); o2.start(); o3.start(); lfo.start();
+    chargeHum = { o1, o2, o3, lfo, lg, f, g };
+  }
+  const base = 49 + lv * 33; // ソ1（約49Hz）から1オクターブ弱だけ上がる重低音
+  chargeHum.o1.frequency.setTargetAtTime(base, t, 0.12);
+  chargeHum.o2.frequency.setTargetAtTime(base * 2.003, t, 0.12); // 1オクターブ上をほんの少しずらして厚みを出す
+  chargeHum.o3.frequency.setTargetAtTime(base * 3, t, 0.12);       // 5度上の倍音を薄く
+  chargeHum.lfo.frequency.setTargetAtTime(2.2 + lv * 4, t, 0.1); chargeHum.lg.gain.setTargetAtTime(0.25, t, 0.1); // 引くほど鼓動が速くなる
+  chargeHum.f.frequency.setTargetAtTime(260 + lv * 520, t, 0.1);
+  chargeHum.g.gain.setTargetAtTime((0.09 + lv * 0.08) * v, t, 0.08);
 }
-function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続けるエネルギー充填音＋段階ごとの「キュッ」、最大で「キィン」
+function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続ける心地よい重低音＋段階ごとの低い「ドゥン」、最大で深い響き
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
   updateChargeHum(lvNow >= PULL_MIN ? lvNow : 0);
   if (!chargeHold || phase !== 'battle') return;
@@ -1277,9 +1279,9 @@ function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続け
   const step = Math.min(5, Math.floor(lv * 5)); // 20%ごとに1段
   if (step > (chargeHold.chargeStep || 0)) {
     chargeHold.chargeStep = step;
-    const f = 300 * Math.pow(2, step * 3 / 12); // 段ごとに短3度ずつ上がる
-    if (step >= 5) { thump(f, f * 2, 0.22, 0.05, 'square'); thump(f * 2, f * 2.02, 0.35, 0.03, 'sine', 0.04); thump(f * 3, f * 3, 0.3, 0.015, 'sine', 0.06); } // 最大チャージ
-    else thump(f, f * 1.35, 0.09, 0.035, 'triangle');
+    const f = 98 * Math.pow(2, step * 2 / 12); // 段ごとに少しずつ上がる低い「ドゥン」
+    if (step >= 5) { thump(f * 0.5, f * 0.5, 0.5, 0.14, 'sine'); thump(f, f, 0.45, 0.06, 'sine', 0.02); thump(f * 4, f * 4.02, 0.4, 0.012, 'sine', 0.05); } // 最大チャージ：深い響き＋かすかな余韻
+    else thump(f, f * 0.9, 0.16, 0.07, 'sine');
   } else if (step < (chargeHold.chargeStep || 0)) chargeHold.chargeStep = step; // 戻したらまた鳴る
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
