@@ -1484,7 +1484,7 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 /* 自動再戦（左）とボス再戦（右）を横並び */
 .boss-retry-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: -10px 0 6px; }
 .boss-retry-row:not(:has(> button:not([style*="none"]))) { display: none; }
-.boss-retry-row #bossRetryBtn { margin: 0 !important; width: min(200px, 50vw) !important; flex: 0 0 auto; }
+.boss-retry-row #bossRetryBtn { margin: 0 !important; width: min(160px, 40vw) !important; flex: 0 0 auto; }
 .boss-retry-row #autoBossBtn { margin: 0 !important; flex: 0 1 auto; font-size: clamp(0.62rem, 2.9vw, 0.78rem) !important; white-space: normal !important; text-align: center; }
 .boss-retry-row #autoBossBtn small { display: block; margin: 0; }
 /* サブウェポンの装備枠 */
