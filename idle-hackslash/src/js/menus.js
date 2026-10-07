@@ -1247,42 +1247,45 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：あたたかい重低音が「ドゥゥン…」と脈打ちながら、引くほど少しずつ高く・濃くなる
+let chargeHum = null; // 引っ張り中のチャージ音：ロータリーエンジン（RX-7風）の空ぶかし。引くほど回転が上がり「ブォォォン！」、最大でレブリミッター「ババババ」
+function engineCurve() { const c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; c[i] = Math.tanh(x * 2.6); } return c; }
 function updateChargeHum(lv) {
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.06); setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.o3.stop(); h.lfo.stop(); } catch (e) {} }, 400); chargeHum = null; } return; }
-  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
-  if (!chargeHum) {
-    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), o3 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), pulse = audioCtx.createGain(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
-    o1.type = 'sine'; o2.type = 'sine'; o3.type = 'triangle'; lfo.type = 'sine';
-    f.type = 'lowpass'; f.frequency.value = 500; f.Q.value = 0.7; g.gain.value = 0.0001; pulse.gain.value = 0.75;
-    lfo.connect(lg); lg.connect(pulse.gain); // 音量をゆっくり脈打たせる（音程は揺らさない）
-    o1.connect(pulse); o2.connect(pulse); o3.connect(pulse); pulse.connect(f); f.connect(g); g.connect(audioCtx.destination);
-    const b0 = 49 + lv * 33; o1.frequency.value = b0; o2.frequency.value = b0 * 2.003; o3.frequency.value = b0 * 3; lfo.frequency.value = 2.2; // 最初から目標の高さで鳴らす（音程がすべらないように）
-    o1.start(); o2.start(); o3.start(); lfo.start();
-    chargeHum = { o1, o2, o3, lfo, lg, f, g };
+  if (!on) { // 離したら回転がストンと落ちて消える
+    if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.o1.frequency.cancelScheduledValues(t); h.o1.frequency.setTargetAtTime(28, t, 0.12); h.o2.frequency.setTargetAtTime(14, t, 0.12); h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.12); setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.noise.stop(); h.lim.stop(); } catch (e) {} }, 700); chargeHum = null; }
+    return;
   }
-  const base = 49 + lv * 33; // ソ1（約49Hz）から1オクターブ弱だけ上がる重低音
-  chargeHum.o1.frequency.setTargetAtTime(base, t, 0.12);
-  chargeHum.o2.frequency.setTargetAtTime(base * 2.003, t, 0.12); // 1オクターブ上をほんの少しずらして厚みを出す
-  chargeHum.o3.frequency.setTargetAtTime(base * 3, t, 0.12);       // 5度上の倍音を薄く
-  chargeHum.lfo.frequency.setTargetAtTime(2.2 + lv * 4, t, 0.1); chargeHum.lg.gain.setTargetAtTime(0.25, t, 0.1); // 引くほど鼓動が速くなる
-  chargeHum.f.frequency.setTargetAtTime(260 + lv * 520, t, 0.1);
-  chargeHum.g.gain.setTargetAtTime((0.09 + lv * 0.08) * v, t, 0.08);
+  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
+  const rpm = 1100 + Math.pow(lv, 1.3) * 7400, fire = rpm / 60 * 2; // 2ローター：1回転に2回の燃焼
+  if (!chargeHum) {
+    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), mix = audioCtx.createGain(), sh = audioCtx.createWaveShaper(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain(), lim = audioCtx.createOscillator(), limG = audioCtx.createGain(), amp = audioCtx.createGain();
+    o1.type = 'sawtooth'; o2.type = 'square'; o1.frequency.value = fire; o2.frequency.value = fire / 2; // 半分の音で「ブリブリ」した粒感
+    const o2g = audioCtx.createGain(); o2g.gain.value = 0.55;
+    sh.curve = engineCurve(); sh.oversample = '2x';
+    f.type = 'lowpass'; f.Q.value = 3; f.frequency.value = 400;
+    // 吸気のシャー音
+    const nb = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const noise = audioCtx.createBufferSource(); noise.buffer = nb; noise.loop = true; const nf = audioCtx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1800; nf.Q.value = 0.8; const ng = audioCtx.createGain(); ng.gain.value = 0.05;
+    // レブリミッター（最大回転で音が途切れる）
+    lim.type = 'square'; lim.frequency.value = 14; limG.gain.value = 0; amp.gain.value = 1; lim.connect(limG); limG.connect(amp.gain);
+    o1.connect(mix); o2.connect(o2g); o2g.connect(mix); mix.connect(sh); sh.connect(f); noise.connect(nf); nf.connect(ng); ng.connect(f);
+    f.connect(amp); amp.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
+    o1.start(); o2.start(); noise.start(); lim.start();
+    chargeHum = { o1, o2, f, g, ng, limG, noise, lim };
+  }
+  const h = chargeHum, tau = 0.09; // 少し遅れて回転が追いつく（ふかしている感じ）
+  h.o1.frequency.setTargetAtTime(fire, t, tau); h.o2.frequency.setTargetAtTime(fire / 2, t, tau);
+  h.f.frequency.setTargetAtTime(350 + lv * 2600, t, tau);
+  h.ng.gain.setTargetAtTime(0.02 + lv * 0.06, t, tau);
+  h.limG.gain.setTargetAtTime(lv >= 0.98 ? 0.6 : 0, t, 0.02);
+  h.g.gain.setTargetAtTime((0.05 + lv * 0.07) * v, t, 0.06);
 }
-function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続ける心地よい重低音＋段階ごとの低い「ドゥン」、最大で深い響き
+function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
   updateChargeHum(lvNow >= PULL_MIN ? lvNow : 0);
   if (!chargeHold || phase !== 'battle') return;
   const lv = lvNow; if (lv < PULL_MIN) return;
   if (!chargeHold.pullSnd) { chargeHold.pullSnd = true; thump(320, 760, 0.14, 0.05, 'triangle'); thump(640, 1500, 0.1, 0.015, 'sine', 0.01); }
-  const step = Math.min(5, Math.floor(lv * 5)); // 20%ごとに1段
-  if (step > (chargeHold.chargeStep || 0)) {
-    chargeHold.chargeStep = step;
-    const f = 98 * Math.pow(2, step * 2 / 12); // 段ごとに少しずつ上がる低い「ドゥン」
-    if (step >= 5) { thump(f * 0.5, f * 0.5, 0.5, 0.14, 'sine'); thump(f, f, 0.45, 0.06, 'sine', 0.02); thump(f * 4, f * 4.02, 0.4, 0.012, 'sine', 0.05); } // 最大チャージ：深い響き＋かすかな余韻
-    else thump(f, f * 0.9, 0.16, 0.07, 'sine');
-  } else if (step < (chargeHold.chargeStep || 0)) chargeHold.chargeStep = step; // 戻したらまた鳴る
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
   const pl = balls.find(isMainPlayerBall);
