@@ -924,6 +924,25 @@ function playPlayerHitSound() { playNoiseBurst(0.1, 0.28); playTone(150, 0.16, '
 function playPlayerWallSound() { playTone(560, 0.07, 'sine', 0.07, 760); }
 function playEnemyWallSound() { playTone(320, 0.07, 'triangle', 0.07, 200); }
 const CHAIN_SCALE = [0, 2, 4, 7, 9];
+// 落ちものパズルの連鎖音：叩くたびに「ピロン↑」と音階が上がり、段が進むと和音ときらめきが重なる
+const PUZZLE_CHAIN_SEMIS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
+function playPuzzleChain(n) {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const i = Math.min(n - 1, PUZZLE_CHAIN_SEMIS.length - 1), heat = Math.min(1, (n - 1) / 14);
+  const f = 659.25 * Math.pow(2, PUZZLE_CHAIN_SEMIS[i] / 12); // E5から上がっていく
+  const v = (game.sfxVolume ?? 0.7), t0 = audioCtx.currentTime;
+  const note = (freq, at, len, type, gain) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t0 + at);
+    g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(gain * v, t0 + at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t0 + at); o.stop(t0 + at + len + 0.02);
+  };
+  note(f, 0, 0.09, 'square', 0.06);            // ピ
+  note(f * 1.5, 0.055, 0.16, 'square', 0.055); // ロン（5度上）
+  note(f * 2, 0.055, 0.2, 'sine', 0.05 + heat * 0.04); // 澄んだ倍音
+  if (n >= 5) note(f * 1.26, 0.055, 0.16, 'triangle', 0.05); // 長3度を重ねて和音に
+  if (n >= 10) [2.5, 3, 4].forEach((m, k) => note(f * m, 0.11 + k * 0.035, 0.12, 'sine', 0.03)); // キラキラ
+}
 function playChainSound(n) {
   const step = Math.min(n - 2, 14); // 2コンボ目から始めて最大15段
   const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];

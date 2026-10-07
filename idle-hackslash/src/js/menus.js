@@ -829,6 +829,7 @@ function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら 
   r.mash = (r.mash || 0) + 1; r.tapsSinceBounce = (r.tapsSinceBounce || 0) + 1;
   r.mashVal = (r.mashVal || 0) + PULL_MASH_STEP * (1 + PULL_MASH_BOUNCE_BONUS * Math.min(PULL_MASH_BOUNCE_CAP, r.bounces || 0));
   r.mashAt = Date.now();
+  playPuzzleChain(r.mash); // 攻撃力アップの連鎖音
   spawnHitParticles(pl.x, pl.y, r.mash >= 15 ? '#ffb35c' : '#ffe08a');
   return true;
 }
@@ -928,7 +929,7 @@ function doTapSlash(auto = false) {
   if (Math.abs(Math.cos(ang)) > 0.2) pl.faceDir = Math.cos(ang) > 0 ? 1 : -1;
   slashSide = -slashSide;
   slashFx.push({ ball: pl, ang, side: slashSide, start: now, r: R });
-  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length), pullMashSlashRate());
+  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length));
   let hits = 0;
   for (const en of foes) {
     const d = Math.hypot(en.x - pl.x, en.y - pl.y);
