@@ -168,6 +168,17 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - s s - s ks - s ks s s | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - s s - s ks - s ks s s'
   },
+  boss11: { // ボス10 世紀末の死闘：刻むパワーコードと唸るベースに、熱く歌い上げる旋律（80年代アニメのヒーローロック）
+    bpm: 158,
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.032, notes: 'E5 = = G5 F#5 = E5 D5 | E5 = = = - - B4 D5 | F#5 = = A5 G5 = F#5 E5 | E5 = = = = = - - | B5 = = A5 G5 = A5 B5 | C6 = B5 A5 G5 = E5 G5 | A5 = = B5 A5 = F#5 D5 | D#5 = F#5 = B5 = A5 F#5 | G5 = = G5 A5 = B5 = | A5 = = F#5 D5 = E5 F#5 | B5 = = A5 F#5 = D5 F#5 | G5 = = = E5 = = = | E6 = = D6 C6 = B5 C6 | D6 = = C6 B5 = A5 F#5 | G#5 = = B5 E6 = = = | D6 = C6 = B5 = G#5 B5' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | E4+G4+B4 = = = = = = - | E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | D#4+F#4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | D4+F#4+B4 = = = = = = - | E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | E4+G#4+B4 = = = = = = - | E4+G#4+B4 = = = = = = -' },
+      { type: 'pcebrass', gain: 0.03, notes: 'E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | B2+F#3 = B2+F#3 = B2+F#3 B2+F#3 B2+F#3 B2+F#3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | B2+F#3 B2+F#3 - B2+F#3 B2+F#3 - B2+F#3 B2+F#3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | E3+B3 = E3+B3 = E3+B3 E3+B3 E3+B3 E3+B3' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 E2 E2 E3 E2 | E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | B1 B1 B2 B1 B1 B1 B2 B1 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | B1 B1 B2 B1 B1 B1 B2 B1 | E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 E2 E2 E3 E2 | E2 E2 E3 E2 E2 E2 E3 E2' },
+    ],
+    kickBoost: 1.4,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks'
+  },
   boss8: {
     bpm: 178,
     tracks: [
@@ -498,7 +509,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -535,6 +546,7 @@ const BGM_INFO = [
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss9', name: 'ボス9 双龍の拳', desc: 'スウィングするウォーキングベースとブラスの合いの手、ブルーノートの効いた旋律で殴り合うジャズファンクの死闘。ニ短調（ダブルドラゴン系の作風）・VRC7風FM・BPM160' },
+  { key: 'boss11', name: 'ボス10 世紀末の死闘', desc: '刻むパワーコードと唸るオクターブベースに、熱く歌い上げる旋律。宿敵を打ち倒すクライマックスのヒーローロック。ホ短調（北斗の拳系の作風）・BPM158' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
