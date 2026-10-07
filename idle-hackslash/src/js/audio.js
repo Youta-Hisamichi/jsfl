@@ -941,7 +941,7 @@ const PUZZLE_CHAIN_SEMIS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24
 function playPuzzleChain(n) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const i = Math.min(n - 1, PUZZLE_CHAIN_SEMIS.length - 1), heat = Math.min(1, (n - 1) / 14);
-  const f = 261.63 * Math.pow(2, PUZZLE_CHAIN_SEMIS[i] / 12); // C4（1オクターブ半低い音）から上がっていく
+  const f = 130.81 * Math.pow(2, PUZZLE_CHAIN_SEMIS[i] / 12); // C3（重低音寄り）から上がっていく
   const v = (game.sfxVolume ?? 0.7) * 1.4, t0 = audioCtx.currentTime;
   const note = (freq, at, len, type, gain) => {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
@@ -949,6 +949,7 @@ function playPuzzleChain(n) {
     g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(gain * v, t0 + at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len);
     o.connect(g); g.connect(audioCtx.destination); o.start(t0 + at); o.stop(t0 + at + len + 0.02);
   };
+  note(f / 2, 0, 0.22, 'sine', 0.16 * (1 - heat * 0.6)); // ズン（さらに1オクターブ下の重低音）
   note(f, 0, 0.09, 'square', 0.06);            // ピ
   note(f * 1.5, 0.055, 0.16, 'square', 0.055); // ロン（5度上）
   note(f * 2, 0.055, 0.2, 'sine', 0.05 + heat * 0.04); // 澄んだ倍音

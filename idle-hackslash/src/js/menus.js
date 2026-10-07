@@ -1247,9 +1247,31 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-function tickChargeSound() { // 引っ張り中のチャージ音：引くほど「キュッ…キュッ」と高くなり、最大で「キィン」
+let chargeHum = null; // 引っ張り中に鳴り続けるエネルギー充填音（うなりながら音程が上がっていく）
+function updateChargeHum(lv) {
+  const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
+  if (!on) { if (chargeHum) { const t = audioCtx.currentTime; chargeHum.g.gain.cancelScheduledValues(t); chargeHum.g.gain.setTargetAtTime(0.0001, t, 0.03); const h = chargeHum; setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.lfo.stop(); } catch (e) {} }, 200); chargeHum = null; } return; }
+  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
+  if (!chargeHum) {
+    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    o1.type = 'sawtooth'; o2.type = 'square'; lfo.type = 'sine';
+    f.type = 'lowpass'; f.Q.value = 6; g.gain.value = 0.0001;
+    lfo.connect(lg); lg.connect(o1.frequency); lg.connect(o2.frequency);
+    o1.connect(f); o2.connect(f); f.connect(g); g.connect(audioCtx.destination);
+    o1.start(); o2.start(); lfo.start();
+    chargeHum = { o1, o2, lfo, lg, f, g };
+  }
+  const base = 70 + lv * lv * 380; // 低いうなりから高い音へ
+  chargeHum.o1.frequency.setTargetAtTime(base, t, 0.05); chargeHum.o2.frequency.setTargetAtTime(base * 1.005, t, 0.05);
+  chargeHum.lfo.frequency.setTargetAtTime(6 + lv * 18, t, 0.05); chargeHum.lg.gain.setTargetAtTime(base * 0.04, t, 0.05); // うなり（だんだん速く）
+  chargeHum.f.frequency.setTargetAtTime(300 + lv * 2600, t, 0.05);
+  chargeHum.g.gain.setTargetAtTime((0.018 + lv * 0.03) * v, t, 0.04);
+}
+function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続けるエネルギー充填音＋段階ごとの「キュッ」、最大で「キィン」
+  const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
+  updateChargeHum(lvNow >= PULL_MIN ? lvNow : 0);
   if (!chargeHold || phase !== 'battle') return;
-  const lv = getChargeLevel(); if (lv < PULL_MIN) return;
+  const lv = lvNow; if (lv < PULL_MIN) return;
   if (!chargeHold.pullSnd) { chargeHold.pullSnd = true; thump(320, 760, 0.14, 0.05, 'triangle'); thump(640, 1500, 0.1, 0.015, 'sine', 0.01); }
   const step = Math.min(5, Math.floor(lv * 5)); // 20%ごとに1段
   if (step > (chargeHold.chargeStep || 0)) {
