@@ -1326,7 +1326,7 @@ function clearSave() {
   try { localStorage.removeItem(SAVE_KEY); } catch (err) { /* 無視 */ }
 }
 
-// 帰還の反射くじ：10分以上離れて戻ると引ける。離れていた時間が長いほど報酬・レア度・サプライズ宝箱の確率が上がる
+// 帰還ボーナス：10分以上離れて戻ると引ける。離れていた時間が長いほど報酬・レア度・サプライズ宝箱の確率が上がる
 const RETURN_MIN_MS = 10 * 60 * 1000;
 const IDLE_REWARD_MAX_MS = 8 * 60 * 60 * 1000; // 放置中の戦果は最大8時間ぶん
 const IDLE_KILLS_PER_MIN = 3;                   // 放置中は1分に3体倒している扱い
@@ -1638,7 +1638,7 @@ setInterval(() => {
   lastPlayTickAt = now;
   if (document.hidden || delta > 5000) return;
   game.playTimeMs = (game.playTimeMs || 0) + delta;
-  game.lastSeenAt = now; // 最後に遊んでいた時刻（帰還の反射くじ用）
+  game.lastSeenAt = now; // 最後に遊んでいた時刻（帰還ボーナス用）
 }, 1000);
 document.addEventListener('visibilitychange', () => {
   lastPlayTickAt = Date.now();
