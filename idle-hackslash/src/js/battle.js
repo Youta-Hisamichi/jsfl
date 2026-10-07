@@ -1446,9 +1446,7 @@ function checkLoginBonus(awayMs) {
   const bonusCoins = Math.round(reward.coins * (1 + game.stage * 0.25) * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
   const chest = Math.random() < reward.chest; // サプライズ宝箱：遺物かジェムの山
-  const chestArtifact = chest && Math.random() < 0.5 ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
-  const chestGems = chest && !chestArtifact ? 5 + tier * 5 : 0;
-  const bonusGems = reward.gems + LOGIN_RARITY_EXTRA_GEMS[rarity] + chestGems;
+  const chestArtifact = chest ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null; // サプライズ宝箱は遺物（ジェムは動画を見たときだけ）
   const bonusPotion = rIdx >= 2 ? 1 : 0;
   const bonusArtifact = rarity === 'legendary' ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
   const fakeOut = rIdx >= 2 && Math.random() < 0.5;
@@ -1465,7 +1463,6 @@ function checkLoginBonus(awayMs) {
   if (idleChests) renderChestTray();
   game.lastSeenAt = Date.now();
   game.coins += bonusCoins;
-  game.gems += bonusGems;
   const stockArt = a => { if (!Array.isArray(game.rebirthChests)) game.rebirthChests = []; game.rebirthChests.push(a.id); }; // 遺物は開けずに宝箱として左下へ（中身は開けるまで秘密）
   if (chestArtifact) stockArt(chestArtifact);
   if (bonusPotion) game.potions = (game.potions || 0) + bonusPotion;
@@ -1485,6 +1482,8 @@ function checkLoginBonus(awayMs) {
   loginBonusReward.innerHTML = '';
   loginBonusCloseBtn.disabled = false; // 演出中に押すとスキップ、終わってから押すと閉じる
   loginBonusCloseBtn.textContent = '抽選中……（タップでスキップ）';
+  loginBonusAdBtn.style.display = 'none';
+  loginAdReward = { coins: (bonusCoins + idleCoins) * (LOGIN_AD_MULT - 1), gems: LOGIN_AD_GEMS };
   loginSlotBox.classList.remove('settled');
   loginSlotBox.classList.add('spinning');
   loginSlotBox.style.borderColor = ''; loginSlotBox.style.boxShadow = '';
@@ -1544,8 +1543,7 @@ function checkLoginBonus(awayMs) {
   const chips = [];
   if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ 🟡 +${formatCoinNumber(idleCoins)}` });
   if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
-  if (chest) chips.push({ special: true, html: `🎁 サプライズ宝箱！ ${chestArtifact ? `<span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` : `💎 ジェム +${chestGems}`}` });
-  if (bonusGems - chestGems) chips.push(`💎 +${bonusGems - chestGems} ジェム`);
+  if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
   if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label}の宝箱 ×1</span>` });
   if (LOGIN_RARITY_MULT[rarity] > 1) chips.push(`🟡 コイン ×${LOGIN_RARITY_MULT[rarity]}`);
@@ -1563,6 +1561,8 @@ function checkLoginBonus(awayMs) {
     showChips();
     loginBonusCloseBtn.disabled = false;
     loginBonusCloseBtn.textContent = '受け取る';
+    loginBonusAdBtn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'}コイン${LOGIN_AD_MULT}倍 <b>＋💎${LOGIN_AD_GEMS}</b>`;
+    loginBonusAdBtn.style.display = '';
     updateStatsUI(); updatePotionButton(); renderArtifactList();
   };
   later(finish, t + 350 + 1500);
@@ -1573,7 +1573,26 @@ document.getElementById('lbPanel').addEventListener('click', ev => {
 }, true);
 loginBonusCloseBtn.addEventListener('click', () => {
   if (loginBonusCloseBtn.disabled || loginGachaSkip) return;
+  loginAdReward = null;
   loginBonusModal.classList.remove('show');
+});
+// 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを1個もらえる（ジェムはここでしか手に入らない）
+const LOGIN_AD_MULT = 3, LOGIN_AD_GEMS = 1;
+const loginBonusAdBtn = document.getElementById('loginBonusAdBtn');
+let loginAdReward = null;
+loginBonusAdBtn.addEventListener('click', ev => {
+  ev.stopPropagation();
+  if (loginGachaSkip || !loginAdReward) return;
+  const give = () => {
+    const r = loginAdReward; if (!r) return; loginAdReward = null;
+    game.coins += r.coins; game.gems += r.gems;
+    loginBonusAdBtn.style.display = 'none';
+    loginSlotNum.textContent = formatCoinNumber(r.coins / (LOGIN_AD_MULT - 1) * LOGIN_AD_MULT);
+    loginBonusReward.insertAdjacentHTML('afterbegin', `<span class="lb-chip special">🎬 コイン${LOGIN_AD_MULT}倍！ 🟡 +${formatCoinNumber(r.coins)}　💎 +${r.gems}</span>`);
+    playSlotSettleSound(); updateStatsUI(); saveGame();
+  };
+  if (isAdFree()) { give(); return; }
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); give(); }, `、帰還ボーナスのコインが${LOGIN_AD_MULT}倍＋ジェム${LOGIN_AD_GEMS}個になります`);
 });
 
 let noticeTimer = null;
