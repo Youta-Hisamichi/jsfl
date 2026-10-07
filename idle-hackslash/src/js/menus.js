@@ -1273,17 +1273,17 @@ function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   }
   const h = chargeHum;
   if (full) {
-    if (!h.full) { h.full = true; thump(2093, 2637, 0.1, 0.02, 'square'); thump(1046, 1046, 0.15, 0.015, 'triangle', 0.02); } // 溜まりきった合図「キィン」
+    if (!h.full) { h.full = true; thump(2093, 2637, 0.1, 0.032, 'square'); thump(1046, 1046, 0.15, 0.024, 'triangle', 0.02); } // 溜まりきった合図「キィン」
     h.o.frequency.setTargetAtTime(1400, t, 0.02); h.o2.frequency.setTargetAtTime(2097, t, 0.02);
     h.nf.frequency.setTargetAtTime(5600, t, 0.02); h.res.frequency.setTargetAtTime(2800, t, 0.02);
     h.lfo.frequency.setTargetAtTime(13, t, 0.02); h.lg.gain.setTargetAtTime(0.45, t, 0.02); // 「キュイキュイ」
-    h.g.gain.setTargetAtTime(0.022 * v, t, 0.03);
+    h.g.gain.setTargetAtTime(0.036 * v, t, 0.03);
   } else {
     h.full = false;
     h.o.frequency.setTargetAtTime(f, t, 0.03); h.o2.frequency.setTargetAtTime(f * 1.498, t, 0.03);
     h.nf.frequency.setTargetAtTime(Math.min(9000, f * 4), t, 0.03); h.res.frequency.setTargetAtTime(f * 2, t, 0.03);
     h.lg.gain.setTargetAtTime(0, t, 0.03);
-    h.g.gain.setTargetAtTime((0.012 + lv * 0.012) * v, t, 0.03);
+    h.g.gain.setTargetAtTime((0.02 + lv * 0.02) * v, t, 0.03);
   }
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
