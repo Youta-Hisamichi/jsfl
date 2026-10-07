@@ -2119,12 +2119,12 @@ function drawArenaFloor() {
   ctx.imageSmoothingEnabled = false;
   const bright = BRIGHT_FLOORS[key]; // 雪原など明るい床は暗くしすぎない
   ctx.globalAlpha = bright ? 1 : 0.9;
-  ctx.fillStyle = floorPattern; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2);
+  ctx.fillStyle = floorPattern; fillArenaRect();
   ctx.globalAlpha = 1;
-  if (bright && bright.glow) { ctx.fillStyle = `rgba(255,255,255,${bright.glow})`; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); }
+  if (bright && bright.glow) { ctx.fillStyle = `rgba(255,255,255,${bright.glow})`; fillArenaRect(); }
   const g = ctx.createRadialGradient(arena.x, arena.y, arena.radius * 0.2, arena.x, arena.y, arena.radius);
   g.addColorStop(0, `rgba(0,0,0,${bright ? bright.inner : 0.12})`); g.addColorStop(1, `rgba(0,0,0,${bright ? bright.outer : 0.5})`);
-  ctx.fillStyle = g; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2);
+  ctx.fillStyle = g; fillArenaRect();
   ctx.restore();
   ctx.imageSmoothingEnabled = true;
 }

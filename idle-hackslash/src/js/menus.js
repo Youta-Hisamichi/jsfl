@@ -683,7 +683,8 @@ const RENDER_DPR_MAX = 2; // 高解像度スマホでも描画は最大2倍ま�
 function renderDpr() { return Math.min(RENDER_DPR_MAX, Math.max(1, window.devicePixelRatio || 1)); }
 let dpr = renderDpr();
 let size = 0;
-let arena = { x: 0, y: 0, radius: 0 };
+let arena = { x: 0, y: 0, radius: 0, hy: 0 };
+let sizeH = 0, arenaAspect = 1; // ゲーム画面の高さ（四角のときは画面の下まで縦に伸ばす）
 // デバッグ：ゲームの容量（HTML本体・埋め込み画像・セーブデータ）を表示
 const SIZE_REPORT = '@@SIZE_REPORT@@'; // ビルド時にゲーム全体のファイル容量（JSON）へ置き換わる
 function getSizeReport() { try { return JSON.parse(SIZE_REPORT); } catch (err) { return null; } }
@@ -716,28 +717,30 @@ renderDebugSizeInfo();
 let ARENA_RECT = true;
 try { const v = localStorage.getItem('arenaRect'); if (v !== null) ARENA_RECT = v === '1'; } catch (err) {}
 document.body.classList.toggle('arena-rect', ARENA_RECT);
-function arenaHalf() { return arena.radius; } // 四角のときの中心から壁までの距離
+function arenaHalf() { return arena.radius; } // 四角のときの中心から左右の壁までの距離
+function arenaHalfY() { return arena.hy || arena.radius; } // 中心から上下の壁までの距離（縦長のときは横より長い）
 function arenaPath(scale = 1) { // サークル／四角の輪郭パス
   ctx.beginPath();
-  if (ARENA_RECT) { const h = arenaHalf() * scale; ctx.rect(arena.x - h, arena.y - h, h * 2, h * 2); }
+  if (ARENA_RECT) { const h = arenaHalf() * scale, hy = arenaHalfY() * scale; ctx.rect(arena.x - h, arena.y - hy, h * 2, hy * 2); }
   else ctx.arc(arena.x, arena.y, arena.radius * scale, 0, Math.PI * 2);
 }
+function fillArenaRect() { ctx.fillRect(arena.x - arena.radius, arena.y - arenaHalfY(), arena.radius * 2, arenaHalfY() * 2); } // ゲーム画面全体を塗る
 function arenaContains(x, y, margin = 0) {
-  if (ARENA_RECT) { const h = arenaHalf() - margin; return Math.abs(x - arena.x) <= h && Math.abs(y - arena.y) <= h; }
+  if (ARENA_RECT) { const h = arenaHalf() - margin; return Math.abs(x - arena.x) <= h && Math.abs(y - arena.y) <= arenaHalfY() - margin; }
   return Math.hypot(x - arena.x, y - arena.y) <= arena.radius - margin;
 }
 function arenaClampPt(x, y, margin = 0) {
-  if (ARENA_RECT) { const h = arenaHalf() - margin; return { x: Math.max(arena.x - h, Math.min(arena.x + h, x)), y: Math.max(arena.y - h, Math.min(arena.y + h, y)) }; }
+  if (ARENA_RECT) { const h = arenaHalf() - margin, hy = arenaHalfY() - margin; return { x: Math.max(arena.x - h, Math.min(arena.x + h, x)), y: Math.max(arena.y - hy, Math.min(arena.y + hy, y)) }; }
   const ox = x - arena.x, oy = y - arena.y, od = Math.hypot(ox, oy), lim = arena.radius - margin;
   return od > lim ? { x: arena.x + ox / od * lim, y: arena.y + oy / od * lim } : { x, y };
 }
 // 壁にめり込んでいたら押し戻し、外向きの法線を返す（めり込んでいなければ null）
 function arenaWallHit(ball) {
   if (ARENA_RECT) {
-    const h = arenaHalf() - ball.radius - 6; // 絵が画面端で切れないよう少し内側で跳ね返る
+    const h = arenaHalf() - ball.radius - 6, hy = arenaHalfY() - ball.radius - 6; // 絵が画面端で切れないよう少し内側で跳ね返る
     let nx = 0, ny = 0;
     if (ball.x < arena.x - h) { ball.x = arena.x - h; nx = -1; } else if (ball.x > arena.x + h) { ball.x = arena.x + h; nx = 1; }
-    if (ball.y < arena.y - h) { ball.y = arena.y - h; ny = -1; } else if (ball.y > arena.y + h) { ball.y = arena.y + h; ny = 1; }
+    if (ball.y < arena.y - hy) { ball.y = arena.y - hy; ny = -1; } else if (ball.y > arena.y + hy) { ball.y = arena.y + hy; ny = 1; }
     if (!nx && !ny) return null;
     const l = Math.hypot(nx, ny); return { nx: nx / l, ny: ny / l };
   }
@@ -1220,7 +1223,7 @@ function drawWeapons() {
       ctx.globalAlpha = 1;
     } else if (f.kind === 'bolt') { // 雷：素材の稲妻を加算合成で光らせ、数コマ切り替えてバリバリ光らせる
       const k = (now - f.start) / BOLT_MS;
-      if (k < 0.12) { ctx.fillStyle = `rgba(230,240,255,${0.28 * (1 - k / 0.12)})`; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); } // 一瞬の閃光
+      if (k < 0.12) { ctx.fillStyle = `rgba(230,240,255,${0.28 * (1 - k / 0.12)})`; fillArenaRect(); } // 一瞬の閃光
       const grp = BOLT_GROUPS[Math.floor(f.seed) % BOLT_GROUPS.length], fr = grp[(Math.floor((now - f.start) / 55) + Math.floor(f.seed)) % grp.length];
       const img = BOLT_IMG, H = Math.min(220, arena.radius * 1.1), C = img.naturalWidth / 12;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';

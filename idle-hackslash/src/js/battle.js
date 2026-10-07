@@ -1945,14 +1945,21 @@ function resizeCanvas() {
   if (rect.width < 10) return;
   dpr = renderDpr();
   const newSize = rect.width;
-  const oldSize = size;
+  const oldSize = size, oldY = arena.y;
   size = newSize;
+  sizeH = Math.round(size * (ARENA_RECT ? arenaAspect : 1)); // 四角のときは縦に長くできる
   canvas.width = size * dpr;
-  canvas.height = size * dpr;
+  canvas.height = sizeH * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   arena.x = size / 2;
-  arena.y = size / 2;
+  arena.y = sizeH / 2;
   arena.radius = size / 2 - (ARENA_RECT ? 3 : 6);
+  arena.hy = ARENA_RECT ? sizeH / 2 - 3 : arena.radius; // 中心から上下の壁までの距離
+  if (oldSize > 0 && Math.abs(newSize - oldSize) <= 0.5 && oldY && Math.abs(arena.y - oldY) > 0.5) { // 縦だけ伸び縮みしたら中身を上下にずらして中央を保つ
+    const dy = arena.y - oldY, sh = o => { o.y += dy; };
+    balls.forEach(sh); adds.forEach(sh); meteors.forEach(sh); particles.forEach(sh); damageTexts.forEach(sh);
+    if (typeof obstacles !== 'undefined') obstacles.forEach(sh);
+  }
   if (oldSize > 0 && Math.abs(newSize - oldSize) > 0.5) {
     const k = newSize / oldSize;
     const scalePos = o => { o.x *= k; o.y *= k; if (o.orbitRadius) o.orbitRadius *= k; };

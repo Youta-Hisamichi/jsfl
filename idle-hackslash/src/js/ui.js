@@ -2,7 +2,7 @@ function draw() {
   cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
   wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
   document.body.classList.toggle('hp-safe', !isPlayerHpShown()); // 雑魚戦は画面下の自分のHPも隠す
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, size, sizeH || size);
   drawArenaFloor();
   drawObstacles();
   drawBossEntrance();
@@ -2016,8 +2016,8 @@ function drawBlastFx() {
   const R = arena.radius * 1.6 * Math.min(1, t * 2.2);
   const g = ctx.createRadialGradient(arena.x, arena.y, 0, arena.x, arena.y, Math.max(1, R));
   g.addColorStop(0, `rgba(255,255,230,${0.95 * (1 - t)})`); g.addColorStop(0.35, `rgba(255,200,80,${0.85 * (1 - t)})`); g.addColorStop(0.7, `rgba(255,90,30,${0.6 * (1 - t)})`); g.addColorStop(1, 'rgba(120,20,0,0)');
-  ctx.fillStyle = g; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2);
-  if (t < 0.18) { ctx.globalAlpha = 1 - t / 0.18; ctx.fillStyle = '#ffffff'; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); } // 一瞬真っ白に
+  ctx.fillStyle = g; fillArenaRect();
+  if (t < 0.18) { ctx.globalAlpha = 1 - t / 0.18; ctx.fillStyle = '#ffffff'; fillArenaRect(); } // 一瞬真っ白に
   ctx.globalAlpha = 1 - t; ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 14 * (1 - t) + 2; ctx.shadowColor = '#ff9f43'; ctx.shadowBlur = 30;
   ctx.beginPath(); ctx.arc(arena.x, arena.y, Math.max(1, arena.radius * 1.5 * t), 0, Math.PI * 2); ctx.stroke(); // 衝撃波の輪
   ctx.restore();
@@ -2223,7 +2223,7 @@ canvas.addEventListener('pointerdown', event => {
   startBgm(game.stage % 10 === 0 ? 'boss' : 'normal');
   const rect = canvas.getBoundingClientRect();
   const x = (event.clientX - rect.left) * (size / rect.width);
-  const y = (event.clientY - rect.top) * (size / rect.height);
+  const y = (event.clientY - rect.top) * ((sizeH || size) / rect.height);
   if (arenaContains(x, y, 12)) {
     if (HOLD_RUSH_MODE) { game.totalTaps++; return; } // タップ・連打の攻撃処理はなし（押しっぱなしのタメ打ちとドラッグ移動のみ）
     arenaHeld = true;
@@ -2275,6 +2275,26 @@ function unlockAudio() {
 
 window.addEventListener('resize', () => { resizeCanvas(); draw(); });
 if (window.ResizeObserver) new ResizeObserver(() => resizeCanvas()).observe(wrap);
+// ゲーム画面（四角）は下に向けて縦に伸ばし、デバッグボタンが下のタブバーに半分隠れるくらいまで広げる
+const ARENA_MAX_ASPECT = 1.8;
+function fitArenaHeight() {
+  if (!size || getActiveTab() !== 'game') return;
+  let a = 1;
+  if (ARENA_RECT) {
+    const dbg = document.getElementById('debugToggleBtn'), tab = document.getElementById('tabBar');
+    if (!dbg || !tab || !dbg.offsetHeight) return;
+    const d = dbg.getBoundingClientRect(), dbgMid = d.top + window.scrollY + d.height * 0.5; // ページ上の位置
+    const line = window.innerHeight - tab.offsetHeight; // タブバーの上端（固定表示）
+    const cssH = wrap.getBoundingClientRect().height;
+    a = Math.max(1, Math.min(ARENA_MAX_ASPECT, (cssH + line - dbgMid) / size));
+  }
+  if (Math.abs(a - arenaAspect) * size < 3) return;
+  arenaAspect = a;
+  wrap.style.aspectRatio = a === 1 ? '' : `${Math.round(size)} / ${Math.round(size * a)}`;
+  resizeCanvas();
+}
+setInterval(fitArenaHeight, 500); // スキルボタンやボス再戦ボタンの出し入れで下の高さが変わるので定期的に合わせる
+window.addEventListener('resize', () => requestAnimationFrame(fitArenaHeight));
 
 setInterval(updateSpecialButton, 1000);
 setInterval(updateAccelButton, 1000);
