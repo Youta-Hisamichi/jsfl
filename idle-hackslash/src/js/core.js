@@ -569,6 +569,7 @@ const ARTIFACT_POOL = [
   { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
   { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
+  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化（ガチャ）の効果 +10%（重複で増加）', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
   { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
@@ -637,6 +638,8 @@ function pickGachaId() {
   }
   return Object.keys(GACHA_POOL)[0];
 }
+const EVO_FEATHER_STEP = 0.1; // 進化の羽1個ごとに進化の効果 +10%
+function getEvoBoost() { return 1 + EVO_FEATHER_STEP * ((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0); }
 function getEvolveNeed(id) {
   const level = game.evolutions[id];
   const mult = RARITY_INFO[GACHA_POOL[id].rarity].needMult;
@@ -804,7 +807,7 @@ const REBIRTH_SHOP_CATEGORIES = [ // タブのアイコンは強化ページと�
 const ARTIFACT_CATEGORY = {
   heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
   book: 'defense', armor: 'defense', feather: 'defense',
-  ring: 'economy', compass: 'economy', calendar: 'economy', rebirthOrb: 'economy',
+  ring: 'economy', compass: 'economy', calendar: 'economy', rebirthOrb: 'economy', evoFeather: 'economy',
   banner: 'companion', amulet: 'companion', pierceHoof: 'attack',
 };
 function getRebirthItemCategory(item) {
@@ -821,7 +824,7 @@ const ARTIFACT_CURRENT = {
   pierceHoof: n => `貫通 +${n}ヒット`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
   compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
-  turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
+  evoFeather: n => `進化の効果 +${10 * n}%`, turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
   feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
   banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
 };
@@ -1086,8 +1089,9 @@ function computeBonuses() {
   if (game.shopOwned.shield) b.hpMult += 0.25;
   if (game.shopOwned.fairy) b.coinMult += 0.30;
 
+  const evoBoost = getEvoBoost(); // 遺物「進化の羽」：進化の効果アップ
   for (const id in GACHA_POOL) {
-    const level = game.evolutions[id] || 0;
+    const level = (game.evolutions[id] || 0) * evoBoost;
     if (!level) continue;
     const bonus = GACHA_POOL[id].bonus;
     if (bonus.atk) b.atkMult += bonus.atk * level;

@@ -386,7 +386,7 @@ function renderArtifactTotal() {
     ['🌟', '必殺ダメージ', b.specialDmgMult > 1 && fmtMult(b.specialDmgMult)], ['⏳', '必殺の待ち時間', b.specialCooldownMult < 1 && '-' + Math.round((1 - b.specialCooldownMult) * 100) + '%'], ['🚀', '加速ダメージ', b.accelDmgMult > 1 && fmtMult(b.accelDmgMult)],
     ['🐗', '体当たり', b.tackleMult > 1 && fmtMult(b.tackleMult)], ['🔍', '命中', b.accuracy > 0 && pct(b.accuracy)], ['🪶', '回避', b.evasion > 0 && pct(b.evasion)], ['🛡️', '反撃', b.counter > 0 && pct(b.counter)],
     ['😤', 'ピンチ時の攻撃', b.pinchAtk > 0 && pct(b.pinchAtk)], ['🚩', '仲間の攻撃', b.companionAtkMult > 1 && fmtMult(b.companionAtkMult)], ['🧿', '仲間のHP', b.companionHpMult > 1 && fmtMult(b.companionHpMult)],
-    ['🧭', '跳ね返りコイン', b.bounceCoinCount > 0 && '+' + b.bounceCoinCount + '枚'], ['📅', 'ログインボーナス', b.loginBonusMult > 1 && fmtMult(b.loginBonusMult)], ['💎', '転生ジェム', b.rebirthGems > 0 && '+' + b.rebirthGems],
+    ['🧭', '跳ね返りコイン', b.bounceCoinCount > 0 && '+' + b.bounceCoinCount + '枚'], ['📅', 'ログインボーナス', b.loginBonusMult > 1 && fmtMult(b.loginBonusMult)], ['💎', '転生ジェム', b.rebirthGems > 0 && '+' + b.rebirthGems], ['🪽', '進化の効果', getEvoBoost() > 1 && '×' + (Math.round(getEvoBoost() * 100) / 100)],
   ].filter(r => r[2]);
   document.getElementById('artifactTotal').innerHTML = `<div class="af-total-title">✨ 遺物の効果 合計</div>` + (rows.length
     ? `<div class="af-total-grid">${rows.map(([i, n, v]) => `<div class="af-total-item"><span>${i} ${n}</span><b>${v}</b></div>`).join('')}</div>`
