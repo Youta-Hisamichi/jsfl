@@ -764,6 +764,36 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
+function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const now = Date.now(); if (now - (playHolyWaterBreak.last || 0) < 140) return; playHolyWaterBreak.last = now; // 同時に何本割れても重ねすぎない
+  const v = game.sfxVolume, ac = audioCtx, t0 = ac.currentTime;
+  filteredNoise(0, 0.07, 0.32, 5200, 0.8, 'highpass'); // 割れる瞬間の「パキッ」
+  thump(1800, 900, 0.05, 0.10, 'triangle');
+  for (let i = 0; i < 9; i++) { // 破片が散る「チリンチリン」
+    const d = 0.01 + Math.random() * 0.16, f = 2600 + Math.random() * 4200, len = 0.05 + Math.random() * 0.12;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f, t0 + d);
+    g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.07 * v, t0 + d + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + len);
+    o.connect(g); g.connect(ac.destination); o.start(t0 + d); o.stop(t0 + d + len + 0.02);
+  }
+  { // 炎が燃え上がる「ボワッ」：こもった音から明るく開くノイズ
+    const d = 0.06, dur = 0.75, n = Math.floor(ac.sampleRate * dur);
+    const buf = ac.createBuffer(1, n, ac.sampleRate), x = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 2.5;
+    f.frequency.setValueAtTime(220, t0 + d); f.frequency.exponentialRampToValueAtTime(2600, t0 + d + 0.22); f.frequency.exponentialRampToValueAtTime(700, t0 + d + dur);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.42 * v, t0 + d + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + dur);
+    src.connect(f); f.connect(g); g.connect(ac.destination); src.start(t0 + d); src.stop(t0 + d + dur + 0.02);
+  }
+  thump(140, 55, 0.35, 0.16, 'sine', 0.05); // 燃え上がりの重み
+  for (let i = 0; i < 10; i++) filteredNoise(0.25 + Math.random() * 0.9, 0.012 + Math.random() * 0.02, 0.09 + Math.random() * 0.08, 2200 + Math.random() * 3000, 1.5, 'bandpass'); // パチパチ
+}
+function playHolyWaterThrow() { // 瓶を放り投げる「ヒュッ」
+  filteredNoise(0, 0.16, 0.08, 1400, 2, 'bandpass');
+}
 function playEnemyBarrierSound() { // 敵のバリア展開：低いうなりから立ち上がる光の膜
   thump(220, 440, 0.4, 0.12, 'sine');
   thump(660, 1320, 0.35, 0.05, 'triangle', 0.04);

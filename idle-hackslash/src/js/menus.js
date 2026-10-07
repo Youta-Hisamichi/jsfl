@@ -1056,6 +1056,7 @@ function fireWeapon(id, lv, pl) {
       const cp = arenaClampPt(pl.x + dir * (150 + i * 55), pl.y, 20); // 遠くまで投げる
       weaponProj.push({ id, x: pl.x, y: pl.y, sx: pl.x, sy: pl.y, tx: cp.x, ty: cp.y, t: 0, dur: 38 + i * 6, life: 38 + i * 6, r: 6, lv, h: 85 + i * 12 });
     }
+    playHolyWaterThrow();
   } else if (id === 'knife') {
     for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
     playTone(1500, 0.05, 'triangle', 0.04, 2200);
@@ -1148,7 +1149,7 @@ function updateWeapons(pl, speedMult) {
         p.life = 0;
         weaponFx.push({ kind: 'fire', x: p.tx, y: p.ty, R: 26 + p.lv * 4, until: 70 + Math.min(p.lv, 5) * 6, // 燃える時間は短め（約1.2〜1.7秒）
           t: 0, tick: 0, dmg: weaponDmg(0.25, p.lv), start: Date.now() });
-        filteredNoise(0, 0.12, 0.2, 3500, 1, 'bandpass'); playNoiseBurst(0.25, 0.12);
+        playHolyWaterBreak();
       }
     }
     if (!arenaContains(p.x, p.y, -60) && p.id !== 'boomerang') p.life = 0;
