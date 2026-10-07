@@ -82,8 +82,8 @@ function step() {
   tickEnemyAtkPhase(e, speedMult);
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
-  const rushPierce = isRushPiercing(); // 貫きの蹄鉄：体当たりが跳ね返らずに貫通する
-  const collided = (piercing || rushPierce) ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
+  const rushPierce = isRushPiercing(); // 乱舞中だけ敵をすり抜ける
+  const collided = rushPierce ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
   const stunMult = collided && isTelegraphStunned(e) ? TG_STUN_DMG : 1; // 攻撃後の隙は大ダメージ
   const styleMult = collided ? (rushingNow ? b.rushDmgUp : b.meleeMult) || 1 : 1; // 強化：体当たり／接近戦
@@ -91,6 +91,7 @@ function step() {
   const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * styleMult * autoMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
   if (stunMult > 1 && a.hitCooldown === 0 && e.hitCooldown === 0) spawnDamageText(e.x, e.y - e.radius - 40, `スキあり！×${TG_STUN_DMG}`, '#ffd76b', 0.02, true); // リセット前の連打ボーナスでダメージを計算する
   if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
+  if (collided && rushingNow && !isRampage()) rushKnockFly(e, a); // 体当たりが当たった敵は貫通せずに吹っ飛ぶ
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
   if (collided && isTackling()) {
     if (tackle.hits && e.hitCooldown > 0) { /* 持続中・連続ヒット待ち */ } else {
@@ -335,6 +336,7 @@ function processAdds(a) {
         if (atk === a && isRushPiercing() ? Math.hypot(add.x - a.x, add.y - a.y) < a.radius + add.radius && !(add.hitCooldown > 0) : resolveBallCollision(atk, add)) {
           if (atk === a && isRushPiercing()) add.hitCooldown = HIT_LOCK_FRAMES;
           const rm = atk === a ? getRushDmgMult() : 1;
+          if (atk === a && rushingNow && !isRampage()) rushKnockFly(add, a);
           if (atk === a) { a.tapSpeedMult = 1; consumeRushHit(add.x, add.y - add.radius); } // 雑魚敵に衝突してもタップ加速をリセット
           const { dmg, crit } = rollCrit(Math.max(1, Math.round((atk.atk || 1) * rm)));
           add.hp -= dmg;
@@ -1691,7 +1693,7 @@ const SPRITE_FACING = {
   blueDragon: 1, blackDragon: 1, wyvern: 1, 
   vampire: 0, werewolf: 0, franken: 0, slimeGirl: 0, reaper: 0, demonKing: 0,
   goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: -1, darkMage: -1, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: -1, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: -1, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: -1, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: -1,
-  slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, m_redGoblin: 1, // レッドゴブリンの絵は右向き
+  slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, m_redGoblin: 1, m_griffon: -1, // レッドゴブリンの絵は右向き・グリフォンは左向き
 };
 const isSlimeSprite = key => /slime/i.test(key) && key !== 'slimeGirl'; // スライム系（プヨプヨ揺らす）
 function drawFacingSprite(img, ball, key, cx, cy, sz) {

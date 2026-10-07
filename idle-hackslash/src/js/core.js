@@ -585,7 +585,7 @@ const ARTIFACT_POOL = [
   { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +40%（最大5個）', rarity: 'epic' },
   { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +60%（最大3個）', rarity: 'epic' },
   { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
-  { id: 'pierceHoof', icon: '🐂', name: '貫きの蹄鉄', desc: '体当たりが敵を貫通し、跳ね返らずに連続攻撃（1個ごとに+1ヒット・最大3個）', rarity: 'epic' },
+  { id: 'pierceHoof', icon: '🐂', name: '吹っ飛ばしの蹄鉄', desc: '体当たりで敵をさらに遠くへ吹っ飛ばす（1個ごとに+25%・最大3個）', rarity: 'epic' },
   { id: 'swordX', icon: '⚔️', name: '闘志の剣・極', desc: '攻撃力 +400%', rarity: 'legendary' },
   { id: 'aegis', icon: '🛡️', name: '不壊の大盾', desc: '最大HP +400%', rarity: 'legendary' },
   { id: 'ragnarok', icon: '🌟', name: '神剣ラグナロク', desc: '攻撃力 +1500%', rarity: 'mythic' },
@@ -833,7 +833,7 @@ function renderSubTabs(el, cats, current, onPick) {
   el.onclick = ev => { const btn = ev.target.closest('[data-subtab]'); if (btn) onPick(btn.dataset.subtab); };
 }
 const ARTIFACT_CURRENT = {
-  pierceHoof: n => `貫通 +${n}ヒット`,
+  pierceHoof: n => `吹っ飛ばし +${n*25}%`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
   compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
   evoFeather: n => `進化の素材 ${n}枚`, turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
