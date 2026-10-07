@@ -1764,7 +1764,9 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .mini-tower.challenging { background: #b0525e; animation: towerPulse 1.2s ease-in-out infinite alternate; }
 .mini-reborn { background: #6a44c4; }
 .mini-retire { background: #9a2a34; }
-.mini-reborn, .mini-retire, .mini-tower { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; } /* 転生・リタイヤは押しやすく縦を大きめに */
+.mini-reborn, .mini-retire, .mini-tower { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; }
+.mini-btn.mini-tower { display: flex; align-items: center; gap: 3px; padding: 3px 7px 3px 4px; min-height: 44px; } /* 試練の塔：塔のアイコン付きで縦を2倍くらいに */
+.mini-tower .mini-ico { height: 36px; width: auto; image-rendering: pixelated; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */
 .upgrade-card { cursor: default; }

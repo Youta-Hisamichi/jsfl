@@ -658,8 +658,8 @@ function updateStatsUI() {
   stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
   updateSkipBtnVisibility();
   const skipHtml = game.skipChallenge
-    ? `🗼 挑戦中 ${game.skipChallenge.target}階`
-    : `🗼 試練の塔`;
+    ? `<img class="mini-ico" src="assets/img/ui/bar/tower_icon.webp" alt="">挑戦中 ${game.skipChallenge.target}階`
+    : `<img class="mini-ico" src="assets/img/ui/bar/tower_icon.webp" alt="">試練の塔`;
   if (stageSkipBtn.dataset.html !== skipHtml) { stageSkipBtn.innerHTML = skipHtml; stageSkipBtn.dataset.html = skipHtml; }
   updateSpecialButton();
   updateAccelButton();
