@@ -982,6 +982,7 @@ const WEAPONS = {
 // サブウェポンの画像（一覧のアイコンと、飛んでいく弾の絵）
 const WEAPON_IMGS = {};
 for (const id of [...Object.keys(WEAPONS), 'buckler']) { const img = new Image(); img.src = `assets/img/weapons/${id}.webp`; WEAPON_IMGS[id] = img; if (WEAPONS[id]) WEAPONS[id].img = img.src; }
+const BLUE_FIRE_IMG = new Image(); BLUE_FIRE_IMG.src = 'assets/img/weapons/blueFire.webp'; // 聖水の青い炎（横＝大きさ5段階、縦＝ゆらめき5コマ）
 function drawWeaponImg(id, size) { const img = WEAPON_IMGS[id]; if (!img || !img.complete || !img.naturalWidth) return false; ctx.drawImage(img, -size / 2, -size / 2, size, size); return true; }
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
@@ -1156,13 +1157,24 @@ function drawWeapons() {
   ctx.save();
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const f of weaponFx) {
-    if (f.kind === 'fire') { // 燃える聖水
+    if (f.kind === 'fire') { // 燃える聖水：青い聖なる炎（5段階の大きさ×5コマのゆらめき）
       const fade = Math.min(1, (f.until - f.t) / 30);
       const g = ctx.createRadialGradient(f.x, f.y, 2, f.x, f.y, f.R);
-      g.addColorStop(0, `rgba(255,240,160,${0.55 * fade})`); g.addColorStop(0.6, `rgba(255,120,40,${0.4 * fade})`); g.addColorStop(1, 'rgba(255,60,20,0)');
+      g.addColorStop(0, `rgba(220,250,255,${0.5 * fade})`); g.addColorStop(0.6, `rgba(70,170,255,${0.35 * fade})`); g.addColorStop(1, 'rgba(40,90,255,0)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, f.R, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = fade; ctx.font = '13px sans-serif';
-      for (let i = 0; i < 5; i++) { const a = i * 1.26 + now / 400, rr = f.R * 0.55 * (0.5 + 0.5 * Math.sin(now / 150 + i)); ctx.fillText('🔥', f.x + Math.cos(a) * rr, f.y + Math.sin(a) * rr * 0.6 - 3); }
+      const atlas = BLUE_FIRE_IMG;
+      if (atlas.complete && atlas.naturalWidth) {
+        const age = (now - f.start) / 1000, grow = Math.min(1, age / 0.45), left = Math.min(1, (f.until - f.t) / 40); // 燃え広がり→消え際に小さく
+        const stage = Math.max(0, Math.min(4, Math.round(4 * Math.min(grow, left))));
+        const C = atlas.naturalWidth / 5;
+        ctx.globalAlpha = fade;
+        const spots = [[0, 0, 1], [-0.55, 0.2, 0.7], [0.55, 0.2, 0.7], [-0.25, -0.35, 0.6], [0.3, -0.3, 0.6]];
+        for (let i = 0; i < spots.length; i++) {
+          const [ox, oy, sc] = spots[i], frame = (Math.floor(now / 90) + i * 2) % 5, st = Math.max(0, stage - (i ? 1 : 0));
+          const sz = f.R * 1.25 * sc, x = f.x + ox * f.R, y = f.y + oy * f.R * 0.6;
+          ctx.drawImage(atlas, st * C, frame * C, C, C, x - sz / 2, y - sz * 0.85, sz, sz);
+        }
+      }
       ctx.globalAlpha = 1;
     } else if (f.kind === 'bolt') { // 雷
       const k = (now - f.start) / 350;
