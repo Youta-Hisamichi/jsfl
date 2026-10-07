@@ -1431,6 +1431,19 @@ function hatchEgg(o, byEnemy = false) {
   spawnDamageText(o.x, o.y - 20, '🥚💥 やばいのが出てきた！', '#ff4f6d', 0.012, true);
   shakeScreen(); playWarningSound();
 }
+// 近接攻撃（切り払い）で卵を叩く：1回で1段階ひびが入り、連打で割れる
+function slashEgg(o, pl) {
+  const now = Date.now();
+  if (o.broken || o.kind !== 'egg' || now - (o.hitAt || 0) < 90) return false;
+  o.hitAt = now; o.shakeAt = now; o.hp -= 1;
+  const ang = Math.atan2(pl.y - o.y, pl.x - o.x), h = o.r * 0.9, pts = [[o.x + Math.cos(ang) * h * 0.9, o.y + Math.sin(ang) * h * 0.9]];
+  for (let k = 1; k <= 3; k++) { const a2 = ang + Math.PI + (Math.random() - 0.5) * 1.6, l = h * 0.3 * k; pts.push([pts[0][0] + Math.cos(a2) * l + (Math.random() - 0.5) * 4, pts[0][1] + Math.sin(a2) * l + (Math.random() - 0.5) * 4]); }
+  o.cracks.push(pts.map(([px, py]) => [px - o.x, py - o.y]));
+  spawnHitParticles(o.x, o.y, BREAKABLES.egg.cols[0]);
+  thump(900, 600, 0.06, 0.08, 'triangle'); filteredNoise(0, 0.05, 0.2, 3000, 2); // ピキッ
+  if (o.hp <= 0) hatchEgg(o, false);
+  return true;
+}
 // 回転角は 0〜2π に収めてから使う（Date.now() をそのまま割った巨大な角度は、描画側の精度不足で回転が止まってしまう）
 function spinAngle(now, msPerRad) { return (now % (msPerRad * Math.PI * 2)) / msPerRad; }
 // ダッシュパネルはゆっくり回転し、乗った瞬間の矢印の向きへ加速する（パネルごとに回る向きが違う）

@@ -924,7 +924,9 @@ function doTapSlash(auto = false) {
   const R = pl.radius + SLASH_RANGE + 6 * getRunBuff('slash');
   const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
   const near = nearestOf(pl, foes);
-  const ang = near && Math.hypot(near.x - pl.x, near.y - pl.y) < R * 2.2 ? Math.atan2(near.y - pl.y, near.x - pl.x) : ((pl.faceDir || 1) > 0 ? 0 : Math.PI);
+  const egg = typeof obstacles !== 'undefined' ? nearestOf(pl, obstacles.filter(o => o.kind === 'egg' && !o.broken)) : null; // 近くに敵がいなければ卵の方へ振る
+  const tgt = near && Math.hypot(near.x - pl.x, near.y - pl.y) < R * 2.2 ? near : egg && Math.hypot(egg.x - pl.x, egg.y - pl.y) < R + egg.r + 10 ? egg : null;
+  const ang = tgt ? Math.atan2(tgt.y - pl.y, tgt.x - pl.x) : ((pl.faceDir || 1) > 0 ? 0 : Math.PI);
   if (Math.abs(Math.cos(ang)) > 0.2) pl.faceDir = Math.cos(ang) > 0 ? 1 : -1;
   slashSide = -slashSide;
   slashFx.push({ ball: pl, ang, side: slashSide, start: now, r: R });
@@ -937,6 +939,14 @@ function doTapSlash(auto = false) {
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
     if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6, pl)) hits++;
+  }
+  for (const o of obstacles) { // 卵も切り払いで割れる
+    if (o.kind !== 'egg' || o.broken) continue;
+    const d = Math.hypot(o.x - pl.x, o.y - pl.y);
+    if (d > R + o.r) continue;
+    let da = Math.atan2(o.y - pl.y, o.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+    if (Math.abs(da) > SLASH_HALF && d > pl.radius + o.r + 6) continue;
+    slashEgg(o, pl);
   }
   if (hits) { if (!mashing) playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
