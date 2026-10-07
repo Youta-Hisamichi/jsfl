@@ -1247,38 +1247,33 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：ロータリーエンジン（RX-7風）の空ぶかし。引くほど回転が上がり「ブォォォン！」、最大でレブリミッター「ババババ」
-function engineCurve() { const c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; c[i] = Math.tanh(x * 2.6); } return c; }
+let chargeHum = null; // 引っ張り中のチャージ音：電車のモーター（インバーター）の始動音。「ファソラシドレミファ〜」と段々に上がる電子音と、なめらかに上がるモーターのうなり
+const INVERTER_STEPS = [0, 2, 4, 5, 7, 9, 11, 12, 14]; // 段々に上がる電子音（長調の音階）
 function updateChargeHum(lv) {
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { // 離したら回転がストンと落ちて消える
-    if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.o1.frequency.cancelScheduledValues(t); h.o1.frequency.setTargetAtTime(28, t, 0.12); h.o2.frequency.setTargetAtTime(14, t, 0.12); h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.12); setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.noise.stop(); h.lim.stop(); } catch (e) {} }, 700); chargeHum = null; }
+  if (!on) { // 離したら惰行のようにすっと音程を下げて消える
+    if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.car.frequency.setTargetAtTime(h.car.frequency.value * 0.7, t, 0.15); h.mot.frequency.setTargetAtTime(h.mot.frequency.value * 0.6, t, 0.2); h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.12); setTimeout(() => { try { h.car.stop(); h.car2.stop(); h.mot.stop(); h.mot2.stop(); } catch (e) {} }, 800); chargeHum = null; }
     return;
   }
   const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
-  const rpm = 1100 + Math.pow(lv, 1.3) * 7400, fire = rpm / 60 * 2; // 2ローター：1回転に2回の燃焼
+  const step = Math.min(INVERTER_STEPS.length - 1, Math.floor(lv * INVERTER_STEPS.length));
+  const carrierF = 349.23 * Math.pow(2, INVERTER_STEPS[step] / 12); // ファから上がる
+  const motorF = 90 + lv * 520; // モーターのうなり（なめらか）
   if (!chargeHum) {
-    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), mix = audioCtx.createGain(), sh = audioCtx.createWaveShaper(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain(), lim = audioCtx.createOscillator(), limG = audioCtx.createGain(), amp = audioCtx.createGain();
-    o1.type = 'sawtooth'; o2.type = 'square'; o1.frequency.value = fire; o2.frequency.value = fire / 2; // 半分の音で「ブリブリ」した粒感
-    const o2g = audioCtx.createGain(); o2g.gain.value = 0.55;
-    sh.curve = engineCurve(); sh.oversample = '2x';
-    f.type = 'lowpass'; f.Q.value = 3; f.frequency.value = 400;
-    // 吸気のシャー音
-    const nb = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    const noise = audioCtx.createBufferSource(); noise.buffer = nb; noise.loop = true; const nf = audioCtx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1800; nf.Q.value = 0.8; const ng = audioCtx.createGain(); ng.gain.value = 0.05;
-    // レブリミッター（最大回転で音が途切れる）
-    lim.type = 'square'; lim.frequency.value = 14; limG.gain.value = 0; amp.gain.value = 1; lim.connect(limG); limG.connect(amp.gain);
-    o1.connect(mix); o2.connect(o2g); o2g.connect(mix); mix.connect(sh); sh.connect(f); noise.connect(nf); nf.connect(ng); ng.connect(f);
-    f.connect(amp); amp.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
-    o1.start(); o2.start(); noise.start(); lim.start();
-    chargeHum = { o1, o2, f, g, ng, limG, noise, lim };
+    const car = audioCtx.createOscillator(), car2 = audioCtx.createOscillator(), mot = audioCtx.createOscillator(), mot2 = audioCtx.createOscillator();
+    const cg = audioCtx.createGain(), c2g = audioCtx.createGain(), mg = audioCtx.createGain(), m2g = audioCtx.createGain(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    car.type = 'square'; car2.type = 'sine'; mot.type = 'triangle'; mot2.type = 'sine';
+    car.frequency.value = carrierF; car2.frequency.value = carrierF * 2; mot.frequency.value = motorF; mot2.frequency.value = motorF / 2;
+    cg.gain.value = 0.25; c2g.gain.value = 0.18; mg.gain.value = 0.6; m2g.gain.value = 0.5;
+    f.type = 'lowpass'; f.frequency.value = 3200; f.Q.value = 0.5; g.gain.value = 0.0001;
+    car.connect(cg); car2.connect(c2g); mot.connect(mg); mot2.connect(m2g); [cg, c2g, mg, m2g].forEach(n => n.connect(f)); f.connect(g); g.connect(audioCtx.destination);
+    car.start(); car2.start(); mot.start(); mot2.start();
+    chargeHum = { car, car2, mot, mot2, g, step };
   }
-  const h = chargeHum, tau = 0.09; // 少し遅れて回転が追いつく（ふかしている感じ）
-  h.o1.frequency.setTargetAtTime(fire, t, tau); h.o2.frequency.setTargetAtTime(fire / 2, t, tau);
-  h.f.frequency.setTargetAtTime(350 + lv * 2600, t, tau);
-  h.ng.gain.setTargetAtTime(0.02 + lv * 0.06, t, tau);
-  h.limG.gain.setTargetAtTime(lv >= 0.98 ? 0.6 : 0, t, 0.02);
-  h.g.gain.setTargetAtTime((0.05 + lv * 0.07) * v, t, 0.06);
+  const h = chargeHum;
+  h.car.frequency.setTargetAtTime(carrierF, t, 0.035); h.car2.frequency.setTargetAtTime(carrierF * 2, t, 0.035); // 段ごとに「ポン」と音が切り替わる
+  h.mot.frequency.setTargetAtTime(motorF, t, 0.12); h.mot2.frequency.setTargetAtTime(motorF / 2, t, 0.12);
+  h.g.gain.setTargetAtTime((0.035 + lv * 0.035) * v, t, 0.06);
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
