@@ -1717,3 +1717,25 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 #skillRow .action-btn.is-disabled, #skillRow .action-btn:disabled { filter: grayscale(0.55) brightness(0.8); box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.5); }
 #skillRow .action-btn:not(.is-disabled):not(:disabled) { animation: skillReady 1.4s ease-in-out infinite alternate; }
 @keyframes skillReady { from { filter: brightness(1); } to { filter: brightness(1.15); } }
+/* ===== 進化ページ（攻撃力／HPを選んでジェムと羽を捧げる） ===== */
+.evo-panel { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 8px; }
+.evo-rates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.evo-rate { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.18); background: linear-gradient(180deg, #2a2440, #17142a); color: #e9e4ff; cursor: pointer; transition: transform 0.1s; }
+.evo-rate span { font-size: 0.78rem; font-weight: 800; }
+.evo-rate b { font-size: 1.15rem; font-weight: 900; color: #ffe08a; text-shadow: 0 0 8px rgba(255,200,90,0.5); }
+.evo-rate.on { border-color: #ffd76b; box-shadow: 0 0 10px rgba(255,215,107,0.55); background: linear-gradient(180deg, #4a3a1c, #2a2010); }
+.evo-row { display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 10px; background: rgba(0,0,0,0.25); }
+.evo-row .evo-lbl { flex: 1; font-weight: 800; font-size: 0.8rem; }
+.evo-row button { min-width: 34px; padding: 4px 6px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.25); background: #2c3550; color: #fff; font-weight: 900; font-size: 0.74rem; cursor: pointer; }
+.evo-row .evo-val { min-width: 56px; text-align: center; font-size: 1rem; }
+.evo-row .evo-val small { font-size: 0.7em; opacity: 0.7; }
+.evo-odds { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.evo-odd { display: flex; flex-direction: column; align-items: center; padding: 5px 2px; border-radius: 8px; border: 1.5px solid var(--rc); background: rgba(0,0,0,0.3); }
+.evo-odd span { font-size: 0.5rem; color: var(--rc); letter-spacing: -0.05em; }
+.evo-odd b { font-size: 0.9rem; font-weight: 900; color: var(--rc); }
+.evo-odd i { font-style: normal; font-size: 0.66rem; font-weight: 800; color: #fff; }
+.evo-go { padding: 12px 8px; border-radius: 12px; border: 2px solid #ffe08a; background: linear-gradient(180deg, #ffb84d, #e0602c); color: #fff; font-weight: 900; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.6); cursor: pointer; box-shadow: 0 0 12px rgba(255,160,60,0.5); }
+.evo-go.is-disabled { filter: grayscale(0.6) brightness(0.8); }
+.evo-odd { background: linear-gradient(180deg, #1c2030, #10131c) !important; }
+.evo-odd span, .evo-odd b { text-shadow: 0 1px 2px #000; }
+.evo-row { background: linear-gradient(180deg, #2a2f44, #1a1d2c) !important; color: #fff; }

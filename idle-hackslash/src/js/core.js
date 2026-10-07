@@ -182,7 +182,7 @@ const SHOPKEEPERS = {
   coinshop:  { npc: 'sage',      name: '魔導書の賢者ソフィア', lines: ['スキルのことなら、この魔導書におまかせを。', '好きなスキルを選んで鍛えましょう！', '修行の代金はコインでけっこうですよ。', '戦闘中しか使えない技もあるので気をつけて。', 'サブウェポンも、ここで鍛えられます。'] },
   artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
   gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
-  gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの運命を占ってあげる。', '水晶玉が…光っているわ…！', '10連なら、運命が動くかもしれないわね。', '欠片を集めれば、力は進化するのよ。'] },
+  gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの力を進化させてあげる。', '水晶玉が…光っているわ…！', 'ジェムを多く捧げるほど、運命は輝くわ。', '進化の羽があれば、×256も夢じゃないわよ。'] },
   records:   { npc: 'elder',     name: '記録係の長老', lines: ['ほっほっ、よく戦っておるのう。', 'おぬしの戦いの記録、しっかり残しておるぞ。', '図鑑を埋めるのも冒険の楽しみじゃ。', '最高記録を更新する日が楽しみじゃわい。'] },
   ranking:   { npc: 'king',      name: 'アルス王', lines: ['よくぞ参った、勇者よ！', 'ランキングの頂点を目指すのだ！', '今日の戦果、期待しておるぞ。', '上位の者には、わしから称賛を贈ろう。'] },
   settings:  { npc: 'sister',    name: '案内係のシスター', lines: ['お困りのことはありませんか？', '音量はここで調整できますよ。', '遊び方はこちらからご覧ください。', 'ゆっくり休むことも大切ですよ。'] },
@@ -569,7 +569,7 @@ const ARTIFACT_POOL = [
   { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
   { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
-  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化（ガチャ）の効果 +10%（重複で増加）', rarity: 'common' },
+  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。進化に使うと高いレア度が出やすくなる（使うと減る）', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
   { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
@@ -638,8 +638,20 @@ function pickGachaId() {
   }
   return Object.keys(GACHA_POOL)[0];
 }
-const EVO_FEATHER_STEP = 0.1; // 進化の羽1個ごとに進化の効果 +10%
-function getEvoBoost() { return 1 + EVO_FEATHER_STEP * ((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0); }
+// ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 2・3・8・25・256倍 が出て、進化率に掛け算される =====
+const EVO_TIERS = [
+  { rarity: 'common', mult: 2, base: 72 }, { rarity: 'rare', mult: 3, base: 20 }, { rarity: 'epic', mult: 8, base: 6.5 },
+  { rarity: 'legendary', mult: 25, base: 1.35 }, { rarity: 'mythic', mult: 256, base: 0.15 },
+];
+const EVO_MIN_GEMS = 5, EVO_RATE_CAP = 1e150;
+function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
+function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
+function evoLuck(gems, feathers) { return Math.max(0, Math.log2(Math.max(EVO_MIN_GEMS, gems) / EVO_MIN_GEMS)) * 0.35 + feathers * 0.3; } // ジェムを多く・羽を多く捧げるほど高レア度が出やすい
+function evoOdds(gems, feathers) {
+  const L = evoLuck(gems, feathers), w = EVO_TIERS.map((t, i) => t.base * Math.pow(1 + L, i * 1.2)), sum = w.reduce((a, b) => a + b, 0);
+  return w.map(x => x / sum);
+}
+function rollEvoTier(gems, feathers) { const o = evoOdds(gems, feathers); let r = Math.random(); for (let i = 0; i < o.length; i++) { r -= o[i]; if (r < 0) return i; } return 0; }
 function getEvolveNeed(id) {
   const level = game.evolutions[id];
   const mult = RARITY_INFO[GACHA_POOL[id].rarity].needMult;
@@ -824,7 +836,7 @@ const ARTIFACT_CURRENT = {
   pierceHoof: n => `貫通 +${n}ヒット`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
   compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
-  evoFeather: n => `進化の効果 +${10 * n}%`, turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
+  evoFeather: n => `進化の素材 ${n}枚`, turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
   feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
   banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
 };
@@ -994,6 +1006,7 @@ const game = {
   coinCloneSlots: 0,
   shopOwned: {},
   gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
+  evoRate: { atk: 1, hp: 1 }, // 進化率（攻撃力・HPに掛け算）
   evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
@@ -1091,7 +1104,7 @@ function computeBonuses() {
 
   const evoBoost = getEvoBoost(); // 遺物「進化の羽」：進化の効果アップ
   for (const id in GACHA_POOL) {
-    const level = (game.evolutions[id] || 0) * evoBoost;
+    const level = 0; // 旧方式の進化（欠片）は廃止：効果なし
     if (!level) continue;
     const bonus = GACHA_POOL[id].bonus;
     if (bonus.atk) b.atkMult += bonus.atk * level;
@@ -1126,6 +1139,7 @@ function computeBonuses() {
   b.hpMult += game.rebirthBonus.hp;
   const rlv = game.rebirthLv || 0; // 転生Lv：転生するたびに上がり、キャラの基礎能力がずっと強くなる
   b.atkMult += rlv * REBIRTH_LV_BONUS; b.hpMult += rlv * REBIRTH_LV_BONUS;
+  b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
   return b;
 }
 

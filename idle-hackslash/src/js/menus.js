@@ -69,18 +69,17 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
+let evoKind = 'atk', evoGems = 5, evoFeathers = 0;
 function renderEvolutionList() {
-  const evoIds = Object.keys(GACHA_POOL);
-  const obtained = evoIds.filter(id => (game.evolutions[id] || 0) > 0 || (game.gachaShards[id] || 0) > 0).length;
-  const evoRate = (evoIds.length ? Math.floor(obtained / evoIds.length * 1000) / 10 : 0).toFixed(1);
-  document.getElementById('evolutionProgress').innerHTML = `<span class="evo-prog-label">進化コレクション</span><strong>${obtained}<small> / ${evoIds.length}</small></strong><span class="evo-prog-bar"><i style="width:${evoRate}%"></i></span><span class="evo-prog-rate">${evoRate}%</span>`;
-  evolutionList.innerHTML = Object.entries(GACHA_POOL).map(([id, type]) => {
-    const level = game.evolutions[id] || 0;
-    const rarity = RARITY_INFO[type.rarity];
-    return `<div class="evo-card ${level ? '' : 'unowned'}" style="--rc:${rarity.color}"><span class="evo-lv">${level ? 'Lv.' + level : '未入手'}</span><span class="evo-ico">${ico(type)}</span><span class="evo-stars">${rarityStars(type.rarity)}</span><span class="evo-name">${type.name.replace('の欠片', '')}</span><span class="evo-desc">${type.desc}</span></div>`;
-  }).join('');
-  gachaBtn.classList.toggle('is-disabled', game.gems < 5);
-  gacha10Btn.classList.toggle('is-disabled', game.gems < 45);
+  const el = document.getElementById('evoPanel'); if (!el) return;
+  const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0;
+  evoGems = Math.max(EVO_MIN_GEMS, Math.min(evoGems, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = Math.max(0, Math.min(evoFeathers, owned));
+  const odds = evoOdds(evoGems, evoFeathers), fmtRate = v => '×' + formatCoinNumber(v);
+  el.innerHTML = `<div class="evo-rates"><div class="evo-rate ${evoKind === 'atk' ? 'on' : ''}" data-evo-kind="atk"><span>⚔️ 攻撃力進化</span><b>${fmtRate(getEvoRate('atk'))}</b></div><div class="evo-rate ${evoKind === 'hp' ? 'on' : ''}" data-evo-kind="hp"><span>❤️ HP進化</span><b>${fmtRate(getEvoRate('hp'))}</b></div></div>
+    <div class="evo-row"><span class="evo-lbl">💎 ジェム</span><button data-evo-gems="-10">-10</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="10">+10</button><button data-evo-gems="max">MAX</button></div>
+    <div class="evo-row"><span class="evo-lbl">🪽 進化の羽</span><button data-evo-fea="-1">-</button><b class="evo-val">${evoFeathers}<small> / ${owned}</small></b><button data-evo-fea="1">+</button><button data-evo-fea="max">MAX</button></div>
+    <div class="evo-odds">${EVO_TIERS.map((t, i) => `<div class="evo-odd" style="--rc:${RARITY_INFO[t.rarity].color}"><span>${rarityStars(t.rarity)}</span><b>×${t.mult}</b><i>${(odds[i] * 100).toFixed(odds[i] < 0.01 ? 2 : 1)}%</i></div>`).join('')}</div>
+    <button class="evo-go ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn">✨ ${evoKind === 'atk' ? '攻撃力' : 'HP'}を進化する（💎${evoGems}${evoFeathers ? `・🪽${evoFeathers}` : ''}）</button>`;
   updateCompSummonVisibility();
 }
 function updateCompSummonVisibility() {
@@ -386,7 +385,7 @@ function renderArtifactTotal() {
     ['🌟', '必殺ダメージ', b.specialDmgMult > 1 && fmtMult(b.specialDmgMult)], ['⏳', '必殺の待ち時間', b.specialCooldownMult < 1 && '-' + Math.round((1 - b.specialCooldownMult) * 100) + '%'], ['🚀', '加速ダメージ', b.accelDmgMult > 1 && fmtMult(b.accelDmgMult)],
     ['🐗', '体当たり', b.tackleMult > 1 && fmtMult(b.tackleMult)], ['🔍', '命中', b.accuracy > 0 && pct(b.accuracy)], ['🪶', '回避', b.evasion > 0 && pct(b.evasion)], ['🛡️', '反撃', b.counter > 0 && pct(b.counter)],
     ['😤', 'ピンチ時の攻撃', b.pinchAtk > 0 && pct(b.pinchAtk)], ['🚩', '仲間の攻撃', b.companionAtkMult > 1 && fmtMult(b.companionAtkMult)], ['🧿', '仲間のHP', b.companionHpMult > 1 && fmtMult(b.companionHpMult)],
-    ['🧭', '跳ね返りコイン', b.bounceCoinCount > 0 && '+' + b.bounceCoinCount + '枚'], ['📅', 'ログインボーナス', b.loginBonusMult > 1 && fmtMult(b.loginBonusMult)], ['💎', '転生ジェム', b.rebirthGems > 0 && '+' + b.rebirthGems], ['🪽', '進化の効果', getEvoBoost() > 1 && '×' + (Math.round(getEvoBoost() * 100) / 100)],
+    ['🧭', '跳ね返りコイン', b.bounceCoinCount > 0 && '+' + b.bounceCoinCount + '枚'], ['📅', 'ログインボーナス', b.loginBonusMult > 1 && fmtMult(b.loginBonusMult)], ['💎', '転生ジェム', b.rebirthGems > 0 && '+' + b.rebirthGems],
   ].filter(r => r[2]);
   document.getElementById('artifactTotal').innerHTML = `<div class="af-total-title">✨ 遺物の効果 合計</div>` + (rows.length
     ? `<div class="af-total-grid">${rows.map(([i, n, v]) => `<div class="af-total-item"><span>${i} ${n}</span><b>${v}</b></div>`).join('')}</div>`

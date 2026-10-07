@@ -1484,6 +1484,36 @@ gacha10Btn.addEventListener('click', event => {
   });
 });
 
+// 新しい進化：攻撃力かHPを選び、ジェムと羽の数を決めて進化
+document.getElementById('evoPanel').addEventListener('click', event => {
+  const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]'), fb = event.target.closest('[data-evo-fea]');
+  const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, maxG = Math.max(EVO_MIN_GEMS, Math.floor(game.gems));
+  if (kindBtn) { evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
+  if (gb) { const d = gb.dataset.evoGems; evoGems = d === 'max' ? maxG : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + Number(d))); renderEvolutionList(); return; }
+  if (fb) { const d = fb.dataset.evoFea; evoFeathers = d === 'max' ? owned : Math.max(0, Math.min(owned, evoFeathers + Number(d))); renderEvolutionList(); return; }
+  if (!event.target.closest('#evoGoBtn')) return;
+  if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
+  if (evoBusy) return;
+  const gems = evoGems, feathers = Math.min(evoFeathers, owned), kind = evoKind;
+  const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
+  game.gems -= gems; if (feathers) game.ownedArtifacts.evoFeather = owned - feathers;
+  evoBusy = true; renderEvolutionList();
+  runGachaCountdown(tier.rarity, () => {
+    if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
+    const before = getEvoRate(kind);
+    game.evoRate[kind] = Math.min(EVO_RATE_CAP, before * tier.mult);
+    refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
+    const rarity = RARITY_INFO[tier.rarity];
+    playGachaSound(tier.rarity);
+    gachaResult.className = 'gacha-result rarity-' + tier.rarity;
+    gachaResult.style.background = rarityBackground(tier.rarity);
+    gachaResult.style.display = '';
+    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${kind === 'atk' ? '⚔️' : '❤️'}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}</div><div class="gr-sub">${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${formatCoinNumber(before)} → <b>×${formatCoinNumber(getEvoRate(kind))}</b></div><button id="gachaResultCloseBtn">閉じる</button>`;
+    document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
+    evoBusy = false; renderEvolutionList(); saveGame();
+  });
+});
+let evoBusy = false;
 evolutionList.addEventListener('click', event => {
   const button = event.target.closest('[data-evolve]');
   if (!button) return;
