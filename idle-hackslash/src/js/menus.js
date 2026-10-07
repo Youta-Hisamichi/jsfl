@@ -1247,42 +1247,34 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：ロックマンX風。なめらかな「ウィィィーン」が溜めた時間で上がり、溜まりきると「ヴィンヴィンヴィン」と揺れながら響き続ける（エコー付き）
+let chargeHum = null; // 引っ張り中のチャージ音：ファミコン版ロックマン風（VRC6音源）。半音ずつカクカク上がる「ピロロロロ↑」、溜まりきると「ピュイピュイピュイ」と2音を行き来し続ける
 const CHARGE_SOUND_MS = 1200; // 溜まりきるまでの時間
 function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.03); setTimeout(() => { try { h.oscs.forEach(o => o.stop()); } catch (e) {} }, 600); chargeHum = null; } return; }
+  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setValueAtTime(0.0001, t + 0.01); setTimeout(() => { try { h.oscs.forEach(o => o.stop()); } catch (e) {} }, 100); chargeHum = null; } return; } // ファミコンらしくスパッと止める
   const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7), full = lv >= 1;
-  const f = 200 * Math.pow(880 / 200, Math.pow(lv, 0.9)); // ゆったり上がる
+  const semi = Math.round(lv * 24); // 2オクターブを半音ずつ
+  const f = 220 * Math.pow(2, semi / 12); // ラから
   if (!chargeHum) {
-    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), o3 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), trem = audioCtx.createOscillator();
-    const lg = audioCtx.createGain(), tg = audioCtx.createGain(), amp = audioCtx.createGain(), lp = audioCtx.createBiquadFilter(), g = audioCtx.createGain(), o3g = audioCtx.createGain();
-    o1.type = 'square'; o2.type = 'square'; o3.type = 'sine';
-    o1.frequency.value = f; o2.frequency.value = f; o2.detune.value = 14; o3.frequency.value = f * 2; o3g.gain.value = 0.5; // 少しずらした2つの音でコーラス感
-    lfo.type = 'sine'; lfo.frequency.value = 6; lg.gain.value = f * 0.01; [o1, o2, o3].forEach(o => lg.connect(o.frequency)); lfo.connect(lg);
-    trem.type = 'sine'; trem.frequency.value = 8; tg.gain.value = 0; amp.gain.value = 1; trem.connect(tg); tg.connect(amp.gain);
-    lp.type = 'lowpass'; lp.Q.value = 2; lp.frequency.value = 900;
-    o1.connect(lp); o2.connect(lp); o3.connect(o3g); o3g.connect(lp); lp.connect(amp); amp.connect(g); g.gain.value = 0.0001;
-    // スーファミ風のエコー
-    const dl = audioCtx.createDelay(1), fb = audioCtx.createGain(), wet = audioCtx.createGain(); dl.delayTime.value = 0.12; fb.gain.value = 0.35; wet.gain.value = 0.4;
-    g.connect(audioCtx.destination); g.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(audioCtx.destination);
-    [o1, o2, o3, lfo, trem].forEach(o => o.start());
-    chargeHum = { oscs: [o1, o2, o3, lfo, trem], o1, o2, o3, lfo, lg, tg, trem, lp, g, full: false };
+    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), sw = audioCtx.createOscillator(), swg = audioCtx.createGain(), o2g = audioCtx.createGain(), g = audioCtx.createGain();
+    o1.setPeriodicWave(getPceWave('vrc6pulse25')); o2.setPeriodicWave(getPceWave('vrc6pulse12'));
+    o1.frequency.value = f; o2.frequency.value = f * 2; o2g.gain.value = 0.35;
+    sw.type = 'square'; sw.frequency.value = 15; swg.gain.value = 0; sw.connect(swg); swg.connect(o1.frequency); swg.connect(o2.frequency); // 溜まりきったら2音を素早く行き来
+    o1.connect(g); o2.connect(o2g); o2g.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
+    [o1, o2, sw].forEach(o => o.start());
+    chargeHum = { oscs: [o1, o2, sw], o1, o2, sw, swg, g, full: false };
   }
   const h = chargeHum;
   if (full) {
-    if (!h.full) { h.full = true; thump(1318, 1760, 0.12, 0.022, 'square'); thump(2637, 2637, 0.25, 0.011, 'sine', 0.04); } // 溜まりきった合図「キュイン」
-    [h.o1, h.o2].forEach(o => o.frequency.setTargetAtTime(988, t, 0.03)); h.o3.frequency.setTargetAtTime(1976, t, 0.03);
-    h.lfo.frequency.setTargetAtTime(11, t, 0.03); h.lg.gain.setTargetAtTime(70, t, 0.03); // 「ヴィンヴィン」と揺れる
-    h.trem.frequency.setTargetAtTime(11, t, 0.03); h.tg.gain.setTargetAtTime(0.35, t, 0.03);
-    h.lp.frequency.setTargetAtTime(4200, t, 0.05);
-    h.g.gain.setTargetAtTime(0.02 * v, t, 0.03);
+    if (!h.full) { h.full = true; h.o1.setPeriodicWave(getPceWave('vrc6pulse12')); }
+    h.o1.frequency.setValueAtTime(1567.98, t); h.o2.frequency.setValueAtTime(3135.96, t); // ソ ↔ シ を行き来
+    h.swg.gain.setValueAtTime(408, t); h.sw.frequency.setValueAtTime(15, t);
+    h.g.gain.setTargetAtTime(0.03 * v, t, 0.01);
   } else {
-    h.full = false;
-    [h.o1, h.o2].forEach(o => o.frequency.setTargetAtTime(f, t, 0.04)); h.o3.frequency.setTargetAtTime(f * 2, t, 0.04);
-    h.lfo.frequency.setTargetAtTime(6, t, 0.04); h.lg.gain.setTargetAtTime(f * 0.01, t, 0.04); h.tg.gain.setTargetAtTime(0, t, 0.04);
-    h.lp.frequency.setTargetAtTime(700 + lv * 2600, t, 0.04);
-    h.g.gain.setTargetAtTime((0.011 + lv * 0.01) * v, t, 0.03);
+    if (h.full) { h.full = false; h.o1.setPeriodicWave(getPceWave('vrc6pulse25')); }
+    h.swg.gain.setValueAtTime(0, t);
+    h.o1.frequency.setValueAtTime(f, t); h.o2.frequency.setValueAtTime(f * 2, t); // カクカク段階的に
+    h.g.gain.setTargetAtTime((0.018 + lv * 0.012) * v, t, 0.01);
   }
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
