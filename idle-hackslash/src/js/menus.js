@@ -929,7 +929,8 @@ function doTapSlash(auto = false) {
   if (Math.abs(Math.cos(ang)) > 0.2) pl.faceDir = Math.cos(ang) > 0 ? 1 : -1;
   slashSide = -slashSide;
   slashFx.push({ ball: pl, ang, side: slashSide, start: now, r: R });
-  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length));
+  const mashing = rushingNow && holdRush && holdRush.shot && !holdRush.auto && holdRush.mash; // 引っ張り連打中は連鎖音だけ鳴らす
+  if (!mashing) playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length));
   let hits = 0;
   for (const en of foes) {
     const d = Math.hypot(en.x - pl.x, en.y - pl.y);
@@ -938,7 +939,7 @@ function doTapSlash(auto = false) {
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
     if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6, pl)) hits++;
   }
-  if (hits) { playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
+  if (hits) { if (!mashing) playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
 // 自キャラの攻撃（切り払い・武器スキル）で敵に攻撃力×mult のダメージ。命中したら true
 function playerHitEnemyBy(en, pl, mult, color, knock, from) {
