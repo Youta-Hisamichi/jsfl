@@ -1200,8 +1200,8 @@ function drawWeapons() {
       ctx.lineWidth = 1.5; ctx.strokeStyle = '#b8860b'; ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(-1.6, -1.6, 2.2, 0, Math.PI * 2); ctx.fill();
     } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 画像の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
-    else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 24)) { ctx.font = '15px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
-    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 20)) { ctx.font = '14px sans-serif'; ctx.fillText('🧴', 0, 0); } }
+    else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 36)) { ctx.font = '22px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
+    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 32)) { ctx.font = '22px sans-serif'; ctx.fillText('🧴', 0, 0); } }
     else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
     ctx.restore();
   }
