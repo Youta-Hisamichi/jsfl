@@ -1247,39 +1247,39 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：格ゲーの気合い溜め（パワーチャージ）のような「ズォォォォ」というオーラの轟音。引くほど高く荒々しく、満タンで「シャキーン」
-function updateChargeHum(lv) {
+let chargeHum = null; // 引っ張り中のチャージ音：ロックマンのチャージショット風。押している時間で「ギュイイーン」と音程が上がり、溜まりきると「ピュイピュイピュイ」と鳴り続ける
+const CHARGE_SOUND_MS = 1200; // 溜まりきるまでの時間
+function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.06); setTimeout(() => { try { h.n.stop(); h.sub.stop(); h.lfo.stop(); } catch (e) {} }, 500); chargeHum = null; } return; }
-  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
+  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.02); setTimeout(() => { try { h.o.stop(); h.o2.stop(); h.lfo.stop(); } catch (e) {} }, 250); chargeHum = null; } return; }
+  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7), full = lv >= 1;
+  const f = 180 * Math.pow(1300 / 180, lv); // 低い所から高い所へ指数的に上がる
   if (!chargeHum) {
-    const sr = audioCtx.sampleRate, nb = audioCtx.createBuffer(1, sr * 2, sr), d = nb.getChannelData(0);
-    let br = 0; for (let i = 0; i < d.length; i++) { br = br * 0.86 + (Math.random() * 2 - 1) * 0.14; d[i] = br * 2.4 + (Math.random() * 2 - 1) * 0.25; } // 低めの轟音ノイズ
-    const n = audioCtx.createBufferSource(); n.buffer = nb; n.loop = true;
-    const bp = audioCtx.createBiquadFilter(), lp = audioCtx.createBiquadFilter(), ng = audioCtx.createGain(), sub = audioCtx.createOscillator(), sg = audioCtx.createGain(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), aura = audioCtx.createGain(), g = audioCtx.createGain();
-    bp.type = 'bandpass'; bp.Q.value = 1.2; bp.frequency.value = 380; lp.type = 'lowpass'; lp.frequency.value = 900;
-    sub.type = 'sine'; sub.frequency.value = 62; sg.gain.value = 0.5;
-    lfo.type = 'sine'; lfo.frequency.value = 7; lg.gain.value = 0.25; aura.gain.value = 0.8; lfo.connect(lg); lg.connect(aura.gain); // オーラのゆらめき
-    n.connect(bp); bp.connect(ng); n.connect(lp); lp.connect(ng); ng.gain.value = 0.5; ng.connect(aura); sub.connect(sg); sg.connect(aura);
-    aura.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
-    n.start(); sub.start(); lfo.start();
-    chargeHum = { n, sub, lfo, lg, bp, lp, g, full: false };
+    const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), o2g = audioCtx.createGain(), g = audioCtx.createGain();
+    o.type = 'square'; o2.type = 'triangle'; lfo.type = 'square';
+    o.frequency.value = f; o2.frequency.value = f * 2; lfo.frequency.value = 9; lg.gain.value = 0;
+    lfo.connect(lg); lg.connect(o.frequency); // 溜まりきったら2つの音を素早く行き来させる
+    o2g.gain.value = 0.3; o.connect(g); o2.connect(o2g); o2g.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
+    o.start(); o2.start(); lfo.start();
+    chargeHum = { o, o2, lfo, lg, g, full: false };
   }
-  const h = chargeHum, full = lv >= 0.98;
-  h.bp.frequency.setTargetAtTime(380 + lv * 2200, t, 0.08); // 引くほど「シャー」と高く荒々しく
-  h.lp.frequency.setTargetAtTime(600 + lv * 1400, t, 0.08);
-  h.sub.frequency.setTargetAtTime(58 + lv * 30, t, 0.1);
-  h.lfo.frequency.setTargetAtTime(6 + lv * 10, t, 0.08);
-  h.g.gain.setTargetAtTime((0.025 + lv * 0.04) * v, t, 0.06);
-  if (full && !h.full) { // 満タン：「シャキーン」
-    h.full = true;
-    [1850, 2470, 3700].forEach((fq, i) => thump(fq, fq * 1.01, 0.5 - i * 0.1, 0.04 - i * 0.008, i ? 'sine' : 'triangle', i * 0.012));
-    filteredNoise(0, 0.25, 0.12, 6000, 2, 'highpass');
-  } else if (!full) h.full = false;
+  const h = chargeHum;
+  if (full) {
+    if (!h.full) { h.full = true; thump(1568, 2093, 0.08, 0.05, 'square'); } // 溜まりきった合図「ピッ」
+    h.o.frequency.setTargetAtTime(1480, t, 0.02); h.o2.frequency.setTargetAtTime(2960, t, 0.02);
+    h.lfo.frequency.setTargetAtTime(16, t, 0.02); h.lg.gain.setTargetAtTime(260, t, 0.02); // 「ピュイピュイピュイ」
+    h.g.gain.setTargetAtTime(0.03 * v, t, 0.03);
+  } else {
+    h.full = false;
+    h.o.frequency.setTargetAtTime(f, t, 0.03); h.o2.frequency.setTargetAtTime(f * 2, t, 0.03);
+    h.lfo.frequency.setTargetAtTime(9 + lv * 10, t, 0.03); h.lg.gain.setTargetAtTime(f * 0.02, t, 0.03); // ほんの少し震わせる
+    h.g.gain.setTargetAtTime((0.02 + lv * 0.015) * v, t, 0.03);
+  }
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
-  updateChargeHum(lvNow >= PULL_MIN ? lvNow : 0);
+  if (lvNow >= PULL_MIN && chargeHold && !chargeHold.soundStart) chargeHold.soundStart = Date.now(); // 引っ張り始めた時から溜めの時間を数える
+  updateChargeHum(lvNow >= PULL_MIN && chargeHold ? Math.min(1, Math.max(0.01, (Date.now() - chargeHold.soundStart) / CHARGE_SOUND_MS)) : 0); // 音は溜めた時間で上がる
   if (!chargeHold || phase !== 'battle') return;
   const lv = lvNow; if (lv < PULL_MIN) return;
   if (!chargeHold.pullSnd) { chargeHold.pullSnd = true; thump(320, 760, 0.14, 0.05, 'triangle'); thump(640, 1500, 0.1, 0.015, 'sine', 0.01); }
