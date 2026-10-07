@@ -809,7 +809,7 @@ function releaseCharge() {
 // 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
 const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
 // 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）
-const PULL_MASH_STEP = 0.1, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×4）
+const PULL_MASH_STEP = 0.2, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×7）
 function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? 1 + PULL_MASH_STEP * Math.min(PULL_MASH_MAX, holdRush.mash || 0) : 1; }
 function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら true
   const r = holdRush, pl = balls.find(isMainPlayerBall);

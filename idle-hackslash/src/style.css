@@ -1699,3 +1699,6 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .upgrade-btn .upgrade-leap.leap-next { display: inline-block; margin: 2px 0; padding: 1px 8px; border-radius: 999px; background: var(--lc); color: #fff; font-size: 0.68rem; text-shadow: 0 1px 1px rgba(0,0,0,0.5); box-shadow: 0 0 8px var(--lc); animation: leapPulse 1s ease-in-out infinite alternate; }
 @keyframes leapPulse { from { transform: scale(1); } to { transform: scale(1.06); } }
 #skillSlotBtn { display: none !important; } /* 枠の追加は見出しのボタンから */
+/* 宝箱ボタン：誤タップしにくい左上に縦並び（ボス戦はポーションの下） */
+.chest-tray { left: 6px; top: 6px; bottom: auto; flex-direction: column; flex-wrap: nowrap; gap: 8px; max-width: none; }
+body:not(.hp-safe) .chest-tray { top: 44px; }
