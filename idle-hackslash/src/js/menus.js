@@ -643,7 +643,9 @@ function updateStatsUI() {
   renderRecordGoals();
 
   const stageInCycle = ((game.stage - 1) % 10) + 1;
-  stageProgressText.textContent = stageInCycle + ' / 10';
+  const bossNow = stageInCycle >= 10; // ボスの階は「ボス！」とだけ出す
+  stageProgressText.textContent = bossNow ? '' : stageInCycle + ' / 10';
+  const toBoss = document.getElementById('stageToBoss'); if (toBoss) { toBoss.textContent = bossNow ? 'ボス！' : 'ボスまで'; toBoss.classList.toggle('is-boss', bossNow); }
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
   { const p = stageInCycle / 10; stagePlayerMark.style.left = p >= 1 ? "calc(100% - 30px)" : `${p * 100}%`; } // 自キャラはゲージの先端に。ボスの階だけボスの絵と重ならないよう手前にずらす
   const BOSS_ICON_FLIP = new Set(['demon', 'blackDragon', 'blueDragon', 'livingArmor', 'b_shibaWarrior', 'b_dragonBear']); // 右を向いている絵は反転して左（自キャラ側）を向かせる
