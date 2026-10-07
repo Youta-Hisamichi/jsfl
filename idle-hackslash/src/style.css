@@ -1768,3 +1768,6 @@ body.in-boss #stageSkipBtn { display: none !important; }
 .upgrade-card { cursor: default; }
 .upgrade-card:active { transform: none !important; filter: none !important; }
 .upgrade-card.is-disabled { opacity: 0.85; }
+/* ショップ・進化ページ上部の動画ボタン：横幅を縮めて金のボタン素材に */
+.reward-ad-btn[data-reward-ad] { width: auto; min-width: 58%; margin: 2px auto 10px; padding: 3px 16px; border: 9px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 9px stretch; border-radius: 0; background: none; color: #2a1a00; font-weight: 900; text-shadow: 0 1px 0 rgba(255,240,200,0.6); }
+.reward-ad-btn[data-reward-ad].cooling { border-image-source: url(assets/img/ui/skin/btn_gray.webp); background: none; color: #e8e8e8; text-shadow: none; }
