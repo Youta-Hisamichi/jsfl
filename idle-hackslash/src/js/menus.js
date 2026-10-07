@@ -1161,20 +1161,20 @@ function drawWeapons() {
       const fade = Math.min(1, (f.until - f.t) / 30);
       const g = ctx.createRadialGradient(f.x, f.y, 2, f.x, f.y, f.R);
       g.addColorStop(0, `rgba(160,230,255,${0.45 * fade})`); g.addColorStop(0.6, `rgba(50,140,255,${0.25 * fade})`); g.addColorStop(1, 'rgba(40,90,255,0)');
-      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, f.R * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; // 足元の照り返し
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(1.25, 0.6); ctx.beginPath(); ctx.arc(0, 0, f.R, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.globalCompositeOperation = 'source-over'; // 足元の照り返し（横長）
       const atlas = BLUE_FIRE_IMG;
       if (atlas.complete && atlas.naturalWidth) {
         const age = (now - f.start) / 1000, grow = Math.min(1, age / 0.45), left = Math.min(1, (f.until - f.t) / 40); // 燃え広がり→消え際に小さく
         const stage = Math.max(0, Math.min(4, Math.round(4 * Math.min(grow, left))));
         const C = atlas.naturalWidth / 5;
-        const spots = [[0, 0, 1], [-0.55, 0.2, 0.7], [0.55, 0.2, 0.7], [-0.25, -0.35, 0.6], [0.3, -0.3, 0.6]];
+        const spots = [[-0.84, 0.15, 0.62], [-0.28, 0.15, 0.62], [0.28, 0.15, 0.62], [0.84, 0.15, 0.62]]; // 横一列に並べて全体を長方形に
         const flick = 0.85 + 0.15 * Math.sin(now / 70 + f.x); // 明るさのゆらぎ
         ctx.globalCompositeOperation = 'lighter'; // 加算合成で炎らしく光らせる
         for (let pass = 0; pass < 2; pass++) { // 1回目：ふわっと大きな光のにじみ、2回目：炎本体
           for (let i = 0; i < spots.length; i++) {
             const [ox, oy, sc] = spots[i], frame = (Math.floor(now / 90) + i * 2) % 5, st = Math.max(0, stage - (i ? 1 : 0));
-            const sz = f.R * 1.75 * sc * (pass ? 1 : 1.35), x = f.x + ox * f.R, y = f.y + oy * f.R * 0.6;
-            ctx.globalAlpha = fade * (pass ? 0.62 : 0.25) * flick;
+            const sz = f.R * 1.9 * sc * (pass ? 1 : 1.25), x = f.x + ox * f.R, y = f.y + oy * f.R * 0.6;
+            ctx.globalAlpha = fade * (pass ? 0.5 : 0.14) * flick;
             ctx.drawImage(atlas, st * C, frame * C, C, C, x - sz / 2, y - sz * 0.85, sz, sz);
           }
         }
