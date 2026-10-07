@@ -812,12 +812,13 @@ const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
 const PULL_MASH_STEP = 0.4, PULL_MASH_MAX_MULT = 25; // 1タップごとの基本の上昇・連打倍率の上限
 const PULL_MASH_BOUNCE_BONUS = 0.5, PULL_MASH_BOUNCE_CAP = 8; // 跳ね返り1回ごとに上がり幅 +50%（8回まで）
 const PULL_BOUNCE_ACCEL = 1.12, PULL_SPEED_MAX = 20; // 跳ね返るたびに少し加速（上限あり）
+const PULL_MASH_ACCEL = 0.06, PULL_MASH_ACCEL_MAX = 0.3, PULL_MASH_SPEED_EXTRA = 6; // 連打しながら跳ね返ると追加加速（1タップ +6%、最大 +30%、上限速度も +6）
 const CHAIN_SEMIS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; // 連打の切り払い音の音階（1オクターブ半で頭打ち）
 function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? Math.min(PULL_MASH_MAX_MULT, 1 + (holdRush.mashVal || 0)) : 1; }
 function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら true
   const r = holdRush, pl = balls.find(isMainPlayerBall);
   if (!r || !r.shot || r.auto || r.used || !rushingNow || !pl) return false;
-  r.mash = (r.mash || 0) + 1;
+  r.mash = (r.mash || 0) + 1; r.tapsSinceBounce = (r.tapsSinceBounce || 0) + 1;
   r.mashVal = (r.mashVal || 0) + PULL_MASH_STEP * (1 + PULL_MASH_BOUNCE_BONUS * Math.min(PULL_MASH_BOUNCE_CAP, r.bounces || 0));
   r.mashAt = Date.now();
   spawnHitParticles(pl.x, pl.y, r.mash >= 15 ? '#ffb35c' : '#ffe08a');
@@ -1349,7 +1350,10 @@ function moveHoldRush(ball, speedMult) {
     const cur = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / cur, uy = ball.vy / cur;
     if (holdRush.ux !== undefined && ux * holdRush.ux + uy * holdRush.uy < 0.95) { // 壁や敵で跳ね返ったら摩擦で減速
       holdRush.bounces = (holdRush.bounces || 0) + 1;
-      holdRush.speed = Math.min(PULL_SPEED_MAX, holdRush.speed * PULL_BOUNCE_ACCEL); // 跳ね返るたびに少し加速（上限あり）
+      const taps = holdRush.tapsSinceBounce || 0; holdRush.tapsSinceBounce = 0;
+      const boost = taps ? 1 + Math.min(PULL_MASH_ACCEL_MAX, PULL_MASH_ACCEL * taps) : 1; // 跳ね返るまでに連打していたら追加で加速
+      holdRush.speed = Math.min(PULL_SPEED_MAX + (taps ? PULL_MASH_SPEED_EXTRA : 0), holdRush.speed * PULL_BOUNCE_ACCEL * boost); // 跳ね返るたびに少し加速（上限あり）
+      if (taps) { const pl = balls.find(isMainPlayerBall); if (pl) { for (let i = 0; i < 6; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#ffe08a' : '#ffffff'); } thump(300, 900, 0.12, 0.06, 'sawtooth'); }
     }
     holdRush.ux = ux; holdRush.uy = uy;
     const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (0.3 + 0.7 * Math.min(1, r * 1.6));
