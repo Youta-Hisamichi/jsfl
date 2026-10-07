@@ -973,6 +973,7 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
 }
 // 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
+const DOVE_ACCEL = 1.07, DOVE_SPEED_MAX = 16; // 鳩：時間とともに ×1.07 ずつ加速（上限あり）
 const AXE_SPEED = 2.4; // 斧の飛ぶ速さ（放物線の形は同じ）
 const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（数・範囲はLv5で頭打ち、威力は伸び続ける）
 const WEAPON_SHAPE_LV = 5;
@@ -1046,7 +1047,7 @@ function fireWeapon(id, lv, pl) {
     for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
     playTone(1500, 0.05, 'triangle', 0.04, 2200);
   } else if (id === 'dove') {
-    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 4, vy: Math.sin(a) * 4, t: 0, life: 200, r: 9, dmg: weaponDmg(0.8, lv), hit: new Set(), pierce: 0 }); }
+    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 1.6, vy: Math.sin(a) * 1.6, t: 0, life: 110, r: 9, dmg: weaponDmg(0.8, lv), hit: new Set(), pierce: 0 }); }
     [1400, 1800].forEach((f, i) => thump(f, f * 1.15, 0.06, 0.03, 'triangle', i * 0.07)); // パタパタ
   } else if (id === 'thunder') {
     const foes = weaponFoes().sort(() => Math.random() - 0.5);
@@ -1113,14 +1114,18 @@ function updateWeapons(pl, speedMult) {
         playTone(1800, 0.05, 'triangle', 0.04, 2400); updateStatsUI();
       }
     } else if (p.id === 'dove') { // 一番近い敵へ向きを変えながら飛ぶ
-      const tg = p.t > 12 && nearestOf(p, foes.filter(f => f.hp > 0));
-      const sp = Math.min(7.5, 4 + p.t * 0.05);
+      const tg = p.t > 8 && nearestOf(p, foes.filter(f => f.hp > 0));
+      const sp = Math.min(DOVE_SPEED_MAX, 1.6 * Math.pow(DOVE_ACCEL, p.t)); // ミサイルのように加速度的に速くなる
+      const cur = Math.atan2(p.vy, p.vx);
+      let a = cur;
       if (tg) {
-        const want = Math.atan2(tg.y - p.y, tg.x - p.x), cur = Math.atan2(p.vy, p.vx);
+        const want = Math.atan2(tg.y - p.y, tg.x - p.x);
         let d = want - cur; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-        const a = cur + Math.max(-0.12, Math.min(0.12, d)) * speedMult;
-        p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
+        const turn = 0.16 * Math.max(0.35, 1 - sp / DOVE_SPEED_MAX); // 速くなるほど曲がりにくい
+        a = cur + Math.max(-turn, Math.min(turn, d)) * speedMult;
       }
+      p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
+      if (sp > 5 && Math.random() < 0.7 * speedMult) particles.push({ x: p.x - p.vx * 0.8, y: p.y - p.vy * 0.8, vx: -p.vx * 0.08 + (Math.random() - 0.5), vy: -p.vy * 0.08 + (Math.random() - 0.5), life: 0.6, color: sp > 10 ? 'rgba(255,220,140,0.9)' : 'rgba(255,255,255,0.85)', decay: 0.06 }); // 噴射の軌跡
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
       hitFoes(p, 1, true);
     } else if (p.id === 'holyWater') {
@@ -1207,10 +1212,10 @@ function drawWeapons() {
       ctx.scale(sx, 1); ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = '#ffcf3d'; ctx.fill();
       ctx.lineWidth = 1.5; ctx.strokeStyle = '#b8860b'; ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(-1.6, -1.6, 2.2, 0, Math.PI * 2); ctx.fill();
-    } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 画像の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
+    } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 画像の鳩は左向き */ ctx.rotate(Math.atan2(p.vy, Math.abs(p.vx)) * (p.vx > 0 ? -1 : 1) * 0.8 + Math.sin(p.t * 0.5) * 0.08); /* 進む向きへ機首を傾ける */ if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
     else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 36)) { ctx.font = '22px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
     else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 42)) { ctx.font = '28px sans-serif'; ctx.fillText('🧴', 0, 0); } }
-    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : p.id === 'axe' ? 0.4 * AXE_SPEED : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
+    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : p.id === 'axe' ? 0.4 * AXE_SPEED : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : p.id === 'cross' ? 42 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : p.id === 'cross' ? 28 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
     ctx.restore();
   }
   const slv = equippedWeaponLv('shield');
