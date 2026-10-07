@@ -746,6 +746,7 @@ debugRow.addEventListener('click', event => {
     bossTimerFor = boss; boss.continued = action === 'bossContFinal';
     bossDefeated('death'); return;
   }
+  if (action === 'facingList') { showFacingDebugList(); return; }
   if (action === 'artifactAll') { // 遺物を全種類1つ以上にする（上限のあるものは上限まで）
     ARTIFACT_POOL.forEach(a => { const lim = ARTIFACT_STACK_LIMIT[a.id]; game.ownedArtifacts[a.id] = Math.max(game.ownedArtifacts[a.id] || 0, lim || 1); });
     refreshPlayerBallStats(false); renderArtifactList(); updateStatsUI(); saveGame();
@@ -2700,3 +2701,20 @@ function updateRecBtn() {
 }
 document.getElementById('dbgRecBtn').addEventListener('click', () => { if (recState) stopRecording(); else startRecording().catch(err => showNotice('録画を開始できませんでした：' + err.message, true, 3000)); });
 setInterval(() => { if (recState) updateRecBtn(); }, 1000); updateRecBtn();
+
+// デバッグ：「向きを変えない」（SPRITE_FACING が 0 か未設定）敵キャラの一覧
+function showFacingDebugList() {
+  const names = {};
+  for (const [e, k] of Object.entries(EMOJI_ENEMY_SPRITE)) if (EMOJI_ENEMY_NAMES[e]) names[k] = EMOJI_ENEMY_NAMES[e];
+  for (const [e, k] of Object.entries(BOSS_ENEMY_SPRITE)) if (BOSS_ENEMY_NAMES[e]) names[k] = BOSS_ENEMY_NAMES[e];
+  const bossKeys = new Set(Object.values(BOSS_ENEMY_SPRITE));
+  const list = Object.keys(ENEMY_SPRITES).filter(k => !SPRITE_FACING[k]);
+  const card = k => `<div style="width:84px;text-align:center;font-size:10px;line-height:1.25;"><div style="width:64px;height:64px;margin:0 auto;background:rgba(255,255,255,0.08);border-radius:8px;"><img src="${ENEMY_SPRITES[k]}" style="width:64px;height:64px;object-fit:contain;" loading="lazy"></div><b>${names[k] || '—'}</b><br><span style="opacity:0.6">${k}</span></div>`;
+  const sec = (title, keys) => `<h3 style="margin:10px 0 6px;font-size:14px;">${title}（${keys.length}体）</h3><div style="display:flex;flex-wrap:wrap;gap:8px;">${keys.map(card).join('')}</div>`;
+  let el = document.getElementById('facingDebug');
+  if (!el) { el = document.createElement('div'); el.id = 'facingDebug'; document.body.appendChild(el); }
+  el.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(10,8,20,0.96);color:#fff;overflow:auto;padding:12px 10px 40px;';
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(10,8,20,0.96);padding:4px 0;"><b>↔️ 向きを変えない敵（${list.length}体）</b><button id="facingDebugClose" style="font-size:16px;padding:4px 12px;">✕</button></div>`
+    + sec('ボス', list.filter(k => bossKeys.has(k))) + sec('雑魚', list.filter(k => !bossKeys.has(k)));
+  document.getElementById('facingDebugClose').onclick = () => el.remove();
+}
