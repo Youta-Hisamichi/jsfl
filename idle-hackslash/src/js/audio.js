@@ -942,7 +942,7 @@ function playPuzzleChain(n) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const i = Math.min(n - 1, PUZZLE_CHAIN_SEMIS.length - 1), heat = Math.min(1, (n - 1) / 14);
   const f = 261.63 * Math.pow(2, PUZZLE_CHAIN_SEMIS[i] / 12); // C4（1オクターブ半低い音）から上がっていく
-  const v = (game.sfxVolume ?? 0.7) * 1.9, t0 = audioCtx.currentTime;
+  const v = (game.sfxVolume ?? 0.7) * 1.4, t0 = audioCtx.currentTime;
   const note = (freq, at, len, type, gain) => {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.type = type; o.frequency.setValueAtTime(freq, t0 + at);

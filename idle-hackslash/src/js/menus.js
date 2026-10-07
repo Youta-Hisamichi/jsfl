@@ -1247,11 +1247,17 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-function tickChargeSound() {
-  if (!chargeHold || chargeHold.pullSnd || phase !== 'battle' || getChargeLevel() < PULL_MIN) return;
-  chargeHold.pullSnd = true;
-  thump(320, 760, 0.14, 0.05, 'triangle');
-  thump(640, 1500, 0.1, 0.015, 'sine', 0.01);
+function tickChargeSound() { // 引っ張り中のチャージ音：引くほど「キュッ…キュッ」と高くなり、最大で「キィン」
+  if (!chargeHold || phase !== 'battle') return;
+  const lv = getChargeLevel(); if (lv < PULL_MIN) return;
+  if (!chargeHold.pullSnd) { chargeHold.pullSnd = true; thump(320, 760, 0.14, 0.05, 'triangle'); thump(640, 1500, 0.1, 0.015, 'sine', 0.01); }
+  const step = Math.min(5, Math.floor(lv * 5)); // 20%ごとに1段
+  if (step > (chargeHold.chargeStep || 0)) {
+    chargeHold.chargeStep = step;
+    const f = 300 * Math.pow(2, step * 3 / 12); // 段ごとに短3度ずつ上がる
+    if (step >= 5) { thump(f, f * 2, 0.22, 0.05, 'square'); thump(f * 2, f * 2.02, 0.35, 0.03, 'sine', 0.04); thump(f * 3, f * 3, 0.3, 0.015, 'sine', 0.06); } // 最大チャージ
+    else thump(f, f * 1.35, 0.09, 0.035, 'triangle');
+  } else if (step < (chargeHold.chargeStep || 0)) chargeHold.chargeStep = step; // 戻したらまた鳴る
 }
 function drawChargeRing() { // 引っ張り中：発射方向の矢印（長さ＝威力）と、引っ張っている線
   const pl = balls.find(isMainPlayerBall);
