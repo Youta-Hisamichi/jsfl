@@ -494,7 +494,15 @@ function shuffleNormalBgm(avoidFirst) {
   normalBgmIndex = 0;
 }
 shuffleNormalBgm();
+let normalBgmChangedAt = Date.now();
+const NORMAL_BGM_ROTATE_MS = 2 * 60 * 1000; // 自動再戦オフでループ中は、この時間ごとに雑魚戦の曲を変える
+function maybeRotateNormalBgm() { // 階をクリアした区切りで呼ぶ
+  if (game.autoBossRetry !== false || battleBgmType !== 'normal') return;
+  if (Date.now() - normalBgmChangedAt < NORMAL_BGM_ROTATE_MS) return;
+  nextNormalBgm(); refreshBgm();
+}
 function nextNormalBgm() {
+  normalBgmChangedAt = Date.now();
   const prev = normalBgmOrder[normalBgmIndex];
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);

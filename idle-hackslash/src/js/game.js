@@ -486,6 +486,7 @@ function onStageClear() {
   }
   if (isBossStage) grantRandomWeapon('ボス撃破！ ');
   if (isBossStage && !game.skipChallenge) setTimeout(tryBossCompanionJoin, 2600); // ボスを倒すと仲間がランダムで加わる（最大3人）
+  if (!isBossStage) maybeRotateNormalBgm(); // 自動再戦オフでループ中は、ときどき雑魚戦の曲を変えて飽きないように
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
