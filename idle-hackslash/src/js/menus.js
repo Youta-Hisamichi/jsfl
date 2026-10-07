@@ -353,7 +353,7 @@ function dropSkipArtifact(skipped) { // 中身は見せずに宝箱へ封入（�
   const rarity = pickSkipDropRarity(skipped);
   const pool = ARTIFACT_POOL.filter(a => a.rarity === rarity);
   const available = pool.filter(a => !ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]);
-  const list = available.length ? available : pool;
+  const list = available.length ? available : pool.length ? pool : ARTIFACT_POOL;
   const pick = list[Math.floor(Math.random() * list.length)];
   if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
   game.rebirthChests.push(pick.id); // 転生ガチャの宝箱と同じしくみ：中身は決まっているが、開けるまで秘密
@@ -1327,7 +1327,7 @@ const RUSH_KNOCK_SPEED = 16; // 体当たりで敵を吹っ飛ばす初速（貫
 function rushKnockFly(en, from) {
   if (!en || en.isDying) return;
   const dx = en.x - from.x, dy = en.y - from.y, d = Math.hypot(dx, dy) || 1;
-  const k = RUSH_KNOCK_SPEED * (1 + 0.25 * Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0)) * (en.isBoss ? 0.35 : 1);
+  const k = RUSH_KNOCK_SPEED * (1 + 0.25 * Math.min(3, (isArtifactShown('pierceHoof') && game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0)) * (en.isBoss ? 0.35 : 1);
   if (Math.hypot(en.kbx || 0, en.kby || 0) >= k * 0.8) return; // 同じ当たりで重ねがけしない
   en.kbx = dx / d * k; en.kby = dy / d * k;
 }

@@ -562,7 +562,7 @@ infoModal.addEventListener('click', event => { if (event.target === infoModal) i
 const ICON_IMAGES = {"x_gb1":"assets/img/icons/x_gb1.webp","x_gb2":"assets/img/icons/x_gb2.webp","x_gb3":"assets/img/icons/x_gb3.webp","x_gb4":"assets/img/icons/x_gb4.webp","x_emb_hero":"assets/img/icons/x_emb_hero.webp","x_emb_vet":"assets/img/icons/x_emb_vet.webp","x_tower":"assets/img/icons/x_tower.webp","art_swordL":"assets/img/icons/art_swordL.webp","art_swordM":"assets/img/icons/art_swordM.webp","x_potion":"assets/img/icons/x_potion.webp","tab_game":"assets/img/icons/tab_game.webp","tab_upgrade":"assets/img/icons/tab_upgrade.webp","tab_companion":"assets/img/icons/tab_companion.webp","tab_coinshop":"assets/img/icons/tab_coinshop.webp","tab_artifact":"assets/img/icons/tab_artifact.webp","tab_gemshop":"assets/img/icons/tab_gemshop.webp","tab_gacha":"assets/img/icons/tab_gacha.webp","tab_records":"assets/img/icons/tab_records.webp","tab_ranking":"assets/img/icons/tab_ranking.webp","art_heart":"assets/img/icons/art_heart.webp","art_ring":"assets/img/icons/art_ring.webp","art_book":"assets/img/icons/art_book.webp","art_armor":"assets/img/icons/art_armor.webp","art_compass":"assets/img/icons/art_compass.webp","art_calendar":"assets/img/icons/art_calendar.webp","art_gauntlet":"assets/img/icons/art_gauntlet.webp","art_hourglass":"assets/img/icons/art_hourglass.webp","art_turbo":"assets/img/icons/art_turbo.webp","art_eye":"assets/img/icons/art_eye.webp","art_fang":"assets/img/icons/art_fang.webp","art_lens":"assets/img/icons/art_lens.webp","art_feather":"assets/img/icons/art_feather.webp","art_crest":"assets/img/icons/art_crest.webp","art_gauntletCounter":"assets/img/icons/art_gauntletCounter.webp","art_banner":"assets/img/icons/art_banner.webp","art_amulet":"assets/img/icons/art_amulet.webp","art_pinchMask":"assets/img/icons/art_pinchMask.webp","art_rebirthOrb":"assets/img/icons/art_rebirthOrb.webp","sk_skillSpecial":"assets/img/icons/sk_skillSpecial.webp","sk_skillAccel":"assets/img/icons/sk_skillAccel.webp","sk_skillHeal":"assets/img/icons/sk_skillHeal.webp","sk_skillBarrier":"assets/img/icons/sk_skillBarrier.webp","sk_skillPoison":"assets/img/icons/sk_skillPoison.webp","sk_skillParalyze":"assets/img/icons/sk_skillParalyze.webp","sk_skillAtkUp":"assets/img/icons/sk_skillAtkUp.webp","sk_skillRegen":"assets/img/icons/sk_skillRegen.webp","sk_skillSilence":"assets/img/icons/sk_skillSilence.webp","sk_skillDeath":"assets/img/icons/sk_skillDeath.webp","sk_skillCoinStrike":"assets/img/icons/sk_skillCoinStrike.webp","sk_skillZeni":"assets/img/icons/sk_skillZeni.webp","sk_skillMystery":"assets/img/icons/sk_skillMystery.webp","sk_skillCompRush":"assets/img/icons/sk_skillCompRush.webp","sk_skillNova":"assets/img/icons/sk_skillNova.webp","sk_skillBlast":"assets/img/obstacles/bomb.webp","up_atk":"assets/img/icons/up_atk.webp","up_crit":"assets/img/icons/up_crit.webp","up_critDmg":"assets/img/icons/up_critDmg.webp","up_accuracy":"assets/img/icons/up_accuracy.webp","up_bossDmg":"assets/img/icons/up_bossDmg.webp","up_hp":"assets/img/icons/up_hp.webp","up_clash":"assets/img/icons/up_clash.webp","up_evasion":"assets/img/icons/up_evasion.webp","up_coin":"assets/img/icons/up_coin.webp","up_compAtk":"assets/img/icons/up_compAtk.webp","up_rush":"assets/img/icons/up_rush.webp","g_power":"assets/img/icons/g_power.webp","g_vitality":"assets/img/icons/g_vitality.webp","g_fortune":"assets/img/icons/g_fortune.webp","g_meteor":"assets/img/icons/g_meteor.webp","g_chain":"assets/img/icons/g_chain.webp","g_critical":"assets/img/icons/g_critical.webp","g_critdmg":"assets/img/icons/g_critdmg.webp","g_aim":"assets/img/icons/g_aim.webp","g_evade":"assets/img/icons/g_evade.webp","g_slayer":"assets/img/icons/g_slayer.webp","g_counter":"assets/img/icons/g_counter.webp","g_bond":"assets/img/icons/g_bond.webp","g_pinch":"assets/img/icons/g_pinch.webp","g_guard":"assets/img/icons/g_guard.webp","g_phoenix":"assets/img/icons/g_phoenix.webp","x_reborn":"assets/img/icons/x_reborn.webp","x_book":"assets/img/icons/x_book.webp","x_gem":"assets/img/icons/x_gem.webp","x_settings":"assets/img/icons/x_settings.webp","x_chest1":"assets/img/icons/x_chest1.webp","x_chest2":"assets/img/icons/x_chest2.webp","x_chest4":"assets/img/icons/x_chest4.webp","x_chest6":"assets/img/icons/x_chest6.webp","x_heart":"assets/img/icons/x_heart.webp","x_break":"assets/img/icons/x_break.webp","x_present":"assets/img/icons/x_present.webp","x_attack":"assets/img/icons/x_attack.webp","x_up_attack":"assets/img/icons/x_up_attack.webp","x_up_defense":"assets/img/icons/x_up_defense.webp","x_up_coin":"assets/img/icons/x_up_coin.webp","x_up_companion":"assets/img/icons/x_up_companion.webp","x_lock":"assets/img/icons/x_lock.webp"};
 function xi(key, cls = 'ico-img') { return ICON_IMAGES[key] ? `<img class="${cls}" src="${ICON_IMAGES[key]}" alt="">` : ''; }
 function ico(obj) { return obj && obj.img ? `<img class="ico-img" src="${obj.img}" alt="">` : (obj ? obj.icon : ''); }
-const ARTIFACT_POOL = [
+const ARTIFACT_ALL = [
   { id: 'heart',  icon: '🗡️', name: '闘志の剣・小',   desc: '攻撃力 +5%', rarity: 'common' },
   { id: 'swordM', icon: '🗡️', name: '闘志の剣・中',   desc: '攻撃力 +30%', rarity: 'rare' },
   { id: 'swordL', icon: '🗡️', name: '闘志の剣・大',   desc: '攻撃力 +150%', rarity: 'epic' },
@@ -596,7 +596,10 @@ const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃�
 const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
 const ARTIFACT_STACK_LIMIT = { pierceHoof: 3, hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
 const ARTIFACT_BY_ID = {};
-ARTIFACT_POOL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
+ARTIFACT_ALL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
+const ARTIFACT_SHOWN = ['evoFeather']; // 一旦これ以外の遺物は隠す（入手・表示・効果なし。所持数はセーブに残す）
+const isArtifactShown = id => ARTIFACT_SHOWN.includes(id);
+const ARTIFACT_POOL = ARTIFACT_ALL.filter(a => isArtifactShown(a.id));
 
 const RARITY_INFO = {
   common:    { label: 'コモン',     stars: 1, color: '#9aa0b4', needMult: 3 },
@@ -757,7 +760,7 @@ function isAdFree() { return !!getActiveSub(); }
 function getSubStatMult() { const s = getActiveSub(); return s ? s.statMult : 1; }
 function coinPrice(cost) { const s = getActiveSub(); return s ? Math.max(1, Math.ceil(cost * s.coinPriceMult)) : cost; }
 function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult < 1 ? Math.max(1, Math.ceil(cost * s.gemPriceMult)) : cost; }
-ARTIFACT_POOL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
+ARTIFACT_ALL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
  // 体当たりはタックルの絵 // 仲間の攻撃力は仲間タブと同じ絵
@@ -769,7 +772,7 @@ ARTIFACT_POOL.forEach(a => {
   REBIRTH_SHOP_ITEMS[a.id] = { icon: a.icon, img: a.img, name: a.name, desc: a.desc.replace(/（最大\d+個）/, '') + '（永続）', rarity: a.rarity, cost: REBIRTH_ARTIFACT_COST[a.rarity], artifactId: a.id,
     effect: () => { gainArtifact(a.id); } };
 });
-REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
+if (REBIRTH_SHOP_ITEMS.heart) REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
 delete REBIRTH_SHOP_ITEMS.swordM; delete REBIRTH_SHOP_ITEMS.swordL;
 const REBIRTH_COST_GROWTH = 1.25;
 function getRebirthItemCost(id) {
@@ -803,10 +806,13 @@ function rollChestRarity(luck = 1, min = 'common') { // luck 倍だけ高レア�
   return order.indexOf(got) < order.indexOf(min) ? min : got;
 }
 function pickWeightedArtifact(pool, weights) {
+  if (!pool.length) pool = ARTIFACT_POOL; // 隠している遺物しか該当しないときは出せる遺物から
   const counts = {};
   pool.forEach(a => counts[a.rarity] = (counts[a.rarity] || 0) + 1);
   const w = a => (weights[a.rarity] || 0) / counts[a.rarity];
-  let r = Math.random() * pool.reduce((sum, a) => sum + w(a), 0);
+  const total = pool.reduce((sum, a) => sum + w(a), 0);
+  if (!(total > 0)) return pool[Math.floor(Math.random() * pool.length)]; // そのレア度の遺物が無い
+  let r = Math.random() * total;
   for (const a of pool) { r -= w(a); if (r <= 0) return a; }
   return pool[pool.length - 1];
 }
@@ -1052,7 +1058,7 @@ function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) 
 function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }
 function applyArtifactBonuses(b) {
   for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
-    if (!ARTIFACT_BY_ID[id]) continue;
+    if (!ARTIFACT_BY_ID[id] || !isArtifactShown(id)) continue; // 隠している遺物は効果なし
     const count = game.ownedArtifacts[id] || 0;
     const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
     if (id === 'heart') b.atkMult += 0.05 * count;     // 闘志の剣（小・中・大）
