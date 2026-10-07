@@ -1762,6 +1762,7 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .mini-tower.challenging { background: #b0525e; animation: towerPulse 1.2s ease-in-out infinite alternate; }
 .mini-reborn { background: #6a44c4; }
 .mini-retire { background: #9a2a34; }
+.mini-reborn, .mini-retire { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */
 .upgrade-card { cursor: default; }

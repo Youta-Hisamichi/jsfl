@@ -37,11 +37,11 @@
   <div class="tab-page active" data-tab="game">
 
     <div class="exp-wrap">
-      <div class="exp-label" style="justify-content:flex-start; gap:6px;"><span><b id="stageNum">1</b>階　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
+      <div class="exp-label" style="justify-content:center; gap:6px;"><span><b id="stageNum">1</b>階　ボスまで</span><span id="stageProgressText">1 / 10</span></div>
       <div class="stage-gauge-row">
         <div class="gauge-side gauge-left">
-          <button class="mini-btn mini-share" data-share="game">📣 シェア</button>
           <button class="mini-btn mini-tower" id="stageSkipBtn">🗼 試練の塔</button>
+          <button class="mini-btn mini-retire" id="bossRetireBtn" style="display:none;">🏳 リタイヤ</button>
         </div>
       <div class="stage-track-wrap">
         <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
@@ -50,7 +50,6 @@
       </div>
         <div class="gauge-side gauge-right">
           <button class="mini-btn mini-reborn" id="rebornBtn" style="display:none;">🌌 転生</button>
-          <button class="mini-btn mini-retire" id="bossRetireBtn" style="display:none;">🏳 リタイヤ</button>
         </div>
       </div>
       <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
