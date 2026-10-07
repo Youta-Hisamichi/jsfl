@@ -1443,7 +1443,7 @@ body.hp-safe #potionBtn { display: none !important; } /* ポーションはHPが
 .cmd-bar #rebornBtn[style*="none"] { display: none !important; }
 .cmd-bar #stageSkipBtn[style*="none"], .cmd-bar #bossRetireBtn[style*="none"] { display: none !important; }
 body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
-.cmd-bar .debug-toggle { flex: 0 0 19%; aspect-ratio: 363 / 150; background-image: url(assets/img/ui/bar/dbg_strip.webp) !important; flex-direction: row !important; align-items: center; justify-content: flex-start !important; color: #fff; overflow: hidden; }
+.cmd-bar .debug-toggle { flex: 0 0 19%; aspect-ratio: 363 / 150; flex-direction: row !important; align-items: center; justify-content: flex-start !important; color: #fff; overflow: hidden; }
 .cmd-bar .debug-toggle .bb-gear { margin-left: 3cqw; }
 .cmd-bar .debug-toggle .bb-gear { width: 26%; height: auto; flex: 0 0 auto; }
 .cmd-bar .debug-toggle .bb-main { font-size: 10.5cqw; }
@@ -1766,7 +1766,11 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .mini-retire { background: #9a2a34; }
 .mini-reborn, .mini-retire, .mini-tower { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; }
 .mini-btn.mini-tower { display: flex; align-items: center; gap: 3px; padding: 3px 7px 3px 4px; min-height: 44px; } /* 試練の塔：塔のアイコン付きで縦を2倍くらいに */
-.mini-tower .mini-ico { height: 36px; width: auto; image-rendering: pixelated; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 転生・リタイヤは押しやすく縦を大きめに */
+/* 画像ボタン（試練の塔・リタイヤ・転生）：ボタンの絵そのものを表示 */
+.mini-btn.img-btn { position: relative; display: block; padding: 0 !important; min-height: 0; background: none !important; border: none !important; border-radius: 0; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
+.mini-btn.img-btn img { display: block; height: 46px; width: auto; }
+.mini-btn.img-btn[style*="none"] { display: none !important; }
+.img-btn-tag { position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); white-space: nowrap; font-size: 0.56rem; font-weight: 900; color: #fff; background: #b0525e; border-radius: 6px; padding: 0 4px; } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */
 .upgrade-card { cursor: default; }
