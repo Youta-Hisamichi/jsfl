@@ -802,7 +802,7 @@ function releaseCharge() {
   const held = Date.now() - chargeHold.start, lv = getChargeLevel(), ang = getPullAngle(), wasAiming = !!playerDrag;
   chargeHold = null;
   if (phase !== 'battle') return;
-  if (held < CHARGE_MIN_MS) { if (!playerDrag && !(rushingNow && holdRush && holdRush.shot)) doTapSlash(); return; } // 引っ張りアタック中の短いタップは連打（切り払いはしない） // 短いタップは至近距離の切り払い（突撃しない）
+  if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは切り払い（引っ張りアタック中は連打の加算も同時に入る） // 短いタップは至近距離の切り払い（突撃しない）
   if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
   launchPull(ang, lv);
 }
