@@ -809,7 +809,8 @@ function releaseCharge() {
 // 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
 const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
 // 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）
-const PULL_MASH_STEP = 0.2, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×7）
+const PULL_MASH_STEP = 0.4, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×13）
+const PULL_MAX_BOUNCES = 1; // 引っ張りタックルが跳ね返る回数
 function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? 1 + PULL_MASH_STEP * Math.min(PULL_MASH_MAX, holdRush.mash || 0) : 1; }
 function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら true
   const r = holdRush, pl = balls.find(isMainPlayerBall);
@@ -1328,6 +1329,8 @@ function moveHoldRush(ball, speedMult) {
   if (holdRush && holdRush.shot) { // 引っ張り発射：まっすぐ飛んで壁・敵で跳ね返り、終わり際に減速
     const cur = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / cur, uy = ball.vy / cur;
     if (holdRush.ux !== undefined && ux * holdRush.ux + uy * holdRush.uy < 0.95) { // 壁や敵で跳ね返ったら摩擦で減速
+      holdRush.bounces = (holdRush.bounces || 0) + 1;
+      if (holdRush.bounces > PULL_MAX_BOUNCES) holdRush.until = Date.now(); // 跳ね返りは1回まで：2回目にぶつかったら止まる
       holdRush.speed *= 0.72;
       if (holdRush.speed < 3) holdRush.until = Date.now();
     }
