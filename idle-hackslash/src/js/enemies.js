@@ -402,7 +402,7 @@ function makeBall(isPlayer) {
       if (kind === 'shape') { const c = SHAPE_ENEMY_COLORS[val] || '#ff5c6c'; style = { color: c, glow: c + '8c', shape: val }; }
       else { isEmoji = true; emoji = val; }
     }
-    const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || Math.random() < GIANT_BOSS_CHANCE);
+    const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || game.stage % GIANT_BOSS_EVERY === 0);
     forcedGiantBoss = false;
     if (isGiant) { es.hp = Math.round(es.hp * GIANT_BOSS_HP_MULT); es.atk = Math.round(es.atk * GIANT_BOSS_ATK_MULT); }
     if (forcedEnemyKey && !es.isBoss) {
