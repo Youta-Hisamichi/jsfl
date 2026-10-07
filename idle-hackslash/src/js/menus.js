@@ -1121,7 +1121,8 @@ function updateWeapons(pl, speedMult) {
       p.x = p.sx + (p.tx - p.sx) * k; p.y = p.sy + (p.ty - p.sy) * k - Math.sin(k * Math.PI) * (p.h || 50);
       if (k >= 1) { // 割れて燃える
         p.life = 0;
-        weaponFx.push({ kind: 'fire', x: p.tx, y: p.ty, R: 26 + p.lv * 4, until: 130 + p.lv * 15, t: 0, tick: 0, dmg: weaponDmg(0.25, p.lv), start: Date.now() });
+        weaponFx.push({ kind: 'fire', x: p.tx, y: p.ty, R: 26 + p.lv * 4, until: 70 + Math.min(p.lv, 5) * 6, // 燃える時間は短め（約1.2〜1.7秒）
+          t: 0, tick: 0, dmg: weaponDmg(0.25, p.lv), start: Date.now() });
         filteredNoise(0, 0.12, 0.2, 3500, 1, 'bandpass'); playNoiseBurst(0.25, 0.12);
       }
     }
@@ -1131,7 +1132,7 @@ function updateWeapons(pl, speedMult) {
   for (const f of weaponFx) {
     if (f.kind !== 'fire') continue;
     f.t += speedMult; f.tick -= speedMult;
-    if (f.tick <= 0) { f.tick = 18; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43')) hits++; } }
+    if (f.tick <= 0) { f.tick = 12; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43')) hits++; } }
   }
   weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < 350);
   // 回転シールド
