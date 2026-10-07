@@ -2118,6 +2118,7 @@ window.addEventListener('pointerdown', event => {
   if (event.target.closest && event.target.closest('button, input, select, textarea, a, label, summary, .modal-backdrop, .toast')) return;
   const r = canvas.getBoundingClientRect();
   if (event.clientX < r.left - DRAG_AREA_MARGIN || event.clientX > r.right + DRAG_AREA_MARGIN || event.clientY < r.top - DRAG_AREA_MARGIN || event.clientY > r.bottom + DRAG_AREA_MARGIN) return;
+  if (tryReflectChainTap()) { lastUserInputAt = Date.now(); return; } // 跳ね返った瞬間のタップ＝反射チェイン
   if (HOLD_RUSH_MODE) { chargeHold = { id: event.pointerId, start: Date.now(), sx: event.clientX, sy: event.clientY, dx: 0, dy: 0, aiming: false }; } // 少し押したまま引っ張ると狙いを付け、離して発射（すぐ動かすとドラッグ移動）
   dragPending = { id: event.pointerId, sx: event.clientX, sy: event.clientY };
 });
