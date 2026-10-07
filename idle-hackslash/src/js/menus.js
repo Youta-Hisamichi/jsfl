@@ -812,8 +812,9 @@ const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
 const REFLECT_WINDOW_MS = 400, REFLECT_STEP = 0.6, REFLECT_MAX = 10; // 受付時間（跳ね返ってから）・1連鎖ごとの倍率・最大連鎖
 function tryReflectChainTap() { // タップした瞬間に呼ぶ。成功したら true
   const r = holdRush;
-  if (!r || !r.shot || r.auto || r.used || !r.bounceAt || r.chainedAt === r.bounceAt) return false;
-  if (Date.now() - r.bounceAt > REFLECT_WINDOW_MS) return false;
+  if (!r || !r.shot || r.auto || r.used) return false;
+  const ok = !r.chainLocked && r.bounceAt && r.chainedAt !== r.bounceAt && Date.now() - r.bounceAt <= REFLECT_WINDOW_MS;
+  if (!ok) { if (rushingNow) r.chainLocked = true; return false; } // 跳ね返り以外のタイミングで押した（適当な連打）→ この発射では連鎖ストップ
   r.chainedAt = r.bounceAt; // 1回の跳ね返りにつき1回だけ
   launchPull(Math.atan2(r.buy, r.bux), r.charge || 0, false, Math.min(REFLECT_MAX, (r.chain || 0) + 1));
   return true;
@@ -825,7 +826,7 @@ function launchPull(ang, lv, auto = false, chain = 0) { // 引っ張り攻撃の
   const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = (6 + 8 * lv) * (1 + 0.06 * chain);
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto, chain, wallChain: prev && chain ? prev.wallChain : 0 };
   if (chain) {
-    spawnDamageText(pl.x, pl.y - pl.radius - 26, `反射チェイン ×${chain}！ 威力×${(1 + REFLECT_STEP * chain).toFixed(1)}`, chain >= 5 ? '#ff4f6d' : '#7ee7ff', 0.02, true);
+    spawnDamageText(pl.x, pl.y - pl.radius - 26, `${chain}連鎖！`, chain >= 5 ? '#ff4f6d' : '#7ee7ff', 0.02, true);
     for (let i = 0; i < 10; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#7ee7ff' : '#ffffff');
     hitStopFrames = Math.max(hitStopFrames || 0, 4);
     shakeScreenLight();
@@ -838,7 +839,7 @@ function launchPull(ang, lv, auto = false, chain = 0) { // 引っ張り攻撃の
   playAccelSound();
 }
 function drawReflectCue() { // 跳ね返った直後：今タップ！の合図（受付時間だけ）
-  if (!holdRush || !holdRush.shot || holdRush.auto || holdRush.used || !holdRush.bounceAt || holdRush.chainedAt === holdRush.bounceAt) return;
+  if (!holdRush || !holdRush.shot || holdRush.auto || holdRush.used || holdRush.chainLocked || !holdRush.bounceAt || holdRush.chainedAt === holdRush.bounceAt) return;
   const t = (Date.now() - holdRush.bounceAt) / REFLECT_WINDOW_MS; if (t > 1) return;
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
   const a = Math.atan2(holdRush.buy, holdRush.bux), L = pl.radius + 26 + 14 * t;
@@ -1352,7 +1353,7 @@ function playPullWallChain(ball, rush) {
   thump(f * 2, f * 2, 0.12, 0.03, 'triangle');
   thump(f * 3.01, f * 3.01, 0.08, 0.012, 'sine', 0.01);
   spawnHitParticles(ball.x, ball.y, '#bfe8ff');
-  if (n >= 2) spawnDamageText(ball.x, ball.y - ball.radius - 20, `反射 ${n}連鎖！`, n >= 5 ? '#ff4f6d' : '#7ee7ff', 0.03, n >= 5);
+  if (n >= 2 && !rush.chain) spawnDamageText(ball.x, ball.y - ball.radius - 20, `反射 ${n}連鎖！`, n >= 5 ? '#ff4f6d' : '#7ee7ff', 0.03, n >= 5);
 }
 // タックル（長押しのタメ体当たり）は今の仕様では使わないので処理を空にしてある
 function getTackleChargeLevel() { return -1; }
