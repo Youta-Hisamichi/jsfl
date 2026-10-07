@@ -967,7 +967,7 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
 }
 // 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
-const AXE_SPEED = 1.6; // 斧の飛ぶ速さ（放物線の形は同じ）
+const AXE_SPEED = 2.4; // 斧の飛ぶ速さ（放物線の形は同じ）
 const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（数・範囲はLv5で頭打ち、威力は伸び続ける）
 const WEAPON_SHAPE_LV = 5;
 const WEAPONS = {
