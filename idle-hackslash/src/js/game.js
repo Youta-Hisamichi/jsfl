@@ -1396,7 +1396,8 @@ document.addEventListener('pointerdown', event => {
 new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
 stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
-const SKILL_RESET_COST = { blast: 8, special: 5, accel: 3, heal: 2, barrier: 4, homing: 3, poison: 3, paralyze: 3, sleep: 3, atkup: 4, regen: 3, silence: 3, sacrifice: 3, death: 5, coinStrike: 3, zeni: 3, mystery: 3, compRush: 3, nova: 3 };
+const SKILL_RESET_GEMS = 1; // スキルの待ち時間リセットはどのスキルもジェム1個
+const SKILL_RESET_COST = new Proxy({}, { get: () => SKILL_RESET_GEMS });
 const SKILL_RESET_CONFIRM_MS = 3000;
 let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
 let pendingSkillResetUntil = 0;
