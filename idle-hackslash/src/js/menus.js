@@ -1039,8 +1039,8 @@ function fireWeapon(id, lv, pl) {
   } else if (id === 'holyWater') {
     const dir = (pl.faceDir || 1) > 0 ? 1 : -1; // 敵は狙わず、向いている方へ決まった放物線で投げる（数が増えると少しずつ遠くへ）
     for (let i = 0; i < n; i++) {
-      const cp = arenaClampPt(pl.x + dir * (85 + i * 45), pl.y, 20);
-      weaponProj.push({ id, x: pl.x, y: pl.y, sx: pl.x, sy: pl.y, tx: cp.x, ty: cp.y, t: 0, dur: 30 + i * 6, life: 30 + i * 6, r: 6, lv, h: 60 + i * 10 });
+      const cp = arenaClampPt(pl.x + dir * (150 + i * 55), pl.y, 20); // 遠くまで投げる
+      weaponProj.push({ id, x: pl.x, y: pl.y, sx: pl.x, sy: pl.y, tx: cp.x, ty: cp.y, t: 0, dur: 38 + i * 6, life: 38 + i * 6, r: 6, lv, h: 85 + i * 12 });
     }
   } else if (id === 'knife') {
     for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
@@ -1209,7 +1209,7 @@ function drawWeapons() {
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(-1.6, -1.6, 2.2, 0, Math.PI * 2); ctx.fill();
     } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 画像の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
     else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 36)) { ctx.font = '22px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
-    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 32)) { ctx.font = '22px sans-serif'; ctx.fillText('🧴', 0, 0); } }
+    else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 42)) { ctx.font = '28px sans-serif'; ctx.fillText('🧴', 0, 0); } }
     else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : p.id === 'axe' ? 0.4 * AXE_SPEED : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
     ctx.restore();
   }
