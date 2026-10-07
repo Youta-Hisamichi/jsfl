@@ -422,6 +422,7 @@ function renderEnemyTraitBadge(en, trait) {
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
     if (en.berserk) tags.push(['🔥 発狂中！防御ダウン', 'warn']);
+    if (en.chaser) tags.push(['🏃 しつこく追ってくる', 'warn']);
     if (isSwarmStage(game.stage) && !en.isBoss) tags.push([`👥 ${getStageEnemyCount(game.stage)}体`, '']);
   }
   const key = en && getEnemySpriteKey(en), img = key && ENEMY_SPRITES[key];

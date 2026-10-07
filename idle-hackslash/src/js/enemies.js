@@ -417,6 +417,7 @@ function makeBall(isPlayer) {
       ...farSpawnPoint(0.72),
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
       maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
+      chaser: es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE, // ときどき、ひたすら主人公を追ってくるボス
       radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? 34 : 16) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
       glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
@@ -1762,6 +1763,7 @@ function movePlayerSideBalls(list, speedMult, b) {
 }
 const WALK_SPEED = 1.5;   // 基本の歩く速さ（px/フレーム・ゲーム速度1倍）
 const WALK_TURN = 0.06;   // 向き・速さの変わりやすさ（小さいほどゆったり）
+const CHASER_CHANCE = 0.3, CHASER_SPEED = 1.7; // ときどき出る「ひたすら主人公を追ってくるボス」の確率と速さ（ふつうのボスは0.85）
 function nearestOf(ball, list) {
   let best = null, bd = Infinity;
   for (const c of list) { const d = (c.x - ball.x) ** 2 + (c.y - ball.y) ** 2; if (d < bd) { bd = d; best = c; } }
@@ -1837,14 +1839,15 @@ function walkBall(ball, speedMult, b) {
     speed = WALK_SPEED * (isMain ? b.speedMult * (ball.tapSpeedMult || 1) : (ball.speedFactor || 1)) * (boosted ? BOOST_MULT : 1);
     if (isMain && (ball.tapSpeedMult || 1) > 1) w.pause = 0;
   } else {
-    target = nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0));
-    speed = WALK_SPEED * (ball.isAdd ? 1.1 : ball.isBoss ? 0.85 : 1);
+    target = ball.chaser ? (balls.find(x => isMainPlayerBall(x) && x.hp > 0) || nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0))) : nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0));
+    speed = WALK_SPEED * (ball.isAdd ? 1.1 : ball.chaser ? CHASER_SPEED : ball.isBoss ? 0.85 : 1); // 追跡ボスは主人公だけをしつこく追う
+    if (ball.chaser) w.pause = 0; // 立ち止まらない
   }
   let dvx = 0, dvy = 0;
   if (target) {
     const dx = target.x - ball.x, dy = target.y - ball.y, d = Math.hypot(dx, dy) || 1;
     const nx = dx / d, ny = dy / d;
-    const style = ball.isPlayer ? 'normal' : ball.movementStyle;
+    const style = ball.isPlayer || ball.chaser ? 'normal' : ball.movementStyle;
     if (style === 'orbit') {
       const lunge = (t % 240) < 50;
       const want = lunge ? 0 : 75;
@@ -1866,7 +1869,7 @@ function walkBall(ball, speedMult, b) {
     const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
     dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
   }
-  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : 1));
+  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : 1));
   ball.vx += (dvx - ball.vx) * turn;
   ball.vy += (dvy - ball.vy) * turn;
   applySeparation(ball, speedMult);
