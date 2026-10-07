@@ -1247,7 +1247,7 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：ファミコン版ロックマン風（VRC6音源）。半音ずつカクカク上がる「ピロロロロ↑」、溜まりきると「ピュイピュイピュイ」と2音を行き来し続ける
+let chargeHum = null; // 引っ張り中のチャージ音：ファミコン版ロックマン風（VRC6音源）。半音ずつカクカク上がる「ピロロロロ↑」、溜まりきると一番上の音で鳴り続ける
 const CHARGE_SOUND_MS = 1200; // 溜まりきるまでの時間
 function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
@@ -1265,13 +1265,13 @@ function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
     chargeHum = { oscs: [o1, o2, sw], o1, o2, sw, swg, g, full: false };
   }
   const h = chargeHum;
-  if (full) {
-    if (!h.full) { h.full = true; h.o1.setPeriodicWave(getPceWave('vrc6pulse12')); }
-    h.o1.frequency.setValueAtTime(1567.98, t); h.o2.frequency.setValueAtTime(3135.96, t); // ソ ↔ シ を行き来
-    h.swg.gain.setValueAtTime(408, t); h.sw.frequency.setValueAtTime(15, t);
+  if (full) { // 溜まりきったら一番上の音で鳴り続ける（ベルのような2音の行き来はしない）
+    h.full = true;
+    h.swg.gain.setValueAtTime(0, t);
+    h.o1.frequency.setValueAtTime(880, t); h.o2.frequency.setValueAtTime(1760, t);
     h.g.gain.setTargetAtTime(0.03 * v, t, 0.01);
   } else {
-    if (h.full) { h.full = false; h.o1.setPeriodicWave(getPceWave('vrc6pulse25')); }
+    h.full = false;
     h.swg.gain.setValueAtTime(0, t);
     h.o1.frequency.setValueAtTime(f, t); h.o2.frequency.setValueAtTime(f * 2, t); // カクカク段階的に
     h.g.gain.setTargetAtTime((0.018 + lv * 0.012) * v, t, 0.01);
