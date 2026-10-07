@@ -1247,25 +1247,26 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中に鳴り続けるエネルギー充填音（うなりながら音程が上がっていく）
+let chargeHum = null; // 引っ張り中の可愛い魔法のチャージ音：やわらかい鈴の音が「キラキラ…」と鳴り続け、引くほど高く速くなる
+const CHARGE_TWINKLE = [0, 4, 7, 12, 16, 19, 24, 28, 31, 36]; // 長調の分散和音
+function chargeBell(freq, gain, at = 0) {
+  const t = audioCtx.currentTime + at, v = (game.sfxVolume ?? 0.7);
+  const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o2.type = 'triangle'; o.frequency.setValueAtTime(freq, t); o2.frequency.setValueAtTime(freq * 2, t);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain * v, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  o.connect(g); o2.connect(g); g.connect(audioCtx.destination); o.start(t); o2.start(t); o.stop(t + 0.25); o2.stop(t + 0.25);
+}
 function updateChargeHum(lv) {
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { if (chargeHum) { const t = audioCtx.currentTime; chargeHum.g.gain.cancelScheduledValues(t); chargeHum.g.gain.setTargetAtTime(0.0001, t, 0.03); const h = chargeHum; setTimeout(() => { try { h.o1.stop(); h.o2.stop(); h.lfo.stop(); } catch (e) {} }, 200); chargeHum = null; } return; }
-  const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7);
-  if (!chargeHum) {
-    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
-    o1.type = 'sawtooth'; o2.type = 'square'; lfo.type = 'sine';
-    f.type = 'lowpass'; f.Q.value = 6; g.gain.value = 0.0001;
-    lfo.connect(lg); lg.connect(o1.frequency); lg.connect(o2.frequency);
-    o1.connect(f); o2.connect(f); f.connect(g); g.connect(audioCtx.destination);
-    o1.start(); o2.start(); lfo.start();
-    chargeHum = { o1, o2, lfo, lg, f, g };
-  }
-  const base = 70 + lv * lv * 380; // 低いうなりから高い音へ
-  chargeHum.o1.frequency.setTargetAtTime(base, t, 0.05); chargeHum.o2.frequency.setTargetAtTime(base * 1.005, t, 0.05);
-  chargeHum.lfo.frequency.setTargetAtTime(6 + lv * 18, t, 0.05); chargeHum.lg.gain.setTargetAtTime(base * 0.04, t, 0.05); // うなり（だんだん速く）
-  chargeHum.f.frequency.setTargetAtTime(300 + lv * 2600, t, 0.05);
-  chargeHum.g.gain.setTargetAtTime((0.018 + lv * 0.03) * v, t, 0.04);
+  if (!on) { chargeHum = null; return; }
+  const now = Date.now();
+  if (!chargeHum) chargeHum = { next: now, i: 0 };
+  if (now < chargeHum.next) return;
+  const top = Math.max(2, Math.round(lv * (CHARGE_TWINKLE.length - 1))); // 引くほど高い音まで届く
+  const semi = CHARGE_TWINKLE[chargeHum.i % (top + 1)];
+  chargeBell(784 * Math.pow(2, semi / 12) / 2, 0.035 + lv * 0.025); // ソの音を基準に、鈴のように
+  chargeHum.i++;
+  chargeHum.next = now + (170 - lv * 110); // 引くほど速くキラキラ
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：鳴り続けるエネルギー充填音＋段階ごとの「キュッ」、最大で「キィン」
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;
