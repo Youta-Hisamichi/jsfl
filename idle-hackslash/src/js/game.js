@@ -644,6 +644,7 @@ function bossDefeated(reason) {
   setTimeout(() => { bossKoPending = false; showBossContModal(reason); }, BOSS_KO_MS);
 }
 const BOSS_KO_MS = 1400;
+const GAMEOVER_REBORN_STAGE = 100; // この階以上でゲームオーバーになったら転生を勧める
 let bossKoPending = false;
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
@@ -652,6 +653,7 @@ function showBossContModal(reason) {
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
+  document.getElementById('bossContRebornBtn').style.display = game.stage >= GAMEOVER_REBORN_STAGE ? '' : 'none'; // ステージ100以上なら転生も選べる
   bossContModal.classList.add('show'); refreshBgm();
   startBossContCountdown();
 }
@@ -667,7 +669,10 @@ function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明�
   // 自キャラがクルクル回りながら吹っ飛ぶ（ボスと反対側へ）
   const pl = balls.find(isMainPlayerBall), boss = balls.find(b => !b.isPlayer && b.isBoss);
   if (pl) knockoutFx = { ball: pl, start: performance.now(), dir: boss ? (pl.x >= boss.x ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1) };
-  setTimeout(() => { knockoutFx = null; el.classList.remove('show'); phase = 'battle'; bossFail(reason, true); }, BOSS_FINAL_MS);
+  setTimeout(() => {
+    if (game.stage >= GAMEOVER_REBORN_STAGE) { openRebornConfirm({ from: 'final', reason }); return; } // コンテニューしても負けた：転生するか確認
+    knockoutFx = null; el.classList.remove('show'); phase = 'battle'; bossFail(reason, true);
+  }, BOSS_FINAL_MS);
 }
 // 10秒のカウントダウン。0になったら自動であきらめる（動画を見ている間は止まる）
 const BOSS_CONT_SECONDS = 10;
@@ -679,7 +684,7 @@ function startBossContCountdown() {
   show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
     if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
-    if (rewardAdModal.classList.contains('show')) return; // 動画中は止める
+    if (rewardAdModal.classList.contains('show') || rebornConfirmModal.classList.contains('show')) return; // 動画中・転生の確認中は止める
     bossContLeft--; show(); if (bossContLeft > 0) playContinueTick(bossContLeft);
     if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
   }, 1000);
@@ -704,6 +709,10 @@ document.getElementById('bossContGiveUpBtn').addEventListener('click', () => {
   clearInterval(bossContTimer); knockoutFx = null;
   bossContModal.classList.remove('show'); phase = 'battle'; refreshBgm();
   const r = bossContReason || 'death'; bossContReason = null; bossFail(r, true); // 悲鳴は敗北時に1回鳴らしているので、ここでは鳴らさない
+});
+document.getElementById('bossContRebornBtn').addEventListener('click', () => {
+  if (!bossContModal.classList.contains('show')) return;
+  openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' });
 });
 // ボス戦のリタイヤ：その場で負けを認めて前の階ループへ（コンテニュー画面は出さない）
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {

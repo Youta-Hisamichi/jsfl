@@ -1740,8 +1740,29 @@ document.getElementById('shareCloseBtn').addEventListener('click', () => shareMo
 shareModal.addEventListener('click', event => { if (event.target === shareModal) shareModal.classList.remove('show'); });
 
 const rebornConfirmModal = document.getElementById('rebornConfirmModal');
+let rebornCtx = null; // ゲームオーバーから転生を選んだとき：{ from: 'cont'（コンテニュー画面）| 'final'（コンテニュー後の敗北）, reason }
+function openRebornConfirm(ctx) {
+  rebornCtx = ctx || null;
+  const g = getRebirthGemGain();
+  document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `${formatStageNumber(game.stage)}階で力尽きた…転生しますか？` : '本当に転生しますか？';
+  document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せず${formatStageNumber(Math.max(1, game.stage - 1))}階で鍛え直す` : 'キャンセル';
+  document.getElementById('rebornGemAmt').textContent = g;
+  document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
+  rebornConfirmModal.classList.add('show');
+}
+function closeRebornConfirm() { // キャンセル：コンテニュー画面に戻る／コンテニュー後の敗北ならいつもどおり前の階へ
+  rebornConfirmModal.classList.remove('show');
+  const ctx = rebornCtx; rebornCtx = null;
+  if (ctx && ctx.from === 'final') { knockoutFx = null; document.getElementById('bossFinalPanel').classList.remove('show'); phase = 'battle'; bossFail(ctx.reason, true); }
+}
 function doSelfRebirth(mult) {
   rebornConfirmModal.classList.remove('show');
+  const ctx = rebornCtx; rebornCtx = null;
+  if (ctx) { // ゲームオーバー画面から：画面を閉じてそのまま転生
+    clearInterval(bossContTimer); knockoutFx = null; bossContReason = null; bossTimerFor = null;
+    bossContModal.classList.remove('show'); document.getElementById('bossFinalPanel').classList.remove('show');
+    phase = 'battle';
+  }
   if (phase !== 'battle' || game.stage < 3) return;
   rebirthGemMult = mult;
   onPlayerDeath(true);
@@ -1751,18 +1772,11 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
   if (isAdFree()) { doSelfRebirth(3); return; } // 紋章（サブスク）加入中は動画なし
   playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); }, '、転生報酬のジェムが3倍になります');
 });
-document.getElementById('rebornConfirmCancelBtn').addEventListener('click', () => rebornConfirmModal.classList.remove('show'));
-rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) rebornConfirmModal.classList.remove('show'); });
+document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
+rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
 rebornBtn.addEventListener('click', event => {
-  if (phase === 'battle' && game.stage >= 3) {
-    const g = getRebirthGemGain();
-    document.getElementById('rebornGemAmt').textContent = g;
-    document.getElementById('rebornGemAmt3').textContent = g * 3;
-    document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
-    rebornConfirmModal.classList.add('show');
-  } else {
-    showTapError('3階から転生できます', event.clientX, event.clientY);
-  }
+  if (phase === 'battle' && game.stage >= 3) openRebornConfirm(null);
+  else showTapError('3階から転生できます', event.clientX, event.clientY);
 });
 
 specialBtn.addEventListener('click', event => {
