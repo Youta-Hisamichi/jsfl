@@ -967,6 +967,7 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
 }
 // 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
+const AXE_SPEED = 1.6; // 斧の飛ぶ速さ（放物線の形は同じ）
 const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（数・範囲はLv5で頭打ち、威力は伸び続ける）
 const WEAPON_SHAPE_LV = 5;
 const WEAPONS = {
@@ -1027,7 +1028,7 @@ function fireWeapon(id, lv, pl) {
     for (let i = 0; i < n; i++) { const a = dir > 0 ? 0 : Math.PI; weaponProj.push({ id, x: pl.x, y: pl.y + (i - (n - 1) / 2) * 22, vx: Math.cos(a) * 7.5, vy: Math.sin(a) * 7.5, ax: -Math.cos(a) * 0.17, ay: -Math.sin(a) * 0.17, t: 0, life: 150, r: 11, dmg: weaponDmg(0.9, lv), hit: new Set(), turned: false }); }
     playTone(900, 0.1, 'square', 0.04, 1300);
   } else if (id === 'axe') {
-    for (let i = 0; i < n; i++) { const dir = (i % 2 ? -1 : 1) * ((pl.faceDir || 1) > 0 ? 1 : -1); weaponProj.push({ id, x: pl.x, y: pl.y, vx: dir * (1.6 + i * 0.9), vy: -7.5 - i * 0.6, t: 0, life: 120, r: 17, dmg: weaponDmg(1.3, lv), hit: new Set() }); }
+    for (let i = 0; i < n; i++) { const dir = (i % 2 ? -1 : 1) * ((pl.faceDir || 1) > 0 ? 1 : -1); weaponProj.push({ id, x: pl.x, y: pl.y, vx: dir * (1.6 + i * 0.9) * AXE_SPEED, vy: (-7.5 - i * 0.6) * AXE_SPEED, t: 0, life: Math.round(120 / AXE_SPEED), r: 17, dmg: weaponDmg(1.3, lv), hit: new Set() }); }
     playTone(220, 0.12, 'sawtooth', 0.05, 160);
   } else if (id === 'holyWater') {
     const dir = (pl.faceDir || 1) > 0 ? 1 : -1; // 敵は狙わず、向いている方へ決まった放物線で投げる（数が増えると少しずつ遠くへ）
@@ -1092,7 +1093,7 @@ function updateWeapons(pl, speedMult) {
       if (!p.turned && p.vx * p.ax + p.vy * p.ay > 0) { p.turned = true; p.hit.clear(); }
       hitFoes(p);
     } else if (p.id === 'axe') {
-      p.vy += 0.22 * speedMult; p.x += p.vx * speedMult; p.y += p.vy * speedMult;
+      p.vy += 0.22 * AXE_SPEED * AXE_SPEED * speedMult; p.x += p.vx * speedMult; p.y += p.vy * speedMult; // 同じ放物線のまま速く
       hitFoes(p);
     } else if (p.id === 'knife') {
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
@@ -1203,7 +1204,7 @@ function drawWeapons() {
     } else if (p.id === 'dove') { ctx.scale(p.vx > 0 ? -1 : 1, 1); /* 画像の鳩は左向き */ ctx.rotate(Math.sin(p.t * 0.5) * 0.15); if (!drawWeaponImg('dove', 26)) { ctx.font = '17px sans-serif'; ctx.fillText('🕊️', 0, 0); } }
     else if (p.id === 'knife') { ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI * 0.75); if (!drawWeaponImg('knife', 36)) { ctx.font = '22px sans-serif'; ctx.fillText('🔪', 0, 0); } } // 画像の刃は左上向き
     else if (p.id === 'holyWater') { ctx.rotate(p.t * 0.3); if (!drawWeaponImg('holyWater', 32)) { ctx.font = '22px sans-serif'; ctx.fillText('🧴', 0, 0); } }
-    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
+    else { ctx.rotate(p.t * (p.id === 'cross' ? 0.35 : p.id === 'axe' ? 0.4 * AXE_SPEED : 0.4)); const sz = p.id === 'boomerang' ? 26 : p.id === 'axe' ? 44 : 28; if (!drawWeaponImg(p.id, sz)) { ctx.font = (p.id === 'boomerang' ? 17 : p.id === 'axe' ? 32 : 19) + 'px sans-serif'; ctx.fillText(WEAPONS[p.id].icon, 0, 0); } }
     ctx.restore();
   }
   const slv = equippedWeaponLv('shield');
