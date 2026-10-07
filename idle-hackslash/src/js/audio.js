@@ -764,6 +764,25 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
+function playThunderStrike() { // 雷の杖：「ピシャ」と裂ける音のあとに「コーン！」と金属的に響く
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const now = Date.now(); if (now - (playThunderStrike.last || 0) < 120) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
+  const v = game.sfxVolume, ac = audioCtx, t0 = ac.currentTime;
+  filteredNoise(0, 0.09, 0.28, 4200, 0.7, 'highpass'); // ピシャッ（空気が裂ける）
+  thump(3200, 380, 0.07, 0.12, 'sawtooth'); // 稲妻が走るジッという下降音
+  const ring = (d, f, g, len) => { // コーン：鐘のような響き（倍音を少しずらして金属っぽく）
+    [[1, 1], [2.76, 0.45], [5.4, 0.22], [0.5, 0.35]].forEach(([m, a]) => {
+      const o = ac.createOscillator(), gn = ac.createGain();
+      o.type = m === 0.5 ? 'triangle' : 'sine';
+      o.frequency.setValueAtTime(f * m, t0 + d); o.frequency.exponentialRampToValueAtTime(f * m * 0.985, t0 + d + len);
+      gn.gain.setValueAtTime(0.0001, t0 + d); gn.gain.exponentialRampToValueAtTime(g * a * v, t0 + d + 0.006); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d + len * (m > 2 ? 0.45 : 1));
+      o.connect(gn); gn.connect(ac.destination); o.start(t0 + d); o.stop(t0 + d + len + 0.02);
+    });
+  };
+  ring(0.06, 1046, 0.11, 0.9);
+  ring(0.20, 1046, 0.035, 0.6); // 響きの余韻（こだま）
+  thump(110, 45, 0.25, 0.14, 'sine'); // 落ちた重み
+}
 function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (now - (playHolyWaterBreak.last || 0) < 140) return; playHolyWaterBreak.last = now; // 同時に何本割れても重ねすぎない

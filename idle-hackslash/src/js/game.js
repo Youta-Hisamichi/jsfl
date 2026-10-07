@@ -930,6 +930,7 @@ function reincarnateAfterAd() {
 let rebirthGemMult = 1;
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {
+  nextNormalBgm(); // 転生したら雑魚戦の曲を転生前とは別の曲に
   gameOverBgm = false; rebirthFlow = true; updateSkipBtnVisibility();
   rebirthRewardBgm = true; refreshBgm();
   endDeathFx();

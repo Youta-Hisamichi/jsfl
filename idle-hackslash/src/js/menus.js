@@ -1072,7 +1072,7 @@ function fireWeapon(id, lv, pl) {
       for (const f of weaponFoes()) if (Math.hypot(f.x - x, f.y - y) < R + f.radius) playerHitEnemyBy(f, pl, weaponDmg(1.5, lv), '#fff27a');
       weaponFx.push({ kind: 'bolt', x, y, R, start: Date.now(), seed: Math.random() * 1000 });
     }
-    filteredNoise(0, 0.25, 0.25, 2500, 0.6, 'highpass'); thump(120, 40, 0.3, 0.25);
+    playThunderStrike();
   }
 }
 function updateWeapons(pl, speedMult) {
