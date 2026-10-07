@@ -94,7 +94,7 @@ let meteorBlasts = [];
 function drawMeteorSprites() {
   const img = METEOR_IMG, ok = img.complete && img.naturalWidth, C = ok ? img.naturalWidth / 10 : 0, now = Date.now();
   for (const m of meteors) {
-    const sz = m.radius * 3.6, ang = Math.atan2(m.vy || 1, m.vx || 0);
+    const sz = m.radius * 5, ang = Math.atan2(m.vy || 1, m.vx || 0);
     if (!m.startD) m.startD = m.dist || 1;
     const prog = Math.max(0, Math.min(1, 1 - (m.dist || m.startD) / m.startD)), fr = METEOR_CRACK[Math.min(METEOR_CRACK.length - 1, Math.floor(prog * METEOR_CRACK.length))];
     if (Math.random() < 0.8) particles.push({ x: m.x - Math.cos(ang) * m.radius * 0.8 + (Math.random() - 0.5) * 14, y: m.y - Math.sin(ang) * m.radius * 0.8 + (Math.random() - 0.5) * 14, vx: -Math.cos(ang) * 2 + (Math.random() - 0.5) * 2, vy: -Math.sin(ang) * 2 + (Math.random() - 0.5) * 2, life: 0.8, color: Math.random() < 0.5 ? '#ffb347' : '#ff5a1f', decay: 0.045 }); // 火の粉
@@ -110,7 +110,7 @@ function drawMeteorSprites() {
   }
   meteorBlasts = meteorBlasts.filter(b => now - b.start < 650);
   for (const b of meteorBlasts) {
-    const k = (now - b.start) / 650, sz = b.r * (2.6 + k * 2.2);
+    const k = (now - b.start) / 650, sz = b.r * (3.4 + k * 2.6);
     ctx.save(); ctx.globalAlpha = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
     ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, sz * 0.8); g.addColorStop(0, `rgba(255,240,200,${0.8 * (1 - k)})`); g.addColorStop(0.5, `rgba(255,140,40,${0.5 * (1 - k)})`); g.addColorStop(1, 'rgba(255,60,0,0)');
