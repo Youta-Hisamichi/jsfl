@@ -1196,6 +1196,7 @@ function renderUpgradeList() {
     if (level >= getUpgradeLevelCap(id)) {
       return `<div class="upgrade-row">
       <button class="upgrade-btn is-disabled" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></button>
+      <button class="upgrade-max-btn one-btn is-disabled" data-upgrade="${id}">+1<span>Lv.</span></button>
       <button class="upgrade-max-btn pct-btn is-disabled" data-upgrade-pct="${id}">10%<span>—</span></button>
       <button class="upgrade-max-btn is-disabled" data-upgrade-max="${id}">MAX<span>—</span></button>
     </div>`;
@@ -1211,6 +1212,7 @@ function renderUpgradeList() {
     game.upgrades[id] = level;
     return `<div class="upgrade-row">
       <button class="upgrade-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><span class="item-icon">${ico(upgrade)}</span> ${upgrade.name} Lv.${level}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>
+      <button class="upgrade-max-btn one-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}">+1<span>Lv.UP</span></button>
       <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${pctCount} Lv.</span></button>
       <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
     </div>`;
