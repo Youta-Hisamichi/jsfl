@@ -2045,7 +2045,9 @@ const FLOOR_BOSS = ['redCarpet', 'dryCrack', 'panel', 'blueTile', 'wasteland', '
 const FLOOR_TILE_PX = 42;
 const FLOOR_SPAN = Object.fromEntries(Object.keys(FLOOR_TILES).map(k => [k, 8])); // 床の画像は8×8枚のタイルを並べたもの（地形・床タイル集から作成）
 const floorImgs = {};
-for (const k in FLOOR_TILES) { const img = new Image(); img.src = FLOOR_TILES[k]; floorImgs[k] = img; }
+// 床・背景・障害物はステージが切り替わった瞬間に必要なので、優先して読み込み＆デコードしておく（表示が1〜2秒遅れないように）
+function warmImg(img) { try { img.fetchPriority = 'high'; } catch (e) {} if (img.decode) img.decode().catch(() => {}); return img; }
+for (const k in FLOOR_TILES) { const img = new Image(); img.fetchPriority = 'high'; img.src = FLOOR_TILES[k]; floorImgs[k] = warmImg(img); }
 function getFloorKey(stage) {
   const cycle = Math.floor((Math.max(1, stage) - 1) / 10);
   return stage % 10 === 0 ? FLOOR_BOSS[cycle % FLOOR_BOSS.length] : FLOOR_NORMAL[cycle % FLOOR_NORMAL.length];
@@ -2066,6 +2068,14 @@ const OUTER_TILES = {
 };
 const OUTER_FOR_FLOOR = { lawn: 'meadow', dirt: 'forest', desert: 'badlands', mossStone: 'ruins', town: 'stone', snow: 'snowfield', market: 'meadow', woodFloor: 'sky', ruins: 'ruins', tower: 'throne',
   redCarpet: 'throne', dryCrack: 'lava', panel: 'hall', blueTile: 'crystal', wasteland: 'badlands', brick: 'hall', sea: 'sky', dungeon2: 'crystal', other: 'hall', mystic: 'sky', dungeon: 'lava' };
+const outerImgs = {}; // 背景も先読みしておき、読み込み済みになってから切り替える
+for (const k in OUTER_TILES) { const img = new Image(); img.fetchPriority = 'high'; img.src = OUTER_TILES[k].src; outerImgs[k] = warmImg(img); }
+let lastReadyFloorKey = '', warmedForStage = 0;
+function warmUpcomingStage() { // 次の階の床と背景を前もってデコード
+  if (warmedForStage === game.stage) return; warmedForStage = game.stage;
+  for (const st of [game.stage + 1, game.stage + 2]) { const k = getFloorKey(st); if (floorImgs[k]) warmImg(floorImgs[k]); const o = outerImgs[OUTER_FOR_FLOOR[k] || 'stone']; if (o) warmImg(o); }
+  if (typeof OBSTACLE_IMGS === 'object') for (const k in OBSTACLE_IMGS) { const im = OBSTACLE_IMGS[k]; if (im && !im.complete) warmImg(im); }
+}
 function applyOuterBackground(floorKey) {
   const t = OUTER_TILES[OUTER_FOR_FLOOR[floorKey] || 'stone'];
   document.body.style.setProperty('--floor-bg', `url(${t.src})`);
@@ -2076,8 +2086,12 @@ function applyOuterBackground(floorKey) {
 const BRIGHT_FLOORS = { snow: { inner: 0, outer: 0.16, glow: 0.12 } }; // 周りの暗さを弱める床（glow＝白く明るくする量）
 let floorPattern = null, floorPatternKey = '', floorPatternCtx = null;
 function drawArenaFloor() {
-  const key = getFloorKey(game.stage), img = floorImgs[key];
-  if (!img || !img.complete || !img.naturalWidth) return;
+  warmUpcomingStage();
+  let key = getFloorKey(game.stage), img = floorImgs[key];
+  if (!img || !img.complete || !img.naturalWidth) { // まだ読み込み中なら、直前の床を出したままにする（真っ暗にしない）
+    if (!lastReadyFloorKey) return;
+    key = lastReadyFloorKey; img = floorImgs[key];
+  } else lastReadyFloorKey = key;
   if (floorPatternKey !== key || floorPatternCtx !== ctx) {
     floorPattern = ctx.createPattern(img, 'repeat'); floorPatternKey = key; floorPatternCtx = ctx;
     applyOuterBackground(key); // 画面の背景（サークルの外）は床に合った景色（壁・森・崖など）

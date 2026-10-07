@@ -956,13 +956,13 @@ Object.entries({
   orb_blue: 'assets/img/obstacles/orb/blue.webp', orb_purple: 'assets/img/obstacles/orb/purple.webp', orb_violet: 'assets/img/obstacles/orb/violet.webp',
   orb_black: 'assets/img/obstacles/orb/black.webp', orb_silver: 'assets/img/obstacles/orb/silver.webp', orb_gold: 'assets/img/obstacles/orb/gold.webp',
   orb_rainbow: 'assets/img/obstacles/orb/rainbow.webp', orb_crystal: 'assets/img/obstacles/orb/crystal.webp', orb_galaxy: 'assets/img/obstacles/orb/galaxy.webp',
-}).forEach(([k, src]) => { const img = new Image(); img.src = src; OBSTACLE_IMGS[k] = img; });
+}).forEach(([k, src]) => { const img = new Image(); img.fetchPriority = 'high'; img.src = src; if (img.decode) img.decode().catch(() => {}); OBSTACLE_IMGS[k] = img; }); // 障害物は優先して読み込む
 // 自然・遺跡の素材（木・柱・草むらなど）
 const NATURE_KEYS = ['d_grass1', 'd_grass2', 'd_grass3', 'd_fern', 'd_flowerW', 'd_flowerP', 'd_flowerY', 'd_flowerB', 'd_flowerR', 'd_flowerR2', 'd_flowerV', 'd_leaves', 'd_pebbles', 'd_reeds', 'd_lily',
   'b_bush', 'b_bush2', 'b_bush3', 'b_pot', 'b_jar', 'b_sack', 'b_hay', 'b_stump', 'b_ruin', 'b_flowerbox',
   't_oak', 't_pine', 't_tree', 't_sakura', 't_autumn', 't_dead', 't_darkpine', 't_willow', 't_palm', 't_snowpine', 't_cactus',
   'p_pillar', 'p_pillar2', 'p_moss', 'p_statue', 'p_lantern', 'p_fountain'];
-NATURE_KEYS.forEach(k => { const img = new Image(); img.src = `assets/img/obstacles/nature/${k}.webp`; OBSTACLE_IMGS[k] = img; });
+NATURE_KEYS.forEach(k => { const img = new Image(); img.fetchPriority = 'high'; img.src = `assets/img/obstacles/nature/${k}.webp`; if (img.decode) img.decode().catch(() => {}); OBSTACLE_IMGS[k] = img; });
 // 床ごとに生える木・立つ柱
 const TREE_BY_FLOOR = { lawn: ['t_oak', 't_tree', 't_sakura'], dirt: ['t_oak', 't_autumn', 't_tree', 't_pine'], desert: ['t_palm', 't_cactus', 't_dead'], mossStone: ['t_pine', 't_darkpine', 't_willow'], town: ['t_tree', 't_sakura'], snow: ['t_snowpine', 't_dead'], market: ['t_tree', 't_autumn'], woodFloor: ['t_pine', 't_oak'], ruins: ['t_dead', 't_willow', 't_darkpine'], tower: ['t_darkpine', 't_dead'] };
 const PILLAR_BY_FLOOR = { town: ['p_lantern', 'p_statue'], market: ['p_fountain', 'p_statue', 'p_lantern'], ruins: ['p_pillar', 'p_moss', 'p_pillar2'], tower: ['p_pillar2', 'p_statue', 'p_lantern'], mossStone: ['p_moss', 'p_pillar'] };
