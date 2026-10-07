@@ -972,7 +972,9 @@ upgradeList.addEventListener('click', event => {
 function showLevelUpPop(x, y, text) {
   const el = document.createElement('div');
   el.className = 'levelup-pop';
-  el.textContent = text;
+  const [first, ...rest] = String(text).split('\n');
+  el.textContent = first;
+  rest.forEach(line => { const s = document.createElement('div'); s.className = line.startsWith('✨') ? 'lv-leap' : ''; s.textContent = line; el.appendChild(s); }); // 飛躍の行は色を変える
   el.style.left = x + 'px';
   el.style.top = y + 'px';
   document.body.appendChild(el);

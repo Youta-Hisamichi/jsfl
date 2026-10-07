@@ -158,13 +158,15 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .upgrade-group-title:first-child { margin-top: 0; }
 .purchase-pop { z-index: 96; text-align: center; line-height: 1.2; }
 .purchase-pop small { display: block; font-size: 0.72rem; font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
-.levelup-pop { white-space: pre-line; text-align: center; line-height: 1.25; position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 0.9s ease-out forwards; }
+.levelup-pop { white-space: pre-line; text-align: center; line-height: 1.25; position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 1.6s ease-out forwards; }
 @keyframes levelUpPop {
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
-  18% { opacity: 1; transform: translate(-50%, -80%) scale(1.25); }
-  35% { transform: translate(-50%, -95%) scale(1); }
+  10% { opacity: 1; transform: translate(-50%, -80%) scale(1.25); }
+  20% { transform: translate(-50%, -95%) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -140%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -190%) scale(1); }
 }
+.levelup-pop .lv-leap { color: #7ff3ff; text-shadow: 0 0 8px rgba(60,180,255,0.95), 0 2px 0 #0a3a7a; font-size: 1.1em; } /* 飛躍の行は水色で目立たせる */
 .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
 .ico-img { width: 1.2em; height: 1.2em; vertical-align: middle; border-radius: 3px; object-fit: cover; }
 .sub-tab-btn .ico-img { width: 1.35em; height: 1.35em; vertical-align: -0.3em; }
@@ -1762,7 +1764,7 @@ body:not(.hp-safe) .chest-tray { top: 44px; }
 .mini-tower.challenging { background: #b0525e; animation: towerPulse 1.2s ease-in-out infinite alternate; }
 .mini-reborn { background: #6a44c4; }
 .mini-retire { background: #9a2a34; }
-.mini-reborn, .mini-retire { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; } /* 転生・リタイヤは押しやすく縦を大きめに */
+.mini-reborn, .mini-retire, .mini-tower { padding-top: 6px; padding-bottom: 6px; font-size: 0.68rem; } /* 転生・リタイヤは押しやすく縦を大きめに */
 body.in-boss #stageSkipBtn { display: none !important; }
 /* 強化ページの項目カードはボタンではない（押しても反応しない） */
 .upgrade-card { cursor: default; }
