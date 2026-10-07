@@ -1260,7 +1260,7 @@ function updateChargeHum(lv) {
     bp.type = 'bandpass'; bp.Q.value = 1.2; bp.frequency.value = 380; lp.type = 'lowpass'; lp.frequency.value = 900;
     sub.type = 'sine'; sub.frequency.value = 62; sg.gain.value = 0.5;
     lfo.type = 'sine'; lfo.frequency.value = 7; lg.gain.value = 0.25; aura.gain.value = 0.8; lfo.connect(lg); lg.connect(aura.gain); // オーラのゆらめき
-    n.connect(bp); bp.connect(ng); n.connect(lp); lp.connect(ng); ng.gain.value = 0.9; ng.connect(aura); sub.connect(sg); sg.connect(aura);
+    n.connect(bp); bp.connect(ng); n.connect(lp); lp.connect(ng); ng.gain.value = 0.5; ng.connect(aura); sub.connect(sg); sg.connect(aura);
     aura.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
     n.start(); sub.start(); lfo.start();
     chargeHum = { n, sub, lfo, lg, bp, lp, g, full: false };
