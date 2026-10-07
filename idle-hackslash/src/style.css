@@ -1770,4 +1770,6 @@ body.in-boss #stageSkipBtn { display: none !important; }
 .upgrade-card.is-disabled { opacity: 0.85; }
 /* ショップ・進化ページ上部の動画ボタン：横幅を縮めて金のボタン素材に */
 .reward-ad-btn[data-reward-ad] { width: fit-content; min-width: 0; margin: 2px auto 10px; padding: 7px 2px; font-size: 0.95rem; gap: 6px; border: 9px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 9px stretch; border-radius: 0; background: none; color: #2a1a00; font-weight: 900; text-shadow: 0 1px 0 rgba(255,240,200,0.6); }
+.evo-panel .evo-go { width: fit-content; align-self: center; margin: 1.2em auto 0; padding: 12px 6px; } /* 進化ボタン：文字の左右の余白を少なめに、上に1行ぶん空ける */
+.reward-ad-btn.evo-ad-btn { margin-top: 12px; }
 .reward-ad-btn[data-reward-ad].cooling { border-image-source: url(assets/img/ui/skin/btn_gray.webp); background: none; color: #e8e8e8; text-shadow: none; }
