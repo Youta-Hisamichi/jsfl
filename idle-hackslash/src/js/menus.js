@@ -990,6 +990,9 @@ const WEAPONS = {
 // サブウェポンの画像（一覧のアイコンと、飛んでいく弾の絵）
 const WEAPON_IMGS = {};
 for (const id of [...Object.keys(WEAPONS), 'buckler']) { const img = new Image(); img.src = `assets/img/weapons/${id}.webp`; WEAPON_IMGS[id] = img; if (WEAPONS[id]) WEAPONS[id].img = img.src; }
+const BOLT_IMG = new Image(); BOLT_IMG.src = 'assets/img/weapons/bolts.webp'; // 雷の杖の稲妻（12本）
+const BOLT_GROUPS = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 4, 6], [9, 10], [11, 3, 0]]; // 同じ色の稲妻どうしで切り替える
+const BOLT_MS = 420;
 const BLUE_FIRE_IMG = new Image(); BLUE_FIRE_IMG.src = 'assets/img/weapons/blueFire.webp'; // 聖水の青い炎（横＝大きさ5段階、縦＝ゆらめき5コマ）
 function drawWeaponImg(id, size) { const img = WEAPON_IMGS[id]; if (!img || !img.complete || !img.naturalWidth) return false; ctx.drawImage(img, -size / 2, -size / 2, size, size); return true; }
 let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd = 0;
@@ -1146,7 +1149,7 @@ function updateWeapons(pl, speedMult) {
     f.t += speedMult; f.tick -= speedMult;
     if (f.tick <= 0) { f.tick = 12; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43')) hits++; } }
   }
-  weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < 350);
+  weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < (f.kind === 'bolt' ? BOLT_MS : 350));
   // 回転シールド
   const slv = equippedWeaponLv('shield');
   if (slv) {
@@ -1194,15 +1197,21 @@ function drawWeapons() {
         ctx.globalCompositeOperation = 'source-over';
       }
       ctx.globalAlpha = 1;
-    } else if (f.kind === 'bolt') { // 雷
-      const k = (now - f.start) / 350;
-      ctx.globalAlpha = 1 - k;
-      ctx.strokeStyle = '#fff6a0'; ctx.lineWidth = 3; ctx.shadowColor = '#ffe65c'; ctx.shadowBlur = 14;
-      ctx.beginPath(); let x = f.x + Math.sin(f.seed) * 20, y = f.y - 260; ctx.moveTo(x, y);
-      for (let i = 1; i <= 8; i++) { y = f.y - 260 + 260 * i / 8; x = f.x + (i === 8 ? 0 : Math.sin(f.seed + i * 2.3) * 16); ctx.lineTo(x, y); }
-      ctx.stroke(); ctx.shadowBlur = 0;
-      ctx.fillStyle = 'rgba(255,250,190,0.45)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.R * (0.6 + k * 0.6), 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1;
+    } else if (f.kind === 'bolt') { // 雷：素材の稲妻を加算合成で光らせ、数コマ切り替えてバリバリ光らせる
+      const k = (now - f.start) / BOLT_MS;
+      if (k < 0.12) { ctx.fillStyle = `rgba(230,240,255,${0.28 * (1 - k / 0.12)})`; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); } // 一瞬の閃光
+      const grp = BOLT_GROUPS[Math.floor(f.seed) % BOLT_GROUPS.length], fr = grp[(Math.floor((now - f.start) / 55) + Math.floor(f.seed)) % grp.length];
+      const img = BOLT_IMG, H = Math.min(300, arena.radius * 1.5), C = img.naturalWidth / 12;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      if (img.complete && img.naturalWidth) {
+        const W = H * C / img.naturalHeight, flick = k < 0.6 ? (Math.floor(now / 40) % 2 ? 1 : 0.7) : 1 - (k - 0.6) / 0.4;
+        ctx.globalAlpha = 0.35 * flick; ctx.drawImage(img, fr * C, 0, C, img.naturalHeight, f.x - W * 0.7, f.y - H * 1.02, W * 1.4, H * 1.04); // 外側のにじみ
+        ctx.globalAlpha = flick; ctx.drawImage(img, fr * C, 0, C, img.naturalHeight, f.x - W / 2, f.y - H, W, H);
+      }
+      const g = ctx.createRadialGradient(f.x, f.y, 2, f.x, f.y, f.R * (0.8 + k * 0.8)); // 落ちた所の光
+      g.addColorStop(0, `rgba(255,255,255,${0.8 * (1 - k)})`); g.addColorStop(0.4, `rgba(140,200,255,${0.5 * (1 - k)})`); g.addColorStop(1, 'rgba(80,120,255,0)');
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.R * (0.8 + k * 0.8), f.R * (0.45 + k * 0.45), 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
     }
   }
   for (const p of weaponProj) {
