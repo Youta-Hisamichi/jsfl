@@ -1247,43 +1247,42 @@ function drawWeapons() {
   ctx.restore();
 }
 // 引っ張りの音：引っ張り始めた瞬間だけ、ゴムを引くような「キュッ」と短く鳴らす
-let chargeHum = null; // 引っ張り中のチャージ音：NEOGEOの横シュー風。ザラついたサンプリング音のような「シュイイイーーン」が溜めた時間で上がり、溜まりきると「キュイキュイ」と脈打つ
+let chargeHum = null; // 引っ張り中のチャージ音：ロックマンX風。なめらかな「ウィィィーン」が溜めた時間で上がり、溜まりきると「ヴィンヴィンヴィン」と揺れながら響き続ける（エコー付き）
 const CHARGE_SOUND_MS = 1200; // 溜まりきるまでの時間
-function crushCurve(steps) { const c = new Float32Array(2048); for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; c[i] = Math.round(x * steps) / steps; } return c; } // 粗い量子化でADPCMっぽいザラつき
 function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   const on = lv > 0 && typeof audioCtx !== 'undefined' && audioCtx && !isBattleSfxMuted();
-  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.02); setTimeout(() => { try { h.o.stop(); h.o2.stop(); h.n.stop(); h.lfo.stop(); } catch (e) {} }, 250); chargeHum = null; } return; }
+  if (!on) { if (chargeHum) { const t = audioCtx.currentTime, h = chargeHum; h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.03); setTimeout(() => { try { h.oscs.forEach(o => o.stop()); } catch (e) {} }, 600); chargeHum = null; } return; }
   const t = audioCtx.currentTime, v = (game.sfxVolume ?? 0.7), full = lv >= 1;
-  const f = 160 * Math.pow(1400 / 160, Math.pow(lv, 0.8));
+  const f = 200 * Math.pow(880 / 200, Math.pow(lv, 0.9)); // ゆったり上がる
   if (!chargeHum) {
-    const sr = audioCtx.sampleRate, nb = audioCtx.createBuffer(1, sr, sr), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const n = audioCtx.createBufferSource(); n.buffer = nb; n.loop = true;
-    const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(), am = audioCtx.createGain();
-    const nf = audioCtx.createBiquadFilter(), ng = audioCtx.createGain(), res = audioCtx.createBiquadFilter(), crush = audioCtx.createWaveShaper(), mix = audioCtx.createGain(), hp = audioCtx.createBiquadFilter(), g = audioCtx.createGain(), o2g = audioCtx.createGain();
-    o.type = 'sawtooth'; o2.type = 'square'; o.frequency.value = f; o2.frequency.value = f * 1.498; o2g.gain.value = 0.25;
-    nf.type = 'bandpass'; nf.Q.value = 9; nf.frequency.value = f * 4; ng.gain.value = 0.7; // 金属的に鳴るノイズ「シュイイ」
-    res.type = 'bandpass'; res.Q.value = 3; res.frequency.value = f * 2;
-    crush.curve = crushCurve(10);
-    lfo.type = 'square'; lfo.frequency.value = 12; lg.gain.value = 0; am.gain.value = 1; lfo.connect(lg); lg.connect(am.gain); // 溜まりきったら脈打つ
-    hp.type = 'highpass'; hp.frequency.value = 120;
-    o.connect(res); o2.connect(o2g); o2g.connect(res); n.connect(nf); nf.connect(ng);
-    res.connect(mix); ng.connect(mix); mix.connect(crush); crush.connect(hp); hp.connect(am); am.connect(g); g.connect(audioCtx.destination); g.gain.value = 0.0001;
-    o.start(); o2.start(); n.start(); lfo.start();
-    chargeHum = { o, o2, n, lfo, lg, nf, res, g, full: false };
+    const o1 = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), o3 = audioCtx.createOscillator(), lfo = audioCtx.createOscillator(), trem = audioCtx.createOscillator();
+    const lg = audioCtx.createGain(), tg = audioCtx.createGain(), amp = audioCtx.createGain(), lp = audioCtx.createBiquadFilter(), g = audioCtx.createGain(), o3g = audioCtx.createGain();
+    o1.type = 'square'; o2.type = 'square'; o3.type = 'sine';
+    o1.frequency.value = f; o2.frequency.value = f; o2.detune.value = 14; o3.frequency.value = f * 2; o3g.gain.value = 0.5; // 少しずらした2つの音でコーラス感
+    lfo.type = 'sine'; lfo.frequency.value = 6; lg.gain.value = f * 0.01; [o1, o2, o3].forEach(o => lg.connect(o.frequency)); lfo.connect(lg);
+    trem.type = 'sine'; trem.frequency.value = 8; tg.gain.value = 0; amp.gain.value = 1; trem.connect(tg); tg.connect(amp.gain);
+    lp.type = 'lowpass'; lp.Q.value = 2; lp.frequency.value = 900;
+    o1.connect(lp); o2.connect(lp); o3.connect(o3g); o3g.connect(lp); lp.connect(amp); amp.connect(g); g.gain.value = 0.0001;
+    // スーファミ風のエコー
+    const dl = audioCtx.createDelay(1), fb = audioCtx.createGain(), wet = audioCtx.createGain(); dl.delayTime.value = 0.12; fb.gain.value = 0.35; wet.gain.value = 0.4;
+    g.connect(audioCtx.destination); g.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(audioCtx.destination);
+    [o1, o2, o3, lfo, trem].forEach(o => o.start());
+    chargeHum = { oscs: [o1, o2, o3, lfo, trem], o1, o2, o3, lfo, lg, tg, trem, lp, g, full: false };
   }
   const h = chargeHum;
   if (full) {
-    if (!h.full) { h.full = true; thump(2093, 2637, 0.1, 0.032, 'square'); thump(1046, 1046, 0.15, 0.024, 'triangle', 0.02); } // 溜まりきった合図「キィン」
-    h.o.frequency.setTargetAtTime(1400, t, 0.02); h.o2.frequency.setTargetAtTime(2097, t, 0.02);
-    h.nf.frequency.setTargetAtTime(5600, t, 0.02); h.res.frequency.setTargetAtTime(2800, t, 0.02);
-    h.lfo.frequency.setTargetAtTime(13, t, 0.02); h.lg.gain.setTargetAtTime(0.45, t, 0.02); // 「キュイキュイ」
-    h.g.gain.setTargetAtTime(0.036 * v, t, 0.03);
+    if (!h.full) { h.full = true; thump(1318, 1760, 0.12, 0.022, 'square'); thump(2637, 2637, 0.25, 0.011, 'sine', 0.04); } // 溜まりきった合図「キュイン」
+    [h.o1, h.o2].forEach(o => o.frequency.setTargetAtTime(988, t, 0.03)); h.o3.frequency.setTargetAtTime(1976, t, 0.03);
+    h.lfo.frequency.setTargetAtTime(11, t, 0.03); h.lg.gain.setTargetAtTime(70, t, 0.03); // 「ヴィンヴィン」と揺れる
+    h.trem.frequency.setTargetAtTime(11, t, 0.03); h.tg.gain.setTargetAtTime(0.35, t, 0.03);
+    h.lp.frequency.setTargetAtTime(4200, t, 0.05);
+    h.g.gain.setTargetAtTime(0.02 * v, t, 0.03);
   } else {
     h.full = false;
-    h.o.frequency.setTargetAtTime(f, t, 0.03); h.o2.frequency.setTargetAtTime(f * 1.498, t, 0.03);
-    h.nf.frequency.setTargetAtTime(Math.min(9000, f * 4), t, 0.03); h.res.frequency.setTargetAtTime(f * 2, t, 0.03);
-    h.lg.gain.setTargetAtTime(0, t, 0.03);
-    h.g.gain.setTargetAtTime((0.02 + lv * 0.02) * v, t, 0.03);
+    [h.o1, h.o2].forEach(o => o.frequency.setTargetAtTime(f, t, 0.04)); h.o3.frequency.setTargetAtTime(f * 2, t, 0.04);
+    h.lfo.frequency.setTargetAtTime(6, t, 0.04); h.lg.gain.setTargetAtTime(f * 0.01, t, 0.04); h.tg.gain.setTargetAtTime(0, t, 0.04);
+    h.lp.frequency.setTargetAtTime(700 + lv * 2600, t, 0.04);
+    h.g.gain.setTargetAtTime((0.011 + lv * 0.01) * v, t, 0.03);
   }
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
