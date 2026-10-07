@@ -965,7 +965,8 @@ upgradeList.addEventListener('click', event => {
   }
   const button = event.target.closest('[data-upgrade]');
   if (button && consumeHoldClick()) return; // 長押しで連続強化した直後のクリックは無視
-  if (!button || phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
+  if (!button) return; // 項目のカード部分は押しても何もしない
+  if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
   levelUpUpgrade(button.dataset.upgrade, event.clientX, event.clientY);
 });
 function showLevelUpPop(x, y, text) {
@@ -978,7 +979,7 @@ function showLevelUpPop(x, y, text) {
   el.addEventListener('animationend', () => el.remove());
 }
 function showUpgradeLevelUpPop(id, x, y, text) {
-  const item = upgradeList.querySelector(`[data-upgrade="${id}"]`);
+  const item = upgradeList.querySelector(`[data-upgrade-card="${id}"]`);
   if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
   showLevelUpPop(x, y, text);
 }
@@ -2635,7 +2636,7 @@ function fitCmdBarText() {
   });
 }
 if (window.ResizeObserver) { const ro = new ResizeObserver(() => requestAnimationFrame(fitCmdBarText)); document.querySelectorAll('.cmd-bar .tower-row > button').forEach(b => ro.observe(b)); }
-new MutationObserver(() => requestAnimationFrame(fitCmdBarText)).observe(document.querySelector('.cmd-bar .tower-row'), { childList: true, subtree: true, characterData: true });
+if (document.querySelector('.cmd-bar .tower-row')) new MutationObserver(() => requestAnimationFrame(fitCmdBarText)).observe(document.querySelector('.cmd-bar .tower-row'),{ childList: true, subtree: true, characterData: true });
 window.addEventListener('load', fitCmdBarText);
 
 // 戦績の各行：先頭の「BEST」などと項目名を1つの札（タグ）にまとめる（見た目用）
