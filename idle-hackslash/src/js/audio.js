@@ -764,27 +764,24 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
-function playThunderStrike() { // 雷の杖：ファミコンのノイズ音源風の雷鳴（「バリバリッ」と裂けて「ゴロゴロ…」と段階的に消える）
+function playThunderStrike() { // 雷の杖：ファミコンのノイズ音源風の軽い「バリバリッ」（重低音なし）
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
-  const ac = audioCtx, sr = ac.sampleRate, dur = 1.25, n = Math.floor(sr * dur);
+  const ac = audioCtx, sr = ac.sampleRate, dur = 0.45, n = Math.floor(sr * dur);
   const buf = ac.createBuffer(1, n, sr), x = buf.getChannelData(0);
   let lfsr = 1, hold = 0, val = 1;
   for (let i = 0; i < n; i++) {
     const t = i / sr;
-    // ノイズの周期：最初は細かい「バリッ」、だんだん粗くなって「ゴロゴロ」へ（NESのノイズ周期を切り替えるイメージ）
-    const period = t < 0.06 ? 12 : t < 0.18 ? 40 : t < 0.5 ? 110 : 220;
+    const period = t < 0.05 ? 6 : t < 0.15 ? 14 : 28; // 細かいノイズのまま少しだけ粗く（低い成分は出さない）
     if (--hold <= 0) { hold = period * sr / 44100; const bit = (lfsr ^ (lfsr >> 1)) & 1; lfsr = (lfsr >> 1) | (bit << 14); val = lfsr & 1 ? 1 : -1; }
-    // 音量は16段階で階段状に減衰。最初の一撃のあとに2回ほど再びバリッと光る
-    let env = t < 0.012 ? 1 : Math.max(0, 1 - (t - 0.012) / (dur - 0.012));
-    if (t > 0.09 && t < 0.13) env = Math.max(env, 0.85);
-    if (t > 0.24 && t < 0.27) env = Math.max(env, 0.6);
+    let env = t < 0.008 ? 1 : Math.max(0, 1 - (t - 0.008) / (dur - 0.008)) ** 1.5; // 16段階で階段状に減衰
+    if (t > 0.07 && t < 0.1) env = Math.max(env, 0.6); // もう一度バリッと光る
     x[i] = val * Math.round(env * 15) / 15;
   }
   const src = ac.createBufferSource(); src.buffer = buf;
-  const g = ac.createGain(); g.gain.value = 0.22 * game.sfxVolume;
-  src.connect(g); g.connect(ac.destination); src.start(ac.currentTime);
-  thump(90, 40, 0.4, 0.12, 'triangle'); // 低い地響き（三角波チャンネル風）
+  const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; // 重低音をカット
+  const g = ac.createGain(); g.gain.value = 0.09 * game.sfxVolume;
+  src.connect(hp); hp.connect(g); g.connect(ac.destination); src.start(ac.currentTime);
 }
 function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える
   if (!audioCtx || isBattleSfxMuted()) return;
