@@ -1201,11 +1201,11 @@ function drawWeapons() {
       const k = (now - f.start) / BOLT_MS;
       if (k < 0.12) { ctx.fillStyle = `rgba(230,240,255,${0.28 * (1 - k / 0.12)})`; ctx.fillRect(arena.x - arena.radius, arena.y - arena.radius, arena.radius * 2, arena.radius * 2); } // 一瞬の閃光
       const grp = BOLT_GROUPS[Math.floor(f.seed) % BOLT_GROUPS.length], fr = grp[(Math.floor((now - f.start) / 55) + Math.floor(f.seed)) % grp.length];
-      const img = BOLT_IMG, H = Math.min(300, arena.radius * 1.5), C = img.naturalWidth / 12;
+      const img = BOLT_IMG, H = Math.min(220, arena.radius * 1.1), C = img.naturalWidth / 12;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       if (img.complete && img.naturalWidth) {
-        const W = H * C / img.naturalHeight, flick = k < 0.6 ? (Math.floor(now / 40) % 2 ? 1 : 0.7) : 1 - (k - 0.6) / 0.4;
-        ctx.globalAlpha = 0.35 * flick; ctx.drawImage(img, fr * C, 0, C, img.naturalHeight, f.x - W * 0.7, f.y - H * 1.02, W * 1.4, H * 1.04); // 外側のにじみ
+        const W = H * C / img.naturalHeight * 0.55, flick = k < 0.6 ? (Math.floor(now / 40) % 2 ? 1 : 0.7) : 1 - (k - 0.6) / 0.4;
+        ctx.globalAlpha = 0.25 * flick; ctx.drawImage(img, fr * C, 0, C, img.naturalHeight, f.x - W * 0.6, f.y - H * 1.01, W * 1.2, H * 1.02); // 外側のにじみ
         ctx.globalAlpha = flick; ctx.drawImage(img, fr * C, 0, C, img.naturalHeight, f.x - W / 2, f.y - H, W, H);
       }
       const g = ctx.createRadialGradient(f.x, f.y, 2, f.x, f.y, f.R * (0.8 + k * 0.8)); // 落ちた所の光
