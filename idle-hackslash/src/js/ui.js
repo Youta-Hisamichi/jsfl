@@ -81,24 +81,44 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
-  for (const meteor of meteors) {
-    ctx.save();
-    ctx.shadowColor = '#ff9f43';
-    ctx.shadowBlur = 22;
-    ctx.beginPath();
-    ctx.arc(meteor.x, meteor.y, meteor.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#f07b32';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(meteor.x - meteor.radius * 0.22, meteor.y - meteor.radius * 0.25, meteor.radius * 0.42, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffd76b';
-    ctx.fill();
-    ctx.restore();
-  }
+  drawMeteorSprites();
 
   drawArenaOverlays();
   drawBossTimer(); updateBossRetireBtn();
   drawAutoLabel();
+}
+// メテオ：素材の燃える隕石（近づくほどひび割れが進む）＋着弾の大爆発
+const METEOR_IMG = new Image(); METEOR_IMG.src = 'assets/img/weapons/meteors.webp'; // 横に10コマ：0まっすぐ 1青 2〜8斜め（だんだん割れる） 9爆発
+const METEOR_CRACK = [2, 3, 4, 5, 6, 7, 8];
+let meteorBlasts = [];
+function drawMeteorSprites() {
+  const img = METEOR_IMG, ok = img.complete && img.naturalWidth, C = ok ? img.naturalWidth / 10 : 0, now = Date.now();
+  for (const m of meteors) {
+    const sz = m.radius * 3.6, ang = Math.atan2(m.vy || 1, m.vx || 0);
+    if (!m.startD) m.startD = m.dist || 1;
+    const prog = Math.max(0, Math.min(1, 1 - (m.dist || m.startD) / m.startD)), fr = METEOR_CRACK[Math.min(METEOR_CRACK.length - 1, Math.floor(prog * METEOR_CRACK.length))];
+    if (Math.random() < 0.8) particles.push({ x: m.x - Math.cos(ang) * m.radius * 0.8 + (Math.random() - 0.5) * 14, y: m.y - Math.sin(ang) * m.radius * 0.8 + (Math.random() - 0.5) * 14, vx: -Math.cos(ang) * 2 + (Math.random() - 0.5) * 2, vy: -Math.sin(ang) * 2 + (Math.random() - 0.5) * 2, life: 0.8, color: Math.random() < 0.5 ? '#ffb347' : '#ff5a1f', decay: 0.045 }); // 火の粉
+    ctx.save(); ctx.translate(m.x, m.y);
+    ctx.globalCompositeOperation = 'lighter'; // 周りの熱気
+    const g = ctx.createRadialGradient(0, 0, 4, 0, 0, sz * 0.7); g.addColorStop(0, 'rgba(255,190,90,0.55)'); g.addColorStop(1, 'rgba(255,80,20,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, sz * 0.7, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.rotate(ang - Math.PI / 4); // 素材の斜めの隕石は右下へ落ちる向き
+    if (ok) ctx.drawImage(img, fr * C, 0, C, C, -sz * 0.62, -sz * 0.62, sz, sz);
+    else { ctx.fillStyle = '#f07b32'; ctx.beginPath(); ctx.arc(0, 0, m.radius, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+  }
+  meteorBlasts = meteorBlasts.filter(b => now - b.start < 650);
+  for (const b of meteorBlasts) {
+    const k = (now - b.start) / 650, sz = b.r * (2.6 + k * 2.2);
+    ctx.save(); ctx.globalAlpha = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, sz * 0.8); g.addColorStop(0, `rgba(255,240,200,${0.8 * (1 - k)})`); g.addColorStop(0.5, `rgba(255,140,40,${0.5 * (1 - k)})`); g.addColorStop(1, 'rgba(255,60,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, sz * 0.8, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    if (ok) ctx.drawImage(img, 9 * C, 0, C, C, b.x - sz / 2, b.y - sz * 0.72, sz, sz);
+    ctx.restore();
+  }
 }
 function drawDamageTexts() {
   ctx.save();
@@ -1728,7 +1748,7 @@ specialBtn.addEventListener('click', event => {
   meteors.push({
     x: arena.x + (Math.random() - 0.5) * arena.radius,
     y: arena.y - arena.radius - 45,
-    radius: 32, speed: 10, damage, hit: false
+    radius: 32, speed: 6, damage, hit: false
   });
   playSpecialSound();
   updateSpecialButton();

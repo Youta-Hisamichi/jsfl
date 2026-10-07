@@ -304,6 +304,8 @@ function step() {
     for (const meteor of meteors) {
       const mdx = e.x - meteor.x, mdy = e.y - meteor.y;
       const distance = Math.hypot(mdx, mdy) || 1;
+      meteor.vx = mdx / distance; meteor.vy = mdy / distance; meteor.dist = distance; // 描画用（向き・ひび割れの進み具合）
+      meteor.speed = Math.min(22, (meteor.speed || 10) * (1 + 0.03 * speedMult)); // 落ちるほど加速
       meteor.x += (mdx / distance) * meteor.speed * speedMult;
       meteor.y += (mdy / distance) * meteor.speed * speedMult;
       if (distance < meteor.radius + e.radius) {
@@ -311,7 +313,8 @@ function step() {
         e.hp -= meteorDmg;
         trackDamage(meteorDmg);
         meteor.hit = true;
-        spawnHitParticles(e.x, e.y, '#ffbc5c');
+        spawnHitParticles(e.x, e.y, '#ffbc5c'); spawnHitParticles(e.x, e.y, '#ff5a1f');
+        meteorBlasts.push({ x: e.x, y: e.y + e.radius * 0.3, r: Math.max(meteor.radius, e.radius), start: Date.now() }); shakeScreen(); // 大爆発
         spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteorDmg, '#ffd76b');
         playMeteorImpactSound();
         updateHPUI();
@@ -587,7 +590,7 @@ function endDeathFx() {
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
 let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引く）
-const AUTO_BOSS_RETRY_LOOPS = 10; // ループを10周したら自動でボスに再挑戦（OFFにもできる）
+const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
