@@ -802,53 +802,43 @@ function releaseCharge() {
   const held = Date.now() - chargeHold.start, lv = getChargeLevel(), ang = getPullAngle(), wasAiming = !!playerDrag;
   chargeHold = null;
   if (phase !== 'battle') return;
-  if (held < CHARGE_MIN_MS) { if (!playerDrag) doTapSlash(); return; } // 短いタップは至近距離の切り払い（突撃しない）
+  if (held < CHARGE_MIN_MS) { if (!playerDrag && !(rushingNow && holdRush && holdRush.shot)) doTapSlash(); return; } // 引っ張りアタック中の短いタップは連打（切り払いはしない） // 短いタップは至近距離の切り払い（突撃しない）
   if (!wasAiming || lv < PULL_MIN) return; // 引っ張りが足りなければ発射しない
   launchPull(ang, lv);
 }
 // 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
 const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
-// 反射チェイン：引っ張りで飛んでいる最中、跳ね返った瞬間にタイミングよくタップすると、跳ね返る向きへ再加速して連鎖・威力アップ
-const REFLECT_WINDOW_MS = 400, REFLECT_STEP = 0.6, REFLECT_MAX = 10; // 受付時間（跳ね返ってから）・1連鎖ごとの倍率・最大連鎖
-function tryReflectChainTap() { // タップした瞬間に呼ぶ。成功したら true
-  const r = holdRush;
-  if (!r || !r.shot || r.auto || r.used) return false;
-  const ok = !r.chainLocked && r.bounceAt && r.chainedAt !== r.bounceAt && Date.now() - r.bounceAt <= REFLECT_WINDOW_MS;
-  if (!ok) { if (rushingNow) r.chainLocked = true; return false; } // 跳ね返り以外のタイミングで押した（適当な連打）→ この発射では連鎖ストップ
-  r.chainedAt = r.bounceAt; // 1回の跳ね返りにつき1回だけ
-  launchPull(Math.atan2(r.buy, r.bux), r.charge || 0, false, Math.min(REFLECT_MAX, (r.chain || 0) + 1));
+// 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）
+const PULL_MASH_STEP = 0.1, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×4）
+function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? 1 + PULL_MASH_STEP * Math.min(PULL_MASH_MAX, holdRush.mash || 0) : 1; }
+function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら true
+  const r = holdRush, pl = balls.find(isMainPlayerBall);
+  if (!r || !r.shot || r.auto || r.used || !rushingNow || !pl) return false;
+  r.mash = Math.min(PULL_MASH_MAX, (r.mash || 0) + 1);
+  const m = 1 + PULL_MASH_STEP * r.mash;
+  r.mashAt = Date.now();
+  spawnHitParticles(pl.x, pl.y, r.mash >= 15 ? '#ffb35c' : '#ffe08a');
+  thump(500 + r.mash * 25, 700 + r.mash * 30, 0.05, 0.05, 'square');
   return true;
 }
-function reflectChainMult() { return holdRush && holdRush.chain ? 1 + REFLECT_STEP * holdRush.chain : 1; }
-function launchPull(ang, lv, auto = false, chain = 0) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1。chain＝反射チェイン数）
+function drawPullMash() { // 連打倍率をキャラの頭上に1つだけ表示（叩くたびにポンと弾む）
+  const r = holdRush; if (!r || !r.shot || r.auto || !r.mash || !rushingNow) return;
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const prev = holdRush;
-  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = (6 + 8 * lv) * (1 + 0.06 * chain);
-  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto, chain, wallChain: prev && chain ? prev.wallChain : 0 };
-  if (chain) {
-    spawnDamageText(pl.x, pl.y - pl.radius - 26, `${chain}連鎖！`, chain >= 5 ? '#ff4f6d' : '#7ee7ff', 0.02, true);
-    for (let i = 0; i < 10; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#7ee7ff' : '#ffffff');
-    hitStopFrames = Math.max(hitStopFrames || 0, 4);
-    shakeScreenLight();
-    playChainSound(chain + 1);
-    lastUserInputAt = Date.now();
-  }
+  const m = 1 + PULL_MASH_STEP * r.mash, pop = Math.max(0, 1 - (Date.now() - (r.mashAt || 0)) / 160);
+  ctx.save(); ctx.translate(pl.x, pl.y - pl.radius - 24); ctx.scale(1 + pop * 0.35, 1 + pop * 0.35);
+  ctx.font = '900 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(`連打 ×${m.toFixed(1)}`, 0, 0);
+  ctx.fillStyle = r.mash >= PULL_MASH_MAX ? '#ff4f6d' : r.mash >= 15 ? '#ffb35c' : '#ffe08a'; ctx.fillText(`連打 ×${m.toFixed(1)}`, 0, 0);
+  ctx.restore();
+}
+function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
+  holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
   if (lv >= 1) shakeScreenLight();
   playAccelSound();
-}
-function drawReflectCue() { // 跳ね返った直後：今タップ！の合図（受付時間だけ）
-  if (!holdRush || !holdRush.shot || holdRush.auto || holdRush.used || holdRush.chainLocked || !holdRush.bounceAt || holdRush.chainedAt === holdRush.bounceAt) return;
-  const t = (Date.now() - holdRush.bounceAt) / REFLECT_WINDOW_MS; if (t > 1) return;
-  const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const a = Math.atan2(holdRush.buy, holdRush.bux), L = pl.radius + 26 + 14 * t;
-  ctx.save(); ctx.globalAlpha = 1 - t; ctx.translate(pl.x, pl.y); ctx.rotate(a);
-  ctx.strokeStyle = '#7ee7ff'; ctx.fillStyle = '#7ee7ff'; ctx.lineWidth = 3; ctx.shadowColor = '#7ee7ff'; ctx.shadowBlur = 10;
-  ctx.beginPath(); ctx.arc(0, 0, pl.radius + 6 + 10 * t, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(L + 10, 0); ctx.lineTo(L - 2, -8); ctx.lineTo(L - 2, 8); ctx.closePath(); ctx.fill();
-  ctx.rotate(-a); ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('TAP!', 0, -pl.radius - 18); ctx.fillStyle = '#fff'; ctx.fillText('TAP!', 0, -pl.radius - 18);
-  ctx.restore();
 }
 function isAutoMode() { return phase === 'battle' && !chargeHold && !playerDrag && getActiveTab() === 'game' && Date.now() - lastUserInputAt >= AUTO_PULL_IDLE_MS; }
 function drawAutoLabel() { // オート中は自キャラの近くに AUTO と表示
@@ -1250,7 +1240,7 @@ const RUN_BUFFS = {
   slash: { icon: '🗡️', name: '近距離攻撃強化', desc: 'タップの切り払いのダメージ+30%・範囲+6' },
 };
 function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
-function getRushDmgMult() { return rushingNow && holdRush ? reflectChainMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
+function getRushDmgMult() { return rushingNow && holdRush ? pullMashMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
 function getRushPierce() { return Math.min(3, (game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0); } // 貫きの蹄鉄：体当たりの追加ヒット数
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
@@ -1319,7 +1309,6 @@ function moveHoldRush(ball, speedMult) {
   if (holdRush && holdRush.shot) { // 引っ張り発射：まっすぐ飛んで壁・敵で跳ね返り、終わり際に減速
     const cur = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / cur, uy = ball.vy / cur;
     if (holdRush.ux !== undefined && ux * holdRush.ux + uy * holdRush.uy < 0.95) { // 壁や敵で跳ね返ったら摩擦で減速
-      holdRush.bounceAt = Date.now(); holdRush.bux = ux; holdRush.buy = uy; // 反射チェインの受付開始（この向きへ引っ張り直す）
       holdRush.speed *= 0.72;
       if (holdRush.speed < 3) holdRush.until = Date.now();
     }
@@ -1353,7 +1342,7 @@ function playPullWallChain(ball, rush) {
   thump(f * 2, f * 2, 0.12, 0.03, 'triangle');
   thump(f * 3.01, f * 3.01, 0.08, 0.012, 'sine', 0.01);
   spawnHitParticles(ball.x, ball.y, '#bfe8ff');
-  if (n >= 2 && !rush.chain) spawnDamageText(ball.x, ball.y - ball.radius - 20, `反射 ${n}連鎖！`, n >= 5 ? '#ff4f6d' : '#7ee7ff', 0.03, n >= 5);
+  if (n >= 2) spawnDamageText(ball.x, ball.y - ball.radius - 20, `反射 ${n}連鎖！`, n >= 5 ? '#ff4f6d' : '#7ee7ff', 0.03, n >= 5);
 }
 // タックル（長押しのタメ体当たり）は今の仕様では使わないので処理を空にしてある
 function getTackleChargeLevel() { return -1; }
