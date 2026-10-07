@@ -808,28 +808,33 @@ function releaseCharge() {
 }
 // 手動とAUTOの威力差：自分の指で攻撃したほうがかなり強い（AUTOは放置用に控えめ）
 const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
-// 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）
-const PULL_MASH_STEP = 0.4, PULL_MASH_MAX = 30; // 1タップごとの上昇・上限タップ数（最大 ×13）
-const PULL_MAX_BOUNCES = 1; // 引っ張りタックルが跳ね返る回数
-function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? 1 + PULL_MASH_STEP * Math.min(PULL_MASH_MAX, holdRush.mash || 0) : 1; }
+// 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）。跳ね返った回数が多いほど1タップの上がり幅も大きい
+const PULL_MASH_STEP = 0.4, PULL_MASH_MAX_MULT = 25; // 1タップごとの基本の上昇・連打倍率の上限
+const PULL_MASH_BOUNCE_BONUS = 0.5, PULL_MASH_BOUNCE_CAP = 8; // 跳ね返り1回ごとに上がり幅 +50%（8回まで）
+const PULL_BOUNCE_ACCEL = 1.12, PULL_SPEED_MAX = 20; // 跳ね返るたびに少し加速（上限あり）
+const CHAIN_SEMIS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; // 連打の切り払い音の音階（1オクターブ半で頭打ち）
+function pullMashMult() { return holdRush && holdRush.shot && !holdRush.auto ? Math.min(PULL_MASH_MAX_MULT, 1 + (holdRush.mashVal || 0)) : 1; }
 function tryPullMashTap() { // 飛んでいる最中のタップ。数えたら true
   const r = holdRush, pl = balls.find(isMainPlayerBall);
   if (!r || !r.shot || r.auto || r.used || !rushingNow || !pl) return false;
-  r.mash = Math.min(PULL_MASH_MAX, (r.mash || 0) + 1);
-  const m = 1 + PULL_MASH_STEP * r.mash;
+  r.mash = (r.mash || 0) + 1;
+  r.mashVal = (r.mashVal || 0) + PULL_MASH_STEP * (1 + PULL_MASH_BOUNCE_BONUS * Math.min(PULL_MASH_BOUNCE_CAP, r.bounces || 0));
   r.mashAt = Date.now();
   spawnHitParticles(pl.x, pl.y, r.mash >= 15 ? '#ffb35c' : '#ffe08a');
-  thump(500 + r.mash * 25, 700 + r.mash * 30, 0.05, 0.05, 'square');
   return true;
+}
+function pullMashSlashRate() { // 連打の切り払い音：叩くたびに音階が上がる（連鎖音のように）
+  const r = holdRush; if (!r || !r.shot || r.auto || !rushingNow || !r.mash) return 0;
+  return 0.9 * Math.pow(2, CHAIN_SEMIS[Math.min(r.mash - 1, CHAIN_SEMIS.length - 1)] / 12);
 }
 function drawPullMash() { // 連打倍率をキャラの頭上に1つだけ表示（叩くたびにポンと弾む）
   const r = holdRush; if (!r || !r.shot || r.auto || !r.mash || !rushingNow) return;
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const m = 1 + PULL_MASH_STEP * r.mash, pop = Math.max(0, 1 - (Date.now() - (r.mashAt || 0)) / 160);
+  const m = pullMashMult(), pop = Math.max(0, 1 - (Date.now() - (r.mashAt || 0)) / 160);
   ctx.save(); ctx.translate(pl.x, pl.y - pl.radius - 24); ctx.scale(1 + pop * 0.35, 1 + pop * 0.35);
   ctx.font = '900 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(`連打 ×${m.toFixed(1)}`, 0, 0);
-  ctx.fillStyle = r.mash >= PULL_MASH_MAX ? '#ff4f6d' : r.mash >= 15 ? '#ffb35c' : '#ffe08a'; ctx.fillText(`連打 ×${m.toFixed(1)}`, 0, 0);
+  ctx.fillStyle = m >= PULL_MASH_MAX_MULT ? '#ff4f6d' : r.mash >= 15 ? '#ffb35c' : '#ffe08a'; ctx.fillText(`連打 ×${m.toFixed(1)}`, 0, 0);
   ctx.restore();
 }
 function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
@@ -914,7 +919,7 @@ function doTapSlash(auto = false) {
   if (Math.abs(Math.cos(ang)) > 0.2) pl.faceDir = Math.cos(ang) > 0 ? 1 : -1;
   slashSide = -slashSide;
   slashFx.push({ ball: pl, ang, side: slashSide, start: now, r: R });
-  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length));
+  playSnesSlash(Math.floor(Math.random() * SNES_SLASHES.length), pullMashSlashRate());
   let hits = 0;
   for (const en of foes) {
     const d = Math.hypot(en.x - pl.x, en.y - pl.y);
@@ -1330,9 +1335,7 @@ function moveHoldRush(ball, speedMult) {
     const cur = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / cur, uy = ball.vy / cur;
     if (holdRush.ux !== undefined && ux * holdRush.ux + uy * holdRush.uy < 0.95) { // 壁や敵で跳ね返ったら摩擦で減速
       holdRush.bounces = (holdRush.bounces || 0) + 1;
-      if (holdRush.bounces > PULL_MAX_BOUNCES) holdRush.until = Date.now(); // 跳ね返りは1回まで：2回目にぶつかったら止まる
-      holdRush.speed *= 0.72;
-      if (holdRush.speed < 3) holdRush.until = Date.now();
+      holdRush.speed = Math.min(PULL_SPEED_MAX, holdRush.speed * PULL_BOUNCE_ACCEL); // 跳ね返るたびに少し加速（上限あり）
     }
     holdRush.ux = ux; holdRush.uy = uy;
     const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (0.3 + 0.7 * Math.min(1, r * 1.6));

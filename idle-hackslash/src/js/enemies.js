@@ -1227,7 +1227,7 @@ function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワー�
     const sp = Math.max(9, Math.hypot(ball.vx, ball.vy) * 1.2);
     const dir = dashPanelDir(o, now); // 今パネルが向いている方向へ飛ばす
     ball.vx = Math.cos(dir) * sp; ball.vy = Math.sin(dir) * sp;
-    if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, Math.max(holdRush.speed, 11));
+    if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(PULL_SPEED_MAX, Math.max(holdRush.speed, 11));
     if (ball.isPlayer) { // 自分や仲間はしばらくダメージ倍増
       ball.dashPowerUntil = now + DASH_POWER_MS;
       thump(400, 1400, 0.14, 0.07, 'sawtooth'); thump(800, 1600, 0.1, 0.05, 'square', 0.05);
@@ -1318,7 +1318,7 @@ function obstacleBounce(ball) {
       if (o.kind !== 'bumper' && o.kind !== 'slime' && info.speed !== 1) {
         const sp = Math.hypot(ball.vx, ball.vy), ns = Math.min(15, sp * info.speed);
         if (sp > 0.01) { ball.vx *= ns / sp; ball.vy *= ns / sp; }
-        if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.max(3, Math.min(16, holdRush.speed * info.speed));
+        if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.max(3, Math.min(PULL_SPEED_MAX, holdRush.speed * info.speed));
       }
     }
     if (o.kind === 'qbox' && !o.used && isMainPlayerBall(ball)) { openQBox(o); continue; } // ハテナボックス：自キャラが当たると中身が飛び出す
@@ -1326,7 +1326,7 @@ function obstacleBounce(ball) {
     if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));
       ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
-      if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(16, holdRush.speed / 0.72 * (o.kind === 'slime' ? 1 : 1.1)); // 摩擦の減速を打ち消して加速
+      if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.min(PULL_SPEED_MAX, holdRush.speed * (o.kind === 'slime' ? 1 : 1.1)); // バンパーでさらに加速
       o.flash = now;
       if (hard) { ball.wallSoundAt = now; if (o.kind === 'slime') { thump(180, 420, 0.12, 0.1, 'sine'); } else { thump(520, 900, 0.12, 0.08, 'square'); thump(260, 180, 0.15, 0.06, 'sine'); } }
     } else if (o.kind === 'spike') { // トゲ：ぶつかった敵だけが痛い（引っ張り攻撃で敵を叩きつけよう）

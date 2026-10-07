@@ -899,11 +899,11 @@ function getSnesEcho() { // SPC風の短いエコー（こもった残響が数�
   snesEcho = { ctx: audioCtx, input };
   return snesEcho;
 }
-function playSnesSlash(i) {
+function playSnesSlash(i, rate) { // rate：再生の高さ（指定なしは少しだけ揺らす）
   if (!audioCtx || isBattleSfxMuted()) return;
   if (!snesSlashBufs || snesSlashBufs.ctx !== audioCtx) snesSlashBufs = { ctx: audioCtx, list: SNES_SLASHES.map(renderSnesSlash) };
   const src = audioCtx.createBufferSource(); src.buffer = snesSlashBufs.list[i];
-  src.playbackRate.value = 0.9 + Math.random() * 0.08; // 毎回少しだけ高さを揺らす（高くなりすぎないよう下寄り）
+  src.playbackRate.value = rate || 0.9 + Math.random() * 0.08; // 毎回少しだけ高さを揺らす（高くなりすぎないよう下寄り）
   const gain = audioCtx.createGain(); gain.gain.value = 0.55 * (game.sfxVolume ?? 0.7);
   src.connect(gain); gain.connect(audioCtx.destination); gain.connect(getSnesEcho().input);
   src.start();
