@@ -1702,3 +1702,18 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 /* 宝箱ボタン：誤タップしにくい左上に縦並び（ボス戦はポーションの下） */
 .chest-tray { left: 6px; top: 6px; bottom: auto; flex-direction: column; flex-wrap: nowrap; gap: 8px; max-width: none; }
 body:not(.hp-safe) .chest-tray { top: 44px; }
+/* ===== ゲーム画面のスキルボタン：スキルごとの色で存在感を出す ===== */
+#skillRow .action-btn { --c1: #5a6a8a; --c2: #2a3550; --glow: rgba(140,180,255,0.6); border: 2px solid #f0c860 !important; border-image: none !important; border-radius: 10px !important; background: linear-gradient(180deg, var(--c1) 0%, var(--c2) 100%) !important; box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -3px 0 rgba(0,0,0,0.35), 0 0 8px var(--glow), 0 2px 4px rgba(0,0,0,0.5); color: #fff !important; font-weight: 900; padding: 5px 3px !important; text-shadow: 0 1px 2px rgba(0,0,0,0.9); }
+#skillRow .action-btn.special    { --c1: #ff7a3c; --c2: #b3200f; --glow: rgba(255,110,40,0.7); }
+#skillRow .action-btn.accel      { --c1: #4fb4ff; --c2: #1c4fc0; --glow: rgba(80,170,255,0.7); }
+#skillRow .action-btn.heal       { --c1: #5be07a; --c2: #18853a; --glow: rgba(90,230,120,0.65); }
+#skillRow .action-btn.poison     { --c1: #8fd34a; --c2: #3c6a14; --glow: rgba(150,220,70,0.6); }
+#skillRow .action-btn.paralyze   { --c1: #ffd84a; --c2: #c07a00; --glow: rgba(255,210,60,0.7); }
+#skillRow .action-btn.death      { --c1: #b06ae8; --c2: #4a1e7a; --glow: rgba(180,110,240,0.65); }
+#skillRow .action-btn.coinstrike, #skillRow .action-btn.zeni { --c1: #ffd36a; --c2: #b8780e; --glow: rgba(255,200,80,0.7); }
+#skillRow .action-btn.mystery    { --c1: #c28aff; --c2: #5a2aa8; --glow: rgba(190,130,255,0.65); }
+#skillRow .action-btn.comprush   { --c1: #ff8ad8; --c2: #9a2a8a; --glow: rgba(255,130,220,0.6); }
+#skillRow .action-btn.blast      { --c1: #ff5050; --c2: #5a0a0a; --glow: rgba(255,70,70,0.7); }
+#skillRow .action-btn.is-disabled, #skillRow .action-btn:disabled { filter: grayscale(0.55) brightness(0.8); box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.5); }
+#skillRow .action-btn:not(.is-disabled):not(:disabled) { animation: skillReady 1.4s ease-in-out infinite alternate; }
+@keyframes skillReady { from { filter: brightness(1); } to { filter: brightness(1.15); } }
