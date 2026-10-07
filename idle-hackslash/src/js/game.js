@@ -472,7 +472,7 @@ function onStageClear() {
   const defeated = balls.find(ball => !ball.isPlayer);
   const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
   const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
-  const coinGain = Math.round((30 + game.stage * 8) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
+  const coinGain = Math.round((30 + game.stage * 8) * Math.sqrt(enemyInflation(game.stage)) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
     const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
     game.gems += metalGems;

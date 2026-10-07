@@ -1367,7 +1367,7 @@ function formatCoinNumber(num) {
   if (num < 0) return '-' + formatCoinNumber(-num);
   num = Math.floor(num);
   if (num < 10000) return num.toLocaleString('ja-JP');
-  if (num >= 1e72) { const e = Math.floor(Math.log10(num)); return (num / Math.pow(10, e)).toFixed(2) + 'e' + e; } // 無量大数の1万倍以上
+  if (num >= 1e72) return formatCoinNumber(num / 1e68) + '無量大数'; // 無量大数を超えたら「○○無量大数」と単位を重ねる（e表記にしない）
   const units = BIG_UNITS;
   let idx = units.length - 1;
   while (idx > 0 && num < units[idx].value) idx--;

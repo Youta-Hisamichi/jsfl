@@ -648,15 +648,19 @@ const UPGRADES = {
   hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
 };
 const UPGRADE_LEAPS = [
-  { every: 1000, mult: 3, name: '超大飛躍', color: '#ff5cd6' },
+  { every: 1000, mult: 2, name: '超大飛躍', color: '#ff5cd6' },
   { every: 100, mult: 1.5, name: '大飛躍', color: '#e08a00' },
   { every: 10, mult: 1.1, name: 'プチ飛躍', color: '#2a9d55' },
 ];
-// そのレベルで到達済みの飛躍倍率。プチ飛躍は+10%ずつ加算、大飛躍×1.5・超大飛躍×3は掛け算（インフレしすぎないように）
+// そのレベルで到達済みの飛躍倍率。どの飛躍も「足し算で積み上がる倍率」をかけ合わせる（指数的に爆発して数値があふれないように）
+// 例：初めての大飛躍で×1.5、2回目で×2.0、3回目で×2.5…（超大飛躍も×2→×3→×4…）
 function upgradeLeapMult(level) {
+  level = Math.max(0, Math.min(1e12, Number(level) || 0));
   const n1000 = Math.floor(level / 1000), n100 = Math.floor(level / 100) - n1000, n10 = Math.floor(level / 10) - Math.floor(level / 100);
-  return (1 + 0.1 * n10) * Math.pow(1.5, n100) * Math.pow(3, n1000);
+  return (1 + 0.1 * n10) * (1 + 0.5 * n100) * (1 + 1 * n1000);
 }
+const NUM_CAP = 1e300; // これ以上は扱わない（Infinity・NaN でフリーズしないための安全柵）
+function safeNum(v) { v = Number(v); return isFinite(v) ? Math.max(-NUM_CAP, Math.min(NUM_CAP, v)) : (v > 0 ? NUM_CAP : v < 0 ? -NUM_CAP : 0); }
 // from→to のレベルアップで到達した最大の飛躍（なければ null）
 function crossedUpgradeLeap(from, to) {
   return UPGRADE_LEAPS.find(l => Math.floor(to / l.every) > Math.floor(from / l.every)) || null;
@@ -1133,14 +1137,18 @@ function sumUpgradeCost(id, fromLevel, count) {
   return s ? Math.ceil(total * s.coinPriceMult) : total;
 }
 function getMaxAffordableUpgradeLevels(id, coins) {
+  coins = Math.max(0, safeNum(coins));
   const base = UPGRADES[id].baseCost;
   const L = game.upgrades[id];
   const sub = getActiveSub();
   const A = base, B = base * (2 * L + 1), C = -2 * (coins / (sub ? sub.coinPriceMult : 1)) - 2 * base; // 割引分だけ多めに見積もり、下で実際の合計で調整
   let count = Math.floor((-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A));
   if (!isFinite(count) || count < 0) count = 0;
-  while (count > 0 && sumUpgradeCost(id, L, count) > coins) count--;
-  while (sumUpgradeCost(id, L, count + 1) <= coins) count++;
+  count = Math.min(count, 1e12);
+  // 誤差の補正は回数を決めて二分探索（大きな数でも無限ループしない）
+  let lo = 0, hi = Math.max(1, count * 2 + 2);
+  for (let i = 0; i < 80 && lo < hi; i++) { const mid = Math.floor((lo + hi + 1) / 2); if (mid === lo) break; if (sumUpgradeCost(id, L, mid) <= coins) lo = mid; else hi = mid - 1; }
+  count = lo;
   return Math.max(0, Math.min(count, getUpgradeLevelCap(id) - L)); // 上限レベルを超えない
 }
 

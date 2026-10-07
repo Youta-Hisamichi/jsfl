@@ -287,12 +287,12 @@ function getPlayerAtk() {
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル（取得したら転生まで常時発動）
-  return Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult()));
+  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult())));
 }
 function getPlayerMaxHP() {
   const b = computeBonuses();
   const base = 100;
-  return Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult()));
+  return safeNum(Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult())));
 }
 const EARLY_PLAYER_HP_MIN_RATE = 0.4;
 function getEarlyPlayerHpRate(stage) {
@@ -604,7 +604,13 @@ function updateTabBadges() {
   const set = { upgrade: canUp, companion: canComp, gemshop: canShop, gacha: canEvo };
   for (const tab in set) { const b = tabBar.querySelector(`.tab-btn[data-tab="${tab}"]`); if (b) b.classList.toggle('has-new', set[tab] && getActiveTab() !== tab); }
 }
+function sanitizeBigNumbers() { // 壊れた巨大な数（Infinity・NaN）をセーブ・画面に持ち込まない
+  game.coins = Math.max(0, safeNum(game.coins)); game.gems = Math.max(0, safeNum(game.gems));
+  if (game.upgrades) for (const k in game.upgrades) { const v = Number(game.upgrades[k]) || 0; game.upgrades[k] = Math.max(0, Math.min(1e12, Math.floor(v))); }
+  if (!isFinite(game.maxDamage)) game.maxDamage = NUM_CAP;
+}
 function updateStatsUI() {
+  sanitizeBigNumbers();
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
   updateTabBadges();
   stageNumEl.textContent = formatStageNumber(game.stage); // 万・億などの単位を付ける
