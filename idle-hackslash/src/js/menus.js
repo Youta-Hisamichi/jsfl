@@ -1265,15 +1265,15 @@ function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
   }
   const h = chargeHum;
   if (full) {
-    if (!h.full) { h.full = true; thump(1568, 2093, 0.08, 0.05, 'square'); } // 溜まりきった合図「ピッ」
+    if (!h.full) { h.full = true; thump(1568, 2093, 0.08, 0.025, 'square'); } // 溜まりきった合図「ピッ」
     h.o.frequency.setTargetAtTime(1480, t, 0.02); h.o2.frequency.setTargetAtTime(2960, t, 0.02);
     h.lfo.frequency.setTargetAtTime(16, t, 0.02); h.lg.gain.setTargetAtTime(260, t, 0.02); // 「ピュイピュイピュイ」
-    h.g.gain.setTargetAtTime(0.03 * v, t, 0.03);
+    h.g.gain.setTargetAtTime(0.015 * v, t, 0.03);
   } else {
     h.full = false;
     h.o.frequency.setTargetAtTime(f, t, 0.03); h.o2.frequency.setTargetAtTime(f * 2, t, 0.03);
     h.lfo.frequency.setTargetAtTime(9 + lv * 10, t, 0.03); h.lg.gain.setTargetAtTime(f * 0.02, t, 0.03); // ほんの少し震わせる
-    h.g.gain.setTargetAtTime((0.02 + lv * 0.015) * v, t, 0.03);
+    h.g.gain.setTargetAtTime((0.01 + lv * 0.008) * v, t, 0.03);
   }
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
