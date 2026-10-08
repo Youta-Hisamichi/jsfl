@@ -2946,3 +2946,18 @@ setInterval(() => {
   const txt = '👾 現在の敵：' + (Object.entries(names).map(([n, c]) => c > 1 ? `${n} ×${c}` : n).join('、') || '—');
   if (el.textContent !== txt) el.textContent = txt;
 }, 500);
+
+// 戦績ページは上のタブで「戦績／敵図鑑／BGM図鑑」を切り替える（最後に見たタブを覚えておく）
+(() => {
+  const tabs = document.querySelectorAll('[data-rec-tab]'), secs = document.querySelectorAll('[data-rec-sec]');
+  const show = key => {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.recTab === key));
+    secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
+    if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook();
+    try { localStorage.setItem('recTab', key); } catch (e) {}
+  };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.recTab)));
+  let first = 'stats'; try { first = localStorage.getItem('recTab') || 'stats'; } catch (e) {}
+  if (![...tabs].some(t => t.dataset.recTab === first)) first = 'stats';
+  show(first);
+})();

@@ -1959,3 +1959,4 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 #skillLevelList .wp-card .sk-equip.on { border-image-source: url(assets/img/ui/skin/btn_green.webp); background: none; }
 #skillLevelList .wp-card.equipped { filter: none; }
 #skillLevelList .wp-card .sk-lv-sub { display: block; font-size: 0.82em; font-weight: 700; color: #3a5a8a; }
+.rec-tabs .sub-tab-btn { flex: 1 1 0; font-size: 0.82rem; padding: 9px 6px; } .rec-sec[hidden] { display: none !important; }
