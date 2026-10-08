@@ -1903,7 +1903,7 @@ function drawBall(ball) {
     const img = companionSpriteImgs[ball.companionId];
     ctx.save();
     if (img && img.complete && img.naturalWidth) {
-      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 2.9; // 丸より少し大きめに。小さい仲間も自機と同じ大きさで描く
+      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 3.6; // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
       drawFacingSprite(img, ball, ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
       const cnt = 1; // 同じ仲間は1人ずつ別の体で出るので、人数バッジは出さない
       if (cnt >= 2) { // 人数バッジ
