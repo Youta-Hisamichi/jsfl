@@ -83,7 +83,8 @@ function step() {
 
   const piercing = isTackling() && getTacklePierceMs() > 0;
   const rushPierce = isRushPiercing(); // 乱舞中だけ敵をすり抜ける
-  const collided = rushPierce ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
+  const airborne = e.jumpZ > 20; // ジャンプアタックで空中にいるボスには当たらない
+  const collided = airborne ? false : rushPierce ? Math.hypot(e.x - a.x, e.y - a.y) < a.radius + e.radius : resolveBallCollision(a, e);
   const rushMult = collided ? getRushDmgMult() : 1; // 助走が長いほど体当たりが強い
   const stunMult = collided && isTelegraphStunned(e) ? TG_STUN_DMG : 1; // 攻撃後の隙は大ダメージ
   const styleMult = collided ? (rushingNow ? b.rushDmgUp : b.meleeMult) || 1 : 1; // 強化：体当たり／接近戦
@@ -211,7 +212,7 @@ function step() {
   if (!battleEnded) {
     const companionsInPlay = balls.filter(ball => ball.isCompanion && ball.hp > 0);
     for (const comp of companionsInPlay) {
-      if (comp.hitCooldown > 0) continue;
+      if (comp.hitCooldown > 0 || e.jumpZ > 20) continue;
       if (resolveBallCollision(comp, e)) {
         comp.hitCooldown = Math.max(6, Math.round(30 / (b.companionSpeedMult || 1))); // 強化「仲間の攻撃頻度」で次の攻撃までが短くなる
         const combo = registerHit();
@@ -1794,6 +1795,7 @@ function drawBall(ball) {
   const enemySprite = ball.isPlayer ? null : getEnemySpriteImg(ball);
   const shape = enemySprite ? 'emoji' : ball.shape;
   ctx.save();
+  if (ball.jumpZ > 0) { const s = 1 + ball.jumpZ / 400; ctx.translate(ball.x, ball.y - ball.jumpZ); ctx.scale(s, s); ctx.translate(-ball.x, -ball.y); } // ジャンプ中は空中に浮かんで少し大きく
   if (deathFx && ball === deathFx.ball) {
     const t = getDeathFxProgress();
     const shake = 6 * (1 - t);

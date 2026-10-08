@@ -552,7 +552,9 @@ function drawEnemyTraitEffects() {
 // 攻撃予兆：敵が足元に赤い予告エリア（扇・円・直線）を出してから攻撃する。範囲の外へ動けば回避でき、攻撃後の隙は大ダメージのチャンス
 const TG_WIND = 32, TG_STUN = 100, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙は約1.7秒、その間はどの攻撃もダメージ3倍
 const TG_KINDS = ['fan', 'circle', 'line'];
+const TG_JUMP_CHANCE = 0.3, TG_JUMP_WIND = 58, TG_JUMP_H = 150; // ボスのジャンプアタック：確率・溜め（空中にいる時間）・飛び上がる高さ
 function tgKindFor(e) {
+  if (e.isBoss && Math.random() < TG_JUMP_CHANCE) return 'jump';
   if (e.isBoss) return TG_KINDS[Math.floor(Math.random() * 3)];
   const key = getEnemyBookKey(e); let h = 0;
   for (const ch of key) h = (h * 31 + ch.codePointAt(0)) >>> 0;
@@ -560,7 +562,7 @@ function tgKindFor(e) {
 }
 function tgRandCd(e) { return e.isBoss ? 170 + Math.random() * 130 : 240 + Math.random() * 180; }
 function tgInside(tg, x, y, pr) {
-  if (tg.kind === 'circle') return Math.hypot(x - tg.x, y - tg.y) < tg.r + pr * 0.5;
+  if (tg.kind === 'circle' || tg.kind === 'jump') return Math.hypot(x - tg.x, y - tg.y) < tg.r + pr * 0.5;
   const dx = x - tg.x, dy = y - tg.y;
   if (tg.kind === 'fan') {
     if (Math.hypot(dx, dy) > tg.r + pr * 0.5) return false;
@@ -600,22 +602,36 @@ function updateEnemyTelegraph(a, e, speedMult) {
     const big = (e.isBoss ? 1.25 : 1) * (isBig ? 1.3 : 1);
     const t = { kind, wind: (e.isBoss ? TG_WIND - 8 : TG_WIND) + (isBig ? 14 : 0), t: 0, ang, x: e.x, y: e.y, big: isBig };
     if (kind === 'circle') { t.x = a.x; t.y = a.y; t.r = 52 * big; }
+    else if (kind === 'jump') { t.x = a.x; t.y = a.y; t.sx = e.x; t.sy = e.y; t.r = Math.max(60, e.radius * 1.5); t.wind = TG_JUMP_WIND + (e.isGiant ? 10 : 0); }
     else if (kind === 'fan') { t.r = (e.radius + 80) * big; t.half = 0.62; }
     else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
-    playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
+    spawnDamageText(e.x, e.y - e.radius - 22, kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
+    if (kind === 'jump') { thump(160, 520, 0.22, 0.12, 'square'); filteredNoise(0, 0.2, 0.12, 900, 1); } // 踏み切りの「ブワッ」
+    else playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
     return false;
   }
-  if (e.traitState !== 'tg') { e.tg = null; return false; } // 封印などで中断された
+  if (e.traitState !== 'tg') { e.tg = null; e.jumpZ = 0; return false; } // 封印などで中断された
   if (kind_followTarget(tg)) { tg.ang = Math.atan2(a.y - e.y, a.x - e.x); }
+  if (tg.kind === 'jump') { // 空中で着地点（影）が前半だけ主人公を追いかけ、ボスはそこへ向かって放物線で飛ぶ
+    const p0 = tg.t / tg.wind;
+    if (p0 < 0.5) { const c = arenaClampPt(a.x, a.y, e.radius); tg.x += (c.x - tg.x) * Math.min(1, 0.08 * speedMult); tg.y += (c.y - tg.y) * Math.min(1, 0.08 * speedMult); }
+    const p = Math.min(1, (tg.t + speedMult) / tg.wind);
+    e.x = tg.sx + (tg.x - tg.sx) * p; e.y = tg.sy + (tg.y - tg.sy) * p;
+    e.jumpZ = Math.sin(Math.PI * p) * TG_JUMP_H; e.vx = 0; e.vy = 0;
+  }
   tg.t += speedMult;
   if (tg.t < tg.wind) return false;
   // 発動
   e.tg = null; e.tgCd = tgRandCd(e);
+  if (tg.kind === 'jump') { // ドスン！と着地して衝撃波
+    e.x = tg.x; e.y = tg.y; e.jumpZ = 0;
+    for (let i = 0; i < 10; i++) { const an = i / 10 * Math.PI * 2; spawnHitParticles(tg.x + Math.cos(an) * tg.r * 0.8, tg.y + Math.sin(an) * tg.r * 0.8, i % 2 ? '#c9a46a' : '#ff9f43'); }
+    shakeScreen(); thump(110, 35, 0.45, 0.4); playNoiseBurst(0.35, 0.3);
+  }
   const hit = a.hp > 0 && tgInside(tg, a.x, a.y, a.radius);
-  if (tg.kind === 'circle') {
+  if (tg.kind === 'jump') { /* 上で演出済み */ } else if (tg.kind === 'circle') {
     for (let i = 0; i < 3; i++) spawnHitParticles(tg.x + (Math.random() - 0.5) * tg.r, tg.y + (Math.random() - 0.5) * tg.r, i ? '#ff9f43' : '#ff4d4d');
     playNoiseBurst(0.25, 0.3); shakeScreenLight();
   } else if (tg.kind === 'fan') {
@@ -624,7 +640,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
   } else {
     playTone(180, 0.25, 'sawtooth', 0.14, 90);
   }
-  e.tgFx = { kind: tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
+  e.tgFx = { kind: tg.kind === 'jump' ? 'circle' : tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
   if (tg.kind === 'line') {
     e.traitState = 'tgDash'; e.traitFreeze = false; e.dashing = true; e.tgBig = tg.big;
     const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
@@ -639,11 +655,11 @@ function updateEnemyTelegraph(a, e, speedMult) {
   if (tg.wasIn || Math.random() < 0.3) spawnEvadeText(a);
   return false;
 }
-function kind_followTarget(tg) { return tg.kind !== 'circle' && tg.t < tg.wind * 0.45; } // 扇・突進は溜めの前半だけ狙いを合わせる
+function kind_followTarget(tg) { return tg.kind !== 'circle' && tg.kind !== 'jump' && tg.t < tg.wind * 0.45; } // 扇・突進は溜めの前半だけ狙いを合わせる
 function isTelegraphStunned(e) { return !!e && e.traitState === 'tgStun'; }
 function tgPath(tg, ex, ey) {
   ctx.beginPath();
-  if (tg.kind === 'circle') ctx.arc(tg.x, tg.y, tg.r, 0, Math.PI * 2);
+  if (tg.kind === 'circle' || tg.kind === 'jump') ctx.arc(tg.x, tg.y, tg.r, 0, Math.PI * 2);
   else if (tg.kind === 'fan') { ctx.moveTo(ex, ey); ctx.arc(ex, ey, tg.r, tg.ang - tg.half, tg.ang + tg.half); ctx.closePath(); }
   else {
     const c = Math.cos(tg.ang), s = Math.sin(tg.ang), hw = tg.w / 2;
@@ -750,14 +766,19 @@ function drawEnemyTelegraphs() {
     const tg = e.tg;
     if (tg) {
       const p = Math.min(1, tg.t / tg.wind);
-      const ex = tg.kind === 'circle' ? tg.x : e.x, ey = tg.kind === 'circle' ? tg.y : e.y;
+      const onGround = tg.kind === 'circle' || tg.kind === 'jump';
+      const ex = onGround ? tg.x : e.x, ey = onGround ? tg.y : e.y;
+      if (tg.kind === 'jump') { // 着地点に落ちる影（高く飛ぶほど薄く小さい）
+        const z = (e.jumpZ || 0) / TG_JUMP_H;
+        ctx.save(); ctx.fillStyle = `rgba(0,0,0,${0.45 - 0.2 * z})`; ctx.beginPath(); ctx.ellipse(tg.x, tg.y + e.radius * 0.3, e.radius * (1.1 - 0.4 * z), e.radius * (0.45 - 0.15 * z), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
       ctx.save();
       tgPath(tg, ex, ey);
       ctx.fillStyle = `rgba(255,40,40,${0.12 + 0.1 * p})`; ctx.fill();
       ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,70,70,${0.55 + 0.4 * Math.abs(Math.sin(now / (p > 0.7 ? 45 : 90)))})`; ctx.stroke();
       ctx.clip(); // 内側から満ちていくゲージで発動タイミングを見せる
       ctx.fillStyle = 'rgba(255,60,40,0.35)';
-      if (tg.kind === 'circle') { ctx.beginPath(); ctx.arc(tg.x, tg.y, tg.r * p, 0, Math.PI * 2); ctx.fill(); }
+      if (onGround) { ctx.beginPath(); ctx.arc(tg.x, tg.y, tg.r * p, 0, Math.PI * 2); ctx.fill(); }
       else if (tg.kind === 'fan') { ctx.beginPath(); ctx.moveTo(ex, ey); ctx.arc(ex, ey, tg.r * p, tg.ang - tg.half, tg.ang + tg.half); ctx.closePath(); ctx.fill(); }
       else { const t2 = { ...tg, len: tg.len * p }; tgPath(t2, ex, ey); ctx.fill(); }
       ctx.restore();
