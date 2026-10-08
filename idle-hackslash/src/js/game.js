@@ -1444,7 +1444,7 @@ function updateSpecialButton() {
   const remaining = Math.max(0, cooldown - (Date.now() - lastSpecialAt));
   if (remaining === 0) {
     specialBtn.disabled = false;
-    specialBtn.classList.toggle('is-disabled', phase !== 'battle');
+    specialBtn.classList.toggle('is-disabled', phase !== 'battle' || !balls.some(b => !b.isPlayer)); /* 敵がいない間（次の敵が出るまで）は押せない見た目に */
     specialBtn.textContent = '☄️ メテオ';
     return;
   }

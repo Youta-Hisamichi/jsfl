@@ -1109,6 +1109,19 @@ function updatePotionButton() {
   if (potionBtn.dataset.html !== html) { potionBtn.innerHTML = html; potionBtn.dataset.html = html; }
   potionBtn.classList.toggle('is-disabled', n <= 0);
 }
+(() => { // スキル列は横スクロールするので、指が少しずれただけでタップが消えないよう、少しの移動ならこちらで押したことにする
+  const row = document.getElementById('skillRow'); let tap = null;
+  row.addEventListener('click', e => { const b = e.target.closest('.action-btn'); if (b && e.isTrusted) b.lastTapClickAt = Date.now(); }, true);
+  row.addEventListener('pointerdown', e => { const b = e.target.closest('.action-btn'); tap = b ? { b, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY } : null; });
+  row.addEventListener('pointermove', e => { if (tap) { tap.lx = e.clientX; tap.ly = e.clientY; } });
+  const end = e => {
+    const t = tap; tap = null; if (!t) return;
+    const x = e.type === 'pointercancel' ? t.lx : e.clientX, y = e.type === 'pointercancel' ? t.ly : e.clientY;
+    if (Math.hypot(x - t.x, y - t.y) > 14) return; // 大きく動かしたのはスクロール
+    setTimeout(() => { if (!(Date.now() - (t.b.lastTapClickAt || 0) < 400)) t.b.click(); }, 80); // ブラウザがクリックを出さなかったときだけ
+  };
+  row.addEventListener('pointerup', end); row.addEventListener('pointercancel', end);
+})();
 const redPotionBtn = document.getElementById('redPotionBtn');
 function updateRedPotionButton() { // スキル列の左端の赤ポーション（所持数つき）
   const n = game.redPotions || 0;
