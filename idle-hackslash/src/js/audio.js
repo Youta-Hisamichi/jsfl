@@ -125,6 +125,17 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks ks ks ks',
   },
+  battle29: { // 戦闘29 秘宝の洞窟：弾むベースと跳ねる分散和音に、わくわくと探検する旋律（ほのぼのアクションの洞窟探検系）
+    bpm: 150,
+    echo: { time: 0.2, feedback: 0.22, wet: 0.15 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.039, notes: 'A4 = C5 E5 = D5 C5 B4 | A4 = = E4 A4 = B4 C5 | C5 = A4 F4 A4 C5 F5 E5 | D5 = = B4 G4 = B4 D5 | E5 = C5 E5 A5 = G5 E5 | C5 = = = E5 = A5 = | F5 = E5 D5 A4 = D5 F5 | E5 = = = G#4 = B4 = | A5 = = G5 F5 = C5 = | D5 = G5 = B5 = = A5 | G5 = E5 = C5 = E5 G5 | A5 = = = E5 = C5 = | D5 = F5 = A5 = = G5 | B5 = = A5 G5 = D5 = | E5 = G#5 = B5 = = = | D6 = C6 B5 G#5 = E5 =' },
+      { type: 'vrc6pulse12', gain: 0.018, notes: 'A3 - C4 E4 A4 - E4 C4 | A3 - C4 E4 A4 - E4 C4 | F3 - A3 C4 F4 - C4 A3 | G3 - B3 D4 G4 - D4 B3 | A3 - C4 E4 A4 - E4 C4 | A3 - C4 E4 A4 - E4 C4 | D4 - F4 A4 D5 - A4 F4 | E3 - G#3 B3 E4 - B3 G#3 | F3 - A3 C4 F4 - C4 A3 | G3 - B3 D4 G4 - D4 B3 | C4 - E4 G4 C5 - G4 E4 | A3 - C4 E4 A4 - E4 C4 | D4 - F4 A4 D5 - A4 F4 | G3 - B3 D4 G4 - D4 B3 | E3 - G#3 B3 E4 - B3 G#3 | E3 - G#3 B3 E4 - B3 G#3' },
+      { type: 'vrc6saw', gain: 0.064, notes: 'A1 - A2 - E2 - A2 E2 | A1 - A2 - E2 - A2 E2 | F1 - F2 - C2 - F2 C2 | G1 - G2 - D2 - G2 D2 | A1 - A2 - E2 - A2 E2 | A1 - A2 - E2 - A2 E2 | D2 - D3 - A2 - D3 A2 | E1 - E2 - B1 - E2 B1 | F1 - F2 - C2 - F2 C2 | G1 - G2 - D2 - G2 D2 | C2 - C3 - G2 - C3 G2 | A1 - A2 - E2 - A2 E2 | D2 - D3 - A2 - D3 A2 | G1 - G2 - D2 - G2 D2 | E1 - E2 - B1 - E2 B1 | E1 - E2 - B1 - E2 B1' },
+    ],
+    kickBoost: 1.2,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s ks s s s ks ks'
+  },
   battle28: {
     bpm: 164,
     tracks: [
@@ -523,7 +534,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -575,6 +586,7 @@ const BGM_INFO = [
   { key: 'battle24', name: '戦闘24 裏通りの拳', desc: '刻むロックベースとパワーコードのリフ、ブルージーな音を混ぜた熱い旋律の街の殴り合い。VRC6風チップチューン。イ短調（ベルトスクロールアクション系の作風）・BPM156' },
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
+  { key: 'battle29', name: '戦闘29 秘宝の洞窟', desc: '弾むベースと跳ねる分散和音に乗って、わくわくと洞窟を探検する旋律。後半は長調に明るく開けて宝の予感に胸が高鳴る。VRC6風チップチューン。イ短調（ほのぼのアクションの洞窟探検の作風）・BPM150' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
