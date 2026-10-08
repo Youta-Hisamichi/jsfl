@@ -2154,23 +2154,16 @@ compRushBtn.addEventListener('click', event => {
   const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton);
   if (!ctxs) return;
   const { player, enemy } = ctxs;
-  let total = 0;
-  comps.forEach((comp, i) => {
-    const ang = Math.atan2(enemy.y - comp.y, enemy.x - comp.x);
-    comp.vx = Math.cos(ang) * 12; comp.vy = Math.sin(ang) * 12;
-    for (let k = 0; k < 6; k++) particles.push({ x: comp.x, y: comp.y, vx: Math.cos(ang) * (3 + k), vy: Math.sin(ang) * (3 + k), life: 0.8, color: COMPANION_COLORS[comp.companionId] || '#8fe3a0', decay: 0.05 });
-    const { dmg } = rollCrit(Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush'))), enemy);
-    total += dmg;
+  const rushUntil = Date.now() + COMP_RUSH_MS, hits = Math.floor(COMP_RUSH_MS / COMP_RUSH_HIT_MS);
+  comps.forEach((comp, i) => { // 仲間全員が敵へ駆け寄って、しばらく猛烈に連続攻撃（合計ダメージは今までの一撃と同じくらい）
+    comp.compRushUntil = rushUntil; comp.compRushTarget = enemy; comp.compRushAng = 0;
+    comp.compRushNextHit = Date.now() + 120 + i * 40;
+    comp.compRushDmg = Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') / hits * 1.15));
   });
-  enemy.hp -= total;
-  trackDamage(total);
   spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `🐾 仲間特攻！ ×${comps.length}`, '#8fe3a0', 0.014, true);
-  spawnAttackDamageText(enemy, total, false, '#d4ffdd');
-  spawnHitParticles(enemy.x, enemy.y, '#8fe3a0');
-  onPlayerHitEnemy(enemy, total);
+  onPlayerHitEnemy(enemy, 1);
   shakeScreenLight();
   [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.1), i * 50));
-  if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
   updateCompRushButton();
   updateHPUI();
 });

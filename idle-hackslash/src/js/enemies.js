@@ -557,6 +557,50 @@ function steerToward(ball, tx, ty, speed, turn) {
   steerBall(ball, dx / d * speed, dy / d * speed, turn);
   return d;
 }
+// 仲間特攻中の動き：狙った敵へ全速力で駆け寄り、まとわりつくように何度も斬りかかる（ダメージは連続ヒットに分けて入る）
+const COMP_RUSH_MS = 2600, COMP_RUSH_HIT_MS = 190;
+let compRushSfxAt = 0;
+function compRushTargetOf(ball) {
+  const t = ball.compRushTarget;
+  if (t && !t.isDying && t.hp > 0 && balls.includes(t)) return t;
+  const next = nearestOf(ball, balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0));
+  ball.compRushTarget = next || null;
+  return next;
+}
+function moveCompRush(ball, speedMult) {
+  const e = compRushTargetOf(ball);
+  if (!e) { ball.compRushUntil = 0; return; }
+  const reach = e.radius + ball.radius + 2;
+  const dx = e.x - ball.x, dy = e.y - ball.y, d = Math.hypot(dx, dy) || 1;
+  if (d > reach + 14) { // 駆け寄る
+    const sp = 11 * speedMult;
+    ball.vx = dx / d * sp; ball.vy = dy / d * sp;
+    ball.x += ball.vx; ball.y += ball.vy;
+    if (Math.random() < 0.6) particles.push({ x: ball.x, y: ball.y, vx: -dx / d * 2, vy: -dy / d * 2, life: 0.6, color: COMPANION_COLORS[ball.companionId] || '#8fe3a0', decay: 0.06 });
+    wallBounce(ball);
+    return;
+  }
+  // 敵のまわりで踏み込み・引きを繰り返しながら斬りつける
+  ball.compRushAng = (ball.compRushAng || Math.atan2(-dy, -dx)) + 0.05 * speedMult;
+  const now = Date.now(), phase = ((now - (ball.compRushHitAt || now)) / COMP_RUSH_HIT_MS);
+  const lunge = Math.max(0, 1 - Math.min(1, phase)) * 10; // 斬った瞬間に深く踏み込む
+  const r = reach + 6 - lunge;
+  ball.x = e.x + Math.cos(ball.compRushAng) * r; ball.y = e.y + Math.sin(ball.compRushAng) * r;
+  ball.vx = (e.x - ball.x) * 0.1; ball.vy = (e.y - ball.y) * 0.1; // 敵の方を向く
+  if (now >= (ball.compRushNextHit || 0)) {
+    ball.compRushNextHit = now + COMP_RUSH_HIT_MS * (0.8 + Math.random() * 0.4);
+    ball.compRushHitAt = now;
+    ball.compRushAng += (Math.random() - 0.5) * 1.2; // 斬るたびに少し回り込む
+    const { dmg, crit } = rollCrit(Math.max(1, ball.compRushDmg || 1), e);
+    e.hp -= dmg; trackDamage(dmg);
+    spawnAttackDamageText(e, dmg, crit, '#d4ffdd');
+    const hx = (ball.x + e.x) / 2, hy = (ball.y + e.y) / 2;
+    for (let k = 0; k < 5; k++) { const a = Math.random() * Math.PI * 2, sp2 = 2 + Math.random() * 3; particles.push({ x: hx, y: hy, vx: Math.cos(a) * sp2, vy: Math.sin(a) * sp2, life: 0.7, color: k % 2 ? '#ffffff' : (COMPANION_COLORS[ball.companionId] || '#8fe3a0'), decay: 0.07 }); }
+    if (now - compRushSfxAt > 70) { compRushSfxAt = now; playTone(700 + Math.random() * 500, 0.05, 'square', 0.05, 300); }
+    updateHPUI();
+    if (e.hp <= 0 && !e.isDying) triggerEnemyDefeat(e, ball.x, ball.y);
+  }
+}
 function moveCompanionCustom(ball, speedMult, player, enemy) {
   const style = ball.movementStyle;
   if (!CUSTOM_COMPANION_STYLES[style]) return false;
@@ -1731,6 +1775,11 @@ function movePlayerSideBalls(list, speedMult, b) {
       ball.vx *= 0.993; ball.vy *= 0.993; // 高速のまま飛んでいく
       wallBounce(ball);
       if (Math.random() < 0.5) spawnHitParticles(ball.x, ball.y, '#ffe066');
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
+    if (ball.isCompanion && ball.compRushUntil > Date.now()) { // 仲間特攻：敵へ駆け寄って猛烈に連続攻撃
+      moveCompRush(ball, speedMult);
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
