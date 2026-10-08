@@ -847,18 +847,16 @@ function playLeapSound(tier = 1, vol = 1) { // vol：オート強化をほかの
   const end = notes.length * (tier >= 2 ? 70 : 60);
   setTimeout(() => { playTone(notes[notes.length - 1], 0.5, 'triangle', 0.1 * vol, notes[notes.length - 1] * 1.5); if (tier >= 2) { playTone(notes[notes.length - 3], 0.6, 'square', 0.05 * vol); playNoiseBurst(0.25, 0.08 * vol); } }, end);
 }
-// コンテニューのカウントダウン：レトロなゲーセン風に、数字ごとに太い「ポーン」を鳴らす（残り3以下は高く強く・2連打）
+// コンテニューのカウントダウン：耳に刺さらないよう、柔らかい「ポン」を控えめに鳴らす（残り3以下は少し高く・2連打）
 function playContinueTick(n) {
   if (!audioCtx) return;
-  const urgent = n <= 3, f = urgent ? 1046.5 : 784;
+  const urgent = n <= 3, f = urgent ? 880 : 659.25;
   const hit = (delay, freq, g) => setTimeout(() => {
-    playTone(freq, 0.26, 'square', g, freq * 0.98);
-    playTone(freq / 2, 0.3, 'triangle', g * 1.3);
-    playTone(freq * 1.5, 0.12, 'square', g * 0.4);
+    playTone(freq, 0.16, 'triangle', g, freq * 0.99);
+    playTone(freq * 2, 0.06, 'sine', g * 0.3);
   }, delay);
-  hit(0, f, urgent ? 0.11 : 0.085);
-  if (urgent) hit(140, f * 1.26, 0.08); // 終盤は「ポポーン」と2連打で焦らせる
-  thump(160, 55, 0.18, urgent ? 0.22 : 0.16);
+  hit(0, f, urgent ? 0.07 : 0.05);
+  if (urgent) hit(130, f * 1.26, 0.05);
 }
 // 宝箱の中身が並ぶときの「ポンポン」連鎖音：カードが出るたびに少しずつ高くなる。レア度が高いカードはキラッと重ねる
 function playLootPopChain(rarities, stepMs = 60) {
@@ -1083,8 +1081,8 @@ function playDeathSound() {
 }
 function playCountdownTick(sec) {
   const urgent = sec <= 3;
-  playTone(urgent ? 1320 : 880, urgent ? 0.14 : 0.09, 'square', urgent ? 0.13 : 0.08);
-  if (urgent) setTimeout(() => playTone(1760, 0.06, 'square', 0.06), 70);
+  playTone(urgent ? 880 : 659.25, urgent ? 0.12 : 0.09, 'triangle', urgent ? 0.06 : 0.045); // 柔らかい三角波で控えめに
+  if (urgent) setTimeout(() => playTone(1108.7, 0.06, 'triangle', 0.035), 80);
 }
 function playBossClearSound() {
   if (activeTabCache !== 'game') return;
