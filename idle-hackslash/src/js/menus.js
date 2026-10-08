@@ -440,7 +440,7 @@ const RIVALS = (() => {
   const rnd = seededRand(20260601);
   const used = new Set();
   const list = [];
-  while (list.length < 99) {
+  while (list.length < 999) {
     const name = RIVAL_NAMES_A[Math.floor(rnd() * RIVAL_NAMES_A.length)] + RIVAL_NAMES_B[Math.floor(rnd() * RIVAL_NAMES_B.length)] + RIVAL_TAGS[Math.floor(rnd() * RIVAL_TAGS.length)];
     if (used.has(name)) continue;
     used.add(name);
@@ -516,7 +516,7 @@ function renderRanking() {
   lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title, score: fmt(myScore) };
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
   const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
-  const shown = entries.slice(0, 100);
+  const shown = entries.slice(0, 1000);
   rankingList.innerHTML = shown.map((entry, i) => {
     const wi = { 'w-god': '🔥', 'w-pro': '👑', 'w-master': '👑', 'w-class': '👑' };
     const wall = RANK_WALLS[i] && i < shown.length ? `<div class="rank-wall ${RANK_WALLS[i][1]}"><span><i>${wi[RANK_WALLS[i][1]]}</i>${RANK_WALLS[i][0]}<i>${wi[RANK_WALLS[i][1]]}</i></span></div>` : '';
