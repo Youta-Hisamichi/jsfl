@@ -1624,6 +1624,8 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .cmd-bar .tower-row > button.tower-share:active { transform: translateY(-50%) scale(0.95) !important; }
 /* ===== 試練の塔（見本準拠：城の塔つき石板＋魔法陣、レア度で色の違う枠） ===== */
 #stageSkipModal .modal-panel { position: relative; display: flex; flex-direction: column; gap: 8px; max-height: 94vh; overflow: visible; max-width: 420px; padding: 0 4px 2px; border-style: solid; border-color: transparent; border-width: calc(min(92vw, 420px) * 0.27) calc(min(92vw, 420px) * 0.05) calc(min(92vw, 420px) * 0.05); border-image: url(assets/img/ui/tower/panel_frame.webp) 172 34 34 34 fill / calc(min(92vw, 420px) * 0.27) calc(min(92vw, 420px) * 0.053) calc(min(92vw, 420px) * 0.053) stretch; background: none; box-shadow: none; border-radius: 0; color: #eef1f6; }
+#stageSkipModal { background: var(--bg); } /* 試練の塔は他のページと同じく、後ろのゲーム画面を透かさない */
+#stageSkipModal .modal-panel { background: #2b303b !important; background-clip: padding-box !important; } /* 枠の内側も不透明に */
 #stageSkipModal .modal-panel::before { content: ''; position: absolute; left: 9%; width: 82%; top: -3%; aspect-ratio: 1; background: url(assets/img/ui/tower/circle.webp) center / contain no-repeat; opacity: 0.6; pointer-events: none; z-index: 0; }
 #stageSkipModal .modal-panel > * { position: relative; z-index: 1; flex: none; }
 #stageSkipModal .tower-head { margin: calc(min(92vw, 420px) * -0.2) 0 0; text-align: center; }
