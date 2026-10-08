@@ -256,7 +256,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
   updateStatsUI();
   saveGame();
-  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (!isReroll) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 引き直しのときは画面を動かさない
   const reveal = () => { // 進化ガチャと同じ召喚演出のあとで開封（引き直しも同じ）
     if (!compSummoning) return;
     compSummoning = false;
