@@ -80,7 +80,7 @@ function updateStackSlime(e) {
   }
 }
 // ボス「超ジャンボスライム」：倒せないミニスライムが叩かれるたびに分裂し、32匹そろうと合体して超ジャンボスライムになる
-const MEGA_COUNT = 32, MEGA_INV_HP = 999999, MEGA_HP_MULT = 4, MEGA_ATK_MULT = 1.5, MEGA_RADIUS = 66, MEGA_AUTO_SPLIT = 240;
+const MEGA_COUNT = 32, MEGA_INV_HP = 999999, MEGA_HP_MULT = 4, MEGA_ATK_MULT = 1.5, MEGA_RADIUS = 66, MEGA_AUTO_SPLIT = 90;
 function makeMegaMini(e, x, y) {
   const c = makeAddEnemy(e);
   c.shape = 'slimeChibi'; c.emoji = null; c.color = '#5cc8ff'; c.glow = 'rgba(92,200,255,0.55)';
@@ -94,7 +94,7 @@ function makeMegaMini(e, x, y) {
 }
 function updateMegaSlime(e, speedMult) {
   if (!e.megaPhase) {
-    e.megaPhase = 'mini'; e.megaBaseHp = e.maxHp; e.megaBaseAtk = e.atk; e.megaTimer = 0;
+    e.megaPhase = 'mini'; e.megaBaseHp = e.maxHp; e.megaBaseAtk = e.atk; e.megaTimer = 0; e.megaCount = 1;
     e.traitBaseRadius = 12; e.radius = 12; e.baseRadius = 12;
     e.maxHp = e.hp = MEGA_INV_HP; e.traitLastHp = e.hp; e.atk = Math.max(1, Math.round(e.megaBaseAtk * 0.3));
     spawnDamageText(arena.x, arena.y - 50, '倒せないミニスライム…？ 叩くと増える！', '#7fd6ff', 0.01, true);
@@ -108,7 +108,7 @@ function updateMegaSlime(e, speedMult) {
     for (const ad of minis) if (ad.hp < ad.maxHp) { hitList.push(ad); ad.hp = ad.maxHp; }
     e.megaTimer += speedMult;
     if (e.megaTimer >= MEGA_AUTO_SPLIT) { e.megaTimer = 0; hitList.push(minis.length ? minis[Math.floor(Math.random() * minis.length)] : e); } // 放っておいても少しずつ増える
-    let count = 1 + minis.length;
+    let count = e.megaCount || 1; // 分裂した累計で数える（攻撃力が高くてミニスライムが倒れても合体に近づく）
     for (const src of hitList) {
       if (count >= MEGA_COUNT) break;
       makeMegaMini(e, src.x, src.y); count++;
@@ -116,6 +116,7 @@ function updateMegaSlime(e, speedMult) {
       playTone(420 + count * 22, 0.09, 'sine', 0.09, 700 + count * 30);
       if (count % 8 === 0 || count === 2) spawnDamageText(src.x, src.y - 20, `ぷるん！分裂（${count}/${MEGA_COUNT}）`, '#7fd6ff', 0.014, true);
     }
+    if (count !== e.megaCount) { e.megaCount = count; updateHPUI(); }
     if (count >= MEGA_COUNT) {
       e.megaPhase = 'gather'; e.traitFreeze = true; e.vx = e.vy = 0;
       adds.filter(ad => ad.megaOwner === e && ad.hp > 0).forEach(ad => { ad.merging = true; ad.traitFreeze = true; });
