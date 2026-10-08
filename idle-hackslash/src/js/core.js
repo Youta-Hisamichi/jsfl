@@ -709,8 +709,8 @@ const SHOP_ITEMS = {
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オート強化', desc: 'たまったコインで攻撃力・最大HP・仲間の強化を自動で上げる（強化ページでON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
-SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）', cost: 3, consumableKey: 'potions' };
-SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）', cost: 3, consumableKey: 'redPotions' };
+SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
+SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];

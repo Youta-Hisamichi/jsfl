@@ -1090,7 +1090,7 @@ shopList.addEventListener('click', event => {
   const gcost = gemPrice(getShopItemBaseCost(id));
   if (game.gems < gcost) { promptGemShortage(gcost); return; }
   game.gems -= gcost;
-  if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + 1; updatePotionButton(); updateRedPotionButton(); }
+  if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); showNotice('🤖 オート強化を開放しました（強化ページでON/OFF）'); }
