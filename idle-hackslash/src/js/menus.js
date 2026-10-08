@@ -16,7 +16,7 @@ function renderSkillGacha() {
     const coinIco = xi('x_coin') || '🟡';
     const buyLabel = !owned ? `解放 ${coinIco}${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ ${coinIco}${formatCoinNumber(cost)}`;
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
-    return `<div data-card-id="${id}" class="sk-card sk-card2 ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `<span class="sk-lv-sub">（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）</span>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div>${equipBtn ? `<div class="sk-btns">${equipBtn}</div>` : ''}</div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `<span class="sk-lv-sub">（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）</span>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div>${equipBtn ? `<div class="sk-btns">${equipBtn}</div>` : ''}</div>`;
   }).join('')) || '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'; // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
