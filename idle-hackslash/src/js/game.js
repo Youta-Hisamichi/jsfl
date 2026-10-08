@@ -1813,7 +1813,8 @@ function drawBall(ball) {
     const lim = arena.radius * 0.88; // 画面の外へ消えないように枠内に収める
     const x = Math.max(arena.x - lim, Math.min(arena.x + lim, ball.x + knockoutFx.dir * t * arena.radius * 0.9));
     const y = Math.max(arena.y - lim, Math.min(arena.y + lim, ball.y - Math.sin(t * Math.PI) * arena.radius * 0.35 + t * arena.radius * 0.25));
-    ctx.translate(x, y); ctx.rotate(knockoutFx.dir * (1 - Math.pow(1 - t, 2)) * Math.PI * 8); ctx.scale(1 - t * 0.25, 1 - t * 0.25); ctx.translate(-ball.x, -ball.y); // だんだん回転がゆるむ
+    if (knockoutFx.land === undefined) knockoutFx.land = Math.random() < 0.5 ? Math.PI / 2 : Math.PI; // 着地したら横倒しか逆さまで倒れたまま
+    ctx.translate(x, y); ctx.rotate(knockoutFx.dir * (1 - Math.pow(1 - t, 2)) * (Math.PI * 8 + knockoutFx.land)); ctx.scale(1 - t * 0.25, 1 - t * 0.25); ctx.translate(-ball.x, -ball.y); // だんだん回転がゆるむ
   }
   if (ball.isDying) {
     const intensity = 7 * (ball.shakeTimer / KNOCKBACK_SHAKE_FRAMES);
