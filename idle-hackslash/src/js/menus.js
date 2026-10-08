@@ -261,6 +261,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     if (!compSummoning) return;
     compSummoning = false;
     compSummonReveal = null;
+    if (activeTabCache !== 'companion') { box.style.display = 'none'; renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
     showCompanionGachaResult(box, results, count, bestRarity);
     box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
     renderCompanionList();

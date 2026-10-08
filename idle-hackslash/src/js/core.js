@@ -229,6 +229,7 @@ function switchTab(name) {
   if (name !== 'game' && typeof gameOverBgm !== 'undefined' && (gameOverBgm || (phase === 'paused' && deathFx))) return;
   if (name !== 'game' && typeof suspendGameOverForTab === 'function') suspendGameOverForTab(); // ゲームオーバー画面は他のページに持ち出さない
   activeTabCache = name;
+  if (name !== 'companion') { const cgr = document.getElementById('compGachaResult'); if (cgr) cgr.style.display = 'none'; } // 仲間ガチャの結果はページを離れたら閉じる
   document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
   if (typeof userPaused !== 'undefined' && userPaused && typeof audioCtx !== 'undefined' && audioCtx) { if (name === 'game') audioCtx.suspend(); else audioCtx.resume(); } // 一時停止は保ったまま、他のページでは音だけ鳴らす
   renderShopkeeper(name);
