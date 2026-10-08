@@ -532,10 +532,11 @@ function makeClone(x, y) {
 
 const KING_ATK_BONUS = 0.3;
 function companionKindCount(kind) { let n = 0; for (const id in COMPANIONS) if (compKind(id) === kind) n += getCompanionCount(id); return n; }
-const COMPANION_COLORS = { villager: '#c9a46a', merchant: '#d9a35a', hobbit: '#8fd36f', dog: '#ffb46b', penguin: '#7fb0ff', warrior: '#cfd6e6', mage: '#b48cff', priest: '#fff4b8', monk: '#ff6b5a', archer: '#6fd36f', thief: '#8a8f9c', dancer: '#ff8ad8', tamer: '#9aa6c8', heavy: '#7a6ab8', cavalry: '#7fb8ff', samurai: '#e0584f', summoner: '#c79bff', sage: '#9fc4ff', ninja: '#5a5f6c', king: '#ffd76b', princess: '#ffb8e0', pegasus: '#e8f0ff', dragon: '#ff7a4a', cat: '#ffb46b' };
+const COMPANION_COLORS = { pirate: '#e0584f', bard: '#4fb0a0', lancer: '#9fc4ff', alchemist: '#c4f06a', musketeer: '#d9583a', dragoon: '#ff6a4a', paladin: '#ffe9a8', archangel: '#fff0a0', bahamut: '#5a8cff', hamster: '#ffb46b', golem: '#9ab06a', bunny: '#ff8ad8', fortune: '#b46cff', villager: '#c9a46a', merchant: '#d9a35a', hobbit: '#8fd36f', dog: '#ffb46b', penguin: '#7fb0ff', warrior: '#cfd6e6', mage: '#b48cff', priest: '#fff4b8', monk: '#ff6b5a', archer: '#6fd36f', thief: '#8a8f9c', dancer: '#ff8ad8', tamer: '#9aa6c8', heavy: '#7a6ab8', cavalry: '#7fb8ff', samurai: '#e0584f', summoner: '#c79bff', sage: '#9fc4ff', ninja: '#5a5f6c', king: '#ffd76b', princess: '#ffb8e0', pegasus: '#e8f0ff', dragon: '#ff7a4a', cat: '#ffb46b' };
 const OLD_COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
 const COMPANION_MOVEMENT = {
-  villager: { style: 'guard', speedFactor: 0.7 }, merchant: { style: 'escort', speedFactor: 0.9 }, hobbit: { style: 'flutter', speedFactor: 1.5 }, dog: { style: 'hop', speedFactor: 1.6 }, penguin: { style: 'kite', speedFactor: 0.9 },
+  pirate: { style: 'hunter', speedFactor: 1.3 }, bard: { style: 'escort', speedFactor: 1 }, lancer: { style: 'hunter', speedFactor: 1.1 }, alchemist: { style: 'kite', speedFactor: 0.95 }, musketeer: { style: 'kite', speedFactor: 1 }, dragoon: { style: 'swoop', speedFactor: 1.2 }, paladin: { style: 'guard', speedFactor: 0.85 }, archangel: { style: 'escort', speedFactor: 1.1 }, bahamut: { style: 'swoop', speedFactor: 1.2 }, hamster: { style: 'hop', speedFactor: 1.4 }, golem: { style: 'guard', speedFactor: 0.55 }, bunny: { style: 'flutter', speedFactor: 1.4 }, fortune: { style: 'kite', speedFactor: 0.9 },
+  villager: { style: 'escort', speedFactor: 0.9 }, merchant: { style: 'escort', speedFactor: 0.9 }, hobbit: { style: 'flutter', speedFactor: 1.5 }, dog: { style: 'hop', speedFactor: 1.6 }, penguin: { style: 'kite', speedFactor: 0.9 },
   dancer: { style: 'flutter', speedFactor: 1.2 }, tamer: { style: 'kite', speedFactor: 1.1 }, heavy: { style: 'guard', speedFactor: 0.6 }, cavalry: { style: 'hunter', speedFactor: 1.5 }, king: { style: 'escort', speedFactor: 0.8 }, princess: { style: 'escort', speedFactor: 1 }, pegasus: { style: 'swoop', speedFactor: 1.3 },
   paladin: { style: 'guard', speedFactor: 0.85 }, dragoon: { style: 'hunter', speedFactor: 1.2 }, summoner: { style: 'kite', speedFactor: 1 }, alchemist: { style: 'kite', speedFactor: 0.95 }, gunner: { style: 'kite', speedFactor: 1 }, pirate: { style: 'hunter', speedFactor: 1.1 },
   heroine: { style: 'guard', speedFactor: 0.9 }, mage: { style: 'kite', speedFactor: 1 }, ranger: { style: 'kite', speedFactor: 1.1 }, warrior: { style: 'guard', speedFactor: 0.85 }, cat: { style: 'hop', speedFactor: 1.2 },
@@ -670,7 +671,7 @@ function moveCompanionCustom(ball, speedMult, player, enemy) {
   wallBounce(ball);
   return true;
 }
-const COMPANION_RADIUS = { villager: 16, heavy: 16, dragon: 16, cavalry: 15, pegasus: 15, tamer: 15 };
+const COMPANION_RADIUS = { heavy: 16, golem: 16, dragon: 16, bahamut: 17, dragoon: 16, cavalry: 15, pegasus: 15, tamer: 15 };
 const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下限（自機と同じ）
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
