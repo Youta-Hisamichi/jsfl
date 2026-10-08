@@ -1248,6 +1248,15 @@ function playAccelSound() {
 function playHealSound() {
   [523.25, 659.25, 880].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.14), i * 70));
 }
+// 大回復：キラキラと駆け上がる分散和音のあとに、明るい和音がふわっと広がって満ちる（スキル全開の赤ポーション）
+function playFullRestoreSound() {
+  [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98, 2093].forEach((f, i) => setTimeout(() => { playTone(f, 0.22, 'sine', 0.11); playTone(f * 2, 0.08, 'triangle', 0.03); }, i * 55));
+  setTimeout(() => {
+    [523.25, 659.25, 783.99, 1046.5].forEach(f => playTone(f, 1.1, 'triangle', 0.075, f * 1.004)); // 満ちる和音
+    playTone(261.63, 1.1, 'sine', 0.08);
+    [2093, 2637, 3136, 2637, 3520].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'sine', 0.035), 80 + i * 110)); // 余韻のキラキラ
+  }, 400);
+}
 function playBarrierSound() {
   playTone(220, 0.3, 'sine', 0.16, 660);
   [440, 554.37, 659.25].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.1), i * 50));

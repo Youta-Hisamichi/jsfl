@@ -1120,7 +1120,7 @@ redPotionBtn.addEventListener('click', event => {
   if (!anySkillCoolingDown()) { showTapError('待ち時間中のスキルがありません', event.clientX, event.clientY); return; }
   game.redPotions--;
   resetAllSkillCooldowns();
-  playUpgradeSound();
+  playFullRestoreSound();
   showNotice('🧪 赤ポーションで全スキルの待ち時間をリセット！');
   updateRedPotionButton();
   saveGame();
