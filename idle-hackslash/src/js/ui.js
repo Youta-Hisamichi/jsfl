@@ -1233,15 +1233,20 @@ function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
 const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
 let skGachaBusy = false;
 function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
-function showSkGachaReveal(rarity, iconHtml, title, sub, after) {
+function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   runGachaCountdown(rarity, () => {
     const info = RARITY_INFO[rarity];
     playGachaSound(rarity);
     skGachaResult.className = 'gacha-result rarity-' + rarity;
     skGachaResult.style.background = rarityBackground(rarity);
-    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><button class="action-btn" id="skGachaCloseBtn" style="margin-top:12px;">OK</button>`;
+    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div>${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で引き直す</button>` : ''}<button class="action-btn" id="skGachaCloseBtn" style="margin-top:8px;">OK</button>`;
     document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
+    if (reroll) document.getElementById('skGachaRerollBtn').addEventListener('click', ev => {
+      if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
+      game.gems -= GACHA_REROLL_GEMS; updateStatsUI();
+      reroll(ev); // 直前の結果を取り消して、もう一度（コインはかからない）
+    });
     after();
   }, skGachaResult);
 }
@@ -1254,13 +1259,15 @@ function weaponGachaPool() {
   const eq = getEquippedWeapons(), free = eq.length < getWeaponSlots();
   return Object.keys(WEAPONS).filter(k => getWeaponLv(k) < WEAPON_MAX_LV && (eq.includes(k) || (free && !getWeaponLv(k))));
 }
-document.getElementById('skillGachaBtn').addEventListener('click', event => {
-  if (skGachaBusy) return;
+function skillGachaPull(event, isReroll) {
   const pool = skillGachaPool();
   if (!pool.length) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
-  const cost = getSkillGachaCost();
-  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-  spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+  if (!isReroll) {
+    const cost = getSkillGachaCost();
+    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+    spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+  }
+  const snap = { owned: Object.keys(SKILL_GACHA_SKILLS).filter(k => game.shopOwned[k]), levels: { ...(game.skillLevels || {}) }, eq: getEquippedSkills().slice() }; // 引き直し用
   const id = gachaPick(pool), sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
   if (!game.skillLevels) game.skillLevels = {};
   if (!owned) {
@@ -1270,21 +1277,32 @@ document.getElementById('skillGachaBtn').addEventListener('click', event => {
   } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
   const slv = game.skillLevels[id];
   saveGame(); updateStatsUI();
-  showSkGachaReveal(skGachaRarity(!owned, slv), ico(sk), !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '装備しました（転生まで外せません）') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); });
-});
-document.getElementById('weaponGachaBtn').addEventListener('click', event => {
-  if (skGachaBusy) return;
+  const undo = ev => { // 引く前に戻してから、もう一度
+    for (const k in SKILL_GACHA_SKILLS) { if (snap.owned.includes(k)) game.shopOwned[k] = true; else delete game.shopOwned[k]; }
+    game.skillLevels = snap.levels; game.equippedSkills = snap.eq;
+    renderCoinShopList(); updateSkillButtonVisibility();
+    skillGachaPull(ev, true);
+  };
+  showSkGachaReveal(skGachaRarity(!owned, slv), ico(sk), !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '装備しました（転生まで外せません）') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
+}
+function weaponGachaPull(event, isReroll) {
   const pool = weaponGachaPool();
   if (!pool.length) { showTapError('引けるサブウェポンがありません', event.clientX, event.clientY); return; }
-  const cost = getWeaponGachaCost();
-  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-  spendCoins(cost); game.weaponGachaPulls = (game.weaponGachaPulls || 0) + 1;
+  if (!isReroll) {
+    const cost = getWeaponGachaCost();
+    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+    spendCoins(cost); game.weaponGachaPulls = (game.weaponGachaPulls || 0) + 1;
+  }
+  const snap = { weapons: { ...(game.weapons || {}) }, eq: getEquippedWeapons().slice() }; // 引き直し用
   const id = gachaPick(pool), W = WEAPONS[id];
   if (!game.weapons) game.weapons = {};
   const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
-  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動（転生まで外せません）' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); });
-});
+  const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; renderCoinShopList(); weaponGachaPull(ev, true); };
+  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動（転生まで外せません）' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
+}
+document.getElementById('skillGachaBtn').addEventListener('click', event => { if (!skGachaBusy) skillGachaPull(event, false); });
+document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (!skGachaBusy) weaponGachaPull(event, false); });
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
   const equip = event.target.closest('[data-skill-equip]');

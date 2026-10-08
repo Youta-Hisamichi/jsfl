@@ -234,13 +234,20 @@ function grantCompanion(id) {
 let compSummoning = false; // 召喚演出中は連打できない
 const COMP_SUMMON_LOADING_MS = 1000;
 let compSummonReveal = null; // ロード中の結果をすぐ出す関数
-function runCompanionGacha(count, cost, event) {
+const GACHA_REROLL_GEMS = 1; // ガチャの結果をジェムで引き直す値段（仲間・スキル・サブウェポン共通）
+let lastCompGacha = null; // 引き直し用：直前の召喚の前の状態
+function runCompanionGacha(count, cost, event, isReroll = false) {
   if (compSummoning) { if (compSummonReveal) compSummonReveal(); return; } // ロード中にもう一度押したら結果をすぐ表示
-  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-  spendCoins(cost);
-  game.companionSummons = (game.companionSummons || 0) + count;
+  if (!isReroll) {
+    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+    spendCoins(cost);
+    game.companionSummons = (game.companionSummons || 0) + count;
+  }
+  const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins };
   const results = [];
   for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
+  snap.refund = game.coins - snap.coins; // 覚醒MAXで返ってきたコイン
+  lastCompGacha = { snap, count };
   refreshPlayerBallStats(false);
   refreshCompanionBalls();
   const box = document.getElementById('compGachaResult');
@@ -276,6 +283,8 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   box.innerHTML = count === 1
     ? `<div class="gr-icon gr-pop">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStars(COMPANIONS[results[0].id].rarity)} ${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
     : `<div class="gr-title gr-pop">🐾 仲間10連召喚結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
+  document.getElementById('compGachaCloseBtn').insertAdjacentHTML('beforebegin', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で引き直す</button>`);
+  document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });
   playGachaSound(bestRarity);
   updateStatsUI();
@@ -1623,4 +1632,16 @@ function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, update
   if (Date.now() - lastAt < skillCd(skillKey, cooldown)) { tryGemResetSkill(resetKey, event, () => { setLast(Date.now() - cooldown); }, updateFn); return null; }
   setLast(Date.now());
   return { player, enemy };
+}
+
+// 仲間ガチャの引き直し：ジェムを払って直前の召喚をなかったことにし、同じ回数をもう一度（コインはかからない）
+function rerollCompanionGacha(event) {
+  if (!lastCompGacha || compSummoning) return;
+  if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
+  game.gems -= GACHA_REROLL_GEMS;
+  const { snap, count } = lastCompGacha;
+  game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund;
+  if (phase === 'battle') balls = balls.filter(b => !b.isCompanion).concat(makeCompanionBalls()); // 戦場の仲間も召喚前に戻す
+  lastCompGacha = null;
+  runCompanionGacha(count, 0, event, true);
 }
