@@ -2005,3 +2005,5 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cp-tile.never .cp-tile-img img, .cp-info.never .cp-info-head img { filter: brightness(0) drop-shadow(0 0 2px rgba(160,190,255,0.55)) !important; opacity: 0.8; }
 .tab-page[data-tab="ranking"] .rank-top-btn { display: flex; justify-content: center; width: auto; margin: 10px auto 2px; padding: 8px 22px; border: 2px solid #c9a24a !important; border-image: none !important; border-radius: 999px; background: linear-gradient(180deg, #3a4a78, #1c2546) !important; color: #fff !important; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
 .tab-page[data-tab="ranking"] .rank-top-btn .msb-name { color: #fff; }
+/* ステージ進捗バー：まだ進んでいない部分も見えるよう、バー全体の幅に溝（ベース）を敷く */
+.exp-wrap .exp-track { background: linear-gradient(180deg, #050914, #121a33 60%, #1d2747) !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(140,170,255,0.35), 0 0 0 1.5px rgba(150,180,255,0.6) !important; }
