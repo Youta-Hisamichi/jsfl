@@ -179,6 +179,18 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks s ks ks'
   },
+  boss12: { // ボス11 帝王の摩天楼：重いブラスの和音とうごめくアルペジオに、威厳たっぷりの旋律がゆったり君臨する（格闘ゲームのラスボス系）
+    bpm: 116,
+    echo: { time: 0.26, feedback: 0.24, wet: 0.16 },
+    tracks: [
+      { type: 'vrc7lead', gain: 0.048, notes: 'C5 = = D#5 G5 = = = | G5 = F5 D#5 D5 = C5 = | C5 = = D#5 G#5 = = G5 | G5 = = = D5 = B4 = | C5 = = D#5 G5 = C6 = | C6 = G#5 = F5 = G#5 C6 | C#6 = = = G#5 = F5 = | B5 = = = = = D6 = | D#6 = = C6 G#5 = C6 = | D6 = = A#5 F5 = A#5 = | A#5 = = G5 D5 = G5 = | G5 = = = D#5 = C5 = | F5 = G#5 = C6 = F6 = | F6 = = D#6 C#6 = G#5 = | G5 = B5 = D6 = F6 = | B5 = = = = = = =' },
+      { type: 'fmep', gain: 0.016, notes: 'C4 D#4 G4 C5 G4 D#4 C4 D#4 | C4 D#4 G4 C5 G4 D#4 C4 D#4 | G#3 C4 D#4 G#4 D#4 C4 G#3 C4 | G3 B3 D4 G4 D4 B3 G3 B3 | C4 D#4 G4 C5 G4 D#4 C4 D#4 | F3 G#3 C4 F4 C4 G#3 F3 G#3 | C#4 F4 G#4 C#5 G#4 F4 C#4 F4 | G3 B3 D4 G4 D4 B3 G3 B3 | G#3 C4 D#4 G#4 D#4 C4 G#3 C4 | A#3 D4 F4 A#4 F4 D4 A#3 D4 | G3 A#3 D4 G4 D4 A#3 G3 A#3 | C4 D#4 G4 C5 G4 D#4 C4 D#4 | F3 G#3 C4 F4 C4 G#3 F3 G#3 | C#4 F4 G#4 C#5 G#4 F4 C#4 F4 | G3 B3 D4 G4 D4 B3 G3 B3 | G3 B3 D4 G4 D4 B3 G3 B3' },
+      { type: 'vrc7brass', gain: 0.034, notes: 'C4+D#4+G4 = = - C4+D#4+G4 = - - | C4+D#4+G4 = = - C4+D#4+G4 = - - | G#3+C4+D#4 = = - G#3+C4+D#4 = - - | G3+B3+D4 = = - G3+B3+D4 = - - | C4+D#4+G4 = = - C4+D#4+G4 = - - | F3+G#3+C4 = = - F3+G#3+C4 = - - | C#4+F4+G#4 = = - C#4+F4+G#4 = - - | G3+B3+D4 = = = = = = = | G#3+C4+D#4 = = - G#3+C4+D#4 = - - | A#3+D4+F4 = = - A#3+D4+F4 = - - | G3+A#3+D4 = = - G3+A#3+D4 = - - | C4+D#4+G4 = = - C4+D#4+G4 = - - | F3+G#3+C4 = = - F3+G#3+C4 = - - | C#4+F4+G#4 = = - C#4+F4+G#4 = - - | G3+B3+D4 = = - G3+B3+D4 = - - | G3+B3+D4 = = = = = = =' },
+      { type: 'vrc7bass', gain: 0.078, notes: 'C2 = = C2 C3 = C2 = | C2 = = C2 C3 = C2 = | G#1 = = G#1 G#2 = G#1 = | G1 = = G1 G2 = G1 = | C2 = = C2 C3 = C2 = | F1 = = F1 F2 = F1 = | C#2 = = C#2 C#3 = C#2 = | G1 = = G1 G2 = G1 = | G#1 = = G#1 G#2 = G#1 = | A#1 = = A#1 A#2 = A#1 = | G1 = = G1 G2 = G1 = | C2 = = C2 C3 = C2 = | F1 = = F1 F2 = F1 = | C#2 = = C#2 C#3 = C#2 = | G1 = = G1 G2 = G1 = | G1 = = G1 G2 = G1 =' },
+    ],
+    kickBoost: 1.5,
+    drums: 'k - h - s - h - | k - h k s - h - | k - h - s - h - | k - h k s - h - | k - h - s - h - | k - h k s - h - | k - h k s - h - | k k s s ks - ks ks | k - h - s - h - | k - h k s - h - | k - h - s - h - | k - h k s - h - | k - h - s - h - | k - h k s - h - | k - h k s - h - | ks - ks - s s s s'
+  },
   boss8: {
     bpm: 178,
     tracks: [
@@ -523,7 +535,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11', 'boss12'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -561,6 +573,7 @@ const BGM_INFO = [
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss9', name: 'ボス9 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
+  { key: 'boss12', name: 'ボス11 帝王の摩天楼', desc: '重々しいブラスの和音と闇にうごめくアルペジオの上で、威厳に満ちた旋律がゆったりと君臨する。街を見下ろす塔の頂上で待つ帝王との決戦。ハ短調（格闘ゲームのラスボス系の作風）・BPM116' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
