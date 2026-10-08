@@ -722,10 +722,18 @@ function makeCompanionBall(id) {
     orbitSpeed: (0.03 + Math.random() * 0.015) * (Math.random() < 0.5 ? 1 : -1)
   };
 }
-function getCompanionBallAtk(id) { return getCompanionAtk(id) * Math.max(1, getCompanionCount(id)); }
-function getCompanionBallMaxHP(id) { return getCompanionMaxHP(id) * Math.max(1, getCompanionCount(id)); }
+// 同じ仲間が何人いても1人ずつ別の体で戦う（1体ぶんの攻撃力・HP）
+function getCompanionBallAtk(id) { return getCompanionAtk(id); }
+function getCompanionBallMaxHP(id) { return getCompanionMaxHP(id); }
 function makeCompanionBalls() {
-  return Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => makeCompanionBall(id));
+  return Object.keys(COMPANIONS).flatMap(id => Array.from({ length: getCompanionCount(id) }, () => makeCompanionBall(id)));
+}
+// 戦場にいる同じ仲間の体の数を、持っている人数にそろえる（足りない分を出す）
+function syncCompanionBalls(id) {
+  if (!game.companions.alive[id]) return [];
+  const added = [];
+  for (let n = balls.filter(b => b.isCompanion && b.companionId === id).length; n < getCompanionCount(id); n++) { const cb = makeCompanionBall(id); balls.push(cb); added.push(cb); }
+  return added;
 }
 function spawnBattleBalls() {
   return [makeBall(true), makeBall(false), ...makeCompanionBalls()];
@@ -736,7 +744,7 @@ function refreshCompanionBalls() {
     ball.atk = getCompanionBallAtk(ball.companionId);
     const maxHP = getCompanionBallMaxHP(ball.companionId);
     ball.maxHp = maxHP;
-    if (game.companions.alive[ball.companionId]) {
+    if (game.companions.alive[ball.companionId] && ball.hp > 0) { // 倒れている体（棺桶）は起こさない
       ball.hp = maxHP;
     }
   }

@@ -489,17 +489,14 @@ function applyPowerUp(c) {
     if (has) { game.companions.level[id] = (game.companions.level[id] || 0) + c.n; showNotice(`🐾 ${COMPANIONS[id].name} がレベルアップ！（Lv${game.companions.level[id] + 1}）`); }
     else {
       const r = grantCompanion(id);
-      if (game.companions.alive[r.id] && !balls.some(ball => ball.isCompanion && ball.companionId === r.id)) { const cb = makeCompanionBall(r.id); balls.push(cb); spawnHitParticles(cb.x, cb.y, '#ff9a4f'); }
+      syncCompanionBalls(r.id).forEach(cb => spawnHitParticles(cb.x, cb.y, '#ff9a4f'));
       showNotice(`🐾 ${COMPANIONS[id].name}：${r.label}`);
     }
     refreshCompanionBalls(); refreshPlayerBallStats(false); renderCompanionList();
   } else if (c.kind === 'comp') {
     const r = grantCompanion(pickCompanionId());
     // 選択中は phase が 'battle' ではないため grantCompanion では戦場に出ない → ここで出現させる
-    if (game.companions.alive[r.id] && !balls.some(ball => ball.isCompanion && ball.companionId === r.id)) {
-      const cb = makeCompanionBall(r.id); balls.push(cb);
-      spawnHitParticles(cb.x, cb.y, '#ff9a4f');
-    }
+    syncCompanionBalls(r.id).forEach(cb => spawnHitParticles(cb.x, cb.y, '#ff9a4f'));
     refreshCompanionBalls(); refreshPlayerBallStats(false);
     showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
   }
@@ -842,7 +839,7 @@ debugRow.addEventListener('click', event => {
       if (!cp.count[id]) cp.count[id] = 1;
       cp.alive[id] = true;
       cp.hp[id] = getCompanionMaxHP(id);
-      if (phase === 'battle' && !balls.some(ball => ball.isCompanion && ball.companionId === id)) balls.push(makeCompanionBall(id));
+      if (phase === 'battle') syncCompanionBalls(id);
     }
     if (phase === 'battle') refreshCompanionBalls();
     renderCompanionList();

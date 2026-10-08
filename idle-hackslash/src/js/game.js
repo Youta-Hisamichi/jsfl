@@ -292,7 +292,7 @@ function step() {
         }
 
         if (comp.hp <= 0) {
-          markCompanionDead(comp.companionId);
+          if (!balls.some(b => b.isCompanion && b.companionId === comp.companionId && b.hp > 0)) markCompanionDead(comp.companionId); // 同じ仲間が全員倒れたら棺桶扱い
           spawnDamageText(comp.x, comp.y, '倒れた', '#ff9999');
         }
 
@@ -1904,7 +1904,7 @@ function drawBall(ball) {
     if (img && img.complete && img.naturalWidth) {
       const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 2.9; // 丸より少し大きめに。小さい仲間も自機と同じ大きさで描く
       drawFacingSprite(img, ball, ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
-      const cnt = getCompanionCount(ball.companionId);
+      const cnt = 1; // 同じ仲間は1人ずつ別の体で出るので、人数バッジは出さない
       if (cnt >= 2) { // 人数バッジ
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';

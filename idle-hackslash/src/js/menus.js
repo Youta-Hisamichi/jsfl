@@ -221,10 +221,7 @@ function grantCompanion(id) {
     if (!cp.alive) cp.alive = {};
     cp.alive[id] = true;
     cp.hp[id] = getCompanionMaxHP(id);
-    if (phase === 'battle') {
-      if (balls.some(ball => ball.isCompanion && ball.companionId === id)) refreshCompanionBalls();
-      else balls.push(makeCompanionBall(id));
-    }
+    if (phase === 'battle') { syncCompanionBalls(id); refreshCompanionBalls(); } // 2人目以降も別の体で出る
     return { id, label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）` };
   }
   if (getCompanionAwaken(id) < COMPANION_AWAKEN_MAX) {
