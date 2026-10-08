@@ -841,12 +841,12 @@ function playTowerStepsSound() {
   }
 }
 // 飛躍の専用効果音：tier 1＝飛躍（キラッと上がる和音）、2＝超飛躍（さらに高く鳴り響くファンファーレ）
-function playLeapSound(tier = 1) {
+function playLeapSound(tier = 1, vol = 1) { // vol：オート強化をほかのページで聞くときは小さく
   if (!audioCtx) return;
   const notes = tier >= 2 ? [523.3, 659.3, 784, 1046.5, 1318.5, 1568, 2093] : [659.3, 784, 987.8, 1318.5];
-  notes.forEach((f, i) => setTimeout(() => playTone(f, tier >= 2 ? 0.22 : 0.16, 'square', 0.07, f * 1.01), i * (tier >= 2 ? 70 : 60)));
+  notes.forEach((f, i) => setTimeout(() => playTone(f, tier >= 2 ? 0.22 : 0.16, 'square', 0.07 * vol, f * 1.01), i * (tier >= 2 ? 70 : 60)));
   const end = notes.length * (tier >= 2 ? 70 : 60);
-  setTimeout(() => { playTone(notes[notes.length - 1], 0.5, 'triangle', 0.1, notes[notes.length - 1] * 1.5); if (tier >= 2) { playTone(notes[notes.length - 3], 0.6, 'square', 0.05); playNoiseBurst(0.25, 0.08); } }, end);
+  setTimeout(() => { playTone(notes[notes.length - 1], 0.5, 'triangle', 0.1 * vol, notes[notes.length - 1] * 1.5); if (tier >= 2) { playTone(notes[notes.length - 3], 0.6, 'square', 0.05 * vol); playNoiseBurst(0.25, 0.08 * vol); } }, end);
 }
 // コンテニューのカウントダウン：レトロなゲーセン風に、数字ごとに太い「ポーン」を鳴らす（残り3以下は高く強く・2連打）
 function playContinueTick(n) {

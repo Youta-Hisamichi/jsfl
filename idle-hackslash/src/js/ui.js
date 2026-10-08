@@ -1009,6 +1009,7 @@ function showUpgradeLevelUpPop(id, x, y, text) {
 }
 // オート強化：ONにすると、たまったコインで攻撃力・最大HPのうち安い方を自動で上げ続ける（放置向け）
 const AUTO_UPGRADE_IDS = ['atk', 'hp'];
+const AUTO_UPGRADE_QUIET_VOL = 0.25; // 強化ページ以外でのオート強化の音の大きさ
 function renderAutoUpgradeBtn() {
   const b = document.getElementById('autoUpgradeBtn'); if (!b) return;
   if (!game.autoUpgradeUnlocked) { b.textContent = '🔒 オート強化（ショップで購入）'; b.classList.add('off'); return; } // ショップのアイテムを買うと使える
@@ -1026,7 +1027,7 @@ setInterval(() => {
     const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
     if (!id || game.coins < getUpgradeCost(id)) break;
     spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
-    announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
+    announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id], true);
   }
   if (!bought) return;
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
@@ -1036,14 +1037,14 @@ setInterval(() => {
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
 function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
 // 強化の飛躍（10/100/1000Lv到達）を演出
-function announceUpgradeLeap(id, from, to) {
+function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
   const lv = Math.floor(to / leap.every) * leap.every;
   showNotice(`✨ ${UPGRADES[id].name} Lv.${lv} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
-  playLeapSound(leap.every >= 100 ? 2 : 1);
+  playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'upgrade' ? AUTO_UPGRADE_QUIET_VOL : 1); // オート強化は強化ページ以外では小さく
 }
 // 大きな「飛躍！」文字を画面中央に出す
 function showLeapBanner(text, tier) {
