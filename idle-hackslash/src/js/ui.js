@@ -2700,6 +2700,7 @@ delete game.level; delete game.exp; // レベル制は廃止（古いセーブ�
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
 if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
+if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig30 = true; } // 削除した旧「戦闘30」の登録を消して、新しい戦闘30を未登録に戻す
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
