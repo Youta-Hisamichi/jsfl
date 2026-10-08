@@ -32,8 +32,13 @@ function renderSkillGacha() {
   }).join('')) || '<div class="sk-empty">まだサブウェポンがありません。上のガチャで手に入れよう</div>'; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const h = `<span class="gp-title">🎲 ${label}</span><span class="gp-cost">${COIN_ICO}${formatCoinNumber(cost)}</span>`; if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
-  gachaBtn(document.getElementById('skillGachaBtn'), 'スキルガチャ<small>解放・Lvアップ（枠いっぱいなら装備中から）</small>', getSkillGachaCost());
-  gachaBtn(document.getElementById('weaponGachaBtn'), 'サブウェポンガチャ<small>入手・Lvアップ（枠いっぱいなら装備中から）</small>', getWeaponGachaCost());
+  gachaBtn(document.getElementById('skillGachaBtn'), 'スキルガチャ<small>ランダムで解放・Lvアップ</small>', getSkillGachaCost());
+  gachaBtn(document.getElementById('weaponGachaBtn'), 'サブウェポンガチャ<small>ランダムで入手・Lvアップ</small>', getWeaponGachaCost());
+  // 装備枠に空きがなければガチャボタンは隠す（枠を増やすとまた出る）
+  const sFull = eq.length >= slots, wFull = weq.length >= wslots;
+  const sg = document.getElementById('skillGachaBtn'), wg = document.getElementById('weaponGachaBtn');
+  if (sg) sg.hidden = sFull;
+  if (wg) wg.hidden = wFull;
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）

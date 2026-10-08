@@ -1940,3 +1940,4 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 /* ガチャ結果の「ジェムで引き直す」ボタン */
 .gacha-reroll-btn { display: block !important; margin: 12px auto 0 !important; padding: 8px 18px !important; border-radius: 999px !important; border: 2px solid #9fe8ff !important; border-image: none !important; background: linear-gradient(180deg, #4fc8ff, #1f7fd0) !important; color: #fff !important; width: auto !important; min-height: 0 !important; font-weight: 900; font-size: 0.82rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5); box-shadow: 0 3px 0 #0f4f8a, 0 4px 8px rgba(0,0,0,0.25); cursor: pointer; }
 .gacha-reroll-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0f4f8a; }
+.gacha-pull-btn[hidden] { display: none !important; }
