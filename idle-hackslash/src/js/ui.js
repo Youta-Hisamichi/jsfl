@@ -1033,7 +1033,7 @@ setInterval(() => {
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
-  if (getActiveTab() === 'upgrade') renderUpgradeList();
+  if (getActiveTab() === 'upgrade') { renderUpgradeList(); playUpgradeSound(); } // 強化ページでは1レベルごとに強化音
 }, 700); // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
 function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
