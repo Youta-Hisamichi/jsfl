@@ -1037,7 +1037,7 @@ setInterval(() => {
   if (getActiveTab() === 'upgrade') { // 強化ページでは1レベルごとに、連続するほど音が上がっていく連鎖音
     renderUpgradeList();
     const now = Date.now(); autoUpChain = now - autoUpChainAt < 1500 ? autoUpChain + 1 : 1; autoUpChainAt = now;
-    playChainSound(autoUpChain + 1);
+    playAutoUpSound(autoUpChain);
   }
 }, 700); // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
