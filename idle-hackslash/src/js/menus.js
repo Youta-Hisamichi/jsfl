@@ -41,6 +41,8 @@ function updateSkillButtonVisibility() {
     const btn = document.getElementById(btnId);
     if (btn) btn.style.display = isSkillEquipped(keys[btnId]) && !PASSIVE_SKILLS.includes(keys[btnId]) ? '' : 'none'; // 常時発動のスキルはボタンなし
   }
+  const rpb = document.getElementById('redPotionBtn'); // 赤ポーションは発動ボタンのスキルが1つでもあれば左端に出す
+  if (rpb) rpb.style.display = Object.keys(keys).some(id => { const b = document.getElementById(id); return b && b.style.display !== 'none'; }) ? '' : 'none';
   const ssb = document.getElementById('skillSetBtn');
   if (ssb) ssb.style.display = 'none'; // ゲーム画面のスキル入れ替えボタンは使わない（スキルページで入れ替え）
 }

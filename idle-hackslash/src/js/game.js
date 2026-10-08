@@ -1419,40 +1419,15 @@ document.addEventListener('pointerdown', event => {
 new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
 stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
-const SKILL_RESET_GEMS = 1; // スキルの待ち時間リセットはどのスキルもジェム1個
-const SKILL_RESET_COST = new Proxy({}, { get: () => SKILL_RESET_GEMS });
-const SKILL_RESET_CONFIRM_MS = 3000;
-let pendingSkillReset = null; // 誤タップ防止：一度目のタップで確認状態にし、もう一度タップで消費
-let pendingSkillResetUntil = 0;
-function isSkillResetPending(key) {
-  return pendingSkillReset === key && Date.now() < pendingSkillResetUntil;
-}
+// スキルの待ち時間はジェムではリセットしない。ショップの「スキル全開の赤ポーション」で全部まとめてリセットする
+function isSkillResetPending() { return false; }
 function cooldownLabel(key, label, remaining) {
-  if (isSkillResetPending(key)) return `💎${SKILL_RESET_COST[key]} 消費で\nリセット？`;
-  const totalSec = Math.ceil(remaining / 1000); // 「4:60」表記にならないよう秒単位に切り上げてから分解
-  const minutes = Math.floor(totalSec / 60);
-  const seconds = String(totalSec % 60).padStart(2, '0');
-  return `${label} ${minutes}:${seconds}\n💎${SKILL_RESET_COST[key]}でリセット`;
+  return `${label}\n${Math.ceil(remaining / 1000)}秒`; // スキル名と残り秒数だけ
 }
-function tryGemResetSkill(key, event, resetCooldown, updateButton) {
-  const cost = SKILL_RESET_COST[key];
-  if (!isSkillResetPending(key)) {
-    pendingSkillReset = key;
-    pendingSkillResetUntil = Date.now() + SKILL_RESET_CONFIRM_MS;
-    showNotice(`もう一度タップで 💎${cost} 消費してクールダウンをリセット`);
-    updateButton();
-    setTimeout(updateButton, SKILL_RESET_CONFIRM_MS + 50);
-    return;
-  }
-  pendingSkillReset = null;
-  if (game.gems < cost) { updateButton(); promptGemShortage(cost, { returnTo: () => switchTab('game') }); return; }
-  game.gems -= cost;
-  resetCooldown();
-  playUpgradeSound();
-  showNotice(`💎${cost} でクールダウンをリセットしました！`);
-  updateStatsUI();
-  saveGame();
-}
+function tryGemResetSkill() {} // 待ち時間中のタップは何もしない
+const SKILL_LAST_SETTERS = [v => { lastSpecialAt = v; }, v => { lastAccelAt = v; }, v => { lastHealAt = v; }, v => { lastBarrierAt = v; }, v => { lastHomingAt = v; }, v => { lastPoisonAt = v; }, v => { lastParalyzeAt = v; }, v => { lastSleepAt = v; }, v => { lastAtkUpAt = v; }, v => { lastRegenAt = v; }, v => { lastSilenceAt = v; }, v => { lastSacrificeAt = v; }, v => { lastDeathAt = v; }, v => { lastCoinStrikeAt = v; }, v => { lastZeniAt = v; }, v => { lastMysteryAt = v; }, v => { lastCompRushAt = v; }, v => { lastNovaAt = v; }, v => { lastBlastAt = v; }];
+function resetAllSkillCooldowns() { SKILL_LAST_SETTERS.forEach(set => set(0)); } // 発動中の効果はそのまま、待ち時間だけ消す
+function anySkillCoolingDown() { return [...document.querySelectorAll('#skillRow .action-btn[id$="Btn"]:not(#redPotionBtn)')].some(b => b.style.display !== 'none' && /\d+秒/.test(b.textContent)); }
 
 function getSpecialCooldown() {
   const b = computeBonuses();
