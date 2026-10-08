@@ -2025,3 +2025,8 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 #shopList .shop-btn .shop-head { grid-column: 1; grid-row: 1; }
 #shopList .shop-btn .shop-desc { grid-column: 1; grid-row: 2; margin-top: 2px; }
 #shopList .shop-btn .cost { grid-column: 2; grid-row: 1 / span 2; margin: 0; white-space: nowrap; font-size: 0.9rem; text-align: right; }
+/* ガチャ結果：引き直し（左）と閉じる/OK（右）を左右に離して並べる（中央をタップしても押さない） */
+.gr-btn-row { display: flex; justify-content: space-between; align-items: center; gap: 48px; margin: 14px auto 0; max-width: 300px; }
+.gr-btn-row .gacha-reroll-btn { margin: 0 !important; flex: 0 0 auto; line-height: 1.25; font-size: 0.78rem; }
+.gr-btn-row .gr-ok-btn { margin: 0 !important; flex: 0 0 auto; min-width: 96px; width: auto !important; }
+.gr-btn-row:has(> :only-child) { justify-content: center; }

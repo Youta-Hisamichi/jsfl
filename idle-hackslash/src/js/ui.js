@@ -1290,7 +1290,8 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
     playGachaSound(rarity);
     skGachaResult.className = 'gacha-result rarity-' + rarity;
     skGachaResult.style.background = rarityBackground(rarity);
-    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div>${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で引き直す</button>` : ''}<button class="action-btn" id="skGachaCloseBtn" style="margin-top:8px;">OK</button>`;
+    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
+    { const row = skGachaResult.querySelector('.gr-btn-row'); if (row) { row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } } // 演出スキップの連打で誤って押さないよう少しだけ待つ
     document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
     if (reroll) document.getElementById('skGachaRerollBtn').addEventListener('click', ev => {
       if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
