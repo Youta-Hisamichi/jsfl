@@ -2855,3 +2855,23 @@ function showFacingDebugList() {
     + sec('ボス', list.filter(k => bossKeys.has(k))) + sec('雑魚', list.filter(k => !bossKeys.has(k)));
   document.getElementById('facingDebugClose').onclick = () => el.remove();
 }
+// 各ページの画像（スキル・サブウェポンのアイコン、店の人、パネルの台など）は起動後のひまな時間に先読み＆デコードしておき、
+// ページを開いた瞬間に絵が遅れて出るのを防ぐ
+(() => {
+  const keep = []; // 参照を持ち続けてキャッシュから消えにくくする
+  const warm = src => { if (!src || src.startsWith('data:')) return; const img = new Image(); img.decoding = 'async'; img.src = src; keep.push(img); if (img.decode) img.decode().catch(() => {}); };
+  const run = () => {
+    Object.values(SKILL_GACHA_SKILLS).forEach(sk => warm(sk.img));
+    Object.values(WEAPONS).forEach(W => warm(W.img));
+    Object.values(NPC_SPRITES).forEach(warm);
+    for (const sheet of document.styleSheets) { // CSSの背景画像（パネル・ボタンの台など）
+      let rules; try { rules = sheet.cssRules; } catch (e) { continue; }
+      for (const r of rules) { const t = r.cssText; if (t.indexOf('url(') < 0) continue; (t.match(/url\("?([^")]+)"?\)/g) || []).forEach(u => warm(u.replace(/^url\("?|"?\)$/g, ''))); }
+    }
+    window.__warmImgs = keep;
+    Object.keys(SHOPKEEPERS).forEach(renderShopkeeper); // 店の人の絵も先に置いておく
+    try { renderCoinShopList(); } catch (e) {} // スキルページの一覧も先に作っておく（開いたとき画像が揃っている）
+  };
+  const start = () => (window.requestIdleCallback ? requestIdleCallback(run, { timeout: 3000 }) : setTimeout(run, 1500));
+  if (document.readyState === 'complete') setTimeout(start, 800); else window.addEventListener('load', () => setTimeout(start, 800));
+})();

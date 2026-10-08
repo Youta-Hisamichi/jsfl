@@ -192,6 +192,8 @@ function renderShopkeeper(tab) {
   if (!info) return;
   document.querySelectorAll(`.shopkeeper[data-npc-tab="${tab}"]`).forEach(el => {
     const line = info.lines[Math.floor(Math.random() * info.lines.length)];
+    const oldBubble = el.querySelector('.sk-bubble');
+    if (oldBubble && el.querySelector('.sk-img')) { oldBubble.innerHTML = `<span class="sk-name">${info.name}</span>${line}`; return; } // 2回目以降は絵を作り直さずセリフだけ替える（絵がちらつかない）
     el.innerHTML = `<img class="sk-img" src="${NPC_SPRITES[info.npc]}" alt="${info.name}"><div class="sk-bubble"><span class="sk-name">${info.name}</span>${line}</div>`;
     el.querySelector('.sk-img').onclick = () => { // タップすると別のセリフ
       const img = el.querySelector('.sk-img');
