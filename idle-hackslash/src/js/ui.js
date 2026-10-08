@@ -1233,6 +1233,7 @@ function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
 const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
 let skGachaBusy = false;
 function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
+const SK_GACHA_FX_MS = { rare: 600, epic: 800, legendary: 1000, mythic: 1200 }; // スキル・サブウェポンガチャの演出は短め
 function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   runGachaCountdown(rarity, () => {
@@ -1248,7 +1249,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
       reroll(ev); // 直前の結果を取り消して、もう一度（コインはかからない）
     });
     after();
-  }, skGachaResult);
+  }, skGachaResult, { dur: SK_GACHA_FX_MS[rarity] || 700, skippable: true });
 }
 // 枠がいっぱいのときは、装備中のもの（と枠を使わない常時スキル）だけが出る＝使えないものは出ない
 function skillGachaPool() {
@@ -1545,21 +1546,27 @@ function playGachaBuildUpSound(hintRarity) {
   if (hintRarity === 'epic' || hintRarity === 'legendary') thump(60, 120, GACHA_LOADING_MS / 1000 * 0.9, 0.25, 'sawtooth');
   setTimeout(() => { noiseSweep(0.35, 8000, 1200, 'highpass', 0.7, 0.35); thump(90, 40, 0.3, 0.5); }, GACHA_LOADING_MS - 40); // シャーン！
 }
-function runGachaCountdown(hintRarity, onDone, el = gachaResult) {
+function runGachaCountdown(hintRarity, onDone, el = gachaResult, opts = {}) { // opts.dur：演出の長さを変える／opts.skippable：タップで飛ばせる
   el.style.display = 'block';
   el.style.background = '';
   el.className = 'gacha-result gacha-summoning gc-building rarity-bg-' + hintRarity;
   const col = RARITY_INFO[hintRarity].color;
-  const dur = getGachaLoadingMs(hintRarity);
+  const dur = opts.dur || getGachaLoadingMs(hintRarity);
   el.style.setProperty('--gc-dur', dur + 'ms'); // CSSアニメの長さも合わせる
-  el.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div><div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
-  playGachaBuildUpSound(hintRarity);
-  setTimeout(() => {
+  el.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div>${opts.skippable ? '<div class="gr-sub">タップでスキップ</div>' : ''}<div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
+  if (opts.dur) playTone(380, dur / 1000, 'triangle', 0.06, 1400); // 短い演出は短い上昇音だけ
+  else playGachaBuildUpSound(hintRarity);
+  let done = false;
+  const finish = () => {
+    if (done) return; done = true;
+    clearTimeout(timer); el.onclick = null;
     el.classList.remove('gc-building');
     onDone();
     el.classList.add('gc-flash');
     setTimeout(() => el.classList.remove('gc-flash'), 500);
-  }, dur);
+  };
+  const timer = setTimeout(finish, dur);
+  if (opts.skippable) el.onclick = finish; // 演出中にタップしたらすぐ結果へ
 }
 
 gachaBtn.addEventListener('click', event => {
