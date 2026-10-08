@@ -1285,7 +1285,7 @@ function skillGachaPull(event, isReroll) {
     renderCoinShopList(); updateSkillButtonVisibility();
     skillGachaPull(ev, true);
   };
-  showSkGachaReveal(skGachaRarity(!owned, slv), ico(sk), !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '装備しました（転生まで外せません）') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
+  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '装備しました（転生まで外せません）') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
 }
 function weaponGachaPull(event, isReroll) {
   const pool = weaponGachaPool();
