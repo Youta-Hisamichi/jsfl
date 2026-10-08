@@ -1006,25 +1006,17 @@ function playPuzzleChain(n) {
   if (n >= 5) note(f * 1.26, 0.055, 0.16, 'triangle', 0.05); // 長3度を重ねて和音に
   if (n >= 10) [2.5, 3, 4].forEach((m, k) => note(f * m, 0.11 + k * 0.035, 0.12, 'sine', 0.03)); // キラキラ
 }
-// オート強化の1レベルアップ音：「ポヨン」と弾む音＋パワーアップのキラッとした上昇音。連続するほど上がり、最上段まで行ったら下に戻る
-const AUTO_UP_STEPS = 15;
-function playAutoUpSound(n) {
+// オート強化の1レベルアップ音：短い「ピロリン↑」のパワーアップ音（毎回同じ高さ）
+function playPowerUpBlip() {
   if (!audioCtx || isBattleSfxMuted()) return;
-  const step = (Math.max(1, n) - 1) % AUTO_UP_STEPS; // 15段目の次は1段目へ戻る
-  const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
-  const f = 392 * Math.pow(2, semis / 12), v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
-  { // ポヨン：低めから跳ね上がって少し戻る、丸い音
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(f * 0.55, t0); o.frequency.exponentialRampToValueAtTime(f * 1.12, t0 + 0.07); o.frequency.exponentialRampToValueAtTime(f, t0 + 0.16);
-    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.22 * v, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
-    o.connect(g); g.connect(audioCtx.destination); o.start(t0); o.stop(t0 + 0.24);
-  }
-  [1, 1.26, 1.5, 2].forEach((m, i) => { // パワーアップ：すばやく駆け上がる短い音
-    const at = t0 + 0.05 + i * 0.028, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'square'; o.frequency.setValueAtTime(f * m * 2, at);
-    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.045 * v, at + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
-    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + 0.07);
+  const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
+  [523.3, 659.3, 784, 1046.5].forEach((f, i) => {
+    const at = t0 + i * 0.045, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = i === 3 ? 'triangle' : 'square'; o.frequency.setValueAtTime(f, at);
+    if (i === 3) o.frequency.exponentialRampToValueAtTime(f * 1.06, at + 0.14);
+    const len = i === 3 ? 0.18 : 0.06, peak = (i === 3 ? 0.14 : 0.05) * v;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.02);
   });
 }
 function playChainSound(n) {
