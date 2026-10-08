@@ -28,7 +28,7 @@ function renderSkillGacha() {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = lv ? `<button class="sk-equip ${on ? 'on' : ''}" data-weapon-equip="${id}">${on ? '✓ 装備中' : weq.length >= wslots ? '入れ替え' : '装備する'}</button>` : '';
-    return `<div class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="wp-buy ${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ 🟡${formatCoinNumber(cost)}`) : `入手 🟡${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
+    return `<div class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns"><button class="wp-buy ${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}">${lv ? (lv >= WEAPON_MAX_LV ? 'Lv MAX' : `Lv↑ ${COIN_ICO}${formatCoinNumber(cost)}`) : `入手 ${COIN_ICO}${formatCoinNumber(cost)}`}</button>${equipBtn}</div></div>`;
   }).join('');
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   updateSkillButtonVisibility();
@@ -49,7 +49,7 @@ function renderCoinShopList() {
   coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
     const cost = coinPrice(id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost);
     const suffix = id === 'cloneSlot' ? `（上限 ${getCloneLimit()}）` : '';
-    return `<button class="shop-btn coin-shop-btn ${game.coins < cost ? 'is-disabled' : ''}" data-coin-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}${suffix}</span><span class="cost">🟡 ${formatCoinNumber(cost)}</span></button>`;
+    return `<button class="shop-btn coin-shop-btn ${game.coins < cost ? 'is-disabled' : ''}" data-coin-shop="${id}"><span class="item-icon">${item.icon}</span> ${item.name}<span class="shop-desc">${item.desc}${suffix}</span><span class="cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></button>`;
   }).join('');
   const cst = document.getElementById('coinShopTitle');
   if (cst) cst.style.display = coinShopList.innerHTML ? '' : 'none';
@@ -88,7 +88,7 @@ function updateCompSummonVisibility() {
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">🟡 ${formatCoinNumber(cost1)}</span>`;
+  cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {
@@ -169,7 +169,7 @@ function renderCompanionList() {
     const disabled = game.coins < cost;
     const maxLv = getCompanionMaxLevels(id).count;
     const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
-    return `<div class="companion-card recruited" style="--rc:${rar.color}"><div class="cc-top"><div class="cc-portrait">${companionIconHtml(id)}<span class="cc-lv">Lv.${level}</span></div><div class="cc-main"><div class="cc-name">${c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span><span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-level-row"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>レベルアップ</b><span>🟡 ${formatCoinNumber(cost)}</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${pctLv} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
+    return `<div class="companion-card recruited" style="--rc:${rar.color}"><div class="cc-top"><div class="cc-portrait">${companionIconHtml(id)}<span class="cc-lv">Lv.${level}</span></div><div class="cc-main"><div class="cc-name">${c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span><span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-level-row"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>レベルアップ</b><span>${COIN_ICO} ${formatCoinNumber(cost)}</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${pctLv} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${maxLv} Lv.</span></button></div></div>`;
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
@@ -227,7 +227,7 @@ function grantCompanion(id) {
     return { id, label: `満員 → 覚醒 ★${cp.awaken[id]}` };
   }
   game.coins += COMP_AWAKEN_MAX_REFUND;
-  return { id, label: `覚醒MAX → 🟡${COMP_AWAKEN_MAX_REFUND}` };
+  return { id, label: `覚醒MAX → ${COIN_ICO}${COMP_AWAKEN_MAX_REFUND}` };
 }
 let compSummoning = false; // 召喚演出中は連打できない
 const COMP_SUMMON_LOADING_MS = 1000;
@@ -380,7 +380,7 @@ function renderArtifactTotal() {
   const fmtMult = m => '×' + (m >= 100 ? formatCoinNumber(Math.round(m)) : (Math.round(m * 100) / 100).toString());
   const pct = v => '+' + (Math.round(v * 1000) / 10) + '%';
   const rows = [
-    ['⚔️', '攻撃力', b.atkMult > 1 && fmtMult(b.atkMult)], ['❤️', '最大HP', b.hpMult > 1 && fmtMult(b.hpMult)], ['🟡', 'コイン', b.coinMult > 1 && fmtMult(b.coinMult)],
+    ['⚔️', '攻撃力', b.atkMult > 1 && fmtMult(b.atkMult)], ['❤️', '最大HP', b.hpMult > 1 && fmtMult(b.hpMult)], [COIN_ICO, 'コイン', b.coinMult > 1 && fmtMult(b.coinMult)],
     ['🎯', '会心率', b.critChance > 0 && pct(b.critChance)], ['💥', '会心ダメージ', b.critMultBonus > 0 && pct(b.critMultBonus)], ['👑', 'ボスへのダメージ', b.bossDmg > 0 && pct(b.bossDmg)],
     ['🌟', '必殺ダメージ', b.specialDmgMult > 1 && fmtMult(b.specialDmgMult)], ['⏳', '必殺の待ち時間', b.specialCooldownMult < 1 && '-' + Math.round((1 - b.specialCooldownMult) * 100) + '%'], ['🚀', '加速ダメージ', b.accelDmgMult > 1 && fmtMult(b.accelDmgMult)],
     ['🐗', '体当たり', b.tackleMult > 1 && fmtMult(b.tackleMult)], ['🔍', '命中', b.accuracy > 0 && pct(b.accuracy)], ['🪶', '回避', b.evasion > 0 && pct(b.evasion)], ['🛡️', '反撃', b.counter > 0 && pct(b.counter)],

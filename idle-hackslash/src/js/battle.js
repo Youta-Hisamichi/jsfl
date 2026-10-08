@@ -1340,7 +1340,7 @@ function renderDebugSlots() {
     const slot = readDebugSlot(i);
     const g = slot && slot.data && slot.data.game;
     const info = g
-      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>${g.stage}階　🟡 ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
+      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>${g.stage}階　${COIN_ICO} ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
       : `<b>スロット${i}</b>　<span class="slot-empty">（空き）</span>`;
     const arm = kind => debugSlotArmed === `${kind}-${i}`;
     html += `<div class="slot-row"><div class="slot-info">${info}</div>`
@@ -1573,7 +1573,7 @@ function checkLoginBonus(awayMs) {
   // 結果が出たら、プレゼント箱を「手に入った一番良い宝箱」の絵に（宝箱がなければコイン）
   const gotChests = [chestArtifact && chestArtifact.rarity, bonusArtifact && bonusArtifact.rarity, ...CHEST_RARITIES.filter(k => idleChestRarities[k])].filter(Boolean);
   const bestChest = CHEST_RARITIES.filter(k => gotChests.includes(k)).pop();
-  const orbIcon = bestChest ? (xi(CHEST_ICON[bestChest]) || '🎁') : (xi('x_up_coin') || '🟡');
+  const orbIcon = bestChest ? (xi(CHEST_ICON[bestChest]) || '🎁') : (xi('x_coin') || '🟡');
   const showRarity = (r, withUp) => {
     const info = RARITY_INFO[r];
     orb.innerHTML = orbIcon;
@@ -1609,12 +1609,12 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
-  if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ 🟡 +${formatCoinNumber(idleCoins)}` });
+  if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ ${COIN_ICO} +${formatCoinNumber(idleCoins)}` });
   if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
   if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label}の宝箱 ×1</span>` });
-  if (LOGIN_RARITY_MULT[rarity] > 1) chips.push(`🟡 コイン ×${LOGIN_RARITY_MULT[rarity]}`);
+  if (LOGIN_RARITY_MULT[rarity] > 1) chips.push(`${COIN_ICO} コイン ×${LOGIN_RARITY_MULT[rarity]}`);
   const showChips = () => {
     loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
   };
@@ -1656,7 +1656,7 @@ loginBonusAdBtn.addEventListener('click', ev => {
     game.coins += r.coins; game.gems += r.gems;
     loginBonusAdBtn.style.display = 'none';
     loginSlotNum.textContent = formatCoinNumber(r.coins / (LOGIN_AD_MULT - 1) * LOGIN_AD_MULT);
-    loginBonusReward.insertAdjacentHTML('afterbegin', `<span class="lb-chip special">🎬 コイン${LOGIN_AD_MULT}倍！ 🟡 +${formatCoinNumber(r.coins)}　💎 +${r.gems}</span>`);
+    loginBonusReward.insertAdjacentHTML('afterbegin', `<span class="lb-chip special">🎬 コイン${LOGIN_AD_MULT}倍！ ${COIN_ICO} +${formatCoinNumber(r.coins)}　💎 +${r.gems}</span>`);
     playSlotSettleSound(); updateStatsUI(); saveGame();
   };
   if (isAdFree()) { give(); return; }
@@ -1902,7 +1902,7 @@ function openChestBatchDialog(rarity) {
     const order = g => g.art ? -RARITY_ORDER.indexOf(g.art.rarity) : 1;
     const cards = [...groups.values()].sort((x, y) => order(x) - order(y)).map((g, i) => {
       const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
-      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">🟡</div><div class="cl-name">コイン${g.count > 1 ? ' ×' + g.count : ''}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
+      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">${COIN_ICO}</div><div class="cl-name">コイン${g.count > 1 ? ' ×' + g.count : ''}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       const c = RARITY_INFO[g.art.rarity].color;
       return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
     });
@@ -1940,7 +1940,7 @@ function openAllChestDialog() { // まとめて開封
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = '<span style="font-size:4rem">🎉</span>';
     document.getElementById('chestModalTitle').textContent = `🎁 ${total}個 開封！${mult > 1 ? '（3倍）' : ''}`;
-    document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:#d18b00">🟡 ${formatCoinNumber(coins)} コイン</div>${list ? `<div style="max-height:30vh;overflow-y:auto;font-weight:800;line-height:1.6">${list}</div>` : ''}`;
+    document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:#d18b00">${COIN_ICO} ${formatCoinNumber(coins)} コイン</div>${list ? `<div style="max-height:30vh;overflow-y:auto;font-weight:800;line-height:1.6">${list}</div>` : ''}`;
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
@@ -1985,7 +1985,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中�
     const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
     if (!quiet) spawnCoinBurst(arena.x, arena.y + 20, bonus);
-    loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `🟡 ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
+    loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${COIN_ICO} ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
     const beforeN = game.ownedArtifacts[pick.id] || 0;

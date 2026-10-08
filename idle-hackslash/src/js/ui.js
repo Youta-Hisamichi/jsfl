@@ -120,6 +120,19 @@ function drawMeteorSprites() {
     ctx.restore();
   }
 }
+function drawTextWithCoin(line, cx, y, sz) { // 「+123 🟡」の🟡をコインの絵にして描く（中央ぞろえ）
+  const parts = line.split('🟡'), gap = 2;
+  const ws = parts.map(p => ctx.measureText(p).width);
+  const total = ws.reduce((a, b) => a + b, 0) + (parts.length - 1) * (sz + gap);
+  let x = cx - total / 2;
+  const align = ctx.textAlign; ctx.textAlign = 'left';
+  parts.forEach((p, i) => {
+    if (p) { ctx.strokeText(p, x, y); ctx.fillText(p, x, y); }
+    x += ws[i];
+    if (i < parts.length - 1) { ctx.drawImage(COIN_IMG, x + gap / 2, y - sz * 0.85, sz, sz); x += sz + gap; }
+  });
+  ctx.textAlign = align;
+}
 function drawDamageTexts() {
   ctx.save();
   ctx.textAlign = 'center';
@@ -133,6 +146,7 @@ function drawDamageTexts() {
     const lineHeight = d.big ? 20 : 15;
     lines.forEach((line, i) => {
       const ly = d.y - (lines.length - 1 - i) * lineHeight;
+      if (line.includes('🟡') && COIN_IMG.complete && COIN_IMG.naturalWidth) { drawTextWithCoin(line, d.x, ly, d.big ? 18 : 14); return; }
       ctx.strokeText(line, d.x, ly);
       ctx.fillText(line, d.x, ly);
     });
@@ -319,7 +333,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
   }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
-  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: '🟡', name: 'コインの山', desc: '今の階に応じたコイン' });
+  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: COIN_ICO, name: 'コインの山', desc: '今の階に応じたコイン' });
   return pool;
 }
 function makePowerUpChoices() {
@@ -1606,7 +1620,7 @@ function showHoldSum() {
   const { t, id } = holdSnap, dc = game.coins - holdSnap.coins, dg = game.gems - holdSnap.gems, dl = holdLevel(t, id) - holdSnap.level;
   const parts = [dl ? `<b>Lv +${dl}</b>` : `<b>×${holdSnap.n}</b>`];
   if (t.attr === 'upgrade') parts.push(`${formatUpgradeStat(id, holdSnap.stat)} → <b>${formatUpgradeStat(id, getUpgradeStatValue(id))}</b>`);
-  if (dc) parts.push(`🟡 ${dc > 0 ? '+' : '-'}${formatCoinNumber(Math.abs(dc))}`);
+  if (dc) parts.push(`${COIN_ICO} ${dc > 0 ? '+' : '-'}${formatCoinNumber(Math.abs(dc))}`);
   if (dg) parts.push(`💎 ${dg > 0 ? '+' : '-'}${Math.floor(Math.abs(dg)).toLocaleString('ja-JP')}`);
   holdSum.innerHTML = parts.join('<span>｜</span>');
   const hw = holdSum.offsetWidth / 2 + 8;
