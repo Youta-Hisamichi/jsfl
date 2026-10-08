@@ -714,13 +714,20 @@ function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オート強化', desc: 'たまったコインで攻撃力・最大HP・仲間の強化を自動で上げる（強化ページでON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
+SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生しても残る）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
+SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.compLock = { icon: '📜', name: '解雇・採用の手続き', desc: '選んだ仲間を「解雇」すると仲間召喚に出なくなる。「採用」でまた出るように戻せる（1人ごとに💎' + 3 + '）', action: () => openCompLockModal() };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
+  if (item.slot) return item.slot.cur() >= item.slot.max(); // 枠増やしは最大まで買えば売り切れ
+  if (item.action) return false;
   if (item.consumableKey) return false; // 消費アイテムは何個でも買える
   if (item.stackKey) return (game[item.stackKey] || 0) >= item.maxStack; // 重ねがけ系は上限まで買えば「所持済み」
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
+function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
 function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
@@ -979,9 +986,9 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【天翔ける槍】9秒ごとに敵へ急降下し攻撃力5倍の一撃（激レア）' },
   king: { icon: '👑', name: '王様', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'legendary', kind: 'paladin', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
     trait: '【王の号令】仲間全員の攻撃力 +30%／10秒ごとに自機と仲間全員のHPを8%回復（激レア）' },
-  archangel: { icon: '👼', name: '大天使ミカエルン', stat: 'hp', desc: '最大HP上昇', rarity: 'legendary', kind: 'angel', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  archangel: { icon: '👼', name: '大天使ミカエルン', stat: 'hp', desc: '最大HP上昇', rarity: 'mythic', kind: 'angel', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
     trait: '【祝福】10秒ごとに自機と仲間全員のHPを15%回復し、倒れた仲間を全員復活（激レア）' },
-  bahamut: { icon: '🐉', name: '覇龍バハムート', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  bahamut: { icon: '🐉', name: '覇龍バハムート', stat: 'atk', desc: '攻撃力上昇', rarity: 'mythic', kind: 'dragon', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
     trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（激レア）' },
 };
 function compKind(id) { return (COMPANIONS[id] && COMPANIONS[id].kind) || id; } // 能力の種類（同じ能力を別の職業でも使い回す）
@@ -999,7 +1006,7 @@ function companionIconHtml(id) {
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
-function companionNeedsUnlock(id) { return !!COMPANION_UNLOCK_COST[COMPANIONS[id].rarity]; }
+function companionNeedsUnlock(id) { return false; } // 永続ショップ廃止：仲間は最初から全員召喚に出る（出したくない仲間は「解雇」で外す）
 function isCompanionUnlocked(id) { return !companionNeedsUnlock(id) || !!(game.companionUnlocks && game.companionUnlocks[id]); }
 COMPANION_IDS.filter(companionNeedsUnlock).forEach(id => {
   const c = COMPANIONS[id];
@@ -1246,12 +1253,16 @@ function renderUpgradeList() {
   upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');
 }
 function renderShopList() {
-  shopList.innerHTML = Object.entries(SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
-    const owned = isShopItemOwned(id);
+  const ids = Object.keys(SHOP_ITEMS).filter(id => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id));
+  const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
+  ids.sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ
+  shopList.innerHTML = ids.map(id => {
+    const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && item.requires && !game[item.requires];
-    const gcost = gemPrice(getShopItemBaseCost(id));
-    const stackNote = item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.stackKey ?`（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
-    return `<button class="shop-btn ${owned || locked || game.gems < gcost ? 'is-disabled' : ''}" data-shop="${id}"><span class="shop-head"><span class="item-icon">${ico(item)}</span><span class="shop-name">${item.name}</span></span><span class="shop-desc">${owned ? (item.unlockKey ? '開放済み' : item.stackKey ? `最大（+${(item.maxStack * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒）` : '購入済み') : locked ? '🔒 先にタックル開放が必要' : item.desc + stackNote}</span><span class="cost">${owned ? (item.unlockKey ? '✓ 開放済み' : item.stackKey ? '✓ 最大' : '✓ 所持中') : '💎 ' + gcost}</span></button>`;
+    const gcost = item.action ? 0 : getShopItemGemCost(id);
+    const note = item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
+    const costTxt = owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
+    return `<button class="shop-btn ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}"><span class="shop-head"><span class="item-icon">${ico(item)}</span><span class="shop-name">${item.name}</span></span><span class="shop-desc">${locked ? '🔒 先にタックル開放が必要' : item.desc + note}</span><span class="cost">${costTxt}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;

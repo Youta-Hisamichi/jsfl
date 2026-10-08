@@ -1960,3 +1960,42 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 #skillLevelList .wp-card.equipped { filter: none; }
 #skillLevelList .wp-card .sk-lv-sub { display: block; font-size: 0.82em; font-weight: 700; color: #3a5a8a; }
 .rec-tabs .sub-tab-btn { flex: 1 1 0; font-size: 0.82rem; padding: 9px 6px; } .rec-sec[hidden] { display: none !important; }
+/* ショップ：買い切ったアイテムはグレーアウトして下へ */
+.shop-btn.sold-out { filter: grayscale(1); opacity: 0.55; }
+.shop-btn.sold-out .cost { color: #b9c0d0; }
+/* ショップ購入ポップ */
+.shop-buy-fx { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.sbf-card { position: relative; min-width: 230px; max-width: 86vw; padding: 16px 20px 14px; border-radius: 16px; text-align: center; color: #fff; background: linear-gradient(180deg, rgba(40,52,96,0.96), rgba(18,22,44,0.96)); border: 2px solid #ffd76b; box-shadow: 0 0 0 3px rgba(0,0,0,0.35), 0 10px 30px rgba(0,0,0,0.5), 0 0 28px rgba(255,215,107,0.45); animation: sbfPop 2.3s cubic-bezier(.2,.9,.3,1.2) forwards; overflow: hidden; }
+.sbf-rays { position: absolute; left: 50%; top: 34px; width: 240px; height: 240px; margin: -120px 0 0 -120px; background: repeating-conic-gradient(rgba(255,215,107,0.22) 0 10deg, transparent 10deg 24deg); border-radius: 50%; animation: sbfSpin 2.3s linear; z-index: 0; }
+.sbf-card > *:not(.sbf-rays) { position: relative; z-index: 1; }
+.sbf-icon { font-size: 2.6rem; line-height: 1; margin-bottom: 4px; display: inline-flex; animation: sbfIcon 0.6s cubic-bezier(.2,.9,.3,1.6) 0.1s both; }
+.sbf-icon img { width: 52px; height: 52px; object-fit: contain; }
+.sbf-kicker { font-size: 0.72rem; font-weight: 900; color: #ffd76b; letter-spacing: 0.1em; }
+.sbf-name { font-size: 1.05rem; font-weight: 900; margin: 2px 0 4px; text-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+.sbf-line { font-size: 0.82rem; font-weight: 800; color: #9ff0ff; animation: sbfLine 0.5s ease-out 0.35s both; }
+@keyframes sbfPop { 0% { transform: scale(0.4); opacity: 0; } 12% { transform: scale(1.08); opacity: 1; } 20% { transform: scale(1); } 78% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-40px); opacity: 0; } }
+@keyframes sbfSpin { to { transform: rotate(120deg); } }
+@keyframes sbfIcon { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes sbfLine { 0% { transform: translateY(8px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+/* 解雇・採用 */
+.comp-lock-btn { justify-content: space-between; margin: 6px 0; }
+.cl-overlay { position: fixed; inset: 0; z-index: 8500; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 16px; }
+.cl-overlay.show { display: flex; }
+.cl-panel { width: 100%; max-width: 420px; max-height: 84vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #26304f, #141a30); border: 2px solid #c9a24a; border-radius: 14px; padding: 12px; color: #fff; }
+.cl-title { font-weight: 900; font-size: 1rem; text-align: center; color: #ffd76b; }
+.cl-note { font-size: 0.72rem; color: #c8cfe0; margin: 4px 0; text-align: center; }
+.cl-gems { font-size: 0.78rem; font-weight: 800; color: #9ff0ff; text-align: right; margin-bottom: 4px; }
+.cl-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+.cl-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--rc); }
+.cl-row.off { opacity: 0.6; filter: grayscale(0.7); }
+.cl-ico { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+.cl-ico img { width: 44px; height: 44px; object-fit: contain; }
+.cl-name { flex: 1; display: flex; flex-direction: column; min-width: 0; font-size: 0.82rem; }
+.cl-name small { font-size: 0.68rem; color: var(--rc); }
+.cl-name em { font-style: normal; color: #ff7b8a; font-weight: 900; }
+.cl-btn { flex-shrink: 0; border: 0; border-radius: 8px; padding: 6px 10px; font-weight: 900; font-size: 0.74rem; color: #fff; display: flex; flex-direction: column; align-items: center; line-height: 1.2; cursor: pointer; }
+.cl-btn span { font-size: 0.66rem; opacity: 0.9; }
+.cl-btn.fire { background: linear-gradient(180deg, #e0505f, #9c2633); }
+.cl-btn.hire { background: linear-gradient(180deg, #3cc06a, #1f7a3e); }
+.cl-btn.is-disabled { filter: grayscale(0.8); opacity: 0.6; }
+.cl-close { margin-top: 10px; padding: 9px; border-radius: 10px; border: 0; font-weight: 900; background: #4a5578; color: #fff; }

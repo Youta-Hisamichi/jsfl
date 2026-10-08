@@ -203,7 +203,8 @@ function getCompSummonCost(count) {
 }
 const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
 function pickCompanionId() {
-  const entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id)); // 未開放の仲間は出ない
+  let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
+  if (!entries.length) entries = Object.entries(COMPANIONS);
   let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
   for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }
   return entries[0][0];

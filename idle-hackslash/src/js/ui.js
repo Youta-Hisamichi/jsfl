@@ -1105,21 +1105,70 @@ shopList.addEventListener('click', event => {
   if (!button) return;
   const id = button.dataset.shop;
   const item = SHOP_ITEMS[id];
-  if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : item.stackKey ? 'これ以上強化できません' : 'すでに所持しています', event.clientX, event.clientY); return; }
+  if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
+  if (item.action) { item.action(); return; }
   if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
-  const gcost = gemPrice(getShopItemBaseCost(id));
+  const gcost = getShopItemGemCost(id);
   if (game.gems < gcost) { promptGemShortage(gcost); return; }
   game.gems -= gcost;
-  if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); }
+  let line = item.desc;
+  if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
+  else if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); line = `+${item.bundle || 1}個 → 所持 ${game[item.consumableKey]}個`; }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
-  if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); showNotice('🤖 オート強化を開放しました（強化ページでON/OFF）'); }
+  if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オート強化が使えるようになった！（強化ページでON/OFF）'; }
+  showShopPurchaseFx(ico(item), item.name, line);
   renderShopList();
   refreshPlayerBallStats(false);
   playRegisterSound();
   updateStatsUI();
   updateHPUI();
+  saveGame();
 });
+// ショップで買ったとき：何を買ってどうなったかを画面中央にポップアップ
+function showShopPurchaseFx(iconHtml, name, line) {
+  document.querySelectorAll('.shop-buy-fx').forEach(el => el.remove());
+  const el = document.createElement('div');
+  el.className = 'shop-buy-fx';
+  el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">購入しました！</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2300);
+}
+// 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）
+const COMP_LOCK_GEMS = 3;
+function isCompLocked(id) { return !!(game.compLocked && game.compLocked[id]); }
+function openCompLockModal() {
+  let ov = document.getElementById('compLockOverlay');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。切り替えるたびに💎' + COMP_LOCK_GEMS + '（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', ev => {
+      if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
+      const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
+      const id = b.dataset.clToggle, locking = !isCompLocked(id);
+      if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
+      if (game.gems < COMP_LOCK_GEMS) { promptGemShortage(COMP_LOCK_GEMS, { iconHtml: companionIconHtml(id) }); return; }
+      game.gems -= COMP_LOCK_GEMS;
+      if (!game.compLocked) game.compLocked = {};
+      if (locking) game.compLocked[id] = true; else delete game.compLocked[id];
+      showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '解雇しました（仲間召喚に出なくなる）' : '採用しました（仲間召喚に出るようになる）');
+      playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
+    });
+  }
+  renderCompLockList();
+  ov.classList.add('show');
+}
+function renderCompLockList() {
+  const ov = document.getElementById('compLockOverlay'); if (!ov) return;
+  ov.querySelector('.cl-gems').innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
+  const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
+  ov.querySelector('.cl-list').innerHTML = ids.map(id => {
+    const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
+    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>解雇中</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < COMP_LOCK_GEMS ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${COMP_LOCK_GEMS}</span></button></div>`;
+  }).join('');
+}
+document.getElementById('compLockBtn').addEventListener('click', openCompLockModal);
 
 const potionBtn = document.getElementById('potionBtn');
 function updatePotionButton() {

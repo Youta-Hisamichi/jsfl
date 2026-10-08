@@ -225,6 +225,7 @@
         <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
       </div>
       <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"><span class="cps-title">🐾 仲間召喚</span><span class="cps-cost"><i class="coin-ico"></i> 200</span></button></div>
+      <button class="modal-shop-btn comp-lock-btn" id="compLockBtn"><span class="msb-name">📜 解雇・採用（召喚に出る仲間を選ぶ）</span><span class="msb-cost">💎 3</span></button>
       <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
       <details class="cp-help"><summary>ⓘ 仲間のしくみ</summary>
         <p>コインの「仲間召喚」で入手し、レベルもコインで上がります（長押しで連続レベルアップ）。それぞれ戦闘中に個性的な能力を発揮します。</p>
@@ -243,7 +244,7 @@
       <button class="reward-ad-btn" data-reward-ad>🎬 動画を見て 💎5 GET</button>
       <div class="title">🛒 ショップ（購入効果は転生後も継続）</div>
       <div class="shop-list" id="shopList"></div>
-      <div id="rebirthShopSection">
+      <div id="rebirthShopSection" hidden>
         <div class="title rs-sec-title">🌌 永続アイテム（長押しで連続購入）</div>
         <div class="purchase-msg" id="rebirthShopMsg" style="display:none"></div>
         <div class="sub-tabs" id="rebirthShopTabs"></div>
