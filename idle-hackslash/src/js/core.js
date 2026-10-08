@@ -754,6 +754,8 @@ function skillPower(id) {
   return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100);
 }
 function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
+const WEAPON_GACHA_BASE_COST = 400, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
+function getWeaponGachaCost() { return coinPrice(Math.round(WEAPON_GACHA_BASE_COST * Math.pow(WEAPON_GACHA_COST_GROWTH, game.weaponGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
 const SUPERGEM_SHOP_ITEMS = {
   small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +20', cost: 198 },
@@ -1035,7 +1037,7 @@ const game = {
   totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
   skillSlots: 1, equippedSkills: [], weaponSlots: 1, // サブウェポン枠（ジェムで最大4・転生しても残る）
   // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
-  skillLevels: {}, skillGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
+  skillLevels: {}, skillGachaPulls: 0, weaponGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
   bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
   bgmBook: {}, // BGM図鑑 { 曲キー: 登録したステージ }（転生しても残る）
   tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）

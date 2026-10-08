@@ -536,7 +536,7 @@ function fullReset() {
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
-  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
+  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -1202,6 +1202,49 @@ document.getElementById('weaponList').addEventListener('click', event => {
   if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else playUpgradeSound();
   showNotice(`${WEAPONS[id].icon} ${WEAPONS[id].name} ${lv === 1 ? (getEquippedWeapons().includes(id) ? 'を獲得！（装備して自動で発動）' : 'を獲得！（枠がいっぱい：装備で入れ替え）') : 'が Lv' + lv + ' に！'}`);
   updateStatsUI(); renderCoinShopList(); saveGame();
+});
+// スキル・サブウェポンはコインのガチャで手に入れる：まだ持っていなければ解放、持っていればLvアップ（どちらも転生でリセット）
+function flashGachaCard(listId, id) {
+  const card = document.querySelector(`#${listId} [data-card-id="${id}"]`); if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  card.classList.remove('sk-flash'); void card.offsetWidth; card.classList.add('sk-flash');
+}
+function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
+document.getElementById('skillGachaBtn').addEventListener('click', event => {
+  const pool = getSkillGachaPool();
+  if (!pool.length) { showTapError('すべてのスキルが Lv MAX です', event.clientX, event.clientY); return; }
+  const cost = getSkillGachaCost();
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+  spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+  const id = gachaPick(pool), sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
+  if (!game.skillLevels) game.skillLevels = {};
+  if (!owned) {
+    game.shopOwned[id] = true; game.skillLevels[id] = 1;
+    const eq = getEquippedSkills();
+    if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(id)) { eq.push(id); lastSetSkill = id; } // 空き枠があれば自動で装備
+  } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
+  const slv = game.skillLevels[id], leapTier = owned ? (slv % 100 === 0 ? 2 : slv % 10 === 0 ? 1 : 0) : 0;
+  showNotice(!owned ? `🎲 ${sk.icon} ${sk.name} スキルを解放！` : leapTier ? `🎲 ✨ ${sk.icon} ${sk.name} Lv${slv} ${leapTier >= 2 ? '超飛躍' : '飛躍'}！` : `🎲 ${sk.icon} ${sk.name} が Lv${slv} に！`);
+  showLevelUpPop(event.clientX, event.clientY, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`);
+  if (leapTier) { showLeapBanner(leapTier >= 2 ? '超飛躍！！' : '飛躍！', leapTier); playLeapSound(leapTier); } else playUpgradeSound();
+  updateStatsUI(); renderCoinShopList(); saveGame();
+  flashGachaCard('skillLevelList', id);
+});
+document.getElementById('weaponGachaBtn').addEventListener('click', event => {
+  const pool = Object.keys(WEAPONS).filter(k => getWeaponLv(k) < WEAPON_MAX_LV);
+  if (!pool.length) { showTapError('すべてのサブウェポンが Lv MAX です', event.clientX, event.clientY); return; }
+  const cost = getWeaponGachaCost();
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+  spendCoins(cost); game.weaponGachaPulls = (game.weaponGachaPulls || 0) + 1;
+  const id = gachaPick(pool), W = WEAPONS[id];
+  if (!game.weapons) game.weapons = {};
+  const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
+  const leap = lv % 100 === 0 ? 2 : lv % 10 === 0 ? 1 : 0;
+  showLevelUpPop(event.clientX, event.clientY, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`);
+  if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else playUpgradeSound();
+  showNotice(`🎲 ${W.icon} ${W.name} ${lv === 1 ? (getEquippedWeapons().includes(id) ? 'を獲得！（装備して自動で発動）' : 'を獲得！（枠がいっぱい：装備で入れ替え）') : 'が Lv' + lv + ' に！'}`);
+  updateStatsUI(); renderCoinShopList(); saveGame();
+  flashGachaCard('weaponList', id);
 });
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');

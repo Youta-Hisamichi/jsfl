@@ -978,7 +978,7 @@ function completeReincarnation() {
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
   game.companionSummons = 0; game.bossJoinSince = 0;
-  game.skillGachaPulls = 0;
+  game.skillGachaPulls = 0; game.weaponGachaPulls = 0;
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
   game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.equippedWeapons = []; game.runBuffs = {}; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
