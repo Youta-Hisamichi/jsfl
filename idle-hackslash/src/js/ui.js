@@ -1822,7 +1822,7 @@ specialBtn.addEventListener('click', event => {
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
   const b = computeBonuses();
-  const multiplier = (game.shopOwned.meteor ? 1.5 : 1) * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
+  const multiplier = (game.shopOwned.meteor ? 2 : 1) * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
   const damage = Math.round(enemy.maxHp * 0.35 * multiplier);
   lastSpecialAt = Date.now();
   meteors.push({
