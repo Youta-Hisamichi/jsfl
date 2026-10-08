@@ -1779,7 +1779,8 @@ function showNotice(text, isError = false, duration = 1500, hold = false) {
   battleNotice.classList.remove('at-tap');
   battleNotice.style.position = '';
   battleNotice.style.left = '';
-  battleNotice.style.top = '';
+  const noticeArena = document.querySelector('.arena-wrap'); // ステージ進捗ゲージに重ねず、戦場の上端に出す
+  battleNotice.style.top = noticeArena && noticeArena.offsetParent ? Math.max(8, noticeArena.getBoundingClientRect().top + 8) + 'px' : '';
   battleNotice.classList.add('show');
   if (isError) playErrorSound();
   clearTimeout(noticeTimer);
