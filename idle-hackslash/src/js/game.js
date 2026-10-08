@@ -703,7 +703,7 @@ let bossContTimer = null, bossContLeft = 0;
 function startBossContCountdown() {
   clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
   const el = document.getElementById('bossContCount');
-  const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.innerHTML = `<img src="assets/img/ui/go/n${n}.webp" alt="${n}">`; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
+  const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.textContent = String(n); /* 数字の画像は一旦使わない */ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
   show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
     if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }

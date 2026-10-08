@@ -1464,19 +1464,18 @@ body.in-boss .cmd-bar #stageSkipBtn { display: none !important; }
 .cmd-bar .dbg-mini.open { color: var(--text); }
 
 /* ===== ボス敗北（GAME OVER）ダイアログ：素材画像 ===== */
-#bossContModal .go-panel { container-type: inline-size; width: min(430px, 94vw); max-width: none; background: url(assets/img/ui/go/dialog.webp) center / 100% 100% no-repeat !important; border: none !important; border-image: none !important; box-shadow: none !important; border-radius: 0; padding: 6cqw 9cqw 8cqw !important; color: #fff; aspect-ratio: 820 / 678; display: flex; flex-direction: column; justify-content: center; overflow: visible; max-height: none; }
+#bossContModal .go-panel { container-type: inline-size; width: min(400px, 92vw); max-width: none; background: linear-gradient(180deg, #2a1838, #140b1e) !important; border: 2px solid #8a5cc8 !important; border-image: none !important; box-shadow: 0 0 24px rgba(140,80,220,0.45), inset 0 1px 0 rgba(255,255,255,0.12) !important; border-radius: 16px; padding: 5cqw 7cqw 6cqw !important; color: #fff; display: flex; flex-direction: column; justify-content: center; overflow: visible; max-height: none; } /* GAME OVER専用の枠画像は一旦使わない */
 #bossContModal .go-logo { display: block; width: 100%; margin: 0 0 1cqw; filter: drop-shadow(0 0 8px rgba(160,90,255,0.45)); }
 #bossContModal h2 { color: #ffe6b0; font-size: 5.4cqw; line-height: 1.3; margin: 0 0 1cqw; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
-#bossContModal .boss-cont-count { display: flex; justify-content: center; align-items: center; height: 19cqw; margin: 1cqw 0 3cqw; text-shadow: none; }
-#bossContModal .boss-cont-count img { height: 100%; width: auto; filter: drop-shadow(0 0 8px rgba(255,60,90,0.55)); }
+#bossContModal .boss-cont-count { display: flex; justify-content: center; align-items: center; height: 17cqw; margin: 1cqw 0 3cqw; font-size: 15cqw; font-weight: 900; color: #ff5c6c; text-shadow: 0 0 10px rgba(255,60,90,0.6), 0 3px 0 #5a0a18; }
 #bossContModal .go-btns { display: flex; flex-direction: column; gap: 3cqw; }
 #bossContModal .go-ad-btn, #bossContModal .go-giveup-btn { width: 100%; border: none; cursor: pointer; padding: 0; background-color: transparent; background-repeat: no-repeat; background-size: 100% 100%; display: flex; align-items: center; transition: transform 0.08s; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5)); font-family: inherit; }
 #bossContModal .go-ad-btn:active, #bossContModal .go-giveup-btn:active { transform: scale(0.97); }
-#bossContModal .go-ad-btn { aspect-ratio: 760 / 138; background-image: url(assets/img/ui/go/btn_ad.webp); justify-content: center; }
-#bossContModal .go-ad-text { display: flex; flex-direction: column; align-items: center; margin-left: 22cqw; color: #fff; font-weight: 900; font-size: 4.8cqw; line-height: 1.25; text-shadow: 0 0 3px #000, 0 2px 3px rgba(0,0,0,0.8); }
+#bossContModal .go-ad-btn { padding: 4px 0; border: 10px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 10px stretch; justify-content: center; }
+#bossContModal .go-ad-text { display: flex; flex-direction: column; align-items: center; color: #fff; font-weight: 900; font-size: 4.8cqw; line-height: 1.25; text-shadow: 0 0 3px #000, 0 2px 3px rgba(0,0,0,0.8); }
 #bossContModal .go-ad-text small { font-size: 3.4cqw; font-weight: 700; }
-#bossContModal .go-giveup-btn { aspect-ratio: 760 / 90; background-image: url(assets/img/ui/go/btn_giveup.webp); justify-content: center; }
-#bossContModal .go-giveup-btn .msb-name { color: #3a2410; font-weight: 900; font-size: 4.6cqw; text-shadow: 0 1px 0 rgba(255,235,200,0.5); }
+#bossContModal .go-giveup-btn { padding: 2px 0; border: 9px solid transparent; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 9px stretch; justify-content: center; }
+#bossContModal .go-giveup-btn .msb-name { color: #f2f2f2; font-weight: 900; font-size: 4.6cqw; text-shadow: 0 1px 0 rgba(255,235,200,0.5); }
 /* 自動再戦：幅は文字に合わせる（枠は9分割で伸び縮みさせて飾りをゆがめない） */
 .boss-retry-row #autoBossBtn { width: fit-content !important; aspect-ratio: auto !important; padding: 7px 16px !important; background: none !important; border: 16px solid transparent !important; border-image: url(assets/img/ui/bar/panel_auto.webp) 70 fill / 16px stretch !important; margin: -6px auto 6px !important; white-space: nowrap; line-height: 1.1; }
 .boss-retry-row #autoBossBtn { padding: 0 6px !important; }
