@@ -143,6 +143,7 @@ function getCompanionLevelCost(id) {
 }
 let compInfoId = null; // 未入手の仲間で詳しく表示中のもの
 function renderCompanionList() {
+  if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
   if (!game.companionBook) game.companionBook = {};
   for (const id in game.companions.recruited) if (game.companions.recruited[id] && COMPANIONS[id]) game.companionBook[id] = true;
   const compIds = Object.keys(COMPANIONS);
@@ -231,7 +232,7 @@ function grantCompanion(id) {
   game.coins += COMP_AWAKEN_MAX_REFUND;
   return { id, label: `覚醒MAX → ${COIN_ICO}${COMP_AWAKEN_MAX_REFUND}` };
 }
-let compSummoning = false; // 召喚演出中は連打できない
+var compSummoning = false; // 召喚演出中は連打できない
 const COMP_SUMMON_LOADING_MS = 1000;
 let compSummonReveal = null; // ロード中の結果をすぐ出す関数
 const GACHA_REROLL_GEMS = 1; // ガチャの結果をジェムで引き直す値段（仲間・スキル・サブウェポン共通）
@@ -243,6 +244,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     spendCoins(cost);
     game.companionSummons = (game.companionSummons || 0) + count;
   }
+  compSummoning = true; // ここから開封までは仲間一覧を書き換えない
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins };
   const results = [];
   for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
@@ -254,23 +256,16 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
   updateStatsUI();
   saveGame();
-  compSummoning = true;
-  box.style.display = 'block';
-  box.style.background = '';
-  box.className = 'gacha-result gacha-summoning rarity-bg-' + bestRarity;
-  box.innerHTML = `<div class="gr-icon">🐾</div><div class="gr-title">召喚中……</div><div class="gr-sub">タップですぐ開封</div>`;
-  playGachaSummonSound();
-  const reveal = () => {
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const reveal = () => { // 進化ガチャと同じ召喚演出のあとで開封（引き直しも同じ）
     if (!compSummoning) return;
     compSummoning = false;
     compSummonReveal = null;
-    clearTimeout(revealTimer);
-    box.onclick = null;
     showCompanionGachaResult(box, results, count, bestRarity);
+    box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
+    renderCompanionList();
   };
-  const revealTimer = setTimeout(reveal, COMP_SUMMON_LOADING_MS);
-  box.onclick = reveal; // 演出中にタップしたらすぐ開封
-  compSummonReveal = reveal;
+  runGachaCountdown(bestRarity, reveal, box);
 }
 function showCompanionGachaResult(box, results, count, bestRarity) {
   box.style.display = 'block';
@@ -1643,5 +1638,6 @@ function rerollCompanionGacha(event) {
   game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund;
   if (phase === 'battle') balls = balls.filter(b => !b.isCompanion).concat(makeCompanionBalls()); // 戦場の仲間も召喚前に戻す
   lastCompGacha = null;
+  renderCompanionList(); // 一覧も引く前に戻す
   runCompanionGacha(count, 0, event, true);
 }
