@@ -32,7 +32,7 @@
   <div class="tab-page active" data-tab="game">
 
     <div class="exp-wrap">
-      <div class="exp-label" style="justify-content:center; gap:6px;"><span><b id="stageNum">1</b>階　<span id="stageToBoss">ボスまで</span></span><span id="stageProgressText">1 / 10</span></div>
+      <div class="exp-label" style="justify-content:center; gap:6px;"><span class="stage-floor"><small>フロア</small><span><b id="stageNum">1</b>階</span></span><span class="stage-boss-txt"><span id="stageToBoss">ボスまで</span> <span id="stageProgressText">1 / 10</span></span></div>
       <div class="stage-gauge-row">
       <div class="stage-track-wrap">
         <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
@@ -83,6 +83,7 @@
       </div>
     </div>
 
+    <div class="battle-cmd-row">
     <div class="action-row four six" id="skillRow">
       <button class="action-btn special" id="specialBtn">🔒 メテオ</button>
       <button class="action-btn accel" id="accelBtn">🔒 加速</button>
@@ -101,11 +102,12 @@
       <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
       <button class="action-btn blast" id="blastBtn">🔒 大爆発</button>
     </div>
-    <button class="skill-set-btn" id="skillSetBtn" style="display:none;">🎒 スキル入れ替え</button>
     <div class="boss-retry-row">
       <button class="auto-toggle-btn" id="autoBossBtn" style="display:none;">🔁 自動再戦 ON</button>
       <button class="action-btn boss-retry-action" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
     </div>
+    </div>
+    <button class="skill-set-btn" id="skillSetBtn" style="display:none;">🎒 スキル入れ替え</button>
     <div class="cmd-bar">
     <div class="bottom-btn-row">
       <button class="mini-btn mini-tower img-btn" id="stageSkipBtn"><img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"></button>
