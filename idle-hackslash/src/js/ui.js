@@ -1020,6 +1020,8 @@ document.getElementById('autoUpgradeBtn').addEventListener('click', () => {
   if (!game.autoUpgradeUnlocked) { switchTab('gemshop'); showNotice('🤖 オート強化はショップで購入できます'); return; }
   game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame();
 });
+const AUTO_UPGRADE_TEXT_INTERVAL = 5000; // ゲーム画面にオート強化の文字を出す間隔（ミリ秒）
+let autoUpgradeTextAt = -Infinity, autoUpgradeTextCount = 0;
 setInterval(() => {
   if (!game.autoUpgrade || !game.autoUpgradeUnlocked || phase !== 'battle') return;
   let bought = 0;
@@ -1032,7 +1034,11 @@ setInterval(() => {
   if (!bought) return;
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
   const pl = balls.find(isMainPlayerBall);
-  if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
+  autoUpgradeTextCount += bought;
+  if (pl && getActiveTab() === 'game' && performance.now() - autoUpgradeTextAt >= AUTO_UPGRADE_TEXT_INTERVAL) { // ゲーム画面の文字は5秒に1回だけ（その間に上がった分をまとめて出す）
+    spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${autoUpgradeTextCount}`, '#7fe8a0', 0.03);
+    autoUpgradeTextAt = performance.now(); autoUpgradeTextCount = 0;
+  }
   if (getActiveTab() === 'upgrade') { // 強化ページでは1レベルごとにパワーアップ音
     renderUpgradeList();
     playPowerUpBlip();

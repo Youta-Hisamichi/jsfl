@@ -24,7 +24,7 @@ const ENEMY_TRAIT_DESCS = {
   attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
   mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', stack: '縦に積み重なっている。HPが減るたびに上から1体ずつ崩れ落ちて、別々に襲ってくる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
 };
-const ENEMY_TRAIT_LABELS = { berserk: '発狂', stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体' };
+const ENEMY_TRAIT_LABELS = { berserk: '発狂', stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体', megaSlime: '分裂合体' };
 const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
 const TRAIT_CD = { berserk: [420, 600], charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
 const SPLIT_TIMES = 2;         // 分裂できる回数
