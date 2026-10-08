@@ -136,17 +136,6 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s ks s s s ks ks'
   },
-  battle30: { // 戦闘30 星の海の航路：はずむオクターブベースときらめくセブンスの分散和音に、晴れやかに宇宙を翔ける旋律（80年代アーケードSTGのフュージョン系）
-    bpm: 152,
-    echo: { time: 0.22, feedback: 0.24, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.038, notes: 'A5 = = F#5 A5 = B5 C#6 | D6 = C#6 B5 = A5 F#5 = | G5 = B5 = D6 = F#6 = | E6 = = D6 C#6 = A5 = | A5 = = F#5 A5 = D6 E6 | F#6 = E6 C#6 = A5 C#6 E6 | D6 = = B5 = G5 A5 B5 | C#6 = = = E6 = = = | F#6 = = E6 D6 = C#6 D6 | B5 = = A5 B5 = D6 F#6 | E6 = = D6 B5 = G5 B5 | C#6 = = B5 A5 = E5 = | A5 = C#6 = E6 = F#6 E6 | D6 = = C#6 B5 = A5 F#5 | G5 = B5 = D6 = F#6 = | E6 = = = C#6 = A5 =' },
-      { type: 'vrc6pulse12', gain: 0.017, notes: 'D4 F#4 A4 C#5 C#5 A4 F#4 A4 | B3 D4 F#4 A4 A4 F#4 D4 F#4 | G3 B3 D4 F#4 F#4 D4 B3 D4 | A3 C#4 E4 A4 A4 E4 C#4 E4 | D4 F#4 A4 C#5 C#5 A4 F#4 A4 | F#3 A3 C#4 E4 E4 C#4 A3 C#4 | G3 B3 D4 F#4 F#4 D4 B3 D4 | A3 C#4 E4 A4 A4 E4 C#4 E4 | B3 D4 F#4 A4 A4 F#4 D4 F#4 | G3 B3 D4 F#4 F#4 D4 B3 D4 | E4 G4 B4 D5 D5 B4 G4 B4 | A3 C#4 E4 A4 A4 E4 C#4 E4 | F#3 A3 C#4 E4 E4 C#4 A3 C#4 | B3 D4 F#4 A4 A4 F#4 D4 F#4 | G3 B3 D4 F#4 F#4 D4 B3 D4 | A3 C#4 E4 A4 A4 E4 C#4 E4' },
-      { type: 'vrc6saw', gain: 0.062, notes: 'D2 = - D2 D3 - D2 D3 | B1 = - B1 B2 - B1 B2 | G1 = - G1 G2 - G1 G2 | A1 = - A1 A2 - A1 A2 | D2 = - D2 D3 - D2 D3 | F#1 = - F#1 F#2 - F#1 F#2 | G1 = - G1 G2 - G1 G2 | A1 = - A1 A2 - A1 A2 | B1 = - B1 B2 - B1 B2 | G1 = - G1 G2 - G1 G2 | E2 = - E2 E3 - E2 E3 | A1 = - A1 A2 - A1 A2 | F#1 = - F#1 F#2 - F#1 F#2 | B1 = - B1 B2 - B1 B2 | G1 = - G1 G2 - G1 G2 | A1 = - A1 A2 - A1 A2' },
-    ],
-    kickBoost: 1.2,
-    drums: 'k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k s s ks ks | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k h k s h | k h s k s s ks ks'
-  },
   battle28: {
     bpm: 164,
     tracks: [
@@ -545,7 +534,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -598,7 +587,6 @@ const BGM_INFO = [
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle29', name: '戦闘29 秘宝の洞窟', desc: '弾むベースと跳ねる分散和音に乗って、わくわくと洞窟を探検する旋律。後半は長調に明るく開けて宝の予感に胸が高鳴る。VRC6風チップチューン。イ短調（ほのぼのアクションの洞窟探検の作風）・BPM150' },
-  { key: 'battle30', name: '戦闘30 星の海の航路', desc: 'はずむシンコペーションのオクターブベースと、きらめくセブンスの分散和音に乗って、晴れやかに宇宙を翔ける旋律。VRC6風チップチューン。ニ長調（80年代アーケードシューティングのフュージョン系の作風）・BPM152' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
