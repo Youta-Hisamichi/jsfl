@@ -1023,7 +1023,7 @@ document.getElementById('autoUpgradeBtn').addEventListener('click', () => {
 setInterval(() => {
   if (!game.autoUpgrade || !game.autoUpgradeUnlocked || phase !== 'battle') return;
   let bought = 0;
-  for (let n = 0; n < 20; n++) {
+  for (let n = 0; n < 1; n++) { // 1回に1レベルずつ
     const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
     if (!id || game.coins < getUpgradeCost(id)) break;
     spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
@@ -1033,7 +1033,8 @@ setInterval(() => {
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
-}, 1500);
+  if (getActiveTab() === 'upgrade') renderUpgradeList();
+}, 700); // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
 function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
 // 強化の飛躍（10/100/1000Lv到達）を演出
