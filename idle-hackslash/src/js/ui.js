@@ -1246,6 +1246,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
     if (reroll) document.getElementById('skGachaRerollBtn').addEventListener('click', ev => {
       if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
       game.gems -= GACHA_REROLL_GEMS; updateStatsUI();
+      ev.stopPropagation();
       reroll(ev); // 直前の結果を取り消して、もう一度（コインはかからない）
     });
     after();
@@ -1566,7 +1567,7 @@ function runGachaCountdown(hintRarity, onDone, el = gachaResult, opts = {}) { //
     setTimeout(() => el.classList.remove('gc-flash'), 500);
   };
   const timer = setTimeout(finish, dur);
-  if (opts.skippable) el.onclick = finish; // 演出中にタップしたらすぐ結果へ
+  if (opts.skippable) setTimeout(() => { if (!done) el.onclick = finish; }, 150); // 演出中にタップしたらすぐ結果へ（引き直しボタンを押したタップがそのまま届いて演出が飛ばないよう少し待つ）
 }
 
 gachaBtn.addEventListener('click', event => {
