@@ -2897,3 +2897,18 @@ function showFacingDebugList() {
   const start = () => (window.requestIdleCallback ? requestIdleCallback(run, { timeout: 3000 }) : setTimeout(run, 1500));
   if (document.readyState === 'complete') setTimeout(start, 800); else window.addEventListener('load', () => setTimeout(start, 800));
 })();
+
+// デバッグの一番上に、いま戦っている敵の名前（図鑑のキー付き）を出す
+setInterval(() => {
+  const el = document.getElementById('dbgNowEnemy'); const panel = document.getElementById('debugPanel');
+  if (!el || !panel || panel.style.display === 'none') return;
+  const names = {};
+  for (const b of balls) {
+    if (b.isPlayer || b.isDying || !(b.hp > 0)) continue;
+    const key = getEnemyBookKey(b), entry = ENEMY_BOOK_BY_KEY[key];
+    const label = `${b.isBoss ? '👑' : ''}${entry ? entry.name : '敵'}（${key}）`;
+    names[label] = (names[label] || 0) + 1;
+  }
+  const txt = '👾 現在の敵：' + (Object.entries(names).map(([n, c]) => c > 1 ? `${n} ×${c}` : n).join('、') || '—');
+  if (el.textContent !== txt) el.textContent = txt;
+}, 500);
