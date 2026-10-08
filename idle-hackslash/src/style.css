@@ -1895,3 +1895,4 @@ body.in-boss .hp-row .hp-card.enemy .label .name { color: #ffb8f0 !important; }
 /* 雑魚戦は下の敵HPゲージを一旦隠す（自分のHPも隠れる雑魚戦では「？」ごと行を隠す） */
 body:not(.in-boss) .hp-row .hp-card.enemy { display: none !important; }
 body.hp-safe:not(.in-boss) .hp-row { display: none !important; }
+#playerHpIco { transform: scaleX(-1); } /* 自キャラの絵は左向きなので、右のボスHPの方を向くよう反転 */
