@@ -15,7 +15,7 @@ function renderSkillGacha() {
     const on = isSkillEquipped(id);
     const coinIco = xi('x_coin') || '🟡';
     const buyLabel = !owned ? `解放 ${coinIco}${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ ${coinIco}${formatCoinNumber(cost)}`;
-    const equipBtn = owned ? `<button class="sk-equip ${on ? 'on' : ''} " data-skill-equip="${id}">${on ? '✓ 装備中' : eq.length >= slots ? '入れ替え' : '装備する'}</button>` : '';
+    const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     return `<div data-card-id="${id}" class="sk-card sk-card2 ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? (maxed ? 'Lv MAX' : 'Lv' + lv) + `<span class="sk-lv-sub">（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）</span>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div>${equipBtn ? `<div class="sk-btns">${equipBtn}</div>` : ''}</div>`;
   }).join('');
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
@@ -27,13 +27,13 @@ function renderSkillGacha() {
   const wHtml = Object.entries(WEAPONS).map(([id, W]) => {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
-    const equipBtn = lv ? `<button class="sk-equip ${on ? 'on' : ''}" data-weapon-equip="${id}">${on ? '✓ 装備中' : weq.length >= wslots ? '入れ替え' : '装備する'}</button>` : '';
+    const equipBtn = !lv ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div>${equipBtn ? `<div class="sk-btns">${equipBtn}</div>` : ''}</div>`;
   }).join('');
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const h = `<span class="gp-title">🎲 ${label}</span><span class="gp-cost">${COIN_ICO}${formatCoinNumber(cost)}</span>`; if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
-  gachaBtn(document.getElementById('skillGachaBtn'), 'スキルガチャ<small>ランダムで1つ解放・Lvアップ</small>', getSkillGachaCost());
-  gachaBtn(document.getElementById('weaponGachaBtn'), 'サブウェポンガチャ<small>ランダムで1つ入手・Lvアップ</small>', getWeaponGachaCost());
+  gachaBtn(document.getElementById('skillGachaBtn'), 'スキルガチャ<small>解放・Lvアップ（枠いっぱいなら装備中から）</small>', getSkillGachaCost());
+  gachaBtn(document.getElementById('weaponGachaBtn'), 'サブウェポンガチャ<small>入手・Lvアップ（枠いっぱいなら装備中から）</small>', getWeaponGachaCost());
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）
@@ -1045,7 +1045,7 @@ function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Mat
 function grantRandomWeapon(reason) {
   if (!game.weapons) game.weapons = {};
   const fresh = Object.keys(WEAPONS).filter(k => !getWeaponLv(k));
-  if (!fresh.length) return; // 全部持っていたら何もしない
+  if (!fresh.length || getEquippedWeapons().length >= getWeaponSlots()) return; // 枠がいっぱいなら渡さない（入れ替え不可のため使えない） // 全部持っていたら何もしない
   const id = fresh[Math.floor(Math.random() * fresh.length)];
   game.weapons[id] = 1; weaponCd[id] = 30; autoEquipWeapon(id);
   const W = WEAPONS[id];

@@ -1925,3 +1925,9 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .gacha-pull-btn:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 1px 0 #8a4f00; }
 .gacha-pull-btn.is-disabled { filter: grayscale(0.6) brightness(0.85); }
 .gacha-pull-btn .gp-title small { display: block; font-size: 0.7em; font-weight: 800; opacity: 0.8; margin-left: 1.6em; }
+/* スキル・サブウェポンのガチャボタンは幅を詰めて中央に */
+.gacha-pull-btn { width: auto !important; max-width: 290px; margin: 0 auto 10px !important; }
+.sk-equip.on, .sk-equip.off { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 900; }
+.sk-equip.off { color: #8a8f9c; background: rgba(0,0,0,0.06); }
+.sk-gacha-panel { padding: 10px !important; }
+.sk-gacha-panel .gacha-result { margin: 0; min-height: 230px; }

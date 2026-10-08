@@ -199,7 +199,7 @@
       <div class="weapon-slot-head" id="weaponSlotHead"></div>
       <button class="gacha-pull-btn" id="weaponGachaBtn"></button>
       <div class="skill-buy-list" id="weaponList"></div>
-      <div class="supergem-note">スキル・サブウェポンはコインのガチャで手に入れる（同じものが出るとLvアップ）。解放・Lv・装備・ガチャの値段は転生でリセット。ジェムで増やしたスキル枠（最大7つ）・サブウェポン枠（最大4つ）は転生後も継続。</div>
+      <div class="supergem-note">スキル・サブウェポンはコインのガチャで手に入れる（同じものが出るとLvアップ）。装備したものは転生するまで外せない・入れ替えられない。解放・Lv・装備・ガチャの値段は転生でリセット。ジェムで増やしたスキル枠（最大7つ）・サブウェポン枠（最大4つ）は転生後も継続。</div>
       <div class="title" id="coinShopTitle" style="margin-top:12px;"><i class="coin-ico"></i> コインショップ（転生でリセット・戦闘中のみ使用可）</div>
       <div class="shop-list" id="coinShopList"></div>
     </div>
@@ -452,6 +452,7 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="skGachaModal" style="z-index:68;"><div class="modal-panel sk-gacha-panel"><div class="gacha-result" id="skGachaResult"></div></div></div>
 <div class="modal-overlay" id="bossContModal" style="z-index:67;">
   <div class="modal-panel go-panel" style="text-align:center;">
     <img class="go-logo" src="assets/img/ui/go/logo.webp" alt="GAME OVER">

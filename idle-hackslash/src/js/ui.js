@@ -1184,9 +1184,9 @@ document.getElementById('weaponList').addEventListener('click', event => {
   if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
     if (skillSwapLocked(event)) return;
     const id = eb.dataset.weaponEquip, eq = getEquippedWeapons();
-    if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
-    else if (eq.length >= getWeaponSlots()) { const out = eq.pop(); eq.push(id); showNotice(`${WEAPONS[out].name} と入れ替えて ${WEAPONS[id].name} を装備`); }
-    else eq.push(id);
+    if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
+    if (eq.length >= getWeaponSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
+    eq.push(id);
     weaponCd[id] = 20; playTone(880, 0.06, 'triangle', 0.1);
     renderCoinShopList(); saveGame();
     return;
@@ -1210,9 +1210,35 @@ function flashGachaCard(listId, id) {
   card.classList.remove('sk-flash'); void card.offsetWidth; card.classList.add('sk-flash');
 }
 function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
+// ガチャの演出（進化ガチャと同じ召喚演出）。Lvアップは控えめ、新規解放は派手、飛躍はさらに派手に
+const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
+let skGachaBusy = false;
+function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
+function showSkGachaReveal(rarity, iconHtml, title, sub, after) {
+  skGachaBusy = true; skGachaModal.classList.add('show');
+  runGachaCountdown(rarity, () => {
+    const info = RARITY_INFO[rarity];
+    playGachaSound(rarity);
+    skGachaResult.className = 'gacha-result rarity-' + rarity;
+    skGachaResult.style.background = rarityBackground(rarity);
+    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><button class="action-btn" id="skGachaCloseBtn" style="margin-top:12px;">OK</button>`;
+    document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
+    after();
+  }, skGachaResult);
+}
+// 枠がいっぱいのときは、装備中のもの（と枠を使わない常時スキル）だけが出る＝使えないものは出ない
+function skillGachaPool() {
+  const eq = getEquippedSkills(), free = eq.length < getSkillSlots();
+  return getSkillGachaPool().filter(id => eq.includes(id) || PASSIVE_SKILLS.includes(id) || (free && !game.shopOwned[id]));
+}
+function weaponGachaPool() {
+  const eq = getEquippedWeapons(), free = eq.length < getWeaponSlots();
+  return Object.keys(WEAPONS).filter(k => getWeaponLv(k) < WEAPON_MAX_LV && (eq.includes(k) || (free && !getWeaponLv(k))));
+}
 document.getElementById('skillGachaBtn').addEventListener('click', event => {
-  const pool = getSkillGachaPool();
-  if (!pool.length) { showTapError('すべてのスキルが Lv MAX です', event.clientX, event.clientY); return; }
+  if (skGachaBusy) return;
+  const pool = skillGachaPool();
+  if (!pool.length) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
   const cost = getSkillGachaCost();
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
   spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
@@ -1221,30 +1247,24 @@ document.getElementById('skillGachaBtn').addEventListener('click', event => {
   if (!owned) {
     game.shopOwned[id] = true; game.skillLevels[id] = 1;
     const eq = getEquippedSkills();
-    if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(id)) { eq.push(id); lastSetSkill = id; } // 空き枠があれば自動で装備
+    if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(id)) { eq.push(id); lastSetSkill = id; } // 空き枠に自動で装備（転生まで外せない）
   } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
-  const slv = game.skillLevels[id], leapTier = owned ? (slv % 100 === 0 ? 2 : slv % 10 === 0 ? 1 : 0) : 0;
-  showNotice(!owned ? `🎲 ${sk.icon} ${sk.name} スキルを解放！` : leapTier ? `🎲 ✨ ${sk.icon} ${sk.name} Lv${slv} ${leapTier >= 2 ? '超飛躍' : '飛躍'}！` : `🎲 ${sk.icon} ${sk.name} が Lv${slv} に！`);
-  showLevelUpPop(event.clientX, event.clientY, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`);
-  if (leapTier) { showLeapBanner(leapTier >= 2 ? '超飛躍！！' : '飛躍！', leapTier); playLeapSound(leapTier); } else playUpgradeSound();
-  updateStatsUI(); renderCoinShopList(); saveGame();
-  flashGachaCard('skillLevelList', id);
+  const slv = game.skillLevels[id];
+  saveGame(); updateStatsUI();
+  showSkGachaReveal(skGachaRarity(!owned, slv), ico(sk), !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '装備しました（転生まで外せません）') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); });
 });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => {
-  const pool = Object.keys(WEAPONS).filter(k => getWeaponLv(k) < WEAPON_MAX_LV);
-  if (!pool.length) { showTapError('すべてのサブウェポンが Lv MAX です', event.clientX, event.clientY); return; }
+  if (skGachaBusy) return;
+  const pool = weaponGachaPool();
+  if (!pool.length) { showTapError('引けるサブウェポンがありません', event.clientX, event.clientY); return; }
   const cost = getWeaponGachaCost();
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
   spendCoins(cost); game.weaponGachaPulls = (game.weaponGachaPulls || 0) + 1;
   const id = gachaPick(pool), W = WEAPONS[id];
   if (!game.weapons) game.weapons = {};
   const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
-  const leap = lv % 100 === 0 ? 2 : lv % 10 === 0 ? 1 : 0;
-  showLevelUpPop(event.clientX, event.clientY, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`);
-  if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else playUpgradeSound();
-  showNotice(`🎲 ${W.icon} ${W.name} ${lv === 1 ? (getEquippedWeapons().includes(id) ? 'を獲得！（装備して自動で発動）' : 'を獲得！（枠がいっぱい：装備で入れ替え）') : 'が Lv' + lv + ' に！'}`);
-  updateStatsUI(); renderCoinShopList(); saveGame();
-  flashGachaCard('weaponList', id);
+  saveGame(); updateStatsUI();
+  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動（転生まで外せません）' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); });
 });
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
@@ -1278,13 +1298,9 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     const id = equip.dataset.skillEquip;
     if (PASSIVE_SKILLS.includes(id)) { showNotice(`${SKILL_GACHA_SKILLS[id].name} は取得するだけで常に効きます（セット不要）`); return; }
     const eq = getEquippedSkills();
-    if (eq.includes(id)) eq.splice(eq.indexOf(id), 1);
-    else if (eq.length >= getSkillSlots()) {
-      const out = eq.pop();
-      eq.push(id);
-      lastSetSkill = id;
-      showNotice(`${SKILL_GACHA_SKILLS[out].name} と入れ替えて ${SKILL_GACHA_SKILLS[id].name} をセット`);
-    } else { eq.push(id); lastSetSkill = id; }
+    if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
+    if (eq.length >= getSkillSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
+    eq.push(id); lastSetSkill = id;
     playTone(880, 0.06, 'triangle', 0.1);
     renderCoinShopList();
     saveGame();
@@ -1492,20 +1508,20 @@ function playGachaBuildUpSound(hintRarity) {
   if (hintRarity === 'epic' || hintRarity === 'legendary') thump(60, 120, GACHA_LOADING_MS / 1000 * 0.9, 0.25, 'sawtooth');
   setTimeout(() => { noiseSweep(0.35, 8000, 1200, 'highpass', 0.7, 0.35); thump(90, 40, 0.3, 0.5); }, GACHA_LOADING_MS - 40); // シャーン！
 }
-function runGachaCountdown(hintRarity, onDone) {
-  gachaResult.style.display = 'block';
-  gachaResult.style.background = '';
-  gachaResult.className = 'gacha-result gacha-summoning gc-building rarity-bg-' + hintRarity;
+function runGachaCountdown(hintRarity, onDone, el = gachaResult) {
+  el.style.display = 'block';
+  el.style.background = '';
+  el.className = 'gacha-result gacha-summoning gc-building rarity-bg-' + hintRarity;
   const col = RARITY_INFO[hintRarity].color;
   const dur = getGachaLoadingMs(hintRarity);
-  gachaResult.style.setProperty('--gc-dur', dur + 'ms'); // CSSアニメの長さも合わせる
-  gachaResult.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div><div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
+  el.style.setProperty('--gc-dur', dur + 'ms'); // CSSアニメの長さも合わせる
+  el.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div><div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
   playGachaBuildUpSound(hintRarity);
   setTimeout(() => {
-    gachaResult.classList.remove('gc-building');
+    el.classList.remove('gc-building');
     onDone();
-    gachaResult.classList.add('gc-flash');
-    setTimeout(() => gachaResult.classList.remove('gc-flash'), 500);
+    el.classList.add('gc-flash');
+    setTimeout(() => el.classList.remove('gc-flash'), 500);
   }, dur);
 }
 
