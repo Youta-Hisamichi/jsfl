@@ -1885,7 +1885,10 @@ body.in-boss .hp-row .hp-card.enemy .label .name { color: #ffb8f0 !important; }
 .tab-bar { background: linear-gradient(180deg, #0e1528, #070b16) !important; border-top: 2px solid #3a4a70 !important; gap: 3px; padding-top: 5px !important; }
 .tab-btn { background: linear-gradient(180deg, #18223a, #0c1426) !important; border: 1px solid #2c3a5c !important; border-radius: 6px !important; color: #e6ecfa !important; font-weight: 800; box-shadow: none !important; }
 .tab-btn.active { background: linear-gradient(180deg, #2a6fd0, #0f2f66) !important; border-color: #6fc0ff !important; color: #fff !important; box-shadow: 0 0 10px rgba(80,170,255,0.75), inset 0 0 8px rgba(140,210,255,0.5) !important; }
-/* 雑魚敵のアイコンはHPゲージの左に大きく */
-body:not(.in-boss) .hp-row .hp-card.enemy { position: relative; padding-left: 44px !important; }
-body:not(.in-boss) .hp-row .hp-card.enemy .en-ico { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8)); }
-body:not(.in-boss) .hp-row .hp-card.enemy .en-ico img, body:not(.in-boss) .hp-row .hp-card.enemy .en-ico .enemy-name-sprite { width: 40px !important; height: 40px !important; max-width: none !important; margin: 0 !important; object-fit: contain; vertical-align: middle; }
+/* 自キャラ・敵（雑魚もボスも）のアイコンはHPゲージの左に大きく */
+.hp-row .hp-card { position: relative; padding-left: 44px !important; }
+.hp-row .hp-card .en-ico { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8)); }
+.hp-row .hp-card .en-ico img, .hp-row .hp-card .en-ico .enemy-name-sprite { width: 40px !important; height: 40px !important; max-width: none !important; margin: 0 !important; object-fit: contain; vertical-align: middle; image-rendering: pixelated; }
+/* 雑魚戦は下の敵HPゲージを一旦隠す（自分のHPも隠れる雑魚戦では「？」ごと行を隠す） */
+body:not(.in-boss) .hp-row .hp-card.enemy { display: none !important; }
+body.hp-safe:not(.in-boss) .hp-row { display: none !important; }

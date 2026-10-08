@@ -989,6 +989,7 @@ const PLAYER_SPRITE = document.getElementById('blHero').src; // 画像の本体�
 const playerSpriteImg = new Image();
 playerSpriteImg.src = PLAYER_SPRITE;
 stagePlayerMark.src = PLAYER_SPRITE; // ステージ進行ゲージの自キャラアイコン
+document.getElementById('playerHpIco').src = PLAYER_SPRITE; // 下のHPパネルの自キャラアイコン
 const companionSpriteImgs = {};
 for (const id in COMPANION_SPRITES) { const img = new Image(); img.src = COMPANION_SPRITES[id]; companionSpriteImgs[id] = img; }
 function companionIconHtml(id) {
