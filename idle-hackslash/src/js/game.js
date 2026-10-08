@@ -998,7 +998,7 @@ function completeReincarnation() {
   toast.style.removeProperty('--chest-glow');
   toastBig.textContent = '輪廻転生……';
   toastBig.className = 'big reborn';
-  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n<span class="chest-rarity" style="color:${RARITY_INFO[pick.rarity].color}">${rarityStars(pick.rarity)} ${RARITY_INFO[pick.rarity].label}の宝箱</span>を手に入れた！\n（画面左下の宝箱からいつでも開けられます）`;
+  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n<span class="chest-rarity" style="color:${RARITY_INFO[pick.rarity].color}">${rarityStars(pick.rarity)} ${RARITY_INFO[pick.rarity].label}の宝箱</span>を手に入れた！`;
   toast.classList.add('show');
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;

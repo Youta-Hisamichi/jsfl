@@ -364,7 +364,7 @@ function dropSkipArtifact(skipped) { // 中身は見せずに宝箱へ封入（�
     particles.push({ x: arena.x, y: arena.y - 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: info.color, decay: 0.015 });
   }
   playGachaSound(rarity);
-  showNotice(`🏺 試練の塔 報酬：${rarityStars(rarity)} ${info.label}の宝箱（遺物入り）を獲得！ 左下の宝箱をタップで開封`, false, TREASURE_NOTICE_MS, true);
+  showNotice(`🏺 試練の塔 報酬：${rarityStars(rarity)} ${info.label}の宝箱（遺物入り）を獲得！`, false, TREASURE_NOTICE_MS, true);
   renderChestTray(rarity);
   saveGame();
 }

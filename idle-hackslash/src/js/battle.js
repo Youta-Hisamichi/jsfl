@@ -1820,7 +1820,7 @@ function dropTreasureChest(rarity) {
   if (CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0) >= CHEST_STOCK_MAX) { spawnDamageText(arena.x, arena.y + 30, `🎁 宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); return; }
   hc[rarity] = (hc[rarity] || 0) + 1;
   const info = RARITY_INFO[rarity];
-  spawnDamageText(arena.x, arena.y + 30, `🎁 ${info.label}の宝箱ゲット！ 左下をタップで開封`, info.color, TREASURE_TEXT_DECAY);
+  spawnDamageText(arena.x, arena.y + 30, `🎁 ${info.label}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
   playLoginBonusSound();
   renderChestTray(rarity);
   saveGame();
