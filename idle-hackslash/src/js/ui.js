@@ -1009,6 +1009,7 @@ function showUpgradeLevelUpPop(id, x, y, text) {
 }
 // オート強化：ONにすると、たまったコインで攻撃力・最大HPのうち安い方を自動で上げ続ける（放置向け）
 const AUTO_UPGRADE_IDS = ['atk', 'hp'];
+let autoUpChain = 0, autoUpChainAt = 0; // オート強化の連鎖音の段数（間が空くと最初から）
 const AUTO_UPGRADE_QUIET_VOL = 0.25; // 強化ページ以外でのオート強化の音の大きさ
 function renderAutoUpgradeBtn() {
   const b = document.getElementById('autoUpgradeBtn'); if (!b) return;
@@ -1033,7 +1034,11 @@ setInterval(() => {
   refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オート強化 +${bought}`, '#7fe8a0', 0.03);
-  if (getActiveTab() === 'upgrade') { renderUpgradeList(); playUpgradeSound(); } // 強化ページでは1レベルごとに強化音
+  if (getActiveTab() === 'upgrade') { // 強化ページでは1レベルごとに、連続するほど音が上がっていく連鎖音
+    renderUpgradeList();
+    const now = Date.now(); autoUpChain = now - autoUpChainAt < 1500 ? autoUpChain + 1 : 1; autoUpChainAt = now;
+    playChainSound(autoUpChain + 1);
+  }
 }, 700); // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
 function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
