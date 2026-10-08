@@ -156,17 +156,17 @@ const BGM_SONGS = {
     drums: 'k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks ks ks ks',
   },
 
-  boss9: { // ボス9 刑事の追及：弾むピチカートのベースとブラスの合いの手、ずる賢く忍び寄る旋律が後半で劇的に盛り上がる（古畑任三郎系のサスペンス劇伴）
-    bpm: 136,
-    echo: { time: 0.22, feedback: 0.18, wet: 0.13 },
+  boss9: { // ボス9 荒波の海賊船：6/8拍子で疾走する弦の刻みと勇ましいブラス、波を越えていくような勇壮な旋律（海賊映画の冒険活劇系）
+    bpm: 200,
+    echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
     tracks: [
-      { type: 'vrc7lead', gain: 0.046, notes: 'D5 - F5 - A5 = G5 F5 | E5 - F5 - D5 = = - | D5 - F5 - A#5 = A5 G5 | A5 = G5 = F5 = E5 C#5 | D5 - A5 - D6 = C6 A#5 | A5 - G5 - D5 = = - | G#5 = B5 = D6 = C6 B5 | C#6 = = = A5 - - - | A#5 = = = A5 = G5 = | F5 = = = A5 = D6 = | D6 = = = C6 = A#5 = | A5 = = = E6 = C#6 = | G6 = = = F6 = E6 = | F6 = = = D6 = A5 = | G5 = A#5 = D#6 = G6 = | E6 = C#6 = A5 = - -' },
-      { type: 'vrc6pulse12', gain: 0.011, notes: 'D5 F5 A5 D6 A5 F5 D5 F5 | D5 F5 A5 D6 A5 F5 D5 F5 | A#4 D5 F5 A#5 F5 D5 A#4 D5 | A4 C#5 E5 G5 E5 C#5 A4 C#5 | D5 F5 A5 D6 A5 F5 D5 F5 | G4 A#4 D5 G5 D5 A#4 G4 A#4 | E5 G#5 B5 D6 B5 G#5 E5 G#5 | A4 C#5 E5 A5 E5 C#5 A4 C#5 | G4 A#4 D5 G5 D5 A#4 G4 A#4 | D5 F5 A5 D6 A5 F5 D5 F5 | A#4 D5 F5 A#5 F5 D5 A#4 D5 | A4 C#5 E5 A5 E5 C#5 A4 C#5 | G4 A#4 D5 G5 D5 A#4 G4 A#4 | D5 F5 A5 D6 A5 F5 D5 F5 | D#5 G5 A#5 D#6 A#5 G5 D#5 G5 | A4 C#5 E5 A5 E5 C#5 A4 C#5' },
-      { type: 'vrc7brass', gain: 0.034, notes: 'D4+F4+A4 - - D4+F4+A4 - - - - | D4+F4+A4 - - D4+F4+A4 - - - - | A#3+D4+F4 - - A#3+D4+F4 - - - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 A3+C#4+E4 - | D4+F4+A4 - - D4+F4+A4 - - - - | G3+A#3+D4 - - G3+A#3+D4 - - - - | E4+G#4+B4 - - E4+G#4+B4 - - - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 A3+C#4+E4 - | G3+A#3+D4 - - G3+A#3+D4 - - - - | D4+F4+A4 - - D4+F4+A4 - - - - | A#3+D4+F4 - - A#3+D4+F4 - - - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 A3+C#4+E4 - | G3+A#3+D4 - - G3+A#3+D4 - - - - | D4+F4+A4 - - D4+F4+A4 - - - - | D#4+G4+A#4 - - D#4+G4+A#4 - - - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 A3+C#4+E4 -' },
-      { type: 'vrc7bass', gain: 0.075, notes: 'D2 - A2 - D3 - A2 - | D2 - A2 - D3 - A2 - | A#2 - F3 - A#3 - F3 - | A2 - E3 - A3 - E3 - | D2 - A2 - D3 - A2 - | G2 - D3 - G3 - D3 - | E2 - B2 - E3 - B2 - | A2 - E3 - A3 - E3 - | G2 - D3 - G3 - D3 - | D2 - A2 - D3 - A2 - | A#2 - F3 - A#3 - F3 - | A2 - E3 - A3 - E3 - | G2 - D3 - G3 - D3 - | D2 - A2 - D3 - A2 - | D#2 - A#2 - D#3 - A#2 - | A2 - E3 - A3 - E3 -' },
+      { type: 'vrc7lead', gain: 0.048, notes: 'D5 = A4 D5 = F5 | A5 = = G5 F5 E5 | E5 = C5 G5 = E5 | F5 = = D5 = = | D5 = F5 A#5 = A5 | A5 = G5 F5 = C5 | D5 = A#4 G5 = F5 | E5 = = C#5 = A4 | D5 = A4 D5 = F5 | A5 = = D6 = C6 | A#5 = A5 G5 = F5 | G5 = = E5 = C5 | F5 = G5 A5 = C6 | C#6 = A5 G5 = E5 | D6 = = A5 = F5 | E5 = C#5 A4 = = | G5 = = A#5 = D6 | D6 = = C6 A#5 A5 | A#5 = = D6 = F6 | E6 = = C#6 = A5 | F6 = E6 D6 = A5 | E6 = D6 C6 = G5 | D6 = C6 A#5 = A5 | E6 = C#6 A5 = C#5' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'D4 D4 F4 D4 D4 A4 | D4 D4 F4 D4 D4 A4 | C4 C4 E4 C4 C4 G4 | D4 D4 F4 D4 D4 A4 | A#3 A#3 D4 A#3 A#3 F4 | F4 F4 A4 F4 F4 C4 | G3 G3 A#4 G3 G3 D4 | A3 A3 C#4 A3 A3 E4 | D4 D4 F4 D4 D4 A4 | D4 D4 F4 D4 D4 A4 | A#3 A#3 D4 A#3 A#3 F4 | C4 C4 E4 C4 C4 G4 | F4 F4 A4 F4 F4 C4 | A3 A3 C#4 A3 A3 E4 | D4 D4 F4 D4 D4 A4 | A3 A3 C#4 A3 A3 E4 | G3 G3 A#4 G3 G3 D4 | D4 D4 F4 D4 D4 A4 | A#3 A#3 D4 A#3 A#3 F4 | A3 A3 C#4 A3 A3 E4 | D4 D4 F4 D4 D4 A4 | C4 C4 E4 C4 C4 G4 | A#3 A#3 D4 A#3 A#3 F4 | A3 A3 C#4 A3 A3 E4' },
+      { type: 'vrc7brass', gain: 0.032, notes: 'D4+F4+A4 - - D4+F4+A4 - - | D4+F4+A4 - - D4+F4+A4 - - | C4+E4+G4 - - C4+E4+G4 - - | D4+F4+A4 - - D4+F4+A4 - - | A#3+D4+F4 - - A#3+D4+F4 - - | F4+A4+C4 - - F4+A4+C4 - - | G3+A#4+D4 - - G3+A#4+D4 - - | A3+C#4+E4 = = = = = | D4+F4+A4 - - D4+F4+A4 - - | D4+F4+A4 - - D4+F4+A4 - - | A#3+D4+F4 - - A#3+D4+F4 - - | C4+E4+G4 - - C4+E4+G4 - - | F4+A4+C4 - - F4+A4+C4 - - | A3+C#4+E4 - - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - - | A3+C#4+E4 = = = = = | G3+A#4+D4 - - G3+A#4+D4 - - | D4+F4+A4 - - D4+F4+A4 - - | A#3+D4+F4 - - A#3+D4+F4 - - | A3+C#4+E4 - - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - - | C4+E4+G4 - - C4+E4+G4 - - | A#3+D4+F4 - - A#3+D4+F4 - - | A3+C#4+E4 = = = = =' },
+      { type: 'vrc7bass', gain: 0.075, notes: 'D2 - D2 D2 - A2 | D2 - D2 D2 - A2 | C2 - C2 C2 - G2 | D2 - D2 D2 - A2 | A#1 - A#1 A#1 - F2 | F2 - F2 F2 - C3 | G1 - G1 G1 - D2 | A1 - A1 A1 - E2 | D2 - D2 D2 - A2 | D2 - D2 D2 - A2 | A#1 - A#1 A#1 - F2 | C2 - C2 C2 - G2 | F2 - F2 F2 - C3 | A1 - A1 A1 - E2 | D2 - D2 D2 - A2 | A1 - A1 A1 - E2 | G1 - G1 G1 - D2 | D2 - D2 D2 - A2 | A#1 - A#1 A#1 - F2 | A1 - A1 A1 - E2 | D2 - D2 D2 - A2 | C2 - C2 C2 - G2 | A#1 - A#1 A#1 - F2 | A1 - A1 A1 - E2' },
     ],
-    kickBoost: 1.1,
-    drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k s s s | k - s - k k s - | k - s - k k s - | k - s - k k s - | s s s s ks - ks - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k s s s | k - s - k k s - | k - s - k k s - | k - s - k k s - | ks s s s ks ks ks ks'
+    kickBoost: 1.3,
+    drums: 'k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks'
   },
   boss11: { // ボス10 世紀末の死闘：刻むパワーコードと唸るベースに、熱く歌い上げる旋律（80年代アニメのヒーローロック）
     bpm: 158,
@@ -466,10 +466,13 @@ let songTimer = null, songState = null;
 function startSong(type, startStep = 0) {
   const song = prepareSong(BGM_SONGS[type]);
   stopSong();
-  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, stepDur: 60 / song.bpm / 2, bus: song.echo ? makeSongEchoBus(song.echo) : null };
+  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, baseStepDur: 60 / song.bpm / 2, stepDur: 60 / song.bpm / 2, tempo: 1, bus: song.echo ? makeSongEchoBus(song.echo) : null };
   const tick = () => {
     const s = songState;
     if (!s) return;
+    const target = getBossPinchTempo();
+    s.tempo += (target - s.tempo) * (target > s.tempo ? 0.06 : 0.03); // じわじわ速く／ゆっくり元に戻す
+    s.stepDur = s.baseStepDur / s.tempo;
     while (s.next < audioCtx.currentTime + 0.15) {
       for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, s.bus));
       const dr = s.song.drumSteps[s.step];
@@ -480,6 +483,17 @@ function startSong(type, startStep = 0) {
   };
   tick();
   songTimer = setInterval(tick, 30);
+}
+// ボス戦でピンチ（自分のHPが少ない・残り時間が少ない）ほどBGMを早回しにして焦らせる
+const PINCH_TEMPO_HP = [[0.15, 1.2], [0.3, 1.1]];        // [HPの割合以下, テンポ倍率]
+const PINCH_TEMPO_TIME = [[5000, 1.25], [10000, 1.12]];  // [残りミリ秒以下, テンポ倍率]
+function getBossPinchTempo() {
+  if (typeof phase === 'undefined' || phase !== 'battle' || !isBossFight()) return 1;
+  let t = 1;
+  const p = balls.find(isMainPlayerBall);
+  if (p && p.maxHp > 0) { const r = p.hp / p.maxHp; for (const [lim, m] of PINCH_TEMPO_HP) if (r <= lim) { t = Math.max(t, m); break; } }
+  if (bossTimerFor) for (const [lim, m] of PINCH_TEMPO_TIME) if (bossTimeLeftMs <= lim) { t = Math.max(t, m); break; }
+  return t;
 }
 function stopSong() { clearInterval(songTimer); songTimer = null; songState = null; }
 let bgmTimer = null;
@@ -545,7 +559,7 @@ const BGM_INFO = [
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-  { key: 'boss9', name: 'ボス9 刑事の追及', desc: '弾むピチカートのベースとブラスの合いの手に乗って、ずる賢く忍び寄る旋律が後半で劇的に舞い上がる。犯人を追い詰める謎解きサスペンスの劇伴。ニ短調（古畑任三郎系の作風）・BPM136' },
+  { key: 'boss9', name: 'ボス9 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss11', name: 'ボス10 世紀末の死闘', desc: '刻むパワーコードと唸るオクターブベースに、熱く歌い上げる旋律。宿敵を打ち倒すクライマックスのヒーローロック。ホ短調（北斗の拳系の作風）・BPM158' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
