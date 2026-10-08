@@ -1850,8 +1850,8 @@ specialBtn.addEventListener('click', event => {
   lastSpecialAt = Date.now();
   meteors.push({
     x: arena.x + (Math.random() - 0.5) * arena.radius,
-    y: arena.y - arena.radius - 45,
-    radius: 32, speed: 6, damage, hit: false
+    y: arena.y - arenaHalfY() - 70, // 縦長の戦場でも画面の外（上）から落とす
+    radius: 32, speed: 14, damage, hit: false
   });
   playSpecialSound();
   updateSpecialButton();

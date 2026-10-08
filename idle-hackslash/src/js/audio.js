@@ -1229,9 +1229,11 @@ function playUpgradeSound() {
   playTone(660, 0.08, 'triangle', 0.12, 880);
   setTimeout(() => playTone(990, 0.12, 'triangle', 0.14), 70);
 }
-function playSpecialSound() {
-  playTone(130, 0.35, 'sawtooth', 0.2, 700);
-  setTimeout(() => playTone(880, 0.25, 'square', 0.16), 90);
+function playSpecialSound() { // メテオ発動：空を裂いて燃えながら落ちてくる「ヒュゴォォォ…」
+  noiseSweep(0.9, 500, 2600, 'bandpass', 1.4, 0.32);              // 炎をまとって迫る轟音（だんだん大きく明るく）
+  playTone(2400, 0.75, 'sine', 0.07, 500);                         // 空気を裂いて落ちる「ヒュー」
+  playTone(70, 0.9, 'sawtooth', 0.12, 45);                         // 地響きのうなり
+  setTimeout(() => playTone(1200, 0.5, 'triangle', 0.05, 300), 120);
 }
 function playMeteorImpactSound() {
   playNoiseBurst(0.6, 0.45);
