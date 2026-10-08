@@ -179,6 +179,17 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks s ks ks'
   },
+  boss12: { // ボス11 決戦の旅路：駆け上がる弦の刻みとうなるベースに、気高く劇的な旋律が挑みかかる（HD-2D系RPGのボス戦系）
+    bpm: 176,
+    echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.036, notes: 'G5 = = A#5 = = D6 = | C6 = A#5 A5 G5 = A5 A#5 | G5 = = D#5 = = G5 = | A5 = = F5 = = C6 = | A#5 = = D6 = = G6 = | F6 = D#6 D6 C6 = D6 = | D#6 = = C6 = = G5 = | F#5 = = = A5 = D6 = | D#6 = = = D6 = A#5 = | C6 = = = A5 = F5 = | D6 = F6 = A6 = F6 D6 | G6 = = = D6 = A#5 = | C6 = D#6 = G6 = F6 D#6 | G6 = = F6 D#6 = D6 A#5 | A5 = D6 = F#6 = A6 = | A6 = = = F#6 = D6 A5' },
+      { type: 'vrc6pulse12', gain: 0.016, notes: 'G3 D4 G4 D4 A#3 D4 G4 D4 | G3 D4 G4 D4 A#3 D4 G4 D4 | D#3 A#3 D#4 A#3 G3 A#3 D#4 A#3 | F3 C4 F4 C4 A3 C4 F4 C4 | G3 D4 G4 D4 A#3 D4 G4 D4 | G3 D4 G4 D4 A#3 D4 G4 D4 | C4 G4 C5 G4 D#4 G4 C5 G4 | D4 A4 D5 A4 F#4 A4 D5 A4 | D#3 A#3 D#4 A#3 G3 A#3 D#4 A#3 | F3 C4 F4 C4 A3 C4 F4 C4 | D4 A4 D5 A4 F4 A4 D5 A4 | G3 D4 G4 D4 A#3 D4 G4 D4 | C4 G4 C5 G4 D#4 G4 C5 G4 | D#3 A#3 D#4 A#3 G3 A#3 D#4 A#3 | D4 A4 D5 A4 F#4 A4 D5 A4 | D4 A4 D5 A4 F#4 A4 D5 A4' },
+      { type: 'vrc6saw', gain: 0.058, notes: 'G1 = G1 G2 G1 = G1 G2 | G1 = G1 G2 G1 = G1 G2 | D#1 = D#1 D#2 D#1 = D#1 D#2 | F1 = F1 F2 F1 = F1 F2 | G1 = G1 G2 G1 = G1 G2 | G1 = G1 G2 G1 = G1 G2 | C2 = C2 C3 C2 = C2 C3 | D2 = D2 D3 D2 = D2 D3 | D#1 = D#1 D#2 D#1 = D#1 D#2 | F1 = F1 F2 F1 = F1 F2 | D2 = D2 D3 D2 = D2 D3 | G1 = G1 G2 G1 = G1 G2 | C2 = C2 C3 C2 = C2 C3 | D#1 = D#1 D#2 D#1 = D#1 D#2 | D2 = D2 D3 D2 = D2 D3 | D2 = D2 D3 D2 = D2 D3' },
+    ],
+    kickBoost: 1.4,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s s s ks ks ks ks'
+  },
   boss8: {
     bpm: 178,
     tracks: [
@@ -523,7 +534,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11', 'boss12'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -561,6 +572,7 @@ const BGM_INFO = [
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss9', name: 'ボス9 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
+  { key: 'boss12', name: 'ボス11 決戦の旅路', desc: '駆け上がる弦の刻みとうなるベースに乗って、気高く劇的な旋律が挑みかかる。旅の果てに立ちはだかる強敵との決戦。VRC6風チップチューン。ト短調（HD-2D系RPGのボス戦の作風）・BPM176' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
