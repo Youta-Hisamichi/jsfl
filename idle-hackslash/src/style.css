@@ -2003,3 +2003,5 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .tab-page[data-tab="ranking"] .rank-tabs .rank-tab-btn { font-size: 0.68rem !important; line-height: 1.25; padding: 6px 0 !important; min-width: 0; }
 /* 一度も入手していない仲間はシルエット */
 .cp-tile.never .cp-tile-img img, .cp-info.never .cp-info-head img { filter: brightness(0) drop-shadow(0 0 2px rgba(160,190,255,0.55)) !important; opacity: 0.8; }
+.tab-page[data-tab="ranking"] .rank-top-btn { display: flex; justify-content: center; width: auto; margin: 10px auto 2px; padding: 8px 22px; border: 2px solid #c9a24a !important; border-image: none !important; border-radius: 999px; background: linear-gradient(180deg, #3a4a78, #1c2546) !important; color: #fff !important; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+.tab-page[data-tab="ranking"] .rank-top-btn .msb-name { color: #fff; }

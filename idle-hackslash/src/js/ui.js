@@ -3009,3 +3009,7 @@ setInterval(() => {
   if (![...tabs].some(t => t.dataset.recTab === first)) first = 'stats';
   show(first);
 })();
+document.getElementById('rankTopBtn').addEventListener('click', () => { // ランキングの一番下からページのトップへ戻る
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  for (let el = document.getElementById('rankTopBtn').parentElement; el; el = el.parentElement) if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: 'smooth' });
+});
