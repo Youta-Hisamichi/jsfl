@@ -827,6 +827,13 @@ debugRow.addEventListener('click', event => {
     renderCompanionList(); renderRebirthShopList(); saveGame();
     showNotice(`DEBUG: 仲間${COMPANION_IDS.length}種をすべて開放し、パーティ枠を最大（${COMPANION_PARTY_MAX}人）にしました`); return;
   }
+  if (action === 'resetCompSlots' || action === 'resetSkillSlots' || action === 'resetWeaponSlots') { // 枠数を1に戻す（はみ出した装備は外す）
+    if (action === 'resetCompSlots') { game.companionSlots = 1; showNotice('🐾 仲間のパーティ枠を1に戻しました'); renderCompanionList(); }
+    if (action === 'resetSkillSlots') { game.skillSlots = 1; game.equippedSkills = getEquippedSkills().slice(0, 1); showNotice('✨ スキルの装備枠を1に戻しました'); }
+    if (action === 'resetWeaponSlots') { game.weaponSlots = 1; game.equippedWeapons = getEquippedWeapons().slice(0, 1); showNotice('🗡️ サブウェポンの装備枠を1に戻しました'); }
+    renderCoinShopList(); updateSkillButtonVisibility(); saveGame();
+    return;
+  }
   if (action === 'allCompanions') {
     const cp = game.companions;
     ['awaken', 'count', 'hp', 'alive'].forEach(k => { if (!cp[k]) cp[k] = {}; });
