@@ -242,7 +242,7 @@ function switchTab(name) {
   if (name === 'game') resizeCanvas();
   if (name === 'game' && typeof resumeGameOverForTab === 'function') resumeGameOverForTab();
   if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
-  if (name === 'gemshop') renderRebirthShopList();
+  if (name === 'gemshop') { renderRebirthShopList(); shopSortOrder = null; renderShopList(); } // 完売品を下へ並べ替えるのはショップを開き直したときだけ
   refreshBgm();
 }
 tabBar.addEventListener('click', event => {
@@ -1245,10 +1245,12 @@ function renderUpgradeList() {
   };
   upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');
 }
+var shopSortOrder = null;
 function renderShopList() {
   const ids = Object.keys(SHOP_ITEMS).filter(id => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id));
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
-  ids.sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ
+  if (!shopSortOrder) shopSortOrder = [...ids].sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ（ショップを開いたときに並べ替える）
+  ids.sort((x, y) => shopSortOrder.indexOf(x) - shopSortOrder.indexOf(y));
   shopList.innerHTML = ids.map(id => {
     const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && item.requires && !game[item.requires];
