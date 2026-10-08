@@ -337,7 +337,8 @@ let gemShopReturn = null;    // ショップから戻る先 { fn, mustResume }
 function promptGemShortage(needed, options = {}) {
   const lack = Math.max(1, Math.ceil(needed - game.gems));
   document.getElementById('gemShortTitle').textContent = options.title || 'ジェムが足りません';
-  document.getElementById('gemShortIcon').textContent = options.icon || '💎'; // 絵文字は自動でアイコン画像に置き換わる
+  const gsIcon = document.getElementById('gemShortIcon');
+  if (options.iconHtml) gsIcon.innerHTML = options.iconHtml; else gsIcon.textContent = options.icon || '💎'; // 絵文字は自動でアイコン画像に置き換わる（iconHtml は絵をそのまま出す）
   gemShortText.textContent = options.text || `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
   gemShortPending = options;
   if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();

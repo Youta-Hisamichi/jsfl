@@ -1111,12 +1111,12 @@ function updatePotionButton() {
 const redPotionBtn = document.getElementById('redPotionBtn');
 function updateRedPotionButton() { // スキル列の左端の赤ポーション（所持数つき）
   const n = game.redPotions || 0;
-  const html = `<i class="ico-redpot"></i>全開<b>×${n}</b>`;
+  const html = `<i class="ico-redpot"></i>スキル全開<b>×${n}</b>`;
   if (redPotionBtn.dataset.html !== html) { redPotionBtn.innerHTML = html; redPotionBtn.dataset.html = html; }
   redPotionBtn.classList.toggle('is-disabled', n <= 0);
 }
 redPotionBtn.addEventListener('click', event => {
-  if ((game.redPotions || 0) <= 0) { promptGemShortage(0, { title: '赤ポーションがありません', text: 'ショップで「スキル全開の赤ポーション」を買いますか？', silent: true, icon: '🧪' }); return; }
+  if ((game.redPotions || 0) <= 0) { promptGemShortage(0, { title: '赤ポーションがありません', text: 'ショップで「スキル全開の赤ポーション」を買いますか？', silent: true, iconHtml: '<i class="ico-redpot" style="width:1em;height:1em;vertical-align:-0.1em"></i>' }); return; }
   if (!anySkillCoolingDown()) { showTapError('待ち時間中のスキルがありません', event.clientX, event.clientY); return; }
   game.redPotions--;
   resetAllSkillCooldowns();
