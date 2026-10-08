@@ -807,6 +807,14 @@ debugRow.addEventListener('click', event => {
     renderShopList(); renderSupergemShopList(); renderUpgradeList(); renderCoinShopList(); renderCompanionList();
     saveGame();
   }
+  if (action === 'companionUnlockAll') { // 仲間をすべて開放（召喚で出る・図鑑に登録）し、パーティ枠も最大に
+    if (!game.companionUnlocks) game.companionUnlocks = {};
+    if (!game.companionBook) game.companionBook = {};
+    COMPANION_IDS.forEach(id => { if (companionNeedsUnlock(id)) game.companionUnlocks[id] = true; game.companionBook[id] = true; });
+    game.companionSlots = COMPANION_PARTY_MAX;
+    renderCompanionList(); renderRebirthShopList(); saveGame();
+    showNotice(`DEBUG: 仲間${COMPANION_IDS.length}種をすべて開放し、パーティ枠を最大（${COMPANION_PARTY_MAX}人）にしました`); return;
+  }
   if (action === 'allCompanions') {
     const cp = game.companions;
     ['awaken', 'count', 'hp', 'alive'].forEach(k => { if (!cp[k]) cp[k] = {}; });
