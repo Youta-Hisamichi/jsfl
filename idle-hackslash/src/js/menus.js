@@ -454,6 +454,15 @@ function getRivalDailyScore(r, i, dateKeyStr) {
   return Math.max(0, Math.round(r.dailyBase * 45 * (0.6 + rnd() * 0.8)));
 }
 let rankingMode = 'daily';
+// ランキングの種類（本日のクリア数以外）。ライバルの記録は腕前（stageScore）から決まる
+const rivalSeed = (i, k) => seededRand(i * 7919 + k)();
+const RANK_MODES = {
+  daily: { title: '本日のクリア数' },
+  stage: { title: 'ベストステージ', mine: () => game.bestStage || 1, rival: r => r.stageScore, fmt: v => `ステージ ${formatCoinNumber(v)}` },
+  coins: { title: 'MAXコイン', mine: () => Math.floor(game.bestCoins || 0), rival: (r, i) => Math.round(Math.pow(10, 2.5 + r.stageScore / 26) * (0.5 + rivalSeed(i, 11))), fmt: v => `${formatCoinNumber(v)} 枚` },
+  kills: { title: 'MAXキル数', mine: () => Math.floor(game.totalKills || 0), rival: (r, i) => Math.round(r.stageScore * 40 * (0.6 + rivalSeed(i, 23) * 0.9)), fmt: v => `${formatCoinNumber(v)} 体` },
+  dps: { title: 'MAX DPS', mine: () => Math.floor(game.maxDps || 0), rival: (r, i) => Math.round(Math.pow(10, 1.6 + r.stageScore / 30) * (0.5 + rivalSeed(i, 37))), fmt: v => `${formatCoinNumber(v)} DPS` },
+};
 let lastRankInfo = null;
 const SERVICE_START_DATE_KEY = '2026-06-01'; // サービス開始日（これより過去へは遡れない）
 let rankingDateOffset = 0; // 0=本日, -1=前日, ...
@@ -495,14 +504,16 @@ function renderRanking() {
   else if (rankingDateOffset === -2) rankDateLabel.textContent = '一昨日';
   else rankDateLabel.textContent = selectedKey;
 
-  rankingTitle.textContent = isDaily ? `🏆 ${rankDateLabel.textContent}のクリア数ランキング` : '🏆 到達階ランキング';
+  const mode = RANK_MODES[rankingMode] || RANK_MODES.daily;
+  rankingTitle.textContent = isDaily ? `🏆 ${rankDateLabel.textContent}のクリア数ランキング` : `🏆 ${mode.title}ランキング`;
   const daysAgo = Math.max(0, daysBetweenKeys(selectedKey, todayKey));
   const rivalFactor = Math.max(0.3, 1 - daysAgo * 0.05); // 過去日ほどライバルのスコアも控えめに演出
-  const entries = RIVALS.map((r, i) => ({ name: r.name, score: isDaily ? Math.round(getRivalDailyScore(r, i, selectedKey) * rivalFactor) : r.stageScore, isPlayer: false }));
-  const myScore = isDaily ? getDailyClearsForDate(selectedKey) : game.bestStage;
+  const entries = RIVALS.map((r, i) => ({ name: r.name, score: isDaily ? Math.round(getRivalDailyScore(r, i, selectedKey) * rivalFactor) : mode.rival(r, i), isPlayer: false }));
+  const myScore = isDaily ? getDailyClearsForDate(selectedKey) : mode.mine();
   entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
   entries.sort((a, b) => b.score - a.score);
-  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : '到達階', score: isDaily ? myScore + ' クリア' : myScore + ' 階' };
+  const fmt = v => isDaily ? v + ' クリア' : mode.fmt(v);
+  lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title, score: fmt(myScore) };
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
   const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
   const shown = entries.slice(0, 100);
@@ -511,7 +522,7 @@ function renderRanking() {
     const wall = RANK_WALLS[i] && i < shown.length ? `<div class="rank-wall ${RANK_WALLS[i][1]}"><span><i>${wi[RANK_WALLS[i][1]]}</i>${RANK_WALLS[i][0]}<i>${wi[RANK_WALLS[i][1]]}</i></span></div>` : '';
     const cls = i < 3 ? `top${i + 1}` : i < 10 ? 'top10' : '';
     const no = i < 3 ? `<span class="rank-medal">${RANK_ICONS[i]}</span>` : `${i + 1}<small>位</small>`;
-    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${isDaily ? entry.score + ' クリア' : entry.score + ' 階'}</span></div>`.replace(/^/, wall);
+    return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${fmt(entry.score)}</span></div>`.replace(/^/, wall);
   }).join('');
 }
 

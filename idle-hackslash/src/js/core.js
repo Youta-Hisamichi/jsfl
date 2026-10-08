@@ -378,18 +378,11 @@ function promptGemShop(options = {}) {
 }
 document.querySelector('.th-item.gem').addEventListener('click', () => promptGemShop());
 
-rankDailyBtn.addEventListener('click', () => {
-  rankingMode = 'daily';
-  rankDailyBtn.classList.add('active'); rankDailyBtn.style.background = '#142d39';
-  rankStageBtn.classList.remove('active'); rankStageBtn.style.background = 'transparent';
+document.querySelectorAll('[data-rank-mode]').forEach(btn => btn.addEventListener('click', () => {
+  rankingMode = btn.dataset.rankMode;
+  document.querySelectorAll('[data-rank-mode]').forEach(x => x.classList.toggle('active', x === btn));
   renderRanking();
-});
-rankStageBtn.addEventListener('click', () => {
-  rankingMode = 'stage';
-  rankStageBtn.classList.add('active'); rankStageBtn.style.background = '#142d39';
-  rankDailyBtn.classList.remove('active'); rankDailyBtn.style.background = 'transparent';
-  renderRanking();
-});
+}));
 rankPrevDayBtn.addEventListener('click', () => {
   rankingDateOffset -= 1;
   renderRanking();

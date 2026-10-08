@@ -1999,3 +1999,5 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cl-btn.hire { background: linear-gradient(180deg, #3cc06a, #1f7a3e); }
 .cl-btn.is-disabled { filter: grayscale(0.8); opacity: 0.6; }
 .cl-close { margin-top: 10px; padding: 9px; border-radius: 10px; border: 0; font-weight: 900; background: #4a5578; color: #fff; }
+.tab-page[data-tab="ranking"] .rank-tabs { gap: 3px; }
+.tab-page[data-tab="ranking"] .rank-tabs .rank-tab-btn { font-size: 0.68rem !important; line-height: 1.25; padding: 6px 0 !important; min-width: 0; }

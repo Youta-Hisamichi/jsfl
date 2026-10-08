@@ -329,8 +329,11 @@
       <div class="shopkeeper" data-npc-tab="ranking"></div>
       <div id="totalUserCount" style="text-align:center; font-size:14px; color:#9db0d8; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.04); border-radius:10px;">👥 累計プレイヤー数：--- 人</div>
       <div class="gacha-actions rank-tabs">
-        <button class="gacha-pull rank-tab-btn active" id="rankDailyBtn" style="background:#142d39;">本日のクリア数</button>
-        <button class="gacha-pull rank-tab-btn" id="rankStageBtn" style="background:transparent;">到達階</button>
+        <button class="gacha-pull rank-tab-btn active" id="rankDailyBtn" data-rank-mode="daily">本日の<br>クリア数</button>
+        <button class="gacha-pull rank-tab-btn" id="rankStageBtn" data-rank-mode="stage">ベスト<br>ステージ</button>
+        <button class="gacha-pull rank-tab-btn" data-rank-mode="coins">MAX<br>コイン</button>
+        <button class="gacha-pull rank-tab-btn" data-rank-mode="kills">MAX<br>キル数</button>
+        <button class="gacha-pull rank-tab-btn" data-rank-mode="dps">MAX<br>DPS</button>
       </div>
       <div class="title" id="rankingTitle">🏆 本日のクリア数ランキング</div>
       <div id="rankDateNav" style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;">
