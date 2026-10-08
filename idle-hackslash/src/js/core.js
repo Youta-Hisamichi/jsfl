@@ -432,8 +432,8 @@ function vibrate(pattern) {
   try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
 }
 
-const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかったときにどちらが攻撃できるかは「迫り合い」の強さで決まります（強化タブで強化できます）。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10階ごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・階はリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
-const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nWho gets to attack on a collision depends on your Clash power vs the enemy\'s (upgradeable).\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
+const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかると自機と敵が同時に攻撃し合います。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10階ごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・階はリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nOn collision, you and the enemy attack each other at the same time.\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
 const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
 const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
 const TERMS_TEXT_JA = '本アプリは無料でお楽しみいただけるブラウザゲームです。\n\n・本アプリの利用により生じたいかなる損害についても、開発者は責任を負いません。\n・ゲーム内のデータ（コイン・ジェム等）は現実の金銭的価値を持ちません。\n・不具合やバランス調整のため、予告なくゲーム内容を変更する場合があります。\n・本アプリの複製・改変・再配布は禁止します。\n・反社会的・迷惑行為（不正なデータ改ざん等）が確認された場合、利用をお断りする場合があります。\n\n本アプリを利用することで、これらの事項に同意したものとみなします。';
@@ -913,9 +913,9 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【畑の恵み】7秒ごとにコインを拾ってくる' },
   merchant: { icon: '💰', name: '商人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'alchemist', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
     trait: '【商売上手】12秒ごとにコインをまとめて稼いでくる' },
-  hobbit: { icon: '🍀', name: 'ホビット', stat: 'speed', desc: '移動速度上昇', rarity: 'common', kind: 'sprite', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  hobbit: { icon: '🍀', name: 'ホビット', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'sprite', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
     trait: '【小さな幸運】クリティカル率+30%／当てると自機が1.5秒加速' },
-  dog: { icon: '🐕', name: '犬', stat: 'speed', desc: '移動速度上昇', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  dog: { icon: '🐕', name: '犬', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
     trait: '【かみつき】当たると、追加でもう1回かみつく（50%ダメージ）' },
   penguin: { icon: '🐧', name: 'ペンギン兵', stat: 'hp', desc: '最大HP上昇', rarity: 'common', kind: 'gunner', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
     trait: '【氷つぶて】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
@@ -933,9 +933,9 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【連撃】攻撃が当たると、追加でもう1発（50%ダメージ）' },
   archer: { icon: '🏹', name: '弓兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'archer', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【狙撃】3秒ごとに敵を追尾する矢を自動で放つ' },
-  thief: { icon: '🗡️', name: '盗賊', stat: 'speed', desc: '移動速度上昇', rarity: 'rare', kind: 'thief', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  thief: { icon: '🗡️', name: '盗賊', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'thief', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【盗む】当てるたびに30%の確率でコインを盗む' },
-  dancer: { icon: '💃', name: '踊り子', stat: 'speed', desc: '移動速度上昇', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  dancer: { icon: '💃', name: '踊り子', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【魅惑の舞】仲間全員の攻撃力 +10%（踊り子1人ごと）' },
   bard: { icon: '🎸', name: '吟遊詩人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【鼓舞の歌】仲間全員の攻撃力 +10%（吟遊詩人1人ごと）' },
@@ -945,7 +945,7 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【錬金】当てるたびにコイン獲得／【調合薬】10秒ごとに自機のHPを8%回復' },
   musketeer: { icon: '🔫', name: 'マスケット兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'gunner', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【一斉射撃】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
-  bunny: { icon: '🐰', name: '遊び人', stat: 'speed', desc: '移動速度上昇', rarity: 'rare', kind: 'sprite', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  bunny: { icon: '🐰', name: '遊び人', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'sprite', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【気まぐれ】クリティカル率+30%／当てると自機が1.5秒加速' },
   golem: { icon: '🗿', name: 'ゴーレム兵', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', kind: 'golem', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
     trait: '【巨体】体が大きく、HPが2倍' },
@@ -963,7 +963,7 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【魔導】5秒ごとに攻撃力2倍の魔法弾を放つ' },
   fortune: { icon: '🔮', name: '占い師', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'sage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
     trait: '【水晶の導き】5秒ごとに攻撃力2倍の魔法弾を放つ' },
-  ninja: { icon: '🥷', name: '忍者', stat: 'speed', desc: '移動速度上昇', rarity: 'epic', kind: 'ninja', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  ninja: { icon: '🥷', name: '忍者', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'epic', kind: 'ninja', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
     trait: '【毒刃】当てた敵を毒状態にする（毒スキルなしでも発動）' },
   pirate: { icon: '🏴‍☠️', name: '海賊', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'pirate', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
     trait: '【略奪】敵に当てるとたまにコインを奪う（8秒に1回まで）' },
@@ -1071,6 +1071,7 @@ const game = {
 // 転生Lv：転生前に進んだ階が深いほど多く上がる（10階ごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
 const REBIRTH_LV_BONUS = 0.03;
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
+const SPEED_MULT_CAP = 1.6;
 function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }
 function applyArtifactBonuses(b) {
   for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
@@ -1166,6 +1167,7 @@ function computeBonuses() {
   const rlv = game.rebirthLv || 0; // 転生Lv：転生するたびに上がり、キャラの基礎能力がずっと強くなる
   b.atkMult += rlv * REBIRTH_LV_BONUS; b.hpMult += rlv * REBIRTH_LV_BONUS;
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
+  b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult); // 移動速度の仲間を育てすぎても超高速にならないよう上限
   return b;
 }
 
@@ -1219,7 +1221,7 @@ function renderUpgradeList() {
     const level = game.upgrades[id];
     if (level >= getUpgradeLevelCap(id)) {
       return `<div class="upgrade-row">
-      <div class="upgrade-btn upgrade-card is-disabled" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${level}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></div>
+      <div class="upgrade-btn upgrade-card is-disabled" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${formatCoinNumber(level)}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></div>
       <button class="upgrade-max-btn one-btn is-disabled" data-upgrade="${id}">+1<span>Lv.</span></button>
       <button class="upgrade-max-btn pct-btn is-disabled" data-upgrade-pct="${id}">10%<span>—</span></button>
       <button class="upgrade-max-btn is-disabled" data-upgrade-max="${id}">MAX<span>—</span></button>
@@ -1235,10 +1237,10 @@ function renderUpgradeList() {
     const next = getUpgradeStatValue(id);
     game.upgrades[id] = level;
     return `<div class="upgrade-row">
-      <div class="upgrade-btn upgrade-card ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${level}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div>
+      <div class="upgrade-btn upgrade-card ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${formatCoinNumber(level)}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div>
       <button class="upgrade-max-btn one-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}">+1<span>Lv.UP</span></button>
-      <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${pctCount} Lv.</span></button>
-      <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${maxCount} Lv.</span></button>
+      <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${formatCoinNumber(pctCount)} Lv.</span></button>
+      <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${formatCoinNumber(maxCount)} Lv.</span></button>
     </div>`;
   };
   upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');

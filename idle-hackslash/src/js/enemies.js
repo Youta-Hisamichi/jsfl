@@ -813,18 +813,6 @@ function playerAttackHits(target) {
 function enemyAttackHits(attacker) {
   return Math.random() < hitChance(getEnemyAccuracy(attacker), getPlayerEvasion());
 }
-const PLAYER_BASE_CLASH = 10;
-const ENEMY_BASE_CLASH = 10;
-const ENEMY_CLASH_PER_STAGE = 0.01;   // ステージごとに敵の迫り合い +1%
-const BOSS_CLASH_MULT = 1.3;          // ボスは1.3倍
-function getPlayerClash() { return PLAYER_BASE_CLASH; }
-function getEnemyClash(enemy) {
-  return ENEMY_BASE_CLASH * (1 + (game.stage - 1) * ENEMY_CLASH_PER_STAGE) * (enemy && enemy.isBoss ? BOSS_CLASH_MULT : 1);
-}
-function getClashWinChance(enemy) {
-  const pc = getPlayerClash(), ec = getEnemyClash(enemy);
-  return pc / (pc + ec);
-}
 function spawnMissText(target) {
   spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
   playMissSound();

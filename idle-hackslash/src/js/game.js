@@ -109,7 +109,7 @@ function step() {
 
     // お試し：ぶつかったら敵味方が同時に攻撃する（麻痺・眠り中の敵は反撃できない）
     if (!MUTUAL_HIT) {
-      const enemyIsHit = isDisabled(e) || Math.random() < getClashWinChance(e);
+      const enemyIsHit = isDisabled(e) || Math.random() < 0.5;
       if (enemyIsHit && !playerAttackHits(e)) {
         spawnMissText(e);
       } else if (enemyIsHit) {
@@ -442,7 +442,7 @@ function renderStatModal() {
   const row = (k, v) => `<div class="st-row"><span>${k}</span><b>${v}</b></div>`;
   let html = `<div class="st-sec">${xi('x_heart')} プレイヤー</div><div class="st-grid">`;
   if (p) html += row('HP', `${Math.max(0, Math.round(p.hp))} / ${p.maxHp}`) + row('攻撃力', p.atk);
-  html += row('命中', pct(getPlayerAccuracy())) + row('回避', pct(getPlayerEvasion())) + row('迫り合い', +getPlayerClash().toFixed(1))
+  html += row('命中', pct(getPlayerAccuracy())) + row('回避', pct(getPlayerEvasion()))
     + row('会心率', pct(CRIT_CHANCE + b.critChance)) + row('会心ダメージ', '×' + +(CRIT_MULT + b.critMultBonus).toFixed(2))
     + row('ボス特攻', '+' + pct(b.bossDmg)) + (game.tackleUnlocked ? row('タックル威力', '×' + +b.tackleMult.toFixed(2)) : '') + row('反撃率', pct(b.counter || 0)) + '</div>';
   if (en) {
@@ -450,11 +450,9 @@ function renderStatModal() {
     const trait = getEnemyTrait(en);
     html += `<div class="st-sec">🔴 ${bookEntry ? bookEntry.name : '敵'}${en.isBoss ? '（ボス）' : ''}${en.isGiant ? '［激デカ］' : ''}</div><div class="st-grid">`
       + row('HP', `${Math.max(0, Math.round(en.hp))} / ${en.maxHp}`) + row('攻撃力', en.atk)
-      + row('命中', pct(getEnemyAccuracy(en))) + row('回避', pct(getEnemyEvasion(en))) + row('迫り合い', +getEnemyClash(en).toFixed(1))
-      + row('迫り合い勝率', pct(getClashWinChance(en))) + '</div>';
+      + row('命中', pct(getEnemyAccuracy(en))) + row('回避', pct(getEnemyEvasion(en))) + '</div>';
     html += `<div class="st-trait">${trait ? `<b>特性：${ENEMY_TRAIT_LABELS[trait]}</b><br>${ENEMY_TRAIT_DESCS[trait] || ''}` : '特性なし'}</div>`;
   }
-  html += '<div class="st-note">迫り合い：ぶつかったとき、どちらが攻撃できるかを決める強さ（強化タブで上昇）</div>';
   document.getElementById('statModalBody').innerHTML = html;
 }
 document.getElementById('statHelpBtn').addEventListener('click', () => {

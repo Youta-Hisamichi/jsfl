@@ -1000,7 +1000,7 @@ upgradeList.addEventListener('click', event => {
     refreshPlayerBallStats(false);
     playUpgradeSound();
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
-    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${count}Lv` + leapPopLine(fromLv, game.upgrades[id]));
+    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv` + leapPopLine(fromLv, game.upgrades[id]));
     updateStatsUI();
     updateHPUI();
     return;
@@ -1071,7 +1071,7 @@ function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
   const lv = Math.floor(to / leap.every) * leap.every;
-  showNotice(`✨ ${UPGRADES[id].name} Lv.${lv} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
+  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv)} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
   playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'upgrade' ? AUTO_UPGRADE_QUIET_VOL : 1); // オート強化は強化ページ以外では小さく
@@ -1094,7 +1094,7 @@ function levelUpUpgrade(id, x, y) {
   announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
-  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${game.upgrades[id]}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
+  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id])}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
   updateStatsUI();
   updateHPUI();
   return true;
@@ -1712,7 +1712,6 @@ companionList.addEventListener('click', event => {
   if (maxBtn) {
     const isPct = maxBtn.dataset.companionLevelPct !== undefined;
     const id = isPct ? maxBtn.dataset.companionLevelPct : maxBtn.dataset.companionLevelMax;
-    if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', event.clientX, event.clientY); return; }
     const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
     spendCoins(total);
@@ -1720,7 +1719,7 @@ companionList.addEventListener('click', event => {
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
     playUpgradeSound();
-    showNotice(`${COMPANIONS[id].name} が Lv.${game.companions.level[id]} に！（+${count}）`);
+    showNotice(`${COMPANIONS[id].name} が Lv.${formatCoinNumber(game.companions.level[id])} に！（+${formatCoinNumber(count)}）`);
     updateStatsUI();
     updateHPUI();
     renderCompanionList();
@@ -1734,7 +1733,6 @@ companionList.addEventListener('click', event => {
 });
 function levelUpCompanion(id, x, y) {
   const cost = getCompanionLevelCost(id);
-  if (phase !== 'battle') { showTapError('戦闘中のみレベルアップできます', x, y); return false; }
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
   spendCoins(cost);
   game.companions.level[id]++;
