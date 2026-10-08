@@ -521,7 +521,7 @@ function fullReset() {
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
-  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
+  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -997,12 +997,16 @@ function showUpgradeLevelUpPop(id, x, y, text) {
 const AUTO_UPGRADE_IDS = ['atk', 'hp'];
 function renderAutoUpgradeBtn() {
   const b = document.getElementById('autoUpgradeBtn'); if (!b) return;
+  if (!game.autoUpgradeUnlocked) { b.textContent = '🔒 オート強化（ショップで購入）'; b.classList.add('off'); return; } // ショップのアイテムを買うと使える
   b.textContent = game.autoUpgrade ? '🤖 オート強化 ON（攻撃力・HPを自動で強化）' : '🤖 オート強化 OFF（タップでON）';
   b.classList.toggle('off', !game.autoUpgrade);
 }
-document.getElementById('autoUpgradeBtn').addEventListener('click', () => { game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame(); });
+document.getElementById('autoUpgradeBtn').addEventListener('click', () => {
+  if (!game.autoUpgradeUnlocked) { switchTab('gemshop'); showNotice('🤖 オート強化はショップで購入できます'); return; }
+  game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame();
+});
 setInterval(() => {
-  if (!game.autoUpgrade || phase !== 'battle') return;
+  if (!game.autoUpgrade || !game.autoUpgradeUnlocked || phase !== 'battle') return;
   let bought = 0;
   for (let n = 0; n < 20; n++) {
     const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
@@ -1064,6 +1068,7 @@ shopList.addEventListener('click', event => {
   if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + 1; updatePotionButton(); }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
+  if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); showNotice('🤖 オート強化を開放しました（強化ページでON/OFF）'); }
   renderShopList();
   refreshPlayerBallStats(false);
   playRegisterSound();
@@ -2524,6 +2529,7 @@ delete game.artifactSlots; delete game.extraArtifactSlots;
 if (game.evolutions) delete game.evolutions.swift;
 if (game.gachaShards) delete game.gachaShards.swift;
 if (!game.upgrades) game.upgrades = newUpgradeLevels();
+if (game.autoUpgrade && game.autoUpgradeUnlocked === undefined) game.autoUpgradeUnlocked = true; // ショップのアイテムになる前からオート強化を使っていた人はそのまま使える
 for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0; // 追加された強化は0から
 for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0;
 for (const id in GACHA_POOL) {
