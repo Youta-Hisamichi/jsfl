@@ -827,6 +827,14 @@ debugRow.addEventListener('click', event => {
     renderCompanionList(); renderRebirthShopList(); saveGame();
     showNotice(`DEBUG: 仲間${COMPANION_IDS.length}種をすべて開放し、パーティ枠を最大（${COMPANION_PARTY_MAX}人）にしました`); return;
   }
+  if (action === 'clearSkillsWeapons') { // 取得したスキル・サブウェポンを全部なくす（転生と同じ状態。ガチャの値段も最初に戻す）
+    for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
+    game.skillLevels = {}; game.equippedSkills = []; game.skillGachaPulls = 0;
+    game.weapons = {}; game.equippedWeapons = []; game.weaponGachaPulls = 0; weaponProj = []; weaponFx = [];
+    showNotice('🗑 スキルとサブウェポンを全部解除しました');
+    renderCoinShopList(); updateSkillButtonVisibility(); updateStatsUI(); saveGame();
+    return;
+  }
   if (action === 'dismissCompanions') { // 仲間を全員パーティから外す（図鑑・開放状況はそのまま）
     game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     balls = balls.filter(ball => !ball.isCompanion);
