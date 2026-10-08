@@ -80,7 +80,7 @@ function updateStackSlime(e) {
   }
 }
 // ボス「超ジャンボスライム」：倒せないミニスライムが叩かれるたびに分裂し、32匹そろうと合体して超ジャンボスライムになる
-const MEGA_COUNT = 32, MEGA_INV_HP = 999999, MEGA_HP_MULT = 4, MEGA_ATK_MULT = 1.5, MEGA_RADIUS = 66, MEGA_AUTO_SPLIT = 90;
+const MEGA_COUNT = 32, MEGA_INV_HP = 999999, MEGA_HP_MULT = 4, MEGA_ATK_MULT = 1.5, MEGA_RADIUS = 66, MEGA_AUTO_SPLIT = 90, MEGA_RUSH_AFTER_MS = 10000, MEGA_RUSH_SPLIT_MS = 90;
 function makeMegaMini(e, x, y) {
   const c = makeAddEnemy(e);
   c.shape = 'slimeChibi'; c.emoji = null; c.color = '#5cc8ff'; c.glow = 'rgba(92,200,255,0.55)';
@@ -106,8 +106,11 @@ function updateMegaSlime(e, speedMult) {
     const hitList = [];
     if (e.hp < e.maxHp) { hitList.push(e); e.hp = e.maxHp; }
     for (const ad of minis) if (ad.hp < ad.maxHp) { hitList.push(ad); ad.hp = ad.maxHp; }
-    e.megaTimer += speedMult;
-    if (e.megaTimer >= MEGA_AUTO_SPLIT) { e.megaTimer = 0; hitList.push(minis.length ? minis[Math.floor(Math.random() * minis.length)] : e); } // 放っておいても少しずつ増える
+    const now = Date.now(); if (!e.megaStartAt) e.megaStartAt = now;
+    const rushing = now - e.megaStartAt >= MEGA_RUSH_AFTER_MS; /* 10秒過ぎたら一気に分裂して合体へ */
+    let autoN = 0; e.megaTimer += speedMult; if (!rushing && e.megaTimer >= MEGA_AUTO_SPLIT) { e.megaTimer = 0; autoN = 1; }
+    if (rushing) { const due = Math.floor((now - e.megaStartAt - MEGA_RUSH_AFTER_MS) / MEGA_RUSH_SPLIT_MS) + 1; autoN = Math.max(0, due - (e.megaRushDone || 0)); e.megaRushDone = due; }
+    for (let k = 0; k < autoN; k++) { const all = adds.filter(ad => ad.megaOwner === e && ad.hp > 0); hitList.push(all.length ? all[Math.floor(Math.random() * all.length)] : e); } // 放っておいても少しずつ増える
     let count = e.megaCount || 1; // 分裂した累計で数える（攻撃力が高くてミニスライムが倒れても合体に近づく）
     for (const src of hitList) {
       if (count >= MEGA_COUNT) break;
