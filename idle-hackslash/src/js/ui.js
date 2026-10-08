@@ -2648,6 +2648,8 @@ for (const id in GACHA_POOL) {
 if (!game.companions.level) game.companions.level = {};
 if (!game.companions.hp) game.companions.hp = {};
 if (!game.companions.alive) game.companions.alive = {};
+for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive', 'downStages']) { const m = game.companions[k]; if (m) for (const id in m) if (!COMPANIONS[id]) delete m[id]; } // 仲間を一新したので、いなくなった職業の記録は消す
+if (game.companionBook) for (const id in game.companionBook) if (!COMPANIONS[id]) delete game.companionBook[id];
 COMPANION_IDS.forEach(id => {
   if (typeof game.companions.level[id] !== 'number') game.companions.level[id] = 0;
   if (typeof game.companions.hp[id] !== 'number') game.companions.hp[id] = 0;

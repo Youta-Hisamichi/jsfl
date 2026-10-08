@@ -1149,7 +1149,7 @@ function updateCompanionAbilities() {
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   for (const comp of balls) {
     if (!comp.isCompanion || comp.hp <= 0) continue;
-    if (comp.companionId === 'archer') {
+    if (compKind(comp.companionId) === 'archer') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + ARCHER_SHOT_INTERVAL_MS;
       if (now >= comp.nextAbilityAt && enemy && !enemy.isDying && !(enemy.spawnTimer > 0)) {
         comp.nextAbilityAt = now + ARCHER_SHOT_INTERVAL_MS;
@@ -1158,7 +1158,7 @@ function updateCompanionAbilities() {
         playTone(1500, 0.06, 'triangle', 0.08, 900);
       }
     }
-    if (comp.companionId === 'priest') {
+    if (compKind(comp.companionId) === 'priest') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + PRIEST_INTERVAL_MS;
       if (now >= comp.nextAbilityAt) {
         comp.nextAbilityAt = now + PRIEST_INTERVAL_MS;
@@ -1182,12 +1182,12 @@ function updateCompanionAbilities() {
         }
       }
     }
-    if (NEW_COMP_ABILITIES[comp.companionId]) { // 新しい仲間の能力（一定時間ごと）
-      const ab = NEW_COMP_ABILITIES[comp.companionId];
+    if (NEW_COMP_ABILITIES[compKind(comp.companionId)]) { // 新しい仲間の能力（一定時間ごと）
+      const ab = NEW_COMP_ABILITIES[compKind(comp.companionId)];
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + ab.ms;
       if (now >= comp.nextAbilityAt) { comp.nextAbilityAt = now + ab.ms; ab.fn(comp, player, enemy); }
     }
-    if (comp.companionId === 'sage') {
+    if (compKind(comp.companionId) === 'sage') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + 5000;
       if (now >= comp.nextAbilityAt && enemy && !enemy.isDying && !(enemy.spawnTimer > 0)) {
         comp.nextAbilityAt = now + 5000;
@@ -1197,7 +1197,7 @@ function updateCompanionAbilities() {
         playTone(880, 0.12, 'sine', 0.1, 1320);
       }
     }
-    if (comp.companionId === 'angel') {
+    if (compKind(comp.companionId) === 'angel') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + 10000;
       if (now >= comp.nextAbilityAt) {
         comp.nextAbilityAt = now + 10000;
@@ -1218,7 +1218,7 @@ function updateCompanionAbilities() {
         updateHPUI();
       }
     }
-    if (comp.companionId === 'witch') {
+    if (compKind(comp.companionId) === 'witch') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + WITCH_HEAL_INTERVAL_MS;
       if (now >= comp.nextAbilityAt && player) {
         comp.nextAbilityAt = now + WITCH_HEAL_INTERVAL_MS;

@@ -530,8 +530,13 @@ function makeClone(x, y) {
   };
 }
 
-const COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
+const KING_ATK_BONUS = 0.3;
+function companionKindCount(kind) { let n = 0; for (const id in COMPANIONS) if (compKind(id) === kind) n += getCompanionCount(id); return n; }
+const COMPANION_COLORS = { villager: '#c9a46a', merchant: '#d9a35a', hobbit: '#8fd36f', dog: '#ffb46b', penguin: '#7fb0ff', warrior: '#cfd6e6', mage: '#b48cff', priest: '#fff4b8', monk: '#ff6b5a', archer: '#6fd36f', thief: '#8a8f9c', dancer: '#ff8ad8', tamer: '#9aa6c8', heavy: '#7a6ab8', cavalry: '#7fb8ff', samurai: '#e0584f', summoner: '#c79bff', sage: '#9fc4ff', ninja: '#5a5f6c', king: '#ffd76b', princess: '#ffb8e0', pegasus: '#e8f0ff', dragon: '#ff7a4a', cat: '#ffb46b' };
+const OLD_COMPANION_COLORS = { paladin: '#ffe9a8', dragoon: '#9fd0ff', summoner: '#b8f5c8', alchemist: '#c4f06a', gunner: '#ffcf7a', pirate: '#e0584f', heroine: '#cfe4ff', mage: '#b48cff', ranger: '#6fd36f', warrior: '#d9a35a', cat: '#ffb46b', knight: '#ffb14f', archer: '#7ee787', witch: '#c792ea', sprite: '#64e8ff', golem: '#b0a58f', monk: '#ff8a5c', bard: '#ffd76b', ninja: '#8a7dff', priest: '#fff4b8', dragon: '#ff4f7b', thief: '#ff6b6b', lancer: '#6fa8ff', samurai: '#e05a6a', sage: '#5a8cff', angel: '#fff0a0' };
 const COMPANION_MOVEMENT = {
+  villager: { style: 'guard', speedFactor: 0.7 }, merchant: { style: 'escort', speedFactor: 0.9 }, hobbit: { style: 'flutter', speedFactor: 1.5 }, dog: { style: 'hop', speedFactor: 1.6 }, penguin: { style: 'kite', speedFactor: 0.9 },
+  dancer: { style: 'flutter', speedFactor: 1.2 }, tamer: { style: 'kite', speedFactor: 1.1 }, heavy: { style: 'guard', speedFactor: 0.6 }, cavalry: { style: 'hunter', speedFactor: 1.5 }, king: { style: 'escort', speedFactor: 0.8 }, princess: { style: 'escort', speedFactor: 1 }, pegasus: { style: 'swoop', speedFactor: 1.3 },
   paladin: { style: 'guard', speedFactor: 0.85 }, dragoon: { style: 'hunter', speedFactor: 1.2 }, summoner: { style: 'kite', speedFactor: 1 }, alchemist: { style: 'kite', speedFactor: 0.95 }, gunner: { style: 'kite', speedFactor: 1 }, pirate: { style: 'hunter', speedFactor: 1.1 },
   heroine: { style: 'guard', speedFactor: 0.9 }, mage: { style: 'kite', speedFactor: 1 }, ranger: { style: 'kite', speedFactor: 1.1 }, warrior: { style: 'guard', speedFactor: 0.85 }, cat: { style: 'hop', speedFactor: 1.2 },
   knight: { style: 'guard', speedFactor: 0.8 },
@@ -665,7 +670,7 @@ function moveCompanionCustom(ball, speedMult, player, enemy) {
   wallBounce(ball);
   return true;
 }
-const COMPANION_RADIUS = { golem: 16, dragon: 15 };
+const COMPANION_RADIUS = { villager: 16, heavy: 16, dragon: 16, cavalry: 15, pegasus: 15, tamer: 15 };
 const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下限（自機と同じ）
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
@@ -678,19 +683,19 @@ function getCompanionMaxHP(id) {
   const baseBonus = c.baseBonus + level * c.perLevel;
   const playerMaxHP = getPlayerMaxHP();
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
-  return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (id === 'golem' ? GOLEM_HP_MULT : 1) * boost);
+  return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost);
 }
 function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
-  const inspire = 1 + BARD_ATK_BONUS * getCompanionCount('bard');
+  const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); // 踊り子（1人ごと+10%）・王様の号令（+30%）
   const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」・進化「絆の欠片」
   return Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(id) * inspire * boost));
 }
 function getCompanionAtk(id) {
-  if (id !== 'dragon') return getCompanionBaseAtk(id);
-  let total = getCompanionBaseAtk('dragon');
+  if (compKind(id) !== 'dragon') return getCompanionBaseAtk(id);
+  let total = getCompanionBaseAtk(id);
   for (const other of COMPANION_IDS) {
-    if (other !== 'dragon') total += getCompanionBaseAtk(other) * getCompanionCount(other);
+    if (compKind(other) !== 'dragon') total += getCompanionBaseAtk(other) * getCompanionCount(other);
   }
   return total;
 }
