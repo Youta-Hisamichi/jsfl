@@ -2,6 +2,7 @@ function draw() {
   cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
   wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
   document.body.classList.toggle('hp-safe', !isPlayerHpShown()); // 雑魚戦は画面下の自分のHPも隠す
+  document.body.classList.toggle('boss-hp', isBossFight()); // HPパネルの見た目はボスがいる間ずっとボス戦用（負けた直後や試練の塔でも）
   ctx.clearRect(0, 0, size, sizeH || size);
   drawArenaFloor();
   drawObstacles();
