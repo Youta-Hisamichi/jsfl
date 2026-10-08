@@ -69,22 +69,7 @@
       </div>
     </div>
 
-    <div class="hp-row">
-      <button class="stat-help-btn" id="statHelpBtn" aria-label="詳しいステータス">？</button>
-      <div class="hp-card player" style="flex:1;">
-        <div class="label"><span class="name"><span class="en-ico"><img id="playerHpIco" alt=""></span>プレイヤー</span><span id="playerHPText">100</span></div>
-        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
-      </div>
-      <div class="hp-card enemy" style="flex:1;">
-        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
-        <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
-        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
-      </div>
-    </div>
-
-    <div class="battle-cmd-row">
-    <div class="action-row four six" id="skillRow">
+    <div class="action-row four six skill-strip" id="skillRow"><!-- スキル発動ボタン：戦場のすぐ下に並べ、多いときは横スクロール -->
       <button class="action-btn special" id="specialBtn">🔒 メテオ</button>
       <button class="action-btn accel" id="accelBtn">🔒 加速</button>
       <button class="action-btn heal" id="healBtn">🔒 回復</button>
@@ -102,6 +87,21 @@
       <button class="action-btn nova" id="novaBtn">🔒 全体攻撃</button>
       <button class="action-btn blast" id="blastBtn">🔒 大爆発</button>
     </div>
+    <div class="hp-row">
+      <button class="stat-help-btn" id="statHelpBtn" aria-label="詳しいステータス">？</button>
+      <div class="hp-card player" style="flex:1;">
+        <div class="label"><span class="name"><span class="en-ico"><img id="playerHpIco" alt=""></span>プレイヤー</span><span id="playerHPText">100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHPFill" style="width:100%"></div></div>
+        <div class="atk-tag"><span>ATK <span id="playerAtkNum">10</span></span><span>命中 <span id="playerAccNum">95%</span></span><span>回避 <span id="playerEvaNum">5%</span></span></div>
+      </div>
+      <div class="hp-card enemy" style="flex:1;">
+        <div class="label"><span class="name" id="enemyName">🔴 敵</span><span id="enemyHPText">100</span></div>
+        <div class="hp-bar-track"><div class="hp-bar-fill" id="enemyHPFill" style="width:100%"></div></div>
+        <div class="atk-tag"><span>ATK <span id="enemyAtkNum">8</span></span><span>命中 <span id="enemyAccNum">95%</span></span><span>回避 <span id="enemyEvaNum">5%</span></span></div>
+      </div>
+    </div>
+
+    <div class="battle-cmd-row">
     <div class="boss-retry-row">
       <button class="auto-toggle-btn" id="autoBossBtn" style="display:none;">🔁 自動再戦 ON</button>
       <button class="action-btn boss-retry-action" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
