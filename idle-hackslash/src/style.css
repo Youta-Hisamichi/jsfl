@@ -1896,3 +1896,4 @@ body.in-boss .hp-row .hp-card.enemy .label .name { color: #ffb8f0 !important; }
 body:not(.in-boss) .hp-row .hp-card.enemy { display: none !important; }
 body.hp-safe:not(.in-boss) .hp-row { display: none !important; }
 #playerHpIco { transform: scaleX(-1); } /* 自キャラの絵は左向きなので、右のボスHPの方を向くよう反転 */
+.battle-notice { background: rgba(8,11,18,0.5) !important; } /* 上に出るお知らせの台は半透明に */
