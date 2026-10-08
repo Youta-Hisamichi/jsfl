@@ -1987,7 +1987,7 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cl-gems { font-size: 0.78rem; font-weight: 800; color: #9ff0ff; text-align: right; margin-bottom: 4px; }
 .cl-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
 .cl-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--rc); }
-.cl-row.off { opacity: 0.6; filter: grayscale(0.7); }
+.cl-row.off .cl-ico, .cl-row.off .cl-name { opacity: 0.6; filter: grayscale(0.7); }
 .cl-ico { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
 .cl-ico img { width: 44px; height: 44px; object-fit: contain; }
 .cl-name { flex: 1; display: flex; flex-direction: column; min-width: 0; font-size: 0.82rem; }

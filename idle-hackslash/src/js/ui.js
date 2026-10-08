@@ -1126,33 +1126,37 @@ shopList.addEventListener('click', event => {
   saveGame();
 });
 // ショップで買ったとき：何を買ってどうなったかを画面中央にポップアップ
-function showShopPurchaseFx(iconHtml, name, line) {
+function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました！') {
   document.querySelectorAll('.shop-buy-fx').forEach(el => el.remove());
   const el = document.createElement('div');
   el.className = 'shop-buy-fx';
-  el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">購入しました！</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
+  el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">${kicker}</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2300);
 }
 // 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）
-const COMP_LOCK_GEMS = 3;
-function isCompLocked(id) { return !!(game.compLocked && game.compLocked[id]); }
+// 値段はレア度が高いほどかなり高い。★3以上は最初「解雇中」（採用すると召喚に出る）
+const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
+function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
+function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic'); }
+function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
 function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。切り替えるたびに💎' + COMP_LOCK_GEMS + '（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。★3以上は最初は解雇中です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
       const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
       const id = b.dataset.clToggle, locking = !isCompLocked(id);
       if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
-      if (game.gems < COMP_LOCK_GEMS) { promptGemShortage(COMP_LOCK_GEMS, { iconHtml: companionIconHtml(id) }); return; }
-      game.gems -= COMP_LOCK_GEMS;
+      const cost = compLockCost(id);
+      if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
+      game.gems -= cost;
       if (!game.compLocked) game.compLocked = {};
-      if (locking) game.compLocked[id] = true; else delete game.compLocked[id];
-      showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '解雇しました（仲間召喚に出なくなる）' : '採用しました（仲間召喚に出るようになる）');
+      game.compLocked[id] = locking;
+      showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間召喚に出なくなりました' : '仲間召喚に出るようになりました', locking ? '解雇しました！' : '採用しました！');
       playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
     });
   }
@@ -1165,7 +1169,7 @@ function renderCompLockList() {
   const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
   ov.querySelector('.cl-list').innerHTML = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
-    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>解雇中</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < COMP_LOCK_GEMS ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${COMP_LOCK_GEMS}</span></button></div>`;
+    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>解雇中</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
   }).join('');
 }
 document.getElementById('compLockBtn').addEventListener('click', openCompLockModal);
@@ -2701,6 +2705,7 @@ delete game.level; delete game.exp; // レベル制は廃止（古いセーブ�
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
 if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
+if (!game.compLockV2) { game.compLocked = {}; game.compLockV2 = true; } // 解雇・採用を初期化（★3以上は解雇中から）
 if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig30 = true; } // 削除した旧「戦闘30」の登録を消して、新しい戦闘30を未登録に戻す
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
