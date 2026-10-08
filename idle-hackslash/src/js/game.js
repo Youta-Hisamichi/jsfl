@@ -408,7 +408,7 @@ function updateHPUI() {
   const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
   const enTrait = getEnemyTrait(en);
   const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
-  enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（試練の塔）` : `👑 ${enIcon} ${enName}`) : `${enIcon} ${enName}`) + traitTag;
+  enemyName.innerHTML = (en.isBoss ? (game.skipChallenge ? `👑 ${enIcon} ${enName}（試練の塔）` : `👑 ${enIcon} ${enName}`) : `<span class="en-ico">${enIcon}</span>${enName}`) + traitTag; // 雑魚のアイコンはHPゲージの左に大きく出す
   renderEnemyTraitBadge(en, enTrait);
 }
 // ステージ右上に、今の敵の特徴をアイコン＋短い文字で小さく表示
