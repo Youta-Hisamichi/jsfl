@@ -1977,6 +1977,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
+const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.3, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
   if (!quiet) playChestOpenSound();
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
@@ -1993,6 +1994,13 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中�
     const info = RARITY_INFO[pick.rarity];
     loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` };
     if (!quiet) renderArtifactList();
+  }
+  // ★3以上の宝箱は、たまに回復ポーションも入っている（3個以上持っているときは入らない）
+  if (CHEST_POTION_RARITIES.includes(rarity) && (game.potions || 0) < CHEST_POTION_MAX_HELD && Math.random() < CHEST_POTION_CHANCE) {
+    game.potions = (game.potions || 0) + 1;
+    loot.sub = (loot.sub ? loot.sub + '<br>' : '') + '<b style="color:#ff7eb6">🧪 回復ポーションも入っていた！ +1</b>';
+    updatePotionButton();
+    showNotice(`🧪 宝箱から回復ポーションを手に入れた！（所持 ${game.potions}個）`);
   }
   if (!quiet) { updateStatsUI(); saveGame(); }
   return loot;
