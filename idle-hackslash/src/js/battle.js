@@ -553,8 +553,21 @@ function drawEnemyTraitEffects() {
 const TG_WIND = 32, TG_STUN = 100, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙は約1.7秒、その間はどの攻撃もダメージ3倍
 const TG_KINDS = ['fan', 'circle', 'line'];
 const TG_JUMP_CHANCE = 0.3, TG_JUMP_WIND = 58, TG_JUMP_H = 150; // ボスのジャンプアタック：確率・溜め（空中にいる時間）・飛び上がる高さ
+const TG_RAIN_CHANCE = 0.25, TG_RAIN_FALL = 44, TG_RAIN_GAP = 9, TG_RAIN_R = 34, TG_RAIN_DMG = 0.8; // ボスの「上から降ってくる」攻撃：確率・落ちるまで・次の岩までの間隔・範囲・威力
+function makeRainDrops(e, a) { // 1個目は主人公の足元、あとは主人公のまわりや画面のあちこちへ
+  const n = 6 + (e.isGiant ? 3 : 0) + Math.min(3, Math.floor(game.stage / 100)), drops = [];
+  for (let i = 0; i < n; i++) {
+    let x, y;
+    if (i === 0) { x = a.x; y = a.y; }
+    else if (i % 2) { const an = Math.random() * Math.PI * 2, d = 50 + Math.random() * 90; x = a.x + Math.cos(an) * d; y = a.y + Math.sin(an) * d; }
+    else { x = arena.x + (Math.random() * 2 - 1) * arenaHalf() * 0.85; y = arena.y + (Math.random() * 2 - 1) * arenaHalfY() * 0.85; }
+    const c = arenaClampPt(x, y, TG_RAIN_R);
+    drops.push({ x: c.x, y: c.y, r: TG_RAIN_R, land: TG_RAIN_FALL + i * TG_RAIN_GAP, done: false, rot: Math.random() * 6 });
+  }
+  return drops;
+}
 function tgKindFor(e) {
-  if (e.isBoss && Math.random() < TG_JUMP_CHANCE) return 'jump';
+  if (e.isBoss) { const r = Math.random(); if (r < TG_JUMP_CHANCE) return 'jump'; if (r < TG_JUMP_CHANCE + TG_RAIN_CHANCE) return 'rain'; }
   if (e.isBoss) return TG_KINDS[Math.floor(Math.random() * 3)];
   const key = getEnemyBookKey(e); let h = 0;
   for (const ch of key) h = (h * 31 + ch.codePointAt(0)) >>> 0;
@@ -602,12 +615,13 @@ function updateEnemyTelegraph(a, e, speedMult) {
     const big = (e.isBoss ? 1.25 : 1) * (isBig ? 1.3 : 1);
     const t = { kind, wind: (e.isBoss ? TG_WIND - 8 : TG_WIND) + (isBig ? 14 : 0), t: 0, ang, x: e.x, y: e.y, big: isBig };
     if (kind === 'circle') { t.x = a.x; t.y = a.y; t.r = 52 * big; }
+    else if (kind === 'rain') { t.drops = makeRainDrops(e, a); t.wind = t.drops[t.drops.length - 1].land + 4; }
     else if (kind === 'jump') { t.x = a.x; t.y = a.y; t.sx = e.x; t.sy = e.y; t.r = Math.max(60, e.radius * 1.5); t.wind = TG_JUMP_WIND + (e.isGiant ? 10 : 0); }
     else if (kind === 'fan') { t.r = (e.radius + 80) * big; t.half = 0.62; }
     else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
+    spawnDamageText(e.x, e.y - e.radius - 22, kind === 'rain' ? '上から降ってくるぞ！' : kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
     if (kind === 'jump') { thump(160, 520, 0.22, 0.12, 'square'); filteredNoise(0, 0.2, 0.12, 900, 1); } // 踏み切りの「ブワッ」
     else playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
     return false;
@@ -622,6 +636,18 @@ function updateEnemyTelegraph(a, e, speedMult) {
     e.jumpZ = Math.sin(Math.PI * p) * TG_JUMP_H; e.vx = 0; e.vy = 0;
   }
   tg.t += speedMult;
+  if (tg.kind === 'rain') { // 岩が順番に落ちてくる：落ちた瞬間に円の中にいると当たる
+    for (const d of tg.drops) {
+      if (d.done || tg.t < d.land) continue;
+      d.done = true;
+      for (let i = 0; i < 4; i++) spawnHitParticles(d.x + (Math.random() - 0.5) * d.r, d.y + (Math.random() - 0.5) * d.r, i % 2 ? '#a08a6a' : '#ff9f43');
+      thump(140, 45, 0.18, 0.18); filteredNoise(0, 0.12, 0.14, 700, 1); shakeScreenLight();
+      if (a.hp > 0 && Math.hypot(a.x - d.x, a.y - d.y) < d.r + a.radius * 0.5) {
+        applyHitKnockback(a, d, 4);
+        if (damagePlayerByTrait(a, e, e.atk * TG_DMG * TG_RAIN_DMG, '#ff4d4d')) return true;
+      }
+    }
+  }
   if (tg.t < tg.wind) return false;
   // 発動
   e.tg = null; e.tgCd = tgRandCd(e);
@@ -630,8 +656,8 @@ function updateEnemyTelegraph(a, e, speedMult) {
     for (let i = 0; i < 10; i++) { const an = i / 10 * Math.PI * 2; spawnHitParticles(tg.x + Math.cos(an) * tg.r * 0.8, tg.y + Math.sin(an) * tg.r * 0.8, i % 2 ? '#c9a46a' : '#ff9f43'); }
     shakeScreen(); thump(110, 35, 0.45, 0.4); playNoiseBurst(0.35, 0.3);
   }
-  const hit = a.hp > 0 && tgInside(tg, a.x, a.y, a.radius);
-  if (tg.kind === 'jump') { /* 上で演出済み */ } else if (tg.kind === 'circle') {
+  const hit = tg.kind !== 'rain' && a.hp > 0 && tgInside(tg, a.x, a.y, a.radius); // 降ってくる岩は1個ずつ判定済み
+  if (tg.kind === 'jump' || tg.kind === 'rain') { /* 上で演出済み */ } else if (tg.kind === 'circle') {
     for (let i = 0; i < 3; i++) spawnHitParticles(tg.x + (Math.random() - 0.5) * tg.r, tg.y + (Math.random() - 0.5) * tg.r, i ? '#ff9f43' : '#ff4d4d');
     playNoiseBurst(0.25, 0.3); shakeScreenLight();
   } else if (tg.kind === 'fan') {
@@ -640,7 +666,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
   } else {
     playTone(180, 0.25, 'sawtooth', 0.14, 90);
   }
-  e.tgFx = { kind: tg.kind === 'jump' ? 'circle' : tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
+  if (tg.kind === 'rain') e.tgFx = null; else e.tgFx = { kind: tg.kind === 'jump' ? 'circle' : tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
   if (tg.kind === 'line') {
     e.traitState = 'tgDash'; e.traitFreeze = false; e.dashing = true; e.tgBig = tg.big;
     const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
@@ -652,8 +678,28 @@ function updateEnemyTelegraph(a, e, speedMult) {
     applyHitKnockback(a, e, 5);
     return damagePlayerByTrait(a, e, e.atk * TG_DMG * (tg.big ? 1.5 : 1), '#ff4d4d'); // 大技は威力も大きい
   }
-  if (tg.wasIn || Math.random() < 0.3) spawnEvadeText(a);
+  if (tg.kind !== 'rain' && (tg.wasIn || Math.random() < 0.3)) spawnEvadeText(a);
   return false;
+}
+function drawRainTelegraph(tg) { // 落下地点の赤い円（落ちる直前ほど濃く）と、上から落ちてくる岩
+  const now = Date.now();
+  ctx.save();
+  for (const d of tg.drops) {
+    if (d.done) continue;
+    const start = d.land - TG_RAIN_FALL, p = Math.max(0, Math.min(1, (tg.t - start) / TG_RAIN_FALL));
+    if (tg.t < start - 14) continue; // まだ予告も出さない
+    ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,40,40,${0.1 + 0.18 * p})`; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,70,70,${0.5 + 0.45 * Math.abs(Math.sin(now / (p > 0.7 ? 45 : 90)))})`; ctx.stroke();
+    ctx.fillStyle = `rgba(0,0,0,${0.15 + 0.3 * p})`; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r * (0.3 + 0.5 * p), d.r * (0.15 + 0.25 * p), 0, 0, Math.PI * 2); ctx.fill(); // 近づく影
+    if (p > 0) { // 上から落ちてくる岩
+      const y = d.y - (1 - p) * (d.y + 60), s = d.r * 1.5;
+      ctx.save(); ctx.translate(d.x, y); ctx.rotate(d.rot + p * 3);
+      if (!drawObstacleSprite('rock', 0, 0, s)) { ctx.font = `${Math.round(s)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🪨', 0, 0); }
+      ctx.restore();
+    }
+  }
+  ctx.restore();
 }
 function kind_followTarget(tg) { return tg.kind !== 'circle' && tg.kind !== 'jump' && tg.t < tg.wind * 0.45; } // 扇・突進は溜めの前半だけ狙いを合わせる
 function isTelegraphStunned(e) { return !!e && e.traitState === 'tgStun'; }
@@ -764,7 +810,8 @@ function drawEnemyTelegraphs() {
     if (e.isPlayer || e.isDying) continue;
     drawEnemyAtkPhase(e);
     const tg = e.tg;
-    if (tg) {
+    if (tg && tg.kind === 'rain') drawRainTelegraph(tg);
+    else if (tg) {
       const p = Math.min(1, tg.t / tg.wind);
       const onGround = tg.kind === 'circle' || tg.kind === 'jump';
       const ex = onGround ? tg.x : e.x, ey = onGround ? tg.y : e.y;
