@@ -168,16 +168,16 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | k h k s h h | k h h s h h | s s s ks ks ks'
   },
-  boss11: { // ボス10 世紀末の死闘：刻むパワーコードと唸るベースに、熱く歌い上げる旋律（80年代アニメのヒーローロック）
-    bpm: 158,
+  boss11: { // ボス10 天翔ける星の拳：疾走する8ビートに刻むコードとうなるベース、熱く舞い上がるサビの旋律（80年代アニメのヒーローソング系）
+    bpm: 168,
+    echo: { time: 0.18, feedback: 0.18, wet: 0.12 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.032, notes: 'E5 = = G5 F#5 = E5 D5 | E5 = = = - - B4 D5 | F#5 = = A5 G5 = F#5 E5 | E5 = = = = = - - | B5 = = A5 G5 = A5 B5 | C6 = B5 A5 G5 = E5 G5 | A5 = = B5 A5 = F#5 D5 | D#5 = F#5 = B5 = A5 F#5 | G5 = = G5 A5 = B5 = | A5 = = F#5 D5 = E5 F#5 | B5 = = A5 F#5 = D5 F#5 | G5 = = = E5 = = = | E6 = = D6 C6 = B5 C6 | D6 = = C6 B5 = A5 F#5 | G#5 = = B5 E6 = = = | D6 = C6 = B5 = G#5 B5' },
-      { type: 'vrc6pulse12', gain: 0.012, notes: 'E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | E4+G4+B4 = = = = = = - | E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | D#4+F#4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | D4+F#4+B4 = = = = = = - | E4+G4+B4 = = = = = = - | C4+E4+G4 = = = = = = - | D4+F#4+A4 = = = = = = - | E4+G#4+B4 = = = = = = - | E4+G#4+B4 = = = = = = -' },
-      { type: 'pcebrass', gain: 0.03, notes: 'E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | B2+F#3 = B2+F#3 = B2+F#3 B2+F#3 B2+F#3 B2+F#3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | B2+F#3 B2+F#3 - B2+F#3 B2+F#3 - B2+F#3 B2+F#3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | C3+G3 C3+G3 - C3+G3 C3+G3 - C3+G3 C3+G3 | D3+A3 D3+A3 - D3+A3 D3+A3 - D3+A3 D3+A3 | E3+B3 E3+B3 - E3+B3 E3+B3 - E3+B3 E3+B3 | E3+B3 = E3+B3 = E3+B3 E3+B3 E3+B3 E3+B3' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 E2 E2 E3 E2 | E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | B1 B1 B2 B1 B1 B1 B2 B1 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | B1 B1 B2 B1 B1 B1 B2 B1 | E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | E2 E2 E3 E2 E2 E2 E3 E2 | E2 E2 E3 E2 E2 E2 E3 E2' },
+      { type: 'vrc6pulse25', gain: 0.034, notes: 'B4 = D5 = F#5 = E5 D5 | D5 = = B4 G4 = B4 D5 | E5 = = C#5 A4 = C#5 E5 | F#5 = = = A#4 = C#5 = | B4 = D5 = F#5 = B5 A5 | G5 = F#5 G5 = = D5 = | E5 = G5 = B5 = A5 G5 | F#5 = = = = = - - | A5 = = F#5 D6 = = C#6 | C#6 = = B5 A5 = = E5 | F#5 = = B5 D6 = C#6 B5 | B5 = = = G5 = A5 B5 | G5 = B5 = E6 = D6 B5 | C#6 = = E6 = = A5 = | A#5 = C#6 = F#6 = = = | F#6 = = = C#6 = A#5 =' },
+      { type: 'vrc6pulse12', gain: 0.015, notes: 'B3+D4+F#4 = - B3+D4+F#4 = - B3+D4+F#4 = | G3+B3+D4 = - G3+B3+D4 = - G3+B3+D4 = | A3+C#4+E4 = - A3+C#4+E4 = - A3+C#4+E4 = | F#3+A#3+C#4 = - F#3+A#3+C#4 = - F#3+A#3+C#4 = | B3+D4+F#4 = - B3+D4+F#4 = - B3+D4+F#4 = | G3+B3+D4 = - G3+B3+D4 = - G3+B3+D4 = | E3+G3+B3 = - E3+G3+B3 = - E3+G3+B3 = | F#3+A#3+C#4 = = = F#3+A#3+C#4 F#3+A#3+C#4 F#3+A#3+C#4 F#3+A#3+C#4 | D4+F#4+A4 = - D4+F#4+A4 = - D4+F#4+A4 = | A3+C#4+E4 = - A3+C#4+E4 = - A3+C#4+E4 = | B3+D4+F#4 = - B3+D4+F#4 = - B3+D4+F#4 = | G3+B3+D4 = - G3+B3+D4 = - G3+B3+D4 = | E3+G3+B3 = - E3+G3+B3 = - E3+G3+B3 = | A3+C#4+E4 = - A3+C#4+E4 = - A3+C#4+E4 = | F#3+A#3+C#4 = - F#3+A#3+C#4 = - F#3+A#3+C#4 = | F#3+A#3+C#4 = = = F#3+A#3+C#4 F#3+A#3+C#4 F#3+A#3+C#4 F#3+A#3+C#4' },
+      { type: 'vrc6saw', gain: 0.054, notes: 'B1 B1 B2 B1 B1 B1 B2 B1 | G1 G1 G2 G1 G1 G1 G2 G1 | A1 A1 A2 A1 A1 A1 A2 A1 | F#1 F#1 F#2 F#1 F#1 F#1 F#2 F#1 | B1 B1 B2 B1 B1 B1 B2 B1 | G1 G1 G2 G1 G1 G1 G2 G1 | E1 E1 E2 E1 E1 E1 E2 E1 | F#1 F#1 F#2 F#1 F#1 F#1 F#2 F#1 | D2 D2 D3 D2 D2 D2 D3 D2 | A1 A1 A2 A1 A1 A1 A2 A1 | B1 B1 B2 B1 B1 B1 B2 B1 | G1 G1 G2 G1 G1 G1 G2 G1 | E1 E1 E2 E1 E1 E1 E2 E1 | A1 A1 A2 A1 A1 A1 A2 A1 | F#1 F#1 F#2 F#1 F#1 F#1 F#2 F#1 | F#1 F#1 F#2 F#1 F#1 F#1 F#2 F#1' },
     ],
     kickBoost: 1.4,
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks'
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks s ks ks'
   },
   boss8: {
     bpm: 178,
@@ -560,7 +560,7 @@ const BGM_INFO = [
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss9', name: 'ボス9 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
-  { key: 'boss11', name: 'ボス10 世紀末の死闘', desc: '刻むパワーコードと唸るオクターブベースに、熱く歌い上げる旋律。宿敵を打ち倒すクライマックスのヒーローロック。ホ短調（北斗の拳系の作風）・BPM158' },
+  { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
