@@ -31,9 +31,9 @@ function renderSkillGacha() {
     return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `Lv${lv}（威力×${+pw.toFixed(1)}）` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div>${equipBtn ? `<div class="sk-btns">${equipBtn}</div>` : ''}</div>`;
   }).join('')) || '<div class="sk-empty">まだサブウェポンがありません。上のガチャで手に入れよう</div>'; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
-  const gachaBtn = (el, label, cost) => { if (!el) return; const h = `<span class="gp-title">🎲 ${label}</span><span class="gp-cost">${COIN_ICO}${formatCoinNumber(cost)}</span>`; if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
-  gachaBtn(document.getElementById('skillGachaBtn'), 'スキルガチャ<small>ランダムで解放・Lvアップ</small>', getSkillGachaCost());
-  gachaBtn(document.getElementById('weaponGachaBtn'), 'サブウェポンガチャ<small>ランダムで入手・Lvアップ</small>', getWeaponGachaCost());
+  const gachaBtn = (el, label, cost) => { if (!el) return; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, `${COIN_ICO} ${formatCoinNumber(cost)}`, label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
+  gachaBtn(document.getElementById('skillGachaBtn'), 'ランダムで解放・Lvアップ', getSkillGachaCost());
+  gachaBtn(document.getElementById('weaponGachaBtn'), 'ランダムで入手・Lvアップ', getWeaponGachaCost());
   // 装備枠に空きがなければガチャボタンは隠す（枠を増やすとまた出る）
   const sFull = eq.length >= slots, wFull = weq.length >= wslots;
   const sg = document.getElementById('skillGachaBtn'), wg = document.getElementById('weaponGachaBtn');
@@ -89,16 +89,17 @@ function renderEvolutionList() {
     <div class="evo-row"><span class="evo-lbl">💎 ジェム</span><button data-evo-gems="-10">-10</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="10">+10</button><button data-evo-gems="max">MAX</button></div>
     <div class="evo-row"><span class="evo-lbl">🪽 進化の羽</span><button data-evo-fea="-1">-</button><b class="evo-val">${evoFeathers}<small> / ${owned}</small></b><button data-evo-fea="1">+</button><button data-evo-fea="max">MAX</button></div>
     <div class="evo-odds">${EVO_TIERS.map((t, i) => `<div class="evo-odd" style="--rc:${RARITY_INFO[t.rarity].color}"><span>${rarityStars(t.rarity)}</span><b>×${t.mult}</b><i>${(odds[i] * 100).toFixed(odds[i] < 0.01 ? 2 : 1)}%</i></div>`).join('')}</div>
-    <button class="evo-go ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn">✨ ${evoKind === 'atk' ? '攻撃力' : 'HP'}を進化する（💎${evoGems}${evoFeathers ? `・🪽${evoFeathers}` : ''}）</button>`;
+    <button class="gacha-art-btn ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn" aria-label="進化ガチャ">${gachaArtHtml(3, `💎 ${evoGems}${evoFeathers ? `・🪽 ${evoFeathers}` : ''}`, `${evoKind === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}を進化する`)}</button>`;
   updateCompSummonVisibility();
 }
+function gachaArtHtml(i, cost, sub) { return `<span class="gacha-art ga-${i}"></span><span class="gab-cost">${cost}</span>${sub ? `<small class="gab-sub">${sub}</small>` : ''}`; } // ガチャのボタン（絵＋下にコスト）
 function updateCompSummonVisibility() {
   const cgb = document.getElementById('compGachaBtn');
   if (!cgb) return;
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 招集ガチャ</span><span class="cps-cost">${cost1 ? COIN_ICO + ' ' + formatCoinNumber(cost1) : '🎁 初回無料！'}</span>`;
+  { const h = gachaArtHtml(0, cost1 ? `${COIN_ICO} ${formatCoinNumber(cost1)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {

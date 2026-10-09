@@ -2185,3 +2185,17 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .goal-chip b { color: #ffd76b; }
 .goal-chip.reached { animation: goalReached 1.4s ease-out; }
 @keyframes goalReached { 0% { transform: translateX(-50%) scale(1.5); background: rgba(255,200,60,0.9); color: #3a2a00; } 100% { transform: translateX(-50%) scale(1); } }
+/* ガチャボタン：絵のボタン＋下にコスト（招集・スキル・サブウェポン・進化の4枚を1枚の画像にまとめて表示） */
+.gacha-art-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; max-width: 360px; margin: 4px auto 8px; padding: 0; border: none !important; background: none !important; box-shadow: none !important; cursor: pointer; font: inherit; color: var(--text); transition: transform 0.1s; }
+.gacha-art-btn:active { transform: scale(0.96); }
+.gacha-art-btn[hidden] { display: none; }
+.gacha-art { display: block; width: 100%; aspect-ratio: 640 / 293; background: url(assets/img/ui/gacha_btns.webp) no-repeat; background-size: 100% 400%; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
+.gacha-art.ga-0 { background-position: 0 0%; }
+.gacha-art.ga-1 { background-position: 0 33.333%; }
+.gacha-art.ga-2 { background-position: 0 66.667%; }
+.gacha-art.ga-3 { background-position: 0 100%; }
+.gacha-art-btn .gab-cost { margin-top: -4px; padding: 2px 14px; border-radius: 999px; background: linear-gradient(180deg, #3a2f5c, #241c3e); border: 1.5px solid #ffd76b; color: #fff; font-weight: 900; font-size: 0.9rem; line-height: 1.3; white-space: nowrap; }
+.gacha-art-btn .gab-cost .coin-ico { vertical-align: -0.15em; }
+.gacha-art-btn .gab-sub { font-size: 0.66rem; color: var(--text-dim); font-weight: 700; }
+.gacha-art-btn.is-disabled .gacha-art { filter: grayscale(0.55) brightness(0.85) drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
+.gacha-art-btn.is-disabled .gab-cost { border-color: #8a8fa3; color: #c8c8d0; }
