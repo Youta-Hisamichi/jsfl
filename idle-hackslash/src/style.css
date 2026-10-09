@@ -2305,3 +2305,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #settingsModal .settings-page .sk-bubble { color: #2a1a06 !important; }
 #settingsModal .settings-head { gap: 4px; }
 #settingsModal .settings-head .ico-img { clip-path: inset(0 7% 0 7%); } /* 歯車の絵の端に入っている線を隠す */
+/* 未解放の仲間はシルエット */
+.cl-list .cl-row.hire-locked .cl-ico img { filter: brightness(0) drop-shadow(0 0 2px rgba(150,170,255,0.6)) !important; }
+/* スキル列の赤ポーションはショップと同じ絵 */
+#redPotionBtn .ico-redpot, .ico-redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 55.2496% / 729.1667% 705.2083% no-repeat !important; }

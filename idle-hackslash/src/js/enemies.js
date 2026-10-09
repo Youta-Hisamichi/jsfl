@@ -442,7 +442,7 @@ function makeBall(isPlayer) {
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
       maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
       chaser: es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE, // ときどき、ひたすら主人公を追ってくるボス
-      radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? 34 : 16) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
+      radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? BOSS_RADIUS : 16) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
       glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
       shape: es.isBoss ? 'emoji' : (isEmoji ? 'emoji' : style.shape),
@@ -482,6 +482,7 @@ function getStageEnemyKey(stage) { // そのステージの通常の敵（エリ
   for (let k = 0; k < z.normal.length; k++) { const key = z.normal[(i + k) % z.normal.length]; if (!isEnemyRemoved(key)) return key; }
   return z.normal[i % z.normal.length];
 }
+const BOSS_RADIUS = 42; // ボスの大きさ（激デカは GIANT_BOSS_RADIUS）
 function getStageBossEmoji(stage) {
   const n = Math.floor((Math.max(10, stage) - 1) / 10);
   // 1周目のエリアは、転生するたびにそのエリアのボス候補（追加ボス→元のボス）が順番に入れ替わる

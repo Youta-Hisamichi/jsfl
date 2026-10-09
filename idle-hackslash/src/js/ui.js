@@ -1189,7 +1189,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
     const st = off ? '<em>採用前</em>' : '採用中', guar = !off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : '';
     const btn = off && !isHireUnlocked(id) ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">転生${hireRebirthNeed(id)}回で解放</span></button>`
       : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
-    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
+    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
