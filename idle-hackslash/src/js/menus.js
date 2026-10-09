@@ -98,7 +98,7 @@ function updateCompSummonVisibility() {
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 仲間招集ガチャ</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
+  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 招集ガチャ</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {
@@ -149,7 +149,7 @@ function getCompanionLevelCost(id) {
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
-  const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「仲間獲得ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
+  const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「採用ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
   return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
 }
 function openCompInfo(id) {
@@ -202,7 +202,7 @@ function renderCompanionList() {
     const rar = RARITY_INFO[c.rarity];
     return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${!isCharObtained(id) ? '🎲 獲得前' : isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
-  companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間招集」で仲間を呼びましょう！</div>`)
+  companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b><small>タップで詳しく</small></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
