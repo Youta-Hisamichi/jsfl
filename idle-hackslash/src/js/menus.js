@@ -67,7 +67,7 @@ function renderCoinShopList() {
 const GEM_BAG_BADGES = { 1: '初心者向け', 2: 'おすすめ', 3: '人気No.1', 4: '最もお得' };
 function renderSupergemShopList() {
   const active = getActiveSub();
-  const subHtml = Object.entries(SUBSCRIPTIONS).map(([id, sub]) => {
+  const subHtml = Object.entries(SUBSCRIPTIONS).reverse().map(([id, sub]) => {
     const on = isSubActive(id);
     const covered = !on && active && active.rank > sub.rank; // 上位プラン加入中
     const days = on ? Math.ceil((game.subscriptions[id] - Date.now()) / 86400000) : 0;
