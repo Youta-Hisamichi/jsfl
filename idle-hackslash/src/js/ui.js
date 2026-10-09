@@ -2640,11 +2640,12 @@ document.querySelectorAll('.tab-page[data-tab]').forEach(page => {
   const tab = page.dataset.tab;
   const src = ICON_IMAGES['tab_' + tab];
   const label = document.querySelector(`.tab-btn[data-tab="${tab}"] .tab-label`);
-  if (tab === 'game' || !src || page.querySelector('.page-head')) return;
+  if (tab === 'game' || tab === 'gemshop' || !src || page.querySelector('.page-head')) return; // ショップは看板があるので見出しなし
   const head = document.createElement('div');
   head.className = 'page-head';
   head.innerHTML = `<img class="ico-img" src="${src}" alt=""><span data-page-label="${tab}">${label ? label.textContent : ''}</span>`;
-  page.insertBefore(head, page.firstChild);
+  const panel = page.querySelector(':scope > .artifact-panel, :scope > .upgrade-panel') || page; // 見出しは魔法陣のパネルの中へ
+  panel.insertBefore(head, panel.firstChild);
 });
 document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
   const src = ICON_IMAGES['tab_' + btn.dataset.tab];
