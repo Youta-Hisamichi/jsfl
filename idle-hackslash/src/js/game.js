@@ -1910,6 +1910,13 @@ function drawBall(ball) {
       ctx.save(); ctx.globalAlpha = (0.25 + 0.55 * k) * pulse; ctx.strokeStyle = full ? '#ff5c6c' : '#ffb35c'; ctx.lineWidth = 2 + 3 * k;
       ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius + 6 + 6 * k, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke(); ctx.restore();
     }
+    { // 溜めの秒数（前の攻撃からのカウントアップ）と最大
+      const maxS = (HERO_WAIT_MAX - 1) * HERO_WAIT_RATE_MS / 1000, sec = Math.min(maxS, (w - 1) * HERO_WAIT_RATE_MS / 1000), full = w >= HERO_WAIT_MAX;
+      const txt = full ? `MAX ×${HERO_WAIT_MAX}` : `${sec.toFixed(1)} / ${maxS.toFixed(1)}秒`, y = ball.y - ball.radius * 2.6 - 6;
+      ctx.save(); ctx.font = `900 ${full ? 11 : 10}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(txt, ball.x, y);
+      ctx.fillStyle = full ? '#ff7b8a' : '#ffd08a'; ctx.fillText(txt, ball.x, y); ctx.restore();
+    }
   }
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
     const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
