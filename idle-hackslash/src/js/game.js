@@ -949,7 +949,7 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
-function getRebirthFeatherGain() { return String(Math.max(1, Math.floor(game.stage))).length * 10; } // 転生報酬の進化の羽：ステージの桁数×10枚
+function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return d * d * 10; } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {
   nextNormalBgm(); // 転生したら雑魚戦の曲を転生前とは別の曲に
