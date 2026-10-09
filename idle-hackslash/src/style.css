@@ -2208,31 +2208,34 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width: max(min(180vw, 980px), 100vh); aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; opacity: 0.45; pointer-events: none; z-index: 0; animation: gameMagicSpin 120s linear infinite; }
 @keyframes gameMagicSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 /* ショップの絵の部品（shop_ui.webp の切り抜き位置。要素の大きさに合わせて伸び縮みする） */
-.su-banner { background: url(assets/img/ui/shop_ui.webp) 0.0000% 0.0000% / 131.3321% 414.1892% no-repeat; }
-.su-gemplate { background: url(assets/img/ui/shop_ui.webp) 0.0000% 27.6753% / 202.8986% 863.3803% no-repeat; }
-.su-pillgold { background: url(assets/img/ui/shop_ui.webp) 59.9309% 26.6904% / 578.5124% 1201.9608% no-repeat; }
-.su-pillnavy { background: url(assets/img/ui/shop_ui.webp) 80.7560% 26.6430% / 593.2203% 1226.0000% no-repeat; }
-.su-name { background: url(assets/img/ui/shop_ui.webp) 0.0000% 37.9252% / 546.8750% 2452.0000% no-repeat; }
-.su-badge { background: url(assets/img/ui/shop_ui.webp) 20.3762% 37.8608% / 1129.0323% 2554.1667% no-repeat; }
-.su-price { background: url(assets/img/ui/shop_ui.webp) 35.2087% 39.0543% / 469.7987% 1459.5238% no-repeat; }
-.su-divider { background: url(assets/img/ui/shop_ui.webp) 70.8419% 39.1916% / 328.6385% 1393.1818% no-repeat; }
-.su-i_sword { background: url(assets/img/ui/shop_ui.webp) 92.7152% 43.1335% / 729.1667% 638.5417% no-repeat; }
-.su-i_shield { background: url(assets/img/ui/shop_ui.webp) 0.0000% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_meteor { background: url(assets/img/ui/shop_ui.webp) 16.2252% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_fairy { background: url(assets/img/ui/shop_ui.webp) 32.4503% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_bluepot { background: url(assets/img/ui/shop_ui.webp) 48.6755% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_party { background: url(assets/img/ui/shop_ui.webp) 81.1258% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_bag { background: url(assets/img/ui/shop_ui.webp) 97.3510% 62.0890% / 729.1667% 638.5417% no-repeat; }
-.su-i_swords { background: url(assets/img/ui/shop_ui.webp) 0.0000% 81.0445% / 729.1667% 638.5417% no-repeat; }
-.su-i_pots { background: url(assets/img/ui/shop_ui.webp) 16.2252% 81.0445% / 729.1667% 638.5417% no-repeat; }
-.su-i_scroll { background: url(assets/img/ui/shop_ui.webp) 32.4503% 81.0445% / 729.1667% 638.5417% no-repeat; }
-.su-i_emblem { background: url(assets/img/ui/shop_ui.webp) 48.6755% 81.0445% / 729.1667% 638.5417% no-repeat; }
-.su-parch { background: url(assets/img/ui/shop_ui.webp) 75.3846% 73.1239% / 388.8889% 1532.5000% no-repeat; }
-.su-tabon { background: url(assets/img/ui/shop_ui.webp) 0.0000% 93.8294% / 282.2581% 988.7097% no-repeat; }
-.su-taboff { background: url(assets/img/ui/shop_ui.webp) 55.3097% 93.8294% / 282.2581% 988.7097% no-repeat; }
-.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 78.6164% 94.1712% / 1093.7500% 957.8125% no-repeat; }
-.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 93.7086% 100.0000% / 729.1667% 638.5417% no-repeat; }
+.su-banner { background: url(assets/img/ui/shop_ui.webp) 0.0000% 0.0000% / 131.3321% 457.4324% no-repeat; }
+.su-gemplate { background: url(assets/img/ui/shop_ui.webp) 0.0000% 24.7525% / 202.8986% 953.5211% no-repeat; }
+.su-pillgold { background: url(assets/img/ui/shop_ui.webp) 59.9309% 23.9617% / 578.5124% 1327.4510% no-repeat; }
+.su-pillnavy { background: url(assets/img/ui/shop_ui.webp) 80.7560% 23.9234% / 593.2203% 1354.0000% no-repeat; }
+.su-name { background: url(assets/img/ui/shop_ui.webp) 0.0000% 34.2025% / 546.8750% 2708.0000% no-repeat; }
+.su-badge { background: url(assets/img/ui/shop_ui.webp) 20.3762% 34.1501% / 1129.0323% 2820.8333% no-repeat; }
+.su-price { background: url(assets/img/ui/shop_ui.webp) 35.2087% 35.1181% / 469.7987% 1611.9048% no-repeat; }
+.su-divider { background: url(assets/img/ui/shop_ui.webp) 70.8419% 35.2291% / 328.6385% 1538.6364% no-repeat; }
+.su-i_sword { background: url(assets/img/ui/shop_ui.webp) 92.7152% 38.3821% / 729.1667% 705.2083% no-repeat; }
+.su-i_shield { background: url(assets/img/ui/shop_ui.webp) 0.0000% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_meteor { background: url(assets/img/ui/shop_ui.webp) 16.2252% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_fairy { background: url(assets/img/ui/shop_ui.webp) 32.4503% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_bluepot { background: url(assets/img/ui/shop_ui.webp) 48.6755% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_party { background: url(assets/img/ui/shop_ui.webp) 81.1258% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_bag { background: url(assets/img/ui/shop_ui.webp) 97.3510% 55.2496% / 729.1667% 705.2083% no-repeat; }
+.su-i_swords { background: url(assets/img/ui/shop_ui.webp) 0.0000% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_pots { background: url(assets/img/ui/shop_ui.webp) 16.2252% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_scroll { background: url(assets/img/ui/shop_ui.webp) 32.4503% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_emblem { background: url(assets/img/ui/shop_ui.webp) 48.6755% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_book { background: url(assets/img/ui/shop_ui.webp) 64.9007% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_axe { background: url(assets/img/ui/shop_ui.webp) 81.1258% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-i_auto { background: url(assets/img/ui/shop_ui.webp) 97.3510% 72.1170% / 729.1667% 705.2083% no-repeat; }
+.su-parch { background: url(assets/img/ui/shop_ui.webp) 0.0000% 81.1617% / 388.8889% 1692.5000% no-repeat; }
+.su-tabon { background: url(assets/img/ui/shop_ui.webp) 40.2655% 84.0650% / 282.2581% 1091.9355% no-repeat; }
+.su-taboff { background: url(assets/img/ui/shop_ui.webp) 95.5752% 84.0650% / 282.2581% 1091.9355% no-repeat; }
+.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 0.0000% 94.7798% / 1093.7500% 1057.8125% no-repeat; }
+.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 10.9272% 100.0000% / 729.1667% 705.2083% no-repeat; }
 /* ショップ（アイテム）ページ：見本に合わせた看板・タブ・行 */
 .tab-page[data-tab="gemshop"] > .page-head { display: none; }
 .shop-hero { display: flex; justify-content: center; margin: -4px -4px 8px; }
@@ -2241,15 +2244,15 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .shop-gemplate { position: relative; flex: 1 1 0; aspect-ratio: 345 / 71; border: none; padding: 0; cursor: pointer; }
 .shop-gemplate span { position: absolute; left: 30%; right: 26%; top: 50%; transform: translateY(-50%); text-align: center; color: #fff; font-weight: 900; font-size: clamp(0.8rem, 3.6vw, 1.1rem); text-shadow: 0 1px 2px #000; }
 .shop-tabs { gap: 4px !important; }
-.shop-tabs .sub-tab-btn { flex: 1 1 0; aspect-ratio: 248 / 62; min-height: 0 !important; padding: 0 6px !important; display: flex !important; align-items: center; justify-content: center; gap: 6px; border: none !important; border-image: none !important; box-shadow: none !important; background: url(assets/img/ui/shop_ui.webp) 55.3097% 93.8294% / 282.2581% 988.7097% no-repeat !important; color: #fff !important; font-size: clamp(0.8rem, 3.8vw, 1rem) !important; font-weight: 900; text-shadow: 0 1px 2px #000 !important; }
-.shop-tabs .sub-tab-btn.active { background: url(assets/img/ui/shop_ui.webp) 0.0000% 93.8294% / 282.2581% 988.7097% no-repeat !important; color: #4a2604 !important; text-shadow: 0 1px 0 #ffe9a8 !important; }
+.shop-tabs .sub-tab-btn { flex: 1 1 0; aspect-ratio: 248 / 62; min-height: 0 !important; padding: 0 6px !important; display: flex !important; align-items: center; justify-content: center; gap: 6px; border: none !important; border-image: none !important; box-shadow: none !important; background: url(assets/img/ui/shop_ui.webp) 95.5752% 84.0650% / 282.2581% 1091.9355% no-repeat !important; color: #fff !important; font-size: clamp(0.8rem, 3.8vw, 1rem) !important; font-weight: 900; text-shadow: 0 1px 2px #000 !important; }
+.shop-tabs .sub-tab-btn.active { background: url(assets/img/ui/shop_ui.webp) 40.2655% 84.0650% / 282.2581% 1091.9355% no-repeat !important; color: #4a2604 !important; text-shadow: 0 1px 0 #ffe9a8 !important; }
 .shop-tabs .st-ico { display: inline-block; width: 1.45em; height: 1.45em; flex: none; filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 紺のタブでは白いアイコン */
 .shop-tabs .sub-tab-btn.active .st-ico { filter: brightness(0) saturate(100%) invert(14%) sepia(60%) saturate(1800%) hue-rotate(15deg) brightness(70%); } /* 金のタブでは茶色 */
-.shop-tabs .st-ico.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 78.6164% 94.1712% / 1093.7500% 957.8125% no-repeat; }
-.shop-tabs .st-ico.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 93.7086% 100.0000% / 729.1667% 638.5417% no-repeat; }
+.shop-tabs .st-ico.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 0.0000% 94.7798% / 1093.7500% 1057.8125% no-repeat; }
+.shop-tabs .st-ico.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 10.9272% 100.0000% / 729.1667% 705.2083% no-repeat; }
 .shop-tabs .sub-tab-btn .ico-img { width: 1.45em; height: 1.45em; vertical-align: middle; }
 #shopList { gap: 6px; }
-#shopList .shop-row { display: grid !important; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; padding: 6px 8px 6px 6px !important; border: 3px solid #b8862e !important; border-image: none !important; border-radius: 8px !important; background: url(assets/img/ui/shop_ui.webp) 75.3846% 73.1239% / 388.8889% 1532.5000% no-repeat !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; text-shadow: none !important; }
+#shopList .shop-row { display: grid !important; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; padding: 6px 8px 6px 6px !important; border: 3px solid #b8862e !important; border-image: none !important; border-radius: 8px !important; background: url(assets/img/ui/shop_ui.webp) 0.0000% 81.1617% / 388.8889% 1692.5000% no-repeat !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; text-shadow: none !important; }
 #shopList .sr-ico { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); }
 #shopList .sr-ico-emoji { border-radius: 8px; background: radial-gradient(circle, #24346a, #0e1630); border: 2px solid #c99a3a; font-size: 1.8rem; }
 #shopList .sr-main { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
