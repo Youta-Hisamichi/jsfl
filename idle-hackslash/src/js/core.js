@@ -242,7 +242,7 @@ function switchTab(name) {
   if (name === 'game') resizeCanvas();
   if (name === 'game' && typeof resumeGameOverForTab === 'function') resumeGameOverForTab();
   if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
-  if (name === 'gemshop') { renderRebirthShopList(); shopSortOrder = null; renderShopList(); } // 完売品を下へ並べ替えるのはショップを開き直したときだけ
+  if (name === 'gemshop') { renderRebirthShopList(); shopSortOrder = null; renderShopList(); if (typeof renderCompLockList === 'function') renderCompLockList(); } // 完売品を下へ並べ替えるのはショップを開き直したときだけ
   refreshBgm();
 }
 tabBar.addEventListener('click', event => {
@@ -363,7 +363,7 @@ gemShortGoBtn.addEventListener('click', () => {
   [stageSkipModal, skipRetryModal].forEach(m => m.classList.remove('show'));
   gemShopReturn = opts.returnTo ? { fn: opts.returnTo, mustResume: !!opts.mustResume } : null;
   gemReturnBtn.style.display = gemShopReturn ? 'flex' : 'none';
-  switchTab('gemshop');
+  switchTab('gemshop'); showShopTab('charge');
   document.getElementById('supergemSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 gemShortCancelBtn.addEventListener('click', () => {
@@ -710,7 +710,6 @@ SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全
 SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生しても残る）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
 SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
 SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
-SHOP_ITEMS.compLock = { icon: '📜', name: '解雇・採用の手続き', desc: '選んだ仲間を「解雇」すると仲間召喚に出なくなる。「採用」でまた出るように戻せる★3以上は最初は解雇中。値段はレア度が高いほど高い（💎3〜800）', action: () => openCompLockModal() };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];

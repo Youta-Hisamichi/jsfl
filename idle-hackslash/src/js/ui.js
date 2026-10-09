@@ -1140,6 +1140,18 @@ const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
 function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic'); }
 function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
+function onCompLockClick(ev) {
+  const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
+  const id = b.dataset.clToggle, locking = !isCompLocked(id);
+  if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
+  const cost = compLockCost(id);
+  if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
+  game.gems -= cost;
+  if (!game.compLocked) game.compLocked = {};
+  game.compLocked[id] = locking;
+  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間召喚に出なくなりました' : '仲間召喚に出るようになりました', locking ? '解雇しました！' : '採用しました！');
+  playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
+}
 function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
@@ -1148,30 +1160,34 @@ function openCompLockModal() {
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
-      const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
-      const id = b.dataset.clToggle, locking = !isCompLocked(id);
-      if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
-      const cost = compLockCost(id);
-      if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
-      game.gems -= cost;
-      if (!game.compLocked) game.compLocked = {};
-      game.compLocked[id] = locking;
-      showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間召喚に出なくなりました' : '仲間召喚に出るようになりました', locking ? '解雇しました！' : '採用しました！');
-      playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
+      onCompLockClick(ev);
     });
   }
   renderCompLockList();
   ov.classList.add('show');
 }
-function renderCompLockList() {
-  const ov = document.getElementById('compLockOverlay'); if (!ov) return;
-  ov.querySelector('.cl-gems').innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
-  const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
-  ov.querySelector('.cl-list').innerHTML = ids.map(id => {
+function renderCompLockList() { // ショップの「キャラ」タブと、仲間ページから開くダイアログの両方を描く（レア度の低い順）
+  const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
+  const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
     return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>解雇中</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
   }).join('');
+  for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
+    if (!root) continue;
+    root.querySelector('.cl-gems').innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
+    root.querySelector('.cl-list').innerHTML = html;
+  }
 }
+document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
+// ショップのタブ：アイテム／キャラ（解雇・採用）／課金（スーパージェム）
+function showShopTab(key) {
+  document.querySelectorAll('[data-shop-tab]').forEach(t => t.classList.toggle('active', t.dataset.shopTab === key));
+  document.querySelectorAll('[data-shop-sec]').forEach(sec => { sec.hidden = sec.dataset.shopSec !== key; });
+  if (key === 'chara') renderCompLockList();
+  try { localStorage.setItem('shopTab', key); } catch (e) {}
+}
+document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
+{ let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'chara', 'charge'].includes(first) ? first : 'item'); }
 document.getElementById('compLockBtn').addEventListener('click', openCompLockModal);
 
 const potionBtn = document.getElementById('potionBtn');
