@@ -1158,7 +1158,7 @@ function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
