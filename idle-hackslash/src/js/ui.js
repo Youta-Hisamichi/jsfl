@@ -2751,7 +2751,8 @@ document.getElementById('dbgMonCopy').addEventListener('click', () => {
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('dbgEnemyWrap').insertAdjacentHTML('beforeend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
   .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
-document.getElementById('debugBgmCat').insertAdjacentHTML('afterend', BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''));
+document.getElementById('dbgBgmWrap').innerHTML = BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''); // BGMの一覧は最初は畳んでおく
+document.getElementById('debugBgmCat').addEventListener('click', () => { const w = document.getElementById('dbgBgmWrap'), o = !w.classList.contains('open'); w.classList.toggle('open', o); document.getElementById('dbgBgmFoldMark').textContent = o ? '▲ 閉じる' : '▼ 開く'; });
 function renderBgmInfo() { // （関数宣言なので上のデバッグ処理からも呼べる）
   const cur = currentBgmType;
   document.getElementById('bgmInfoList').innerHTML = `<div class="bi-row">通常戦闘は${NORMAL_BATTLE_SONGS.length}曲・ボス戦は${BOSS_BATTLE_SONGS.length}曲をそれぞれシャッフルして流し、ボスを倒すたびに次の曲へ切り替わります。</div>` +
