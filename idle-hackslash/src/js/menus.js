@@ -766,7 +766,7 @@ function updateStatsUI() {
   }
 
   renderTabLists(); // 各ページの一覧は開いているページだけ描き直す（他は開いたときに描く）
-  rebornBtn.style.display = game.stage >= 3 && isRebornUnlocked() ? 'block' : 'none';
+  rebornBtn.style.display = canShowReborn() ? 'block' : 'none';
   stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
   updateSkipBtnVisibility();
   const skipHtml = game.skipChallenge

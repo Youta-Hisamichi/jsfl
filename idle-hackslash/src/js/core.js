@@ -1118,7 +1118,8 @@ const game = {
 const REBIRTH_LV_BONUS = 0.03;
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
 const REBORN_UNLOCK_STAGE = 101, TOWER_UNLOCK_STAGE = 51; // 転生したことがなければ、転生・試練の塔はこのステージに着いてから
-function isRebornUnlocked() { return (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= REBORN_UNLOCK_STAGE; }
+function canShowReborn() { return (game.stage >= 3 || !!game.dbgRebornAlways) && isRebornUnlocked(); } // デバッグの「転生ボタン常時表示」ならステージに関係なく出す
+function isRebornUnlocked() { return !!game.dbgRebornAlways || (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= REBORN_UNLOCK_STAGE; }
 function isTowerUnlocked() { return (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= TOWER_UNLOCK_STAGE || !!game.skipChallenge; }
 const SPEED_MULT_CAP = 1.6;
 function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }

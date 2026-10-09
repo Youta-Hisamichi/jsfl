@@ -763,7 +763,7 @@ function updateSkipBtnVisibility() {
   const hide = gameOverBgm || rebirthFlow;
   stageSkipBtn.style.display = hide || !isTowerUnlocked() ? 'none' : '';
   if (hide) rebornBtn.style.display = 'none'; // 転生するボタンもゲームオーバー・転生中は出さない
-  else rebornBtn.style.display = game.stage >= 3 && isRebornUnlocked() ? 'block' : 'none';
+  else rebornBtn.style.display = canShowReborn() ? 'block' : 'none';
   document.body.classList.toggle('gameover-lock', gameOverBgm);
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
 }

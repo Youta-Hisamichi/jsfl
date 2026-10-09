@@ -738,6 +738,11 @@ debugRow.addEventListener('click', event => {
     showNotice(action === 'playerHp1' ? 'DEBUG: 自分のHPを1にしました' : 'DEBUG: 敵のHPを1にしました');
     return;
   }
+  if (action === 'rebornAlways') {
+    game.dbgRebornAlways = !game.dbgRebornAlways; updateDbgRebornBtn(); updateStatsUI(); saveGame();
+    showNotice(game.dbgRebornAlways ? 'DEBUG: 転生ボタンをステージに関係なく表示します' : 'DEBUG: 転生ボタンを通常の条件に戻しました');
+    return;
+  }
   if (action === 'unlockSkills') {
     for (const id in SKILL_GACHA_SKILLS) {
       game.shopOwned[id] = true;
@@ -2063,8 +2068,8 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
 rebornBtn.addEventListener('click', event => {
-  if (bossContModal.classList.contains('show') && game.stage >= 3 && isRebornUnlocked()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
-  if (phase === 'battle' && game.stage >= 3 && isRebornUnlocked()) openRebornConfirm(null);
+  if (bossContModal.classList.contains('show') && canShowReborn()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
+  if (phase === 'battle' && canShowReborn()) openRebornConfirm(null);
   else showTapError('ステージ3から転生できます', event.clientX, event.clientY);
 });
 
@@ -3110,3 +3115,5 @@ document.getElementById('rankTopBtn').addEventListener('click', () => { // ラ�
   document.addEventListener('pointercancel', end, true);
   document.addEventListener('click', e => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); } }, true); // ドラッグで動かしたときはボタンを押したことにしない
 })();
+function updateDbgRebornBtn() { const b = document.getElementById('dbgRebornAlwaysBtn'); if (b) { b.textContent = `🌌 転生ボタン常時表示：${game.dbgRebornAlways ? 'ON' : 'OFF'}`; b.classList.toggle('dbg-on', !!game.dbgRebornAlways); } }
+updateDbgRebornBtn();
