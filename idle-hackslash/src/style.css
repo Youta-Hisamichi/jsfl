@@ -2103,3 +2103,4 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .my-char-card .mc-main small { margin-right: 0; white-space: nowrap; }
 .my-char-card .mc-name { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
 .my-char-card .mc-main small { color: #fff !important; font-size: 0.82rem; }
+.cc-name .cc-swap { font-size: 0.62rem; font-weight: 800; color: var(--text-dim); margin-left: 4px; }

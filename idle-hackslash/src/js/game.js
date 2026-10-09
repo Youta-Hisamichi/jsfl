@@ -233,7 +233,7 @@ function step() {
           trackDamage(dmg);
           spawnHitParticles(comp.x, comp.y, comp.color);
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-          noteElementHit(COMPANION_ELEMENT[comp.companionId], e);
+          noteElementHit(compElement(comp.companionId), e);
           onPlayerHitEnemy(e, dmg);
           if (comp.launchUntil > Date.now()) { // 弾き飛ばされた仲間が直撃
             comp.launchUntil = 0; e.vx += comp.vx * 0.6; e.vy += comp.vy * 0.6;
@@ -1902,11 +1902,12 @@ function drawBall(ball) {
   }
 
   if (ball.isCompanion) {
-    const img = companionSpriteImgs[ball.companionId];
+    const swapped = ball.companionId === getHeroChar(); // 自キャラと交代した仲間の枠には勇者が入る
+    const img = swapped ? braveImg : companionSpriteImgs[ball.companionId];
     ctx.save();
     if (img && img.complete && img.naturalWidth) {
-      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * 3.6; // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
-      drawFacingSprite(img, ball, ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
+      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.6); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
+      drawFacingSprite(img, ball, swapped ? 'hero' : ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
       const cnt = 1; // 同じ仲間は1人ずつ別の体で出るので、人数バッジは出さない
       if (cnt >= 2) { // 人数バッジ
         ctx.font = 'bold 11px sans-serif';

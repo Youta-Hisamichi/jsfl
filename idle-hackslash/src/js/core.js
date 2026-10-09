@@ -1016,6 +1016,8 @@ function elementMult(att, def) { return !att || !def ? 1 : ELEMENT_BEATS[att] ==
 function elemBadge(el, cls = '') { return el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
 // 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
 function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharObtained(game.heroChar) ? game.heroChar : null; }
+function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMENT[id]; } // 自キャラと交代した仲間は勇者が代わりに出るので属性なし
+const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
 function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
 // 採用ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）

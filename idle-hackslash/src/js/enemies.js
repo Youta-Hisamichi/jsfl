@@ -745,7 +745,7 @@ function makeCompanionBall(id) {
   };
 }
 // 同じ仲間が何人いても1人ずつ別の体で戦う（1体ぶんの攻撃力・HP）
-function getCompanionBallAtk(id) { return Math.max(1, Math.round(getCompanionAtk(id) * elementMult(COMPANION_ELEMENT[id], getFoeElement()))); } // 属性の相性込み
+function getCompanionBallAtk(id) { return Math.max(1, Math.round(getCompanionAtk(id) * elementMult(compElement(id), getFoeElement()))); } // 属性の相性込み
 function getCompanionBallMaxHP(id) { return getCompanionMaxHP(id); }
 function makeCompanionBalls() {
   return Object.keys(COMPANIONS).flatMap(id => Array.from({ length: getCompanionCount(id) }, () => makeCompanionBall(id)));
