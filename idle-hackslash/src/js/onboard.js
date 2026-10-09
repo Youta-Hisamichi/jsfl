@@ -1,6 +1,6 @@
 // 序盤の導線：ページ（タブ）を少しずつ解放・初心者ミッション・ボスに負けたときの次の目安
 // ---- ページの段階的な解放 ----
-const TAB_UNLOCK_STAGE = { upgrade: 2, records: 3, companion: 4, ranking: 5, coinshop: 6, gemshop: 8, gacha: 11 }; // 到達ステージで解放
+const TAB_UNLOCK_STAGE = { upgrade: 2, companion: 5, coinshop: 8, gacha: 11, records: 14, gemshop: 17, ranking: 20 }; // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
 const TAB_UNLOCK_INFO = {
   upgrade: 'コインで攻撃力やHPを強化できます',
   records: '目標を達成するとジェムがもらえます',
@@ -17,6 +17,8 @@ function isTabUnlocked(tab) {
 }
 function tabLabel(tab) { const el = document.querySelector(`.tab-btn[data-tab="${tab}"] .tab-label`); return el ? el.textContent : tab; }
 const tabUnlockQueue = [];
+const TAB_UNLOCK_GAP_MS = 25000; // 解放のお知らせは最低これだけ間をあける
+let lastTabUnlockAt = 0;
 function updateTabLocks() {
   const first = !Array.isArray(game.unlockedTabs);
   if (first) game.unlockedTabs = [];
@@ -28,7 +30,7 @@ function updateTabLocks() {
       if (!first && (game.bestStage || 1) < 100) { tabUnlockQueue.push(tab); if (btn) btn.classList.add('has-new'); } // 昔のセーブを読んだときは黙って開く
     }
   }
-  if (tabUnlockQueue.length && !document.querySelector('.ob-unlock.show')) showTabUnlock(tabUnlockQueue.shift());
+  if (tabUnlockQueue.length && !document.querySelector('.ob-unlock.show') && Date.now() - lastTabUnlockAt > TAB_UNLOCK_GAP_MS) { lastTabUnlockAt = Date.now(); showTabUnlock(tabUnlockQueue.shift()); }
 }
 function showTabUnlock(tab) {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
@@ -65,12 +67,15 @@ const BEGINNER_MISSIONS = [
   { text: 'ステージ30に到達する', get: () => game.bestStage || 1, goal: 30, gems: 5 },
 ];
 let missionSig = '';
+const MISSION_GAP_MS = 20000; let missionHoldUntil = Date.now() + 8000; // 始めてすぐには出さない
 function updateMission() {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
   let el = document.getElementById('obMission');
   if (game.obMission == null) game.obMission = (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= 100 ? BEGINNER_MISSIONS.length : 0; // やり込んだセーブには出さない
   const m = BEGINNER_MISSIONS[game.obMission];
   if (!m) { if (el) el.remove(); return; }
+  if (Date.now() < missionHoldUntil || document.querySelector('.ob-unlock.show')) { if (el) el.style.display = 'none'; missionSig = ''; return; } // 解放のお知らせと同時には出さない
+  if (el) el.style.display = '';
   if (!el) { el = document.createElement('button'); el.id = 'obMission'; el.className = 'ob-mission'; el.addEventListener('click', claimMission); wrap.appendChild(el); }
   const v = Math.min(m.goal, m.get()), done = v >= m.goal;
   const sig = game.obMission + ':' + v;
@@ -83,7 +88,7 @@ function updateMission() {
 function claimMission(event) {
   const m = BEGINNER_MISSIONS[game.obMission];
   if (!m || m.get() < m.goal) { if (m && m.hint) showTapError('💡 ' + m.hint, event.clientX, event.clientY); return; }
-  game.gems += m.gems; game.obMission++;
+  game.gems += m.gems; game.obMission++; missionHoldUntil = Date.now() + MISSION_GAP_MS; // 次のミッションは少し休んでから
   spawnDamageText(arena.x, arena.y - 30, `🎯 ミッション達成！ +${m.gems} 💎`, '#64e8ff', 0.012, true);
   playTone(1047, 0.1, 'square', 0.05, 1319); setTimeout(() => playTone(1568, 0.2, 'square', 0.05, 2093), 100);
   missionSig = ''; updateMission(); updateStatsUI(); saveGame();
@@ -153,3 +158,36 @@ function showFeatureUnlock(key) {
   playTone(784, 0.12, 'square', 0.05, 1175); setTimeout(() => playTone(1568, 0.25, 'square', 0.05, 2093), 140);
 }
 setInterval(() => { try { updateFeatureUnlocks(); } catch (e) { console.error(e); } }, 700);
+
+// ---- 敵をタップすると名前・属性・相性などを表示 ----
+let enemyTapStart = null;
+canvas.addEventListener('pointerdown', event => { enemyTapStart = { id: event.pointerId, x: event.clientX, y: event.clientY, t: Date.now() }; });
+canvas.addEventListener('pointerup', event => {
+  const s = enemyTapStart; enemyTapStart = null;
+  if (!s || s.id !== event.pointerId || Date.now() - s.t > 400 || Math.hypot(event.clientX - s.x, event.clientY - s.y) > 12) return; // 短いタップだけ（引っ張り・ドラッグは対象外）
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) * (size / rect.width), y = (event.clientY - rect.top) * ((sizeH || size) / rect.height);
+  const foes = [...balls, ...adds].filter(e => !e.isPlayer && !e.isDying && e.hp > 0 && !(e.spawnTimer > 0));
+  let best = null, bd = Infinity;
+  for (const e of foes) { const d = Math.hypot(e.x - x, e.y - y); if (d < (e.radius || 12) * 1.4 + 10 && d < bd) { best = e; bd = d; } }
+  if (best) showEnemyInfo(best, event.clientX - rect.left + canvas.offsetLeft, event.clientY - rect.top + canvas.offsetTop);
+});
+function showEnemyInfo(e, px, py) {
+  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+  let el = document.getElementById('enemyInfoPop');
+  if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; wrap.appendChild(el); }
+  const key = getEnemyBookKey(e.megaOwner || e), book = ENEMY_BOOK_BY_KEY[key];
+  const name = e.milestone && !game.skipChallenge ? e.milestone.label : (book && book.name) || (e.isBoss ? 'ボス' : 'モンスター');
+  const el2 = getEnemyElement(e), hero = getHeroElement();
+  const weak = el2 ? Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el2) : null;
+  const m = elementMult(hero, el2);
+  const aff = !el2 ? '' : !hero ? '自キャラは属性なし（ふつう）' : m > 1 ? `<b class="eip-good">こうかばつぐん！（×${ELEMENT_ADV}）</b>` : m < 1 ? `<b class="eip-bad">いまひとつ…（×${ELEMENT_DIS}）</b>` : 'ふつう（×1）';
+  el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}</div>`
+    + `<div class="eip-row">Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))} / ${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</div>`
+    + `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}</div>`
+    + (aff ? `<div class="eip-row">相性 ${aff}</div>` : '');
+  const ww = wrap.clientWidth;
+  el.style.left = Math.max(8, Math.min(ww - 8, px)) + 'px'; el.style.top = Math.max(60, py - 18) + 'px';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
+}

@@ -1335,12 +1335,12 @@ function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
 const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
 let skGachaBusy = false;
 function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
-const SK_GACHA_FX_MS = { rare: 600, epic: 800, legendary: 1000, mythic: 1200 }; // スキル・サブウェポンガチャの演出は短め
+const SK_GACHA_FX_MS = { rare: 900, epic: 1200, legendary: 1600, mythic: 2000 }; // スキル・サブウェポンガチャの演出は短め
 function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   runGachaCountdown(rarity, () => {
     const info = RARITY_INFO[rarity];
-    playGachaSound(rarity);
+    playPachinkoWin(rarity);
     skGachaResult.className = 'gacha-result rarity-' + rarity;
     skGachaResult.style.background = rarityBackground(rarity);
     skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
@@ -1353,7 +1353,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
       reroll(ev); // 直前の結果を取り消して、もう一度（コインはかからない）
     });
     after();
-  }, skGachaResult, { dur: SK_GACHA_FX_MS[rarity] || 700, skippable: true });
+  }, skGachaResult, { dur: SK_GACHA_FX_MS[rarity] || 900, skippable: true, pachinko: true });
 }
 // 枠がいっぱいのときは、装備中のもの（と枠を使わない常時スキル）だけが出る＝使えないものは出ない
 function skillGachaPool() {
@@ -1631,6 +1631,30 @@ function playGachaSound(rarity) {
   notes.forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.2), i * 90));
   if (rarity === 'legendary' || rarity === 'epic' || rarity === 'mythic') playNoiseBurst(0.3, 0.15);
 }
+// パチンコ風：だんだん速くなるリール音＋ジャラジャラ、レア度が高いほどキュインキュイン
+let pachinkoTok = 0; // 結果が出たら（スキップしたときも）溜め音を止める
+function playPachinkoBuildUp(ms, rarity) {
+  const tok = ++pachinkoTok;
+  for (let t = 0, gap = 110, i = 0; t < ms - 60; t += gap, gap = Math.max(32, gap * 0.9), i++) {
+    const f = 880 + (i % 4) * 220 + i * 14, k = i;
+    setTimeout(() => { if (tok !== pachinkoTok) return; playTone(f, 0.05, 'square', 0.05 + Math.min(0.05, k * 0.002)); if (k % 2 === 0) playNoiseBurst(0.025, 0.05); }, t);
+  }
+  const kyuin = { epic: 2, legendary: 3, mythic: 5 }[rarity] || 0;
+  for (let k = 0; k < kyuin; k++) setTimeout(() => { if (tok !== pachinkoTok) return; playTone(500, 0.16, 'sawtooth', 0.07, 2600); playTone(1000, 0.16, 'square', 0.03, 3200); }, ms * 0.3 + k * 160);
+  if (rarity === 'legendary' || rarity === 'mythic') thump(55, 140, ms / 1000 * 0.8, 0.25, 'sawtooth');
+}
+function playPachinkoWin(rarity) {
+  const lv = { rare: 1, epic: 2, legendary: 3, mythic: 4 }[rarity] || 1;
+  pachinkoTok++;
+  thump(130, 40, 0.4, 0.7); noiseSweep(0.5, 9000, 1500, 'highpass', 0.7, 0.45); // ドン！シャーン！
+  const fan = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.5, 1568];
+  const n = Math.min(fan.length, 4 + lv);
+  fan.slice(0, n).forEach((f, i) => setTimeout(() => { playTone(f, 0.13, 'square', 0.08); playTone(f / 2, 0.13, 'triangle', 0.1); }, 90 + i * 85));
+  const end = 90 + n * 85;
+  setTimeout(() => { [1046.5, 1318.5, 1568, 2093].slice(0, 2 + Math.min(2, lv)).forEach(f => playTone(f, 0.6, 'square', 0.05)); playNoiseBurst(0.45, 0.22); }, end); // ジャーン！
+  for (let k = 0; k < 8 * lv; k++) setTimeout(() => playTone(1800 + Math.random() * 2800, 0.035, 'triangle', 0.05), end + 150 + k * 40); // 玉がジャラジャラ出てくる
+  if (lv >= 3) for (let k = 0; k < 3; k++) setTimeout(() => playTone(700, 0.18, 'sawtooth', 0.06, 2800), end + 300 + k * 200);
+}
 function playGachaSummonSound() {
   [220, 277.18, 349.23, 440].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 'sine', 0.1, f * 1.5), i * 260));
 }
@@ -1658,7 +1682,8 @@ function runGachaCountdown(hintRarity, onDone, el = gachaResult, opts = {}) { //
   const dur = opts.dur || getGachaLoadingMs(hintRarity);
   el.style.setProperty('--gc-dur', dur + 'ms'); // CSSアニメの長さも合わせる
   el.innerHTML = `<div class="gc-stage" style="--gc-color:${col}"><div class="gc-ring"></div><div class="gc-ring gc-ring2"></div><div class="gc-orb">🔮</div></div><div class="gr-title gc-text" style="--gc-color:${col}">召喚中！！</div>${opts.skippable ? '<div class="gr-sub">タップでスキップ</div>' : ''}<div class="gc-bar"><div class="gc-fill" style="background:${col}"></div></div>`;
-  if (opts.dur) playTone(380, dur / 1000, 'triangle', 0.06, 1400); // 短い演出は短い上昇音だけ
+  if (opts.pachinko) playPachinkoBuildUp(dur, hintRarity); // スキル・サブウェポンガチャはパチンコ風に派手に
+  else if (opts.dur) playTone(380, dur / 1000, 'triangle', 0.06, 1400); // 短い演出は短い上昇音だけ
   else playGachaBuildUpSound(hintRarity);
   let done = false;
   const finish = () => {

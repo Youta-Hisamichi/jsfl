@@ -2152,3 +2152,14 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .fu-body { text-align: left; font-size: 0.85rem; line-height: 1.6; }
 .fu-body p { margin: 0 0 7px; }
 .fu-body b { color: #e07b00; }
+.comp-gacha-overlay { position: fixed; inset: 0; z-index: 75; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(6,6,16,0.72); }
+.comp-gacha-overlay.show { display: flex; }
+.comp-gacha-overlay .cgo-panel { width: 100%; max-width: 380px; border-radius: 14px; background: #17142c; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+.comp-gacha-overlay .gacha-result { width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
+.enemy-info-pop { position: absolute; z-index: 8; transform: translate(-50%, -100%) scale(0.9); min-width: 170px; max-width: 240px; padding: 7px 10px; border-radius: 10px; background: rgba(12,10,26,0.9); border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 0.72rem; line-height: 1.55; pointer-events: none; opacity: 0; transition: opacity 0.18s, transform 0.18s; box-shadow: 0 4px 14px rgba(0,0,0,0.45); }
+.enemy-info-pop.show { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+.enemy-info-pop .eip-name { font-weight: 900; font-size: 0.86rem; color: #ffd76b; margin-bottom: 2px; }
+.enemy-info-pop .eip-good { color: #ffe14f; }
+.enemy-info-pop .eip-bad { color: #9aa6c8; }
+.enemy-info-pop .el-badge { font-size: 0.68rem; }
+.comp-gacha-overlay #compGachaCloseBtn { color: #fff; border-color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.08); }

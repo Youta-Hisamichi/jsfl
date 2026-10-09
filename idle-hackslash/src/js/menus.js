@@ -149,6 +149,7 @@ function getCompanionLevelCost(id) {
 // 自キャラ：勇者か、獲得済みの仲間から選ぶ（見た目と属性が変わる）
 function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
+  el.style.display = COMPANION_IDS.some(isCharSummoned) ? '' : 'none'; // まだ誰も招集していなければ自キャラ変更は出さない
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
   el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><span class="mc-name"><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span></span><span class="mc-go">変更 ▶</span>`;
@@ -165,7 +166,7 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">獲得した仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -177,7 +178,7 @@ function openMyCharPicker() {
     });
   }
   const cur = getHeroChar() || '';
-  const ids = COMPANION_IDS.filter(isCharObtained).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
+  const ids = COMPANION_IDS.filter(isCharSummoned).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
   const row = (id, name, img, badge, rcol) => `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}</b><small>${badge}</small></span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`;
   ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '属性なし', '#9aa0b4')
     + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)} ${elemBadge(COMPANION_ELEMENT[id])}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
@@ -315,7 +316,6 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
   updateStatsUI();
   saveGame();
-  if (!isReroll) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 引き直しのときは画面を動かさない
   const reveal = () => { // 進化ガチャと同じ召喚演出のあとで開封（引き直しも同じ）
     if (!compSummoning) return;
     compSummoning = false;
@@ -346,6 +346,12 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateHPUI();
 }
 document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
+{ // 招集ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
+  const box = document.getElementById('compGachaResult'), ov = document.createElement('div');
+  ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);
+  const panel = document.createElement('div'); panel.className = 'cgo-panel'; ov.appendChild(panel); panel.appendChild(box); // 後ろのページが透けないよう不透明な台に載せる
+  new MutationObserver(() => ov.classList.toggle('show', box.style.display !== 'none')).observe(box, { attributes: true, attributeFilter: ['style'] });
+}
 
 function getPlayerAtk() {
   const b = computeBonuses();

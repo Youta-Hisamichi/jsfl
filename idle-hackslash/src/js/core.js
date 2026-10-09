@@ -1019,7 +1019,8 @@ const COMPANION_ELEMENT = {};
 function elementMult(att, def) { return !att || !def ? 1 : ELEMENT_BEATS[att] === def ? ELEMENT_ADV : ELEMENT_BEATS[def] === att ? ELEMENT_DIS : 1; }
 function elemBadge(el, cls = '') { return el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
 // 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
-function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharObtained(game.heroChar) ? game.heroChar : null; }
+function isCharSummoned(id) { return !!(game.companionBook && game.companionBook[id]) && isCharObtained(id); } // 一度でも招集して仲間にしたことがある
+function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharSummoned(game.heroChar) ? game.heroChar : null; }
 function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMENT[id]; } // 自キャラと交代した仲間は勇者が代わりに出るので属性なし
 const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
 function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
