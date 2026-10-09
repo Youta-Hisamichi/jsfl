@@ -676,7 +676,7 @@ const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下�
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
 function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
-function getCompanionPower(id) { return 1 + COMPANION_AWAKEN_BONUS * getCompanionAwaken(id); }
+function getCompanionPower(id) { return (1 + COMPANION_AWAKEN_BONUS * getCompanionAwaken(id)) * getCharLvMult(id); } // 覚醒と獲得Lv（キャラ獲得ガチャのダブり）で強くなる
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const c = COMPANIONS[id];

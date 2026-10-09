@@ -872,7 +872,7 @@ function buildGameOverTips() {
   if (atkLv + hpLv >= 2) tips.push(`⚔️ 強化で攻撃力・HPを上げよう（今のコインで 攻撃力+${atkLv}Lv / HP+${hpLv}Lv）`);
   if (ownedSkills.length > eq.length && eq.length < getSkillSlots()) tips.push('✨ 解放済みのスキルを装備しよう（スキルページ）');
   else if (!ownedSkills.length && cheapestSkill && game.coins >= cheapestSkill) tips.push('✨ スキルを解放して装備しよう（回復やバリアがおすすめ）');
-  if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を召喚して一緒に戦おう');
+  if (getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1)) tips.push('🐾 仲間を招集して一緒に戦おう');
   if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
   if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
   if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');

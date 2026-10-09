@@ -1138,25 +1138,27 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
 // 値段はレア度が高いほどかなり高い。★3以上は最初「解雇中」（採用すると召喚に出る）
 const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
-function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic'); }
-function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
+function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('rare'); } // ★2以上は最初「採用前」
+function isCompLocked(id) { if (!isCharObtained(id)) return true; return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); } // 獲得前のキャラは採用できない
 function onCompLockClick(ev) {
+  if (ev.target.closest('#charGachaBtn')) { charGachaPull(ev); return; }
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
   const id = b.dataset.clToggle, locking = !isCompLocked(id);
+  if (!isCharObtained(id)) { showTapError('先に「キャラ獲得ガチャ」で獲得してください', ev.clientX, ev.clientY); return; }
   if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
   const cost = compLockCost(id);
   if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
   game.gems -= cost;
   if (!game.compLocked) game.compLocked = {};
   game.compLocked[id] = locking;
-  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間召喚に出なくなりました' : '仲間召喚に出るようになりました', locking ? '解雇しました！' : '採用しました！');
+  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間招集に出なくなりました' : '仲間招集に出るようになりました', locking ? '解雇しました！' : '採用しました！');
   playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
 }
 function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。★3以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -1170,7 +1172,10 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
   const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
-    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>採用前</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
+    const got = isCharObtained(id), lv = getCharLv(id);
+    const btn = !got ? `<button class="cl-btn notyet" data-cl-toggle="${id}">獲得前<span>ガチャで獲得</span></button>`
+      : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button>`;
+    return `<div class="cl-row ${off ? 'off' : ''} ${got ? '' : 'notyet'}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}${got ? `<i class="cl-lv">獲得Lv.${lv}</i>` : ''}</b><small>${rarityStars(c.rarity)} ${!got ? '<em>獲得前</em>' : off ? '<em>採用前</em>' : '採用中'}${lv > 1 ? `　攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%` : ''}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
@@ -1179,6 +1184,28 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   }
 }
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
+// キャラ獲得ガチャ（ジェム）：★2以上のキャラを獲得する。ダブったら獲得Lvが上がり攻撃力・HPが上がる
+function charGachaPull(ev) {
+  if (typeof skGachaBusy !== 'undefined' && skGachaBusy) return;
+  if (game.gems < CHAR_GACHA_COST) { promptGemShortage(CHAR_GACHA_COST); return; }
+  game.gems -= CHAR_GACHA_COST; updateStatsUI();
+  const total = Object.values(CHAR_GACHA_WEIGHTS).reduce((a, b) => a + b, 0);
+  let r = Math.random() * total, rarity = 'common';
+  for (const [k, w] of Object.entries(CHAR_GACHA_WEIGHTS)) { r -= w; if (r < 0) { rarity = k; break; } }
+  const pool = COMPANION_IDS.filter(id => COMPANIONS[id].rarity === rarity);
+  const id = pool[Math.floor(Math.random() * pool.length)], c = COMPANIONS[id];
+  const before = (game.charLv && game.charLv[id]) || 0, wasGot = isCharObtained(id);
+  if (!game.charLv) game.charLv = {};
+  game.charLv[id] = Math.max(before, wasGot ? 1 : 0) + 1;
+  if (!wasGot) game.charLv[id] = 1;
+  const lv = getCharLv(id);
+  const title = !wasGot ? `${rarityStars(c.rarity)} ${c.name} 獲得！` : `${c.name} 獲得Lv${lv}！`;
+  const sub = !wasGot ? '「採用する」と仲間招集に出るようになります' : `ダブり！ 攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%`;
+  showSkGachaReveal(c.rarity, companionIconHtml(id), title, sub, () => {
+    if (!game.companionBook) game.companionBook = {};
+    renderCompLockList(); refreshPlayerBallStats(false); if (typeof refreshCompanionBalls === 'function') refreshCompanionBalls(); renderCompanionList(); saveGame();
+  }, null);
+}
 // ショップのタブ：アイテム／キャラ（解雇・採用）／課金（スーパージェム）
 function showShopTab(key) {
   document.querySelectorAll('[data-shop-tab]').forEach(t => t.classList.toggle('active', t.dataset.shopTab === key));
@@ -2722,7 +2749,7 @@ delete game.level; delete game.exp; // レベル制は廃止（古いセーブ�
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
 if (game.upgrades) for (const k of ['crit', 'critDmg', 'accuracy', 'bossDmg', 'clash', 'evasion', 'coin']) delete game.upgrades[k]; // 強化ページから廃止
-if (!game.compLockV2) { game.compLocked = {}; game.compLockV2 = true; } // 解雇・採用を初期化（★3以上は解雇中から）
+if (!game.compLockV3) { game.compLocked = {}; game.compLockV2 = game.compLockV3 = true; } // 解雇・採用を初期化（★3以上は解雇中から）
 if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig30 = true; } // 削除した旧「戦闘30」の登録を消して、新しい戦闘30を未登録に戻す
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止

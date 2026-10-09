@@ -998,11 +998,17 @@ function companionIconHtml(id) {
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
+// キャラ獲得ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）
+const CHAR_GACHA_COST = 20, CHAR_LV_BONUS = 0.25;
+const CHAR_GACHA_WEIGHTS = { common: 40, rare: 34, epic: 18, legendary: 6.5, mythic: 1.5 };
+function getCharLv(id) { const v = (game.charLv && game.charLv[id]) || 0; return Math.max(v, COMPANIONS[id] && COMPANIONS[id].rarity === 'common' ? 1 : 0); } // ★1は最初から獲得済み
+function isCharObtained(id) { return getCharLv(id) > 0; }
+function getCharLvMult(id) { return 1 + CHAR_LV_BONUS * Math.max(0, getCharLv(id) - 1); }
 function companionNeedsUnlock(id) { return false; } // 永続ショップ廃止：仲間は最初から全員召喚に出る（出したくない仲間は「解雇」で外す）
 function isCompanionUnlocked(id) { return !companionNeedsUnlock(id) || !!(game.companionUnlocks && game.companionUnlocks[id]); }
 COMPANION_IDS.filter(companionNeedsUnlock).forEach(id => {
   const c = COMPANIONS[id];
-  REBIRTH_SHOP_ITEMS['comp_' + id] = { icon: c.icon, name: c.name + ' 開放', desc: '仲間召喚で出るようになる（永続）', rarity: c.rarity, cost: COMPANION_UNLOCK_COST[c.rarity], companionId: id,
+  REBIRTH_SHOP_ITEMS['comp_' + id] = { icon: c.icon, name: c.name + ' 開放', desc: '仲間招集で出るようになる（永続）', rarity: c.rarity, cost: COMPANION_UNLOCK_COST[c.rarity], companionId: id,
     effect: () => { if (!game.companionUnlocks) game.companionUnlocks = {}; game.companionUnlocks[id] = true; renderCompanionList(); } };
 });
 function companionMap(value) { const m = {}; COMPANION_IDS.forEach(id => m[id] = value); return m; }

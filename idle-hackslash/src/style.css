@@ -2059,3 +2059,13 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 /* 図鑑の拡大表示：拡大しすぎると粗が目立つので小さめに。積み重なり系（雪だるま・三色団子）は全体を拡大 */
 .bstz-face { width: 58%; margin: 6px auto 4px; font-size: 6rem; }
 .bstz-face .bst-stack { transform: scale(5); transform-origin: 50% 50%; }
+/* キャラ獲得ガチャ */
+.char-gacha { margin: 4px 0 10px; }
+.char-gacha-btn { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px; border: none; border-radius: 12px; color: #fff; font-weight: 900; background: linear-gradient(180deg, #b46cff, #6a2fd0); box-shadow: 0 3px 0 #3f1a85, 0 0 14px rgba(180,108,255,0.45); cursor: pointer; }
+.char-gacha-btn .cg-title { font-size: 1rem; }
+.char-gacha-btn .cg-cost { font-size: 0.8rem; opacity: 0.95; }
+.char-gacha-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #3f1a85; }
+.char-gacha .cg-note { font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+.cl-btn.notyet { background: linear-gradient(180deg, #8a8fa3, #5a5f73); }
+.cl-row.notyet .cl-ico img { filter: brightness(0) drop-shadow(0 0 2px rgba(160,190,255,0.55)); opacity: 0.8; }
+.cl-name .cl-lv { font-style: normal; font-size: 0.66rem; font-weight: 900; color: #fff; background: #b46cff; border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }

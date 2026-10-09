@@ -98,7 +98,7 @@ function updateCompSummonVisibility() {
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">🐾 仲間召喚</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
+  cgb.innerHTML = `<span class="cps-title">🐾 仲間招集</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {
@@ -149,7 +149,7 @@ function getCompanionLevelCost(id) {
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
-  const status = isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間召喚に出ます' : '🐾 仲間召喚で入手できます';
+  const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「キャラ獲得ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
   return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
 }
 function openCompInfo(id) {
@@ -200,9 +200,9 @@ function renderCompanionList() {
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
-    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${isCompLocked(id) ? '📜 採用前' : '召喚で入手'}</span></button>`;
+    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${!isCharObtained(id) ? '🎲 獲得前' : isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
-  companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間召喚」で仲間を呼びましょう！</div>`)
+  companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間招集」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b><small>タップで詳しく</small></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
@@ -296,7 +296,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   };
   box.innerHTML = count === 1
     ? `<div class="gr-icon gr-pop">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStars(COMPANIONS[results[0].id].rarity)} ${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
-    : `<div class="gr-title gr-pop">🐾 仲間10連召喚結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
+    : `<div class="gr-title gr-pop">🐾 仲間10連招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
   { const cb = document.getElementById('compGachaCloseBtn'), row = document.createElement('div'); row.className = 'gr-btn-row'; cb.before(row); row.insertAdjacentHTML('beforeend', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>`); cb.classList.add('gr-ok-btn'); row.appendChild(cb); row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } // 演出スキップの誤タップを防ぐため、引き直しと閉じるは左右に離して並べる
   document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });
