@@ -84,7 +84,7 @@ function renderEvolutionList() {
   const el = document.getElementById('evoPanel'); if (!el) return;
   const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0;
   evoGems = Math.max(EVO_MIN_GEMS, Math.min(evoGems, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = Math.max(0, Math.min(evoFeathers, owned));
-  const odds = evoOdds(evoGems, evoFeathers), fmtRate = v => '×' + formatCoinNumber(v);
+  const odds = evoOdds(evoGems, evoFeathers), fmtRate = v => '×' + (v < 1000 ? +v.toFixed(2) : formatCoinNumber(v));
   el.innerHTML = `<div class="evo-rates"><div class="evo-rate ${evoKind === 'atk' ? 'on' : ''}" data-evo-kind="atk"><span>⚔️ 攻撃力進化</span><b>${fmtRate(getEvoRate('atk'))}</b></div><div class="evo-rate ${evoKind === 'hp' ? 'on' : ''}" data-evo-kind="hp"><span>❤️ HP進化</span><b>${fmtRate(getEvoRate('hp'))}</b></div></div>
     <div class="evo-row"><span class="evo-lbl">💎 ジェム</span><button data-evo-gems="-10">-10</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="10">+10</button><button data-evo-gems="max">MAX</button></div>
     <div class="evo-row"><span class="evo-lbl">🪽 進化の羽</span><button data-evo-fea="-1">-</button><b class="evo-val">${evoFeathers}<small> / ${owned}</small></b><button data-evo-fea="1">+</button><button data-evo-fea="max">MAX</button></div>
@@ -365,12 +365,12 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateHPUI();
 }
 document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
-{ // 招集ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
-  const box = document.getElementById('compGachaResult'), ov = document.createElement('div');
+['compGachaResult', 'gachaResult'].forEach(boxId => { // 招集ガチャ・進化ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
+  const box = document.getElementById(boxId), ov = document.createElement('div'); if (!box) return;
   ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);
   const panel = document.createElement('div'); panel.className = 'cgo-panel'; ov.appendChild(panel); panel.appendChild(box); // 後ろのページが透けないよう不透明な台に載せる
   new MutationObserver(() => ov.classList.toggle('show', box.style.display !== 'none')).observe(box, { attributes: true, attributeFilter: ['style'] });
-}
+});
 
 function getPlayerAtk() {
   const b = computeBonuses();

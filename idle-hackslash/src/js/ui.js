@@ -1802,12 +1802,13 @@ document.getElementById('evoPanel').addEventListener('click', event => {
     gachaResult.className = 'gacha-result rarity-' + tier.rarity;
     gachaResult.style.background = rarityBackground(tier.rarity);
     gachaResult.style.display = '';
-    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${kind === 'atk' ? '⚔️' : '❤️'}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}</div><div class="gr-sub">${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${formatCoinNumber(before)} → <b>×${formatCoinNumber(getEvoRate(kind))}</b></div><button id="gachaResultCloseBtn">閉じる</button>`;
+    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${kind === 'atk' ? '⚔️' : '❤️'}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}</div><div class="gr-sub">${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(getEvoRate(kind))}</b></div><button id="gachaResultCloseBtn">閉じる</button>`;
     document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
     evoBusy = false; renderEvolutionList(); saveGame();
   });
 });
 let evoBusy = false;
+function fmtEvoRate(v) { return v < 1000 ? String(+v.toFixed(2)) : formatCoinNumber(v); } // ×1.1 などの小数も見えるように
 evolutionList.addEventListener('click', event => {
   const button = event.target.closest('[data-evolve]');
   if (!button) return;
