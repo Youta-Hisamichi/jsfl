@@ -1142,8 +1142,8 @@ const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
 function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('rare'); } // ★2以上は最初「採用前」
 function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
-// ★4以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★4→★5の順）
-const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
+// ★3以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★3→★4→★5の順）
+const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
 function hireRebirthNeed(id) { const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : i + 1; } // 採用に必要な転生回数
 function isHireUnlocked(id) { return (game.reincarnations || 0) >= hireRebirthNeed(id); }
 function onCompLockClick(ev) {
@@ -1166,7 +1166,7 @@ function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。★4以上は転生1回ごとに1人ずつ採用できるようになります。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。★3以上は転生1回ごとに1人ずつ採用できるようになります。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
