@@ -201,17 +201,6 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks'
   },
-  battle35: { // 戦闘35 妖怪横丁の夜：ゆらゆら跳ねるシャッフルと歩くベースに、妖しくもひょうきんな短調の旋律（昭和の妖怪アニメ主題歌系）
-    bpm: 168,
-    echo: { time: 0.26, feedback: 0.3, wet: 0.18 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.035, notes: 'D5 = F5 A5 = - G5 = F5 E5 = D5 | A4 = = = = - - - - D5 = E5 | F5 = G5 A#5 = - A5 = G5 F5 = E5 | D5 = = = = = - - - A4 = A4 | A#4 = D5 F5 = - A#5 = A5 G5 = F5 | E5 = = C#5 = - E5 = G5 A5 = - | F5 = E5 D5 = - A4 = D5 F5 = A5 | G5 = F5 E5 = = = - - - - - | G5 = - G5 = A#5 D6 = = - - - | A5 = - A5 = F5 D5 = = - - - | A#5 = A5 G5 = F5 E5 = F5 G5 = - | A5 = = = = = - - - D6 = C6 | A#5 = A5 A#5 = - F5 = = D5 = - | C#5 = D5 E5 = - G5 = F5 E5 = C#5 | D5 = = = = - A4 = D5 F5 = A5 | D6 = = = = = - - - - - -' },
-      { type: 'vrc6pulse12', gain: 0.015, notes: '- - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - G3+A#3+D4 = - - - - G3+A#3+D4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - A#3+D4+F4 = - - - - A#3+D4+F4 = - | - - - A3+C#4+E4+G4 = - - - - A3+C#4+E4+G4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - A3+C#4+E4+G4 = - - - - A3+C#4+E4+G4 = - | - - - G3+A#3+D4 = - - - - G3+A#3+D4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - G3+A#3+D4 = - - - - G3+A#3+D4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - A#3+D4+F4 = - - - - A#3+D4+F4 = - | - - - A3+C#4+E4+G4 = - - - - A3+C#4+E4+G4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = - | - - - D4+F4+A4 = - - - - D4+F4+A4 = -' },
-      { type: 'vrc6saw', gain: 0.058, notes: 'D2 = - A2 = - D3 = - A2 = - | D2 = - A2 = - D3 = - A2 = - | G1 = - D2 = - G2 = - D2 = - | D2 = - A2 = - D3 = - A2 = - | A#1 = - F2 = - A#2 = - F2 = - | A1 = - E2 = - A2 = - E2 = - | D2 = - A2 = - D3 = - A2 = - | A1 = - E2 = - A2 = - E2 = - | G1 = - D2 = - G2 = - D2 = - | D2 = - A2 = - D3 = - A2 = - | G1 = - D2 = - G2 = - D2 = - | D2 = - A2 = - D3 = - A2 = - | A#1 = - F2 = - A#2 = - F2 = - | A1 = - E2 = - A2 = - E2 = - | D2 = - A2 = - D3 = - A2 = - | D2 = - A2 = - D3 = - A2 = -' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | s - s s - s ks - ks s s s | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | k - h s - h k - h s - h | s - s s - s ks - ks s s s'
-  },
   boss13: { // ボス12 不屈の挑戦者：高らかに鳴るファンファーレと駆け上がる分散和音に、何度でも立ち上がる不屈の旋律（ボクシング映画のテーマ系）
     bpm: 200,
     echo: { time: 0.2, feedback: 0.2, wet: 0.15 },
@@ -678,7 +667,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle31', 'battle32', 'battle33', 'battle34', 'battle35'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle31', 'battle32', 'battle33', 'battle34'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -736,7 +725,6 @@ const BGM_INFO = [
   { key: 'battle32', name: '戦闘32 秘境の冒険者', desc: 'ズンチャッと進む行進のリズムに乗って、付点で弾む勇ましい旋律が秘境へと分け入る。鞭と帽子の冒険活劇。VRC6風チップチューン。ヘ長調（考古学冒険映画のマーチの作風）・BPM128' },
   { key: 'battle33', name: '戦闘33 銀河の英雄', desc: '3連符で駆け上がるファンファーレと力強い行進に乗って、英雄の旋律が星の海へ旅立つ。遥かな銀河の大冒険。VRC6風チップチューン。ハ長調（宇宙活劇のオーケストラの作風）・BPM120' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
-  { key: 'battle35', name: '戦闘35 妖怪横丁の夜', desc: 'ゆらゆら跳ねるシャッフルと歩くベースに乗って、妖しくもひょうきんな短調の旋律が夜の横丁を練り歩く。下駄の音が響く妖怪たちの宴。VRC6風チップチューン。ニ短調（昭和の妖怪アニメ主題歌の作風）・BPM112' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
