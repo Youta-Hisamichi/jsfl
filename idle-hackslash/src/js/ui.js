@@ -1179,7 +1179,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
-    root.querySelector('.cl-gems').innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
+    const g = root.querySelector('.cl-gems'); if (g) g.innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
     root.querySelector('.cl-list').innerHTML = html;
   }
 }

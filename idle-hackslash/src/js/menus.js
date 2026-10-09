@@ -187,7 +187,7 @@ function renderCompanionList() {
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;
   const sorted = Object.entries(COMPANIONS).sort((x, y) => (owned(y[0]) - owned(x[0])) || (RARITY_ORDER[y[1].rarity] - RARITY_ORDER[x[1].rarity]));
-  const mine = sorted.filter(([id]) => game.companions.recruited[id]), others = sorted.filter(([id]) => !game.companions.recruited[id]);
+  const mine = sorted.filter(([id]) => game.companions.recruited[id]), others = sorted.filter(([id]) => !game.companions.recruited[id] && !isCompLocked(id)); // 待機中＝採用中でまだパーティにいない仲間
   const mineHtml = mine.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
     const aw = getCompanionAwaken(id);
