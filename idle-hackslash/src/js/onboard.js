@@ -191,3 +191,17 @@ function showEnemyInfo(e, px, py) {
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
+
+// ---- 待ち時間中のスキルを押したら「チャージ中…」と出す ----
+document.getElementById('skillRow').addEventListener('click', event => {
+  const btn = event.target.closest('.action-btn'); if (!btn || btn.id === 'redPotionBtn') return;
+  const m = btn.textContent.match(/(\d+)秒\s*$/); if (!m) return;
+  const r = btn.getBoundingClientRect();
+  let el = document.getElementById('skillChargePop');
+  if (!el) { el = document.createElement('div'); el.id = 'skillChargePop'; el.className = 'skill-charge-pop'; document.body.appendChild(el); }
+  el.innerHTML = `⏳ チャージ中…<small>あと${m[1]}秒</small>`;
+  el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = r.top + 'px';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  playTone(660, 0.06, 'triangle', 0.04, 520);
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1100);
+}, true);
