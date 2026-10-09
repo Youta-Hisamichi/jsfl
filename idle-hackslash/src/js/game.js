@@ -478,7 +478,7 @@ function onStageClear() {
   const defeated = balls.find(ball => !ball.isPlayer);
   const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
   const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
-  const coinGain = Math.round((30 + game.stage * 8) * Math.sqrt(enemyInflation(game.stage)) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
+  const coinGain = Math.round(KILL_COIN_BASE * Math.pow(enemyInflation(game.stage), KILL_COIN_POW) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
     const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
     game.gems += metalGems;
@@ -953,6 +953,7 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
+const KILL_COIN_BASE = 12, KILL_COIN_POW = 1; // 撃破コイン＝基礎×敵の強さ（敵Lv^1.2×桁数）
 function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return d * d * 10; } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {

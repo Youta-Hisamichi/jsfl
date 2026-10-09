@@ -1290,7 +1290,7 @@ function absorbWithBarrier(player) {
   return true;
 }
 
-const SAVE_KEY = 'circle-battle-idle-save-v1';
+const SAVE_KEY = 'circle-battle-idle-save-v2'; // v2：数値バランスを作り直したので、セーブは最初から
 let saveTimer = null;
 let suppressAutoSave = false; // デバッグのロード中は自動セーブで上書きしない
 function saveGame() {

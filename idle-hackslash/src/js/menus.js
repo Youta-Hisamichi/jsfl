@@ -363,25 +363,29 @@ function getEarlyPlayerHpRate(stage) {
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
   return EARLY_PLAYER_HP_MIN_RATE + (1 - EARLY_PLAYER_HP_MIN_RATE) * t;
 }
-const BOSS_HP_MULT = 8;    // ボスのHP倍率（通常敵比）の基本
-// ボスは階が進むほど（インフレが進むほど）雑魚との差が開く：1階付近×8 → 100階×9 → 500階×15 → 1000階×35 前後
-function bossHpMult(stage) { return BOSS_HP_MULT * Math.pow(enemyInflation(stage), 0.25); }
+// ===== 敵の強さ =====
+// 敵Lv＝ステージ×係数。HP＝基礎×敵Lv^1.2×ステージの桁数。ボスは桁数をさらに掛け、100階・1000階の節目のボスはもう1回ずつ掛ける
+const ENEMY_LV_PER_STAGE = 1, ENEMY_HP_POW = 1.2, ENEMY_ATK_POW = 1.1;
+const ENEMY_HP_BASE = 30, ENEMY_ATK_BASE = 4;
+const BOSS_HP_MULT = 6;    // ボスのHP倍率の基本（これに桁数が掛かる）
 const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
-const EARLY_HP_MIN_RATE = 0.1;
-const EARLY_HP_UNTIL_STAGE = 20;
+function stageDigits(stage) { return String(Math.max(1, Math.floor(stage))).length; }
+function enemyLevel(stage) { return 1 + (Math.max(1, stage) - 1) * ENEMY_LV_PER_STAGE; }
+function bossHpMult(stage) { return BOSS_HP_MULT * stageDigits(stage); }
+const EARLY_HP_MIN_RATE = 0.35;
+const EARLY_HP_UNTIL_STAGE = 10;
 function getEarlyHpRate(stage) {
   if (stage >= EARLY_HP_UNTIL_STAGE) return 1;
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
-  return EARLY_HP_MIN_RATE + (1 - EARLY_HP_MIN_RATE) * t * t;
+  return EARLY_HP_MIN_RATE + (1 - EARLY_HP_MIN_RATE) * t;
 }
-// 階が進むほど敵が指数的に強くなる（インフレ）。桁あふれしないよう指数は一定の階で頭打ち
-const ENEMY_INFLATION = 1.006, ENEMY_INFLATION_CAP_STAGE = 20000;
-function enemyInflation(stage) { return Math.pow(ENEMY_INFLATION, Math.min(Math.max(0, stage - 1), ENEMY_INFLATION_CAP_STAGE)); }
+// 敵の強さの伸び（コインなどの報酬もこれに合わせて増える）
+function enemyInflation(stage) { return Math.pow(enemyLevel(stage), ENEMY_HP_POW) * stageDigits(stage); }
 function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
-  const inf = enemyInflation(stage);
-  const baseHp = Math.max(10, Math.round((80 + stage * 24) * getEarlyHpRate(stage) * inf));
-  const baseAtk = Math.round((6 + stage * 2.4) * inf);
+  const d = stageDigits(stage), lv = enemyLevel(stage);
+  const baseHp = Math.max(10, Math.round(ENEMY_HP_BASE * Math.pow(lv, ENEMY_HP_POW) * d * getEarlyHpRate(stage)));
+  const baseAtk = Math.max(1, Math.round(ENEMY_ATK_BASE * Math.pow(lv, ENEMY_ATK_POW) * d));
   const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
   return {
     hp: isBoss ? Math.round(baseHp * bossHpMult(stage) * (ms ? ms.hp : 1)) : baseHp,
@@ -389,10 +393,11 @@ function getEnemyStats(stage) {
     isBoss, milestone: ms
   };
 }
-// 節目のボス：100階ごと・1000階ごとに、HP・攻撃力・大きさ・報酬が跳ね上がる
+// 節目のボス：100階ごと・1000階ごとに、桁数をもう1回（1000階はさらにもう1回）掛ける
 function getMilestoneBoss(stage) {
-  if (stage % 1000 === 0) return { label: `${stage}階の覇王`, hp: 6, atk: 2.2, radius: 1.6, reward: 10 };
-  if (stage % 100 === 0) return { label: `${stage}階の主`, hp: 3, atk: 1.5, radius: 1.3, reward: 4 };
+  const d = stageDigits(stage);
+  if (stage % 1000 === 0) return { label: `${stage}階の覇王`, hp: d * d, atk: 2.2, radius: 1.6, reward: 10 };
+  if (stage % 100 === 0) return { label: `${stage}階の主`, hp: d, atk: 1.5, radius: 1.3, reward: 4 };
   return null;
 }
 

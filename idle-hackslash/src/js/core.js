@@ -644,10 +644,10 @@ function pickGachaId() {
   }
   return Object.keys(GACHA_POOL)[0];
 }
-// ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 2・3・8・25・256倍 が出て、進化率に掛け算される =====
+// ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 1.1・1.2・1.5・2・3倍 が出て、進化率に掛け算される =====
 const EVO_TIERS = [
-  { rarity: 'common', mult: 2, base: 72 }, { rarity: 'rare', mult: 3, base: 20 }, { rarity: 'epic', mult: 8, base: 6.5 },
-  { rarity: 'legendary', mult: 25, base: 1.35 }, { rarity: 'mythic', mult: 256, base: 0.15 },
+  { rarity: 'common', mult: 1.1, base: 72 }, { rarity: 'rare', mult: 1.2, base: 20 }, { rarity: 'epic', mult: 1.5, base: 6.5 },
+  { rarity: 'legendary', mult: 2, base: 1.35 }, { rarity: 'mythic', mult: 3, base: 0.15 },
 ];
 const EVO_MIN_GEMS = 5, EVO_RATE_CAP = 1e150;
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
@@ -665,24 +665,27 @@ function getEvolveNeed(id) {
 }
 
 const UPGRADES = {
-  atk: { icon: '⚔️', name: '攻撃力', desc: '+15%', baseCost: 25, group: 'attack' },
-  hp: { icon: '❤️', name: '最大HP', desc: '+20%', baseCost: 25, group: 'defense' },
+  atk: { icon: '⚔️', name: '攻撃力', desc: 'Lvが上がるほど伸びる', baseCost: 25, group: 'attack' },
+  hp: { icon: '❤️', name: '最大HP', desc: 'Lvが上がるほど伸びる', baseCost: 25, group: 'defense' },
   cAtk: { icon: '🚩', name: '仲間の攻撃力', desc: '+15%', baseCost: 40, group: 'companion' },
   cSpd: { icon: '💨', name: '仲間の攻撃頻度', desc: '+5%', baseCost: 60, group: 'companion' },
   cHp: { icon: '🧿', name: '仲間の最大HP', desc: '+20%', baseCost: 40, group: 'companion' },
 };
 const UPGRADE_LEAPS = [
-  { every: 1000, mult: 2, name: '超大飛躍', color: '#ff5cd6' },
-  { every: 100, mult: 1.5, name: '大飛躍', color: '#e08a00' },
-  { every: 10, mult: 1.1, name: 'プチ飛躍', color: '#2a9d55' },
+  { every: 1000, mult: 1.5, name: '超大飛躍', color: '#ff5cd6' },
+  { every: 100, mult: 1.2, name: '大飛躍', color: '#e08a00' },
+  { every: 10, mult: 1.03, name: 'プチ飛躍', color: '#2a9d55' },
 ];
 // そのレベルで到達済みの飛躍倍率。どの飛躍も「足し算で積み上がる倍率」をかけ合わせる（指数的に爆発して数値があふれないように）
 // 例：初めての大飛躍で×1.5、2回目で×2.0、3回目で×2.5…（超大飛躍も×2→×3→×4…）
 function upgradeLeapMult(level) {
   level = Math.max(0, Math.min(1e12, Number(level) || 0));
   const n1000 = Math.floor(level / 1000), n100 = Math.floor(level / 100) - n1000, n10 = Math.floor(level / 10) - Math.floor(level / 100);
-  return (1 + 0.1 * n10) * (1 + 0.5 * n100) * (1 + 1 * n1000);
+  return (1 + 0.03 * n10) * (1 + 0.2 * n100) * (1 + 0.5 * n1000);
 }
+// 攻撃力・最大HPの強化：Lv^1.2 で伸びる（＋飛躍）。数値がなだらかに増えるように
+const UPGRADE_POW = 1.2;
+function upgradeLvMult(level) { level = Math.max(0, Number(level) || 0); return Math.pow(level + 1, UPGRADE_POW) * upgradeLeapMult(level); }
 const NUM_CAP = 1e300; // これ以上は扱わない（Infinity・NaN でフリーズしないための安全柵）
 function safeNum(v) { v = Number(v); return isFinite(v) ? Math.max(-NUM_CAP, Math.min(NUM_CAP, v)) : (v > 0 ? NUM_CAP : v < 0 ? -NUM_CAP : 0); }
 // from→to のレベルアップで到達した最大の飛躍（なければ null）
@@ -1138,15 +1141,13 @@ function applyArtifactBonuses(b) {
 function computeBonuses() {
   const b = applyArtifactBonuses(baseBonuses());
   const up = game.upgrades;
-  b.atkMult += (up.atk || 0) * 0.15;
-  b.hpMult += (up.hp || 0) * 0.20;
   b.tackleMult += (up.tackle || 0) * 0.08;
   b.companionAtkMult += (up.compAtk || 0) * 0.08;
   b.meleeMult = (1 + (up.melee || 0) * 0.10) * upgradeLeapMult(up.melee || 0); // 接近戦：ふつうの衝突ダメージ
   b.rushDmgUp = (1 + (up.rush || 0) * 0.12) * upgradeLeapMult(up.rush || 0); // 体当たり：引っぱり攻撃のダメージ
   // 強化の飛躍：10Lvごとにプチ飛躍・100Lvごとに大飛躍・1000Lvごとに超大飛躍（倍率で掛かる）
-  b.atkMult *= upgradeLeapMult(up.atk || 0);
-  b.hpMult *= upgradeLeapMult(up.hp || 0);
+  b.atkMult *= upgradeLvMult(up.atk || 0);
+  b.hpMult *= upgradeLvMult(up.hp || 0);
   b.companionAtkMult *= upgradeLeapMult(up.compAtk || 0);
   // 強化：仲間の攻撃力・攻撃頻度・最大HP（飛躍も効く）
   b.companionAtkMult *= (1 + (up.cAtk || 0) * 0.15) * upgradeLeapMult(up.cAtk || 0);
@@ -1258,7 +1259,7 @@ function renderUpgradeList() {
     const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
     const pctCount = getMaxAffordableUpgradeLevels(id, game.coins * PCT_BUDGET);
     const nl = nextUpgradeLeap(level);
-    const leapTag = nl.target - level === 1 ? `<span class="upgrade-leap leap-next" style="--lc:${nl.leap.color}">✨ 次で${nl.leap.name}！（${nl.leap.every === 10 ? '+10%' : '×' + nl.leap.mult}）</span>` : ''; // あと1回で飛躍するときだけ知らせる
+    const leapTag = nl.target - level === 1 ? `<span class="upgrade-leap leap-next" style="--lc:${nl.leap.color}">✨ 次で${nl.leap.name}！（${nl.leap.every === 10 ? '+3%' : '×' + nl.leap.mult}）</span>` : ''; // あと1回で飛躍するときだけ知らせる
     const now = getUpgradeStatValue(id);
     game.upgrades[id] = level + 1;
     const next = getUpgradeStatValue(id);

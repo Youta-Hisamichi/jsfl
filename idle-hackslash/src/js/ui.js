@@ -1065,13 +1065,13 @@ setInterval(() => {
   }
 }, 700); // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
-function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+10%' : '×' + l.mult}` : ''; }
+function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+3%' : '×' + l.mult}` : ''; }
 // 強化の飛躍（10/100/1000Lv到達）を演出
 function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
   const lv = Math.floor(to / leap.every) * leap.every;
-  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv)} ${leap.name}！ ${leap.every === 10 ? '+10%' : '×' + leap.mult}`);
+  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv)} ${leap.name}！ ${leap.every === 10 ? '+3%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
   playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'upgrade' ? AUTO_UPGRADE_QUIET_VOL : 1); // オート強化は強化ページ以外では小さく
