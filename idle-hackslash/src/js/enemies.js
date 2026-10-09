@@ -1138,7 +1138,17 @@ const OBSTACLE_BOUNCE = {
 const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.kind] || { speed: 1, wobble: 0.3 };
 const FLOOR_OBSTACLES = new Set(['dash', 'portal']);
 const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通った味方は3秒間ダメージ2倍
-function dashDmgMult(ball) { return ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1; }
+// 自キャラの溜め：前の攻撃から時間がたつほどダメージ倍率アップ（1.5秒ごとに+1倍、最大3倍）。当てると元に戻る
+const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3;
+function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / HERO_WAIT_RATE_MS); }
+function dashDmgMult(ball) {
+  let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
+  if (ball && isMainPlayerBall(ball)) { // ダメージを出すたびに溜めを使い切る
+    const w = heroWaitMult(ball); ball.lastAtkAt = Date.now(); m *= w;
+    if (w >= 2) spawnDamageText(ball.x, ball.y - ball.radius - 30, `溜め ×${w.toFixed(1)}！`, w >= HERO_WAIT_MAX ? '#ff5c6c' : '#ffb35c', 0.022, w >= HERO_WAIT_MAX);
+  }
+  return m;
+}
 const SAW_SELF_DMG = 0.08; // 回転ノコギリに自分や仲間がぶつかったときのダメージ（最大HP比） // 床に置くもの（ぶつからずに上を通る）
 // エリアごとの出やすさ（何も書いていない種類は共通の重み）
 const OBSTACLE_WEIGHTS = { rock: 18, crate: 11, barrel: 8, bumper: 9, slime: 6, egg: 6, qbox: 8, ice: 4, crystal: 4, techBox: 3, bomb: 6, spike: 7, dash: 6, portal: 4 };

@@ -1903,6 +1903,14 @@ function drawBall(ball) {
     ctx.restore();
   }
 
+  if (isMainPlayerBall(ball) && phase === 'battle') { // 溜めのオーラ：溜まるほど明るく大きく、最大で脈打つ
+    const w = heroWaitMult(ball), k = (w - 1) / (HERO_WAIT_MAX - 1);
+    if (k > 0.05) {
+      const full = w >= HERO_WAIT_MAX, pulse = full ? 0.75 + Math.sin(Date.now() / 90) * 0.25 : 1;
+      ctx.save(); ctx.globalAlpha = (0.25 + 0.55 * k) * pulse; ctx.strokeStyle = full ? '#ff5c6c' : '#ffb35c'; ctx.lineWidth = 2 + 3 * k;
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius + 6 + 6 * k, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke(); ctx.restore();
+    }
+  }
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
     const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
     drawFacingSprite(playerSpriteImg, ball, hc || 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
