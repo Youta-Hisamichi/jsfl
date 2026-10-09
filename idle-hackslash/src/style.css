@@ -2148,7 +2148,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .comp-gacha-overlay .cgo-panel { width: 100%; max-width: 380px; border-radius: 14px; background: #17142c; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
 .comp-gacha-overlay .gacha-result { width: 100%; margin: 0; max-height: 90vh; overflow-y: auto; }
 .exp-wrap { position: relative; }
-.enemy-info-pop { position: absolute; inset: 2px 4px; z-index: 6; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 4px 12px; border-radius: 12px; background: rgba(12,10,26,0.72); border: 1px solid rgba(255,255,255,0.25); color: #fff; font-size: 0.72rem; line-height: 1.4; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+.enemy-info-pop { position: absolute; inset: 2px 4px; z-index: 6; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 4px 12px; border-radius: 12px; background: #16132a; border: 1px solid #4a4566; color: #fff; font-size: 0.72rem; line-height: 1.4; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
 .enemy-info-pop.show { opacity: 1; }
 .enemy-info-pop .eip-name { font-weight: 900; font-size: 0.84rem; color: #ffd76b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .enemy-info-pop .eip-name small { margin-left: 8px; font-size: 0.7rem; color: #e8e8f0; font-weight: 700; }
