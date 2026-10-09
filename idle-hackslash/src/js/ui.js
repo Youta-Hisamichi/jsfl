@@ -1153,9 +1153,10 @@ const MYTHIC_HIRE_REBIRTHS = 30; // ★5（ミカエルン・バハムート）�
 function hireRebirthNeed(id) { if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_REBIRTHS; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : i + 1; } // 採用に必要な転生回数
 const HIRE_STAGE_STEPS = [30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 1000, 1500, 2000]; // ★3→★4の順に、最高到達ステージの条件（キリ番）
 const MYTHIC_HIRE_STAGE = 3000; // ★5の到達ステージ条件
-function hireStageNeed(id) { if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_STAGE; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : HIRE_STAGE_STEPS[Math.min(i, HIRE_STAGE_STEPS.length - 1)]; }
+const HIRE_STAGE_OVERRIDE = { pegasus: 2500, king: 5000, archangel: 10000, bahamut: 20000 }; // 個別の到達ステージ条件
+function hireStageNeed(id) { if (HIRE_STAGE_OVERRIDE[id]) return HIRE_STAGE_OVERRIDE[id]; if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_STAGE; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : HIRE_STAGE_STEPS[Math.min(i, HIRE_STAGE_STEPS.length - 1)]; }
 function isHireUnlocked(id) { return (game.reincarnations || 0) >= hireRebirthNeed(id) && (game.bestStage || 1) >= hireStageNeed(id); } // 転生回数と最高到達ステージの両方
-function hireNeedText(id) { const r = (game.reincarnations || 0) >= hireRebirthNeed(id), s = (game.bestStage || 1) >= hireStageNeed(id); return [r ? '' : `転生${hireRebirthNeed(id)}回`, s ? '' : `ステージ${formatStageNumber(hireStageNeed(id))}到達`].filter(Boolean).join('・'); }
+function hireNeedText(id) { const r = (game.reincarnations || 0) >= hireRebirthNeed(id), s = (game.bestStage || 1) >= hireStageNeed(id); return [r ? '' : `転生${hireRebirthNeed(id)}回`, s ? '' : `ステージ${formatStageNumber(hireStageNeed(id))}到達`].filter(Boolean).join('＋'); }
 function onCompLockClick(ev) {
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
   const id = b.dataset.clToggle, locking = !isCompLocked(id);
