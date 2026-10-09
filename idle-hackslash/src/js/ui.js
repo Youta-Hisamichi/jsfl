@@ -1150,14 +1150,17 @@ function onCompLockClick(ev) {
   game.gems -= cost;
   if (!game.compLocked) game.compLocked = {};
   game.compLocked[id] = locking;
-  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間招集に出なくなりました' : '仲間招集に出るようになりました', locking ? '解雇しました！' : '採用しました！');
+  if (!Array.isArray(game.summonGuarantee)) game.summonGuarantee = [];
+  game.summonGuarantee = game.summonGuarantee.filter(x => x !== id);
+  if (!locking) game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
+  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間招集に出なくなりました' : '次の招集ガチャで必ず出ます！', locking ? '解雇しました！' : '採用しました！');
   playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
 }
 function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -1171,7 +1174,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
   const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
-    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${off ? '<em>採用前</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
+    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${off ? '<em>採用前</em>' : '採用中'}${!off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : ''}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;

@@ -272,6 +272,8 @@ function getCompSummonCost(count) {
 }
 const COMP_AWAKEN_MAX_REFUND = 2; // 覚醒MAXの仲間が出たときに返すコイン
 function pickCompanionId() {
+  const q = Array.isArray(game.summonGuarantee) ? game.summonGuarantee : [];
+  while (q.length) { const g = q.shift(); if (COMPANIONS[g] && !isCompLocked(g)) return g; } // 採用したばかりの仲間は次の招集で必ず出る
   let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
   if (!entries.length) entries = Object.entries(COMPANIONS);
   let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
@@ -321,7 +323,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     game.companionSummons = (game.companionSummons || 0) + count;
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
-  const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins };
+  const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
   for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
   snap.refund = game.coins - snap.coins; // 覚醒MAXで返ってきたコイン
@@ -1738,7 +1740,7 @@ function rerollCompanionGacha(event) {
   if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
   game.gems -= GACHA_REROLL_GEMS;
   const { snap, count } = lastCompGacha;
-  game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund;
+  game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund; game.summonGuarantee = JSON.parse(snap.guar || '[]'); // 確定枠も引く前に戻す
   if (phase === 'battle') balls = balls.filter(b => !b.isCompanion).concat(makeCompanionBalls()); // 戦場の仲間も召喚前に戻す
   lastCompGacha = null;
   renderCompanionList(); // 一覧も引く前に戻す
