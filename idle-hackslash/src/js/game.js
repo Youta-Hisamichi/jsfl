@@ -624,6 +624,7 @@ let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引�
 const AUTO_BOSS_RETRY_LOOPS = 4; // ループを4周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
+function canUseHealNow() { return isBossFight() || !!game.skipChallenge; } // 回復はボス戦だけ（ほかはHPが減らない）
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function tickBossTimer() {
   const now = Date.now(), boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0);
@@ -1530,7 +1531,7 @@ function updateHealButton() {
   const remaining = Math.max(0, skillCd('skillHeal', HEAL_COOLDOWN) - (Date.now() - lastHealAt));
   if (remaining === 0) {
     healBtn.disabled = false;
-    healBtn.classList.toggle('is-disabled', phase !== 'battle');
+    healBtn.classList.toggle('is-disabled', phase !== 'battle' || !canUseHealNow());
     healBtn.textContent = '💗 回復';
     return;
   }

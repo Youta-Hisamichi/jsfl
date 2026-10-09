@@ -2089,6 +2089,7 @@ accelBtn.addEventListener('click', event => {
 healBtn.addEventListener('click', event => {
   if (!game.shopOwned.skillHeal) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
   if (phase !== 'battle') { showTapError('今は回復できません', event.clientX, event.clientY); return; }
+  if (!canUseHealNow()) { showTapError('回復はボス戦でだけ使えます', event.clientX, event.clientY); return; } // ボス戦以外ではHPが減らないので使えない
   if (Date.now() - lastHealAt < skillCd('skillHeal', HEAL_COOLDOWN)) { tryGemResetSkill('heal', event, () => { lastHealAt = Date.now() - HEAL_COOLDOWN; }, updateHealButton); return; }
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   if (!player) return;
