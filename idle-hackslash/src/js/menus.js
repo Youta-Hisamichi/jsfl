@@ -156,8 +156,9 @@ function renderMyCharCard() {
 function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
   const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
   if (playerSpriteImg.src !== new URL(src, location.href).href) playerSpriteImg.src = src;
-  const flip = id && (SPRITE_FACING[id] || 0) < 0 ? 'scaleX(-1)' : '';
-  for (const im of [stagePlayerMark, document.getElementById('playerHpIco')]) { if (!im) continue; im.src = src; im.style.transform = flip; }
+  const left = !!id && (SPRITE_FACING[id] || 0) < 0; // 左向きの絵は反転して、勇者と同じく右（ボスの方）を向かせる
+  stagePlayerMark.src = src; stagePlayerMark.style.transform = left ? 'translate(-50%, -58%) scaleX(-1)' : ''; // ゲージ上の位置合わせ（translate）は残す
+  const hpIco = document.getElementById('playerHpIco'); if (hpIco) { hpIco.src = src; hpIco.style.transform = left ? 'scaleX(-1)' : ''; }
   renderMyCharCard();
 }
 function openMyCharPicker() {
