@@ -1139,7 +1139,7 @@ const obstacleBounceInfo = o => OBSTACLE_BOUNCE[o.sprite] || OBSTACLE_BOUNCE[o.k
 const FLOOR_OBSTACLES = new Set(['dash', 'portal']);
 const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通った味方は3秒間ダメージ2倍
 // 自キャラの溜め：前の攻撃から時間がたつほどダメージ倍率アップ（2.5秒ごとに+1倍、5秒で最大3倍）。当てると元に戻る
-const HERO_WAIT_RATE_MS = 2500, HERO_WAIT_MAX = 3;
+const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / HERO_WAIT_RATE_MS); }
 function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
