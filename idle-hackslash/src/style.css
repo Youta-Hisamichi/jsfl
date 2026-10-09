@@ -1671,7 +1671,7 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 .bstz-card { width: min(88vw, 400px); padding: 14px 14px 10px; border-radius: 14px; background: radial-gradient(120% 80% at 50% 20%, #2c3550, #141a2a 70%); border: 2px solid #8a94b4; box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center; color: #eef1f8; }
 .bstz-card.boss { border-color: #e2c06a; box-shadow: 0 0 18px rgba(226,192,106,0.45), 0 10px 30px rgba(0,0,0,0.6); }
 .bstz-face { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1; font-size: 9rem; line-height: 1; }
-.bstz-face img, .bstz-face .bst-sprite { width: 100% !important; height: 100% !important; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6)); }
+.bstz-face > img, .bstz-face img.bst-sprite { width: 100% !important; height: 100% !important; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6)); }
 .bstz-face > * { max-width: 100%; max-height: 100%; }
 .bstz-face .bst-shape { width: 60% !important; height: 60% !important; }
 .bstz-name { margin-top: 6px; font-size: 1.2rem; font-weight: 900; color: #ffe39a; text-shadow: 0 2px 0 #000; }
@@ -2056,3 +2056,6 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .reborn-info .ri-keep { background: rgba(60,192,106,0.12); border: 1px solid rgba(60,192,106,0.45); }
 .reborn-info .ri-keep b { color: #1f9a4a; }
 .reborn-reward b { white-space: nowrap; display: inline-block; }
+/* 図鑑の拡大表示：拡大しすぎると粗が目立つので小さめに。積み重なり系（雪だるま・三色団子）は全体を拡大 */
+.bstz-face { width: 58%; margin: 6px auto 4px; font-size: 6rem; }
+.bstz-face .bst-stack { transform: scale(5); transform-origin: 50% 50%; }
