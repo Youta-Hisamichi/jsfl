@@ -667,7 +667,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle31', 'battle32', 'battle33', 'battle34'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle32', 'battle33', 'battle34'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -721,7 +721,6 @@ const BGM_INFO = [
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle29', name: '戦闘29 秘宝の洞窟', desc: '弾むベースと跳ねる分散和音に乗って、わくわくと洞窟を探検する旋律。後半は長調に明るく開けて宝の予感に胸が高鳴る。VRC6風チップチューン。イ短調（ほのぼのアクションの洞窟探検の作風）・BPM150' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
-  { key: 'battle31', name: '戦闘31 エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
   { key: 'battle32', name: '戦闘32 秘境の冒険者', desc: 'ズンチャッと進む行進のリズムに乗って、付点で弾む勇ましい旋律が秘境へと分け入る。鞭と帽子の冒険活劇。VRC6風チップチューン。ヘ長調（考古学冒険映画のマーチの作風）・BPM128' },
   { key: 'battle33', name: '戦闘33 銀河の英雄', desc: '3連符で駆け上がるファンファーレと力強い行進に乗って、英雄の旋律が星の海へ旅立つ。遥かな銀河の大冒険。VRC6風チップチューン。ハ長調（宇宙活劇のオーケストラの作風）・BPM120' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
@@ -755,6 +754,7 @@ const BGM_INFO = [
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
+  { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
   { key: 'rebirth', name: '転生 リバース・パラドックス', desc: '転生の演出中に流れる。4つ打ちのキックと転がるオクターブベースに、鋭いシンセのリフと16分の分散和音が畳みかけるハードコアテクノ。後半は1オクターブ上で叫ぶように盛り上がる。VRC6風チップチューン。イ短調（音楽ゲームの超高難度ボス曲系の作風）・BPM180' },
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
@@ -805,7 +805,8 @@ function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
   if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
-  else if (document.getElementById('creditsModal').classList.contains('show') || settingsModal.classList.contains('show')) type = 'settings'; // 設定画面・スタッフロール中（スタッフロールも設定画面の曲）
+  else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
+  else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
