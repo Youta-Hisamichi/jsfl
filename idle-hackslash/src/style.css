@@ -2200,7 +2200,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .gacha-art-btn.is-disabled .gacha-art { filter: grayscale(0.55) brightness(0.85) drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
 .gacha-art-btn.is-disabled .gab-cost { border-color: #8a8fa3; color: #c8c8d0; }
 /* 動画を見て💎5 GET：絵のボタン */
-.reward-ad-btn[data-reward-ad].ad-art-btn { width: 100%; max-width: 330px; padding: 0; border: none; border-image: none; background: none; box-shadow: none; transition: transform 0.1s; }
+.reward-ad-btn[data-reward-ad].ad-art-btn { width: 100%; max-width: 250px; padding: 0; border: none; border-image: none; background: none; box-shadow: none; transition: transform 0.1s; }
 .reward-ad-btn[data-reward-ad].ad-art-btn:active { transform: scale(0.96); }
 .reward-ad-btn .ad-art { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); animation: adArtGlow 1.6s ease-in-out infinite alternate; }
 @keyframes adArtGlow { from { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); } to { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(255,215,107,0.8)); } }

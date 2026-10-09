@@ -1324,7 +1324,7 @@ function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
 const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
 let skGachaBusy = false;
 function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
-const SK_GACHA_FX_MS = { rare: 900, epic: 1200, legendary: 1600, mythic: 2000 }; // スキル・サブウェポンガチャの演出は短め
+const SK_GACHA_FX_MS = { common: 800, rare: 900, epic: 1200, legendary: 1600, mythic: 2000 }; // スキル・サブウェポンガチャの演出は短め
 function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   runGachaCountdown(rarity, () => {
@@ -1787,25 +1787,19 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (fb) { const d = fb.dataset.evoFea; evoFeathers = d === 'max' ? owned : Math.max(0, Math.min(owned, evoFeathers + Number(d))); renderEvolutionList(); return; }
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
-  if (evoBusy) return;
+  if (evoBusy || skGachaBusy) return;
   const gems = evoGems, feathers = Math.min(evoFeathers, owned), kind = evoKind;
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   game.gems -= gems; if (feathers) game.ownedArtifacts.evoFeather = owned - feathers;
-  evoBusy = true; renderEvolutionList();
-  runGachaCountdown(tier.rarity, () => {
-    if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
-    const before = getEvoRate(kind);
-    game.evoRate[kind] = Math.min(EVO_RATE_CAP, before * tier.mult);
-    refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
-    const rarity = RARITY_INFO[tier.rarity];
-    playGachaSound(tier.rarity);
-    gachaResult.className = 'gacha-result rarity-' + tier.rarity;
-    gachaResult.style.background = rarityBackground(tier.rarity);
-    gachaResult.style.display = '';
-    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${kind === 'atk' ? '⚔️' : '❤️'}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}</div><div class="gr-sub">${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(getEvoRate(kind))}</b></div><button id="gachaResultCloseBtn">閉じる</button>`;
-    document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
-    evoBusy = false; renderEvolutionList(); saveGame();
-  });
+  // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
+  if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
+  const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * tier.mult);
+  updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
+  const rarity = RARITY_INFO[tier.rarity];
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}`,
+    `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
+      game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
+    }, null);
 });
 let evoBusy = false;
 function fmtEvoRate(v) { return v < 1000 ? String(+v.toFixed(2)) : formatCoinNumber(v); } // ×1.1 などの小数も見えるように
