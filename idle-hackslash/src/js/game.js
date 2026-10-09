@@ -2155,7 +2155,7 @@ let lastReadyFloorKey = '', warmedForStage = 0;
 function warmUpcomingStage() { // 次の階の床と背景を前もってデコード
   if (warmedForStage === game.stage) return; warmedForStage = game.stage;
   for (const st of [game.stage + 1, game.stage + 2]) { const k = getFloorKey(st); if (floorImgs[k]) warmImg(floorImgs[k]); const o = outerImgs[OUTER_FOR_FLOOR[k] || 'stone']; if (o) warmImg(o); }
-  if (typeof OBSTACLE_IMGS === 'object') for (const k in OBSTACLE_IMGS) { const im = OBSTACLE_IMGS[k]; if (im && !im.complete) warmImg(im); }
+  if (typeof OBSTACLE_IMGS === 'object') for (const k in OBSTACLE_IMGS) { const im = OBSTACLE_IMGS[k]; if (im && !im.complete && im.tagName === 'IMG') warmImg(im); }
 }
 function applyOuterBackground(floorKey) {
   const t = OUTER_TILES[OUTER_FOR_FLOOR[floorKey] || 'stone'];
