@@ -949,6 +949,7 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
+function getRebirthFeatherGain() { return String(Math.max(1, Math.floor(game.stage))).length * 10; } // 転生報酬の進化の羽：ステージの桁数×10枚
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {
   nextNormalBgm(); // 転生したら雑魚戦の曲を転生前とは別の曲に
@@ -962,11 +963,9 @@ function completeReincarnation() {
   const gemBase = getRebirthGemGain(); // ステージを戻す前に計算
   const lvGain = getRebirthLvGain(game.stage);
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
-  const earlyRebirth = game.reincarnations < EARLY_REBIRTH_COUNT;
-  const rebirthPool = earlyRebirth ? ARTIFACT_POOL.filter(x => EARLY_REBIRTH_ARTIFACTS.includes(x.id)) : ARTIFACT_POOL;
-  const pick = pickWeightedArtifact(rebirthPool, REBIRTH_REWARD_RARITY_WEIGHTS);
-  if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
-  game.rebirthChests.push(pick.id); // 転生ガチャの宝箱は開けずに左下へストック（中身は抽選済み）
+  const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×10枚）
+  if (!game.ownedArtifacts) game.ownedArtifacts = {};
+  game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + featherGain;
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
@@ -990,19 +989,20 @@ function completeReincarnation() {
   saveGame();
   playRebirthSound();
   toastIcon.style.display = 'block';
-  toastIcon.innerHTML = xi(CHEST_ICON[pick.rarity]) || '🎁'; // 宝箱のレア度は転生時にわかる（中身は開けるまでお楽しみ）
+  toastIcon.innerHTML = ico(ARTIFACT_BY_ID.evoFeather);
   toastIcon.className = 'artifact-icon chest-shake';
   toast.classList.add('rebirth-reward'); // 背景に魔法陣
   toast.style.removeProperty('--chest-glow');
   toastBig.textContent = '輪廻転生……';
   toastBig.className = 'big reborn';
-  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n<span class="chest-rarity" style="color:${RARITY_INFO[pick.rarity].color}">${rarityStars(pick.rarity)} ${RARITY_INFO[pick.rarity].label}の宝箱</span>を手に入れた！`;
+  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n✨ 転生Lv +${lvGain} → Lv${game.rebirthLv}（攻撃力・最大HP +${Math.round(game.rebirthLv * REBIRTH_LV_BONUS * 100)}%）\n<span class="chest-rarity" style="color:#7fd6ff">🪽 進化の羽 ×${featherGain}</span>を手に入れた！`;
   toast.classList.add('show');
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
   rebirthTimer = setTimeout(finishRebirth, 6000); // 転生情報はじっくり読めるように
-  renderChestTray(pick.rarity);
+  renderChestTray();
+  if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
 // 左下にストックした転生ガチャの宝箱を開ける（戦闘は止めて、開封演出→中身を獲得）
 let rebirthChestFromTray = false, rebirthTrayPausedPhase = null;

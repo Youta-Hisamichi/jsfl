@@ -493,10 +493,13 @@
 </div>
 <div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
   <div class="modal-panel" style="text-align:center;">
-    <div style="font-size:2.4rem;"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
+    <div class="reborn-big-icon"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
     <h2 id="rebornConfirmTitle">本当に転生しますか？</h2>
-    <div class="modal-sub" style="color:var(--text); font-size:0.85rem;">コイン・強化・仲間・階の進行がリセットされます<br>（代わりにランダムなアーティファクトを1つ獲得できます）</div>
-    <div class="reborn-reward">転生報酬 <b>💎 <span id="rebornGemAmt">2</span></b></div>
+    <div class="reborn-info">
+      <div class="ri-sec ri-reset"><b>🔄 リセットされるもの</b><span>コイン・強化・ステージの進行・パーティの仲間（セットしたキャラ）・スキル・サブウェポン</span></div>
+      <div class="ri-sec ri-keep"><b>✅ リセットされないもの</b><span>ジェム・ショップで買ったアイテム・進化・転生Lv・図鑑や戦績</span></div>
+    </div>
+    <div class="reborn-reward">転生報酬 <b>💎 <span id="rebornGemAmt">2</span></b>　<b>🪽 進化の羽 ×<span id="rebornFeatherAmt">10</span></b></div>
     <div class="modal-shop-list">
       <button class="reward-ad-btn reborn-ad-btn" id="rebornAdBtn">🎬 動画を見て報酬3倍 <b>💎 <span id="rebornGemAmt3">6</span></b></button>
       <button class="modal-close-btn" id="rebornConfirmOkBtn"><span data-xi="x_reborn">🌌</span> 転生する</button>

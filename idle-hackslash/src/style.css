@@ -2045,3 +2045,14 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .ci-panel .cp-info-head .comp-sprite { width: 84px !important; height: 84px !important; }
 .ci-panel .cc-trait { font-size: 0.78rem !important; }
 .ci-panel .cp-info-lock { margin-top: 6px; font-weight: 800; }
+/* 転生確認ダイアログ */
+.reborn-big-icon { font-size: 4.6rem; line-height: 1; margin-bottom: 2px; }
+.reborn-big-icon img, .reborn-big-icon .ico-img { width: 110px !important; height: 110px !important; }
+.reborn-info { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 8px; text-align: left; font-size: 0.78rem; }
+.reborn-info .ri-sec { border-radius: 8px; padding: 6px 9px; line-height: 1.45; }
+.reborn-info .ri-sec b { display: block; font-size: 0.8rem; margin-bottom: 1px; }
+.reborn-info .ri-reset { background: rgba(255,92,108,0.12); border: 1px solid rgba(255,92,108,0.45); }
+.reborn-info .ri-reset b { color: #e0414f; }
+.reborn-info .ri-keep { background: rgba(60,192,106,0.12); border: 1px solid rgba(60,192,106,0.45); }
+.reborn-info .ri-keep b { color: #1f9a4a; }
+.reborn-reward b { white-space: nowrap; display: inline-block; }

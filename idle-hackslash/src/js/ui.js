@@ -1992,6 +1992,7 @@ function openRebornConfirm(ctx) {
   document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `${formatStageNumber(game.stage)}階で力尽きた…転生しますか？` : '本当に転生しますか？';
   document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せず${formatStageNumber(Math.max(1, game.stage - 1))}階で鍛え直す` : 'キャンセル';
   document.getElementById('rebornGemAmt').textContent = g;
+  document.getElementById('rebornFeatherAmt').textContent = getRebirthFeatherGain();
   document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
   rebornConfirmModal.classList.add('show');
 }
