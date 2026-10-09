@@ -2264,3 +2264,21 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #shopList .sr-price-txt { font-size: 0.72rem; font-weight: 900; color: #2e7a3e !important; white-space: nowrap; }
 #shopList .shop-row.is-disabled:not(.sold-out) .sr-price b { color: #ff9a9a; }
 .shop-tabs .sub-tab-btn > * { display: none !important; }
+/* ショップの仲間タブ（と解雇・採用ダイアログ）の行：アイテムページと同じ羊皮紙の行 */
+.cl-list .cl-row { gap: 8px; padding: 6px 8px 6px 6px; border: 3px solid #b8862e; border-radius: 8px; background: linear-gradient(180deg, #f7ecd2, #ecdcb6) !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3); color: #3a2a10 !important; margin-bottom: 6px; }
+.cl-list .cl-ico { width: 52px; height: 52px; border-radius: 8px; background: radial-gradient(circle, #2c3f7a, #0e1630); border: 2px solid #c99a3a; box-shadow: inset 0 0 0 1px #6a4a10; }
+.cl-list .cl-ico img { width: 46px; height: 46px; }
+.cl-list .cl-name { gap: 3px; align-items: flex-start; }
+.cl-list .cl-name b.su-name { display: inline-block; max-width: 100%; padding: 3px 16px 3px 12px; color: #fff; font-size: 0.8rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; }
+.cl-list .cl-name small { color: #6a5838; font-weight: 700; }
+.cl-list .cl-btn { background: none !important; padding: 0; gap: 2px; filter: none; opacity: 1; }
+.cl-list .cl-btn .cl-act { padding: 1px 10px; border-radius: 999px; font-size: 0.66rem; font-weight: 900; color: #fff; opacity: 1; }
+.cl-list .cl-btn.hire .cl-act { background: linear-gradient(180deg, #3cc06a, #1f7a3e); }
+.cl-list .cl-btn.fire .cl-act { background: linear-gradient(180deg, #e0505f, #9c2633); }
+.cl-list .cl-btn.notyet .cl-act { background: linear-gradient(180deg, #8a8fa3, #5a5f73); }
+.cl-list .cl-btn .cl-lock { font-size: 0.6rem; color: #6a5838; font-weight: 800; opacity: 1; }
+.cl-list .cl-btn .cl-plate { display: flex; align-items: center; justify-content: flex-end; width: 78px; height: 28px; padding-right: 12px; opacity: 1; }
+.cl-list .cl-btn .cl-plate b { color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.cl-list .cl-btn.is-disabled .cl-plate b { color: #ff9a9a; }
+.cl-list .cl-row.off .cl-ico, .cl-list .cl-row.off .cl-name { opacity: 1; filter: none; }
+.cl-list .cl-row.off .cl-ico img { filter: grayscale(0.6) brightness(0.85); }
