@@ -149,7 +149,7 @@ function getCompanionLevelCost(id) {
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
-  const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「キャラ獲得ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
+  const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「仲間獲得ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
   return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
 }
 function openCompInfo(id) {

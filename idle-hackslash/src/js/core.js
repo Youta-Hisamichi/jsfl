@@ -998,7 +998,7 @@ function companionIconHtml(id) {
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
-// キャラ獲得ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）
+// 仲間獲得ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）
 const CHAR_GACHA_COST = 5, CHAR_LV_BONUS = 0.25;
 const CHAR_GACHA_WEIGHTS = { common: 40, rare: 34, epic: 18, legendary: 6.5, mythic: 1.5 };
 function getCharLv(id) { const v = (game.charLv && game.charLv[id]) || 0; return Math.max(v, COMPANIONS[id] && COMPANIONS[id].rarity === 'common' ? 1 : 0); } // ★1は最初から獲得済み

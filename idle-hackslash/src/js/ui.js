@@ -1144,7 +1144,7 @@ function onCompLockClick(ev) {
   if (ev.target.closest('#charGachaBtn')) { charGachaPull(ev); return; }
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
   const id = b.dataset.clToggle, locking = !isCompLocked(id);
-  if (!isCharObtained(id)) { showTapError('先に「キャラ獲得ガチャ」で獲得してください', ev.clientX, ev.clientY); return; }
+  if (!isCharObtained(id)) { showTapError('先に「仲間獲得ガチャ」で獲得してください', ev.clientX, ev.clientY); return; }
   if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
   const cost = compLockCost(id);
   if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
@@ -1184,7 +1184,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   }
 }
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
-// キャラ獲得ガチャ（ジェム）：★2以上のキャラを獲得する。ダブったら獲得Lvが上がり攻撃力・HPが上がる
+// 仲間獲得ガチャ（ジェム）：★2以上のキャラを獲得する。ダブったら獲得Lvが上がり攻撃力・HPが上がる
 function charGachaPull(ev) {
   if (typeof skGachaBusy !== 'undefined' && skGachaBusy) return;
   if (game.gems < CHAR_GACHA_COST) { promptGemShortage(CHAR_GACHA_COST); return; }
