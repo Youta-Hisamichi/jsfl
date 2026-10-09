@@ -870,7 +870,7 @@ debugRow.addEventListener('click', event => {
     saveGame();
   }
   if (action === 'rebirthShop') {
-    switchTab('gemshop'); // 転生ショップの商品はショップページにある
+    switchTab('gemshop'); showShopTab('item'); // 転生ショップの商品はショップページにある
     return;
   }
   if (action === 'slots') { openDebugSlots(); return; }
@@ -1038,7 +1038,7 @@ function renderAutoUpgradeBtn() {
   b.classList.toggle('off', !game.autoUpgrade);
 }
 document.getElementById('autoUpgradeBtn').addEventListener('click', () => {
-  if (!game.autoUpgradeUnlocked) { switchTab('gemshop'); showNotice('🤖 オート強化はショップで購入できます'); return; }
+  if (!game.autoUpgradeUnlocked) { switchTab('gemshop'); showShopTab('item'); { const it = document.querySelector('[data-shop="autoUpgrade"]'); if (it) it.scrollIntoView({ block: 'center' }); } showNotice('🤖 オート強化はショップで購入できます'); return; }
   game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame();
 });
 const AUTO_UPGRADE_TEXT_INTERVAL = 5000; // ゲーム画面にオート強化の文字を出す間隔（ミリ秒）
@@ -3071,3 +3071,32 @@ document.getElementById('rankTopBtn').addEventListener('click', () => { // ラ�
   window.scrollTo({ top: 0, behavior: 'smooth' });
   for (let el = document.getElementById('rankTopBtn').parentElement; el; el = el.parentElement) if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+// PCのマウスでも、スマホのようにドラッグでスクロールできる（ゲーム画面のキャンバスや入力欄は除く）
+(() => {
+  let drag = null, suppressClickUntil = 0;
+  const canScroll = (el, axis) => { const cs = getComputedStyle(el); return axis === 'y' ? /(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 2 : /(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 2; };
+  const scroller = (el, axis) => { for (; el && el !== document.body && el !== document.documentElement; el = el.parentElement) if (canScroll(el, axis)) return el; return axis === 'y' ? document.scrollingElement : null; };
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    if (e.target.closest('canvas, input, textarea, select, .modal-overlay.show [type=range]')) return;
+    drag = { target: e.target, x: e.clientX, y: e.clientY, sc: null, axis: null, start: 0 };
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (!drag || !(e.buttons & 1)) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.sc) {
+      if (Math.hypot(dx, dy) < 6) return;
+      const axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y', sc = scroller(drag.target, axis);
+      if (!sc) { drag = null; return; }
+      drag.sc = sc; drag.axis = axis; drag.start = axis === 'y' ? sc.scrollTop : sc.scrollLeft;
+      document.body.classList.add('drag-scrolling');
+    }
+    if (drag.axis === 'y') drag.sc.scrollTop = drag.start - dy; else drag.sc.scrollLeft = drag.start - dx;
+    e.preventDefault();
+  }, true);
+  const end = () => { if (drag && drag.sc) { suppressClickUntil = Date.now() + 80; document.body.classList.remove('drag-scrolling'); } drag = null; };
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointercancel', end, true);
+  document.addEventListener('click', e => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); } }, true); // ドラッグで動かしたときはボタンを押したことにしない
+})();
