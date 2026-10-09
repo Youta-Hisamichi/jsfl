@@ -2208,33 +2208,31 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width: max(min(180vw, 980px), 100vh); aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; opacity: 0.45; pointer-events: none; z-index: 0; animation: gameMagicSpin 120s linear infinite; }
 @keyframes gameMagicSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 /* ショップの絵の部品（shop_ui.webp の切り抜き位置。要素の大きさに合わせて伸び縮みする） */
-.su-banner { background: url(assets/img/ui/shop_ui.webp) 0.0000% 0.0000% / 131.3321% 477.7027% no-repeat; }
-.su-gemplate { background: url(assets/img/ui/shop_ui.webp) 0.0000% 23.5849% / 202.8986% 995.7746% no-repeat; }
-.su-pillgold { background: url(assets/img/ui/shop_ui.webp) 59.9309% 22.8659% / 578.5124% 1386.2745% no-repeat; }
-.su-pillnavy { background: url(assets/img/ui/shop_ui.webp) 80.7560% 22.8311% / 593.2203% 1414.0000% no-repeat; }
-.su-name { background: url(assets/img/ui/shop_ui.webp) 0.0000% 32.6979% / 546.8750% 2828.0000% no-repeat; }
-.su-badge { background: url(assets/img/ui/shop_ui.webp) 20.3762% 32.6501% / 1129.0323% 2945.8333% no-repeat; }
-.su-price { background: url(assets/img/ui/shop_ui.webp) 35.2087% 33.5338% / 469.7987% 1683.3333% no-repeat; }
-.su-divider { background: url(assets/img/ui/shop_ui.webp) 70.8419% 33.6350% / 328.6385% 1606.8182% no-repeat; }
-.su-i_sword { background: url(assets/img/ui/shop_ui.webp) 92.7152% 36.4975% / 729.1667% 736.4583% no-repeat; }
-.su-i_shield { background: url(assets/img/ui/shop_ui.webp) 0.0000% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_meteor { background: url(assets/img/ui/shop_ui.webp) 16.2252% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_fairy { background: url(assets/img/ui/shop_ui.webp) 32.4503% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_bluepot { background: url(assets/img/ui/shop_ui.webp) 48.6755% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_party { background: url(assets/img/ui/shop_ui.webp) 81.1258% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_bag { background: url(assets/img/ui/shop_ui.webp) 97.3510% 52.5368% / 729.1667% 736.4583% no-repeat; }
-.su-i_swords { background: url(assets/img/ui/shop_ui.webp) 0.0000% 68.5761% / 729.1667% 736.4583% no-repeat; }
-.su-i_pots { background: url(assets/img/ui/shop_ui.webp) 16.2252% 68.5761% / 729.1667% 736.4583% no-repeat; }
-.su-i_scroll { background: url(assets/img/ui/shop_ui.webp) 32.4503% 68.5761% / 729.1667% 736.4583% no-repeat; }
-.su-i_emblem { background: url(assets/img/ui/shop_ui.webp) 48.6755% 68.5761% / 729.1667% 736.4583% no-repeat; }
-.su-parch { background: url(assets/img/ui/shop_ui.webp) 75.3846% 62.8186% / 388.8889% 1767.5000% no-repeat; }
-.su-tab_item_on { background: url(assets/img/ui/shop_ui.webp) 0.0000% 80.1550% / 282.2581% 1140.3226% no-repeat; }
-.su-tab_item_off { background: url(assets/img/ui/shop_ui.webp) 55.3097% 80.1550% / 282.2581% 1140.3226% no-repeat; }
-.su-tab_chara_on { background: url(assets/img/ui/shop_ui.webp) 0.0000% 90.0775% / 282.2581% 1140.3226% no-repeat; }
-.su-tab_chara_off { background: url(assets/img/ui/shop_ui.webp) 55.3097% 90.0775% / 282.2581% 1140.3226% no-repeat; }
-.su-tab_charge_on { background: url(assets/img/ui/shop_ui.webp) 0.0000% 100.0000% / 282.2581% 1140.3226% no-repeat; }
-.su-tab_charge_off { background: url(assets/img/ui/shop_ui.webp) 55.3097% 100.0000% / 282.2581% 1140.3226% no-repeat; }
+.su-banner { background: url(assets/img/ui/shop_ui.webp) 0.0000% 0.0000% / 131.3321% 414.1892% no-repeat; }
+.su-gemplate { background: url(assets/img/ui/shop_ui.webp) 0.0000% 27.6753% / 202.8986% 863.3803% no-repeat; }
+.su-pillgold { background: url(assets/img/ui/shop_ui.webp) 59.9309% 26.6904% / 578.5124% 1201.9608% no-repeat; }
+.su-pillnavy { background: url(assets/img/ui/shop_ui.webp) 80.7560% 26.6430% / 593.2203% 1226.0000% no-repeat; }
+.su-name { background: url(assets/img/ui/shop_ui.webp) 0.0000% 37.9252% / 546.8750% 2452.0000% no-repeat; }
+.su-badge { background: url(assets/img/ui/shop_ui.webp) 20.3762% 37.8608% / 1129.0323% 2554.1667% no-repeat; }
+.su-price { background: url(assets/img/ui/shop_ui.webp) 35.2087% 39.0543% / 469.7987% 1459.5238% no-repeat; }
+.su-divider { background: url(assets/img/ui/shop_ui.webp) 70.8419% 39.1916% / 328.6385% 1393.1818% no-repeat; }
+.su-i_sword { background: url(assets/img/ui/shop_ui.webp) 92.7152% 43.1335% / 729.1667% 638.5417% no-repeat; }
+.su-i_shield { background: url(assets/img/ui/shop_ui.webp) 0.0000% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_meteor { background: url(assets/img/ui/shop_ui.webp) 16.2252% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_fairy { background: url(assets/img/ui/shop_ui.webp) 32.4503% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_bluepot { background: url(assets/img/ui/shop_ui.webp) 48.6755% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_party { background: url(assets/img/ui/shop_ui.webp) 81.1258% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_bag { background: url(assets/img/ui/shop_ui.webp) 97.3510% 62.0890% / 729.1667% 638.5417% no-repeat; }
+.su-i_swords { background: url(assets/img/ui/shop_ui.webp) 0.0000% 81.0445% / 729.1667% 638.5417% no-repeat; }
+.su-i_pots { background: url(assets/img/ui/shop_ui.webp) 16.2252% 81.0445% / 729.1667% 638.5417% no-repeat; }
+.su-i_scroll { background: url(assets/img/ui/shop_ui.webp) 32.4503% 81.0445% / 729.1667% 638.5417% no-repeat; }
+.su-i_emblem { background: url(assets/img/ui/shop_ui.webp) 48.6755% 81.0445% / 729.1667% 638.5417% no-repeat; }
+.su-parch { background: url(assets/img/ui/shop_ui.webp) 75.3846% 73.1239% / 388.8889% 1532.5000% no-repeat; }
+.su-tabon { background: url(assets/img/ui/shop_ui.webp) 0.0000% 93.8294% / 282.2581% 988.7097% no-repeat; }
+.su-taboff { background: url(assets/img/ui/shop_ui.webp) 55.3097% 93.8294% / 282.2581% 988.7097% no-repeat; }
+.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 78.6164% 94.1712% / 1093.7500% 957.8125% no-repeat; }
+.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 93.7086% 100.0000% / 729.1667% 638.5417% no-repeat; }
 /* ショップ（アイテム）ページ：見本に合わせた看板・タブ・行 */
 .tab-page[data-tab="gemshop"] > .page-head { display: none; }
 .shop-hero { display: flex; justify-content: center; margin: -4px -4px 8px; }
@@ -2243,15 +2241,15 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .shop-gemplate { position: relative; flex: 1 1 0; aspect-ratio: 345 / 71; border: none; padding: 0; cursor: pointer; }
 .shop-gemplate span { position: absolute; left: 30%; right: 26%; top: 50%; transform: translateY(-50%); text-align: center; color: #fff; font-weight: 900; font-size: clamp(0.8rem, 3.6vw, 1.1rem); text-shadow: 0 1px 2px #000; }
 .shop-tabs { gap: 4px !important; }
-.shop-tabs .sub-tab-btn { flex: 1 1 0; aspect-ratio: 248 / 62; min-height: 0 !important; padding: 0 !important; border: none !important; border-image: none !important; box-shadow: none !important; font-size: 0 !important; color: transparent !important; text-shadow: none !important; } /* 文字は絵に入っている */
-.shop-tabs .sub-tab-btn[data-shop-tab="item"] { background: url(assets/img/ui/shop_ui.webp) 55.3097% 80.1550% / 282.2581% 1140.3226% no-repeat !important; }
-.shop-tabs .sub-tab-btn[data-shop-tab="item"].active { background: url(assets/img/ui/shop_ui.webp) 0.0000% 80.1550% / 282.2581% 1140.3226% no-repeat !important; }
-.shop-tabs .sub-tab-btn[data-shop-tab="chara"] { background: url(assets/img/ui/shop_ui.webp) 55.3097% 90.0775% / 282.2581% 1140.3226% no-repeat !important; }
-.shop-tabs .sub-tab-btn[data-shop-tab="chara"].active { background: url(assets/img/ui/shop_ui.webp) 0.0000% 90.0775% / 282.2581% 1140.3226% no-repeat !important; }
-.shop-tabs .sub-tab-btn[data-shop-tab="charge"] { background: url(assets/img/ui/shop_ui.webp) 55.3097% 100.0000% / 282.2581% 1140.3226% no-repeat !important; }
-.shop-tabs .sub-tab-btn[data-shop-tab="charge"].active { background: url(assets/img/ui/shop_ui.webp) 0.0000% 100.0000% / 282.2581% 1140.3226% no-repeat !important; }
+.shop-tabs .sub-tab-btn { flex: 1 1 0; aspect-ratio: 248 / 62; min-height: 0 !important; padding: 0 6px !important; display: flex !important; align-items: center; justify-content: center; gap: 6px; border: none !important; border-image: none !important; box-shadow: none !important; background: url(assets/img/ui/shop_ui.webp) 55.3097% 93.8294% / 282.2581% 988.7097% no-repeat !important; color: #fff !important; font-size: clamp(0.8rem, 3.8vw, 1rem) !important; font-weight: 900; text-shadow: 0 1px 2px #000 !important; }
+.shop-tabs .sub-tab-btn.active { background: url(assets/img/ui/shop_ui.webp) 0.0000% 93.8294% / 282.2581% 988.7097% no-repeat !important; color: #4a2604 !important; text-shadow: 0 1px 0 #ffe9a8 !important; }
+.shop-tabs .st-ico { display: inline-block; width: 1.45em; height: 1.45em; flex: none; filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 紺のタブでは白いアイコン */
+.shop-tabs .sub-tab-btn.active .st-ico { filter: brightness(0) saturate(100%) invert(14%) sepia(60%) saturate(1800%) hue-rotate(15deg) brightness(70%); } /* 金のタブでは茶色 */
+.shop-tabs .st-ico.su-ic_cart { background: url(assets/img/ui/shop_ui.webp) 78.6164% 94.1712% / 1093.7500% 957.8125% no-repeat; }
+.shop-tabs .st-ico.su-ic_people { background: url(assets/img/ui/shop_ui.webp) 93.7086% 100.0000% / 729.1667% 638.5417% no-repeat; }
+.shop-tabs .sub-tab-btn .ico-img { width: 1.45em; height: 1.45em; vertical-align: middle; }
 #shopList { gap: 6px; }
-#shopList .shop-row { display: grid !important; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; padding: 6px 8px 6px 6px !important; border: 3px solid #b8862e !important; border-image: none !important; border-radius: 8px !important; background: url(assets/img/ui/shop_ui.webp) 75.3846% 62.8186% / 388.8889% 1767.5000% no-repeat !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; text-shadow: none !important; }
+#shopList .shop-row { display: grid !important; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; padding: 6px 8px 6px 6px !important; border: 3px solid #b8862e !important; border-image: none !important; border-radius: 8px !important; background: url(assets/img/ui/shop_ui.webp) 75.3846% 73.1239% / 388.8889% 1532.5000% no-repeat !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; text-shadow: none !important; }
 #shopList .sr-ico { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); }
 #shopList .sr-ico-emoji { border-radius: 8px; background: radial-gradient(circle, #24346a, #0e1630); border: 2px solid #c99a3a; font-size: 1.8rem; }
 #shopList .sr-main { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
@@ -2263,7 +2261,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #shopList .sr-price b { color: #fff; font-size: 1.05rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
 #shopList .sr-price-txt { font-size: 0.72rem; font-weight: 900; color: #2e7a3e !important; white-space: nowrap; }
 #shopList .shop-row.is-disabled:not(.sold-out) .sr-price b { color: #ff9a9a; }
-.shop-tabs .sub-tab-btn > * { display: none !important; }
 /* ショップの仲間タブ（と解雇・採用ダイアログ）の行：アイテムページと同じ羊皮紙の行 */
 .cl-list .cl-row { gap: 8px; padding: 6px 8px 6px 6px; border: 3px solid #b8862e; border-radius: 8px; background: linear-gradient(180deg, #f7ecd2, #ecdcb6) !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3); color: #3a2a10 !important; margin-bottom: 6px; }
 .cl-list .cl-ico { width: 52px; height: 52px; border-radius: 8px; background: radial-gradient(circle, #2c3f7a, #0e1630); border: 2px solid #c99a3a; box-shadow: inset 0 0 0 1px #6a4a10; }
