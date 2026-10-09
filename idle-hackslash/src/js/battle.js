@@ -1142,9 +1142,9 @@ const NEW_COMP_ABILITIES = {
   paladin: { ms: 10000, fn: (c, pl) => { let healed = false; for (const b of balls) { if (!(b.isCompanion || b === pl) || b.hp <= 0 || b.hp >= b.maxHp) continue; b.hp = Math.min(b.maxHp, b.hp + Math.max(1, Math.round(b.maxHp * 0.08))); spawnHitParticles(b.x, b.y, '#ffe9a8'); healed = true; } if (healed) { spawnDamageText(c.x, c.y - c.radius - 14, '⚜️ 聖盾', '#ffe9a8', 0.025); playHealSound(); updateHPUI(); } } },
   dragoon: { ms: 9000, fn: (c, pl, en) => { if (!en || en.isDying || en.spawnTimer > 0) return; c.x = en.x - (en.radius + c.radius) * 0.7; c.y = en.y - (en.radius + c.radius) * 0.7; c.vx = 0; c.vy = 0; homingMissiles.push({ x: c.x, y: c.y, vx: 0, vy: 0, speed: 12, life: HOMING_LIFE_FRAMES, trail: [], delay: 0, dmg: c.atk * 5, kind: 'arrow' }); spawnHitParticles(en.x, en.y, '#9fd0ff'); spawnDamageText(c.x, c.y - c.radius - 14, '🐲 ジャンプ！', '#9fd0ff', 0.025, true); thump(220, 60, 0.35, 0.35, 'sawtooth'); } },
   summoner: { ms: 7000, fn: (c, pl, en) => { if (!en || en.isDying || en.spawnTimer > 0) return; for (const off of [-0.6, 0.6]) { const a = Math.atan2(en.y - c.y, en.x - c.x) + off; homingMissiles.push({ x: c.x, y: c.y, vx: Math.cos(a) * 4.5, vy: Math.sin(a) * 4.5, speed: 4.5, life: HOMING_LIFE_FRAMES, trail: [], delay: 0, dmg: c.atk * 1.5 }); } spawnDamageText(c.x, c.y - c.radius - 14, '🦊 霊獣召喚', '#b8f5c8', 0.03); playTone(660, 0.18, 'sine', 0.09, 990); } },
-  alchemist: { ms: 12000, fn: c => { const g = Math.max(1, Math.round((20 + game.stage * 5) * computeBonuses().coinMult)); game.coins += g; spawnDamageText(c.x, c.y - c.radius - 14, '⚗️ +' + formatCoinNumber(g) + ' 🟡', '#ffd76b', 0.025); playTone(1200, 0.1, 'triangle', 0.07, 2600); updateStatsUI(); } },
+  alchemist: { ms: 12000, fn: c => { const g = Math.max(1, Math.round(stageCoinRaw() * 0.8 * computeBonuses().coinMult)); game.coins += g; spawnDamageText(c.x, c.y - c.radius - 14, '⚗️ +' + formatCoinNumber(g) + ' 🟡', '#ffd76b', 0.025); playTone(1200, 0.1, 'triangle', 0.07, 2600); updateStatsUI(); } },
   gunner: { ms: 5000, fn: (c, pl, en) => { if (!en || en.isDying || en.spawnTimer > 0) return; const a = Math.atan2(en.y - c.y, en.x - c.x); homingMissiles.push({ x: c.x, y: c.y, vx: Math.cos(a) * 9, vy: Math.sin(a) * 9, speed: 9, life: HOMING_LIFE_FRAMES, trail: [], delay: 0, dmg: c.atk * 2.5 }); spawnDamageText(c.x, c.y - c.radius - 14, '🔫 狙撃', '#ffcf7a', 0.03); thump(900, 200, 0.08, 0.2, 'square'); } },
-  cat: { ms: 7000, fn: c => { const g = Math.max(1, Math.round((8 + game.stage * 2) * computeBonuses().coinMult)); game.coins += g; spawnDamageText(c.x, c.y - c.radius - 14, '🐾 +' + formatCoinNumber(g) + ' 🟡', '#ffd76b', 0.025); playTone(1800, 0.06, 'triangle', 0.06, 2400); updateStatsUI(); } },
+  cat: { ms: 7000, fn: c => { const g = Math.max(1, Math.round(stageCoinRaw() * 0.4 * computeBonuses().coinMult)); game.coins += g; spawnDamageText(c.x, c.y - c.radius - 14, '🐾 +' + formatCoinNumber(g) + ' 🟡', '#ffd76b', 0.025); playTone(1800, 0.06, 'triangle', 0.06, 2400); updateStatsUI(); } },
 };
 function updateCompanionAbilities() {
   if (phase !== 'battle') return;
@@ -1519,7 +1519,7 @@ function checkLoginBonus(awayMs) {
   const rarity = pickLoginRarity(tier);
   const rarityInfo = RARITY_INFO[rarity];
   const b = computeBonuses();
-  const bonusCoins = Math.round(reward.coins * (1 + game.stage * 0.25) * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
+  const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
   const chest = Math.random() < reward.chest; // サプライズ宝箱：遺物かジェムの山
   const chestArtifact = chest ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null; // サプライズ宝箱は遺物（ジェムは動画を見たときだけ）
@@ -1529,7 +1529,7 @@ function checkLoginBonus(awayMs) {
   // 放置中の戦果：離れている間も自キャラは戦い続けていた（最大8時間ぶん）
   const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
   const idleKills = Math.floor(idleMin * IDLE_KILLS_PER_MIN);
-  const idleCoins = Math.round(idleKills * (30 + game.stage * 8) * b.coinMult * IDLE_COIN_RATE);
+  const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE);
   const hcIdle = getHeldChests(), heldNow = CHEST_RARITIES.reduce((n, k) => n + (hcIdle[k] || 0), 0);
   let idleChests = Math.min(Math.floor(idleMin / IDLE_CHEST_EVERY_MIN), Math.max(0, CHEST_STOCK_MAX - heldNow));
   const idleChestRarities = {};
@@ -1993,7 +1993,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中�
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   let loot;
   if (isCoin) {
-    const bonus = Math.round((60 + game.stage * 10) * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
+    const bonus = Math.round(stageCoinRaw() * 2 * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
     if (!quiet) spawnCoinBurst(arena.x, arena.y + 20, bonus);
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${COIN_ICO} ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };

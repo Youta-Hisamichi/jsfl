@@ -665,11 +665,11 @@ function getEvolveNeed(id) {
 }
 
 const UPGRADES = {
-  atk: { icon: '⚔️', name: '攻撃力', desc: 'Lvが上がるほど伸びる', baseCost: 25, group: 'attack' },
-  hp: { icon: '❤️', name: '最大HP', desc: 'Lvが上がるほど伸びる', baseCost: 25, group: 'defense' },
-  cAtk: { icon: '🚩', name: '仲間の攻撃力', desc: '+15%', baseCost: 40, group: 'companion' },
-  cSpd: { icon: '💨', name: '仲間の攻撃頻度', desc: '+5%', baseCost: 60, group: 'companion' },
-  cHp: { icon: '🧿', name: '仲間の最大HP', desc: '+20%', baseCost: 40, group: 'companion' },
+  atk: { icon: '⚔️', name: '攻撃力', desc: 'Lvが上がるほど伸びる', baseCost: 2, group: 'attack' },
+  hp: { icon: '❤️', name: '最大HP', desc: 'Lvが上がるほど伸びる', baseCost: 2, group: 'defense' },
+  cAtk: { icon: '🚩', name: '仲間の攻撃力', desc: '+15%', baseCost: 3, group: 'companion' },
+  cSpd: { icon: '💨', name: '仲間の攻撃頻度', desc: '+5%', baseCost: 4, group: 'companion' },
+  cHp: { icon: '🧿', name: '仲間の最大HP', desc: '+20%', baseCost: 3, group: 'companion' },
 };
 const UPGRADE_LEAPS = [
   { every: 1000, mult: 1.5, name: '超大飛躍', color: '#ff5cd6' },
@@ -744,7 +744,7 @@ const SKILL_GACHA_SKILLS = {
 const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen']; // 削除したスキル（古いセーブからも外す）
 const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
 const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
-const SKILL_GACHA_BASE_COST = 100, SKILL_GACHA_COST_GROWTH = 1.15; // 1回ごとに値上げ（転生でリセット）
+const SKILL_GACHA_BASE_COST = 10, SKILL_GACHA_COST_GROWTH = 1.15; // 1回ごとに値上げ（転生でリセット）
 function getSkillLevel(id) {
   if (!game.shopOwned[id]) return 0;
   return Math.max(1, Math.min(SKILL_MAX_LEVEL, (game.skillLevels && game.skillLevels[id]) || 1));
@@ -759,7 +759,7 @@ function skillPower(id) {
   return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100);
 }
 function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
-const WEAPON_GACHA_BASE_COST = 400, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
+const WEAPON_GACHA_BASE_COST = 40, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
 function getWeaponGachaCost() { return coinPrice(Math.round(WEAPON_GACHA_BASE_COST * Math.pow(WEAPON_GACHA_COST_GROWTH, game.weaponGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
 const SUPERGEM_SHOP_ITEMS = {
@@ -911,79 +911,79 @@ function isRebirthItemMaxed(item) {
 }
 
 const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使うか）
-  villager: { icon: '🧑‍🌾', name: '村人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'cat', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  villager: { icon: '🧑‍🌾', name: '村人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'cat', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【畑の恵み】7秒ごとにコインを拾ってくる' },
-  merchant: { icon: '💰', name: '商人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'alchemist', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  merchant: { icon: '💰', name: '商人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'alchemist', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【商売上手】12秒ごとにコインをまとめて稼いでくる' },
-  hobbit: { icon: '🍀', name: 'ホビット', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'sprite', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  hobbit: { icon: '🍀', name: 'ホビット', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'sprite', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【小さな幸運】クリティカル率+30%／当てると自機が1.5秒加速' },
-  dog: { icon: '🐕', name: '犬', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  dog: { icon: '🐕', name: '犬', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【かみつき】当たると、追加でもう1回かみつく（50%ダメージ）' },
-  penguin: { icon: '🐧', name: 'ペンギン兵', stat: 'hp', desc: '最大HP上昇', rarity: 'common', kind: 'gunner', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  penguin: { icon: '🐧', name: 'ペンギン兵', stat: 'hp', desc: '最大HP上昇', rarity: 'common', kind: 'gunner', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【氷つぶて】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
-  hamster: { icon: '🐹', name: 'ハムスター兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'common', kind: 'archer', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  hamster: { icon: '🐹', name: 'ハムスター兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'common', kind: 'archer', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【豆鉄砲】3秒ごとに敵を追尾する弾を撃つ' },
-  cat: { icon: '🐱', name: '相棒ニャンタ', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'cat', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 15,
+  cat: { icon: '🐱', name: '相棒ニャンタ', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'common', kind: 'cat', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【拾い物】7秒ごとにコインを拾ってくる' },
-  warrior: { icon: '⚔️', name: '戦士', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'warrior', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  warrior: { icon: '⚔️', name: '戦士', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'warrior', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【雄叫び】12秒ごとに自機の攻撃力を4秒間1.5倍' },
-  mage: { icon: '🔮', name: '魔法使い', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'mage', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  mage: { icon: '🔮', name: '魔法使い', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'mage', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【爆炎】6秒ごとに攻撃力3倍の火球を放つ' },
-  priest: { icon: '⛪', name: '僧侶', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', kind: 'priest', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  priest: { icon: '⛪', name: '僧侶', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', kind: 'priest', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【蘇生】12秒ごとに倒れた仲間を1人復活、いなければ仲間全員のHPを20%回復' },
-  monk: { icon: '🥋', name: '武道家', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'monk', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  monk: { icon: '🥋', name: '武道家', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'monk', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【連撃】攻撃が当たると、追加でもう1発（50%ダメージ）' },
-  archer: { icon: '🏹', name: '弓兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'archer', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  archer: { icon: '🏹', name: '弓兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'archer', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【狙撃】3秒ごとに敵を追尾する矢を自動で放つ' },
-  thief: { icon: '🗡️', name: '盗賊', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'thief', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  thief: { icon: '🗡️', name: '盗賊', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'thief', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【盗む】当てるたびに30%の確率でコインを盗む' },
-  dancer: { icon: '💃', name: '踊り子', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  dancer: { icon: '💃', name: '踊り子', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【魅惑の舞】仲間全員の攻撃力 +10%（踊り子1人ごと）' },
-  bard: { icon: '🎸', name: '吟遊詩人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  bard: { icon: '🎸', name: '吟遊詩人', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', kind: 'bard', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【鼓舞の歌】仲間全員の攻撃力 +10%（吟遊詩人1人ごと）' },
-  lancer: { icon: '🔱', name: '槍兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'lancer', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  lancer: { icon: '🔱', name: '槍兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'lancer', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【貫通】ボスへのダメージ1.5倍' },
-  alchemist: { icon: '⚗️', name: '錬金術師', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', kind: 'witch', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  alchemist: { icon: '⚗️', name: '錬金術師', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'rare', kind: 'witch', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【錬金】当てるたびにコイン獲得／【調合薬】10秒ごとに自機のHPを8%回復' },
-  musketeer: { icon: '🔫', name: 'マスケット兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'gunner', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  musketeer: { icon: '🔫', name: 'マスケット兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'rare', kind: 'gunner', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【一斉射撃】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
-  bunny: { icon: '🐰', name: '遊び人', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'sprite', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  bunny: { icon: '🐰', name: '遊び人', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'rare', kind: 'sprite', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【気まぐれ】クリティカル率+30%／当てると自機が1.5秒加速' },
-  golem: { icon: '🗿', name: 'ゴーレム兵', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', kind: 'golem', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 20,
+  golem: { icon: '🗿', name: 'ゴーレム兵', stat: 'hp', desc: '最大HP上昇', rarity: 'rare', kind: 'golem', weight: 25, recruitCost: 90, baseBonus: 0.07, perLevel: 0.03, levelCostBase: 2,
     trait: '【巨体】体が大きく、HPが2倍' },
-  tamer: { icon: '🐺', name: '魔物使い', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'ranger', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  tamer: { icon: '🐺', name: '魔物使い', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'ranger', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【けしかけ】4秒ごとに追尾する魔獣の牙を3本放つ' },
-  heavy: { icon: '🛡️', name: '重戦士', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'knight', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  heavy: { icon: '🛡️', name: '重戦士', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'knight', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.8秒気絶させ大きく弾き飛ばす' },
-  cavalry: { icon: '🐎', name: '騎兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'lancer', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  cavalry: { icon: '🐎', name: '騎兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'lancer', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【突撃槍】ボスへのダメージ1.5倍' },
-  samurai: { icon: '🎌', name: '侍', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'samurai', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  samurai: { icon: '🎌', name: '侍', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'samurai', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【居合】当てたとき25%で攻撃力3倍の一閃' },
-  summoner: { icon: '👻', name: '召喚士', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'summoner', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  summoner: { icon: '👻', name: '召喚士', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'summoner', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【霊獣召喚】7秒ごとに追尾する霊獣を2体放つ' },
-  sage: { icon: '📖', name: '賢者', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'sage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  sage: { icon: '📖', name: '賢者', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'sage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【魔導】5秒ごとに攻撃力2倍の魔法弾を放つ' },
-  fortune: { icon: '🔮', name: '占い師', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'sage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  fortune: { icon: '🔮', name: '占い師', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'sage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【水晶の導き】5秒ごとに攻撃力2倍の魔法弾を放つ' },
-  ninja: { icon: '🥷', name: '忍者', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'epic', kind: 'ninja', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  ninja: { icon: '🥷', name: '忍者', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'epic', kind: 'ninja', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【毒刃】当てた敵を毒状態にする（毒スキルなしでも発動）' },
-  pirate: { icon: '🏴‍☠️', name: '海賊', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'pirate', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  pirate: { icon: '🏴‍☠️', name: '海賊', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'epic', kind: 'pirate', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【略奪】敵に当てるとたまにコインを奪う（8秒に1回まで）' },
-  paladin: { icon: '⚜️', name: '聖騎士パラディン', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'paladin', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  paladin: { icon: '⚜️', name: '聖騎士パラディン', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'paladin', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【聖盾】10秒ごとに自機と仲間全員のHPを8%回復' },
-  princess: { icon: '👸', name: '姫', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'heroine', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  princess: { icon: '👸', name: '姫', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'heroine', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【癒しの祈り】8秒ごとに自機のHPを10%回復' },
-  dragon: { icon: '🐉', name: 'ドラゴン', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'mage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 25,
+  dragon: { icon: '🐉', name: 'ドラゴン', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'mage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【火炎の息】6秒ごとに攻撃力3倍の火球を吐く' },
-  dragoon: { icon: '🐲', name: '竜騎士', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  dragoon: { icon: '🐲', name: '竜騎士', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
     trait: '【竜槍ジャンプ】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 レジェンド）' },
-  pegasus: { icon: '🦄', name: 'ペガサスナイト', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  pegasus: { icon: '🦄', name: 'ペガサスナイト', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
     trait: '【天翔ける槍】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 レジェンド）' },
-  king: { icon: '👑', name: '王様', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'legendary', kind: 'paladin', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  king: { icon: '👑', name: '王様', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'legendary', kind: 'paladin', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
     trait: '【王の号令】仲間全員の攻撃力 +30%／10秒ごとに自機と仲間全員のHPを8%回復（★4 レジェンド）' },
-  archangel: { icon: '👼', name: '大天使ミカエルン', stat: 'hp', desc: '最大HP上昇', rarity: 'mythic', kind: 'angel', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  archangel: { icon: '👼', name: '大天使ミカエルン', stat: 'hp', desc: '最大HP上昇', rarity: 'mythic', kind: 'angel', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
     trait: '【祝福】10秒ごとに自機と仲間全員のHPを15%回復し、倒れた仲間を全員復活（★5 ミシック）' },
-  bahamut: { icon: '🐉', name: '覇龍バハムート', stat: 'atk', desc: '攻撃力上昇', rarity: 'mythic', kind: 'dragon', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 50,
+  bahamut: { icon: '🐉', name: '覇龍バハムート', stat: 'atk', desc: '攻撃力上昇', rarity: 'mythic', kind: 'dragon', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
     trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（★5 ミシック）' },
 };
 function compKind(id) { return (COMPANIONS[id] && COMPANIONS[id].kind) || id; } // 能力の種類（同じ能力を別の職業でも使い回す）

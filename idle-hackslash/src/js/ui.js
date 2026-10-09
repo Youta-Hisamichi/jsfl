@@ -250,7 +250,7 @@ let expGems = [], lastKillPos = null;
 const EXP_ENABLED = false;
 function spawnExpGems(x, y, total) {
   if (!EXP_ENABLED) { // 経験値の代わりに少しのコインにする（ハテナボックス・氷・水晶などの中身）
-    const c = Math.max(1, Math.round(total * (5 + game.stage) * computeBonuses().coinMult * 0.5));
+    const c = Math.max(1, Math.round(total * stageCoinRaw() * 0.1 * computeBonuses().coinMult));
     if (total <= 4) return; // 雑魚を倒したときの経験値ぶんは無し
     game.coins += c; spawnCoinBurst(x, y, c, 5); updateStatsUI(); return;
   }
@@ -503,7 +503,7 @@ function applyPowerUp(c) {
   else if (c.kind === 'buff') { if (!game.runBuffs) game.runBuffs = {}; game.runBuffs[c.id] = Math.min(RUN_BUFF_MAX, getRunBuff(c.id) + 1); }
   else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; autoEquipWeapon(c.id); }
   else if (c.kind === 'heal') { const PU_HEAL = 0.3; const pl = balls.find(isMainPlayerBall); if (pl && pl.hp > 0) { const h = Math.min(pl.maxHp - pl.hp, Math.round(pl.maxHp * PU_HEAL)); pl.hp += h; spawnDamageText(pl.x, pl.y - pl.radius - 14, '+' + h + ' HP', '#5fe0a8', 0.012); } balls.forEach(b => { if (b.isCompanion && b.hp > 0) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * PU_HEAL); }); playHealSound(); }
-  else if (c.kind === 'coin') { const g = Math.round(getEnemyStats(game.stage).hp * 3 + 50); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
+  else if (c.kind === 'coin') { const g = Math.max(1, Math.round(stageCoinRaw() * 6)); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
 }
 document.getElementById('powerUpList').addEventListener('click', ev => {
   const b = ev.target.closest('[data-pu]'); if (!b || puSpinning) return; // スロット中は選べない
@@ -2183,7 +2183,7 @@ coinStrikeBtn.addEventListener('click', event => {
 });
 function onCoinStrikeTap(x, y) {
   if (!isCoinStrike()) return;
-  const gain = Math.max(1, Math.round((3 + game.stage) * 0.5 * computeBonuses().coinMult));
+  const gain = Math.max(1, Math.round(stageCoinRaw() * 0.1 * computeBonuses().coinMult));
   game.coins += gain;
   spawnDamageText(x, y - 10, '+' + gain + ' 🟡', '#ffd76b', 0.03);
   playTone(1568, 0.05, 'square', 0.06);
@@ -2214,7 +2214,7 @@ const MYSTERY_EFFECTS = [
   { w: 14, name: '💥 大爆発！', color: '#ff9f43', fn: ({ player, enemy }) => { const { dmg, crit } = rollCrit(Math.round(player.atk * 10), enemy); enemy.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(enemy, dmg, crit, '#ffcf8a'); onPlayerHitEnemy(enemy, dmg); shakeScreenLight(); if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y); } },
   { w: 12, name: '💖 全回復！', color: '#7ee787', fn: ({ player }) => { player.hp = player.maxHp; playHealSound(); } },
   { w: 10, name: '💎 ジェムが降ってきた！ +3', color: '#64e8ff', fn: () => { game.gems += 3; } },
-  { w: 12, name: '🟡 コインの雨！', color: '#ffd76b', fn: ({ player }) => { const g = Math.round(game.stage * 40 * computeBonuses().coinMult); game.coins += g; spawnCoinBurst(player.x, player.y, g); } },
+  { w: 12, name: '🟡 コインの雨！', color: '#ffd76b', fn: ({ player }) => { const g = Math.max(1, Math.round(stageCoinRaw() * 8 * computeBonuses().coinMult)); game.coins += g; spawnCoinBurst(player.x, player.y, g); } },
   { w: 12, name: '⏸ 時間停止！（敵が3秒止まる）', color: '#a5a8ff', fn: ({ enemy }) => { enemy.stunnedUntil = Date.now() + 3000; } },
   { w: 8,  name: '🔻 敵が縮んだ！', color: '#7fd6ff', fn: ({ enemy }) => { enemy.radius = Math.max(8, enemy.radius * 0.7); enemy.traitBaseRadius = enemy.radius; } },
   { w: 8,  name: '🤔 何も起きなかった…', color: '#9aa3b8', fn: () => {} },
@@ -2242,7 +2242,7 @@ novaBtn.addEventListener('click', event => {
     if (en.isAdd) {
       if (en.hp <= 0) {
         recordBestiaryKill(en);
-        const coinGain = 5 + Math.floor(Math.random() * 8);
+        const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3)));
         game.coins += coinGain;
         spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
       }
@@ -2275,7 +2275,7 @@ blastBtn.addEventListener('click', event => {
     for (let k = 0; k < 3; k++) spawnHitParticles(en.x + (Math.random() - 0.5) * en.radius, en.y + (Math.random() - 0.5) * en.radius, k % 2 ? '#ffd76b' : '#ff6b3d');
     applyHitKnockback(en, player, 12);
     if (en.isAdd) {
-      if (en.hp <= 0) { recordBestiaryKill(en); const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain; spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b'); }
+      if (en.hp <= 0) { recordBestiaryKill(en); const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3))); game.coins += coinGain; spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b'); }
     } else {
       onPlayerHitEnemy(en, dmg);
       if (en.hp <= 0) triggerEnemyDefeat(en, player.x, player.y);

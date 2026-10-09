@@ -248,7 +248,7 @@ function step() {
             applyHitKnockback(e, comp, 3.2);
           }
           if (cid === 'witch') {
-            const coin = Math.max(1, Math.round((3 + game.stage * 0.5) * computeBonuses().coinMult));
+            const coin = Math.max(1, Math.round(stageCoinRaw() * 0.1 * computeBonuses().coinMult));
             game.coins += coin;
             spawnDamageText(comp.x, comp.y - comp.radius - 10, '+' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
           }
@@ -259,13 +259,13 @@ function step() {
             spawnDamageText(e.x + 14, e.y - e.radius - 24, '連撃 ' + formatCoinNumber(extra), '#ff8a5c');
           }
           if (cid === 'thief' && Math.random() < 0.3) {
-            const coin = Math.max(1, Math.round((5 + game.stage * 1.5) * computeBonuses().coinMult));
+            const coin = Math.max(1, Math.round(stageCoinRaw() * 0.2 * computeBonuses().coinMult));
             game.coins += coin;
             spawnDamageText(comp.x, comp.y - comp.radius - 10, '盗んだ！ +' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
           }
           if (cid === 'pirate' && Math.random() < 0.5 && !(comp.lootCdUntil > Date.now())) {
             comp.lootCdUntil = Date.now() + 8000;
-            const coin = Math.max(1, Math.round((12 + game.stage * 3) * computeBonuses().coinMult));
+            const coin = Math.max(1, Math.round(stageCoinRaw() * 0.4 * computeBonuses().coinMult));
             game.coins += coin;
             spawnDamageText(comp.x, comp.y - comp.radius - 10, '略奪！ +' + formatCoinNumber(coin) + ' 🟡', '#ffd76b');
           }
@@ -354,7 +354,7 @@ function processAdds(a) {
           if (add.hp <= 0) {
             recordBestiaryKill(add);
             spawnExpGems(add.x, add.y, 4);
-            const coinGain = 5 + Math.floor(Math.random() * 8);
+            const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3)));
             game.coins += coinGain;
             if (Math.random() < 0.3) game.gems += 1;
             spawnDamageText(add.x, add.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
@@ -478,7 +478,7 @@ function onStageClear() {
   const defeated = balls.find(ball => !ball.isPlayer);
   const isMetal = !!defeated && !defeated.isBoss && defeated.emoji === '👾'; // メタルスライムは討伐コインが大幅アップ
   const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
-  const coinGain = Math.round(KILL_COIN_BASE * Math.pow(enemyInflation(game.stage), KILL_COIN_POW) * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
+  const coinGain = Math.round(stageCoinRaw() * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
     const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
     game.gems += metalGems;
@@ -594,7 +594,7 @@ function endDeathFx() {
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
 let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引く）
-const AUTO_BOSS_RETRY_LOOPS = 5; // ループを5周したら自動でボスに再挑戦（OFFにもできる）
+const AUTO_BOSS_RETRY_LOOPS = 4; // ループを4周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
@@ -951,7 +951,6 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
-const KILL_COIN_BASE = 12, KILL_COIN_POW = 1; // 撃破コイン＝基礎×敵の強さ（敵Lv^1.2×桁数）
 function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return d * d * 10; } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {

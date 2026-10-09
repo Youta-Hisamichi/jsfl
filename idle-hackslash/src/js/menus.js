@@ -245,14 +245,14 @@ function renderCompanionList() {
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
-const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1;
+const COMP_GACHA_BASE_COST = 20, COMP_GACHA_COST_GROWTH = 1.1;
 function getCompSummonCost(count) {
   const done = game.companionSummons || 0;
   let total = 0;
   for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
   return coinPrice(total);
 }
-const COMP_AWAKEN_MAX_REFUND = 20; // 覚醒MAXの仲間が出たときに返すコイン
+const COMP_AWAKEN_MAX_REFUND = 2; // 覚醒MAXの仲間が出たときに返すコイン
 function pickCompanionId() {
   let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
   if (!entries.length) entries = Object.entries(COMPANIONS);
@@ -366,20 +366,23 @@ function getEarlyPlayerHpRate(stage) {
 // ===== 敵の強さ =====
 // 敵Lv＝ステージ×係数。HP＝基礎×敵Lv^1.2×ステージの桁数。ボスは桁数をさらに掛け、100階・1000階の節目のボスはもう1回ずつ掛ける
 const ENEMY_LV_PER_STAGE = 1, ENEMY_HP_POW = 1.2, ENEMY_ATK_POW = 1.1;
-const ENEMY_HP_BASE = 30, ENEMY_ATK_BASE = 4;
+const ENEMY_HP_BASE = 20, ENEMY_ATK_BASE = 0.3; // 序盤の雑魚は引っ張り連打2発くらいで倒れる・最初のボスは強化なしでも頑張れば勝てる
 const BOSS_HP_MULT = 1;    // ボスのHP：通常の敵×桁数（もう1回桁数を掛ける）
 const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
 function stageDigits(stage) { return String(Math.max(1, Math.floor(stage))).length; }
 function enemyLevel(stage) { return 1 + (Math.max(1, stage) - 1) * ENEMY_LV_PER_STAGE; }
 function bossHpMult(stage) { return BOSS_HP_MULT * stageDigits(stage); }
-const EARLY_HP_MIN_RATE = 0.35;
-const EARLY_HP_UNTIL_STAGE = 10;
+const EARLY_HP_MIN_RATE = 0.4;
+const EARLY_HP_UNTIL_STAGE = 15;
 function getEarlyHpRate(stage) {
   if (stage >= EARLY_HP_UNTIL_STAGE) return 1;
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
   return EARLY_HP_MIN_RATE + (1 - EARLY_HP_MIN_RATE) * t;
 }
-// 敵の強さの伸び（コインなどの報酬もこれに合わせて増える）
+// コインの基準：今のステージの雑魚1体ぶん（敵Lv^0.9×桁数^1.5）。ステージ1で1枚・2で2枚・9で7枚ほど。ほかのコイン入手もこの何倍かで決める
+const COIN_LV_POW = 0.9, COIN_DIGIT_POW = 1.5;
+function stageCoinRaw(stage = game.stage) { return Math.pow(enemyLevel(stage), COIN_LV_POW) * Math.pow(stageDigits(stage), COIN_DIGIT_POW); }
+// 敵の強さの伸び
 function enemyInflation(stage) { return Math.pow(enemyLevel(stage), ENEMY_HP_POW) * stageDigits(stage); }
 function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
@@ -1048,7 +1051,7 @@ function playerHitEnemyBy(en, pl, mult, color, knock, from) {
     focusHpEnemy(en);
     if (en.hp <= 0) {
       recordBestiaryKill(en); spawnExpGems(en.x, en.y, 4);
-      const coinGain = 5 + Math.floor(Math.random() * 8); game.coins += coinGain;
+      const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3))); game.coins += coinGain;
       spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
     }
   } else {
@@ -1218,7 +1221,7 @@ function updateWeapons(pl, speedMult) {
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
       const before = p.life; hitFoes(p, 1, true);
       if (p.life <= 0 && before > 0) {
-        const gain = Math.max(1, Math.round((3 + game.stage) * 0.25 * computeBonuses().coinMult));
+        const gain = Math.max(1, Math.round(stageCoinRaw() * 0.05 * computeBonuses().coinMult));
         game.coins += gain; spawnDamageText(p.x, p.y - 12, '+' + formatCoinNumber(gain) + ' 🟡', '#ffd76b', 0.03);
         playTone(1800, 0.05, 'triangle', 0.04, 2400); updateStatsUI();
       }
