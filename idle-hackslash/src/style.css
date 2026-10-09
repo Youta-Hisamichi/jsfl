@@ -2204,3 +2204,6 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .reward-ad-btn[data-reward-ad].ad-art-btn:active { transform: scale(0.96); }
 .reward-ad-btn .ad-art { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); animation: adArtGlow 1.6s ease-in-out infinite alternate; }
 @keyframes adArtGlow { from { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); } to { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(255,215,107,0.8)); } }
+/* ゲーム画面の下地にも、他のページと同じ魔法陣を薄く敷く */
+body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width: max(min(180vw, 980px), 100vh); aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; opacity: 0.45; pointer-events: none; z-index: 0; animation: gameMagicSpin 120s linear infinite; }
+@keyframes gameMagicSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
