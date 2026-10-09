@@ -592,7 +592,13 @@ function makeSongEchoBus(echo) {
   tone.type = 'lowpass'; tone.frequency.value = 2600; // 跳ね返りはこもらせて奥行きを出す
   input.connect(audioCtx.destination);
   input.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay); tone.connect(wet); wet.connect(audioCtx.destination);
+  input.echoNodes = [input, delay, fb, wet, tone]; // 曲を止めたら切り離す（つないだままだとフィードバックのループが残り続け、長時間でどんどん重くなる）
   return input;
+}
+function releaseSongEchoBus(bus) {
+  if (!bus || !bus.echoNodes) return;
+  const nodes = bus.echoNodes; bus.echoNodes = null;
+  setTimeout(() => nodes.forEach(n => { try { n.disconnect(); } catch (e) {} }), 1500); // 残響が消えるまで少し待ってから
 }
 function playSongDrum(time, kind, boost = 1) {
   const v = bgmVol();
@@ -650,7 +656,7 @@ function getBossPinchTempo() {
   if (bossTimerFor) for (const [lim, m] of PINCH_TEMPO_TIME) if (bossTimeLeftMs <= lim) { t = Math.max(t, m); break; }
   return t;
 }
-function stopSong() { clearInterval(songTimer); songTimer = null; songState = null; }
+function stopSong() { clearInterval(songTimer); songTimer = null; if (songState) releaseSongEchoBus(songState.bus); songState = null; }
 let bgmTimer = null;
 let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
