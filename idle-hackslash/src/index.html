@@ -220,6 +220,11 @@
   <div class="tab-page" data-tab="companion">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="companion"></div>
+      <details class="cp-help cp-help-top"><summary>ⓘ 仲間のしくみ</summary>
+        <p>コインの「仲間招集」で入手し、レベルもコインで上がります（長押しで連続レベルアップ）。それぞれ戦闘中に個性的な能力を発揮します。</p>
+        <p>招集するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
+        <p>仲間・覚醒・招集費用は転生ですべてリセットされます。</p>
+      </details>
       <button class="my-char-card" id="myCharCard"></button>
       <div class="cp-hero">
         <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
@@ -228,11 +233,6 @@
       <div class="gacha-actions pull-row"><button class="gacha-pull cp-summon" id="compGachaBtn"><span class="cps-title">招集ガチャ</span><span class="cps-cost"><i class="coin-ico"></i> 200</span></button></div>
       <button class="modal-shop-btn comp-lock-btn" id="compLockBtn"><span class="msb-name">🎲 レア仲間の採用はこちら</span><span class="msb-cost">▶</span></button>
       <button class="modal-shop-btn party-slot-btn" id="partySlotBtn"></button>
-      <details class="cp-help"><summary>ⓘ 仲間のしくみ</summary>
-        <p>コインの「仲間招集」で入手し、レベルもコインで上がります（長押しで連続レベルアップ）。それぞれ戦闘中に個性的な能力を発揮します。</p>
-        <p>招集するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
-        <p>仲間・覚醒・招集費用は転生ですべてリセットされます。</p>
-      </details>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
     </div>

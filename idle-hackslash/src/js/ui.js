@@ -2750,6 +2750,7 @@ window.addEventListener('beforeunload', saveGame);
 window.addEventListener('pagehide', saveGame);
 
 loadGame();
+applyHeroChar(); // セーブから自キャラを戻す（読み込み前に一度描いているので、ここで描き直す）
 delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
 if (game.upgrades) delete game.upgrades.speed; // 移動速度の強化は廃止（タップ加速に置き換え）
