@@ -367,7 +367,7 @@ function getEarlyPlayerHpRate(stage) {
 // 敵Lv＝ステージ×係数。HP＝基礎×敵Lv^1.2×ステージの桁数。ボスは桁数をさらに掛け、100階・1000階の節目のボスはもう1回ずつ掛ける
 const ENEMY_LV_PER_STAGE = 1, ENEMY_HP_POW = 1.2, ENEMY_ATK_POW = 1.1;
 const ENEMY_HP_BASE = 30, ENEMY_ATK_BASE = 4;
-const BOSS_HP_MULT = 6;    // ボスのHP倍率の基本（これに桁数が掛かる）
+const BOSS_HP_MULT = 1;    // ボスのHP：通常の敵×桁数（もう1回桁数を掛ける）
 const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
 function stageDigits(stage) { return String(Math.max(1, Math.floor(stage))).length; }
 function enemyLevel(stage) { return 1 + (Math.max(1, stage) - 1) * ENEMY_LV_PER_STAGE; }
