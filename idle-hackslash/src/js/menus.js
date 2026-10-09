@@ -372,8 +372,8 @@ const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
 function stageDigits(stage) { return String(Math.max(1, Math.floor(stage))).length; }
 function enemyLevel(stage) { return 1 + (Math.max(1, stage) - 1) * ENEMY_LV_PER_STAGE; }
 function bossHpMult(stage) { return BOSS_HP_MULT * stageDigits(stage); }
-const EARLY_HP_MIN_RATE = 0.4;
-const EARLY_HP_UNTIL_STAGE = 15;
+const EARLY_HP_MIN_RATE = 0.35;
+const EARLY_HP_UNTIL_STAGE = 20;
 function getEarlyHpRate(stage) {
   if (stage >= EARLY_HP_UNTIL_STAGE) return 1;
   const t = (stage - 1) / (EARLY_HP_UNTIL_STAGE - 1);
@@ -399,8 +399,8 @@ function getEnemyStats(stage) {
 // 節目のボス：100階ごと・1000階ごとに、桁数をもう1回（1000階はさらにもう1回）掛ける
 function getMilestoneBoss(stage) {
   const d = stageDigits(stage);
-  if (stage % 1000 === 0) return { label: `${stage}階の覇王`, hp: d * d, atk: 2.2, radius: 1.6, reward: 10 };
-  if (stage % 100 === 0) return { label: `${stage}階の主`, hp: d, atk: 1.5, radius: 1.3, reward: 4 };
+  if (stage % 1000 === 0) return { label: `ステージ${stage}の覇王`, hp: d * d, atk: 2.2, radius: 1.6, reward: 10 };
+  if (stage % 100 === 0) return { label: `ステージ${stage}の主`, hp: d, atk: 1.5, radius: 1.3, reward: 4 };
   return null;
 }
 
@@ -588,7 +588,7 @@ function renderRanking() {
 const geo = (start, mult) => lv => Math.round(start * Math.pow(mult, lv));
 const listThen = (list, mult) => lv => lv < list.length ? list[lv] : Math.round(list[list.length - 1] * Math.pow(mult, lv - list.length + 1));
 const RECORD_GOALS = {
-  bestStage: { get: () => game.bestStage || 1, goal: listThen([10, 20, 30, 50, 75, 100, 150, 200, 300, 500], 1.5), unit: '階' },
+  bestStage: { get: () => game.bestStage || 1, goal: listThen([10, 20, 30, 50, 75, 100, 150, 200, 300, 500], 1.5), unit: 'ステージ' },
   bestCoins: { get: () => game.bestCoins || 0, goal: geo(1000, 10), unit: '枚' },
   totalKills: { get: () => game.totalKills || 0, goal: listThen([50, 100, 300, 1000, 3000, 10000], 3), unit: '体' },
   totalTaps: { get: () => game.totalTaps || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
@@ -599,7 +599,7 @@ const RECORD_GOALS = {
   maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
   maxDps: { get: () => game.maxDps || 0, goal: geo(100, 10), unit: 'DPS' },
   maxCombo: { get: () => game.maxCombo || 0, goal: listThen([5, 10, 20, 30, 50, 75, 100], 1.5), unit: '回' },
-  bestTowerJump: { get: () => game.bestTowerJump || 0, goal: listThen([50, 100, 200, 500, 1000], 2), unit: '階' },
+  bestTowerJump: { get: () => game.bestTowerJump || 0, goal: listThen([50, 100, 200, 500, 1000], 2), unit: 'ステージ' },
   playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
@@ -743,7 +743,7 @@ function updateStatsUI() {
   stageSkipBtn.classList.toggle('challenging', !!game.skipChallenge);
   updateSkipBtnVisibility();
   const skipHtml = game.skipChallenge
-    ? `<img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"><span class="img-btn-tag">挑戦中 ${game.skipChallenge.target}階</span>`
+    ? `<img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"><span class="img-btn-tag">挑戦中 ステージ${game.skipChallenge.target}</span>`
     : `<img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔">`;
   if (stageSkipBtn.dataset.html !== skipHtml) { stageSkipBtn.innerHTML = skipHtml; stageSkipBtn.dataset.html = skipHtml; }
   updateSpecialButton();

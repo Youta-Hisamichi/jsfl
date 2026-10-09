@@ -744,7 +744,7 @@ function renderBgmBook() {
   document.getElementById('bgmBookCount').textContent = `${BGM_INFO.filter(b => book[b.key]).length} / ${BGM_INFO.length}`;
   list.innerHTML = BGM_INFO.map(b => {
     const got = book[b.key];
-    if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れる階をクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
+    if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れるステージをクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
     const playing = bgmBookPreview === b.key;
     return `<div class="bgm-book-row ${playing ? 'playing' : ''}"><button class="bb-play" data-bgm-book="${b.key}">${playing ? '■' : '▶'}</button><div class="bb-info"><div class="bb-name">${b.name}</div><div class="bb-desc">${b.desc}</div></div></div>`;
   }).join('');
@@ -1279,7 +1279,7 @@ function showBossClearFx(stage) {
   const cols = ['#ffd76b', '#ff5c8a', '#64e8ff', '#7ee787', '#c792ea', '#ffffff'];
   let conf = '';
   for (let i = 0; i < 46; i++) conf += `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - 0.5) * 140}px;--rot:${Math.random() * 900 - 450}deg;animation-duration:${1.8 + Math.random() * 1.4}s;animation-delay:${0.2 + Math.random() * 0.5}s"></i>`;
-  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main"><img class="bcf-banner" src="assets/img/ui/questClear.webp" alt="BOSS DEFEATED!"></div><div class="bcf-sub">🎉 おめでとう！ ${stage}階 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
+  fx.innerHTML = `<div class="bcf-rays"></div><div class="bcf-text"><div class="bcf-main"><img class="bcf-banner" src="assets/img/ui/questClear.webp" alt="BOSS DEFEATED!"></div><div class="bcf-sub">🎉 おめでとう！ ステージ${stage} 突破 🎉</div></div><div class="bcf-confetti">${conf}</div>`;
   wrapEl.appendChild(fx);
   setTimeout(() => fx.classList.add('out'), 3000);
   setTimeout(() => fx.remove(), 3600);
@@ -1426,7 +1426,7 @@ function getEffectiveSpeed() {
 }
 
 const EMOJI_ENEMIES = ['👺', '💀', '👻', '🎃', '🐉', '🦂', '🦇', '👾', '🧟', '🦖', '🐲', '👑', '🐧', '🪼', '🛢️', '🌕', '⚡', '🥬', '🧙', '🪖', '🔪', '🌑', '⚫', '🩶', '🩷', '🔷', '🦕', '🪙', '🟩', '🐟', '🦒', '🥒', '🦎', '🦀', '🥈', '🌈', '🟨', '🦋', '🔥', '🛡️', '🗡️', '🪲', '🐻', '🦞', '🦫', 'm_flameY', 'm_dropSlime', 'm_shadowFlame', 'm_sproutling', 'm_rockling', 'm_stumpling', 'm_crystalElem', 'm_redMush', 'm_blueMush', 'm_seedling', 'm_treeling', 'm_leafling', 'm_fireKid', 'm_blueFireKid', 'm_darkKid', 'm_treeGuard', 'm_maneater', 'm_cactusKid', 'm_dinoPlant', 'm_redMush2', 'm_greenMush', 'm_ghostMush', 'm_acorn', 'm_greenSprout', 'm_goblinSpear', 'm_redGoblin', 'm_blueGoblin', 'm_skelSword', 'm_skelShield', 'm_skelDagger', 'm_orcKnight', 'm_ghoul', 'm_mummy', 'm_sheetGhost', 'm_shade', 'm_willWisp', 'm_candle', 'm_purpleBat', 'm_redBat', 'm_direWolf', 'm_whiteWolf', 'm_boar', 'm_redBoar', 'm_rat', 'm_whiteRat', 'm_squirrel', 'm_chick', 'm_owl', 'm_hippoChick', 'm_bigBat', 'm_vampBat', 'm_hornet', 'm_bee', 'm_blueButterfly', 'm_moth', 'm_dragonfly', 'm_spider', 'm_scorpionS', 'm_crab', 'm_hermit', 'm_blueHermit', 'm_jelly', 'm_squid', 'm_octopus', 'm_woodSpirit', 'm_mossMonk', 'm_rose', 'm_maneater2', 'm_maneater3', 'm_sproutSlime', 'm_cactusFlower', 'm_jackO', 'm_scarecrow', 'm_scarecrow2', 'm_bookEye', 'm_mimicS', 'm_chestKid', 'm_clayGolem', 'm_crystalSoldier', 'm_mudGolem', 'm_snowGolem', 'm_crystalBeast', 'm_magmaKid', 'm_tornado', 'm_cloud', 'm_frostCloud', 'm_darkBall', 'm_voidBall', 'm_starKid', 'm_blackHole', 'm_ironMask', 'm_redArmor', 'm_axeArmor', 'm_spearArmor', 'm_assassin', 'm_shinobi', 'm_witchKid', 'm_cultist', 'm_plagueDoc', 'm_blackMage', 'm_archer', 'm_cannoneer', 'm_automaton', 'm_redDrake', 'm_blueDrake', 'm_greenDrake', 'm_griffon', 'm_eagle', 'm_hawk', 'm_tortoise', 'm_crystalTortoise', 'm_spikeBeast', 'm_serpent', 'm_worm', 'm_blackSpider', 'm_purpleSpider', 'm_crystalSlime', 'm_holySlime'];
-const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '🦍', '💪', '🫧', '🌋', '🧊', '🗿', '🩸', '😇', '👀', '🐙', '☠️', '🐺', '🌳', '🧜', '🪓', '🔮', '🖤', '📦', '🏮', '🪨', '🪶', '❄️', '🌊', '🌌', '🧸', '⚜️', '☄️', '🧿', '💘', '🐋', '🕯️', '🦑', '🎎', '🐍', '🥇', '🏇', '🛕', '🌺', '🪐', '🔆', '🟥', '🐴', '☀️', '🐚', '🦚', '⌛', '🎙️', '🦉', '🎒', '🐶', '🌞', '🟪', '🍫', '🏁', '🥀', '🎍', '⚱️', '🛐', '🪑', '🌲', '🦴', '💙', '🦜', '🐊', '🫠'];
+const BOSS_EMOJIS = ['⚔️', '👹', '💀', '🦖', '🐲', '🦔', '⚰️', '🦍', '💪', '🫧', '🌋', '🧊', '🗿', '🩸', '😇', '👀', '🐙', '☠️', '🐺', '🧜', '🪓', '🔮', '🖤', '📦', '🏮', '🪨', '🪶', '❄️', '🌊', '🌌', '🧸', '⚜️', '☄️', '🧿', '💘', '🐋', '🕯️', '🦑', '🎎', '🐍', '🥇', '🏇', '🛕', '🌺', '🪐', '🔆', '🟥', '🐴', '☀️', '🐚', '🦚', '⌛', '🎙️', '🦉', '🎒', '🐶', '🌞', '🟪', '🍫', '🏁', '🥀', '🎍', '⚱️', '🛐', '🪑', '🌲', '🦴', '💙', '🦜', '🐊', '🫠'];
 const TACKLE_TRADE_BOSS = '🦔';
 let forcedBossEmoji = null; // デバッグ：次に出すボスを指定
 let forcedEnemyKey = null;  // デバッグ：次に出す雑魚を図鑑キー（'shape:slimeBlood' など）で指定

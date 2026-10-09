@@ -9,7 +9,7 @@
 <body class="floor-bg">
 <div id="bootLoading"><div class="bl-run"><img id="blHero" src="assets/img/misc/blHero.webp" alt=""><i class="bl-dust"></i><i class="bl-dust d2"></i><div class="bl-ground"></div></div><div class="bl-title">放置系ハクスラ<br>無限反射</div><div class="bl-text">NOW LOADING<span>.</span><span>.</span><span>.</span></div><div class="bl-bar"><i></i></div><div class="bl-tip" id="blTip"></div></div>
 <script>(function () { // 起動中のヒント（本体の読み込みより先に表示）
-  var tips = ['画面をドラッグすると移動、離すと逆方向へ引っ張り攻撃！', '引っ張る距離が長いほど引っ張り攻撃は強力に', '短いタップで周りの敵を切り払える', '敵の足元に赤い予告が出たら範囲の外へ逃げよう', '攻撃した直後の敵は隙だらけ。今がダメージ2倍のチャンス', '経験値ダイヤを集めてレベルアップ！3択から強化を選べる', '武器スキルは一定時間ごとに自動で発動する', '攻撃UP・リヒールは取得するだけで常に効く', '壁で跳ね返るたびに反射の連鎖音が上がっていく', 'ボスは10階ごとに登場。HPと回復を整えて挑もう', '転生すると強力な遺物と💎がもらえる', '10階ごとにエリアが変わり、出てくる敵も変わる', 'スキルはゲーム画面の「スキル入れ替え」から付け替えられる'];
+  var tips = ['画面をドラッグすると移動、離すと逆方向へ引っ張り攻撃！', '引っ張る距離が長いほど引っ張り攻撃は強力に', '短いタップで周りの敵を切り払える', '敵の足元に赤い予告が出たら範囲の外へ逃げよう', '攻撃した直後の敵は隙だらけ。今がダメージ2倍のチャンス', '経験値ダイヤを集めてレベルアップ！3択から強化を選べる', '武器スキルは一定時間ごとに自動で発動する', '攻撃UP・リヒールは取得するだけで常に効く', '壁で跳ね返るたびに反射の連鎖音が上がっていく', 'ボスは10ステージごとに登場。HPと回復を整えて挑もう', '転生すると強力な遺物と💎がもらえる', '10ステージごとにエリアが変わり、出てくる敵も変わる', 'スキルはゲーム画面の「スキル入れ替え」から付け替えられる'];
   var el = document.getElementById('blTip'); if (el) el.textContent = '💡 ' + tips[Math.floor(Math.random() * tips.length)];
 })();</script>
 <canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
@@ -138,7 +138,7 @@
       <button data-debug="bookAll">📖 キャラと曲を全開放</button><button data-debug="artifactAll">🏺 遺物コンプ</button><button data-debug="companionUnlockAll">🐾 仲間を全開放</button><button data-debug="facingList">↔️ 向きを変えない敵一覧</button>
       <div class="debug-cat">💀 ボス敗北画面</div>
       <button data-debug="bossCont">💀 コンテニュー画面</button><button data-debug="bossContFinal">💀 再敗北画面</button>
-      <div class="debug-cat">🗺️ 階・敵</div>
+      <div class="debug-cat">🗺️ ステージ・敵</div>
       <button data-debug="prev">◀ Stage</button><button data-debug="next">Stage ▶</button><button data-debug="nextboss">👑 次のボス出現</button><button data-debug="tradeBoss">🦔 針鎧の王出現</button><button data-debug="giantBoss">🗻 激デカボス出現</button><button data-debug="swarmStage">🐜 大群の階へ</button>
       <button class="debug-cat dbg-fold" id="dbgMonFold">🖼️ モンスターを選んで出現・削除 <b id="dbgMonFoldMark">▼ 開く</b></button>
       <div id="dbgMonWrap" style="display:none">
@@ -293,7 +293,7 @@
       </div>
       <button class="rg-claim-all" id="rgClaimAll" style="display:none;"></button>
       <div class="record-panel one">
-        <div class="record" data-goal-row="bestStage">BEST<strong id="bestStageNum" data-unit="階">1</strong>到達階<div class="rec-goal" data-goal="bestStage"></div></div>
+        <div class="record" data-goal-row="bestStage">BEST<strong id="bestStageNum" data-unit="ステージ">1</strong>ベストステージ<div class="rec-goal" data-goal="bestStage"></div></div>
         <div class="record" data-goal-row="bestCoins">BEST<strong id="bestCoinsNum" data-unit="枚">0</strong>コイン所持数<div class="rec-goal" data-goal="bestCoins"></div></div>
         <div class="record" data-goal-row="totalKills">TOTAL<strong id="totalKillsNum" data-unit="体">0</strong>キル<div class="rec-goal" data-goal="totalKills"></div></div>
         <div class="record" data-goal-row="totalTaps">TOTAL<strong id="totalTapsNum" data-unit="回">0</strong>タップ<div class="rec-goal" data-goal="totalTaps"></div></div>
@@ -305,7 +305,7 @@
         <div class="record" data-goal-row="maxDamage">MAX<strong id="maxDamageNum" data-unit="DMG">0</strong>単発ダメージ<div class="rec-goal" data-goal="maxDamage"></div></div>
         <div class="record" data-goal-row="maxDps">MAX<strong id="maxDpsNum" data-unit="DPS">0</strong>DPS<div class="rec-goal" data-goal="maxDps"></div></div>
         <div class="record" data-goal-row="maxCombo">MAX<strong id="maxComboNum" data-unit="回">0</strong>コンボ<div class="rec-goal" data-goal="maxCombo"></div></div>
-        <div class="record" data-goal-row="bestTowerJump">MAX<strong id="bestTowerJumpNum" data-unit="階">0</strong>試練の塔 ジャンプ<div class="rec-goal" data-goal="bestTowerJump"></div></div>
+        <div class="record" data-goal-row="bestTowerJump">MAX<strong id="bestTowerJumpNum" data-unit="ステージ">0</strong>試練の塔 ジャンプ<div class="rec-goal" data-goal="bestTowerJump"></div></div>
         <div class="record">CRIT<strong id="critRateNum">5%</strong>クリティカル率</div>
         <div class="record">CRIT<strong id="critMultNum">×2</strong>クリティカル倍率</div>
         <div class="record">HIT<strong id="accuracyNum">95%</strong>命中率</div>
@@ -323,7 +323,7 @@
       </div>
       <div class="rec-sec" data-rec-sec="bgm" hidden>
       <div class="title" style="margin-top:0;">🎵 BGM図鑑 <span id="bgmBookCount" style="color:var(--gold);">0 / 0</span></div>
-      <div class="modal-sub" style="margin:-4px 0 6px;">戦闘の曲は、その曲が流れている階をクリアすると登録。ページの曲は一度聴くと登録されます。</div>
+      <div class="modal-sub" style="margin:-4px 0 6px;">戦闘の曲は、その曲が流れているステージをクリアすると登録。ページの曲は一度聴くと登録されます。</div>
       <div class="bgm-book-list" id="bgmBookList"></div>
       </div>
     </div>
@@ -384,15 +384,15 @@
 <div class="modal-overlay" id="stageSkipModal">
   <div class="modal-panel">
     <div class="tower-head"><h2 class="tower-title">試練の塔</h2><span class="tower-gems"><span data-xi="x_gem">💎</span> <span id="stageSkipGems">0</span></span><div class="tower-best">🏆 自己ベスト <b id="towerBestJump">-</b></div></div>
-    <div class="modal-sub">ジェムを捧げて塔を登り、上の階のボスに挑みます。勝てばその階まで一気に進み、負けたら今の <b id="stageSkipOrigin">1</b>階 に戻ります（転生はしません）。</div>
+    <div class="modal-sub">ジェムを捧げて塔を登り、上のステージのボスに挑みます。勝てばそのステージまで一気に進み、負けたら今のステージ<b id="stageSkipOrigin">1</b> に戻ります（転生はしません）。</div>
     <div class="custom-skip">
-      <div class="custom-skip-title">🎯 登る階を指定（ジェムは距離に応じて消費）</div>
+      <div class="custom-skip-title">🎯 登るステージを指定（ジェムは距離に応じて消費）</div>
       <div class="custom-skip-row">
-        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦する階">
+        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦するステージ">
         <button class="modal-shop-btn" id="customSkipMaxBtn"><span class="msb-name">手持ちMAX</span></button>
         <button class="modal-shop-btn" id="customSkipBtn"><span class="msb-name">挑戦</span><span class="msb-cost" id="customSkipCost">💎 -</span></button>
       </div>
-      <div class="custom-skip-info" id="customSkipInfo">挑戦したい階を入力してください</div>
+      <div class="custom-skip-info" id="customSkipInfo">挑戦したいステージを入力してください</div>
     </div>
     <div class="modal-shop-list tower-floors" id="stageSkipList"></div>
     <button class="modal-close-btn" id="stageSkipCloseBtn">塔を降りる</button>

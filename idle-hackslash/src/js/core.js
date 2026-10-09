@@ -425,7 +425,7 @@ function vibrate(pattern) {
   try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (err) { /* 非対応環境では無視 */ }
 }
 
-const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかると自機と敵が同時に攻撃し合います。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10階ごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・階はリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
+const HOW_TO_PLAY_TEXT_JA = '・円の中を自機（青）と敵が反射しながら自動で戦います。\n・サークルをタップするたびに、自機が敵に向かって加速し、次に敵にぶつかったときのダメージも上がります（1タップ+25%、最大+200%。ぶつかると元に戻ります）。\n・ショップでタックルを開放すると、サークルを長押ししてから離して敵を追尾する強力な体当たり（タメ打ち）を放てます。長く押すほど強力で、自機が壁で跳ねた瞬間に離すと「壁蹴り」で威力2倍（超タックルも開放可能）。\n・ぶつかると自機と敵が同時に攻撃し合います。\n・遺物「反射のコンパス」を持っていると、壁に反射するたびにコインを獲得します。\n・敵を倒すとコインを獲得し、強化タブで自機を強化できます。\n・10ステージごとに強力なボスが出現します。\n・力尽きると転生し、コイン・強化・仲間・ステージはリセットされますが、ランダムでアーティファクトを獲得できます。\n・強化／ショップ／仲間／ガチャなど各タブで戦力を強化していきましょう。';
 const HOW_TO_PLAY_TEXT_EN = 'Your ball (blue) and the enemy automatically fight by bouncing inside the circle.\nEach tap in the arena sends your ball toward the enemy and speeds it up (the speed resets when it hits an enemy).\nAfter unlocking Tackle in the rebirth shop, press and hold the arena, then release to launch a powerful homing tackle. The longer you hold, the stronger it gets (Super Tackle can also be unlocked).\nOn collision, you and the enemy attack each other at the same time.\nWith the Reflection Compass relic, each wall bounce gives a small amount of coins.\nDefeating enemies grants coins you can spend on upgrades.\nA powerful boss appears every 10 stages.\nWhen you fall, you reincarnate: coins, upgrades, allies and stage reset, but you gain a random artifact.\nStrengthen yourself using the Upgrade / Shop / Allies / Gacha tabs.';
 const CONTACT_TEXT_JA = 'ご意見・不具合報告などは下記メールアドレスまでお気軽にご連絡ください。\n\n📧 hisashi.app@gmail.com';
 const CONTACT_TEXT_EN = 'For feedback or bug reports, please feel free to contact us at the email address below.\n\n📧 hisashi.app@gmail.com';
@@ -527,7 +527,7 @@ const FAQ_LIST = [
   ['セーブデータはどこに保存されますか？', 'プレイ中のデータは、お使いのブラウザ（端末）の中に自動で保存されます。\nブラウザの履歴・キャッシュ・サイトデータを削除したり、シークレットモードで遊んだりすると、データが消えることがあります。'],
   ['機種変更・別の端末に引き継げますか？', '現在、データの引き継ぎ機能はありません。同じ端末・同じブラウザで遊んでください。'],
   ['音が鳴りません', 'ブラウザの仕組みにより、最初に画面をタップするまで音は鳴りません。\nそれでも鳴らない場合は、端末のマナーモードや音量、設定のBGM・効果音の音量を確認してください。'],
-  ['転生すると何がなくなりますか？', 'コイン・強化・スキル・仲間・階は最初に戻ります。\n遺物・ジェム・回復ポーション・スキル枠・パーティ枠・サブスクは引き継がれます。転生するたびに遺物がもらえて、次の周回が楽になります。'],
+  ['転生すると何がなくなりますか？', 'コイン・強化・スキル・仲間・ステージは最初に戻ります。\n遺物・ジェム・回復ポーション・スキル枠・パーティ枠・サブスクは引き継がれます。転生するたびに遺物がもらえて、次の周回が楽になります。'],
   ['ジェムはどうやって手に入れますか？', 'ボス撃破、転生、帰還ボーナス、動画視聴、メタルスライムの撃破などで手に入ります。ショップで購入することもできます。'],
   ['ゲームが重い・カクカクします', 'ほかのアプリやタブを閉じてみてください。仲間や敵が多い場面では処理が重くなることがあります。'],
   ['購入したアイテムが反映されません', 'いったんゲーム画面を再読み込みしてください。それでも反映されない場合は、お問い合わせからご連絡ください。'],
@@ -1098,7 +1098,7 @@ const game = {
 };
 
 
-// 転生Lv：転生前に進んだ階が深いほど多く上がる（10階ごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
+// 転生Lv：転生前に進んだ階が深いほど多く上がる（10ステージごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
 const REBIRTH_LV_BONUS = 0.03;
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
 const SPEED_MULT_CAP = 1.6;

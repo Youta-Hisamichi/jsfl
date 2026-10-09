@@ -334,7 +334,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
     pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
   }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
-  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: COIN_ICO, name: 'コインの山', desc: '今の階に応じたコイン' });
+  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: COIN_ICO, name: 'コインの山', desc: '今のステージに応じたコイン' });
   return pool;
 }
 function makePowerUpChoices() {
@@ -689,11 +689,11 @@ const DEBUG_ACTION_LABELS = {
   coins1000: 'DEBUG: コイン +1000 を付与しました',
   supergems: 'DEBUG: スーパージェム +10000円 を付与しました',
   special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
-  prev: 'DEBUG: 1階戻しました',
-  next: 'DEBUG: 1階進めました',
-  nextboss: 'DEBUG: 次のボスの階までスキップしました',
+  prev: 'DEBUG: 1ステージ戻しました',
+  next: 'DEBUG: 1ステージ進めました',
+  nextboss: 'DEBUG: 次のボスのステージまでスキップしました',
   tradeBoss: 'DEBUG: 針鎧の王を出現させました',
-  swarmStage: 'DEBUG: 次の大群の階へ移動しました',
+  swarmStage: 'DEBUG: 次の大群のステージへ移動しました',
   giantBoss: 'DEBUG: 激デカボスを出現させました',
   unlockSkills: 'DEBUG: すべてのスキルを解放しました',
   allCompanions: 'DEBUG: 仲間を全員追加しました',
@@ -956,7 +956,7 @@ debugRow.addEventListener('click', event => {
     game.bestStage = Math.max(game.bestStage, game.stage);
     balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
     refreshPlayerBallStats(true); updateHPUI();
-    stageAnnounceText = formatStageNumber(game.stage) + `階 敵${getStageEnemyCount(game.stage)}体！`;
+    stageAnnounceText = 'ステージ' + formatStageNumber(game.stage) + ` 敵${getStageEnemyCount(game.stage)}体！`;
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     startBgm('normal');
   }
@@ -1969,7 +1969,7 @@ function buildShareText(kind) {
   const found = ENEMY_BOOK.filter(entry => (game.bestiary || {})[entry.key]).length;
   const comp = (Math.floor(found / ENEMY_BOOK.length * 1000) / 10).toFixed(1);
   if (kind === 'records') {
-    return `【放置系ハクスラ無限反射 戦績】\n🏔 最高到達 ${game.bestStage}階\n⚔️ 累計キル ${game.totalKills.toLocaleString('ja-JP')}\n💥 最大ダメージ ${Math.floor(game.maxDamage || 0).toLocaleString('ja-JP')}\n🌌 転生 ${game.reincarnations}回\n📖 敵図鑑 ${found}/${ENEMY_BOOK.length}（${comp}%）\n${SHARE_HASHTAG}`;
+    return `【放置系ハクスラ無限反射 戦績】\n🏔 最高到達 ステージ${game.bestStage}\n⚔️ 累計キル ${game.totalKills.toLocaleString('ja-JP')}\n💥 最大ダメージ ${Math.floor(game.maxDamage || 0).toLocaleString('ja-JP')}\n🌌 転生 ${game.reincarnations}回\n📖 敵図鑑 ${found}/${ENEMY_BOOK.length}（${comp}%）\n${SHARE_HASHTAG}`;
   }
   if (kind === 'ranking') {
     if (!lastRankInfo) renderRanking();
@@ -1977,7 +1977,7 @@ function buildShareText(kind) {
     return `【放置系ハクスラ無限反射 ランキング】\n🏆 ${info.label}ランキングで ${info.rank}位！（${info.score}）\n${SHARE_HASHTAG}`;
   }
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-  return `放置系ハクスラ無限反射で ${game.stage}階 に挑戦中！\n⚔️ ATK ${player ? player.atk : getPlayerAtk()} ／ 🏔 最高 ${game.bestStage}階 ／ 🌌 転生 ${game.reincarnations}回\n${SHARE_HASHTAG}`;
+  return `放置系ハクスラ無限反射で ステージ${game.stage} に挑戦中！\n⚔️ ATK ${player ? player.atk : getPlayerAtk()} ／ 🏔 最高 ステージ${game.bestStage} ／ 🌌 転生 ${game.reincarnations}回\n${SHARE_HASHTAG}`;
 }
 const shareModal = document.getElementById('shareModal');
 const shareTextEl = document.getElementById('shareText');
@@ -2022,8 +2022,8 @@ let rebornCtx = null; // ゲームオーバーから転生を選んだとき：{
 function openRebornConfirm(ctx) {
   rebornCtx = ctx || null;
   const g = getRebirthGemGain();
-  document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `${formatStageNumber(game.stage)}階で力尽きた…転生しますか？` : '本当に転生しますか？';
-  document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せず${formatStageNumber(Math.max(1, game.stage - 1))}階で鍛え直す` : 'キャンセル';
+  document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `ステージ${formatStageNumber(game.stage)}で力尽きた…転生しますか？` : '本当に転生しますか？';
+  document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せずステージ${formatStageNumber(Math.max(1, game.stage - 1))}で鍛え直す` : 'キャンセル';
   document.getElementById('rebornGemAmt').textContent = g;
   document.getElementById('rebornFeatherAmt').textContent = getRebirthFeatherGain();
   document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
@@ -2056,7 +2056,7 @@ rebornConfirmModal.addEventListener('click', event => { if (event.target === reb
 rebornBtn.addEventListener('click', event => {
   if (bossContModal.classList.contains('show') && game.stage >= 3) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
   if (phase === 'battle' && game.stage >= 3) openRebornConfirm(null);
-  else showTapError('3階から転生できます', event.clientX, event.clientY);
+  else showTapError('ステージ3から転生できます', event.clientX, event.clientY);
 });
 
 specialBtn.addEventListener('click', event => {
@@ -2674,12 +2674,12 @@ renderDebugMonsters();
   const ow = document.getElementById('dbgObsWrap'), om = document.getElementById('dbgObsFoldMark'); // 障害物も最初は閉じておく
   document.getElementById('dbgObsCat').addEventListener('click', () => { const o = !ow.classList.contains('open'); ow.classList.toggle('open', o); om.textContent = o ? '▲ 閉じる' : '▼ 開く'; });
   ow.innerHTML = DEBUG_OBSTACLES.map(([k, sp, name], i) => `<button data-dbg-obs="${i}">${sp && OBSTACLE_IMGS[sp] ? `<img class="dbg-obs-img" src="${OBSTACLE_IMGS[sp].src}" alt="">` : k === 'egg' ? '🥚' : '❓'} ${name}</button>`).join('') +
-    '<button data-dbg-obs="clear">🧹 障害物を全部消す</button><button data-dbg-obs="reset">↩ この階の配置に戻す</button>';
+    '<button data-dbg-obs="clear">🧹 障害物を全部消す</button><button data-dbg-obs="reset">↩ このステージの配置に戻す</button>';
   ow.addEventListener('click', ev => {
     const btn = ev.target.closest('[data-dbg-obs]'); if (!btn) return;
     const v = btn.dataset.dbgObs;
     if (v === 'clear') { obstacles = []; showNotice('DEBUG: 障害物を全部消しました'); return; }
-    if (v === 'reset') { setupObstacles(true); showNotice('DEBUG: この階の障害物の配置に戻しました（デバッグで出した分は消去）'); return; }
+    if (v === 'reset') { setupObstacles(true); showNotice('DEBUG: このステージの障害物の配置に戻しました（デバッグで出した分は消去）'); return; }
     const [k, sp, name] = DEBUG_OBSTACLES[+v];
     if (getActiveTab() !== 'game') switchTab('game');
     showNotice(debugSpawnObstacle(k, sp) ? `DEBUG: ${name} を出現` : 'DEBUG: 空いている場所がありません');

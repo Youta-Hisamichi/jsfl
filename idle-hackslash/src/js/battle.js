@@ -1348,7 +1348,7 @@ function renderDebugSlots() {
     const slot = readDebugSlot(i);
     const g = slot && slot.data && slot.data.game;
     const info = g
-      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>${g.stage}階　${COIN_ICO} ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
+      ? `<b>スロット${i}</b>　${new Date(slot.savedAt).toLocaleString('ja-JP')}<br>ステージ${g.stage}　${COIN_ICO} ${formatCoinNumber(g.coins)}　💎 ${Math.floor(g.gems || 0)}　転生 ${g.reincarnations || 0}回`
       : `<b>スロット${i}</b>　<span class="slot-empty">（空き）</span>`;
     const arm = kind => debugSlotArmed === `${kind}-${i}`;
     html += `<div class="slot-row"><div class="slot-info">${info}</div>`

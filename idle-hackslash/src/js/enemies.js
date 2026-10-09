@@ -377,7 +377,7 @@ function renderBestiary() {
       ? `<span class="bst-face">${entry.icon}</span>`
       : `<span class="bst-face"><span class="bst-shape bst-${entry.shape}" style="background:${entry.color}"></span></span>`;
     if (!rec) return `<div class="bst-card unknown"><span class="bst-face">？</span><span class="bst-name">？？？</span><span class="bst-info">${entry.kind === 'boss' ? '👑 ボス' : '未発見'}</span></div>`;
-    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}" data-bst-zoom="${entry.key}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ${rec.firstStage}階</span></div>`;
+    return `<div class="bst-card ${entry.kind === 'boss' ? 'boss' : ''}" data-bst-zoom="${entry.key}">${face}<span class="bst-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</span><span class="bst-info">撃破 ${formatCoinNumber(rec.kills)}体</span><span class="bst-info">初撃破 ステージ${rec.firstStage}</span></div>`;
   }).join('');
 }
 
@@ -388,7 +388,7 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
   const face = card.querySelector('.bst-face');
   let ov = document.getElementById('bstZoom');
   if (!ov) { ov = document.createElement('div'); ov.id = 'bstZoom'; ov.className = 'bst-zoom'; ov.addEventListener('click', () => ov.classList.remove('show')); document.body.appendChild(ov); }
-  ov.innerHTML = `<div class="bstz-card ${entry.kind === 'boss' ? 'boss' : ''}"><div class="bstz-face">${face ? face.innerHTML : ''}</div><div class="bstz-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</div><div class="bstz-el">${elemBadge(ENEMY_ELEMENT_BY_KEY[entry.key])}</div><div class="bstz-info">撃破 ${formatCoinNumber(rec.kills)}体　初撃破 ${formatStageNumber(rec.firstStage)}階</div><div class="bstz-hint">タップで閉じる</div></div>`;
+  ov.innerHTML = `<div class="bstz-card ${entry.kind === 'boss' ? 'boss' : ''}"><div class="bstz-face">${face ? face.innerHTML : ''}</div><div class="bstz-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</div><div class="bstz-el">${elemBadge(ENEMY_ELEMENT_BY_KEY[entry.key])}</div><div class="bstz-info">撃破 ${formatCoinNumber(rec.kills)}体　初撃破 ステージ${formatStageNumber(rec.firstStage)}</div><div class="bstz-hint">タップで閉じる</div></div>`;
   ov.classList.add('show');
 });
 
@@ -458,7 +458,7 @@ function makeBall(isPlayer) {
 }
 // ステージごとの敵は固定。10ステージ単位のエリア（床の景色）に合った顔ぶれで、1〜9番目が通常の敵、10番目がボス
 const STAGE_ZONES = [
-  { name: '草原',   normal: ['shape:spike', 'emoji:🔷', 'emoji:🟩', 'emoji:🦫', 'shape:slimeOrange', 'emoji:🥬', 'emoji:🦋', 'emoji:🟨', 'emoji:👺', 'emoji:m_sproutling', 'emoji:m_seedling', 'emoji:m_leafling', 'emoji:m_greenSprout', 'emoji:m_redMush', 'emoji:m_blueMush', 'emoji:m_redMush2', 'emoji:m_greenMush', 'emoji:m_whiteRat', 'emoji:m_squirrel', 'emoji:m_chick', 'emoji:m_bee', 'emoji:m_blueButterfly', 'emoji:m_sproutSlime'], boss: '💪', extraBosses: ['🌳', '🪶', '🦉', '🏁', '🫠'] },
+  { name: '草原',   normal: ['shape:spike', 'emoji:🔷', 'emoji:🟩', 'emoji:🦫', 'shape:slimeOrange', 'emoji:🥬', 'emoji:🦋', 'emoji:🟨', 'emoji:👺', 'emoji:m_sproutling', 'emoji:m_seedling', 'emoji:m_leafling', 'emoji:m_greenSprout', 'emoji:m_redMush', 'emoji:m_blueMush', 'emoji:m_redMush2', 'emoji:m_greenMush', 'emoji:m_whiteRat', 'emoji:m_squirrel', 'emoji:m_chick', 'emoji:m_bee', 'emoji:m_blueButterfly', 'emoji:m_sproutSlime'], boss: '🪶', extraBosses: ['💪', '🦉', '🏁', '🫠'] },
   { name: '森',     normal: ['emoji:🔪', 'shape:slimeGreen', 'emoji:🦎', 'emoji:🦒', 'emoji:🪲', 'shape:slimeChibi', 'emoji:🩷', 'emoji:🦇', 'emoji:🐻', 'emoji:m_stumpling', 'emoji:m_treeling', 'emoji:m_treeGuard', 'emoji:m_maneater', 'emoji:m_dinoPlant', 'emoji:m_acorn', 'emoji:m_direWolf', 'emoji:m_boar', 'emoji:m_redBoar', 'emoji:m_owl', 'emoji:m_hornet', 'emoji:m_woodSpirit', 'emoji:m_mossMonk', 'emoji:m_rose', 'emoji:m_maneater2', 'emoji:m_worm'], boss: '🦍', extraBosses: ['🗿', '🐺', '🪨', '🌺', '🐶', '🌲', '🐊'] },
   { name: '砂漠',   normal: ['emoji:🦂', 'emoji:🪙', 'emoji:🦞', 'shape:diamond', 'emoji:🔥', 'emoji:🦕', 'shape:slimeBlood', 'emoji:⚫', 'emoji:🦖', 'emoji:m_flameY', 'emoji:m_fireKid', 'emoji:m_cactusKid', 'emoji:m_scorpionS', 'emoji:m_cactusFlower', 'emoji:m_magmaKid', 'emoji:m_tornado', 'emoji:m_griffon', 'emoji:m_hawk', 'emoji:m_tortoise', 'emoji:m_serpent', 'emoji:m_blackSpider'], boss: '🦔', extraBosses: ['🌋', '☄️', '🐍', '☀️', '🌞', '🦜'] },
   { name: '街道',   normal: ['emoji:🥒', 'emoji:🩶', 'shape:square', 'emoji:🪖', 'emoji:💀', 'emoji:🥈', 'emoji:🗡️', 'emoji:👾', 'emoji:🛡️', 'emoji:m_goblinSpear', 'emoji:m_redGoblin', 'emoji:m_blueGoblin', 'emoji:m_orcKnight', 'emoji:m_rat', 'emoji:m_ironMask', 'emoji:m_redArmor', 'emoji:m_axeArmor', 'emoji:m_spearArmor', 'emoji:m_archer', 'emoji:m_cannoneer', 'emoji:m_eagle'], boss: '🖤', extraBosses: ['🪓', '🏇', '🟥', '🎒', '🛐'] },
