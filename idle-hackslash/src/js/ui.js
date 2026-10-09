@@ -1136,10 +1136,10 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
   setTimeout(() => el.remove(), 2300);
 }
 // 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）
-// 値段はレア度が高いほどかなり高い。★3以上は最初「解雇中」（採用すると召喚に出る）
+// 値段はレア度が高いほどかなり高い。★2以上は最初「解雇中」（採用すると召喚に出る）
 const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
-function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic'); } // ★3以上は最初「採用前」
+function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('rare'); } // ★2以上は最初「採用前」
 function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
 function onCompLockClick(ev) {
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
@@ -1157,7 +1157,7 @@ function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★3以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
