@@ -2091,3 +2091,15 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .mc-row { width: 100%; text-align: left; cursor: pointer; color: #fff; font: inherit; }
 .mc-row.on { box-shadow: 0 0 0 2px #ffd76b inset; background: rgba(255,215,107,0.16); }
 .mc-row .mc-sel { flex: none; font-size: 0.74rem; font-weight: 900; color: #ffd76b; }
+/* 自キャラのカード：文字とアイコンを目立たせる */
+.my-char-card { padding: 8px 12px 8px 8px; }
+.my-char-card .mc-ico { width: 76px; height: 76px; background: radial-gradient(circle at 50% 45%, rgba(255,215,107,0.45), rgba(0,0,0,0.06) 70%); border: 2px solid #e2c06a; }
+.my-char-card .mc-ico img { width: 72px; height: 72px; }
+.my-char-card .mc-main small { display: inline-block; width: auto; margin-right: 100%; margin-bottom: 2px; font-size: 0.78rem; font-weight: 900; color: #fff; background: linear-gradient(180deg, #ffb84d, #e07a12); border-radius: 999px; padding: 1px 10px; text-shadow: 0 1px 0 #8a4300, 1px 0 0 #8a4300, -1px 0 0 #8a4300, 0 -1px 0 #8a4300; box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+.my-char-card .mc-main b { font-size: 1.15rem; }
+.my-char-card .mc-go { font-size: 0.95rem; font-weight: 900; color: #fff; padding: 7px 12px; border-radius: 10px; background: linear-gradient(180deg, #4fc3ff, #2f8cff); box-shadow: 0 3px 0 #1c5bb8; text-shadow: 0 1px 0 #0a3a80, 1px 0 0 #0a3a80, -1px 0 0 #0a3a80, 0 -1px 0 #0a3a80; }
+.my-char-card:active .mc-go { transform: translateY(2px); box-shadow: 0 1px 0 #1c5bb8; }
+.my-char-card .mc-main { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 4px; }
+.my-char-card .mc-main small { margin-right: 0; white-space: nowrap; }
+.my-char-card .mc-name { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+.my-char-card .mc-main small { color: #fff !important; font-size: 0.82rem; }

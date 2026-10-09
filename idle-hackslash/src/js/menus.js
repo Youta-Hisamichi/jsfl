@@ -151,7 +151,7 @@ function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span><span class="mc-go">変更 ▶</span>`;
+  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><span class="mc-name"><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span></span><span class="mc-go">変更 ▶</span>`;
 }
 function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
   const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
@@ -241,7 +241,7 @@ function renderCompanionList() {
     return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span>${elemBadge(COMPANION_ELEMENT[id], 'el-tile')}<span class="cp-tile-lock">${!isCharObtained(id) ? '🎲 獲得前' : isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
   companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
-    + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b><small>タップで詳しく</small></div><div class="cp-grid">${othersHtml}</div>` : '');
+    + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
 const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1;
