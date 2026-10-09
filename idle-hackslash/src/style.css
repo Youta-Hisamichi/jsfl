@@ -2286,3 +2286,22 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .artifact-panel > .page-head, .upgrade-panel > .page-head { margin: 0 0 10px; font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 2px 0 rgba(255,255,255,0.6), 0 3px 6px rgba(0,0,0,0.25); }
 .artifact-panel > .page-head .ico-img, .upgrade-panel > .page-head .ico-img { width: 3.4rem; height: 3.4rem; }
 .tab-page[data-tab="records"] > .artifact-panel > .page-head, .tab-page[data-tab="ranking"] > .artifact-panel > .page-head { color: #f3e7c4; text-shadow: 0 2px 4px rgba(0,0,0,0.7); }
+/* スキル・サブウェポンの取得済みカードは中央にそろえる */
+#skillLevelList, #weaponList { display: flex !important; flex-wrap: wrap; justify-content: center; }
+#skillLevelList > .sk-card, #weaponList > .sk-card { flex: 0 0 calc((100% - 14px) / 3); }
+#skillLevelList > .sk-empty, #weaponList > .sk-empty { flex: 1 1 100%; }
+/* 設定：ほかのページと同じ明るい魔法陣パネル・大きな見出し・案内役 */
+#settingsModal .modal-panel.settings-page { background: var(--panel) !important; border: 1px solid var(--ring) !important; border-image: none !important; border-radius: 14px !important; color: var(--text) !important; padding: 12px 10px !important; max-width: 460px; max-height: calc(100vh - 110px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+#settingsModal .modal-panel.settings-page::before { background: url(assets/img/ui/magic_circle.webp) 50% -70px / 125% auto no-repeat; opacity: 1; filter: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #settingsModal .modal-panel.settings-page::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
+#settingsModal .settings-head { margin: 0 0 10px; font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 2px 0 rgba(255,255,255,0.6), 0 3px 6px rgba(0,0,0,0.25); color: var(--text); }
+#settingsModal .settings-head .ico-img { width: 3.4rem; height: 3.4rem; }
+#settingsModal .settings-page .settings-row label { color: var(--text); }
+#settingsModal .settings-page .modal-sub { color: var(--text-dim); }
+#settingsModal .settings-game-head { margin: 4px 0 12px; }
+#settingsModal .settings-page, #settingsModal .settings-page .settings-head, #settingsModal .settings-page .settings-row label, #settingsModal .settings-page label span { color: #2a1a06 !important; text-shadow: 0 0 2px #fff6dc, 0 0 2px #fff6dc !important; }
+#settingsModal .settings-page .settings-head { color: #1c140a !important; font-weight: 900; }
+#settingsModal .settings-page .modal-sub { color: #4a3818 !important; text-shadow: none !important; }
+#settingsModal .settings-page .sk-bubble { color: #2a1a06 !important; }
+#settingsModal .settings-head { gap: 4px; }
+#settingsModal .settings-head .ico-img { clip-path: inset(0 7% 0 7%); } /* 歯車の絵の端に入っている線を隠す */

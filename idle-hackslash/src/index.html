@@ -570,14 +570,9 @@
 </div>
 
 <div class="modal-overlay" id="settingsModal">
-  <div class="modal-panel">
-    <div class="settings-game-head">
-      <div class="sgh-title" id="settingsGameTitle">放置系ハクスラ無限反射</div>
-      <div class="sgh-ver" id="settingsGameVersion"></div>
-    </div>
-    <h2 data-i18n="settingsTitle">⚙️ 設定</h2>
-    <div class="modal-sub" data-i18n="settingsSub">音量やヘルプの設定です</div>
-    <div class="shopkeeper compact" data-npc-tab="settings"></div>
+  <div class="modal-panel settings-page">
+    <div class="page-head settings-head"><span data-xi="x_settings">⚙️</span><span data-i18n="settingsTitle">設定</span></div>
+    <div class="shopkeeper" data-npc-tab="settings"></div>
     <div class="settings-row">
       <label><span data-i18n="bgmLabel">🎵 BGM音量　</span><span id="bgmVolVal">70%</span></label>
       <input type="range" id="bgmVolRange" min="0" max="100" value="70">
@@ -605,6 +600,10 @@
         <button class="modal-shop-btn lang-btn active" id="langJaBtn" data-lang="ja"><span class="msb-name">日本語</span></button>
         <button class="modal-shop-btn lang-btn" id="langEnBtn" data-lang="en"><span class="msb-name">English</span></button>
       </div>
+    </div>
+    <div class="settings-game-head">
+      <div class="sgh-title" id="settingsGameTitle">放置系ハクスラ無限反射</div>
+      <div class="sgh-ver" id="settingsGameVersion"></div>
     </div>
     <div class="settings-row">
       <label data-i18n="devLabel">👤 開発者</label>
