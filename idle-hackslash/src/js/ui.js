@@ -186,7 +186,7 @@ let simAcc = 0, lastSimAt = 0;
 function loop() {
   battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
   try {
-    if (userPaused || stageSkipModal.classList.contains('show')) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
+    if (userPaused || stageSkipModal.classList.contains('show') || rewardAdModal.classList.contains('show')) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
     if (activeTabCache !== 'game') { drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // drawFlyouts は画面全体の重ね描きを消すため（残像が残らないように）
     // 固定ステップ：描画が重くて fps が落ちてもゲームの進み（1秒＝60ステップ）は変わらない。120Hz の画面でも速くなりすぎない
     const now = performance.now();
@@ -527,6 +527,7 @@ document.addEventListener('keydown', ev => {
   setUserPaused(!userPaused);
 });
 document.getElementById('pauseBadge').addEventListener('click', () => setUserPaused(false));
+new MutationObserver(() => { if (audioCtx && !userPaused) { if (rewardAdModal.classList.contains('show')) audioCtx.suspend(); else audioCtx.resume(); } }).observe(rewardAdModal, { attributes: true, attributeFilter: ['class'] }); // リワード動画の再生中はゲームも音も止める
 
 function fullReset() {
   if (animId) cancelAnimationFrame(animId);
