@@ -1201,7 +1201,7 @@ function updatePotionButton() {
   const n = game.potions || 0;
   const html = `🧪<b>×${n}</b>`;
   if (potionBtn.dataset.html !== html) { potionBtn.innerHTML = html; potionBtn.dataset.html = html; }
-  potionBtn.classList.toggle('is-disabled', n <= 0);
+  potionBtn.classList.toggle('is-disabled', n <= 0 || !canUseHealNow()); // 回復はボス戦だけ
 }
 (() => { // スキル列は横スクロールするので、指が少しずれただけでタップが消えないよう、少しの移動ならこちらで押したことにする
   const row = document.getElementById('skillRow'); let tap = null;
@@ -1237,6 +1237,7 @@ potionBtn.addEventListener('click', event => {
   if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
+  if (!canUseHealNow()) { showTapError('回復ポーションはボス戦でだけ使えます', event.clientX, event.clientY); return; } // ボス戦以外ではHPが減らない
   if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
   game.potions--;
   const heal = Math.round(player.maxHp * POTION_HEAL_RATIO);

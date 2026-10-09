@@ -114,7 +114,7 @@ function bossAdviceHtml(reason, short) {
   return `<div class="boss-advice">${tips.map(t => `<div>${t}</div>`).join('')}</div>`;
 }
 
-setInterval(() => { try { updateTabLocks(); updateMission(); } catch (e) { console.error(e); } }, 500);
+setInterval(() => { try { updateTabLocks(); updateMission(); updatePotionButton(); } catch (e) { console.error(e); } }, 500);
 updateTabLocks(); updateMission();
 
 // ---- 転生・試練の塔の解放ダイアログ ----
