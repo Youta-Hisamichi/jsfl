@@ -201,3 +201,29 @@ document.getElementById('skillRow').addEventListener('click', event => {
   playTone(660, 0.06, 'triangle', 0.04, 520);
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1100);
 }, true);
+
+// ---- 次の目標ステージ（50・100・200・300・500・1000…）をそれとなく見せる ----
+const GOAL_STAGES = [50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000];
+function nextGoalStage() {
+  const best = game.bestStage || 1;
+  for (const g of GOAL_STAGES) if (best < g) return g;
+  let g = 10000; while (g <= best) g *= 10; return g;
+}
+let goalSig = '', lastGoalReached = null;
+function updateGoalChip() {
+  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+  let el = document.getElementById('goalChip');
+  if (!el) { el = document.createElement('div'); el.id = 'goalChip'; el.className = 'goal-chip'; wrap.appendChild(el); }
+  const goal = nextGoalStage(), best = game.bestStage || 1;
+  if (lastGoalReached !== null && goal !== lastGoalReached && best >= lastGoalReached) { // 目標に届いた
+    showNotice(`🎯 目標のステージ${formatStageNumber(lastGoalReached)}に到達！ 次はステージ${formatStageNumber(goal)}`, false, 3200);
+    el.classList.remove('reached'); void el.offsetWidth; el.classList.add('reached');
+  }
+  lastGoalReached = goal;
+  const ms = typeof getMilestoneBoss === 'function' && goal % 100 === 0 ? getMilestoneBoss(goal) : null;
+  const sig = goal + ':' + best;
+  if (sig === goalSig) return; goalSig = sig;
+  el.innerHTML = `🎯 目標 <b>ステージ${formatStageNumber(goal)}</b>${ms ? ' <span>👑</span>' : ''}`;
+  el.style.display = game.skipChallenge ? 'none' : '';
+}
+setInterval(() => { try { updateGoalChip(); } catch (e) { console.error(e); } }, 1000);

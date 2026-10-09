@@ -2181,3 +2181,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .cl-guar { margin-left: 4px; padding: 0 5px; border-radius: 6px; background: #ff9f2e; color: #fff; font-size: 0.6rem; font-weight: 900; }
 .cl-btn.notyet { background: linear-gradient(180deg, #8a8fa3, #5a5f73); }
 .debug-panel button.dbg-on { background: #2e9e5b; color: #fff; }
+.goal-chip { position: absolute; left: 50%; top: 5px; transform: translateX(-50%); z-index: 3; padding: 2px 10px; border-radius: 999px; background: rgba(10,12,28,0.45); color: rgba(255,255,255,0.85); font-size: 0.66rem; font-weight: 700; white-space: nowrap; pointer-events: none; }
+.goal-chip b { color: #ffd76b; }
+.goal-chip.reached { animation: goalReached 1.4s ease-out; }
+@keyframes goalReached { 0% { transform: translateX(-50%) scale(1.5); background: rgba(255,200,60,0.9); color: #3a2a00; } 100% { transform: translateX(-50%) scale(1); } }

@@ -1736,6 +1736,7 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
   enemy.vy = (dy / dist) * KNOCKBACK_SPEED;
   enemy.shakeTimer = KNOCKBACK_SHAKE_FRAMES;
   hitStopFrames = KILL_HITSTOP_DURATION;
+  if (enemy.isBoss && typeof playHomeRunSound === 'function') playHomeRunSound(); // ボスは金属バットでかっ飛ばしたような「カキーン！」
   startFlyout(enemy);
 }
 

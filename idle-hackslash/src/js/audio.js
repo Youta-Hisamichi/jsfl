@@ -1247,6 +1247,15 @@ function playCountdownTick(sec) {
   playTone(urgent ? 880 : 659.25, urgent ? 0.12 : 0.09, 'triangle', urgent ? 0.06 : 0.045); // 柔らかい三角波で控えめに
   if (urgent) setTimeout(() => playTone(1108.7, 0.06, 'triangle', 0.035), 80);
 }
+// 金属バットのホームラン：芯をとらえた「カキーン！」（金属の響き）＋打球が飛んでいく風切り音＋遠くの歓声
+function playHomeRunSound() {
+  if (activeTabCache !== 'game' || !audioCtx) return;
+  playNoiseBurst(0.03, 0.35); thump(900, 300, 0.05, 0.4, 'square'); // カッ（打球の瞬間）
+  [[1760, 0.22, 0.9], [2637, 0.16, 0.7], [3951, 0.1, 0.5], [5274, 0.06, 0.35], [1318, 0.12, 0.6]].forEach(([f, g, d]) => playTone(f, d, 'sine', g, f * 0.985)); // キーーン（倍音がずれた金属の響き）
+  playTone(3520, 0.25, 'triangle', 0.05, 3400);
+  noiseSweep(0.9, 3000, 400, 'bandpass', 2, 0.18, 0.08); // ヒューーッ（打球が遠ざかる）
+  noiseSweep(1.4, 1200, 900, 'bandpass', 0.7, 0.12, 0.5); // ワーッ（遠くの歓声）
+}
 function playBossClearSound() {
   if (activeTabCache !== 'game') return;
   thump(110, 40, 0.5, 0.7);
