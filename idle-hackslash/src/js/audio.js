@@ -125,17 +125,6 @@ const BGM_SONGS = {
     kickBoost: 1.2,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks s s ks ks ks ks',
   },
-  battle29: { // 戦闘29 秘宝の洞窟：弾むベースと跳ねる分散和音に、わくわくと探検する旋律（ほのぼのアクションの洞窟探検系）
-    bpm: 150,
-    echo: { time: 0.2, feedback: 0.22, wet: 0.15 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.039, notes: 'A4 = C5 E5 = D5 C5 B4 | A4 = = E4 A4 = B4 C5 | C5 = A4 F4 A4 C5 F5 E5 | D5 = = B4 G4 = B4 D5 | E5 = C5 E5 A5 = G5 E5 | C5 = = = E5 = A5 = | F5 = E5 D5 A4 = D5 F5 | E5 = = = G#4 = B4 = | A5 = = G5 F5 = C5 = | D5 = G5 = B5 = = A5 | G5 = E5 = C5 = E5 G5 | A5 = = = E5 = C5 = | D5 = F5 = A5 = = G5 | B5 = = A5 G5 = D5 = | E5 = G#5 = B5 = = = | D6 = C6 B5 G#5 = E5 =' },
-      { type: 'vrc6pulse12', gain: 0.018, notes: 'A3 - C4 E4 A4 - E4 C4 | A3 - C4 E4 A4 - E4 C4 | F3 - A3 C4 F4 - C4 A3 | G3 - B3 D4 G4 - D4 B3 | A3 - C4 E4 A4 - E4 C4 | A3 - C4 E4 A4 - E4 C4 | D4 - F4 A4 D5 - A4 F4 | E3 - G#3 B3 E4 - B3 G#3 | F3 - A3 C4 F4 - C4 A3 | G3 - B3 D4 G4 - D4 B3 | C4 - E4 G4 C5 - G4 E4 | A3 - C4 E4 A4 - E4 C4 | D4 - F4 A4 D5 - A4 F4 | G3 - B3 D4 G4 - D4 B3 | E3 - G#3 B3 E4 - B3 G#3 | E3 - G#3 B3 E4 - B3 G#3' },
-      { type: 'vrc6saw', gain: 0.064, notes: 'A1 - A2 - E2 - A2 E2 | A1 - A2 - E2 - A2 E2 | F1 - F2 - C2 - F2 C2 | G1 - G2 - D2 - G2 D2 | A1 - A2 - E2 - A2 E2 | A1 - A2 - E2 - A2 E2 | D2 - D3 - A2 - D3 A2 | E1 - E2 - B1 - E2 B1 | F1 - F2 - C2 - F2 C2 | G1 - G2 - D2 - G2 D2 | C2 - C3 - G2 - C3 G2 | A1 - A2 - E2 - A2 E2 | D2 - D3 - A2 - D3 A2 | G1 - G2 - D2 - G2 D2 | E1 - E2 - B1 - E2 B1 | E1 - E2 - B1 - E2 B1' },
-    ],
-    kickBoost: 1.2,
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k s s s | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks s ks s s s ks ks'
-  },
   battle28: {
     bpm: 164,
     tracks: [
@@ -190,17 +179,6 @@ const BGM_SONGS = {
     ],
     kickBoost: 1.3,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
-  },
-  boss14: { // ボス13 暗黒卿の行進：重く踏みしめる行進のリズムと低くうなるベースに、威圧的な短調の旋律（宇宙活劇の悪役テーマ系）
-    bpm: 208,
-    echo: { time: 0.22, feedback: 0.24, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.037, notes: 'C5 = = = = = = - D#5 = = D5 C5 = = - | G4 = = = = = = - G4 = = G#4 G4 = = - | G#4 = = = C5 = = = D#5 = = = D5 = C5 = | C5 = = = = = = = - - - - G4 = = - | F5 = = = = = = - G#5 = = G5 F5 = = - | D#5 = = = = = = - D5 = = D#5 C5 = = - | B4 = = = D5 = = = F5 = = = D5 = B4 = | G4 = = = = = = = - - - - G4 = A4 B4 | C5 = = = = = = - D#5 = = = G#5 = = = | G#5 = = G5 F5 = = = C5 = = = F5 = = = | G5 = = = = = = - D#5 = = D5 C5 = = - | C6 = = = = = = = G5 = = = D#5 = = = | F5 = = = = = = - G#5 = = = C#6 = = = | D6 = = = = = = - B5 = = = F5 = = = | G5 = = = = = = - G5 = = G#5 G5 = F5 = | D5 = = = B4 = = = G4 = = = - - - -' },
-      { type: 'vrc6pulse12', gain: 0.014, notes: 'C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | F3 G#3 C4 F4 C4 G#3 C4 G#3 F3 G#3 C4 F4 C4 G#3 C4 G#3 | C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | F3 G#3 C4 F4 C4 G#3 C4 G#3 F3 G#3 C4 F4 C4 G#3 C4 G#3 | C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | C3 D#3 G3 C4 G3 D#3 G3 D#3 C3 D#3 G3 C4 G3 D#3 G3 D#3 | C#3 F3 G#3 C#4 G#3 F3 G#3 F3 C#3 F3 G#3 C#4 G#3 F3 G#3 F3 | B3 D4 F4 B4 F4 D4 F4 D4 B3 D4 F4 B4 F4 D4 F4 D4 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3' },
-      { type: 'vrc6saw', gain: 0.064, notes: 'C1 = - - C1 = - C1 C1 = - - C1 = - - | C1 = - - C1 = - C1 C1 = - - C1 = - - | G#1 = - - G#1 = - G#1 G#1 = - - G#1 = - - | C1 = - - C1 = - C1 C1 = - - C1 = - - | F1 = - - F1 = - F1 F1 = - - F1 = - - | C1 = - - C1 = - C1 C1 = - - C1 = - - | G1 = - - G1 = - G1 G1 = - - G1 = - - | G1 = - - G1 = - G1 G1 = - - G1 = - - | G#1 = - - G#1 = - G#1 G#1 = - - G#1 = - - | F1 = - - F1 = - F1 F1 = - - F1 = - - | C1 = - - C1 = - C1 C1 = - - C1 = - - | C1 = - - C1 = - C1 C1 = - - C1 = - - | C#1 = - - C#1 = - C#1 C#1 = - - C#1 = - - | B1 = - - B1 = - B1 B1 = - - B1 = - - | G1 = - - G1 = - G1 G1 = - - G1 = - - | G1 = - - G1 = - G1 G1 = - - G1 = - -' },
-    ],
-    kickBoost: 1.5,
-    drums: 'k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | s - s s s - s s s s s s ks - ks - | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | s - s s s - s s s s s s ks - ks -'
   },
   boss15: { // ボス14 逆転の大勝負：せわしなく刻む弦の分散和音と突き上げるベースに、重厚で劇的な短調の旋律（企業ドラマの決戦テーマ系）
     bpm: 280,
@@ -651,7 +629,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle34'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -673,14 +651,18 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss14', 'boss15', 'boss16', 'boss17', 'boss21'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss15', 'boss16', 'boss17', 'boss21'];
 let bossBgmOrder = [], bossBgmIndex = 0;
+// 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
+const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
+function isBossFirstRound(stage) { const n = Math.floor(stage / 10); return n >= 1 && n <= BOSS_FIRST_ROUND.length; }
+var dbgBgmOverride = null; // デバッグで選んだ戦闘曲（次のステージまで）
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
   if (avoidFirst && bossBgmOrder[0] === avoidFirst) bossBgmOrder.push(bossBgmOrder.shift());
   bossBgmIndex = 0;
 }
-shuffleBossBgm();
+shuffleBossBgm(BOSS_FIRST_ROUND[BOSS_FIRST_ROUND.length - 1]);
 function nextBossBgm() {
   const prev = bossBgmOrder[bossBgmIndex];
   if (++bossBgmIndex >= bossBgmOrder.length) shuffleBossBgm(prev);
@@ -688,6 +670,10 @@ function nextBossBgm() {
 const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'boss9', 'boss18']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
 function resolveBgmType(type) {
   if (type === 'boss' && game.skipChallenge) return TOWER_BOSS_SONGS[(game.skipChallenge.bgm || 0) % TOWER_BOSS_SONGS.length];
+  if ((type === 'normal' || type === 'boss') && dbgBgmOverride) return dbgBgmOverride;
+  if (type === 'normal' && game.stage < 10) return 'battle3';  // 1〜9ステージ
+  if (type === 'normal' && game.stage < 20) return 'battle4';  // 11〜19ステージ
+  if (type === 'boss' && isBossFirstRound(game.stage)) return BOSS_FIRST_ROUND[Math.floor(game.stage / 10) - 1];
   return type === 'normal' ? normalBgmOrder[normalBgmIndex] : type === 'boss' ? bossBgmOrder[bossBgmIndex] : type;
 }
 const BGM_INFO = [
@@ -703,7 +689,6 @@ const BGM_INFO = [
   { key: 'battle24', name: '戦闘24 裏通りの拳', desc: '刻むロックベースとパワーコードのリフ、ブルージーな音を混ぜた熱い旋律の街の殴り合い。VRC6風チップチューン。イ短調（ベルトスクロールアクション系の作風）・BPM156' },
   { key: 'battle27', name: '戦闘27 影の疾走', desc: '休みなく刻むオクターブベースと駆け回る分散和音、悲壮で勇ましい旋律が疾走する忍びの戦い。VRC6風チップチューン。ニ短調（ファミコンの忍者アクション系の作風）・BPM170' },
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
-  { key: 'battle29', name: '戦闘29 秘宝の洞窟', desc: '弾むベースと跳ねる分散和音に乗って、わくわくと洞窟を探検する旋律。後半は長調に明るく開けて宝の予感に胸が高鳴る。VRC6風チップチューン。イ短調（ほのぼのアクションの洞窟探検の作風）・BPM150' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
@@ -715,7 +700,6 @@ const BGM_INFO = [
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
   { key: 'boss12', name: 'ボス11 決戦の旅路', desc: '駆け上がる弦の刻みとうなるベースに乗って、気高く劇的な旋律が挑みかかる。旅の果てに立ちはだかる強敵との決戦。VRC6風チップチューン。ト短調（HD-2D系RPGのボス戦の作風）・BPM176' },
   { key: 'boss13', name: 'ボス12 不屈の挑戦者', desc: '高らかに鳴るファンファーレと駆け上がる分散和音に乗って、何度倒れても立ち上がる不屈の旋律が頂上を目指す。VRC6風チップチューン。ニ長調（ボクシング映画のテーマの作風）・BPM200' },
-  { key: 'boss14', name: 'ボス13 暗黒卿の行進', desc: '重く踏みしめる行進のリズムと低くうなるベースに乗って、黒いマントの暗黒卿が威圧的に迫り来る。VRC6風チップチューン。ハ短調（宇宙活劇の悪役テーマの作風）・BPM104' },
   { key: 'boss15', name: 'ボス14 逆転の大勝負', desc: 'せわしなく刻む弦の分散和音と突き上げるベースに乗って、重厚で劇的な旋律が一歩も引かずに立ち向かう。土壇場からの大逆転劇。VRC6風チップチューン。イ短調（企業ドラマの決戦テーマの作風）・BPM140' },
   { key: 'boss16', name: 'ボス15 戦闘民族の襲来', desc: 'せき立てる分散和音とうなるオクターブベースに乗って、荒々しい旋律が空から襲来した強敵と激突する。VRC6風チップチューン。ホ短調（ファミコンの格闘アニメRPGのボス戦の作風）・BPM190' },
   { key: 'boss17', name: 'ボス16 摩天楼の夜狩り', desc: '16分で脈打つシンセベースと切り込む和音に乗って、クールな旋律が夜の摩天楼を駆け抜ける。凄腕の始末屋の夜。VRC6風チップチューン。嬰ヘ短調（80年代シティ系アニメのシンセロックの作風）・BPM126' },
@@ -798,6 +782,7 @@ function refreshBgm() {
     const tab = getActiveTab();
     if (tab !== 'game' && (BGM_SONGS[tab] || BGM_PATTERNS[tab])) type = tab; // 各ページ専用の曲
   }
+  if (type === 'silent') { stopBgm(); return; } // ボス接近のワーニング中は無音
   playBgmTrack(resolveBgmType(type));
 }
 

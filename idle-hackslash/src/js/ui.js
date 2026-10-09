@@ -318,7 +318,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
   }
   { // 仲間は個別に選べる：まだいない仲間は「加入」、もういる仲間はレベルアップ
     const room = getCompanionTotal() < getPartyLimit(), lvN = 2 + Math.floor(game.stage / 15);
-    const ids = Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && (getCompanionCount(id) > 0 || room)).sort(() => Math.random() - 0.5).slice(0, 3);
+    const ids = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0) // 仲間は勝手に増えない：今いる仲間のレベルアップだけ.sort(() => Math.random() - 0.5).slice(0, 3);
     for (const id of ids) {
       const c = COMPANIONS[id], has = getCompanionCount(id) > 0;
       pool.push({ kind: 'compPick', id, n: lvN, col: '#ff9a4f', label: '仲間', icon: companionIconHtml(id), name: has ? `${c.name} Lv+${lvN}` : `${c.name} 加入`, desc: has ? `Lv${(game.companions.level[id] || 0) + 1} → Lv${(game.companions.level[id] || 0) + 1 + lvN}` : '仲間に加わって一緒に戦う' });
@@ -330,7 +330,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
   }
   for (const id in WEAPONS) {
     const lv = getWeaponLv(id), W = WEAPONS[id];
-    if (lv >= WEAPON_MAX_LV) continue;
+    if (lv >= WEAPON_MAX_LV || !lv) continue; // サブウェポンは勝手に増えない：持っているもののレベルアップだけ
     pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
   }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
@@ -802,6 +802,7 @@ debugRow.addEventListener('click', event => {
   if (action.startsWith('bgm:')) {
     const key = action.slice(4);
     ensureAudio();
+    dbgBgmOverride = BOSS_BATTLE_SONGS.includes(key) || NORMAL_BATTLE_SONGS.includes(key) ? key : null;
     if (BOSS_BATTLE_SONGS.includes(key)) { battleBgmType = 'boss'; const i = bossBgmOrder.indexOf(key); if (i >= 0) bossBgmIndex = i; }
     else if (!NORMAL_BATTLE_SONGS.includes(key)) battleBgmType = key; // コンテニュー曲など（次のステージで戦闘曲に戻る）
     else { battleBgmType = 'normal'; const i = normalBgmOrder.indexOf(key); if (i >= 0) normalBgmIndex = i; }
@@ -2053,6 +2054,7 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
 rebornBtn.addEventListener('click', event => {
+  if (bossContModal.classList.contains('show') && game.stage >= 3) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
   if (phase === 'battle' && game.stage >= 3) openRebornConfirm(null);
   else showTapError('3階から転生できます', event.clientX, event.clientY);
 });

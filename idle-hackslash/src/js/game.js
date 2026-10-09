@@ -493,10 +493,8 @@ function onStageClear() {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
   }
-  if (isBossStage) grantRandomWeapon('ボス撃破！ ');
-  if (isBossStage && !game.skipChallenge) setTimeout(tryBossCompanionJoin, 2600); // ボスを倒すと仲間がランダムで加わる（最大3人）
   if (!isBossStage) maybeRotateNormalBgm(); // 自動再戦オフでループ中は、ときどき雑魚戦の曲を変えて飽きないように
-  if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); nextNormalBgm(); nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
+  if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); dbgBgmOverride = null; nextNormalBgm(); if (!isBossFirstRound(game.stage)) nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
   if (isBossStage) spawnDamageText(arena.x, arena.y, `+${5 * (msBoss ? msBoss.reward : 1)} 💎`, '#64e8ff');
@@ -670,6 +668,7 @@ function resumeGameOverForTab() { // ゲーム画面に戻ったとき
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
+  { const im = document.getElementById('goCoffin'); if (im && !im.src && typeof getCoffinSprite === 'function') im.src = getCoffinSprite().toDataURL(); } // ゲームオーバー画面に棺桶
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').textContent = '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
@@ -794,7 +793,6 @@ function canCompanionRevive(id) { // 階を進むたびに1つ減らし、0に�
   return true;
 }
 function bossFail(reason, silent) {
-  if (reason === 'retire') grantRandomWeapon('リタイヤ報酬：');
   const bossStage = game.stage;
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
@@ -834,7 +832,7 @@ function onPlayerDeath(forceRebirth = false, skipFx = false) {
     const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = p.hp; updateHPUI(); }
     return;
   }
-  if (deathFx && !skipFx) return; // 演出中の二重呼び出しを防ぐ
+  if (deathFx && !skipFx && !forceRebirth) return; // 演出中の二重呼び出しを防ぐ（転生は演出中でも通す）
   phase = 'paused';
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
@@ -1228,6 +1226,7 @@ function drawBossEntrance() { // 落下中の影（だんだん大きく濃く�
   }
 }
 function spawnBossWithWarning() {
+  startBgm('silent'); // ワーニング中は雑魚戦の曲を止める
   showBossWarning();
   balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく
   setTimeout(() => {
@@ -1907,7 +1906,7 @@ function drawBall(ball) {
     const img = swapped ? braveImg : companionSpriteImgs[ball.companionId];
     ctx.save();
     if (img && img.complete && img.naturalWidth) {
-      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.6); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
+      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.3); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
       drawFacingSprite(img, ball, swapped ? 'hero' : ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
       const cnt = 1; // 同じ仲間は1人ずつ別の体で出るので、人数バッジは出さない
       if (cnt >= 2) { // 人数バッジ

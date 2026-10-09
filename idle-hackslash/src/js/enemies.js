@@ -828,7 +828,9 @@ function getEnemyEvasion(enemy) { return (enemy.isBoss ? BOSS_EVASION : ENEMY_EV
 function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
 function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
 function hitChance(accuracy, evasion) { return Math.min(1, Math.max(MIN_HIT_CHANCE, accuracy - evasion)); }
+const NO_MISS_UNTIL_STAGE = 30; // 序盤（30階まで）はこちらの攻撃が外れない
 function playerAttackHits(target) {
+  if (game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge) return true;
   return Math.random() < hitChance(getPlayerAccuracy(), getEnemyEvasion(target));
 }
 function enemyAttackHits(attacker) {
