@@ -1940,7 +1940,7 @@ function drawBall(ball) {
       ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius + 6 + 6 * k, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke(); ctx.restore();
     }
     { // 溜めの秒数（前の攻撃からのカウントアップ）と最大
-      const maxS = (HERO_WAIT_MAX - 1) * HERO_WAIT_RATE_MS / 1000, sec = Math.min(maxS, (w - 1) * HERO_WAIT_RATE_MS / 1000), full = w >= HERO_WAIT_MAX;
+      const maxS = (HERO_WAIT_MAX - 1) * heroWaitRateMs() / 1000, sec = Math.min(maxS, (w - 1) * heroWaitRateMs() / 1000), full = w >= HERO_WAIT_MAX;
       const txt = full ? `MAX ×${HERO_WAIT_MAX}` : `${sec.toFixed(1)} / ${maxS.toFixed(1)}秒`, y = ball.y - ball.radius * 2.6 - 6;
       ctx.save(); ctx.font = `900 ${full ? 11 : 10}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(txt, ball.x, y);

@@ -2161,3 +2161,15 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .skill-charge-pop small { display: block; font-size: 0.66rem; color: #9fb4d8; font-weight: 700; }
 .skill-charge-pop.show { animation: skillChargePop 1.1s ease-out forwards; }
 @keyframes skillChargePop { 0% { opacity: 0; transform: translate(-50%, -80%) scale(0.85); } 15% { opacity: 1; transform: translate(-50%, -110%) scale(1); } 75% { opacity: 1; transform: translate(-50%, -125%); } 100% { opacity: 0; transform: translate(-50%, -140%); } }
+/* 自キャラのタイプ（長所・短所）と攻略のヒント */
+.mc-ud { display: flex; flex-wrap: wrap; gap: 2px 6px; margin-top: 2px; font-size: 0.64rem; line-height: 1.3; }
+.mc-ud i { font-style: normal; font-weight: 700; }
+.mc-ud .ht { color: #6a4fc0; }
+.mc-ud .up { color: #1f9a52; }
+.mc-ud .dn { color: #d04848; }
+.mc-rec { font-style: normal; margin-left: 6px; padding: 0 6px; border-radius: 8px; background: #ff9f2e; color: #fff; font-size: 0.6rem; font-weight: 900; vertical-align: 1px; }
+.mc-advice { margin: 0 0 8px; padding: 7px 10px; border-radius: 10px; background: rgba(255,200,80,0.14); border: 1px solid rgba(220,160,40,0.45); font-size: 0.7rem; line-height: 1.55; text-align: left; }
+.mc-advice b { display: block; font-size: 0.78rem; margin-bottom: 2px; }
+.mc-advice .mc-advice-sub { margin-top: 3px; color: var(--text-dim); font-size: 0.64rem; }
+.mc-advice .el-badge { font-size: 0.62rem; }
+.mc-list .mc-ud .ht { color: #c8b6ff; } .mc-list .mc-ud .up { color: #63e394; } .mc-list .mc-ud .dn { color: #ff8a8a; }

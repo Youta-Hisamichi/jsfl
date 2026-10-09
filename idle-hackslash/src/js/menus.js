@@ -152,7 +152,21 @@ function renderMyCharCard() {
   el.style.display = COMPANION_IDS.some(isCharSummoned) ? '' : 'none'; // まだ誰も招集していなければ自キャラ変更は出さない
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><span class="mc-name"><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span></span><span class="mc-go">変更 ▶</span>`;
+  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><span class="mc-name"><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span>${heroTypeHtml(id)}</span><span class="mc-go">変更 ▶</span>`;
+}
+function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
+  const info = heroTypeInfo(id);
+  if (!info) return '<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ 属性の不利を受けない</i><i class="dn">▼ 補正なし</i></span>';
+  return `<span class="mc-ud"><i class="ht">${info.t.icon} ${info.t.name}</i><i class="up">▲ ${info.up}</i><i class="dn">▼ ${info.down}</i></span>`;
+}
+function zoneElementAdvice() { // いまのエリアの雑魚と次のボスの属性から、有利な属性をすすめる
+  const zone = getStageZone(game.stage), cnt = { fire: 0, water: 0, grass: 0 };
+  zone.normal.filter(k => !isEnemyRemoved(k)).forEach(k => { const e = ENEMY_ELEMENT_BY_KEY[k]; if (e) cnt[e]++; });
+  const top = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0], beat = el => Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el);
+  const bossStage = Math.ceil(Math.max(1, game.stage) / 10) * 10, bossEm = getStageBossEmoji(bossStage), bossEl = ENEMY_ELEMENT_BY_KEY['boss:' + bossEm];
+  const zoneTxt = Object.keys(cnt).filter(k => cnt[k]).map(k => `${elemBadge(k)}${cnt[k]}`).join(' ');
+  return { rec: beat(top), bossRec: bossEl ? beat(bossEl) : null,
+    html: `<div class="mc-advice"><b>🧭 攻略のヒント</b><div>${zone.name}エリアの雑魚：${zoneTxt}<br>→ ${elemBadge(top)}が多いので ${elemBadge(beat(top))} の自キャラが有利</div>${bossEl ? `<div>次のボス「${BOSS_ENEMY_NAMES[bossEm] || 'ボス'}」は ${elemBadge(bossEl)} → ${elemBadge(beat(bossEl))} が有利（不利な ${elemBadge(ELEMENT_BEATS[bossEl])} は与ダメ半減）</div>` : ''}<div class="mc-advice-sub">雑魚戦は稼ぎ重視（トレジャー・スピード）、ボス戦は火力（アタッカー）や耐久（タンク）に切り替えるのも手</div></div>` };
 }
 function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
   const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
@@ -166,20 +180,22 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
       const b = ev.target.closest('[data-my-char]'); if (!b) return;
       game.heroChar = b.dataset.myChar || null;
-      applyHeroChar(); lastFoeElement = undefined; renderCompanionList(); playRegisterSound(); saveGame();
+      applyHeroChar(); lastFoeElement = undefined; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderCompanionList(); playRegisterSound(); saveGame();
       ov.classList.remove('show');
       showShopPurchaseFx(game.heroChar ? companionIconHtml(game.heroChar) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, game.heroChar ? COMPANIONS[game.heroChar].name : '勇者', '自キャラを変更しました', '自キャラ変更！');
     });
   }
   const cur = getHeroChar() || '';
   const ids = COMPANION_IDS.filter(isCharSummoned).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
-  const row = (id, name, img, badge, rcol) => `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}</b><small>${badge}</small></span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`;
+  const adv = zoneElementAdvice();
+  const row = (id, name, img, badge, rcol) => { const el = id && COMPANION_ELEMENT[id], rec = el && (el === adv.rec || el === adv.bossRec); return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
+  ov.querySelector('.mc-advice-box').innerHTML = adv.html;
   ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '属性なし', '#9aa0b4')
     + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)} ${elemBadge(COMPANION_ELEMENT[id])}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
   ov.classList.add('show');

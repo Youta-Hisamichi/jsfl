@@ -1023,6 +1023,27 @@ function isCharSummoned(id) { return !!(game.companionBook && game.companionBook
 function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharSummoned(game.heroChar) ? game.heroChar : null; }
 function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMENT[id]; } // 自キャラと交代した仲間は勇者が代わりに出るので属性なし
 const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
+// 自キャラのタイプ：仲間の得意分野で決まり、長所はレア度が高いほど大きい。短所は固定。勇者は補正なし・属性なし（相性の不利も受けない）
+const HERO_TYPES = {
+  atk:   { icon: '⚔️', name: 'アタッカー', up: p => `攻撃力 +${p}%`, down: '最大HP -20%', mods: p => ({ atk: 1 + p / 100, hp: 0.8 }) },
+  hp:    { icon: '🛡️', name: 'タンク', up: p => `最大HP +${p * 2}%`, down: '攻撃力 -15%', mods: p => ({ hp: 1 + p * 2 / 100, atk: 0.85 }) },
+  speed: { icon: '💨', name: 'スピード', up: p => `移動速度 +${Math.round(p / 2)}%・溜め時間 -${Math.min(40, Math.round(p / 2))}%`, down: '最大HP -15%', mods: p => ({ speed: 1 + p / 200, charge: 1 - Math.min(0.4, p / 200), hp: 0.85 }) },
+  coin:  { icon: '💰', name: 'トレジャー', up: p => `コイン +${p * 2}%`, down: '攻撃力 -15%', mods: p => ({ coin: 1 + p * 2 / 100, atk: 0.85 }) },
+};
+const HERO_TYPE_PCT = { common: 15, rare: 25, epic: 40, legendary: 60, mythic: 100 };
+function heroTypeInfo(id) { // { type, pct, up, down } または勇者なら null
+  const c = id && COMPANIONS[id]; if (!c || !HERO_TYPES[c.stat]) return null;
+  const t = HERO_TYPES[c.stat], pct = HERO_TYPE_PCT[c.rarity] || 15;
+  return { key: c.stat, t, pct, up: t.up(pct), down: t.down };
+}
+let heroModsCache = { id: undefined, v: null };
+function heroCharMods() {
+  const id = getHeroChar();
+  if (heroModsCache.id === id && heroModsCache.v) return heroModsCache.v;
+  const info = heroTypeInfo(id), m = info ? info.t.mods(info.pct) : {};
+  const v = { atk: m.atk || 1, hp: m.hp || 1, coin: m.coin || 1, speed: m.speed || 1, charge: m.charge || 1 };
+  heroModsCache = { id, v }; return v;
+}
 function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
 function isCharObtained(id) { return !!COMPANIONS[id]; } // 採用ガチャは廃止：どのキャラも最初から採用・解雇できる
@@ -1195,7 +1216,8 @@ function computeBonuses() {
   const rlv = game.rebirthLv || 0; // 転生Lv：転生するたびに上がり、キャラの基礎能力がずっと強くなる
   b.atkMult += rlv * REBIRTH_LV_BONUS; b.hpMult += rlv * REBIRTH_LV_BONUS;
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
-  b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult); // 移動速度の仲間を育てすぎても超高速にならないよう上限
+  { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
+  b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
   return b;
 }
 
