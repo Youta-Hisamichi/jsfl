@@ -1197,10 +1197,10 @@ function charGachaPull(ev) {
   const before = (game.charLv && game.charLv[id]) || 0, wasGot = isCharObtained(id);
   if (!game.charLv) game.charLv = {};
   game.charLv[id] = Math.max(before, wasGot ? 1 : 0) + 1;
-  if (!wasGot) game.charLv[id] = 1;
+  if (!wasGot) { game.charLv[id] = 1; if (!game.compLocked) game.compLocked = {}; game.compLocked[id] = false; } // 新しく獲得したキャラは自動で採用
   const lv = getCharLv(id);
   const title = !wasGot ? `${rarityStars(c.rarity)} ${c.name} 獲得！` : `${c.name} 獲得Lv${lv}！`;
-  const sub = !wasGot ? '「採用する」と仲間招集に出るようになります' : `ダブり！ 攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%`;
+  const sub = !wasGot ? '自動で採用しました（仲間招集に出るようになります）' : `ダブり！ 攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%`;
   showSkGachaReveal(c.rarity, companionIconHtml(id), title, sub, () => {
     if (!game.companionBook) game.companionBook = {};
     renderCompLockList(); refreshPlayerBallStats(false); if (typeof refreshCompanionBalls === 'function') refreshCompanionBalls(); renderCompanionList(); saveGame();
