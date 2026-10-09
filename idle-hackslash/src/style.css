@@ -2231,9 +2231,9 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .su-parch { background: url(assets/img/ui/shop_ui.webp) 75.3846% 88.2105% / 388.8889% 1287.5000% no-repeat; }
 /* ショップ（アイテム）ページ：見本に合わせた看板・タブ・行 */
 .tab-page[data-tab="gemshop"] > .page-head { display: none; }
-.shop-hero { display: flex; align-items: center; gap: 4px; margin: -4px -4px 8px; }
-.shop-banner { position: relative; flex: 1.55 1 0; aspect-ratio: 533 / 148; }
-.shop-banner .sb-title { position: absolute; left: 49%; right: 5%; top: 50%; transform: translateY(-52%); text-align: center; white-space: nowrap; font-size: clamp(0.95rem, 5vw, 1.8rem); font-weight: 900; letter-spacing: 0.04em; color: #ffe08a; text-shadow: -1px -1px 0 #5a3206, 1px -1px 0 #5a3206, -1px 1px 0 #5a3206, 1px 1px 0 #5a3206, 0 3px 0 #7a4a10, 0 0 8px rgba(0,0,0,0.6); }
+.shop-hero { display: flex; justify-content: center; margin: -4px -4px 8px; }
+.shop-banner { position: relative; width: 100%; max-width: 340px; aspect-ratio: 533 / 148; }
+.shop-banner .sb-title { position: absolute; left: 49%; right: 5%; top: 50%; transform: translateY(-52%); text-align: center; white-space: nowrap; font-size: clamp(1.1rem, 6vw, 1.9rem); font-weight: 900; letter-spacing: 0.04em; color: #ffe08a; text-shadow: -1px -1px 0 #5a3206, 1px -1px 0 #5a3206, -1px 1px 0 #5a3206, 1px 1px 0 #5a3206, 0 3px 0 #7a4a10, 0 0 8px rgba(0,0,0,0.6); }
 .shop-gemplate { position: relative; flex: 1 1 0; aspect-ratio: 345 / 71; border: none; padding: 0; cursor: pointer; }
 .shop-gemplate span { position: absolute; left: 30%; right: 26%; top: 50%; transform: translateY(-50%); text-align: center; color: #fff; font-weight: 900; font-size: clamp(0.8rem, 3.6vw, 1.1rem); text-shadow: 0 1px 2px #000; }
 .shop-tabs .sub-tab-btn { background: url(assets/img/ui/shop_ui.webp) 80.7560% 32.2581% / 593.2203% 1030.0000% no-repeat !important; border: none !important; border-image: none !important; box-shadow: none !important; color: #fff !important; font-weight: 900; text-shadow: 0 1px 2px #000; min-height: 40px; }

@@ -228,7 +228,3 @@ function updateGoalChip() {
 }
 setInterval(() => { try { updateGoalChip(); } catch (e) { console.error(e); } }, 1000);
 
-// ---- ショップ上部のジェム枠（所持数・押すと課金タブへ） ----
-{ const plate = document.getElementById('shopGemPlate'), num = document.getElementById('shopGemCount');
-  if (plate) plate.addEventListener('click', () => showShopTab('charge'));
-  setInterval(() => { if (num && getActiveTab() === 'gemshop') { const t = Math.floor(game.gems || 0).toLocaleString('ja-JP'); if (num.textContent !== t) num.textContent = t; } }, 300); }
