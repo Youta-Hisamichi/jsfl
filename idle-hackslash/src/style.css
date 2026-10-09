@@ -2110,3 +2110,13 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 /* 買えない（ジェム不足）だけのアイテムはアイコンを灰色にしない（売り切れだけ灰色） */
 #shopList .shop-btn.is-disabled:not(.sold-out) .item-icon { filter: none; opacity: 1; }
 body.drag-scrolling, body.drag-scrolling * { user-select: none !important; cursor: grabbing !important; }
+/* 初ボス撃破のお祝い */
+.first-boss-gift { z-index: 9100; }
+.fbg-panel { max-width: 320px; text-align: center; animation: fbgPop 0.5s cubic-bezier(.2,.9,.3,1.3) both; }
+@keyframes fbgPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.fbg-title { font-size: 1.1rem; font-weight: 900; color: #ffd76b; text-shadow: 0 2px 0 #000; }
+.fbg-gem { font-size: 3.2rem; margin: 6px 0 2px; animation: sbfIcon 0.6s cubic-bezier(.2,.9,.3,1.6) 0.15s both; }
+.fbg-gem img { width: 64px !important; height: 64px !important; }
+.fbg-main { font-size: 1rem; font-weight: 900; color: #fff; }
+.fbg-main b { color: #9ff0ff; font-size: 1.2rem; }
+.fbg-note { margin: 10px 0 2px; font-size: 0.78rem; line-height: 1.6; color: #d8deee; text-align: left; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 10px; }

@@ -494,6 +494,7 @@ function onStageClear() {
     spawnDamageText(arena.x, arena.y - 60, `👑 激デカボス撃破！ 報酬×${GIANT_BOSS_REWARD_MULT}`, '#ffd76b', 0.01, true);
   }
   if (!isBossStage) maybeRotateNormalBgm(); // 自動再戦オフでループ中は、ときどき雑魚戦の曲を変えて飽きないように
+  if (isBossStage && game.stage === 10 && !game.skipChallenge && !game.firstBossGift) { game.firstBossGift = true; game.gems += 1; setTimeout(showFirstBossGift, 1800); } // 初ボス撃破のお祝いにジェム1個
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); dbgBgmOverride = null; nextNormalBgm(); if (!isBossFirstRound(game.stage)) nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
@@ -951,6 +952,13 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
+function showFirstBossGift() { // 初めてステージ10のボスを倒したときのお祝い
+  const ov = document.createElement('div'); ov.className = 'cl-overlay show first-boss-gift';
+  ov.innerHTML = `<div class="cl-panel fbg-panel"><div class="fbg-title">🎉 初ボス撃破おめでとう！</div><div class="fbg-gem">💎</div><div class="fbg-main">ジェムを <b>1個</b> プレゼント！</div><div class="fbg-note">ジェムは色々便利だよ！<br>・ショップでポーションや枠を買う<br>・採用ガチャで強い仲間を手に入れる<br>・進化で攻撃力・HPを伸ばす<br>・ガチャの結果を引き直す</div><button class="cl-close">ありがとう！</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove(); });
+  playRegisterSound(); updateStatsUI(); saveGame();
+}
 function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return d * d * 10; } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
 function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
 function completeReincarnation() {
