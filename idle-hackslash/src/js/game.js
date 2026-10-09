@@ -982,7 +982,7 @@ function reincarnateAfterAd() {
 let rebirthGemMult = 1;
 function showFirstBossGift() { // 初めてステージ10のボスを倒したときのお祝い
   const ov = document.createElement('div'); ov.className = 'cl-overlay show first-boss-gift';
-  ov.innerHTML = `<div class="cl-panel fbg-panel"><div class="fbg-title">🎉 初ボス撃破おめでとう！</div><div class="fbg-gem">💎</div><div class="fbg-main">ジェムを <b>1個</b> プレゼント！</div><div class="fbg-note">ジェムは色々便利だよ！<br>・ショップでポーションや枠を買う<br>・採用ガチャで強い仲間を手に入れる<br>・進化で攻撃力・HPを伸ばす<br>・ガチャの結果を引き直す</div><button class="cl-close">ありがとう！</button></div>`;
+  ov.innerHTML = `<div class="cl-panel fbg-panel"><div class="fbg-title">🎉 初ボス撃破おめでとう！</div><div class="fbg-gem">💎</div><div class="fbg-main">ジェムを <b>1個</b> プレゼント！</div><div class="fbg-note">ジェムは色々便利だよ！<br>・ショップでポーションや枠を買う<br>・ショップでレア仲間を採用する<br>・進化で攻撃力・HPを伸ばす<br>・ガチャの結果を引き直す</div><button class="cl-close">ありがとう！</button></div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove(); });
   playRegisterSound(); updateStatsUI(); saveGame();

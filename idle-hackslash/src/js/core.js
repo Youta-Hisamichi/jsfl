@@ -1025,12 +1025,7 @@ function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMEN
 const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
 function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
-// 採用ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）
-const CHAR_GACHA_COST = 5, CHAR_LV_BONUS = 0.25;
-const CHAR_GACHA_WEIGHTS = { common: 40, rare: 34, epic: 18, legendary: 6.5, mythic: 1.5 };
-function getCharLv(id) { const v = (game.charLv && game.charLv[id]) || 0; return Math.max(v, COMPANIONS[id] && COMPANIONS[id].rarity === 'common' ? 1 : 0); } // ★1は最初から獲得済み
-function isCharObtained(id) { return getCharLv(id) > 0; }
-function getCharLvMult(id) { return 1 + CHAR_LV_BONUS * Math.max(0, getCharLv(id) - 1); }
+function isCharObtained(id) { return !!COMPANIONS[id]; } // 採用ガチャは廃止：どのキャラも最初から採用・解雇できる
 function companionNeedsUnlock(id) { return false; } // 永続ショップ廃止：仲間は最初から全員召喚に出る（出したくない仲間は「解雇」で外す）
 function isCompanionUnlocked(id) { return !companionNeedsUnlock(id) || !!(game.companionUnlocks && game.companionUnlocks[id]); }
 COMPANION_IDS.filter(companionNeedsUnlock).forEach(id => {
