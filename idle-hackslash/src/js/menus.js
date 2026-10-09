@@ -1002,7 +1002,7 @@ function tickAutoPull() {
   thump(320, 760, 0.14, 0.04, 'triangle');
 }
 // タップ（連打）：自キャラが至近距離を切り払う。近くに敵がいれば実際に斬る
-const SLASH_RANGE = 40, SLASH_DMG = 0.5, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;
+const SLASH_RANGE = 40, SLASH_DMG = 0.8, SLASH_HALF = 1.75, SLASH_GAP_MS = 90, SLASH_FX_MS = 170;
 let slashFx = [], lastSlashAt = 0, slashSide = 1;
 function doTapSlash(auto = false) {
   const now = Date.now();
