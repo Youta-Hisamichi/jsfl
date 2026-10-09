@@ -1161,6 +1161,11 @@ const STAGE_SKIP_OPTIONS = [
   { skip: 500, cost: 120 },
   { skip: 1000, cost: 250 },
 ];
+const TOWER_COIN_KILLS_PER_STAGE = 1.2; // 試練の塔の固定ステージはコイン払い：今のステージの雑魚を（飛ばすステージ数×これ）体倒したくらいのコイン
+function getTowerCoinCost(opt) { return coinPrice(Math.max(1, Math.round(stageCoinRaw(game.stage) * computeBonuses().coinMult * opt.skip * TOWER_COIN_KILLS_PER_STAGE))); }
+function canPayTower(ch) { return ch.currency === 'coin' ? game.coins >= ch.cost : game.gems >= ch.cost; }
+function payTower(ch) { if (ch.currency === 'coin') spendCoins(ch.cost); else game.gems -= ch.cost; }
+function towerCostText(ch) { return ch.currency === 'coin' ? `${COIN_ICO}${formatCoinNumber(ch.cost)}` : `💎${ch.cost}`; }
 function getCustomSkipCost(distance) {
   const d = Math.max(0, distance);
   const pts = [[0, 0], ...STAGE_SKIP_OPTIONS.map(o => [o.skip, o.cost])];
@@ -1218,15 +1223,16 @@ function getSkipTargetStage(skip) {
 function renderStageSkipList() {
   updateCustomSkip();
   stageSkipGems.textContent = Math.floor(game.gems);
+  { const sc = document.getElementById('stageSkipCoins'); if (sc) sc.textContent = formatCoinNumber(Math.floor(game.coins)); }
   stageSkipOrigin.textContent = game.stage;
   document.getElementById('towerBestJump').textContent = game.bestTowerJump ? `+${game.bestTowerJump.toLocaleString('ja-JP')}ステージ` : 'まだ突破なし';
   stageSkipList.innerHTML = STAGE_SKIP_OPTIONS.map((opt, i) => {
     const target = getSkipTargetStage(opt.skip);
     const es = getEnemyStats(target);
-    const short = game.gems < opt.cost;
+    const cost = getTowerCoinCost(opt), short = game.coins < cost;
     const bossKey = BOSS_ENEMY_SPRITE[getStageBossEmoji(target)];
     const tier = ['bronze', 'silver', 'gold', 'orange', 'red'][i] || 'bronze'; // 遠い階ほど豪華な枠
-    return `<button class="tower-floor tf-${tier} ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span class="tf-main"><span class="tf-top"><span class="tf-no">${formatStageNumber(target)}F</span><span class="tf-name">👑 ステージ${formatStageNumber(target)}のボス</span></span><span class="tf-desc">+${formatStageNumber(target - game.stage)}ステージ先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span>${bossKey ? enemySpriteHtml(bossKey, 'tf-boss') : '<span class="tf-boss"></span>'}<span class="tf-cost">${xi('x_gem') || '💎'}${opt.cost}</span></button>`;
+    return `<button class="tower-floor tf-${tier} ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span class="tf-main"><span class="tf-top"><span class="tf-no">${formatStageNumber(target)}F</span><span class="tf-name">👑 ステージ${formatStageNumber(target)}のボス</span></span><span class="tf-desc">+${formatStageNumber(target - game.stage)}ステージ先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span>${bossKey ? enemySpriteHtml(bossKey, 'tf-boss') : '<span class="tf-boss"></span>'}<span class="tf-cost tf-coin">${COIN_ICO}${formatCoinNumber(cost)}</span></button>`;
   }).reverse().join('');
 }
 function spawnNextEnemy() {
@@ -1275,10 +1281,10 @@ function spawnBossWithWarning() {
   }, BOSS_WARNING_MS + 50);
 }
 function startSkipChallenge(challenge) {
-  const { target, cost } = challenge;
-  game.gems -= cost;
+  const { target, cost, currency } = challenge;
+  payTower(challenge);
   game.towerBgmNext = ((game.towerBgmNext || 0) + 1) % TOWER_BOSS_SONGS.length;
-  game.skipChallenge = { origin: game.stage, target, cost, bgm: game.towerBgmNext };
+  game.skipChallenge = { origin: game.stage, target, cost, currency: currency || 'gem', bgm: game.towerBgmNext };
   game.stage = target;
   playTowerStepsSound();
   meteors = []; adds = []; clearEnemyTraitObjects();
@@ -1299,10 +1305,10 @@ function failSkipChallenge() {
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
   playDeathSound();
-  const retryCost = cost || 0;
-  skipRetryText.innerHTML = `ステージ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持ジェム: 💎${Math.floor(game.gems)}）`;
-  skipRetryBtn.innerHTML = `<span class="msb-name">🔁 💎${retryCost} でリトライ</span>`;
-  skipRetryBtn.classList.toggle('is-disabled', game.gems < retryCost);
+  const ch = { cost: cost || 0, currency: game.skipChallenge.currency };
+  skipRetryText.innerHTML = `ステージ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持${ch.currency === 'coin' ? `コイン: ${COIN_ICO}${formatCoinNumber(Math.floor(game.coins))}` : `ジェム: 💎${Math.floor(game.gems)}`}）`;
+  skipRetryBtn.innerHTML = `<span class="msb-name">🔁 ${towerCostText(ch)} でリトライ</span>`;
+  skipRetryBtn.classList.toggle('is-disabled', !canPayTower(ch));
   skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて ステージ${origin} に戻る</span>`;
   skipRetryActions.style.visibility = 'hidden';
   const shownAt = skipRetryShownAt = Date.now();
@@ -1331,7 +1337,7 @@ function revivePlayerInPlace() {
 }
 function retrySkipChallenge() {
   const { target, cost } = game.skipChallenge;
-  game.gems -= cost || 0;
+  payTower({ cost: cost || 0, currency: game.skipChallenge.currency });
   game.skipChallenge.lost = false;
   skipRetryModal.classList.remove('show');
   revivePlayerInPlace();
@@ -1370,10 +1376,11 @@ stageSkipList.addEventListener('click', event => {
   const button = event.target.closest('[data-stage-skip]');
   if (!button) return;
   const opt = STAGE_SKIP_OPTIONS[Number(button.dataset.stageSkip)];
-  if (game.gems < opt.cost) { promptGemShortage(opt.cost, { returnTo: () => { switchTab('game'); renderStageSkipList(); stageSkipModal.classList.add('show'); } }); return; }
+  const cost = getTowerCoinCost(opt);
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
   if (game.skipChallenge || phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { stageSkipModal.classList.remove('show'); return; }
   stageSkipModal.classList.remove('show');
-  startSkipChallenge({ target: getSkipTargetStage(opt.skip), cost: opt.cost });
+  startSkipChallenge({ target: getSkipTargetStage(opt.skip), cost, currency: 'coin' });
 });
 
 const customSkipInput = document.getElementById('customSkipInput');
@@ -1434,7 +1441,8 @@ customSkipBtn.addEventListener('click', event => {
 stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
 skipRetryBtn.addEventListener('click', event => {
   if (!game.skipChallenge || !skipRetryButtonsReady()) return;
-  if (game.gems < (game.skipChallenge.cost || 0)) { promptGemShortage(game.skipChallenge.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
+  if (game.skipChallenge.currency === 'coin' ? game.coins < (game.skipChallenge.cost || 0) : false) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
+  if (game.skipChallenge.currency !== 'coin' && game.gems < (game.skipChallenge.cost || 0)) { promptGemShortage(game.skipChallenge.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
   retrySkipChallenge();
 });
 skipGiveUpBtn.addEventListener('click', () => {
