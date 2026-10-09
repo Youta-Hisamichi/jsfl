@@ -279,29 +279,6 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | s s s s ks - ks - s s s s ks ks ks ks | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | k - h k s - h - k k h - s - h h | s s s s ks - ks - s s s s ks ks ks ks'
   },
-  boss19: { // ボス18 鋼鉄の超人：堂々と行進するリズムと煌めく弦の分散和音に、大空へ飛び立つ英雄の旋律（アメコミヒーロー映画のテーマ系）
-    bpm: 264,
-    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.036, notes: 'D#5 = = = = = A#4 = D#5 = G5 = A#5 = = = | A#5 = = = G5 = = = D#5 = = = - - - - | C6 = = = = = G#5 = D#5 = = = C5 = = = | D#5 = = = G5 = = = A#5 = = = - - A#4 = | C5 = = = D#5 = = = G5 = = = C6 = = = | C6 = = = = = A#5 = G#5 = = = G5 = F5 = | F5 = = = A#5 = = = D6 = = = F6 = = = | F6 = = = = = = = = = = = - - - - | G6 = = = = = D#6 = A#5 = = = D#6 = = = | D6 = = = = = A#5 = G5 = = = A#5 = = = | C6 = = = = = G#5 = D#5 = = = G#5 = = = | A#5 = = = = = = = - - A#5 = C6 = D6 = | D#6 = = = = = = = A#5 = = = G5 = = = | G#5 = = = C6 = = = D#6 = = = G#6 = = = | G6 = = = F6 = = = D6 = = = A#5 = = = | D#6 = = = = = = = = = = = - - - -' },
-      { type: 'vrc6pulse12', gain: 0.015, notes: 'D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4 | D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4 | C4 D#4 G4 C5 G4 D#4 G4 D#4 C4 D#4 G4 C5 G4 D#4 G4 D#4 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | A#3 D4 F4 A#4 F4 D4 F4 D4 A#3 D4 F4 A#4 F4 D4 F4 D4 | A#3 D4 F4 A#4 F4 D4 F4 D4 A#3 D4 F4 A#4 F4 D4 F4 D4 | D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4 | G3 A#3 D4 G4 D4 A#3 D4 A#3 G3 A#3 D4 G4 D4 A#3 D4 A#3 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | A#3 D4 F4 A#4 F4 D4 F4 D4 A#3 D4 F4 A#4 F4 D4 F4 D4 | D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | A#3 D4 F4 A#4 F4 D4 F4 D4 A#3 D4 F4 A#4 F4 D4 F4 D4 | D#4 G4 A#4 D#5 A#4 G4 A#4 G4 D#4 G4 A#4 D#5 A#4 G4 A#4 G4' },
-      { type: 'vrc6saw', gain: 0.058, notes: 'D#2 = - - A#2 = - - D#3 = - - A#2 = - - | D#2 = - - A#2 = - - D#3 = - - A#2 = - - | G#1 = - - D#2 = - - G#2 = - - D#2 = - - | D#2 = - - A#2 = - - D#3 = - - A#2 = - - | C2 = - - G2 = - - C3 = - - G2 = - - | G#1 = - - D#2 = - - G#2 = - - D#2 = - - | A#1 = - - F2 = - - A#2 = - - F2 = - - | A#1 = - - F2 = - - A#2 = - - F2 = - - | D#2 = - - A#2 = - - D#3 = - - A#2 = - - | G1 = - - D2 = - - G2 = - - D2 = - - | G#1 = - - D#2 = - - G#2 = - - D#2 = - - | A#1 = - - F2 = - - A#2 = - - F2 = - - | D#2 = - - A#2 = - - D#3 = - - A#2 = - - | G#1 = - - D#2 = - - G#2 = - - D#2 = - - | A#1 = - - F2 = - - A#2 = - - F2 = - - | D#2 = - - A#2 = - - D#3 = - - A#2 = - -' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | s - s s s - s s ks - ks - ks ks ks ks | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | k - - - s - - - k - k - s - - - | s - s s s - s s ks - ks - ks ks ks ks'
-  },
-  boss20: { // ボス19 時空ドライブ：疾走する分散和音と弾むオクターブベースに、時を越えて駆け抜ける晴れやかな旋律（80年代タイムトラベル映画のテーマ系）
-    bpm: 176,
-    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.036, notes: 'G5 = = = C6 = = = | B5 = = = A5 = G5 = | A5 = = = E5 = = = | F5 = A5 = C6 = = = | E6 = = = D6 = C6 = | C6 = = = A5 = = = | B5 = = = D6 = G6 = | G6 = = = = = - - | E6 = = = C6 = A5 = | F6 = = = C6 = A5 = | G5 = = = C6 = E6 = | D6 = = = = = B5 = | C6 = = = D#6 = G#6 = | F6 = = = D6 = A#5 = | C6 = = = E6 = G6 = | E6 = = = C6 = = -' },
-      { type: 'vrc6pulse12', gain: 0.014, notes: 'C4 E4 G4 C5 G4 E4 G4 E4 | G3 B3 D4 G4 D4 B3 D4 B3 | A3 C4 E4 A4 E4 C4 E4 C4 | F4 A4 C5 F5 C5 A4 C5 A4 | C4 E4 G4 C5 G4 E4 G4 E4 | F4 A4 C5 F5 C5 A4 C5 A4 | G3 B3 D4 G4 D4 B3 D4 B3 | G3 B3 D4 G4 D4 B3 D4 B3 | A3 C4 E4 A4 E4 C4 E4 C4 | F4 A4 C5 F5 C5 A4 C5 A4 | C4 E4 G4 C5 G4 E4 G4 E4 | G3 B3 D4 G4 D4 B3 D4 B3 | G#3 C4 D#4 G#4 D#4 C4 D#4 C4 | A#3 D4 F4 A#4 F4 D4 F4 D4 | C4 E4 G4 C5 G4 E4 G4 E4 | C4 E4 G4 C5 G4 E4 G4 E4' },
-      { type: 'vrc6pulse12', gain: 0.009, notes: '- C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - G#4+C5+D#5 - G#4+C5+D#5 - G#4+C5+D#5 - G#4+C5+D#5 | - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4' },
-      { type: 'vrc6saw', gain: 0.056, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | B1 B2 B1 B2 B1 B2 B1 B2 | A1 A2 A1 A2 A1 A2 A1 A2 | F1 F2 F1 F2 F1 F2 F1 F2 | C2 C3 C2 C3 C2 C3 C2 C3 | F1 F2 F1 F2 F1 F2 F1 F2 | G1 G2 G1 G2 G1 G2 G1 G2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | F1 F2 F1 F2 F1 F2 F1 F2 | C2 C3 C2 C3 C2 C3 C2 C3 | G1 G2 G1 G2 G1 G2 G1 G2 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks s ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks s ks ks'
-  },
   boss21: { // ボス20 宿命の血統：熱く刻む8ビートとうなるベースに、宿命に立ち向かう激しくも気高い短調の旋律（熱血バトル漫画アニメのロックOP系）
     bpm: 184,
     echo: { time: 0.2, feedback: 0.22, wet: 0.15 },
@@ -723,7 +700,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss9', 'boss11', 'boss12', 'boss13', 'boss14', 'boss15', 'boss16', 'boss17', 'boss18', 'boss19', 'boss20', 'boss21'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss14', 'boss15', 'boss16', 'boss17', 'boss21'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 function shuffleBossBgm(avoidFirst) {
   bossBgmOrder = BOSS_BATTLE_SONGS.slice().sort(() => Math.random() - 0.5);
@@ -735,7 +712,7 @@ function nextBossBgm() {
   const prev = bossBgmOrder[bossBgmIndex];
   if (++bossBgmIndex >= bossBgmOrder.length) shuffleBossBgm(prev);
 }
-const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
+const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'boss9', 'boss18']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
 function resolveBgmType(type) {
   if (type === 'boss' && game.skipChallenge) return TOWER_BOSS_SONGS[(game.skipChallenge.bgm || 0) % TOWER_BOSS_SONGS.length];
   return type === 'normal' ? normalBgmOrder[normalBgmIndex] : type === 'boss' ? bossBgmOrder[bossBgmIndex] : type;
@@ -766,7 +743,6 @@ const BGM_INFO = [
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
   { key: 'boss5', name: 'ボス5 決戦', desc: '駆け上がる最終決戦の高揚感。ロ短調（FF系の作風）・BPM176' },
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
-  { key: 'boss9', name: 'ボス9 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
   { key: 'boss12', name: 'ボス11 決戦の旅路', desc: '駆け上がる弦の刻みとうなるベースに乗って、気高く劇的な旋律が挑みかかる。旅の果てに立ちはだかる強敵との決戦。VRC6風チップチューン。ト短調（HD-2D系RPGのボス戦の作風）・BPM176' },
   { key: 'boss13', name: 'ボス12 不屈の挑戦者', desc: '高らかに鳴るファンファーレと駆け上がる分散和音に乗って、何度倒れても立ち上がる不屈の旋律が頂上を目指す。VRC6風チップチューン。ニ長調（ボクシング映画のテーマの作風）・BPM200' },
@@ -774,14 +750,13 @@ const BGM_INFO = [
   { key: 'boss15', name: 'ボス14 逆転の大勝負', desc: 'せわしなく刻む弦の分散和音と突き上げるベースに乗って、重厚で劇的な旋律が一歩も引かずに立ち向かう。土壇場からの大逆転劇。VRC6風チップチューン。イ短調（企業ドラマの決戦テーマの作風）・BPM140' },
   { key: 'boss16', name: 'ボス15 戦闘民族の襲来', desc: 'せき立てる分散和音とうなるオクターブベースに乗って、荒々しい旋律が空から襲来した強敵と激突する。VRC6風チップチューン。ホ短調（ファミコンの格闘アニメRPGのボス戦の作風）・BPM190' },
   { key: 'boss17', name: 'ボス16 摩天楼の夜狩り', desc: '16分で脈打つシンセベースと切り込む和音に乗って、クールな旋律が夜の摩天楼を駆け抜ける。凄腕の始末屋の夜。VRC6風チップチューン。嬰ヘ短調（80年代シティ系アニメのシンセロックの作風）・BPM126' },
-  { key: 'boss18', name: 'ボス17 緊急配備', desc: '跳ねるファンクのベースと鋭いブラスの連打に乗って、緊迫の旋律が事件現場へ急行する。全署に緊急配備が敷かれた大捜査。VRC6風チップチューン。ト短調（刑事ドラマのアクションテーマの作風）・BPM144' },
-  { key: 'boss19', name: 'ボス18 鋼鉄の超人', desc: '堂々と行進するリズムと煌めく弦の分散和音に乗って、正義の英雄が大空へ飛び立つ高らかな旋律。VRC6風チップチューン。変ホ長調（アメコミヒーロー映画のテーマの作風）・BPM132' },
-  { key: 'boss20', name: 'ボス19 時空ドライブ', desc: '疾走する分散和音と弾むオクターブベースに乗って、晴れやかな旋律が時を越えて駆け抜ける。稲妻とともに未来へ飛ぶ大冒険。VRC6風チップチューン。ハ長調（80年代タイムトラベル映画のテーマの作風）・BPM176' },
   { key: 'boss21', name: 'ボス20 宿命の血統', desc: '熱く刻む8ビートとうなるベースに乗って、激しくも気高い旋律が宿命の敵へ立ち向かう。血統に刻まれた誇りの戦い。VRC6風チップチューン。イ短調（熱血バトル漫画アニメのロックOPの作風）・BPM184' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'tboss4', name: '試練の塔ボス4 悪夢の魔導王', desc: 'せわしなく渦巻く分散和音と半音ずれで忍び寄る不穏な和音の上を、狂おしく駆け回る旋律。夢を食らう魔導王との最終決戦。VRC6風チップチューン。ホ短調（ほのぼのアクションゲームのラスボス最終形態の作風）・BPM182' },
+  { key: 'boss9', name: '試練の塔ボス5 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
+  { key: 'boss18', name: '試練の塔ボス6 緊急配備', desc: '跳ねるファンクのベースと鋭いブラスの連打に乗って、緊迫の旋律が事件現場へ急行する。全署に緊急配備が敷かれた大捜査。VRC6風チップチューン。ト短調（刑事ドラマのアクションテーマの作風）・BPM144' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 出撃前の兵装選択', desc: 'シンコペーションの和音の刻みと疾走するベースに、勇ましい旋律が乗る、シューティングの装備選択画面のような出撃前の高揚感あふれる曲。VRC6風チップチューン。ホ短調・BPM152' },
