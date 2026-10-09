@@ -43,6 +43,18 @@ function step() {
     return;
   }
 
+  if (e.escaping) { // 倒しきれなかった雑魚が逃げていく（報酬なしで次の敵へ）
+    e.escaping = Math.max(0, e.escaping - speedMult);
+    e.radius = Math.max(1, e.radius * 0.9); e.y -= 3 * speedMult;
+    if (Math.random() < 0.5) spawnHitParticles(e.x + (Math.random() - 0.5) * 30, e.y + 10, '#cfcfcf');
+    movePlayerSideBalls(balls, speedMult, b); resolveAllyCollisions();
+    if (e.escaping <= 0) onStageClear(true);
+    return;
+  }
+  if (!e.isBoss && !e.spawnTimer && !game.skipChallenge && game.stage % 10 !== 0 && !filmMode) { // 雑魚はしばらく倒せないと逃げて、次の雑魚が出てくる
+    e.liveFrames = (e.liveFrames || 0) + speedMult;
+    if (e.liveFrames >= ENEMY_PASS_FRAMES) startEnemyEscape(e);
+  }
   let battleEnded = false;
   if (e.spawnTimer > 0) {
     e.spawnTimer = Math.max(0, e.spawnTimer - speedMult);
@@ -471,7 +483,14 @@ let statPausedPhase = null;
 document.getElementById('statModalCloseBtn').addEventListener('click', closeStatModal);
 statModal.addEventListener('click', event => { if (event.target === statModal) closeStatModal(); });
 
-function onStageClear() {
+const ENEMY_PASS_FRAMES = 60 * 15, ENEMY_ESCAPE_FRAMES = 36; // 雑魚がにげるまで約15秒・にげる演出の長さ
+function startEnemyEscape(e) {
+  e.escaping = ENEMY_ESCAPE_FRAMES; e.vx = e.vy = 0;
+  spawnDamageText(e.x, e.y - e.radius - 16, '💨 にげた！', '#e8e8e8', 0.012, true);
+  playTone(700, 0.18, 'square', 0.03, 1400);
+}
+function onStageClear(passed) {
+  if (passed) return advanceStage(true);
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
   const b = computeBonuses();
   const isBossStage = game.stage % 10 === 0;
@@ -507,6 +526,10 @@ function onStageClear() {
   ensureDailyClearReset();
   game.dailyClears++;
   resetCombo();
+  advanceStage(false, isBossStage);
+}
+function advanceStage(passed, isBossStage) {
+  if (passed) resetCombo();
   const wasTower = !!game.skipChallenge;
   const easyBossKill = isBossStage && !game.bossLoop && bossTimeLeftMs >= BOSS_TIME_LIMIT_MS - TOWER_SUGGEST_FAST_KILL_MS; // ボスをあっさり倒した
   if (game.skipChallenge) {

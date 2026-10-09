@@ -1769,7 +1769,7 @@ function resolveAllyCollisions() {
   }
 }
 // 棺桶：倒れた順に1列につながって、主人公（または前の棺桶）からロープで引っぱられる
-const COFFIN_ROPE = 40;
+const COFFIN_ROPE = 32;
 function coffinLeader(ball, pl) {
   const dead = balls.filter(x => x.isCompanion && x.hp <= 0).sort((a, b) => (a.coffinAt || 0) - (b.coffinAt || 0));
   const i = dead.indexOf(ball);
