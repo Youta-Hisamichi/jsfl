@@ -205,7 +205,7 @@ let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
   const status = isCompLocked(id) ? '📜 採用前：ショップの「仲間」タブで採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
-  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
+  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
 }
 function openCompInfo(id) {
   let ov = document.getElementById('compInfoOverlay');
@@ -253,13 +253,13 @@ function renderCompanionList() {
     const maxLv = getCompanionMaxLevels(id).count;
     const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
     const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
-    return `<div class="companion-card recruited cc-side-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name">${sw ? `勇者<small class="cc-swap">（${c.name}と交代中）</small>` : c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-cost">次のLv ${COIN_ICO} ${formatCoinNumber(cost)}</div></div><div class="cc-level-row cc-side"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>+1</b><span>Lv.UP</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button></div></div>`;
+    return `<div class="companion-card recruited cc-side-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name">${sw ? `勇者<small class="cc-swap">（${c.name}と交代中）</small>` : c.name}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-cost">次のLv ${COIN_ICO} ${formatCoinNumber(cost)}</div></div><div class="cc-level-row cc-side"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>+1</b><span>Lv.UP</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button></div></div>`;
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
     return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span>${elemBadge(COMPANION_ELEMENT[id], 'el-tile')}<span class="cp-tile-lock">${isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
-  companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
+  companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
@@ -377,7 +377,7 @@ function getPlayerAtk() {
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル（取得したら転生まで常時発動）
-  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult())));
+  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1))));
 }
 function getPlayerMaxHP() {
   const b = computeBonuses();

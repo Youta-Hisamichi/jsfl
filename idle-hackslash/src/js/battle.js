@@ -1617,6 +1617,7 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
+  { const capped = awayMs >= IDLE_REWARD_MAX_MS, hrs = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 3600000; chips.push({ special: capped, html: `⏳ 放置報酬 ${hrs.toFixed(1)}時間ぶん / 最大${IDLE_REWARD_MAX_MS / 3600000}時間${capped ? '（上限！こまめに戻ろう）' : ''}` }); }
   if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ ${COIN_ICO} +${formatCoinNumber(idleCoins)}` });
   if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
@@ -1651,6 +1652,7 @@ loginBonusCloseBtn.addEventListener('click', () => {
   if (loginBonusCloseBtn.disabled || loginGachaSkip) return;
   loginAdReward = null;
   loginBonusModal.classList.remove('show');
+  if (typeof spawnCoinDrop === 'function' && typeof arena !== 'undefined') { spawnCoinDrop(arena.x, arena.y, 0, 14); for (let i = 0; i < 10; i++) setTimeout(() => playCoinChime(i), 300 + i * 45); } // 受け取り演出：コインがはじけて飛び出す
 });
 // 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを1個もらえる（ジェムはここでしか手に入らない）
 const LOGIN_AD_MULT = 3, LOGIN_AD_GEMS = 1;

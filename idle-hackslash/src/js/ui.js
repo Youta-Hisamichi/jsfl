@@ -1155,11 +1155,12 @@ const HIRE_STAGE_STEPS = [30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 70
 const MYTHIC_HIRE_STAGE = 3000; // ★5の到達ステージ条件
 const HIRE_STAGE_OVERRIDE = { pegasus: 2500, king: 5000, archangel: 10000, bahamut: 20000 }; // 個別の到達ステージ条件
 function hireStageNeed(id) { if (HIRE_STAGE_OVERRIDE[id]) return HIRE_STAGE_OVERRIDE[id]; if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_STAGE; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : HIRE_STAGE_STEPS[Math.min(i, HIRE_STAGE_STEPS.length - 1)]; }
-function isHireUnlocked(id) { return (game.reincarnations || 0) >= hireRebirthNeed(id) && (game.bestStage || 1) >= hireStageNeed(id); } // 転生回数と最高到達ステージの両方
+function isHireUnlocked(id) { return !!(game.ticketUnlocked && game.ticketUnlocked[id]) || (game.reincarnations || 0) >= hireRebirthNeed(id) && (game.bestStage || 1) >= hireStageNeed(id); } // 転生回数と最高到達ステージの両方
 function hireNeedText(id) { const r = (game.reincarnations || 0) >= hireRebirthNeed(id), s = (game.bestStage || 1) >= hireStageNeed(id); return [r ? '' : `転生${hireRebirthNeed(id)}回`, s ? '' : `ステージ${formatStageNumber(hireStageNeed(id))}到達`].filter(Boolean).join('＋'); }
 function onCompLockClick(ev) {
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
   const id = b.dataset.clToggle, locking = !isCompLocked(id);
+  if (!locking && !isHireUnlocked(id) && typeof useHireTicket === 'function' && RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary') && useHireTicket(id)) return; // ★4・★5はピックアップ採用券で解放できる
   if (!locking && !isHireUnlocked(id)) { showTapError(`🔒 ${hireNeedText(id)}で採用できます`, ev.clientX, ev.clientY); return; }
   if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
   const cost = compLockCost(id);
@@ -2059,7 +2060,7 @@ function doSelfRebirth(mult) {
     bossContModal.classList.remove('show'); document.getElementById('bossFinalPanel').classList.remove('show');
     phase = 'battle';
   }
-  if (phase !== 'battle' || game.stage < 3) return;
+  if (phase !== 'battle' || (game.stage < 3 && !game.dbgRebornAlways)) return;
   rebirthGemMult = mult;
   onPlayerDeath(true);
 }

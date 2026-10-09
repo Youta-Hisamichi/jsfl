@@ -489,9 +489,13 @@ function startEnemyEscape(e) {
   spawnDamageText(e.x, e.y - e.radius - 16, '💨 にげた！', '#e8e8e8', 0.012, true);
   playTone(700, 0.18, 'square', 0.03, 1400);
 }
-const EARLY_KILL_CHEST_CHANCE = 0.08;
+const EARLY_KILL_CHEST_CHANCE = 0.08, ESCAPE_COIN_RATE = 0.3;
 function onStageClear(passed) {
-  if (passed) return advanceStage(true);
+  if (passed) { // 逃げられても撃破の30%のコインは入る
+    const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * ESCAPE_COIN_RATE)); game.coins += c;
+    spawnDamageText(arena.x, arena.y - 20, `+${formatCoinNumber(c)} 🟡`, '#ffd76b', 0.016, true);
+    return advanceStage(true);
+  }
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
   const b = computeBonuses();
   const isBossStage = game.stage % 10 === 0;
@@ -524,6 +528,7 @@ function onStageClear(passed) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
   game.totalKills++;
+  if (typeof featureOnKill === 'function') featureOnKill(isBossStage);
   checkPowerUp(isBossStage);
   ensureDailyClearReset();
   game.dailyClears++;

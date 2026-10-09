@@ -698,7 +698,7 @@ const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下�
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
 function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
-function getCompanionPower(id) { return 1 + COMPANION_AWAKEN_BONUS * getCompanionAwaken(id); }
+function getCompanionPower(id) { return (1 + COMPANION_AWAKEN_BONUS * getCompanionAwaken(id)) * (typeof bondMult === 'function' ? bondMult(id) : 1); } // 覚醒と絆レベルで強くなる
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const c = COMPANIONS[id];
@@ -1153,6 +1153,7 @@ function dashDmgMult(ball) {
   if (ball && isMainPlayerBall(ball)) { // ダメージを出すたびに溜めを使い切る
     const w = heroWaitMult(ball); ball.lastAtkAt = Date.now(); m *= w;
     if (w >= HERO_WAIT_MAX && typeof obFlag === 'function') obFlag('chargeMax');
+    if (w >= HERO_WAIT_MAX && typeof heroSignature === 'function') m *= heroSignature(ball); // 自キャラの専用技
     if (w >= 2) spawnDamageText(ball.x, ball.y - ball.radius - 30, `溜め ×${w.toFixed(1)}！`, w >= HERO_WAIT_MAX ? '#ff5c6c' : '#ffb35c', 0.022, w >= HERO_WAIT_MAX);
   }
   return m;
