@@ -267,13 +267,16 @@ function updateRewardAdButtons() {
   const remaining = getRewardAdRemaining();
   document.querySelectorAll('[data-reward-ad]').forEach(btn => {
     btn.classList.toggle('cooling', remaining > 0);
+    if (remaining > 0) btn.classList.remove('ad-art-btn');
     if (remaining > 0) {
       const sec = Math.ceil(remaining / 1000);
       btn.dataset.html = '';
       btn.textContent = `🎬 次の動画まで ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
     } else {
-      const adHtml = isAdFree() ? `${xi('x_present')} 広告なしで ${xi('x_gem')}${REWARD_AD_GEMS} GET` : `🎬 動画を見て ${xi('x_gem')}${REWARD_AD_GEMS} GET`;
+      const art = !isAdFree() && REWARD_AD_GEMS === 5; // 「動画を見て💎5 GET」の絵のボタン
+      const adHtml = isAdFree() ? `${xi('x_present')} 広告なしで ${xi('x_gem')}${REWARD_AD_GEMS} GET` : art ? '<img class="ad-art" src="assets/img/ui/ad_gem5.webp" alt="動画を見て ジェム5 GET">' : `🎬 動画を見て ${xi('x_gem')}${REWARD_AD_GEMS} GET`;
       if (btn.dataset.html !== adHtml) { btn.innerHTML = adHtml; btn.dataset.html = adHtml; }
+      btn.classList.toggle('ad-art-btn', art);
     }
   });
 }
