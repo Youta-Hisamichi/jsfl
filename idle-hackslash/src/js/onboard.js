@@ -111,3 +111,45 @@ function bossAdviceHtml(reason, short) {
 
 setInterval(() => { try { updateTabLocks(); updateMission(); } catch (e) { console.error(e); } }, 500);
 updateTabLocks(); updateMission();
+
+// ---- 転生・試練の塔の解放ダイアログ ----
+const FEATURE_UNLOCKS = {
+  tower: { ok: () => isTowerUnlocked(), img: 'assets/img/ui/bar/btn_tower.webp', title: '🏰 試練の塔が解放！', body: [
+    'ジェムを払って、<b>先のステージのボス</b>にいきなり挑戦できます。',
+    '勝てばそのステージまで<b>一気にワープ</b>！ 飛ばしたステージが多いほど良い<b>遺物</b>がもらえます。',
+    '負けても元のステージに戻るだけなので、気軽に挑戦しよう。',
+    '画面下の「試練の塔」ボタンから挑戦できます。'] },
+  reborn: { ok: () => isRebornUnlocked(), img: 'assets/img/ui/bar/btn_reborn.webp', title: '🌌 転生が解放！', body: [
+    'ステージ1からやり直す代わりに、<b>ずっと強くなる報酬</b>がもらえます。',
+    '・<b>転生Lv</b>アップ（深く進むほど多く上がる）<br>・<b>ジェム</b>と<b>進化の羽</b>（ステージの桁数×桁数×10枚）',
+    'ボスに勝てなくなって行き詰まったら、転生して一気に駆け上がろう。',
+    '画面下の「転生」ボタンから転生できます。'] },
+};
+const featureUnlockQueue = [];
+function updateFeatureUnlocks() {
+  const first = !game.featureUnlockSeen;
+  if (first) game.featureUnlockSeen = {};
+  for (const key in FEATURE_UNLOCKS) {
+    if (game.featureUnlockSeen[key] || !FEATURE_UNLOCKS[key].ok()) continue;
+    game.featureUnlockSeen[key] = true;
+    if (!first && !(game.reincarnations > 0)) featureUnlockQueue.push(key); // 昔のセーブ・転生済みなら黙って開く
+  }
+  if (!featureUnlockQueue.length || getActiveTab() !== 'game' || phase !== 'battle' || document.querySelector('.modal-overlay.show')) return; // ほかのダイアログやゲームオーバー中は待つ
+  showFeatureUnlock(featureUnlockQueue.shift()); saveGame();
+}
+function showFeatureUnlock(key) {
+  const f = FEATURE_UNLOCKS[key];
+  let ov = document.getElementById('featureUnlockModal');
+  if (!ov) {
+    ov = document.createElement('div'); ov.className = 'modal-overlay'; ov.id = 'featureUnlockModal'; ov.style.zIndex = 73;
+    ov.innerHTML = '<div class="modal-panel fu-panel"><div class="fu-new">NEW!</div><img class="fu-img" alt=""><h2 class="fu-title"></h2><div class="fu-body"></div><button class="modal-close-btn fu-ok">OK</button></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('.fu-ok').addEventListener('click', () => { ov.classList.remove('show'); if (typeof refreshBgm === 'function') refreshBgm(); });
+  }
+  ov.querySelector('.fu-img').src = f.img;
+  ov.querySelector('.fu-title').textContent = f.title;
+  ov.querySelector('.fu-body').innerHTML = f.body.map(t => `<p>${t}</p>`).join('');
+  ov.classList.add('show');
+  playTone(784, 0.12, 'square', 0.05, 1175); setTimeout(() => playTone(1568, 0.25, 'square', 0.05, 2093), 140);
+}
+setInterval(() => { try { updateFeatureUnlocks(); } catch (e) { console.error(e); } }, 700);

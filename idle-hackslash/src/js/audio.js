@@ -761,9 +761,9 @@ let rebirthFlow = false;      // 転生演出〜転生ショップを閉じる�
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
 function updateSkipBtnVisibility() {
   const hide = gameOverBgm || rebirthFlow;
-  stageSkipBtn.style.display = hide ? 'none' : '';
+  stageSkipBtn.style.display = hide || !isTowerUnlocked() ? 'none' : '';
   if (hide) rebornBtn.style.display = 'none'; // 転生するボタンもゲームオーバー・転生中は出さない
-  else rebornBtn.style.display = game.stage >= 3 ? 'block' : 'none';
+  else rebornBtn.style.display = game.stage >= 3 && isRebornUnlocked() ? 'block' : 'none';
   document.body.classList.toggle('gameover-lock', gameOverBgm);
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
 }

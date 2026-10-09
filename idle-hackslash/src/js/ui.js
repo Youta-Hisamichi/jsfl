@@ -2054,8 +2054,8 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
 rebornBtn.addEventListener('click', event => {
-  if (bossContModal.classList.contains('show') && game.stage >= 3) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
-  if (phase === 'battle' && game.stage >= 3) openRebornConfirm(null);
+  if (bossContModal.classList.contains('show') && game.stage >= 3 && isRebornUnlocked()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
+  if (phase === 'battle' && game.stage >= 3 && isRebornUnlocked()) openRebornConfirm(null);
   else showTapError('ステージ3から転生できます', event.clientX, event.clientY);
 });
 

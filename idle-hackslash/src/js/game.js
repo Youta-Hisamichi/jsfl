@@ -703,7 +703,7 @@ function showBossContModal(reason) {
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
-  document.getElementById('bossContRebornBtn').style.display = game.stage >= GAMEOVER_REBORN_STAGE ? '' : 'none'; // ステージ100以上なら転生も選べる
+  document.getElementById('bossContRebornBtn').style.display = game.stage >= GAMEOVER_REBORN_STAGE && isRebornUnlocked() ? '' : 'none'; // ステージ100以上なら転生も選べる
   bossContModal.classList.add('show'); refreshBgm();
   startBossContCountdown();
 }
@@ -720,7 +720,7 @@ function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明�
   const pl = balls.find(isMainPlayerBall), boss = balls.find(b => !b.isPlayer && b.isBoss);
   if (pl) knockoutFx = { ball: pl, start: performance.now(), dir: boss ? (pl.x >= boss.x ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1) };
   setTimeout(() => {
-    if (game.stage >= GAMEOVER_REBORN_STAGE) { // コンテニューしても負けた：転生するか確認（他のページを見ているときは戻ってから）
+    if (game.stage >= GAMEOVER_REBORN_STAGE && isRebornUnlocked()) { // コンテニューしても負けた：転生するか確認（他のページを見ているときは戻ってから）
       if (getActiveTab() !== 'game') deferredGameOver = { kind: 'final', reason }; else openRebornConfirm({ from: 'final', reason });
       return;
     }
@@ -1189,7 +1189,7 @@ function findRecommendedTowerStage() {
 }
 function maybeSuggestTower() {
   if (game.skipChallenge || game.bossLoop || isBossFight() || phase !== 'battle' || getActiveTab() !== 'game' || userPaused) return;
-  if (game.stage % 10 === 0 || game.stage < (game.towerSuggestNext || 0)) return;
+  if (game.stage % 10 === 0 || game.stage < (game.towerSuggestNext || 0) || !isTowerUnlocked()) return;
   if (document.querySelector('.modal-overlay.show')) return; // 他のダイアログ中は出さない
   const target = findRecommendedTowerStage(); if (!target) return;
   game.towerSuggestNext = game.stage + TOWER_SUGGEST_COOLDOWN_STAGES;

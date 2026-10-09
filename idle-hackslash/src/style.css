@@ -2145,3 +2145,10 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .boss-advice b { color: #ffd76b; }
 .ba-final .boss-advice { font-size: 0.72rem; margin-top: 4px; }
 .tab-btn.tab-locked::after { display: none; }
+.fu-panel { position: relative; text-align: center; max-width: 340px; }
+.fu-new { display: inline-block; padding: 2px 12px; border-radius: 10px; background: #ff4f6d; color: #fff; font-weight: 900; font-size: 0.85rem; animation: tabDot 0.6s ease-in-out infinite alternate; }
+.fu-img { display: block; height: 64px; margin: 8px auto 4px; object-fit: contain; }
+.fu-title { margin: 4px 0 8px; color: #ffb92e; }
+.fu-body { text-align: left; font-size: 0.85rem; line-height: 1.6; }
+.fu-body p { margin: 0 0 7px; }
+.fu-body b { color: #e07b00; }
