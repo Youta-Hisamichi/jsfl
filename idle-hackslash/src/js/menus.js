@@ -146,7 +146,23 @@ function getCompanionLevelCost(id) {
   const c = COMPANIONS[id];
   return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
 }
-let compInfoId = null; // 未入手の仲間で詳しく表示中のもの
+let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
+function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
+  const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
+  const status = isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間召喚に出ます' : '🐾 仲間召喚で入手できます';
+  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
+}
+function openCompInfo(id) {
+  let ov = document.getElementById('compInfoOverlay');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'compInfoOverlay'; ov.className = 'cl-overlay ci-overlay';
+    ov.innerHTML = '<div class="cl-panel ci-panel"><div class="ci-body"></div><button class="cl-close">閉じる</button></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.classList.remove('show'); });
+  }
+  ov.querySelector('.ci-body').innerHTML = compInfoHtml(id);
+  ov.classList.add('show');
+}
 function renderCompanionList() {
   if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
   if (!game.companionBook) game.companionBook = {};
@@ -184,14 +200,10 @@ function renderCompanionList() {
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
-    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${isCompanionUnlocked(id) ? '召喚で入手' : '🔒 未開放'}</span></button>`;
+    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${isCompLocked(id) ? '📜 採用前' : '召喚で入手'}</span></button>`;
   }).join('');
-  const info = compInfoId && COMPANIONS[compInfoId] && !game.companions.recruited[compInfoId] ? (() => {
-    const c = COMPANIONS[compInfoId], rar = RARITY_INFO[c.rarity];
-    return `<div class="cp-info ${isCompanionUnlocked(compInfoId) ? '' : 'sealed'} ${game.companionBook && game.companionBook[compInfoId] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(compInfoId)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${isCompanionUnlocked(compInfoId) ? '🔒 未入手：仲間召喚で入手できます' : `🔒 未開放：ショップで開放（💎${COMPANION_UNLOCK_COST[c.rarity]}）`}</div></div>`;
-  })() : '';
   companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「仲間召喚」で仲間を呼びましょう！</div>`)
-    + (others.length ? `<div class="cp-sec">📖 未入手の仲間 <b>${others.length}</b><small>タップで詳しく</small></div>${info}<div class="cp-grid">${othersHtml}</div>` : '');
+    + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b><small>タップで詳しく</small></div><div class="cp-grid">${othersHtml}</div>` : '');
 }
 
 const COMP_GACHA_BASE_COST = 200, COMP_GACHA_COST_GROWTH = 1.1;

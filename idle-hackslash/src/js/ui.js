@@ -1156,7 +1156,7 @@ function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。★3以上は最初は解雇中です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">📜 解雇・採用の手続き</div><div class="cl-note">解雇した仲間は仲間召喚に出なくなります。★3以上は最初は採用前です。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -1170,7 +1170,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
   const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
-    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>解雇中</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
+    return `<div class="cl-row ${off ? 'off' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}</b><small>${rarityStars(c.rarity)} ${off ? '<em>採用前</em>' : '採用中'}</small></span><button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button></div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
@@ -1777,7 +1777,7 @@ evolutionList.addEventListener('click', event => {
 
 companionList.addEventListener('click', event => {
   const infoTile = event.target.closest('[data-comp-info]');
-  if (infoTile) { compInfoId = compInfoId === infoTile.dataset.compInfo ? null : infoTile.dataset.compInfo; renderCompanionList(); return; }
+  if (infoTile) { openCompInfo(infoTile.dataset.compInfo); return; }
   const maxBtn = event.target.closest('[data-companion-level-max], [data-companion-level-pct]');
   if (maxBtn) {
     const isPct = maxBtn.dataset.companionLevelPct !== undefined;

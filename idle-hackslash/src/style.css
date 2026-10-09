@@ -2036,3 +2036,12 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 #shopCharaSec .cl-note { color: var(--text-dim); text-align: left; margin: 0 0 4px; }
 #shopCharaSec .cl-gems { color: #1a7fb0; }
 #shopCharaSec .cl-row { background: var(--bg-soft); color: var(--text); }
+/* 待機中の仲間の詳細ダイアログ */
+.ci-panel { max-width: 360px; }
+.ci-panel .cp-info { margin: 0; color: var(--text); font-size: 0.8rem; }
+.ci-panel .cp-info-head { display: flex; align-items: center; gap: 10px; }
+.ci-panel .cp-info-head b { display: block; font-size: 1.15rem; font-weight: 900; color: var(--text); }
+.ci-panel .cp-info-head span { font-size: 0.78rem; font-weight: 900; }
+.ci-panel .cp-info-head .comp-sprite { width: 84px !important; height: 84px !important; }
+.ci-panel .cc-trait { font-size: 0.78rem !important; }
+.ci-panel .cp-info-lock { margin-top: 6px; font-weight: 800; }
