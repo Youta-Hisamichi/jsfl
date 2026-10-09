@@ -167,10 +167,10 @@ canvas.addEventListener('pointerup', event => {
   if (!s || s.id !== event.pointerId || Date.now() - s.t > 400 || Math.hypot(event.clientX - s.x, event.clientY - s.y) > 12) return; // 短いタップだけ（引っ張り・ドラッグは対象外）
   const rect = canvas.getBoundingClientRect();
   const x = (event.clientX - rect.left) * (size / rect.width), y = (event.clientY - rect.top) * ((sizeH || size) / rect.height);
-  const foes = [...balls, ...adds].filter(e => !e.isPlayer && !e.isDying && e.hp > 0 && !(e.spawnTimer > 0));
+  const foes = [...balls, ...adds].filter(e => (e.isPlayer ? !e.isClone : !e.isDying && e.hp > 0 && !(e.spawnTimer > 0))); // 味方（自キャラ・仲間）も対象
   let best = null, bd = Infinity;
   for (const e of foes) { const d = Math.hypot(e.x - x, e.y - y); if (d < (e.radius || 12) * 1.4 + 10 && d < bd) { best = e; bd = d; } }
-  if (best) showEnemyInfo(best);
+  if (best) (best.isPlayer ? showAllyInfo(best) : showEnemyInfo(best));
 });
 function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重ねて出す（戦場をふさがない）
   const host = document.querySelector('.exp-wrap'); if (!host) return;
@@ -228,3 +228,25 @@ function updateGoalChip() {
 }
 setInterval(() => { try { updateGoalChip(); } catch (e) { console.error(e); } }, 1000);
 
+
+// ---- 味方（自キャラ・仲間）をタップしたときの情報 ----
+function showAllyInfo(b) {
+  const host = document.querySelector('.exp-wrap'); if (!host) return;
+  let el = document.getElementById('enemyInfoPop');
+  if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; host.appendChild(el); }
+  const isMain = isMainPlayerBall(b), cid = b.companionId;
+  const hero = getHeroChar(), swapped = !isMain && cid && cid === hero; // 自キャラと交代した仲間の枠は勇者が入る
+  const id = isMain ? hero : swapped ? null : cid;
+  const name = id ? COMPANIONS[id].name : '勇者';
+  const elem = isMain ? getHeroElement() : swapped ? null : (typeof compElement === 'function' ? compElement(cid) : COMPANION_ELEMENT[cid]);
+  const weakTo = elem ? ELEMENT_BEATS[ELEMENT_BEATS[elem]] : null; // 自分が不利になる相手の属性
+  const role = isMain ? '自キャラ' : '仲間';
+  const lv = !isMain && cid && game.companions.level ? `Lv.${(game.companions.level[cid] || 0) + 1}　` : '';
+  const info = isMain && typeof heroTypeInfo === 'function' ? heroTypeInfo(hero) : null;
+  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : '⚖️ バランス（属性の不利なし）') : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
+  el.innerHTML = `<div class="eip-name eip-ally">${isMain ? '⭐ ' : '🐾 '}${name}<small>${role}　${lv}HP ${formatCoinNumber(Math.ceil(Math.max(0, b.hp)))}/${formatCoinNumber(Math.ceil(b.maxHp || b.hp))}　攻撃 ${formatCoinNumber(Math.round(b.atk || 0))}</small></div>`
+    + `<div class="eip-row">属性 ${elem ? elemBadge(elem) : '<span class="el-badge el-none">なし</span>'}${elem ? `　有利 ${elemBadge(ELEMENT_BEATS[elem])}　苦手 ${elemBadge(weakTo)}` : ''}</div>`
+    + (typeTxt ? `<div class="eip-row eip-sub">${typeTxt}</div>` : '');
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
+}

@@ -2309,3 +2309,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .cl-list .cl-row.hire-locked .cl-ico img { filter: brightness(0) drop-shadow(0 0 2px rgba(150,170,255,0.6)) !important; }
 /* スキル列の赤ポーションはショップと同じ絵 */
 #redPotionBtn .ico-redpot, .ico-redpot { background: url(assets/img/ui/shop_ui.webp) 64.9007% 55.2496% / 729.1667% 705.2083% no-repeat !important; }
+.enemy-info-pop .eip-ally { color: #9fe0ff; }
+.enemy-info-pop .eip-sub { font-size: 0.64rem; color: #d8d2c4; overflow: hidden; text-overflow: ellipsis; }
+.enemy-info-pop { inset: 2px 4px auto !important; min-height: calc(100% - 4px); line-height: 1.3 !important; }
