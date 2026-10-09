@@ -13,7 +13,8 @@ function step() {
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   updateExpGems(speedMult);
-  a.atk = getPlayerAtk(); // 加速中ボーナス等を毎フレーム反映
+  const foeEl = getFoeElement(); syncElementAtk(foeEl);
+  a.atk = Math.max(1, Math.round(getPlayerAtk() * elementMult(getHeroElement(), foeEl))); // 加速中ボーナス等を毎フレーム反映（自キャラの属性の相性込み）
   a.inPinch = b.pinchAtk > 0 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
   if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk)));
   const e = balls.find(ball => !ball.isPlayer);
@@ -408,7 +409,7 @@ function updateHPUI() {
   const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
   const enTrait = getEnemyTrait(en);
   const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
-  enemyName.innerHTML = `<span class="en-ico">${enIcon}</span>${enName}${en.isBoss && game.skipChallenge ? '（試練の塔）' : ''}` + traitTag; // 敵のアイコンはHPゲージの左に大きく出す（ボスも同じ）
+  enemyName.innerHTML = `<span class="en-ico">${enIcon}</span>${elemBadge(getEnemyElement(en), 'el-sm')}${enName}${en.isBoss && game.skipChallenge ? '（試練の塔）' : ''}` + traitTag; // 敵のアイコンはHPゲージの左に大きく出す（ボスも同じ）
   renderEnemyTraitBadge(en, enTrait);
 }
 // ステージ右上に、今の敵の特徴をアイコン＋短い文字で小さく表示
@@ -1893,8 +1894,8 @@ function drawBall(ball) {
   }
 
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
-    const sz = ball.radius * 2.9;
-    drawFacingSprite(playerSpriteImg, ball, 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
+    const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
+    drawFacingSprite(playerSpriteImg, ball, hc || 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
   }
 
   if (ball.isCompanion) {

@@ -1175,7 +1175,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
     const got = isCharObtained(id), lv = getCharLv(id);
     const btn = !got ? `<button class="cl-btn notyet" data-cl-toggle="${id}">獲得前<span>ガチャで獲得</span></button>`
       : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}">${off ? '採用する' : '解雇する'}<span>💎${compLockCost(id)}</span></button>`;
-    return `<div class="cl-row ${off ? 'off' : ''} ${got ? '' : 'notyet'}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}${got ? `<i class="cl-lv">獲得Lv.${lv}</i>` : ''}</b><small>${rarityStars(c.rarity)} ${!got ? '<em>獲得前</em>' : off ? '<em>採用前</em>' : '採用中'}${lv > 1 ? `　攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%` : ''}</small></span>${btn}</div>`;
+    return `<div class="cl-row ${off ? 'off' : ''} ${got ? '' : 'notyet'}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b>${c.name}${got ? `<i class="cl-lv">獲得Lv.${lv}</i>` : ''}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${!got ? '<em>獲得前</em>' : off ? '<em>採用前</em>' : '採用中'}${lv > 1 ? `　攻撃力・HP +${Math.round((getCharLvMult(id) - 1) * 100)}%` : ''}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
@@ -1215,6 +1215,8 @@ function showShopTab(key) {
 }
 document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
 { let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'chara', 'charge'].includes(first) ? first : 'item'); }
+document.getElementById('myCharCard').addEventListener('click', openMyCharPicker);
+applyHeroChar();
 document.getElementById('compLockBtn').addEventListener('click', () => { // 仲間ページから、ショップの採用ガチャ（仲間タブ）へ
   switchTab('gemshop'); showShopTab('chara');
   const t = document.querySelector('.shop-tabs'); if (t) { t.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); }

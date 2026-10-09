@@ -146,11 +146,47 @@ function getCompanionLevelCost(id) {
   const c = COMPANIONS[id];
   return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
 }
+// 自キャラ：勇者か、獲得済みの仲間から選ぶ（見た目と属性が変わる）
+function renderMyCharCard() {
+  const el = document.getElementById('myCharCard'); if (!el) return;
+  const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
+  const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
+  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span><span class="mc-go">変更 ▶</span>`;
+}
+function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
+  const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
+  if (playerSpriteImg.src !== new URL(src, location.href).href) playerSpriteImg.src = src;
+  const flip = id && (SPRITE_FACING[id] || 0) < 0 ? 'scaleX(-1)' : '';
+  for (const im of [stagePlayerMark, document.getElementById('playerHpIco')]) { if (!im) continue; im.src = src; im.style.transform = flip; }
+  renderMyCharCard();
+}
+function openMyCharPicker() {
+  let ov = document.getElementById('myCharOverlay');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">獲得した仲間を自キャラにできます。自キャラの属性で、敵との相性（有利なら与ダメージ1.5倍・不利なら0.75倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', ev => {
+      if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
+      const b = ev.target.closest('[data-my-char]'); if (!b) return;
+      game.heroChar = b.dataset.myChar || null;
+      applyHeroChar(); playRegisterSound(); saveGame();
+      ov.classList.remove('show');
+      showShopPurchaseFx(game.heroChar ? companionIconHtml(game.heroChar) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, game.heroChar ? COMPANIONS[game.heroChar].name : '勇者', '自キャラを変更しました', '自キャラ変更！');
+    });
+  }
+  const cur = getHeroChar() || '';
+  const ids = COMPANION_IDS.filter(isCharObtained).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
+  const row = (id, name, img, badge, rcol) => `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}</b><small>${badge}</small></span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`;
+  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '属性なし', '#9aa0b4')
+    + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)} ${elemBadge(COMPANION_ELEMENT[id])}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
+  ov.classList.add('show');
+}
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
   const status = !isCharObtained(id) ? '🎲 獲得前：ショップの「採用ガチャ」で獲得し、採用すると仲間招集に出ます' : isCompLocked(id) ? '📜 採用前：ショップの「キャラ」で採用すると仲間招集に出ます' : '🐾 仲間招集で入手できます';
-  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
+  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div><div class="cp-info-lock">${status}</div></div>`;
 }
 function openCompInfo(id) {
   let ov = document.getElementById('compInfoOverlay');
@@ -164,6 +200,7 @@ function openCompInfo(id) {
   ov.classList.add('show');
 }
 function renderCompanionList() {
+  renderMyCharCard();
   if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
   if (!game.companionBook) game.companionBook = {};
   for (const id in game.companions.recruited) if (game.companions.recruited[id] && COMPANIONS[id]) game.companionBook[id] = true;
@@ -196,11 +233,11 @@ function renderCompanionList() {
     const disabled = game.coins < cost;
     const maxLv = getCompanionMaxLevels(id).count;
     const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
-    return `<div class="companion-card recruited cc-side-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name">${c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span><span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-cost">次のLv ${COIN_ICO} ${formatCoinNumber(cost)}</div></div><div class="cc-level-row cc-side"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>+1</b><span>Lv.UP</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button></div></div>`;
+    return `<div class="companion-card recruited cc-side-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name">${c.name}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-cost">次のLv ${COIN_ICO} ${formatCoinNumber(cost)}</div></div><div class="cc-level-row cc-side"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>+1</b><span>Lv.UP</span></button><button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button><button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button></div></div>`;
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];
-    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span><span class="cp-tile-lock">${!isCharObtained(id) ? '🎲 獲得前' : isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
+    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span>${elemBadge(COMPANION_ELEMENT[id], 'el-tile')}<span class="cp-tile-lock">${!isCharObtained(id) ? '🎲 獲得前' : isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
   companionList.innerHTML = (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b><small>タップで詳しく</small></div><div class="cp-grid">${othersHtml}</div>` : '');

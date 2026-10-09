@@ -2071,3 +2071,23 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cl-name .cl-lv { font-style: normal; font-size: 0.66rem; font-weight: 900; color: #fff; background: #b46cff; border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }
 .gem-ico.comp-ico { width: 1.25em; height: 1.25em; vertical-align: -0.28em; }
 .cp-summon .cps-ico { width: 1.6em; height: 1.6em; vertical-align: -0.45em; object-fit: contain; margin-right: 2px; }
+/* 属性バッジ（炎・水・草） */
+.el-badge { display: inline-flex; align-items: center; gap: 1px; font-size: 0.62rem; font-weight: 900; line-height: 1; padding: 2px 6px 2px 4px; border-radius: 999px; color: #fff; vertical-align: 1px; white-space: nowrap; margin-left: 4px; }
+.el-fire { background: linear-gradient(180deg, #ff8a5c, #e0412a); }
+.el-water { background: linear-gradient(180deg, #5cc2ff, #1f7fe0); }
+.el-grass { background: linear-gradient(180deg, #5fd67c, #23a046); }
+.el-none { background: #8a8fa3; }
+.el-badge.el-sm { font-size: 0.6rem; padding: 1px 5px 1px 3px; margin: 0 4px 0 0; }
+.el-badge.el-tile { display: block; width: max-content; margin: 1px auto 0; font-size: 0.56rem; }
+.bstz-el { margin: 2px 0 4px; }
+/* 自キャラ */
+.my-char-card { width: 100%; display: flex; align-items: center; gap: 10px; margin: 0 0 8px; padding: 6px 12px 6px 6px; border-radius: 12px; border: 2px solid #c9a24a; background: linear-gradient(135deg, rgba(255,215,107,0.18), rgba(255,255,255,0.6)); cursor: pointer; text-align: left; color: var(--text); }
+.my-char-card .mc-ico { flex: none; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(0,0,0,0.06); }
+.my-char-card .mc-ico img { width: 48px; height: 48px; object-fit: contain; }
+.my-char-card .mc-main { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; }
+.my-char-card .mc-main small { width: 100%; font-size: 0.64rem; color: var(--text-dim); font-weight: 800; }
+.my-char-card .mc-main b { font-size: 1rem; font-weight: 900; }
+.my-char-card .mc-go { flex: none; font-size: 0.78rem; font-weight: 900; color: #b07800; }
+.mc-row { width: 100%; text-align: left; cursor: pointer; color: #fff; font: inherit; }
+.mc-row.on { box-shadow: 0 0 0 2px #ffd76b inset; background: rgba(255,215,107,0.16); }
+.mc-row .mc-sel { flex: none; font-size: 0.74rem; font-weight: 900; color: #ffd76b; }

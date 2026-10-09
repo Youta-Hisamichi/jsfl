@@ -321,6 +321,27 @@ function renderDebugMonsters() {
   document.getElementById('dbgMonSel').textContent = en ? `${en.kind === 'boss' ? '👑' : ''}${en.name}${isEnemyRemoved(en.key) ? '（削除中）' : ''}` : '画像をタップして選択';
 }
 ENEMY_BOOK.forEach(entry => ENEMY_BOOK_BY_KEY[entry.key] = entry);
+// 敵の属性：名前から炎・水・草を決める（当てはまらなければキーから均等に振り分け）
+const ENEMY_ELEMENT_RULES = [
+  [/氷|アイス|ゆき|ユキ|雪|しも|フロスト|水|海|人魚|セイレーン|鯨|クラーケン|深き|深淵|蒼|ブルー|アオ|あお|青|ペンギン|クラゲ|イカ|タコ|カニ|ガニ|やどかり|魚|ドロップ|晶|クリスタル|すいしょう|嵐|くも|うず|シルバー|メタル/, 'water'],
+  [/炎|ほのお|フレイム|焔|煉獄|溶岩|ようがん|ひのたま|おにび|しょくだい|ランタン|不死鳥|紅蓮|太陽|サラマンダー|レッド|あか|赤|ブラッド|血|ベニ|地獄|オレンジ|ゴールド|黄金|キイロ|デーモン|悪魔|ほうへい|ショコラ/, 'fire'],
+  [/グリーン|ミドリ|みどり|マッチャ|草|花|木|樹|もり|森|はっぱ|めばえ|ふたば|こかぶ|キノコ|サボテン|ワニソウ|どんぐり|きりかぶ|こけ|苔|ローズ|サクラ|桜|キュウリ|ワーム|ミミズ|ばち|ハチ|ちょう|どくが|やんま|グモ|クモ|さそり|クワガタ|獣|いのしし|ねずみ|ネズミ|リス|マーモット|ひよこ|みみずく|わし|はやぶさ|ウルフ|おおかみ|犬|かかし|つち|どろ|いわ|ゴーレム|ガメ|へび|蛇|ドリアード|コブラ|リザード|ラミア|グリフォン|ヒポグリフ|ゴリ|オーガ|オーク|ゴブリン/, 'grass'],
+  [/竜|ドラゴン|ドレイク|ワイバーン|ドラグ/, 'fire'],
+];
+const ENEMY_ELEMENT_BY_KEY = {};
+{ // 名前で決まらない敵は、いちばん少ない属性へ順に振り分けて3つの数をそろえる
+  const n = { fire: 0, water: 0, grass: 0 }, rest = [];
+  ENEMY_BOOK.forEach(entry => { const hit = ENEMY_ELEMENT_RULES.find(([re]) => re.test(entry.name)); if (hit) { ENEMY_ELEMENT_BY_KEY[entry.key] = hit[1]; n[hit[1]]++; } else rest.push(entry); });
+  rest.forEach(entry => { const el = Object.keys(n).sort((a, b) => n[a] - n[b])[0]; ENEMY_ELEMENT_BY_KEY[entry.key] = el; n[el]++; });
+}
+function getEnemyElement(en) { if (!en) return null; const k = en.megaOwner ? getEnemyBookKey(en.megaOwner) : getEnemyBookKey(en); return ENEMY_ELEMENT_BY_KEY[k] || null; }
+function getFoeElement() { const e = balls.find(b => !b.isPlayer && !b.isDying); return e ? getEnemyElement(e) : null; }
+let lastFoeElement = undefined;
+function syncElementAtk(foeEl) { // 戦う敵の属性が変わったら、仲間の攻撃力（相性込み）を計算し直す
+  if (foeEl === lastFoeElement) return;
+  lastFoeElement = foeEl;
+  for (const c of balls) if (c.isCompanion && c.companionId && COMPANIONS[c.companionId]) c.atk = getCompanionBallAtk(c.companionId);
+}
 function getEnemyBookKey(enemy) {
   if (enemy.isBoss) return 'boss:' + enemy.emoji;
   return enemy.emoji ? 'emoji:' + enemy.emoji : 'shape:' + enemy.shape;
@@ -367,7 +388,7 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
   const face = card.querySelector('.bst-face');
   let ov = document.getElementById('bstZoom');
   if (!ov) { ov = document.createElement('div'); ov.id = 'bstZoom'; ov.className = 'bst-zoom'; ov.addEventListener('click', () => ov.classList.remove('show')); document.body.appendChild(ov); }
-  ov.innerHTML = `<div class="bstz-card ${entry.kind === 'boss' ? 'boss' : ''}"><div class="bstz-face">${face ? face.innerHTML : ''}</div><div class="bstz-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</div><div class="bstz-info">撃破 ${formatCoinNumber(rec.kills)}体　初撃破 ${formatStageNumber(rec.firstStage)}階</div><div class="bstz-hint">タップで閉じる</div></div>`;
+  ov.innerHTML = `<div class="bstz-card ${entry.kind === 'boss' ? 'boss' : ''}"><div class="bstz-face">${face ? face.innerHTML : ''}</div><div class="bstz-name">${entry.kind === 'boss' ? '👑 ' : ''}${entry.name}</div><div class="bstz-el">${elemBadge(ENEMY_ELEMENT_BY_KEY[entry.key])}</div><div class="bstz-info">撃破 ${formatCoinNumber(rec.kills)}体　初撃破 ${formatStageNumber(rec.firstStage)}階</div><div class="bstz-hint">タップで閉じる</div></div>`;
   ov.classList.add('show');
 });
 
@@ -724,7 +745,7 @@ function makeCompanionBall(id) {
   };
 }
 // 同じ仲間が何人いても1人ずつ別の体で戦う（1体ぶんの攻撃力・HP）
-function getCompanionBallAtk(id) { return getCompanionAtk(id); }
+function getCompanionBallAtk(id) { return Math.max(1, Math.round(getCompanionAtk(id) * elementMult(COMPANION_ELEMENT[id], getFoeElement()))); } // 属性の相性込み
 function getCompanionBallMaxHP(id) { return getCompanionMaxHP(id); }
 function makeCompanionBalls() {
   return Object.keys(COMPANIONS).flatMap(id => Array.from({ length: getCompanionCount(id) }, () => makeCompanionBall(id)));
@@ -763,7 +784,7 @@ function refreshPlayerBallStats(healFull) {
     if (!c.isCompanion || !c.companionId || !COMPANIONS[c.companionId]) continue;
     const mx = getCompanionMaxHP(c.companionId);
     if (c.maxHp > 0 && c.hp > 0) c.hp = Math.min(mx, Math.round(c.hp * mx / c.maxHp));
-    c.maxHp = mx; c.atk = getCompanionAtk(c.companionId);
+    c.maxHp = mx; c.atk = getCompanionBallAtk(c.companionId);
   }
 }
 

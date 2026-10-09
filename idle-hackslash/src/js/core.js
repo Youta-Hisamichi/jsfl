@@ -997,6 +997,19 @@ function companionIconHtml(id) {
   return COMPANION_SPRITES[id] ? `<img class="comp-sprite" src="${COMPANION_SPRITES[id]}" alt="">` : COMPANIONS[id].icon;
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
+// 属性（炎・水・草の三すくみ）：炎→草→水→炎 の順に強い。有利なら与ダメージ1.5倍、不利なら0.75倍
+const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water: { icon: '💧', name: '水', color: '#3aa8ff' }, grass: { icon: '🌿', name: '草', color: '#3cbf5f' } };
+const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
+const ELEMENT_ADV = 1.5, ELEMENT_DIS = 0.75;
+const COMPANION_ELEMENT = {};
+[['fire', 'merchant warrior monk mage musketeer alchemist bunny lancer heavy samurai dragon dragoon bahamut'],
+ ['water', 'penguin priest dancer bard princess fortune sage ninja pirate paladin pegasus archangel'],
+ ['grass', 'villager hobbit dog cat hamster archer thief golem tamer summoner cavalry king']].forEach(([el, ids]) => ids.split(' ').forEach(id => { COMPANION_ELEMENT[id] = el; }));
+function elementMult(att, def) { return !att || !def ? 1 : ELEMENT_BEATS[att] === def ? ELEMENT_ADV : ELEMENT_BEATS[def] === att ? ELEMENT_DIS : 1; }
+function elemBadge(el, cls = '') { return el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
+// 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
+function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharObtained(game.heroChar) ? game.heroChar : null; }
+function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
 // 採用ガチャ：★2以上のキャラはショップのガチャで獲得してから採用できる。ダブると獲得Lvが上がって強くなる（転生しても残る）
 const CHAR_GACHA_COST = 5, CHAR_LV_BONUS = 0.25;
