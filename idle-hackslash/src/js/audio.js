@@ -168,17 +168,6 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
-  battle32: { // 戦闘32 秘境の冒険者：ズンチャッと進む行進のリズムに、付点で弾む勇ましい冒険の旋律（考古学冒険映画のマーチ系）
-    bpm: 256,
-    echo: { time: 0.2, feedback: 0.2, wet: 0.15 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.036, notes: 'F4 = = F4 A4 = = C5 F5 = = = = = = = | E5 = = F5 G5 = = = A5 = = = - - - - | D5 = = D5 F5 = = A#5 A5 = = = G5 = = = | F5 = = = = = = = C5 = = = - - C5 C5 | D5 = = D5 G5 = = A#5 A#5 = = = A5 = = = | G5 = = = E5 = = = C5 = = = - - C5 D5 | E5 = = F5 A5 = = = C6 = = A5 F5 = = = | G5 = = = = = = = - - - - C5 = D5 E5 | F5 = = = A5 = = = D6 = = = C6 = A5 = | A5 = = = = = = = F5 = = E5 D5 = = = | D5 = = F5 A#5 = = = D6 = = = C6 = A#5 = | C6 = = = G5 = = = E5 = = = - - C5 C5 | F5 = = = = = A5 = C6 = = = A5 = = = | A#5 = = A5 G5 = = = D6 = = = A#5 = = = | C6 = = A#5 A5 = = G5 G5 = = A#5 E5 = = = | F5 = = = = = = = = = = = - - - -' },
-      { type: 'vrc6pulse12', gain: 0.014, notes: '- - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = | - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = | - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = | - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = | - - G4+A#4+D5 = - - G4+A#4+D5 = - - G4+A#4+D5 = - - G4+A#4+D5 = | - - C4+E4+G4 = - - C4+E4+G4 = - - C4+E4+G4 = - - C4+E4+G4 = | - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = | - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = | - - D4+F4+A4 = - - D4+F4+A4 = - - D4+F4+A4 = - - D4+F4+A4 = | - - D4+F4+A4 = - - D4+F4+A4 = - - D4+F4+A4 = - - D4+F4+A4 = | - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = | - - C4+E4+G4 = - - C4+E4+G4 = - - C4+E4+G4 = - - C4+E4+G4 = | - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = | - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = - - A#3+D4+F4 = | - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = - - C4+E4+G4+A#4 = | - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 = - - F4+A4+C5 =' },
-      { type: 'vrc6saw', gain: 0.058, notes: 'F1 = - - C2 = - - F1 = - - C2 = - - | F1 = - - C2 = - - F1 = - - C2 = - - | A#1 = - - F2 = - - A#1 = - - F2 = - - | F1 = - - C2 = - - F1 = - - C2 = - - | G1 = - - D2 = - - G1 = - - D2 = - - | C2 = - - G2 = - - C2 = - - G2 = - - | F1 = - - C2 = - - F1 = - - C2 = - - | C2 = - - G2 = - - C2 = - - G2 = - - | D2 = - - A2 = - - D2 = - - A2 = - - | D2 = - - A2 = - - D2 = - - A2 = - - | A#1 = - - F2 = - - A#1 = - - F2 = - - | C2 = - - G2 = - - C2 = - - G2 = - - | F1 = - - C2 = - - F1 = - - C2 = - - | A#1 = - - F2 = - - A#1 = - - F2 = - - | C2 = - - G2 = - - C2 = - - G2 = - - | F1 = - - C2 = - - F1 = - - C2 = - -' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | s - s s s - s s s s s s ks - ks - | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | k - - - s - - s k - - - s - s s | s - s s s - s s s s s s ks - ks -'
-  },
   battle33: { // 戦闘33 銀河の英雄：3連符で駆け上がるファンファーレと力強い行進に、宇宙へ旅立つ英雄の旋律（宇宙活劇オーケストラ系）
     bpm: 180,
     echo: { time: 0.24, feedback: 0.24, wet: 0.17 },
@@ -667,7 +656,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle32', 'battle33', 'battle34'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle29', 'battle30', 'battle33', 'battle34'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -721,7 +710,6 @@ const BGM_INFO = [
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle29', name: '戦闘29 秘宝の洞窟', desc: '弾むベースと跳ねる分散和音に乗って、わくわくと洞窟を探検する旋律。後半は長調に明るく開けて宝の予感に胸が高鳴る。VRC6風チップチューン。イ短調（ほのぼのアクションの洞窟探検の作風）・BPM150' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
-  { key: 'battle32', name: '戦闘32 秘境の冒険者', desc: 'ズンチャッと進む行進のリズムに乗って、付点で弾む勇ましい旋律が秘境へと分け入る。鞭と帽子の冒険活劇。VRC6風チップチューン。ヘ長調（考古学冒険映画のマーチの作風）・BPM128' },
   { key: 'battle33', name: '戦闘33 銀河の英雄', desc: '3連符で駆け上がるファンファーレと力強い行進に乗って、英雄の旋律が星の海へ旅立つ。遥かな銀河の大冒険。VRC6風チップチューン。ハ長調（宇宙活劇のオーケストラの作風）・BPM120' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
