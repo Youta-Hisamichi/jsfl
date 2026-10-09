@@ -1298,6 +1298,7 @@ function renderUpgradeList() {
   upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');
 }
 var shopSortOrder = null;
+const SHOP_ITEM_ART = { sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'bluepot', potion: 'pots', redPotion: 'redpot', partySlot: 'party', skillSlot: 'bag', weaponSlot: 'swords', summoner: 'emblem' }; // ショップの絵のアイコン
 function renderShopList() {
   const ids = Object.keys(SHOP_ITEMS).filter(id => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id));
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
@@ -1309,7 +1310,10 @@ function renderShopList() {
     const gcost = item.action ? 0 : getShopItemGemCost(id);
     const note = item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
     const costTxt = owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
-    return `<button class="shop-btn ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}"><span class="shop-head"><span class="item-icon">${ico(item)}</span><span class="shop-name">${item.name}</span></span><span class="shop-desc">${locked ? '🔒 先にタックル開放が必要' : item.desc + note}</span><span class="cost">${costTxt}</span></button>`;
+    const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
+    const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
+    const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}</span><span class="shop-desc">${locked ? '🔒 先にタックル開放が必要' : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${price}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;
