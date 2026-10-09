@@ -1145,6 +1145,7 @@ function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
   if (ball && isMainPlayerBall(ball)) { // ダメージを出すたびに溜めを使い切る
     const w = heroWaitMult(ball); ball.lastAtkAt = Date.now(); m *= w;
+    if (w >= HERO_WAIT_MAX && typeof obFlag === 'function') obFlag('chargeMax');
     if (w >= 2) spawnDamageText(ball.x, ball.y - ball.radius - 30, `溜め ×${w.toFixed(1)}！`, w >= HERO_WAIT_MAX ? '#ff5c6c' : '#ffb35c', 0.022, w >= HERO_WAIT_MAX);
   }
   return m;
@@ -1331,11 +1332,13 @@ function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワー�
     if (ball.isPlayer) { playTone(500, 0.18, 'sine', 0.08, 1500); setTimeout(() => playTone(1500, 0.12, 'sine', 0.06, 700), 90); }
   }
 }
+const EARLY_CHEST_STAGE = 20, EARLY_CHEST_MULT = 3; // 序盤は宝箱が出やすい
+function earlyChestMult() { return game.stage <= EARLY_CHEST_STAGE ? EARLY_CHEST_MULT : 1; }
 function breakObstacleLoot(o) { // 壊れた障害物の中身
   const x = o.x, y = o.y - 10, r = Math.random();
   const coinsFor = m => Math.max(1, Math.round(stageCoinRaw() * m * 2));
   if (o.kind === 'crate') { // 超たまに激レア宝箱、たまにコイン、たいていはスカ
-    if (r < 0.04) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
+    if (r < 0.04 * earlyChestMult()) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
     else if (r < 0.3) { const c = coinsFor(0.6); game.coins += c; spawnDamageText(x, y, '+' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
     else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'barrel') { // 樽：コインが出やすい
@@ -1357,7 +1360,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   } else if (o.kind === 'stump') { // 切り株：コイン
     const c = coinsFor(1); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🪵 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true);
   } else if (o.kind === 'ruin') { // 崩れた柱：たまに宝箱
-    if (r < 0.15) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
+    if (r < 0.15 * earlyChestMult()) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
     else { const c = coinsFor(1.2); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🏛️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
     const rar = rollChestRarity(6, 'rare'); // 魔導コンテナは良い宝箱が出やすい

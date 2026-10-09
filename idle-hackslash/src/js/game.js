@@ -489,6 +489,7 @@ function startEnemyEscape(e) {
   spawnDamageText(e.x, e.y - e.radius - 16, '💨 にげた！', '#e8e8e8', 0.012, true);
   playTone(700, 0.18, 'square', 0.03, 1400);
 }
+const EARLY_KILL_CHEST_CHANCE = 0.08;
 function onStageClear(passed) {
   if (passed) return advanceStage(true);
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
@@ -518,6 +519,7 @@ function onStageClear(passed) {
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
   if (isBossStage) spawnDamageText(arena.x, arena.y, `+${5 * (msBoss ? msBoss.reward : 1)} 💎`, '#64e8ff');
+  else if (game.stage <= EARLY_CHEST_STAGE && Math.random() < EARLY_KILL_CHEST_CHANCE) setTimeout(() => dropTreasureChest(), 700); // 序盤は雑魚からもたまに宝箱
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
@@ -552,6 +554,7 @@ function advanceStage(passed, isBossStage) {
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
     stageAnnounceText = 'ステージ' + formatStageNumber(game.stage) + '' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) ? ` 敵${getStageEnemyCount(game.stage)}体！` : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    if (!stillLooping && game.stage > 1 && game.stage % 10 === 1) showNotice(`🌍 ${getStageZone(game.stage).name}エリアに突入！`, false, 2600); // 新しいエリアに入ったら大きく知らせる
   }
   meteors = []; adds = []; clearEnemyTraitObjects();
   for (const id in COMPANIONS) {
@@ -656,9 +659,11 @@ let lastBossTickSec = 0;
 // ボスに負けたら一度だけコンテニューの機会：動画を見るとHP全快・残り時間30秒に戻して続行。あきらめると前の階ループへ
 const bossContModal = document.getElementById('bossContModal');
 let bossContReason = null;
+let lastBossHpFrac = 1;
 function bossDefeated(reason) {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (!boss) { bossFail(reason); return; }
+  lastBossHpFrac = boss.maxHp ? Math.max(0, boss.hp) / boss.maxHp : 1; // 負けたときのボスの残りHP（次の目安の表示用）
   if (boss.continued) { showBossFinalDefeat(reason); return; } // コンテニュー済み：少し間をおいて説明してから前の階へ
   if (bossKoPending) return; // 吹っ飛び演出中の二重呼び出しを防ぐ
   bossContReason = reason; phase = 'paused'; homingMissiles = [];
@@ -694,7 +699,7 @@ function showBossContModal(reason) {
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
   { const im = document.getElementById('goCoffin'); if (im && !im.src && typeof getCoffinSprite === 'function') im.src = getCoffinSprite().toDataURL(); } // ゲームオーバー画面に棺桶
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
-  document.getElementById('bossContText').textContent = '';
+  document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? bossAdviceHtml(reason) : '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
@@ -709,7 +714,7 @@ function showBossFinalDefeat(reason) { // ゲーム画面に小さな半透明�
   phase = 'paused'; homingMissiles = [];
   playDeathSound();
   const back = Math.max(1, game.stage - 1), el = document.getElementById('bossFinalPanel');
-  el.innerHTML = `<b>${reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…'}</b><br>ステージ${back}に戻って鍛え直します`;
+  el.innerHTML = `<b>${reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…'}</b><br>ステージ${back}に戻って鍛え直します` + (typeof bossAdviceHtml === 'function' ? '<div class="ba-final">' + bossAdviceHtml(reason, true) + '</div>' : '');
   el.classList.add('show');
   // 自キャラがクルクル回りながら吹っ飛ぶ（ボスと反対側へ）
   const pl = balls.find(isMainPlayerBall), boss = balls.find(b => !b.isPlayer && b.isBoss);

@@ -1009,6 +1009,7 @@ function noteElementHit(attEl, target) { // 有利な属性で当てたら「こ
   if (!target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
   const now = Date.now(); if (now - lastElementHitAt < 900) return;
   lastElementHitAt = now;
+  if (typeof obFlag === 'function') obFlag('superEff');
   spawnDamageText(target.x, target.y - (target.radius || 12) - 46, 'こうかばつぐん！', '#ffe14f', 0.018, true);
 }
 const COMPANION_ELEMENT = {};

@@ -2001,7 +2001,8 @@ function showChestResult(rarity, loot, mult) {
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.3, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
 const CHEST_GEM_CHANCE = 0.35, CHEST_GEM_MAX_HELD = 3; // 宝箱のおまけのジェム（手持ちが少ないときだけ）
-function openTreasureChest(rarity = 'common', mult = 1, quiet = false) { // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
+function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
+  if (typeof obFlag === 'function') obFlag('chest'); // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
   if (!quiet) playChestOpenSound();
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   let loot;

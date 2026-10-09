@@ -98,7 +98,7 @@ function updateCompSummonVisibility() {
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 招集ガチャ</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
+  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 招集ガチャ</span><span class="cps-cost">${cost1 ? COIN_ICO + ' ' + formatCoinNumber(cost1) : '🎁 初回無料！'}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {
@@ -247,6 +247,7 @@ function renderCompanionList() {
 
 const COMP_GACHA_BASE_COST = 20, COMP_GACHA_COST_GROWTH = 1.1;
 function getCompSummonCost(count) {
+  if (count === 1 && !game.firstFreeSummon) return 0; // はじめての招集は無料
   const done = game.companionSummons || 0;
   let total = 0;
   for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
@@ -299,6 +300,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   if (!isReroll) {
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
     spendCoins(cost);
+    if (count === 1 && cost === 0) game.firstFreeSummon = true;
     game.companionSummons = (game.companionSummons || 0) + count;
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
@@ -730,6 +732,7 @@ function updateStatsUI() {
   stageProgressText.textContent = bossNow ? '' : stageInCycle + ' / 10';
   const toBoss = document.getElementById('stageToBoss'); if (toBoss) { toBoss.textContent = bossNow ? 'ボス！' : 'ボスまで'; toBoss.classList.toggle('is-boss', bossNow); }
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
+  { const bm = document.getElementById('stageBossMark'); if (bm) bm.classList.toggle('boss-near', stageInCycle >= 8 && !bossNow); } // ボスが近づいたらゴールのボスが赤く光る
   { const p = stageInCycle / 10; stagePlayerMark.style.left = p >= 1 ? "calc(100% - 30px)" : `${p * 100}%`; } // 自キャラはゲージの先端に。ボスの階だけボスの絵と重ならないよう手前にずらす
   const BOSS_ICON_FLIP = new Set(['demon', 'blackDragon', 'blueDragon', 'livingArmor', 'b_shibaWarrior', 'b_dragonBear']); // 右を向いている絵は反転して左（自キャラ側）を向かせる
   { // ゴールのボスアイコンは、その10階で待ち構えるボスの絵（自キャラの来る左を向かせる）

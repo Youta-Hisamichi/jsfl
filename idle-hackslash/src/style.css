@@ -2120,3 +2120,28 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .fbg-main { font-size: 1rem; font-weight: 900; color: #fff; }
 .fbg-main b { color: #9ff0ff; font-size: 1.2rem; }
 .fbg-note { margin: 10px 0 2px; font-size: 0.78rem; line-height: 1.6; color: #d8deee; text-align: left; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 10px; }
+/* 序盤の導線：解放前のタブ・解放のお知らせ・初心者ミッション・ボスの目安 */
+.tab-btn.tab-locked { position: relative; }
+.tab-btn.tab-locked .tab-icon, .tab-btn.tab-locked .tab-label { filter: grayscale(1) brightness(0.55); opacity: 0.6; }
+.tab-btn.tab-locked::before { content: '🔒'; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 0.95rem; z-index: 1; }
+.ob-unlock { position: absolute; left: 50%; top: 14%; z-index: 9; display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 10px; border-radius: 14px; border: 2px solid #ffd76b; background: linear-gradient(180deg, rgba(60,40,10,0.94), rgba(25,18,8,0.94)); color: #fff; box-shadow: 0 6px 22px rgba(0,0,0,0.5), 0 0 18px rgba(255,215,107,0.45); opacity: 0; pointer-events: none; transform: translate(-50%, -16px) scale(0.85); transition: opacity 0.25s, transform 0.3s cubic-bezier(.2,1.6,.4,1); max-width: 92%; text-align: left; font: inherit; }
+.ob-unlock.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
+.ob-unlock .ico-img { width: 38px; height: 38px; object-fit: contain; flex: none; }
+.ob-unlock .obu-new { position: absolute; top: -10px; left: -8px; padding: 1px 7px; border-radius: 8px; background: #ff4f6d; color: #fff; font-weight: 900; font-size: 0.72rem; animation: tabDot 0.6s ease-in-out infinite alternate; }
+.ob-unlock .obu-main { display: flex; flex-direction: column; line-height: 1.35; }
+.ob-unlock .obu-main b { color: #ffd76b; font-size: 0.95rem; }
+.ob-unlock .obu-main small { font-size: 0.72rem; color: #e8e2d0; }
+.ob-mission { position: absolute; left: 6px; bottom: 6px; z-index: 6; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; max-width: 62%; padding: 5px 9px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.25); background: rgba(10,12,28,0.55); color: #fff; text-align: left; font: inherit; line-height: 1.3; cursor: pointer; }
+.ob-mission .obm-head { font-size: 0.62rem; color: #9fd8ff; font-weight: 700; }
+.ob-mission .obm-text { font-size: 0.78rem; font-weight: 700; }
+.ob-mission .obm-text b { color: #ffd76b; }
+.ob-mission .obm-sub { font-size: 0.62rem; color: #c8c8d8; }
+.ob-mission .obm-claim { font-size: 0.7rem; font-weight: 900; color: #3a2a00; background: #ffd76b; border-radius: 6px; padding: 1px 6px; margin-top: 2px; }
+.ob-mission.done { border-color: #ffd76b; box-shadow: 0 0 12px rgba(255,215,107,0.7); animation: obmPulse 0.9s ease-in-out infinite alternate; }
+@keyframes obmPulse { from { transform: scale(1); } to { transform: scale(1.04); } }
+.stage-mark-boss.boss-near { animation: bossNear 0.7s ease-in-out infinite alternate; }
+@keyframes bossNear { from { filter: drop-shadow(0 0 2px rgba(255,60,60,0.6)); } to { filter: drop-shadow(0 0 9px rgba(255,40,40,1)) brightness(1.2); } }
+.boss-advice { margin-top: 6px; padding: 7px 10px; border-radius: 10px; background: rgba(255,215,107,0.1); border: 1px solid rgba(255,215,107,0.35); font-size: 0.8rem; line-height: 1.55; white-space: normal; }
+.boss-advice b { color: #ffd76b; }
+.ba-final .boss-advice { font-size: 0.72rem; margin-top: 4px; }
+.tab-btn.tab-locked::after { display: none; }
