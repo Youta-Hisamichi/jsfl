@@ -2069,3 +2069,5 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cl-btn.notyet { background: linear-gradient(180deg, #8a8fa3, #5a5f73); }
 .cl-row.notyet .cl-ico img { filter: brightness(0) drop-shadow(0 0 2px rgba(160,190,255,0.55)); opacity: 0.8; }
 .cl-name .cl-lv { font-style: normal; font-size: 0.66rem; font-weight: 900; color: #fff; background: #b46cff; border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }
+.gem-ico.comp-ico { width: 1.25em; height: 1.25em; vertical-align: -0.28em; }
+.cp-summon .cps-ico { width: 1.6em; height: 1.6em; vertical-align: -0.45em; object-fit: contain; margin-right: 2px; }

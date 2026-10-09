@@ -2317,7 +2317,7 @@ compRushBtn.addEventListener('click', event => {
     comp.compRushNextHit = Date.now() + 120 + i * 40;
     comp.compRushDmg = Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') / hits * 1.15));
   });
-  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `🐾 仲間特攻！ ×${comps.length}`, '#8fe3a0', 0.014, true);
+  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `仲間特攻！ ×${comps.length}`, '#8fe3a0', 0.014, true);
   onPlayerHitEnemy(enemy, 1);
   shakeScreenLight();
   [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.1), i * 50));
@@ -2582,8 +2582,8 @@ setInterval(() => {
   setTimeout(() => playTone(62, 0.14, 'sine', 0.18, 40), 170);
 }, 850);
 const GEM_CHAR = '💎';
-const ICON_CHARS = { '💎': ['x_gem', 'gem-ico'], '🔒': ['x_lock', 'gem-ico lock-ico'], '🧪': ['x_potion', 'gem-ico potion-ico'] }; // 文字 → [アイコン, クラス]
-const ICON_CHAR_RE = /💎|🔒|🧪/;
+const ICON_CHARS = { '💎': ['x_gem', 'gem-ico'], '🔒': ['x_lock', 'gem-ico lock-ico'], '🧪': ['x_potion', 'gem-ico potion-ico'], '🐾': ['tab_companion', 'gem-ico comp-ico'] }; // 文字 → [アイコン, クラス]（仲間は足跡ではなく仲間タブの絵）
+const ICON_CHAR_RE = /💎|🔒|🧪|🐾/;
 const GEM_SKIP_TAGS = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, OPTION: 1, TITLE: 1, CANVAS: 1 };
 function gemifyTextNode(node) {
   const text = node.nodeValue;
@@ -2591,7 +2591,7 @@ function gemifyTextNode(node) {
   const parent = node.parentNode;
   if (!parent || GEM_SKIP_TAGS[parent.nodeName]) return;
   const frag = document.createDocumentFragment();
-  text.split(/(💎|🔒|🧪)/).forEach(part => {
+  text.split(/(💎|🔒|🧪|🐾)/).forEach(part => {
     if (ICON_CHARS[part]) { const img = document.createElement('img'); img.className = ICON_CHARS[part][1]; img.src = ICON_IMAGES[ICON_CHARS[part][0]]; img.alt = ''; frag.appendChild(img); }
     else if (part) frag.appendChild(document.createTextNode(part));
   });

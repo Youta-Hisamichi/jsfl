@@ -765,7 +765,7 @@ function tryBossCompanionJoin() {
   const c = COMPANIONS[r.id], pl = balls.find(isMainPlayerBall);
   const cb = balls.find(b => b.isCompanion && b.companionId === r.id);
   if (cb) { spawnHitParticles(cb.x, cb.y, '#ff9a4f'); spawnHitParticles(cb.x, cb.y, '#ffe36b'); }
-  spawnDamageText(pl ? pl.x : arena.x, (pl ? pl.y : arena.y) - 50, `🐾 ${c.name} が仲間に加わった！`, '#ffb35c', 0.01, true);
+  spawnDamageText(pl ? pl.x : arena.x, (pl ? pl.y : arena.y) - 50, `${c.name} が仲間に加わった！`, '#ffb35c', 0.01, true);
   showNotice(`🐾 ボスを倒して、${c.icon} ${c.name} が仲間に加わった！（${getCompanionTotal()}/${BOSS_JOIN_MAX}）`, false, 2600);
   [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => playTone(f, 0.12, 'square', 0.06), i * 90)); // 仲間加入のファンファーレ
   if (typeof renderCompanionList === 'function') renderCompanionList();

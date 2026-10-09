@@ -98,7 +98,7 @@ function updateCompSummonVisibility() {
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', game.coins < cost1);
-  cgb.innerHTML = `<span class="cps-title">🐾 仲間招集</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
+  cgb.innerHTML = `<span class="cps-title">${xi('tab_companion', 'cps-ico')} 仲間招集ガチャ</span><span class="cps-cost">${COIN_ICO} ${formatCoinNumber(cost1)}</span>`;
   cgb.parentElement.style.display = full ? 'none' : '';
 }
 function renderRebirthShopList() {
