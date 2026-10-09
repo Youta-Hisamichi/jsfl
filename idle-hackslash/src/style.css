@@ -2106,3 +2106,4 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .cc-name .cc-swap { font-size: 0.62rem; font-weight: 800; color: var(--text-dim); margin-left: 4px; }
 .go-coffin { display: block; width: 120px; height: auto; margin: 2px auto 0; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); animation: goCoffinDrop 0.6s cubic-bezier(.3,1.6,.5,1) both; }
 @keyframes goCoffinDrop { 0% { transform: translateY(-30px) rotate(-12deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.cl-card .cl-ico { width: auto; flex-shrink: initial; } /* 解雇・採用一覧の .cl-ico と名前が同じなので、宝箱のカードでは中央寄せに戻す */
