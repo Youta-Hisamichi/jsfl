@@ -164,7 +164,7 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">獲得した仲間を自キャラにできます。自キャラの属性で、敵との相性（有利なら与ダメージ1.5倍・不利なら0.75倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">獲得した仲間を自キャラにできます。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります</div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -1599,6 +1599,7 @@ function updateHomingMissiles(speedMult) {
       enemy.hp -= dmg;
       trackDamage(dmg);
       spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
+      if (m.el) noteElementHit(m.el, enemy); // 仲間の飛び道具も属性の相性で
       onPlayerHitEnemy(enemy, dmg);
       playHomingHitSound();
       updateHPUI();

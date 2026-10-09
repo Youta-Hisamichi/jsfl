@@ -1151,7 +1151,10 @@ function updateCompanionAbilities() {
   const now = Date.now();
   const enemy = balls.find(ball => !ball.isPlayer);
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
+  let tagFrom = homingMissiles.length, tagEl = null; // 仲間が放った飛び道具に、その仲間の属性を付ける
+  const tagMissiles = () => { for (let i = tagFrom; i < homingMissiles.length; i++) if (homingMissiles[i].el === undefined) homingMissiles[i].el = tagEl; tagFrom = homingMissiles.length; };
   for (const comp of balls) {
+    tagMissiles(); tagEl = COMPANION_ELEMENT[comp.companionId] || null;
     if (!comp.isCompanion || comp.hp <= 0) continue;
     if (compKind(comp.companionId) === 'archer') {
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + ARCHER_SHOT_INTERVAL_MS;
@@ -1237,6 +1240,7 @@ function updateCompanionAbilities() {
       }
     }
   }
+  tagMissiles();
 }
 function drawHomingMissiles() {
   for (const m of homingMissiles) {

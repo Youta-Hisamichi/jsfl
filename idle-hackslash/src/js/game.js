@@ -119,6 +119,7 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playPlayerAttackSound();
@@ -153,6 +154,7 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+        noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg);
         playPlayerAttackSound();
@@ -231,6 +233,7 @@ function step() {
           trackDamage(dmg);
           spawnHitParticles(comp.x, comp.y, comp.color);
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
+          noteElementHit(COMPANION_ELEMENT[comp.companionId], e);
           onPlayerHitEnemy(e, dmg);
           if (comp.launchUntil > Date.now()) { // 弾き飛ばされた仲間が直撃
             comp.launchUntil = 0; e.vx += comp.vx * 0.6; e.vy += comp.vy * 0.6;

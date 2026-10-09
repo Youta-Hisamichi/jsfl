@@ -997,10 +997,17 @@ function companionIconHtml(id) {
   return COMPANION_SPRITES[id] ? `<img class="comp-sprite" src="${COMPANION_SPRITES[id]}" alt="">` : COMPANIONS[id].icon;
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
-// 属性（炎・水・草の三すくみ）：炎→草→水→炎 の順に強い。有利なら与ダメージ1.5倍、不利なら0.75倍
+// 属性（炎・水・草の三すくみ）：炎→草→水→炎 の順に強い。有利なら与ダメージ2倍、不利なら0.5倍
 const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water: { icon: '💧', name: '水', color: '#3aa8ff' }, grass: { icon: '🌿', name: '草', color: '#3cbf5f' } };
 const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
-const ELEMENT_ADV = 1.5, ELEMENT_DIS = 0.75;
+const ELEMENT_ADV = 2, ELEMENT_DIS = 0.5;
+let lastElementHitAt = 0;
+function noteElementHit(attEl, target) { // 有利な属性で当てたら「こうかばつぐん！」（出しすぎないよう少し間をあける）
+  if (!target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
+  const now = Date.now(); if (now - lastElementHitAt < 900) return;
+  lastElementHitAt = now;
+  spawnDamageText(target.x, target.y - (target.radius || 12) - 46, 'こうかばつぐん！', '#ffe14f', 0.018, true);
+}
 const COMPANION_ELEMENT = {};
 [['fire', 'merchant warrior monk mage musketeer alchemist bunny lancer heavy samurai dragon dragoon bahamut'],
  ['water', 'penguin priest dancer bard princess fortune sage ninja pirate paladin pegasus archangel'],
