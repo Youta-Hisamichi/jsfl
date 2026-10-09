@@ -1665,12 +1665,23 @@ loginBonusAdBtn.addEventListener('click', ev => {
     loginBonusAdBtn.style.display = 'none';
     loginSlotNum.textContent = formatCoinNumber(r.coins / (LOGIN_AD_MULT - 1) * LOGIN_AD_MULT);
     loginBonusReward.insertAdjacentHTML('afterbegin', `<span class="lb-chip special">🎬 コイン${LOGIN_AD_MULT}倍！ ${COIN_ICO} +${formatCoinNumber(r.coins)}　💎 +${r.gems}</span>`);
-    playSlotSettleSound(); updateStatsUI(); saveGame();
+    playSlotSettleSound(); playBossFanfare(250); celebrateLoginAd(); updateStatsUI(); saveGame(); // 動画のあとはファンファーレと紙吹雪でお祝い
   };
   if (isAdFree()) { give(); return; }
   playRewardedVideo(() => { rewardAdModal.classList.remove('show'); give(); }, `、帰還ボーナスのコインが${LOGIN_AD_MULT}倍＋ジェム${LOGIN_AD_GEMS}個になります`);
 });
 
+function celebrateLoginAd() { // 帰還ボーナスのパネルに紙吹雪と「祝」バナー
+  const panel = loginSlotNum.closest('.modal-panel'); if (!panel) return;
+  const fx = document.createElement('div'); fx.className = 'login-ad-fx';
+  const cols = ['#ffd76b', '#ff5c8a', '#64e8ff', '#7ee787', '#c792ea', '#ffffff'];
+  let conf = '';
+  for (let i = 0; i < 40; i++) conf += `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - 0.5) * 120}px;--rot:${Math.random() * 900 - 450}deg;animation-duration:${1.6 + Math.random() * 1.2}s;animation-delay:${Math.random() * 0.4}s"></i>`;
+  fx.innerHTML = `<div class="lafx-text">🎉 ボーナス${LOGIN_AD_MULT}倍！おめでとう！ 🎉</div><div class="bcf-confetti">${conf}</div>`;
+  panel.appendChild(fx);
+  setTimeout(() => fx.classList.add('out'), 2800);
+  setTimeout(() => fx.remove(), 3400);
+}
 let noticeTimer = null;
 let continueTimer = null;
 let continueDeadline = 0;

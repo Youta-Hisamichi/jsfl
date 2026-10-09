@@ -2173,3 +2173,8 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .mc-advice .mc-advice-sub { margin-top: 3px; color: var(--text-dim); font-size: 0.64rem; }
 .mc-advice .el-badge { font-size: 0.62rem; }
 .mc-list .mc-ud .ht { color: #c8b6ff; } .mc-list .mc-ud .up { color: #63e394; } .mc-list .mc-ud .dn { color: #ff8a8a; }
+/* 帰還ボーナスの動画後のお祝い */
+.login-ad-fx { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; border-radius: inherit; transition: opacity 0.5s; }
+.login-ad-fx.out { opacity: 0; }
+.login-ad-fx .bcf-confetti { position: absolute; inset: 0; }
+.login-ad-fx .lafx-text { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); white-space: nowrap; padding: 6px 14px; border-radius: 12px; background: linear-gradient(180deg, #ffe58a, #ffb92e); color: #6a3a00; font-weight: 900; font-size: 1rem; box-shadow: 0 4px 14px rgba(0,0,0,0.35); animation: bcfPop 0.5s ease-out; }
