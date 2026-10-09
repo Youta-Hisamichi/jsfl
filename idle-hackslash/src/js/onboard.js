@@ -170,24 +170,20 @@ canvas.addEventListener('pointerup', event => {
   const foes = [...balls, ...adds].filter(e => !e.isPlayer && !e.isDying && e.hp > 0 && !(e.spawnTimer > 0));
   let best = null, bd = Infinity;
   for (const e of foes) { const d = Math.hypot(e.x - x, e.y - y); if (d < (e.radius || 12) * 1.4 + 10 && d < bd) { best = e; bd = d; } }
-  if (best) showEnemyInfo(best, event.clientX - rect.left + canvas.offsetLeft, event.clientY - rect.top + canvas.offsetTop);
+  if (best) showEnemyInfo(best);
 });
-function showEnemyInfo(e, px, py) {
-  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重ねて出す（戦場をふさがない）
+  const host = document.querySelector('.exp-wrap'); if (!host) return;
   let el = document.getElementById('enemyInfoPop');
-  if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; wrap.appendChild(el); }
+  if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; host.appendChild(el); }
   const key = getEnemyBookKey(e.megaOwner || e), book = ENEMY_BOOK_BY_KEY[key];
   const name = e.milestone && !game.skipChallenge ? e.milestone.label : (book && book.name) || (e.isBoss ? 'ボス' : 'モンスター');
   const el2 = getEnemyElement(e), hero = getHeroElement();
   const weak = el2 ? Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el2) : null;
   const m = elementMult(hero, el2);
-  const aff = !el2 ? '' : !hero ? '自キャラは属性なし（ふつう）' : m > 1 ? `<b class="eip-good">こうかばつぐん！（×${ELEMENT_ADV}）</b>` : m < 1 ? `<b class="eip-bad">いまひとつ…（×${ELEMENT_DIS}）</b>` : 'ふつう（×1）';
-  el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}</div>`
-    + `<div class="eip-row">Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))} / ${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</div>`
-    + `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}</div>`
-    + (aff ? `<div class="eip-row">相性 ${aff}</div>` : '');
-  const ww = wrap.clientWidth;
-  el.style.left = Math.max(8, Math.min(ww - 8, px)) + 'px'; el.style.top = Math.max(60, py - 18) + 'px';
+  const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">こうかばつぐん×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
+  el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</small></div>`
+    + `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
