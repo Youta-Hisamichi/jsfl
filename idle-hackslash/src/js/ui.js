@@ -1151,11 +1151,15 @@ function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!
 const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
 const MYTHIC_HIRE_REBIRTHS = 30; // ★5（ミカエルン・バハムート）は転生30回で解放
 function hireRebirthNeed(id) { if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_REBIRTHS; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : i + 1; } // 採用に必要な転生回数
-function isHireUnlocked(id) { return (game.reincarnations || 0) >= hireRebirthNeed(id); }
+const HIRE_STAGE_STEPS = [30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 1000, 1500, 2000]; // ★3→★4の順に、最高到達ステージの条件（キリ番）
+const MYTHIC_HIRE_STAGE = 3000; // ★5の到達ステージ条件
+function hireStageNeed(id) { if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_STAGE; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : HIRE_STAGE_STEPS[Math.min(i, HIRE_STAGE_STEPS.length - 1)]; }
+function isHireUnlocked(id) { return (game.reincarnations || 0) >= hireRebirthNeed(id) && (game.bestStage || 1) >= hireStageNeed(id); } // 転生回数と最高到達ステージの両方
+function hireNeedText(id) { const r = (game.reincarnations || 0) >= hireRebirthNeed(id), s = (game.bestStage || 1) >= hireStageNeed(id); return [r ? '' : `転生${hireRebirthNeed(id)}回`, s ? '' : `ステージ${formatStageNumber(hireStageNeed(id))}到達`].filter(Boolean).join('・'); }
 function onCompLockClick(ev) {
   const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
   const id = b.dataset.clToggle, locking = !isCompLocked(id);
-  if (!locking && !isHireUnlocked(id)) { showTapError(`🔒 転生${hireRebirthNeed(id)}回で採用できます`, ev.clientX, ev.clientY); return; }
+  if (!locking && !isHireUnlocked(id)) { showTapError(`🔒 ${hireNeedText(id)}で採用できます`, ev.clientX, ev.clientY); return; }
   if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
   const cost = compLockCost(id);
   if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
@@ -1172,7 +1176,7 @@ function openCompLockModal() {
   let ov = document.getElementById('compLockOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。★3・★4は転生1回ごとに1人ずつ、★5は転生30回で採用できるようになります。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。★3・★4は転生1回ごとに1人ずつ、★5は転生30回で採用できるようになります（最高到達ステージの条件もあります）。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -1187,7 +1191,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
     const st = off ? '<em>採用前</em>' : '採用中', guar = !off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : '';
-    const btn = off && !isHireUnlocked(id) ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">転生${hireRebirthNeed(id)}回で解放</span></button>`
+    const btn = off && !isHireUnlocked(id) ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
       : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
     return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
   }).join('');
@@ -3108,9 +3112,24 @@ document.getElementById('rankTopBtn').addEventListener('click', () => { // ラ�
       document.body.classList.add('drag-scrolling');
     }
     if (drag.axis === 'y') drag.sc.scrollTop = drag.start - dy; else drag.sc.scrollLeft = drag.start - dx;
+    const now = performance.now(), d = drag.axis === 'y' ? e.clientY : e.clientX; // 指を離したときの勢い（px/ms）
+    if (drag.lt) { const dt = Math.max(1, now - drag.lt); drag.v = 0.75 * ((d - drag.lp) / dt) + 0.25 * (drag.v || 0); }
+    drag.lt = now; drag.lp = d;
     e.preventDefault();
   }, true);
-  const end = () => { if (drag && drag.sc) { suppressClickUntil = Date.now() + 80; document.body.classList.remove('drag-scrolling'); } drag = null; };
+  let glide = 0;
+  const end = () => {
+    if (drag && drag.sc) {
+      suppressClickUntil = Date.now() + 80; document.body.classList.remove('drag-scrolling');
+      const { sc, axis } = drag; let v = (performance.now() - (drag.lt || 0) < 80 ? drag.v || 0 : 0) * 16; // 慣性：離したあとも少し滑ってからゆっくり止まる
+      cancelAnimationFrame(glide);
+      const step = () => { if (Math.abs(v) < 0.3) return; if (axis === 'y') sc.scrollTop -= v; else sc.scrollLeft -= v; v *= 0.94; glide = requestAnimationFrame(step); };
+      if (Math.abs(v) > 1) glide = requestAnimationFrame(step);
+    }
+    drag = null;
+  };
+  document.addEventListener('wheel', () => cancelAnimationFrame(glide), { passive: true, capture: true });
+  document.addEventListener('pointerdown', () => cancelAnimationFrame(glide), true); // 滑っている途中で触ったら止める
   document.addEventListener('pointerup', end, true);
   document.addEventListener('pointercancel', end, true);
   document.addEventListener('click', e => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); } }, true); // ドラッグで動かしたときはボタンを押したことにしない
