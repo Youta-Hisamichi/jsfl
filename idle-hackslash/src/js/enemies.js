@@ -483,14 +483,25 @@ function getStageEnemyKey(stage) { // そのステージの通常の敵（エリ
   return z.normal[i % z.normal.length];
 }
 const BOSS_RADIUS = 42; // ボスの大きさ（激デカは GIANT_BOSS_RADIUS）
-function getStageBossEmoji(stage) {
+// 試練の塔のボス：伝説の竜・神・女帝など格の高いボスは、まず試練の塔で出会う。一度倒せば通常のボスとしても出てくる
+const TOWER_BOSSES = ['🌋', '🧊', '😇', '🌊', '🌌', '🥇', '🪐', '🦚', '🌞', '⌛', '🦉', '⚱️', '🦴', '🐋', '🔆', '🛕', '🥀'];
+const TOWER_BOSS_SET = new Set(TOWER_BOSSES);
+function markBossBeaten(em) { if (!em) return; if (!game.bossBeaten) game.bossBeaten = {}; game.bossBeaten[em] = true; }
+function canBeNormalBoss(em) { return !TOWER_BOSS_SET.has(em) || !!(game.bossBeaten && game.bossBeaten[em]); }
+function getStageBossEmoji(stage, forTower) {
+  const tower = forTower != null ? forTower : !!(game.skipChallenge && stage === game.skipChallenge.target);
+  if (tower) { // 試練の塔は塔のボスから（ステージと転生回数で巡回）
+    const tl = TOWER_BOSSES.filter(e => !isEnemyRemoved('boss:' + e));
+    if (tl.length) return tl[(Math.floor(stage / 10) + (game.reincarnations || 0) * 7) % tl.length];
+  }
   const n = Math.floor((Math.max(10, stage) - 1) / 10);
+  const ok = e => !isEnemyRemoved('boss:' + e) && canBeNormalBoss(e); // 塔のボスは倒すまで通常ボスに出ない
   // 1周目のエリアは、転生するたびにそのエリアのボス候補（追加ボス→元のボス）が順番に入れ替わる
-  const zoneOpts = z => [...(z.extraBosses || []), z.boss].filter(e => !isEnemyRemoved('boss:' + e));
-  const lateAll = [...STAGE_ZONES.flatMap(z => [z.boss, ...(z.extraBosses || [])]), ...LATE_BOSSES];
+  const zoneOpts = z => [...(z.extraBosses || []), z.boss].filter(ok);
+  const lateAll = [...STAGE_ZONES.flatMap(z => [z.boss, ...(z.extraBosses || [])]), ...LATE_BOSSES].filter(ok);
   const opts = zoneOpts(getStageZone(stage));
-  const list = n < STAGE_ZONES.length ? (opts.length ? [opts[(game.reincarnations || 0) % opts.length]] : []) : lateAll.slice(n % lateAll.length);
-  const all = [...list, ...BOSS_EMOJIS];
+  const list = n < STAGE_ZONES.length ? (opts.length ? [opts[(game.reincarnations || 0) % opts.length]] : []) : lateAll.slice(n % Math.max(1, lateAll.length));
+  const all = [...list, ...BOSS_EMOJIS.filter(ok), ...BOSS_EMOJIS];
   return all.find(e => !isEnemyRemoved('boss:' + e)) || all[0];
 }
 function getStageAddEmojis(stage) { // 雑魚の増援も同じエリアの顔ぶれから

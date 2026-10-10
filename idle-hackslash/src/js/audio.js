@@ -1247,22 +1247,20 @@ function playCountdownTick(sec) {
   playTone(urgent ? 880 : 659.25, urgent ? 0.12 : 0.09, 'triangle', urgent ? 0.06 : 0.045); // 柔らかい三角波で控えめに
   if (urgent) setTimeout(() => playTone(1108.7, 0.06, 'triangle', 0.035), 80);
 }
-// ボス撃破の止めの音：格闘ゲームのKOのような、低めで丸い「コーン…（コーン…）」とこだまする響き
-function koKnock(at, vol) { // 1回ぶんの「コーン」：木と金属の中間のような、倍音が少しずれた響き
-  const v = (game.sfxVolume ?? 0.7) * vol;
-  for (const [f, g0, len] of [[620, 0.5, 1.1], [620 * 2.71, 0.16, 0.5], [620 * 5.2, 0.05, 0.2], [310, 0.18, 0.8]]) {
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'sine'; o.frequency.setValueAtTime(f * 1.04, at); o.frequency.exponentialRampToValueAtTime(f, at + 0.03);
-    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(g0 * v, at + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
-    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.05);
-  }
-}
+// ボス撃破の止めの音：ソシャゲの必殺技フィニッシュ風
+// 「キュイィン」と力がたまる→「ズドォン！」と重い一撃＋斬撃の「シャキン」→「キラキラ…」と光の粒が降る
 function playHomeRunSound() {
   if (activeTabCache !== 'game' || !audioCtx) return;
-  playNoiseBurst(0.025, 0.25); // コッ（当たった瞬間）
-  const t0 = audioCtx.currentTime;
-  koKnock(t0, 1); koKnock(t0 + 0.26, 0.38); koKnock(t0 + 0.52, 0.14); // コーン…コーン…（こだま）
-  noiseSweep(0.8, 1800, 300, 'bandpass', 1.5, 0.08, 0.1); // 吹っ飛んでいく風切り（控えめ）
+  noiseSweep(0.22, 600, 6000, 'bandpass', 3, 0.22);            // キュイィン（溜め：上がっていく風）
+  playTone(500, 0.22, 'sawtooth', 0.05, 2200);
+  setTimeout(() => {
+    thump(95, 28, 0.7, 0.85);                                     // ズドォン（重い低音）
+    thump(160, 50, 0.25, 0.5, 'square');
+    playNoiseBurst(0.35, 0.5);                                    // 爆風
+    noiseSweep(0.12, 9000, 3000, 'highpass', 1, 0.35);            // シャキン（斬撃）
+    playTone(2600, 0.18, 'triangle', 0.08, 1800);
+  }, 200);
+  [2637, 2349, 2093, 1760, 1568, 2093, 2637].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'sine', 0.045, f * 1.01), 450 + i * 65)); // キラキラ…
 }
 function playBossClearSound() {
   if (activeTabCache !== 'game') return;
