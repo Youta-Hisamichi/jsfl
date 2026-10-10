@@ -279,7 +279,7 @@ function checkDailyLogin() {
 }
 function showLogin7(day, got) {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 74;
-  ov.innerHTML = `<div class="modal-panel l7-panel"><div class="l7-title">📅 ログインボーナス ${day}日目</div><div class="l7-days">${LOGIN7.map((r, i) => `<div class="l7-day ${i + 1 < day ? 'got' : i + 1 === day ? 'today' : ''} ${i === 6 ? 'big' : ''}"><small>${i + 1}日目</small><b>${r.label}</b></div>`).join('')}</div><div class="l7-got">🎁 ${got}</div><div class="modal-sub">毎日ログインで報酬アップ！ 7日目は<b>仲間確定</b></div><button class="modal-close-btn">受け取る</button></div>`;
+  ov.innerHTML = `<div class="modal-panel l7-panel"><div class="l7-title">📅 ログインボーナス ${day}日目</div>${typeof greetHtml === 'function' ? greetHtml(1) : ''}<div class="l7-days">${LOGIN7.map((r, i) => `<div class="l7-day ${i + 1 < day ? 'got' : i + 1 === day ? 'today' : ''} ${i === 6 ? 'big' : ''}"><small>${i + 1}日目</small><b>${r.label}</b></div>`).join('')}</div><div class="l7-got">🎁 ${got}</div><div class="modal-sub">毎日ログインで報酬アップ！ 7日目は<b>仲間確定</b></div><button class="modal-close-btn">受け取る</button></div>`;
   document.body.appendChild(ov);
   playLoginBonusSound && playLoginBonusSound();
   ov.querySelector('.modal-close-btn').addEventListener('click', () => ov.remove());
@@ -443,3 +443,69 @@ function comboListHtml() {
 // フッター（タブ）の高さをCSSに渡す（デバッグボタンをフッターの上に置くため）
 { const setTabH = () => { const t = document.getElementById('tabBar'); if (t) document.documentElement.style.setProperty('--tabbar-h', t.getBoundingClientRect().height + 'px'); };
   setTabH(); window.addEventListener('resize', setTabH); setTimeout(setTabH, 1000); }
+
+// ===== 帰還ボーナス・ログインボーナスに、ランダムなキャラのひとこと =====
+// [おかえり（帰還ボーナス）, ログインボーナス]
+const GREET_SAY = {
+  hero:      [['フッ…待っていたぞ。闇の気配が濃くなっている', '戻ったか…俺の右腕も、お前を待ちわびていた', '留守の間、世界は俺がひとりで守っておいた'], ['今日もまた、選ばれし者の一日が始まる…', '契約の刻（とき）だ。今日の供物を受け取れ', '毎日来るとは…お前も運命に選ばれし者か']],
+  villager:  ['おかえりだべ！ 留守の間に畑で稼いでおいたべ', '今日もとれたて野菜…じゃなくてボーナスだべ！'],
+  merchant:  ['お帰りなさいませ！ 留守中の売上、しっかり預かってますよ', '毎度ありっ！ 本日のサービス品でございます'],
+  hobbit:    ['おかえり！ 朝ごはん2回分くらい待ってたよ！', '今日もいいことありそう！ はい、プレゼント！'],
+  dog:       ['ワンワン！（おかえり！しっぽ止まらない！）', 'ワフッ！（今日も遊ぼう！）'],
+  penguin:   ['おかえりペン！ 氷を用意して待ってたペン', '今日のおみやげだペン！'],
+  hamster:   ['おかえりでチュ！ ほっぺに貯めといたでチュ', '今日の種、わけてあげるでチュ！'],
+  cat:       ['…べ、別に待ってなかったニャ', '今日もなでていいニャよ。…特別ニャ'],
+  warrior:   ['おう、戻ったか！ 腕がなまってないか？', '今日も気合い入れていくぞ！'],
+  mage:      ['遅いわよ！ 魔法の練習、ひとりでしてたんだから', '今日はどれだけ吹き飛ばす？'],
+  priest:    ['ご無事で何よりです。お帰りなさい', '今日も皆さんにご加護がありますように'],
+  monk:      ['押忍！ 留守の間も修行を続けておりました', '今日の修行、始めますか！'],
+  archer:    ['おかえり。森は静かだったよ', '今日も狙いは完璧。いこう'],
+  thief:     ['よう、おかえり。留守中にちょっと稼いどいたぜ', 'へへっ、今日の戦利品、山分けな'],
+  dancer:    ['おかえりなさい♪ 再会の舞をどうぞ', '今日もステージの幕が上がるわ♪'],
+  bard:      ['おお、主役のお帰りだ！ 新しい歌ができたよ', '今日という新しい章を始めよう！'],
+  lancer:    ['戻ったか。手ごわい獲物が待ってるぞ', '今日も大物狩りといこう'],
+  alchemist: ['おかえり！ 留守中に実験が…いや、大成功よ！', '今日の試作品、受け取って！'],
+  musketeer: ['お帰りなさいませ、隊長殿！ 異常なしであります', '本日の補給物資であります！'],
+  bunny:     ['おかえり〜♪ ボーナスの大当たり、出てるかも！', '今日のラッキーアイテム、どうぞ♪'],
+  golem:     ['…オカエリ。…マッテタ', '…キョウモ、マモル'],
+  tamer:     ['おかえり！ 魔物たちもいい子にしてたよ', '今日もみんなで冒険しよ！'],
+  heavy:     ['戻ったか。留守はオレが守っておいた', '今日も盾は万全だ'],
+  cavalry:   ['お帰りなさいませ！ 愛馬も喜んでおります', '本日も駆けましょう！'],
+  samurai:   ['…おかえり。茶を淹れておいた', '…今日も、参る'],
+  summoner:  ['霊獣たちが、あなたの帰りを告げていたわ', '今日の星の巡りは…いい感じよ'],
+  sage:      ['ふぉっふぉっ、よう戻ったのう', '今日も学ぶことが多そうじゃな'],
+  fortune:   ['おかえりなさい。水晶に、あなたの帰りが映っていたわ', '今日の運勢は…大吉よ'],
+  ninja:     ['…おかえり。（ずっと影から見ていた）', '…本日の任務、承知'],
+  pirate:    ['ヨーホー！ 船長のお帰りだ！ お宝貯めといたぜ', '今日の宝、山分けだ！'],
+  paladin:   ['ご帰還、心よりお待ちしておりました', '今日も聖なる光とともに'],
+  princess:  ['お帰りなさいませ！ お茶会の準備ができておりますわ', '今日もよろしくお願いいたしますわ'],
+  dragon:    ['ガオー！ おかえり！ おなかすいた！', '今日もいっしょに燃やそー！'],
+  dragoon:   ['戻ったか。空から見守っていたぞ', '今日も高く跳ぼう'],
+  pegasus:   ['おかえり！ 天馬もうれしそう！', '今日もいい風が吹いてるよ！'],
+  king:      ['おお、よくぞ戻った！ 褒美をとらそう', '本日の褒美じゃ、受け取るがよい'],
+  archangel: ['おかえりなさい。天界から祝福を', '今日もあなたに光がありますように'],
+  bahamut:   ['…戻ったか、人の子よ。待ちくたびれたぞ', '今日の貢ぎ物…いや、褒美だ'],
+};
+function pickGreeter() { // 勇者か招集した仲間から（だれもいなければ勇者か、たまに未来の仲間がチラ見せ）
+  const own = COMPANION_IDS.filter(id => game.companions.recruited[id] && GREET_SAY[id]);
+  const pool = ['hero', ...own];
+  if (!own.length && Math.random() < 0.3) pool.push(...COMPANION_IDS.filter(id => GREET_SAY[id] && ['common', 'rare'].includes(COMPANIONS[id].rarity)));
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナス
+  const id = pickGreeter(), g = GREET_SAY[id];
+  let t = g[kind]; if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
+  const name = id === 'hero' ? '勇者' : COMPANIONS[id].name;
+  const ico = id === 'hero' ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id);
+  return `<div class="greet"><span class="gr-ico">${ico}</span><div class="gr-bubble"><b>${name}</b>${t}</div></div>`;
+}
+{ const orig = checkLoginBonus; checkLoginBonus = function () {
+  const was = loginBonusModal.classList.contains('show');
+  const r = orig.apply(this, arguments);
+  if (!was && loginBonusModal.classList.contains('show')) {
+    const days = document.getElementById('lbDays'); let el = document.getElementById('lbGreet');
+    if (!el && days) { el = document.createElement('div'); el.id = 'lbGreet'; days.parentNode.insertBefore(el, days); }
+    if (el) el.innerHTML = greetHtml(0);
+  }
+  return r;
+}; }

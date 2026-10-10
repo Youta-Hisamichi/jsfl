@@ -2384,3 +2384,11 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .my-char-box > .my-char-card { margin-bottom: 8px; }
 .mcb-title { font-weight: 900; font-size: 0.82rem; color: #ffd76b; margin: 2px 0 6px; display: flex; align-items: center; gap: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 .my-char-box .auto-toggle-btn { margin-bottom: 6px; }
+/* ボーナス画面のキャラのひとこと */
+.greet { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; text-align: left; }
+.gr-ico { flex: 0 0 52px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 2rem; border-radius: 50%; background: radial-gradient(circle, rgba(255,240,190,0.9), rgba(255,200,90,0.35)); border: 2px solid #ffd76b; animation: grHop 1.2s ease-in-out infinite alternate; }
+.gr-ico img, .gr-ico .comp-sprite { width: 46px; height: 46px; object-fit: contain; image-rendering: pixelated; }
+.gr-bubble { position: relative; flex: 1; padding: 6px 10px; border-radius: 12px; background: #fffaf0; color: #3a2a14; font-size: 0.78rem; line-height: 1.4; font-weight: 700; border: 1.5px solid rgba(120,80,20,0.5); box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.gr-bubble::before { content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fffaf0; border-left: 0; }
+.gr-bubble b { display: block; font-size: 0.66rem; color: #b06a00; margin-bottom: 1px; }
+@keyframes grHop { from { transform: translateY(0); } to { transform: translateY(-3px); } }
