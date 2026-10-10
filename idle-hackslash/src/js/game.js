@@ -1283,7 +1283,7 @@ function rollForbiddenDrop() {
   let delay = 2600;
   for (const d of FORBIDDEN_DROPS) {
     const owned = (game.ownedArtifacts && game.ownedArtifacts[d.id]) || 0;
-    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind]) continue;
+    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind] * (typeof eventDropMult === 'function' ? eventDropMult() : 1)) continue; // 日曜はドロップ率2倍
     gainArtifact(d.id); renderArtifactList(); saveGame();
     const a = ARTIFACT_BY_ID[d.id];
     setTimeout(() => { // ボス撃破の演出のあとに

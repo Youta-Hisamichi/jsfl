@@ -107,6 +107,7 @@ function checkRunProgress() {
 setInterval(() => { try { if (phase === 'battle') checkRunProgress(); } catch (e) { console.error(e); } }, 1000);
 function showRunBanner(title, text) {
   const el = document.createElement('div'); el.className = 'run-banner';
+  const n = document.querySelectorAll('.run-banner:not(.out)').length; if (n) el.style.top = `calc(18% + ${n * 82}px)`; // 同時に出たら下に並べる
   el.innerHTML = `<b>${title}</b><span>${text}</span>`;
   document.body.appendChild(el);
   playTone(784, 0.1, 'square', 0.05, 1175); setTimeout(() => playTone(1568, 0.25, 'triangle', 0.06), 120);

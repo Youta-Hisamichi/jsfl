@@ -985,6 +985,7 @@ debugRow.addEventListener('click', event => {
     showNotice('DEBUG: セーブデータを削除し、ゲームを最初からやり直しました');
     return;
   }
+  if (action === 'guerrilla') { if (typeof startGuerrilla === 'function') startGuerrilla(); return; }
   if (action === 'runStart') { if (typeof openRunStartDialog === 'function') openRunStartDialog(); return; }
   if (action === 'gimmick') { if (typeof dbgNextGimmick === 'function') dbgNextGimmick(); return; }
   if (action === 'login7') { // 7日ログインボーナス：次の日として受け取り（7日目の次は1日目）
