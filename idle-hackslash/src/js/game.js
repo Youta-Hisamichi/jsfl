@@ -1487,7 +1487,7 @@ function cooldownLabel(key, label, remaining) {
   return `${label}\n${Math.ceil(remaining / 1000)}秒`; // スキル名と残り秒数だけ
 }
 function tryGemResetSkill() {} // 待ち時間中のタップは何もしない
-const SKILL_LAST_SETTERS = [v => { lastSpecialAt = v; }, v => { lastAccelAt = v; }, v => { lastHealAt = v; }, v => { lastBarrierAt = v; }, v => { lastHomingAt = v; }, v => { lastPoisonAt = v; }, v => { lastParalyzeAt = v; }, v => { lastSleepAt = v; }, v => { lastAtkUpAt = v; }, v => { lastRegenAt = v; }, v => { lastSilenceAt = v; }, v => { lastSacrificeAt = v; }, v => { lastDeathAt = v; }, v => { lastCoinStrikeAt = v; }, v => { lastZeniAt = v; }, v => { lastMysteryAt = v; }, v => { lastCompRushAt = v; }, v => { lastNovaAt = v; }, v => { lastBlastAt = v; }];
+const SKILL_LAST_SETTERS = [v => { lastSpecialAt = v; }, v => { lastAccelAt = v; }, v => { lastHealAt = v; }, v => { lastBarrierAt = v; }, v => { lastHomingAt = v; }, v => { lastPoisonAt = v; }, v => { lastParalyzeAt = v; }, v => { lastSleepAt = v; }, v => { lastAtkUpAt = v; }, v => { lastRegenAt = v; }, v => { lastSilenceAt = v; }, v => { lastSacrificeAt = v; }, v => { lastDeathAt = v; }, v => { lastCoinStrikeAt = v; }, v => { lastZeniAt = v; }, v => { lastMysteryAt = v; }, v => { lastCompRushAt = v; }, v => { lastNovaAt = v; }, v => { lastBlastAt = v; }, v => { lastHalveAt = v; }];
 function resetAllSkillCooldowns() { SKILL_LAST_SETTERS.forEach(set => set(0)); } // 発動中の効果はそのまま、待ち時間だけ消す
 function anySkillCoolingDown() { return [...document.querySelectorAll('#skillRow .action-btn[id$="Btn"]:not(#redPotionBtn)')].some(b => b.style.display !== 'none' && /\d+秒/.test(b.textContent)); }
 
@@ -1627,6 +1627,7 @@ function renderSkillButton(btn, skillKey, resetKey, label, cooldown, lastAt, act
 function updateDeathButton() { renderSkillButton(deathBtn, 'skillDeath', 'death', '💀 即死魔法', SKILL_DEATH_COOLDOWN, lastDeathAt); }
 function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン攻撃', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン攻撃中'); }
 function updateZeniButton() { renderSkillButton(zeniBtn, 'skillZeni', 'zeni', '💰 ゼニ投げ', SKILL_ZENI_COOLDOWN, lastZeniAt); }
+function updateHalveButton() { renderSkillButton(halveBtn, 'skillHalve', 'halve', '🌗 半減魔法', SKILL_HALVE_COOLDOWN, lastHalveAt); }
 function updateBlastButton() { renderSkillButton(blastBtn, 'skillBlast', 'blast', '💣 大爆発', SKILL_BLAST_COOLDOWN, lastBlastAt); }
 function updateNovaButton() { renderSkillButton(novaBtn, 'skillNova', 'nova', '💥 全体攻撃', SKILL_NOVA_COOLDOWN, lastNovaAt); }
 function updateCompRushButton() { renderSkillButton(compRushBtn, 'skillCompRush', 'compRush', '🐾 仲間特攻', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt); }

@@ -790,6 +790,7 @@ function updateStatsUI() {
   updateCompRushButton();
   updateNovaButton();
   updateBlastButton();
+  updateHalveButton();
 }
 
 const RENDER_DPR_MAX = 2; // 高解像度スマホでも描画は最大2倍まで（3倍近い端末で描く画素が半分ほどに減り軽くなる）
@@ -1723,6 +1724,9 @@ let novaFx = null; // 全体攻撃の衝撃波 { start }
 const SKILL_BLAST_COOLDOWN = 90 * 1000;
 const BLAST_DMG_MULT = 15; // 大爆発：敵1体あたり攻撃力の15倍（ボスは2割増しの手応え演出のみ）
 let lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
+const SKILL_HALVE_COOLDOWN = 60 * 1000;
+const HALVE_CHANCE_BOSS = 0.15; // 半減魔法がボスに効く確率（効いたらそのボスにはもう効かない）
+let lastHalveAt = Date.now() - SKILL_HALVE_COOLDOWN;
 let blastFx = null; // 大爆発の閃光 { start }
 function isCoinStrike() { return Date.now() < coinStrikeEndAt; }
 function beginSkill(event, skillKey, resetKey, cooldown, lastAt, setLast, updateFn, needEnemy = true) {

@@ -567,6 +567,7 @@ function fullReset() {
   lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
   lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
   lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
+  lastHalveAt = Date.now() - SKILL_HALVE_COOLDOWN;
   game.startedAt = Date.now();
   game.playTimeMs = 0;
   particles = []; damageTexts = []; meteors = []; adds = []; clearEnemyTraitObjects(); flyouts = [];
@@ -917,6 +918,8 @@ debugRow.addEventListener('click', event => {
     updateNovaButton();
     lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
     updateBlastButton();
+    lastHalveAt = Date.now() - SKILL_HALVE_COOLDOWN;
+    updateHalveButton();
     updateDeathButton();
     updateCoinStrikeButton();
     updateZeniButton();
@@ -2286,6 +2289,25 @@ novaBtn.addEventListener('click', event => {
   updateHPUI();
 });
 // 大爆発：画面全体を白く飛ばす閃光と、炎の火球が広がる
+halveBtn.addEventListener('click', event => { // 半減魔法：敵のHPを半分に（ボスにはまれに・1体1回だけ）
+  const ctxs = beginSkill(event, 'skillHalve', 'halve', SKILL_HALVE_COOLDOWN, lastHalveAt, v => { lastHalveAt = v; }, updateHalveButton);
+  if (!ctxs) return;
+  const { enemy } = ctxs;
+  for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * 2.2, vy: Math.sin(a) * 2.2, life: 1, color: i % 2 ? '#9b8cff' : '#ffe36b', decay: 0.03 }); }
+  playTone(660, 0.35, 'triangle', 0.1, 330); setTimeout(() => playTone(330, 0.4, 'sine', 0.1, 165), 160);
+  const y = enemy.y - enemy.radius - 30;
+  if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
+  else if (enemy.isBoss && Math.random() >= HALVE_CHANCE_BOSS) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
+  else {
+    const cut = Math.floor(enemy.hp / 2);
+    if (cut > 0) { enemy.hp -= cut; trackDamage(cut); }
+    if (enemy.isBoss) enemy.halved = true;
+    spawnDamageText(enemy.x, y, enemy.isBoss ? '🌗 ボスのHPが半分に！！' : '🌗 HP半減！', '#ffe36b', 0.012, true);
+    if (enemy.isBoss) shakeScreen(); else shakeScreenLight();
+    if (typeof onPlayerHitEnemy === 'function' && cut > 0) onPlayerHitEnemy(enemy, cut);
+  }
+  updateHalveButton(); updateHPUI();
+});
 blastBtn.addEventListener('click', event => {
   const targets = () => [...balls.filter(x => !x.isPlayer && !x.isDying && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
   if (game.shopOwned.skillBlast && !targets().length && Date.now() - lastBlastAt >= skillCd('skillBlast', SKILL_BLAST_COOLDOWN)) { showTapError('敵がいません', event.clientX, event.clientY); return; }
@@ -2667,7 +2689,7 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
   const span = btn.querySelector('.tab-icon');
   if (src && span) span.innerHTML = `<img class="ico-img" src="${src}" alt="">`;
 });
-const SKILL_BUTTON_KEYS = { specialBtn: 'skillSpecial', accelBtn: 'skillAccel', healBtn: 'skillHeal', barrierBtn: 'skillBarrier', poisonBtn: 'skillPoison', paralyzeBtn: 'skillParalyze', atkUpBtn: 'skillAtkUp', regenBtn: 'skillRegen', silenceBtn: 'skillSilence', deathBtn: 'skillDeath', coinStrikeBtn: 'skillCoinStrike', zeniBtn: 'skillZeni', mysteryBtn: 'skillMystery', compRushBtn: 'skillCompRush', novaBtn: 'skillNova', blastBtn: 'skillBlast' };
+const SKILL_BUTTON_KEYS = { specialBtn: 'skillSpecial', accelBtn: 'skillAccel', healBtn: 'skillHeal', barrierBtn: 'skillBarrier', poisonBtn: 'skillPoison', paralyzeBtn: 'skillParalyze', atkUpBtn: 'skillAtkUp', regenBtn: 'skillRegen', silenceBtn: 'skillSilence', deathBtn: 'skillDeath', halveBtn: 'skillHalve', coinStrikeBtn: 'skillCoinStrike', zeniBtn: 'skillZeni', mysteryBtn: 'skillMystery', compRushBtn: 'skillCompRush', novaBtn: 'skillNova', blastBtn: 'skillBlast' };
 function decorateSkillButton(btn) {
   const node = btn.firstChild;
   if (!node || node.nodeType !== 3) return; // すでに画像化済み
