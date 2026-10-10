@@ -2432,3 +2432,9 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .sc-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
 .sc-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .sc-btns > button { width: 100%; margin: 0 !important; justify-content: center; text-align: center; }
+/* 仲間ページの自キャラカード：タイプ・長所・短所を読みやすく（大きめの文字・白い下地のチップ・濃い色） */
+#myCharCard .mc-ud { gap: 3px; margin-top: 4px; font-size: 0.74rem; line-height: 1.25; }
+#myCharCard .mc-ud i { display: inline-block; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,0.88); border: 1px solid rgba(0,0,0,0.12); font-weight: 800; }
+#myCharCard .mc-ud .ht { color: #4b2fa8; }
+#myCharCard .mc-ud .up { color: #0e7a3a; }
+#myCharCard .mc-ud .dn { color: #b3261e; }
