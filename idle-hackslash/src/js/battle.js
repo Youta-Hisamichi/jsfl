@@ -1642,8 +1642,9 @@ function checkLoginBonus(awayMs) {
     loginBonusAdBtn.style.display = '';
     updateStatsUI(); updatePotionButton(); renderArtifactList();
   };
-  later(finish, t + 350 + 1500);
   loginGachaSkip = finish;
+  finish(); // 抽選の演出を待たせず、開いたらすぐ結果を出す
+  if (rIdx >= 2) playLoginBonusSound();
 }
 document.getElementById('lbPanel').addEventListener('click', ev => {
   if (loginGachaSkip) { ev.stopPropagation(); loginGachaSkip(); }

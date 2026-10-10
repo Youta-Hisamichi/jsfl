@@ -10,7 +10,6 @@ const GIMMICKS = {
   thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.3)' },
   bubbles:   { name: 'シャボン玉の庭', icon: '🫧', desc: 'シャボン玉を割るとコイン', coin: 1 },
   gold:      { name: 'ゴールドラッシュ', icon: '💰', desc: '撃破コイン×2！', coin: 2, tint: 'rgba(255,200,40,0.08)' },
-  petals:    { name: '桜吹雪', icon: '🌸', desc: '花びらが舞う。コイン×1.2', coin: 1.2 },
   whirl:     { name: '大渦の間', icon: '🌀', desc: '中心のまわりをぐるぐる流される', coin: 1.2 },
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
   rocks:     { name: '落石注意', icon: '🪨', desc: '岩が降ってきて敵をつぶす', coin: 1.1 },
@@ -20,7 +19,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'balloons', 'night', 'wind', 'treasure', 'fireworks', 'bubbles', 'thunder', 'gold', 'petals', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
+const GIMMICK_FIRST_RUN = ['stars', 'balloons', 'night', 'wind', 'treasure', 'fireworks', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -86,7 +85,7 @@ function tickGimmick(sp) {
     else if (key === 'rocks') { gm.nextAt = gm.t + gRand(140, 210); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'coinrain') { gm.nextAt = gm.t + gRand(14, 30); gm.items.push({ kind: 'coin', x: gRand(A.l + 16, A.r - 16), y: A.t - 10, vy: gRand(1.2, 2), spin: Math.random() * 6, landY: gRand(A.t + A.h * 0.3, A.b - 16) }); }
     else if (key === 'night') { gm.nextAt = gm.t + 120; if (gm.items.filter(i => i.kind === 'firefly').length < 6) gm.items.push(makeFirefly(A)); }
-    else if (key === 'petals' || key === 'snow') { gm.nextAt = gm.t + 3; gm.fx.push({ kind: key === 'snow' ? 'flake' : 'petal', x: gRand(A.l - 20, A.r), y: A.t - 8, vx: gRand(0.3, 0.9), vy: gRand(0.6, 1.3), rot: Math.random() * 6, s: gRand(3, 6) }); }
+    else if (key === 'snow') { gm.nextAt = gm.t + 3; gm.fx.push({ kind: 'flake', x: gRand(A.l - 20, A.r), y: A.t - 8, vx: gRand(0.3, 0.9), vy: gRand(0.6, 1.3), rot: Math.random() * 6, s: gRand(3, 6) }); }
     else if (key === 'wind') { gm.nextAt = gm.t + 2; gm.fx.push({ kind: 'streak', x: gRand(A.l, A.r), y: gRand(A.t, A.b), life: 1, len: gRand(20, 60) }); }
     else gm.nextAt = gm.t + 60;
   }
@@ -128,7 +127,7 @@ function tickGimmick(sp) {
       if (f.t >= 50) { f.dead = true; gimmickStrike(f); }
     }
     else if (f.kind === 'bolt' || f.kind === 'crash') { f.life -= 0.06 * sp; if (f.life <= 0) f.dead = true; }
-    else if (f.kind === 'petal' || f.kind === 'flake') { f.x += (f.vx + Math.sin(gm.t * 0.03 + f.rot) * 0.4) * sp; f.y += f.vy * sp; f.rot += 0.05 * sp; if (f.y > A.b + 10) f.dead = true; }
+    else if (f.kind === 'flake') { f.x += (f.vx + Math.sin(gm.t * 0.03 + f.rot) * 0.4) * sp; f.y += f.vy * sp; f.rot += 0.05 * sp; if (f.y > A.b + 10) f.dead = true; }
     else if (f.kind === 'streak') { f.life -= 0.03 * sp; f.x += Math.cos(gm.wind) * 6 * sp; f.y += Math.sin(gm.wind) * 6 * sp; if (f.life <= 0) f.dead = true; }
   }
   gm.fx = gm.fx.filter(f => !f.dead);
@@ -234,7 +233,6 @@ function drawGimmickFx(f, now) {
     if (f.kind === 'rockfall') { const A = gArea(), y = A.t - 30 + (f.y - A.t + 30) * p * p; ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 16 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; if (!(typeof drawObstacleSprite === 'function' && drawObstacleSprite('rock', f.x, y, 34, p * 4))) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(f.x, y, 15, 0, Math.PI * 2); ctx.fill(); } } }
   else if (f.kind === 'bolt') { const A = gArea(); ctx.strokeStyle = `rgba(255,250,200,${f.life})`; ctx.lineWidth = 4; ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 18; ctx.beginPath(); let x = f.x + gRand(-20, 20), y = A.t; ctx.moveTo(x, y); const n = 7; for (let i = 1; i <= n; i++) { y = A.t + (f.y - A.t) * i / n; x = i === n ? f.x : f.x + gRand(-18, 18); ctx.lineTo(x, y); } ctx.stroke(); ctx.shadowBlur = 0; }
   else if (f.kind === 'crash') { ctx.strokeStyle = `rgba(200,180,150,${f.life})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (2 - f.life), 0, Math.PI * 2); ctx.stroke(); }
-  else if (f.kind === 'petal') { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.fillStyle = 'rgba(255,183,210,0.9)'; ctx.beginPath(); ctx.ellipse(0, 0, f.s, f.s * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
   else if (f.kind === 'flake') { ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.s * 0.5, 0, Math.PI * 2); ctx.fill(); }
   else if (f.kind === 'streak') { ctx.strokeStyle = `rgba(230,255,230,${0.35 * f.life})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.x - Math.cos(gm.wind) * f.len, f.y - Math.sin(gm.wind) * f.len); ctx.stroke(); if (Math.random() < 0.02) { ctx.fillStyle = '#7ccf5a'; ctx.beginPath(); ctx.ellipse(f.x, f.y, 4, 2, gm.wind, 0, Math.PI * 2); ctx.fill(); } }
 }
