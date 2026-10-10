@@ -71,6 +71,7 @@ function step() {
     e.hitCooldown = Math.max(e.hitCooldown || 0, 10); // 出現中は無敵気味に
     if (e.spawnTimer > 0) { movePlayerSideBalls(balls, speedMult, b); resolveAllyCollisions(); return; } // 完全出現までは攻撃判定なし
   }
+  if (e.knifeCut && !e.knifeShown) { e.knifeShown = true; spawnDamageText(e.x, e.y - e.radius - 14, `🔪 HP -${e.knifeCut}%`, '#ff6b8a', 0.02); } // 禁断のナイフ
 
   const swarm = !e.isBoss && isSwarmStage(game.stage);
   if (swarm && !e.swarmStarted) { // 大群ステージ：開始時にまとめて出現し、減ったら補充
@@ -1270,6 +1271,13 @@ function applyForbiddenSword(e) { // 禁断の剣：1個につきボスのHPを1
   for (let i = 0; i < 16; i++) particles.push({ x: e.x + (Math.random() - 0.5) * e.radius * 2, y: e.y + (Math.random() - 0.5) * e.radius * 2, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 2, life: 1, color: i % 2 ? '#c04cff' : '#ff4c8a', decay: 0.025 });
   playTone(180, 0.4, 'sawtooth', 0.12, 60); shakeScreenLight(); updateHPUI();
 }
+function applyForbiddenKnife(e) { // 禁断のナイフ：雑魚が現れたとき、1本につきHPを1%削る（最大50本）
+  const n = Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, (game.ownedArtifacts && game.ownedArtifacts.forbiddenKnife) || 0);
+  if (!n || !e || !(e.maxHp > 0)) return;
+  e.hp = Math.max(1, Math.min(e.hp, Math.ceil(e.maxHp * (1 - n / 100))));
+  e.knifeCut = n; // 出現したときに小さく表示
+}
+{ const orig = makeBall; makeBall = function (isPlayer) { const e = orig.apply(this, arguments); if (!isPlayer && e && !e.isBoss) applyForbiddenKnife(e); return e; }; }
 function bossLandingFx(e) { // ボス着地：地響き・砂煙・名乗り
   if (!game.skipChallenge) setTimeout(applyBombDebt, 300); // 雑魚戦で爆弾に当たった分
   setTimeout(() => applyForbiddenSword(e), 600); // 禁断の剣：ボスのHPを削る

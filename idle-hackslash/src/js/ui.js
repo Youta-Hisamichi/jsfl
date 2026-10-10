@@ -1133,6 +1133,7 @@ shopList.addEventListener('click', event => {
   else if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); line = `+${item.bundle || 1}個 → 所持 ${game[item.consumableKey]}個`; }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
+  if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（${game.ownedArtifacts.forbiddenKnife}本・雑魚HP -${Math.min(50, game.ownedArtifacts.forbiddenKnife)}%）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オート強化が使えるようになった！（強化ページでON/OFF）'; }
   showShopPurchaseFx(ico(item), item.name, line);
