@@ -1010,7 +1010,7 @@ upgradeList.addEventListener('click', event => {
     game.upgrades[id] += count;
     announceUpgradeLeap(id, fromLv, game.upgrades[id]);
     refreshPlayerBallStats(false);
-    playUpgradeSound();
+    if (isPct) playUpgradeSoundClassic(); else playUpgradeSound(); // 10%は元の音
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
     showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv` + leapPopLine(fromLv, game.upgrades[id]));
     updateStatsUI();

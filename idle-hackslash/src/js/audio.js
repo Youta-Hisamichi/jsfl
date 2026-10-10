@@ -1347,27 +1347,27 @@ function playRegisterSound() {
     }, 60);
   }, rapid ? 0 : 70);
 }
-// レベルアップ音：ピロピロッと駆け上がる「1UP」風のオリジナルのファンファーレ（ありがたみ重視）
-// 長押しの連続強化などで続けて鳴るときは、うるさくならないように短い「ピロッ」だけにする
+// レベルアップ音：短く駆け上がる「パワーアップ」風（3音の分散和音を少しずつ上げて3回、約0.35秒）
+// 長押しの連続強化などで続けて鳴るときは、最後のひと組だけにして重ならないように
 let lastUpgradeSoundAt = 0;
-const UPGRADE_JINGLE = [783.99, 987.77, 1174.66, 1567.98, 1318.51, 2093.0]; // ソ・シ・レ・ソ・ミ・ド（上のソから折り返して高いドで決める）
+const UPGRADE_ARPS = [[523.25, 659.25, 783.99], [587.33, 739.99, 880.0], [659.25, 830.61, 987.77]]; // ドミソ→レファ#ラ→ミソ#シ
 function playUpgradeSound() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = performance.now(), quick = now - lastUpgradeSoundAt < 450; lastUpgradeSoundAt = now;
-  const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
-  const notes = quick ? UPGRADE_JINGLE.slice(3) : UPGRADE_JINGLE, step = quick ? 0.045 : 0.07;
+  const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime, step = 0.036;
+  const notes = (quick ? UPGRADE_ARPS.slice(2) : UPGRADE_ARPS).flat();
   notes.forEach((f, i) => {
-    const last = i === notes.length - 1, at = t0 + i * step, len = last ? (quick ? 0.16 : 0.34) : step * 0.95;
-    for (const [type, mul, vol] of [['square', 1, 0.07], ['triangle', 0.5, 0.09]]) { // 矩形波のきらきら＋1オクターブ下で厚み
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = type; o.frequency.setValueAtTime(f * mul, at);
-      if (last && !quick) { const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain(); lfo.frequency.value = 9; lg.gain.value = f * mul * 0.012; lfo.connect(lg); lg.connect(o.frequency); lfo.start(at + 0.08); lfo.stop(at + len); } // 最後の音は少しビブラート
-      const peak = vol * v * (last ? 1.2 : 1);
-      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.005);
-      g.gain.setValueAtTime(peak, at + len * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
-      o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.02);
-    }
+    const last = i === notes.length - 1, at = t0 + i * step, len = last ? 0.12 : step * 0.9;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'square'; o.frequency.setValueAtTime(f, at);
+    const peak = 0.045 * v;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.02);
   });
+}
+function playUpgradeSoundClassic() { // 元のレベルアップ音（10%まとめ強化で使う）
+  playTone(660, 0.08, 'triangle', 0.12, 880);
+  setTimeout(() => playTone(990, 0.12, 'triangle', 0.14), 70);
 }
 function playSpecialSound() { // メテオ発動：空を裂いて燃えながら落ちてくる「ヒュゴォォォ…」
   noiseSweep(0.9, 500, 2600, 'bandpass', 1.4, 0.32);              // 炎をまとって迫る轟音（だんだん大きく明るく）
