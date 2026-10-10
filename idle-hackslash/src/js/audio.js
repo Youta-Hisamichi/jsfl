@@ -1414,7 +1414,7 @@ function playAccelSound() {
 function playHealSound() {
   [523.25, 659.25, 880].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.14), i * 70));
 }
-// 大回復：キラキラと駆け上がる分散和音のあとに、明るい和音がふわっと広がって満ちる（スキル全開の赤ポーション）
+// 大回復：キラキラと駆け上がる分散和音のあとに、明るい和音がふわっと広がって満ちる（スキル全快ポーション）
 function playFullRestoreSound() {
   [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98, 2093].forEach((f, i) => setTimeout(() => { playTone(f, 0.22, 'sine', 0.11); playTone(f * 2, 0.08, 'triangle', 0.03); }, i * 55));
   setTimeout(() => {

@@ -734,7 +734,7 @@ function simpleChoice(o) { // 軽い2択ダイアログ
   playTone(880, 0.08, 'triangle', 0.08);
 }
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
-SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
+SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全快ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 SHOP_ITEMS.hireTicket = { icon: '🎫', name: 'ピックアップ採用券', desc: '★4・★5の仲間を1人、転生・ステージの条件なしで採用できるように（ショップの仲間タブで未解放の仲間を押して使う）', cost: 300, consumableKey: 'hireTickets' };
 SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生しても残る）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
 SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };

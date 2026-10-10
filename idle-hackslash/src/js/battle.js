@@ -2040,12 +2040,12 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     updatePotionButton();
     showNotice(`🧪 宝箱から回復ポーションを手に入れた！（所持 ${game.potions}個）`);
   }
-  // ★3以上の宝箱は、たまにスキル全開の赤ポーションも（3個以上持っているときは入らない）
+  // ★3以上の宝箱は、たまにスキル全快ポーションも（3個以上持っているときは入らない）
   if (CHEST_POTION_RARITIES.includes(rarity) && (game.redPotions || 0) < CHEST_POTION_MAX_HELD && Math.random() < CHEST_POTION_CHANCE) {
     game.redPotions = (game.redPotions || 0) + 1;
-    loot.sub = (loot.sub ? loot.sub + '<br>' : '') + '<b style="color:#ff5c6c"><i class="ico-redpot"></i> スキル全開の赤ポーションも入っていた！ +1</b>';
+    loot.sub = (loot.sub ? loot.sub + '<br>' : '') + '<b style="color:#ff5c6c"><i class="ico-redpot"></i> スキル全快ポーションも入っていた！ +1</b>';
     updateRedPotionButton();
-    showNotice(`🔴 宝箱からスキル全開の赤ポーションを手に入れた！（所持 ${game.redPotions}個）`);
+    showNotice(`🔴 宝箱からスキル全快ポーションを手に入れた！（所持 ${game.redPotions}個）`);
   }
   // ★3以上の宝箱は、ジェムが3個以下のときだけジェムも入っていることがある
   if (CHEST_POTION_RARITIES.includes(rarity) && (game.gems || 0) <= CHEST_GEM_MAX_HELD && Math.random() < CHEST_GEM_CHANCE) {
