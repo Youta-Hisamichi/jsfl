@@ -1347,26 +1347,27 @@ function playRegisterSound() {
     }, 60);
   }, rapid ? 0 : 70);
 }
-// レベルアップ音：パチスロの予告みたいな短い「ヴッ」（低い唸りを細かく震わせる）
+// レベルアップ音：スマホゲームのような明るい「キラキラッ↑シャラーン」（鈴の音が駆け上がって和音で鳴り響く）
+// 長押しの連続強化などで続けて鳴るときは、最後の和音だけの短い「キラン」
 let lastUpgradeSoundAt = 0;
+function upgradeBell(f, at, len, vol, v) { // 鈴の音：サイン波＋高い倍音、すぐ立ち上がってゆっくり消える
+  for (const [mul, g0] of [[1, 1], [2.01, 0.35], [3.98, 0.12]]) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f * mul, at);
+    const peak = vol * g0 * v;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, at + len / mul ** 0.3);
+    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.05);
+  }
+}
 function playUpgradeSound() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = performance.now(), quick = now - lastUpgradeSoundAt < 450; lastUpgradeSoundAt = now;
-  const v = game.sfxVolume ?? 0.7, at = audioCtx.currentTime, len = quick ? 0.11 : 0.17;
-  const out = audioCtx.createGain(), lp = audioCtx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, at); lp.frequency.exponentialRampToValueAtTime(700, at + len);
-  out.gain.setValueAtTime(0.0001, at); out.gain.exponentialRampToValueAtTime(0.22 * v, at + 0.006);
-  out.gain.setValueAtTime(0.22 * v, at + len * 0.55); out.gain.exponentialRampToValueAtTime(0.0001, at + len);
-  const trem = audioCtx.createGain(), lfo = audioCtx.createOscillator(), lfoG = audioCtx.createGain(); // 細かい震え（ヴヴヴ）
-  lfo.type = 'square'; lfo.frequency.value = 38; lfoG.gain.value = 0.45; trem.gain.value = 0.55;
-  lfo.connect(lfoG); lfoG.connect(trem.gain);
-  for (const [type, f, g0] of [['sawtooth', 98, 0.9], ['square', 196, 0.35], ['sawtooth', 147, 0.4]]) {
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = type; o.frequency.setValueAtTime(f, at); o.frequency.exponentialRampToValueAtTime(f * 0.94, at + len);
-    g.gain.value = g0; o.connect(g); g.connect(trem); o.start(at); o.stop(at + len + 0.02);
-  }
-  trem.connect(lp); lp.connect(out); out.connect(audioCtx.destination);
-  lfo.start(at); lfo.stop(at + len + 0.02);
+  const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
+  if (quick) { [1046.5, 1568.0].forEach((f, i) => upgradeBell(f, t0 + i * 0.03, 0.22, 0.09, v)); return; }
+  [783.99, 1046.5, 1318.51, 1567.98].forEach((f, i) => upgradeBell(f, t0 + i * 0.05, 0.25, 0.08, v)); // キラキラッ↑
+  const c = t0 + 0.22;
+  [1046.5, 1318.51, 1567.98, 2093.0].forEach((f, i) => upgradeBell(f, c + i * 0.012, 0.7, 0.07, v)); // シャラーン（和音）
+  for (let i = 0; i < 6; i++) upgradeBell(2637 + i * 220, c + 0.04 + i * 0.045, 0.18, 0.025, v); // 残りのきらめき
 }
 function playUpgradeSoundClassic() { // 元のレベルアップ音（10%まとめ強化で使う）
   playTone(660, 0.08, 'triangle', 0.12, 880);

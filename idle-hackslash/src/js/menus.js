@@ -3,7 +3,7 @@ function renderSkillGacha() {
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
   // サブウェポンと同じシンプルな見出し：装備数／枠数と「＋枠を増やす」だけ（スロット一覧は出さない）
-  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1">＋枠を増やす 💎${getSkillSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1">＋枠を増やす<br>💎${getSkillSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
@@ -22,7 +22,7 @@ function renderSkillGacha() {
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
   const weq = getEquippedWeapons(), wslots = getWeaponSlots();
   const wHead = document.getElementById('weaponSlotHead');
-  const wHeadHtml = `<span>装備枠 <b>${weq.length} / ${wslots}</b></span>` + (wslots < WEAPON_SLOT_MAX ? `<button class="${game.gems < getWeaponSlotCost() ? 'is-disabled' : ''}" data-weapon-slot="1">＋枠を増やす 💎${getWeaponSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  const wHeadHtml = `<span>装備枠 <b>${weq.length} / ${wslots}</b></span>` + (wslots < WEAPON_SLOT_MAX ? `<button class="${game.gems < getWeaponSlotCost() ? 'is-disabled' : ''}" data-weapon-slot="1">＋枠を増やす<br>💎${getWeaponSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
   if (wHead && wHead.dataset.html !== wHeadHtml) { wHead.innerHTML = wHeadHtml; wHead.dataset.html = wHeadHtml; }
   const wHtml = (Object.entries(WEAPONS).filter(([id]) => getWeaponLv(id)).map(([id, W]) => {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);

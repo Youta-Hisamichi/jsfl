@@ -2401,3 +2401,4 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #weaponGachaBtn { position: relative; isolation: isolate; }
 #weaponGachaBtn::before { content: ''; position: absolute; left: 50%; top: 42%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; z-index: -1; pointer-events: none; }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #weaponGachaBtn::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
+.weapon-slot-head button { line-height: 1.2; text-align: center; white-space: nowrap; } /* 「＋枠を増やす」とジェム数を2行に */
