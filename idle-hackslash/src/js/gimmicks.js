@@ -19,10 +19,11 @@ const GIMMICKS = {
   pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
   blocks:    { name: 'ブロック叩きまくり', icon: '🧱', desc: 'ハテナブロックを何度も叩いてコイン', coin: 1 },
+  tansu:     { name: 'タンス開けまくり', icon: '🗄️', desc: 'タンスを調べまくってお宝さがし！', coin: 1 },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'balloons', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'balloons', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -295,6 +296,7 @@ const GM_FILL = {
   pots:   { kind: 'pot', n: 16, size: 0.07, regrow: 70 },
   mow:    { kind: 'bush', n: 26, size: 0.055, regrow: 35 },
   blocks: { kind: 'qbox', n: 12, size: 0.075, regrow: 0, hits: 6 },
+  tansu:  { kind: 'qbox', n: 9, size: 0.085, regrow: 80, hits: 3, tansu: true },
 };
 function gmFillSpots() { // ゲーム画面いっぱいの格子（少しずらして自然に）
   const A = gArea(), pts = [], cols = 6, rows = Math.max(5, Math.round(cols * A.h / A.w));
@@ -304,7 +306,7 @@ function gmFillSpots() { // ゲーム画面いっぱいの格子（少しずら�
 function gmMakeObstacle(key, p, rnd) {
   const F = GM_FILL[key], r = arena.radius * F.size, floorKey = getFloorKey(game.stage);
   const o = { x: p.x, y: p.y, r, seed: rnd(), kind: F.kind, hp: F.kind === 'qbox' ? 1 : 1, cracks: [], gm: key, bornAt: Date.now() };
-  if (F.kind === 'qbox') o.multi = F.hits; // 何度も叩ける
+  if (F.kind === 'qbox') { o.multi = F.hits; if (F.tansu) o.tansu = true; } // 何度も叩ける（タンスは引き出し3段）
   else o.sprite = F.kind === 'bush' ? ['b_bush', 'b_bush2', 'b_bush3'][Math.floor(rnd() * 3)] : natureSpriteFor(F.kind, floorKey, rnd);
   return o;
 }
@@ -321,6 +323,7 @@ let gmRegrowT = 0;
 { const orig = tickGimmick; tickGimmick = function (sp) {
   orig.apply(this, arguments);
   const k = gm.key, F = GM_FILL[k]; if (!F || !F.regrow) return;
+  for (const o of obstacles) if (o.tansu && o.used && Date.now() - (o.usedAt || 0) > 3000) o.broken = true; // 空になったタンスは消える
   if (gm.lastFill !== game.stage + ':' + k) { gm.lastFill = game.stage + ':' + k; if (!obstacles.some(o => o.gm === k)) fillGimmickObstacles(k); }
   gmRegrowT += sp; if (gmRegrowT < F.regrow) return; gmRegrowT = 0;
   if (obstacles.filter(o => o.gm === k).length >= F.n) return;
@@ -340,6 +343,7 @@ let gmRegrowT = 0;
 }; }
 // ハテナブロック：何度も叩ける（叩くたびにコイン、最後の1回は豪華）
 { const orig = openQBox; openQBox = function (o) {
+  if (o.tansu) return openTansu(o);
   if (!o.gm || !(o.multi > 0)) return orig.apply(this, arguments);
   if (Date.now() - (o.popAt || 0) < 220) return; // 連続ヒットしすぎないように
   o.multi--; o.popAt = Date.now(); gm.broke = (gm.broke || 0) + 1;
@@ -350,3 +354,24 @@ let gmRegrowT = 0;
   playTone(988, 0.06, 'square', 0.06); setTimeout(() => playCoinChime(gm.broke % 13), 50);
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }; }
+
+// タンス：ぶつかるたびに引き出しを1段ずつ開けて、中身を見つける（RPGの「タンスを調べた！」）
+const TANSU_JUNK = ['古びたくつしたを見つけた…', 'ホコリが舞った…', 'なにもなかった…', 'ヘソクリのメモ「残念でした」', 'ぬいぐるみがこっちを見ている…'];
+function openTansu(o) {
+  if (o.used || Date.now() - (o.popAt || 0) < 250) return;
+  o.multi = (o.multi || 3) - 1; o.popAt = Date.now(); o.opened = true; gm.broke = (gm.broke || 0) + 1;
+  if (o.multi <= 0) { o.used = true; o.usedAt = Date.now(); }
+  playTone(520, 0.05, 'square', 0.05, 380); setTimeout(() => playTone(700, 0.08, 'triangle', 0.06), 70); // ガラッ
+  const x = o.x, y = o.y - o.r - 12, r = Math.random(), unit = Math.max(1, stageCoinRaw() * computeBonuses().coinMult);
+  let txt, col = '#ffd76b';
+  if (r < 0.45) { const c = Math.round(unit * (0.3 + Math.random() * 0.5)); game.coins += c; spawnCoinDrop(x, o.y, c, 3); txt = `💰 ${formatCoinNumber(c)}コインを見つけた！`; playCoinChime(gm.broke % 13); }
+  else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '🌿 やくそうを見つけた！ HP回復'; col = '#7ee787'; }
+  else if (r < 0.65) { game.gems += 1; txt = '💎 ジェムを見つけた！'; col = '#64e8ff'; playCoinChime(10); }
+  else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
+  else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキル全快ポーションを見つけた！'; col = '#ff8ad8'; }
+  else { txt = TANSU_JUNK[Math.floor(Math.random() * TANSU_JUNK.length)]; col = '#c8c8d0'; }
+  spawnDamageText(x, y, txt, col, 0.016, r < 0.74);
+  spawnHitParticles(x, o.y - o.r * 0.4, '#e8c080');
+  if (gm.broke % 15 === 0) { const b = Math.round(unit * 6); game.coins += b; spawnCoinBurst(arena.x, arena.y - 20, b, 8); spawnDamageText(arena.x, arena.y - 44, `🗄️ タンス ${gm.broke}段！ ボーナス`, '#ffe36b', 0.012, true); }
+  updateStatsUI();
+}

@@ -1061,6 +1061,7 @@ const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🌑']; // 卵から出�
 const OBSTACLE_IMGS = {};
 Object.entries({
   rock: 'assets/img/obstacles/rock.webp', mossRock: 'assets/img/obstacles/mossRock.webp', magmaRock: 'assets/img/obstacles/magmaRock.webp',
+  tansu: 'assets/img/obstacles/tansu.webp', tansu_open: 'assets/img/obstacles/tansu_open.webp',
   crate: 'assets/img/obstacles/crate.webp', barrel: 'assets/img/obstacles/barrel.webp', ice: 'assets/img/obstacles/ice.webp',
   crystal: 'assets/img/obstacles/crystal.webp', techBox: 'assets/img/obstacles/techBox.webp', bomb: 'assets/img/obstacles/bomb.webp',
   slime: 'assets/img/obstacles/slime.webp', dash: 'assets/img/obstacles/dash.webp', portal: 'assets/img/obstacles/portal.webp',
@@ -1657,12 +1658,19 @@ function drawObstacles() {
       else { const g = o.wobAmp * Math.exp(-wt / 90) * Math.sin(wt / 14); ctx.translate(g * 3, Math.abs(g) * -1); ctx.translate(o.x, o.y + o.r); ctx.rotate(g * 0.04); ctx.translate(-o.x, -(o.y + o.r)); } // 硬い物は小刻みにガタガタ
     }
     if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
+      if (o.tansu) { // タンス（開けると引き出しが出る。全部開けたら薄くなって消える）
+        const pop = Date.now() - (o.popAt || 0) < 200 ? -Math.sin((Date.now() - o.popAt) / 200 * Math.PI) * 5 : 0;
+        ctx.globalAlpha = o.used ? Math.max(0, 1 - (Date.now() - (o.usedAt || 0)) / 3000) * 0.8 : 1;
+        if (!drawObstacleSprite(o.opened ? 'tansu_open' : 'tansu', o.x, o.y + pop, o.r * 2.4)) { ctx.fillStyle = '#965c30'; ctx.fillRect(o.x - o.r, o.y - o.r, o.r * 2, o.r * 2); }
+        ctx.globalAlpha = 1;
+      } else {
       const pop = now - (o.popAt || 0) < 200 ? -Math.sin((now - o.popAt) / 200 * Math.PI) * 6 : 0, h = o.r * 0.9, bob = o.used ? 0 : Math.sin(now / 300 + o.seed * 6) * 1.5;
       ctx.translate(0, pop + bob);
       ctx.fillStyle = o.used ? '#8a5a2c' : '#ffbf1f'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
       ctx.strokeStyle = o.used ? '#4a2e12' : '#a8560a'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
       ctx.fillStyle = o.used ? '#5e3c1c' : '#a8560a'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { ctx.beginPath(); ctx.arc(o.x + sx * h * 0.72, o.y + sy * h * 0.72, 1.6, 0, Math.PI * 2); ctx.fill(); }); // 鋲
       if (!o.used) { ctx.font = `900 ${Math.round(h * 1.5)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#7a3a00'; ctx.fillText('?', o.x + 1.5, o.y + 2.5); ctx.fillStyle = '#fff6d0'; ctx.fillText('?', o.x, o.y + 1); }
+      }
     } else if (o.kind === 'egg') { // 卵（ひびが増え、割れそうになると震える）
       const wob = o.hp <= 1 ? Math.sin(now / 40) * 0.12 : now - (o.shakeAt || 0) < 200 ? Math.sin(now / 25) * 0.15 : 0;
       ctx.translate(o.x, o.y + o.r * 0.9); ctx.rotate(wob); ctx.translate(-o.x, -(o.y + o.r * 0.9));

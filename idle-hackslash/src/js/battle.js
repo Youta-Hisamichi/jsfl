@@ -1604,13 +1604,13 @@ function checkLoginBonus(awayMs) {
   const spin = () => {
     if (done) return;
     if (++ticks < 14) {
-      loginSlotNum.textContent = Math.round(Math.random() * bonusCoins * 1.4).toLocaleString('ja-JP');
+      loginSlotNum.textContent = Math.round(Math.random() * (bonusCoins + idleCoins) * 1.4).toLocaleString('ja-JP');
       playSlotTickSound();
       later(spin, 40 + Math.pow(ticks / 14, 2) * 160);
     } else settleCoins();
   };
   const settleCoins = () => {
-    loginSlotNum.textContent = formatCoinNumber(bonusCoins);
+    loginSlotNum.textContent = formatCoinNumber(bonusCoins + idleCoins); // 受け取るコインの合計（帰還ボーナス＋放置中の撃破）
     loginSlotBox.classList.remove('spinning');
     loginSlotBox.classList.add('settled');
     loginSlotBox.style.borderColor = rarityInfo.color;
@@ -1619,13 +1619,13 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
+  chips.push({ html: `🔮 帰還ボーナス ${COIN_ICO} +${formatCoinNumber(bonusCoins)}${LOGIN_RARITY_MULT[rarity] > 1 ? `（×${LOGIN_RARITY_MULT[rarity]}）` : ''}` }); // 合計の内訳
   { const capped = awayMs >= IDLE_REWARD_MAX_MS, hrs = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 3600000; chips.push({ special: capped, html: `⏳ 放置報酬 ${hrs.toFixed(1)}時間ぶん / 最大${IDLE_REWARD_MAX_MS / 3600000}時間${capped ? '（上限！こまめに戻ろう）' : ''}` }); }
   if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ ${COIN_ICO} +${formatCoinNumber(idleCoins)}` });
   if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
   if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label}の宝箱 ×1</span>` });
-  if (LOGIN_RARITY_MULT[rarity] > 1) chips.push(`${COIN_ICO} コイン ×${LOGIN_RARITY_MULT[rarity]}`);
   const showChips = () => {
     loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
   };
