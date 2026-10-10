@@ -982,6 +982,10 @@ debugRow.addEventListener('click', event => {
     showNotice('DEBUG: セーブデータを削除し、ゲームを最初からやり直しました');
     return;
   }
+  if (action === 'login7') { // 7日ログインボーナス：次の日として受け取り（7日目の次は1日目）
+    game.login7Date = null; const y = new Date(); y.setDate(y.getDate() - 1); game.login7Date = todayKey(y); checkDailyLogin();
+    return;
+  }
   if (action === 'loginBonus') {
     checkLoginBonus([15, 45, 90, 240, 600, 2000][Math.floor(Math.random() * 6)] * 60000);
     return;
