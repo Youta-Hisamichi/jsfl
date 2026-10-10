@@ -2374,3 +2374,8 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .l7-day.big b { color: #5a1a40; }
 /* デバッグボタンは画面左下に固定（フッターのタブに重ならない高さ） */
 .cmd-bar .dbg-mini, #debugToggleBtn { position: fixed !important; left: 6px !important; right: auto !important; bottom: calc(var(--tabbar-h, 64px) + 6px + env(safe-area-inset-bottom, 0px)) !important; top: auto !important; transform: none !important; margin: 0 !important; z-index: 60; background: rgba(12,14,30,0.75) !important; color: #e8ecf8 !important; border: 1px solid rgba(255,255,255,0.35) !important; }
+.gm-book .qb-head small { font-size: 0.62rem; color: #aab4d0; font-weight: 700; margin-left: 4px; }
+.gm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.gm-cell { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; border-radius: 8px; background: rgba(255,255,255,0.07); font-size: 0.6rem; color: #e8ecf8; text-align: center; line-height: 1.2; }
+.gm-cell b { font-size: 1.2rem; line-height: 1.3; }
+.gm-cell.un { opacity: 0.45; }
