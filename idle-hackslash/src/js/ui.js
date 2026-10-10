@@ -2569,18 +2569,18 @@ function unlockAudio() {
 
 window.addEventListener('resize', () => { resizeCanvas(); draw(); });
 if (window.ResizeObserver) new ResizeObserver(() => resizeCanvas()).observe(wrap);
-// ゲーム画面（四角）は下に向けて縦に伸ばし、デバッグボタンが下のタブバーに半分隠れるくらいまで広げる
+// ゲーム画面（四角）は下に向けて縦に伸ばし、下のボタン帯がタブバーのすぐ上に来るまで広げる
 const ARENA_MAX_ASPECT = 1.8;
 function fitArenaHeight() {
   if (!size || getActiveTab() !== 'game') return;
   let a = 1;
   if (ARENA_RECT) {
-    const dbg = document.getElementById('debugToggleBtn'), tab = document.getElementById('tabBar');
-    if (!dbg || !tab || !dbg.offsetHeight) return;
-    const d = dbg.getBoundingClientRect(), dbgMid = d.top + window.scrollY + d.height * 0.5; // ページ上の位置
-    const line = window.innerHeight - tab.offsetHeight; // タブバーの上端（固定表示）
+    const bar = document.querySelector('.cmd-bar'), tab = document.getElementById('tabBar');
+    if (!bar || !tab || !bar.offsetHeight) return;
+    const barBottom = bar.getBoundingClientRect().bottom + window.scrollY; // 下のボタン帯の下端（ページ上の位置。固定表示のデバッグボタンは基準にしない）
+    const line = window.innerHeight - tab.offsetHeight - 4; // タブバーの上端（固定表示）
     const cssH = wrap.getBoundingClientRect().height;
-    a = Math.max(1, Math.min(ARENA_MAX_ASPECT, (cssH + line - dbgMid) / size));
+    a = Math.max(1, Math.min(ARENA_MAX_ASPECT, (cssH + line - barBottom) / size));
   }
   if (Math.abs(a - arenaAspect) * size < 3) return;
   arenaAspect = a;
