@@ -1247,14 +1247,22 @@ function playCountdownTick(sec) {
   playTone(urgent ? 880 : 659.25, urgent ? 0.12 : 0.09, 'triangle', urgent ? 0.06 : 0.045); // 柔らかい三角波で控えめに
   if (urgent) setTimeout(() => playTone(1108.7, 0.06, 'triangle', 0.035), 80);
 }
-// 金属バットのホームラン：芯をとらえた「カキーン！」（金属の響き）＋打球が飛んでいく風切り音＋遠くの歓声
+// ボス撃破の止めの音：格闘ゲームのKOのような、低めで丸い「コーン…（コーン…）」とこだまする響き
+function koKnock(at, vol) { // 1回ぶんの「コーン」：木と金属の中間のような、倍音が少しずれた響き
+  const v = (game.sfxVolume ?? 0.7) * vol;
+  for (const [f, g0, len] of [[620, 0.5, 1.1], [620 * 2.71, 0.16, 0.5], [620 * 5.2, 0.05, 0.2], [310, 0.18, 0.8]]) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f * 1.04, at); o.frequency.exponentialRampToValueAtTime(f, at + 0.03);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(g0 * v, at + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.05);
+  }
+}
 function playHomeRunSound() {
   if (activeTabCache !== 'game' || !audioCtx) return;
-  playNoiseBurst(0.03, 0.35); thump(900, 300, 0.05, 0.4, 'square'); // カッ（打球の瞬間）
-  [[1760, 0.22, 0.9], [2637, 0.16, 0.7], [3951, 0.1, 0.5], [5274, 0.06, 0.35], [1318, 0.12, 0.6]].forEach(([f, g, d]) => playTone(f, d, 'sine', g, f * 0.985)); // キーーン（倍音がずれた金属の響き）
-  playTone(3520, 0.25, 'triangle', 0.05, 3400);
-  noiseSweep(0.9, 3000, 400, 'bandpass', 2, 0.18, 0.08); // ヒューーッ（打球が遠ざかる）
-  noiseSweep(1.4, 1200, 900, 'bandpass', 0.7, 0.12, 0.5); // ワーッ（遠くの歓声）
+  playNoiseBurst(0.025, 0.25); // コッ（当たった瞬間）
+  const t0 = audioCtx.currentTime;
+  koKnock(t0, 1); koKnock(t0 + 0.26, 0.38); koKnock(t0 + 0.52, 0.14); // コーン…コーン…（こだま）
+  noiseSweep(0.8, 1800, 300, 'bandpass', 1.5, 0.08, 0.1); // 吹っ飛んでいく風切り（控えめ）
 }
 function playBossClearSound() {
   if (activeTabCache !== 'game') return;

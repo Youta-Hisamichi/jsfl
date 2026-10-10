@@ -716,7 +716,23 @@ SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXまとめ強化', desc: '買える�
 function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
 function bulkUpLockedBtn(isPct) { return `${isPct ? '10%' : 'MAX'}<span>🔒</span>`; }
 function goShopItem(id, msg) { switchTab('gemshop'); showShopTab('item'); const it = document.querySelector(`[data-shop="${id}"]`); if (it) it.scrollIntoView({ block: 'center' }); if (msg) showNotice(msg); }
-function openBulkUpShop(isPct) { goShopItem(isPct ? 'upPct' : 'upMax', `${isPct ? '📈 10%' : '⏫ MAX'}まとめ強化はショップで購入できます`); }
+function openBulkUpShop(isPct) { // いきなりショップへ飛ばさず、まず何のボタンかを説明する
+  const id = isPct ? 'upPct' : 'upMax', item = SHOP_ITEMS[id];
+  simpleChoice({ icon: item.icon, title: item.name,
+    text: isPct ? '手持ちコインの<b>10%ぶん</b>で、一気に何Lvも上げられるボタンです。' : 'コインで<b>買えるだけ</b>、一気にLvを上げられるボタンです。',
+    sub: `ショップで <b>💎${item.cost}</b> で購入すると、自キャラと仲間の強化で使えるようになります（転生しても残ります）。`,
+    yes: '🛒 ショップで見る', no: 'あとで', onYes: () => goShopItem(id) });
+}
+function simpleChoice(o) { // 軽い2択ダイアログ
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 80;
+  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon">${o.icon || ''}</div><div class="sc-title">${o.title}</div><div class="sc-text">${o.text}</div>${o.sub ? `<div class="sc-sub">${o.sub}</div>` : ''}<div class="sc-btns"><button class="modal-close-btn sc-yes">${o.yes || 'OK'}</button><button class="modal-shop-btn sc-no">${o.no || 'キャンセル'}</button></div></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.querySelector('.sc-no').addEventListener('click', close);
+  ov.querySelector('.sc-yes').addEventListener('click', () => { close(); if (o.onYes) o.onYes(); });
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  playTone(880, 0.08, 'triangle', 0.08);
+}
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 SHOP_ITEMS.hireTicket = { icon: '🎫', name: 'ピックアップ採用券', desc: '★4・★5の仲間を1人、転生・ステージの条件なしで採用できるように（ショップの仲間タブで未解放の仲間を押して使う）', cost: 300, consumableKey: 'hireTickets' };

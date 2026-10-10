@@ -2415,3 +2415,20 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 /* ショップで買うまでの10%・MAXボタン（押すとショップへ） */
 .bulk-locked { pointer-events: auto !important; cursor: pointer; }
 .bulk-locked span { font-size: 0.8rem !important; }
+/* 仲間ページ：パーティ枠の見出し＋「解雇・採用」「＋枠を増やす」を1行に（スキルの枠ボタンと同じデザイン） */
+.party-row { display: flex; align-items: center; gap: 6px; margin: 4px 2px 6px; }
+.party-row #partySlotBtn { display: contents; }
+.party-row #partySlotBtn > span:first-child { order: 0; flex: 1; font-size: 0.8rem; color: var(--text-dim); }
+.party-row #compLockBtn { order: 1; }
+.party-row #partySlotBtn > button, .party-row #partySlotBtn > .ws-max { order: 2; }
+.party-row #partySlotBtn > button, .party-row #compLockBtn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; color: #fff; font-weight: 800; font-size: 0.74rem; padding: 0 6px; cursor: pointer; line-height: 1.2; text-align: center; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.6); border-radius: 0; box-shadow: none; margin: 0; width: auto; }
+.party-row #compLockBtn small { font-size: 0.6rem; opacity: 0.9; }
+.party-row #partySlotBtn > button.is-disabled { filter: grayscale(0.7); opacity: 0.7; }
+/* 軽い2択ダイアログ */
+.sc-panel { text-align: center; max-width: 320px; }
+.sc-icon { font-size: 2.4rem; line-height: 1.2; }
+.sc-title { font-weight: 900; font-size: 1.1rem; color: #ffd76b; margin: 2px 0 6px; }
+.sc-text { font-size: 0.85rem; line-height: 1.5; }
+.sc-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+.sc-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.sc-btns > button { width: 100%; margin: 0 !important; justify-content: center; text-align: center; }

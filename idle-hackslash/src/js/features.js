@@ -436,7 +436,7 @@ function compExtraHtml(id) {
 }
 function comboListHtml() {
   const on = activeCombos();
-  if (!on.length) return `<div class="combo-box"><b>🤝 組み合わせボーナス</b><small>特定の仲間をそろえるとボーナス（仲間をタップで詳細）</small></div>`;
+  if (!on.length) return ''; // 発動中のものがなければ何も出さない
   return `<div class="combo-box"><b>🤝 発動中の組み合わせボーナス</b>${on.map(c => `<span class="combo-chip">${c.name}：${c.desc}</span>`).join('')}</div>`;
 }
 
