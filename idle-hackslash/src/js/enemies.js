@@ -1456,7 +1456,7 @@ function obstacleBounce(ball) {
         if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.max(3, Math.min(PULL_SPEED_MAX, holdRush.speed * info.speed));
       }
     }
-    if (o.kind === 'qbox' && !o.used && isMainPlayerBall(ball)) { openQBox(o); continue; } // ハテナボックス：自キャラが当たると中身が飛び出す
+    if (o.kind === 'qbox' && !o.used && (isMainPlayerBall(ball) || (o.gm && ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)))) { openQBox(o); continue; } // ハテナボックス：自キャラが当たると中身が飛び出す
     if (dot < -0.6 && isMainPlayerBall(ball)) game.totalBounces = (game.totalBounces || 0) + 1; // 障害物での反射も数える
     if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));

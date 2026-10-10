@@ -16,10 +16,13 @@ const GIMMICKS = {
   snow:      { name: '雪まつり', icon: '⛄', desc: '雪が舞う。雪だるまを壊すとコイン', coin: 1 },
   coinrain:  { name: 'コインの雨', icon: '🪙', desc: '降ってくるコインを拾おう', coin: 1 },
   slime:     { name: 'ぷるぷる床', icon: '🟢', desc: '跳ね返りが強くなる。コイン×1.2', coin: 1.2 },
+  pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
+  mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
+  blocks:    { name: 'ブロック叩きまくり', icon: '🧱', desc: 'ハテナブロックを何度も叩いてコイン', coin: 1 },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'balloons', 'night', 'wind', 'treasure', 'fireworks', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'balloons', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -240,7 +243,7 @@ function drawGimmickLabel(key, A, now) { // 左下にイベント名、開始時
   const G = GIMMICKS[key];
   ctx.save();
   ctx.font = 'bold 11px sans-serif'; ctx.textBaseline = 'middle';
-  const label = `${G.icon} ${G.name}${G.coin > 1 ? ' コイン×' + G.coin : ''}`, w = ctx.measureText(label).width + 14;
+  const label = `${G.icon} ${G.name}${G.coin > 1 ? ' コイン×' + G.coin : ''}${GM_FILL[key] ? `　×${gm.broke || 0}` : ''}`, w = ctx.measureText(label).width + 14;
   ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(A.l + 6, A.b - 26, w, 20, 10) : ctx.rect(A.l + 6, A.b - 26, w, 20); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, A.l + 13, A.b - 16);
   const t = (now - gm.bannerAt) / 2600;
@@ -285,4 +288,65 @@ function dbgNextGimmick() { // デバッグ：イベントを順番に切り替�
   orig(); const host = document.getElementById('questBox'); if (!host) return;
   const seen = game.gimmickSeen || {}, n = GIMMICK_KEYS.filter(k => seen[k]).length;
   host.insertAdjacentHTML('beforeend', `<div class="qb-sec gm-book"><div class="qb-head">🗺️ ステージイベント図鑑 ${n}/${GIMMICK_KEYS.length}<small>（初めて出会うと 💎${GIMMICK_FIND_GEMS}）</small></div><div class="gm-grid">${GIMMICK_KEYS.map(k => seen[k] ? `<div class="gm-cell" title="${GIMMICKS[k].desc}"><b>${GIMMICKS[k].icon}</b><span>${GIMMICKS[k].name}</span></div>` : '<div class="gm-cell un"><b>？</b><span>？？？</span></div>').join('')}</div></div>`);
+}; }
+
+// ===== 壺割りまくり・芝刈りしまくり・ブロック叩きまくり：障害物をずらっと並べ、壊してもまた出てくる =====
+const GM_FILL = {
+  pots:   { kind: 'pot', n: 16, size: 0.07, regrow: 70 },
+  mow:    { kind: 'bush', n: 26, size: 0.055, regrow: 35 },
+  blocks: { kind: 'qbox', n: 12, size: 0.075, regrow: 0, hits: 6 },
+};
+function gmFillSpots() { // ゲーム画面いっぱいの格子（少しずらして自然に）
+  const A = gArea(), pts = [], cols = 6, rows = Math.max(5, Math.round(cols * A.h / A.w));
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) pts.push({ x: A.l + A.w * (c + 0.5 + (r % 2 ? 0.25 : -0.25) * 0.6) / cols, y: A.t + A.h * (r + 0.5) / rows });
+  return pts;
+}
+function gmMakeObstacle(key, p, rnd) {
+  const F = GM_FILL[key], r = arena.radius * F.size, floorKey = getFloorKey(game.stage);
+  const o = { x: p.x, y: p.y, r, seed: rnd(), kind: F.kind, hp: F.kind === 'qbox' ? 1 : 1, cracks: [], gm: key, bornAt: Date.now() };
+  if (F.kind === 'qbox') o.multi = F.hits; // 何度も叩ける
+  else o.sprite = F.kind === 'bush' ? ['b_bush', 'b_bush2', 'b_bush3'][Math.floor(rnd() * 3)] : natureSpriteFor(F.kind, floorKey, rnd);
+  return o;
+}
+function gmSpotFree(p, r) { return !obstacles.some(o => Math.hypot(o.x - p.x, o.y - p.y) < o.r + r + 6) && ![...balls, ...adds].some(b => Math.hypot(b.x - p.x, b.y - p.y) < (b.radius || 14) + r + 10); }
+function fillGimmickObstacles(key) {
+  const F = GM_FILL[key]; if (!F) return;
+  obstacles = obstacles.filter(o => o.debug || o.gm === key); // ほかの障害物はどけて、この遊びに集中
+  const rnd = stageRand(game.stage * 7 + 1), spots = gmFillSpots().sort(() => rnd() - 0.5), r = arena.radius * F.size;
+  for (const p of spots) { if (obstacles.filter(o => o.gm === key).length >= F.n) break; if (gmSpotFree(p, r)) obstacles.push(gmMakeObstacle(key, p, rnd)); }
+}
+{ const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); const k = gimmickForStage(game.stage); if (GM_FILL[k]) fillGimmickObstacles(k); }; }
+// また生えてくる（壺・草）
+let gmRegrowT = 0;
+{ const orig = tickGimmick; tickGimmick = function (sp) {
+  orig.apply(this, arguments);
+  const k = gm.key, F = GM_FILL[k]; if (!F || !F.regrow) return;
+  if (gm.lastFill !== game.stage + ':' + k) { gm.lastFill = game.stage + ':' + k; if (!obstacles.some(o => o.gm === k)) fillGimmickObstacles(k); }
+  gmRegrowT += sp; if (gmRegrowT < F.regrow) return; gmRegrowT = 0;
+  if (obstacles.filter(o => o.gm === k).length >= F.n) return;
+  const r = arena.radius * F.size, spots = gmFillSpots().filter(p => gmSpotFree(p, r));
+  if (spots.length) { const o = gmMakeObstacle(k, spots[Math.floor(Math.random() * spots.length)], Math.random); obstacles.push(o); spawnHitParticles(o.x, o.y, F.kind === 'bush' ? '#7fd06a' : '#c8a070'); }
+}; }
+// 壊したときのごほうび（この遊びのものは必ずコイン）
+{ const orig = breakObstacleLoot; breakObstacleLoot = function (o) {
+  if (!o.gm) return orig.apply(this, arguments);
+  gm.broke = (gm.broke || 0) + 1;
+  const m = o.gm === 'mow' ? 0.12 : 0.3, c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * m));
+  game.coins += c; spawnCoinDrop(o.x, o.y, c, o.gm === 'mow' ? 1 : 3);
+  spawnDamageText(o.x, o.y - 10, `${o.gm === 'mow' ? '🌿' : '🏺'} +${formatCoinNumber(c)}`, '#ffd76b', 0.022);
+  playCoinChime(Math.min(12, gm.broke % 13));
+  if (gm.broke % 25 === 0) { spawnDamageText(arena.x, arena.y - 40, `${o.gm === 'mow' ? '🌿 芝刈り' : '🏺 壺割り'} ${gm.broke}コンボ！ ボーナス`, '#ffe36b', 0.012, true); const b = c * 10; game.coins += b; spawnCoinBurst(arena.x, arena.y - 20, b, 8); }
+  updateStatsUI();
+}; }
+// ハテナブロック：何度も叩ける（叩くたびにコイン、最後の1回は豪華）
+{ const orig = openQBox; openQBox = function (o) {
+  if (!o.gm || !(o.multi > 0)) return orig.apply(this, arguments);
+  if (Date.now() - (o.popAt || 0) < 220) return; // 連続ヒットしすぎないように
+  o.multi--; o.popAt = Date.now(); gm.broke = (gm.broke || 0) + 1;
+  if (o.multi <= 0) { o.used = true; return orig.apply(this, arguments); } // 最後は通常のハテナボックスの中身
+  const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * 0.35));
+  game.coins += c; spawnCoinDrop(o.x, o.y - o.r, c, 2);
+  spawnDamageText(o.x, o.y - o.r - 10, `🧱 +${formatCoinNumber(c)}（あと${o.multi}）`, '#ffd76b', 0.022);
+  playTone(988, 0.06, 'square', 0.06); setTimeout(() => playCoinChime(gm.broke % 13), 50);
+  spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }; }
