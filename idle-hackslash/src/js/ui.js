@@ -1346,7 +1346,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
     playPachinkoWin(rarity);
     skGachaResult.className = 'gacha-result rarity-' + rarity;
     skGachaResult.style.background = rarityBackground(rarity);
-    skGachaResult.innerHTML = `<div class="gr-icon gr-pop">${iconHtml}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
+    skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
     { const row = skGachaResult.querySelector('.gr-btn-row'); if (row) { row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } } // 演出スキップの連打で誤って押さないよう少しだけ待つ
     document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
     if (reroll) document.getElementById('skGachaRerollBtn').addEventListener('click', ev => {
@@ -1547,6 +1547,7 @@ supergemShopList.addEventListener('click', event => {
 });
 
 document.getElementById('partySlotBtn').addEventListener('click', event => {
+  if (!event.target.closest('button')) return; // ボタン以外（見出しの文字）は押しても何もしない
   const lim = getPartyLimit();
   if (lim >= COMPANION_PARTY_MAX) { showTapError('パーティ枠は最大です', event.clientX, event.clientY); return; }
   const cost = getPartySlotCost();

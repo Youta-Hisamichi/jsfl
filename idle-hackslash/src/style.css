@@ -2402,3 +2402,13 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #weaponGachaBtn::before { content: ''; position: absolute; left: 50%; top: 42%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; z-index: -1; pointer-events: none; }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #weaponGachaBtn::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
 .weapon-slot-head button { line-height: 1.2; text-align: center; white-space: nowrap; } /* 「＋枠を増やす」とジェム数を2行に */
+/* スキル・サブウェポン・進化ガチャの結果：アイコンの後ろに回る後光（レア度の色） */
+.gr-halo-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; margin: 6px auto 4px; }
+.gr-halo-wrap .gr-icon { position: relative; z-index: 1; }
+.gr-halo { position: absolute; left: 50%; top: 50%; width: 230%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hc, #ffd76b) 75%, #fff) 0%, color-mix(in srgb, var(--hc, #ffd76b) 45%, transparent) 22%, transparent 48%),
+    repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--hc, #ffd76b) 55%, transparent) 0deg 7deg, transparent 7deg 20deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, rgba(0,0,0,0.6) 38%, transparent 66%); mask: radial-gradient(circle, #000 18%, rgba(0,0,0,0.6) 38%, transparent 66%);
+  animation: grHaloSpin 9s linear infinite, grHaloIn 0.5s ease-out; }
+@keyframes grHaloSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes grHaloIn { from { opacity: 0; width: 60%; } }
