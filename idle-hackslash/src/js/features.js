@@ -58,8 +58,31 @@ function sayByEvent(kind, pick) { // kind: 0=登場 1=ボス戦 2=ボス撃破 3
   const list = pick ? allies.filter(pick) : allies;
   const b = list[Math.floor(Math.random() * list.length)]; if (!b) return;
   const id = b.isCompanion ? b.companionId : getHeroChar();
+  if (!id && isMainPlayerBall(b)) return heroChuuni(['boss', 'boss', 'bossKill', 'down'][kind] || 'idle', true);
   const lines = (id && COMP_PROFILE[id] && COMP_PROFILE[id].say) || HERO_SAY;
   companionSay(b, lines[kind]);
+}
+// ===== 勇者（自キャラを変えていないとき）の中二病ゼリフ =====
+const CHUUNI = {
+  idle: ['右腕が…疼く…！', '我が封印されし力、今こそ解き放つ時…', 'フッ…運命の歯車が回り始めたか', '静まれ…俺の左腕…！', 'この眼帯の下を見た者は、生きては帰れぬ', '俺の中のもう一人の俺が囁く…', '世界が俺を呼んでいる…', '真の力の0.1%も出していない', '風が…泣いている', '我が魂に刻まれし古の契約…', '俺に触れると火傷するぜ', '前世の記憶が…蘇る…', '漆黒の堕天使、ここに降臨', '時は満ちた…', 'この程度の敵、片目で十分だ', '月が紅い…今宵は荒れるぞ', '我が名を知る者は、もうこの世にいない', '選ばれし者の宿命か…', '封印が…解けかかっている…', '…運命（さだめ）とは、残酷なものだな', 'ククク…すべて計算通り', '因果律の外から来た男、それが俺だ', '我が邪気眼が…未来を視た…', 'この世界の理（ことわり）を、俺が書き換える', '俺の影に…何かが棲んでいる', '光と闇の狭間に生きる者…それが勇者だ', 'ノートに書いた技が、ついに使える…', '眠れる獅子が…目を覚ます', 'まだ本気を出す時ではない…', '我が剣は、星の声を聴く'],
+  kill: ['塵に還れ', '…またつまらぬものを斬ってしまった', '貴様の運命は、既に決まっていた', '安らかに眠れ…闇の中で', 'フッ…他愛もない', '名もなき者よ、さらばだ', '残像だ', '遅い…遅すぎる', '我が刃に斬れぬものなし', '悪いな…手加減は苦手でね'],
+  charge: ['喰らえ！ 終焉の黒炎（ダークネス・フレア）！', '奥義・虚無斬り（ヴォイド・スラッシュ）！', '解き放て、封印されし右腕よ！', '漆黒の断罪（ブラック・ジャッジメント）！', '天地開闢・絶影剣！', '滅びの序曲（エンド・プレリュード）！', '刻めッ！ 永劫回帰斬（エターナル・リターン）！', '我が魂の叫びを聞けェッ！'],
+  boss: ['来たか…宿命の相手よ', 'この時を待っていた…千年もの間な', '面白い…少しは楽しませてくれるのだろうな？', '我が真の力、見せてやろう…', '貴様が闇の眷属か…', 'フッ…ようやく本気を出せそうだ'],
+  bossKill: ['闇は…光に還った', '我が伝説に、また一頁が刻まれた', 'これが…選ばれし者の力だ', 'フッ…次の宿敵はどこだ', '俺に勝つには…千年早い', '封印、完了…'],
+  pinch: ['くっ…まだだ、まだ終わらんよ…！', 'この痛み…悪くない', '覚醒の時は…近い…！', '俺の中の何かが…目覚める…', 'ここからが…本当の俺だ…！'],
+  escape: ['逃げるか…賢明な判断だ', 'フッ…命拾いしたな', '追わぬ…それが強者の余裕', '置いていったか…その金貨、もらっておこう'],
+  event: ['この気配…ただ事ではないな', '天が…俺に味方している', '世界が…歪み始めた…', '面白くなってきたじゃないか'],
+  down: ['ここまでか…だが我が魂は不滅…', '次の転生で…会おう…', '世界よ…すまない…'],
+};
+let chuuniLast = '', chuuniAt = 0;
+function heroChuuni(kind, force) {
+  if (getHeroChar()) return; // 仲間を自キャラにしているときはその仲間のセリフ
+  const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
+  const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
+  const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  chuuniLast = t; chuuniAt = now;
+  companionSay(hero, t, 1800 + t.length * 70);
 }
 function drawSpeech() {
   if (!speech.length) return;
@@ -277,9 +300,20 @@ function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(i
 }; }
 { const orig = showSkGachaReveal; showSkGachaReveal = function () { questTick('gacha'); return orig.apply(this, arguments); }; }
 function featureOnKill(isBoss) {
+  if (!isBoss && Math.random() < 0.18) heroChuuni('kill');
   questTick('kill'); if (isBoss) { questTick('boss'); addBond(3); setTimeout(() => sayByEvent(2), 600); } else addBond(1);
 }
 setInterval(() => { if (Math.random() < 0.25 && phase === 'battle' && getActiveTab() === 'game' && !isBossFight()) sayByEvent(0, b => b.isCompanion); }, 9000); // ときどき仲間がひとこと
+{ let wasBoss = false, lastGm = null, pinchSaid = false;
+  setInterval(() => { // 勇者のひとりごと・場面ごとのセリフ
+    if (phase !== 'battle' || getActiveTab() !== 'game') return;
+    const boss = isBossFight(); if (boss && !wasBoss) setTimeout(() => heroChuuni('boss', true), 1200); wasBoss = boss;
+    const g = typeof gm === 'object' ? gm.key : null; if (g && g !== lastGm) setTimeout(() => heroChuuni('event', true), 2800); lastGm = g;
+    const h = balls.find(b => isMainPlayerBall(b)), pinch = !!(h && h.inPinch); if (pinch && !pinchSaid) heroChuuni('pinch', true); pinchSaid = pinch;
+    if (Math.random() < 0.04) heroChuuni('idle');
+  }, 500); }
+{ const orig = startEnemyEscape; startEnemyEscape = function (e) { orig(e); setTimeout(() => heroChuuni('escape'), 900); }; }
+{ const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
 checkDailyLogin(); questState();
 
 // ===== 仲間の詳細（プロフィール・絆・組み合わせ）とパーティの組み合わせ一覧 =====
