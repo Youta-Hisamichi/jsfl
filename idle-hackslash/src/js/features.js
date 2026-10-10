@@ -147,7 +147,7 @@ const LOGIN7 = [
   { label: '💎5', give: () => { game.gems += 5; return '💎5'; } },
   { label: '🪽×20', give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
   { label: '💎8', give: () => { game.gems += 8; return '💎8'; } },
-  { label: '赤×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全開の赤ポーション×2'; } },
+  { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全開の赤ポーション×2'; } },
   { label: '🐾確定', give: () => { const pool = COMPANION_IDS.filter(id => !isCompLocked(id)); const id = pool.length ? pool[Math.floor(Math.random() * pool.length)] : 'villager'; const r = grantCompanion(id); refreshCompanionBalls && refreshCompanionBalls(); if (RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary')) setTimeout(() => rareCutIn(id), 400); return `仲間確定！ ${COMPANIONS[id].name}（${r.label}）`; } },
 ];
 function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }

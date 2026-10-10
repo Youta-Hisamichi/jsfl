@@ -2360,3 +2360,15 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .boss-ad-buff { position: absolute; right: 8px; bottom: 54px; z-index: 7; display: none; flex-direction: column; align-items: center; padding: 6px 10px; border-radius: 12px; border: 2px solid #ffd76b; background: linear-gradient(180deg, #ff9f43, #ff5c6c); color: #fff; font-weight: 900; font-size: 0.72rem; line-height: 1.25; box-shadow: 0 4px 12px rgba(0,0,0,0.4); animation: obmPulse 0.7s ease-in-out infinite alternate; }
 .boss-ad-buff.show { display: flex; }
 .boss-ad-buff b { font-size: 0.9rem; } .boss-ad-buff small { font-size: 0.58rem; opacity: 0.9; }
+/* ログインボーナス：3日ずつ並べて大きく */
+.l7-days { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+.l7-day { padding: 10px 4px !important; border-radius: 12px !important; font-size: 1.05rem !important; gap: 4px; align-items: center; justify-content: center; min-height: 74px; }
+.l7-day small { font-size: 0.78rem !important; font-weight: 800; }
+.l7-day b { font-size: 1.25rem; line-height: 1.2; }
+.l7-day .gem-ico, .l7-day .ico-img { width: 1.4em !important; height: 1.4em !important; vertical-align: -0.3em; }
+.l7-day.big { grid-column: 1 / -1 !important; min-height: 64px; }
+.l7-day.big b { font-size: 1.4rem; }
+.l7-day.today { transform: scale(1.05); box-shadow: 0 0 14px rgba(255,215,107,0.8); }
+.l7-day .ico-redpot { width: 1.4em; height: 1.4em; vertical-align: -0.3em; }
+.l7-day.big small { color: #6a3a50 !important; }
+.l7-day.big b { color: #5a1a40; }
