@@ -2566,7 +2566,7 @@ try {
   if (tryCtx.state === 'running') { audioCtx = tryCtx; refreshBgm(); } else tryCtx.close();
 } catch (e) {}
 function unlockAudio() {
-  ensureAudio(); refreshBgm();
+  ensureAudio(); refreshBgm(); if (typeof loadBossFinish === 'function') loadBossFinish(); // ボス撃破音を前もって読み込む
   ['pointerdown', 'touchend', 'keydown'].forEach(t => document.removeEventListener(t, unlockAudio, true));
 }
 ['pointerdown', 'touchend', 'keydown'].forEach(t => document.addEventListener(t, unlockAudio, true));

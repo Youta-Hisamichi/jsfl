@@ -1249,8 +1249,22 @@ function playCountdownTick(sec) {
 }
 // ボス撃破の止めの音：ソシャゲの必殺技フィニッシュ風
 // 「キュイィン」と力がたまる→「ズドォン！」と重い一撃＋斬撃の「シャキン」→「キラキラ…」と光の粒が降る
+// 音の本体は「5_必殺技フィニッシュ」の録音（assets/audio/boss_finish.wav）。読み込めていなければ下の合成音で代わりに鳴らす
+let bossFinishBuf = null, bossFinishLoading = false;
+function loadBossFinish() {
+  if (bossFinishBuf || bossFinishLoading || !audioCtx) return;
+  bossFinishLoading = true;
+  fetch('assets/audio/boss_finish.wav').then(r => r.arrayBuffer()).then(b => audioCtx.decodeAudioData(b)).then(buf => { bossFinishBuf = buf; }).catch(() => { bossFinishLoading = false; });
+}
 function playHomeRunSound() {
   if (activeTabCache !== 'game' || !audioCtx) return;
+  loadBossFinish();
+  if (bossFinishBuf) {
+    const src = audioCtx.createBufferSource(), g = audioCtx.createGain();
+    src.buffer = bossFinishBuf; g.gain.value = (game.sfxVolume ?? 0.7) * 1.1;
+    src.connect(g); g.connect(audioCtx.destination); src.start();
+    return;
+  }
   noiseSweep(0.22, 600, 6000, 'bandpass', 3, 0.22);            // キュイィン（溜め：上がっていく風）
   playTone(500, 0.22, 'sawtooth', 0.05, 2200);
   setTimeout(() => {
