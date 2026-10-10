@@ -517,6 +517,8 @@ function onStageClear(passed) {
     spawnDamageText(arena.x, arena.y - 12, '+' + metalGems + ' 💎', '#64e8ff', 0.01, true);
   }
   game.coins += coinGain;
+  if (defeated && !defeated.isBoss && defeated.emoji === 'm_petitMimic') { const extra = coinGain * 2; game.coins += extra; spawnDamageText(arena.x, arena.y - 40, `🎁 ぷちミミックのお宝！ +${formatCoinNumber(extra)} 🟡`, '#ffd76b', 0.01, true); } // 宝箱のふり：コイン3倍
+  if (defeated && !defeated.isBoss && defeated.emoji === 'm_luckyCat' && Math.random() < 0.15) { game.gems += 1; spawnDamageText(arena.x, arena.y - 40, '🐱 招き猫のご利益！ +1 💎', '#64e8ff', 0.01, true); } // まれにジェム
   const giantKill = !!(defeated && defeated.isGiant);
   if (isBossStage) game.gems += (giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5) * (msBoss ? msBoss.reward : 1);
   if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? rollChestRarity(20, 'epic') : rollChestRarity(5, 'rare')); }
@@ -1763,7 +1765,7 @@ const SPRITE_FACING = {
   blueDragon: 1, blackDragon: 1, wyvern: 1, 
   vampire: 0, werewolf: 0, franken: 0, slimeGirl: 0, reaper: 0, demonKing: 0,
   goblinSlime: 0, witchSlime: 0, vikingSlime: 0, knifeGoblin: -1, darkMage: -1, slimeBlack: -1, slimeGray: -1, slimePinkS: -1, slimeBlueS: -1, fatDragon: 0, slimeGold: -1, slimeGreenS: -1, fishman: 0, longSlime: 0, cucumber: -1, swordLizard: 0, crabGirl: 0, slimeSilver: -1, slimeRainbow: -1, slimeYellow: -1, blueBat: 0, fireSpirit: 0, succubus: 0, ironKnight: 0, wolfSword: -1, stagKnight: 0, muscleSlime: 0, flameBear: 1, scorpion: 0, marmot: -1, eyeGirl: 0, spiderGirl: 0, wellGhost: 0, gorillaTaur: -1,
-  slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, m_redGoblin: 1, m_griffon: -1, m_mimicS: -1, m_spearArmor: 1, m_plagueDoc: -1, // レッドゴブリンの絵は右向き・グリフォンは左向き
+  slimeKing: 0, penguinMage: 0, jellyDiva: 0, barrelCat: 0, m_redGoblin: 1, m_griffon: -1, m_mimicS: -1, m_spearArmor: 1, m_plagueDoc: -1, m_petitMimic: 1, m_thunderRabbit: -1, m_fireRat: -1, m_clockBird: 1, m_ghostKnight: -1, // レッドゴブリンの絵は右向き・グリフォンは左向き
 };
 const isSlimeSprite = key => /slime/i.test(key) && key !== 'slimeGirl'; // スライム系（プヨプヨ揺らす）
 function drawFacingSprite(img, ball, key, cx, cy, sz) {
