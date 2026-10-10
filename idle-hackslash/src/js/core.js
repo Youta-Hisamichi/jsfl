@@ -709,7 +709,14 @@ const SHOP_ITEMS = {
 };
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
-SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オート強化', desc: 'たまったコインで攻撃力・最大HP・仲間の強化を自動で上げる（強化ページでON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
+SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オート強化', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
+SHOP_ITEMS.upPct = { icon: '📈', name: '10%まとめ強化', desc: '手持ちコインの10%ぶん一気にLvアップする「10%」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 10, unlockKey: 'upPctUnlocked' };
+SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXまとめ強化', desc: '買えるだけ一気にLvアップする「MAX」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 15, unlockKey: 'upMaxUnlocked' };
+// 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
+function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
+function bulkUpLockedBtn(isPct) { return `${isPct ? '10%' : 'MAX'}<span>🔒</span>`; }
+function goShopItem(id, msg) { switchTab('gemshop'); showShopTab('item'); const it = document.querySelector(`[data-shop="${id}"]`); if (it) it.scrollIntoView({ block: 'center' }); if (msg) showNotice(msg); }
+function openBulkUpShop(isPct) { goShopItem(isPct ? 'upPct' : 'upMax', `${isPct ? '📈 10%' : '⏫ MAX'}まとめ強化はショップで購入できます`); }
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキル全開の赤ポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 SHOP_ITEMS.hireTicket = { icon: '🎫', name: 'ピックアップ採用券', desc: '★4・★5の仲間を1人、転生・ステージの条件なしで採用できるように（ショップの仲間タブで未解放の仲間を押して使う）', cost: 300, consumableKey: 'hireTickets' };
@@ -1293,8 +1300,8 @@ function renderUpgradeList() {
     return `<div class="upgrade-row">
       <div class="upgrade-btn upgrade-card ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${formatCoinNumber(level)}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div>
       <button class="upgrade-max-btn one-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}">+1<span>Lv.UP</span></button>
-      <button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${formatCoinNumber(pctCount)} Lv.</span></button>
-      <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${formatCoinNumber(maxCount)} Lv.</span></button>
+      ${bulkUpLocked(true) ? `<button class="upgrade-max-btn pct-btn is-disabled bulk-locked" data-upgrade-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${formatCoinNumber(pctCount)} Lv.</span></button>`}
+      ${bulkUpLocked(false) ? `<button class="upgrade-max-btn is-disabled bulk-locked" data-upgrade-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${formatCoinNumber(maxCount)} Lv.</span></button>`}
     </div>`;
   };
   upgradeList.innerHTML = Object.entries(UPGRADES).filter(([id]) => UPGRADE_SHOWN.includes(id)).map(row).join('');

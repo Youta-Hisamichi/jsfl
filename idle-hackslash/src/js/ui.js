@@ -1000,6 +1000,7 @@ upgradeList.addEventListener('click', event => {
   if (maxButton) {
     if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
     const isPct = maxButton.dataset.upgradePct !== undefined;
+    if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; } // ショップで買うまで使えない
     const id = isPct ? maxButton.dataset.upgradePct : maxButton.dataset.upgradeMax;
     if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', event.clientX, event.clientY); return; }
     const count = getMaxAffordableUpgradeLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
@@ -1838,6 +1839,7 @@ companionList.addEventListener('click', event => {
   const maxBtn = event.target.closest('[data-companion-level-max], [data-companion-level-pct]');
   if (maxBtn) {
     const isPct = maxBtn.dataset.companionLevelPct !== undefined;
+    if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; }
     const id = isPct ? maxBtn.dataset.companionLevelPct : maxBtn.dataset.companionLevelMax;
     const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }

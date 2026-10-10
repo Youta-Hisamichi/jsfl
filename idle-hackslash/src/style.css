@@ -2412,3 +2412,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
   animation: grHaloSpin 9s linear infinite, grHaloIn 0.5s ease-out; }
 @keyframes grHaloSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 @keyframes grHaloIn { from { opacity: 0; width: 60%; } }
+/* ショップで買うまでの10%・MAXボタン（押すとショップへ） */
+.bulk-locked { pointer-events: auto !important; cursor: pointer; }
+.bulk-locked span { font-size: 0.8rem !important; }
