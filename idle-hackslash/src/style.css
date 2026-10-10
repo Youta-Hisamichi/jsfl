@@ -2450,3 +2450,34 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .companion-list .cp-tile .cp-tile-img .comp-sprite { width: 52px; height: 52px; margin: 0; }
 .companion-list .cp-tile.sealed .cp-tile-img .comp-sprite { filter: brightness(0) invert(0.6) opacity(0.75); }
 .companion-list .cp-tile .cp-tile-lock { color: #6a5838; }
+/* 周回の掟・転生ボーナスのダイアログ */
+.rs-panel { text-align: center; max-width: 360px; }
+.rs-title { font-weight: 900; font-size: 1.05rem; color: #ffd76b; }
+.rs-sub { font-size: 0.7rem; color: var(--text-dim); margin: 2px 0 8px; }
+.rs-cards { display: flex; flex-direction: column; gap: 6px; }
+.rs-card { position: relative; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto auto; align-items: center; column-gap: 8px; text-align: left; padding: 8px 10px; border: 3px solid #b8862e; border-radius: 10px; background: linear-gradient(180deg, #f7ecd2, #ecdcb6); box-shadow: inset 0 0 0 2px #f6dc8e, 0 2px 4px rgba(0,0,0,0.3); color: #3a2a10; cursor: pointer; }
+.rs-card:active { transform: scale(0.97); }
+.rs-card .rs-ico { grid-row: 1 / 4; font-size: 1.9rem; text-align: center; }
+.rs-card b { font-size: 0.92rem; font-weight: 900; }
+.rs-card small { font-size: 0.72rem; font-weight: 800; line-height: 1.3; }
+.rs-card small.good { color: #0e7a3a; } .rs-card small.bad { color: #b3261e; }
+.rs-new { position: absolute; right: 6px; top: 4px; font-style: normal; font-size: 0.55rem; font-weight: 900; color: #fff; background: #ff5c7a; border-radius: 999px; padding: 1px 6px; }
+.rs-skip { margin-top: 8px; background: none; border: none; color: var(--text-dim); font-size: 0.72rem; text-decoration: underline; cursor: pointer; }
+.rs-dash { margin-top: 6px; font-size: 0.74rem; font-weight: 800; color: #64e8ff; }
+/* 記録・実績のお知らせ */
+.run-banner { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 18px; border-radius: 14px; background: linear-gradient(180deg, rgba(40,30,80,0.95), rgba(20,16,44,0.95)); border: 2px solid #ffd76b; color: #fff; text-align: center; box-shadow: 0 6px 18px rgba(0,0,0,0.5); animation: runBannerIn 0.4s cubic-bezier(.34,1.56,.64,1); pointer-events: none; max-width: 90vw; }
+.run-banner b { font-size: 1rem; color: #ffd76b; } .run-banner span { font-size: 0.78rem; }
+.run-banner.out { opacity: 0; transition: opacity 0.5s; }
+@keyframes runBannerIn { from { transform: translate(-50%, -20px) scale(0.8); opacity: 0; } }
+.run-rule-chip { position: absolute; left: 6px; top: 6px; z-index: 6; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,215,107,0.7); background: rgba(10,12,30,0.6); color: #ffe9a8; font-size: 0.66rem; font-weight: 800; cursor: pointer; }
+/* 戦績：周回記録と実績 */
+.rr-row { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.74rem; color: #e8ecf8; }
+.rr-row b { color: #ffd76b; }
+.rf-list { display: flex; flex-direction: column; gap: 3px; }
+.rf-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-top: 1px solid rgba(255,255,255,0.08); opacity: 0.65; }
+.rf-row.got { opacity: 1; }
+.rf-ico { width: 22px; text-align: center; }
+.rf-main { flex: 1; display: flex; flex-direction: column; font-size: 0.74rem; color: #e8ecf8; }
+.rf-main small { font-size: 0.62rem; color: #aab4d0; }
+.rf-gem { font-size: 0.7rem; font-weight: 900; color: #64e8ff; }
+.rf-row.got .rf-gem { color: #7ee787; }
