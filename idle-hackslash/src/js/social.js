@@ -160,8 +160,14 @@ function openFortune() {
 function b64u(s) { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); }
 function codeSum(s) { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h.toString(36); }
-function myRivalCode() { const body = `${(game.username || '名無しの勇者').slice(0, 12)}|${game.bestStage || 1}|${myPlayerSeed() % 46656}`; return 'MH-' + b64u(body) + '.' + codeSum(body); }
+// 挑戦状コード：「MH＋最高ステージ（36進）－プレイヤー番号4文字＋確認1文字」の短いコード（例：MH6I-K3F2X）。名前は入れない
+function myRivalId() { return (myPlayerSeed() % 1679616).toString(36).toUpperCase().padStart(4, '0'); }
+function shortCheck(s) { let h = 11; for (const ch of s) h = (h * 37 + ch.charCodeAt(0)) % 36; return h.toString(36).toUpperCase(); }
+function myRivalCode() { const st = Math.max(1, Math.floor(game.bestStage || 1)).toString(36).toUpperCase(), id = myRivalId(); return `MH${st}-${id}${shortCheck(st + id)}`; }
 function parseRivalCode(code) {
+  const sm = String(code).trim().toUpperCase().replace(/\s/g, '').match(/MH([0-9A-Z]+)-([0-9A-Z]{4})([0-9A-Z])\b/);
+  if (sm) { if (shortCheck(sm[1] + sm[2]) !== sm[3]) return null; const stage = parseInt(sm[1], 36); if (!(stage >= 1)) return null; return { name: '勇者#' + sm[2], stage, id: sm[2] }; }
+  // 以前の長いコードも読める
   const m = String(code).trim().match(/MH-([A-Za-z0-9_-]+)\.([0-9a-z]+)/); if (!m) return null;
   let body; try { body = unb64u(m[1]); } catch (e) { return null; }
   if (codeSum(body) !== m[2]) return null;
@@ -173,9 +179,9 @@ const FRIEND_FIRST_GEMS = 10, FRIEND_BEAT_GEMS = 5, FRIEND_MAX = 20;
 function addFriendCode(code) {
   const f = parseRivalCode(code);
   if (!f) return '⚠️ コードが正しくありません';
-  if (f.id === String(myPlayerSeed() % 46656) && f.name === (game.username || '名無しの勇者').slice(0, 12)) return '⚠️ 自分のコードは登録できません';
+  if (f.id === myRivalId() || (f.id === String(myPlayerSeed() % 46656) && f.name === (game.username || '名無しの勇者').slice(0, 12))) return '⚠️ 自分のコードは登録できません';
   if (!game.friends) game.friends = [];
-  const old = game.friends.find(x => x.id === f.id && x.name === f.name);
+  const old = game.friends.find(x => x.id === f.id);
   if (old) { old.stage = Math.max(old.stage, f.stage); old.beaten = (game.bestStage || 1) > old.stage; saveGame(); return `🔄 ${f.name}の記録を更新しました（ステージ${old.stage}）`; }
   if (game.friends.length >= FRIEND_MAX) game.friends.shift();
   game.friends.push({ ...f, beaten: false, at: Date.now() });

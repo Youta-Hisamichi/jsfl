@@ -2570,3 +2570,4 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .ob-mission .obm-text b { display: block; font-size: 0.64rem; }
 .ob-mission .obm-sub { font-size: 0.54rem; }
 .ob-mission .obm-claim { font-size: 0.6rem; padding: 0 5px; margin-top: 1px; }
+.fb-my code { flex: 0 1 auto; font-size: 1rem; font-weight: 900; letter-spacing: 1px; color: #ffd76b; } /* 短くなった挑戦状コードは大きく */
