@@ -1261,8 +1261,18 @@ function spawnNextEnemy() {
   }
   balls = [...allies, makeBall(false)];
 }
+function applyForbiddenSword(e) { // 禁断の剣：1個につきボスのHPを1%削る（最大50個）
+  const n = Math.min(ARTIFACT_STACK_LIMIT.forbiddenSword, (game.ownedArtifacts && game.ownedArtifacts.forbiddenSword) || 0);
+  if (!n || !e || e.isDying || !(e.hp > 0)) return;
+  const cut = Math.floor(e.maxHp * n / 100); if (cut <= 0) return;
+  e.hp = Math.max(1, e.hp - cut); trackDamage(cut);
+  spawnDamageText(e.x, e.y - e.radius - 34, `🗡️ 禁断の剣がボスを斬り裂いた！ HP -${n}%`, '#d07bff', 0.01, true);
+  for (let i = 0; i < 16; i++) particles.push({ x: e.x + (Math.random() - 0.5) * e.radius * 2, y: e.y + (Math.random() - 0.5) * e.radius * 2, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 2, life: 1, color: i % 2 ? '#c04cff' : '#ff4c8a', decay: 0.025 });
+  playTone(180, 0.4, 'sawtooth', 0.12, 60); shakeScreenLight(); updateHPUI();
+}
 function bossLandingFx(e) { // ボス着地：地響き・砂煙・名乗り
   if (!game.skipChallenge) setTimeout(applyBombDebt, 300); // 雑魚戦で爆弾に当たった分
+  setTimeout(() => applyForbiddenSword(e), 600); // 禁断の剣：ボスのHPを削る
   shakeScreen(); thump(70, 28, 0.7, 0.65); thump(140, 50, 0.4, 0.35, 'sawtooth'); playNoiseBurst(0.5, 0.35);
   for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; spawnHitParticles(e.x + Math.cos(a) * e.radius * 1.2, e.y + e.radius * 0.6 + Math.sin(a) * e.radius * 0.35, i % 2 ? '#c8b89a' : '#8d7f68'); }
   bossLandRing = { x: e.x, y: e.y + e.radius * 0.6, r: e.radius, t: Date.now() };
