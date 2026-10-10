@@ -2397,3 +2397,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .top-header .th-item.gem { border-image-source: var(--ui2-gembar) !important; padding-right: 0 !important; }
 .top-header .th-item.coin { border-left-width: 34px !important; padding-left: 0 !important; margin-left: 0; }
 .top-header .th-item.coin .coin-ico { margin-left: -24px; }
+/* サブウェポンガチャの後ろにも魔法陣（スキルガチャと同じく、ページ上部と同じ絵を敷く） */
+#weaponGachaBtn { position: relative; isolation: isolate; }
+#weaponGachaBtn::before { content: ''; position: absolute; left: 50%; top: 42%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; z-index: -1; pointer-events: none; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #weaponGachaBtn::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }

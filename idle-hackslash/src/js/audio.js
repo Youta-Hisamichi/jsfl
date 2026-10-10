@@ -1347,23 +1347,26 @@ function playRegisterSound() {
     }, 60);
   }, rapid ? 0 : 70);
 }
-// レベルアップ音：短く駆け上がる「パワーアップ」風（3音の分散和音を少しずつ上げて3回、約0.35秒）
-// 長押しの連続強化などで続けて鳴るときは、最後のひと組だけにして重ならないように
+// レベルアップ音：パチスロの予告みたいな短い「ヴッ」（低い唸りを細かく震わせる）
 let lastUpgradeSoundAt = 0;
-const UPGRADE_ARPS = [[523.25, 659.25, 783.99], [587.33, 739.99, 880.0], [659.25, 830.61, 987.77]]; // ドミソ→レファ#ラ→ミソ#シ
 function playUpgradeSound() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = performance.now(), quick = now - lastUpgradeSoundAt < 450; lastUpgradeSoundAt = now;
-  const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime, step = 0.036;
-  const notes = (quick ? UPGRADE_ARPS.slice(2) : UPGRADE_ARPS).flat();
-  notes.forEach((f, i) => {
-    const last = i === notes.length - 1, at = t0 + i * step, len = last ? 0.12 : step * 0.9;
+  const v = game.sfxVolume ?? 0.7, at = audioCtx.currentTime, len = quick ? 0.11 : 0.17;
+  const out = audioCtx.createGain(), lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, at); lp.frequency.exponentialRampToValueAtTime(700, at + len);
+  out.gain.setValueAtTime(0.0001, at); out.gain.exponentialRampToValueAtTime(0.22 * v, at + 0.006);
+  out.gain.setValueAtTime(0.22 * v, at + len * 0.55); out.gain.exponentialRampToValueAtTime(0.0001, at + len);
+  const trem = audioCtx.createGain(), lfo = audioCtx.createOscillator(), lfoG = audioCtx.createGain(); // 細かい震え（ヴヴヴ）
+  lfo.type = 'square'; lfo.frequency.value = 38; lfoG.gain.value = 0.45; trem.gain.value = 0.55;
+  lfo.connect(lfoG); lfoG.connect(trem.gain);
+  for (const [type, f, g0] of [['sawtooth', 98, 0.9], ['square', 196, 0.35], ['sawtooth', 147, 0.4]]) {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'square'; o.frequency.setValueAtTime(f, at);
-    const peak = 0.045 * v;
-    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
-    o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.02);
-  });
+    o.type = type; o.frequency.setValueAtTime(f, at); o.frequency.exponentialRampToValueAtTime(f * 0.94, at + len);
+    g.gain.value = g0; o.connect(g); g.connect(trem); o.start(at); o.stop(at + len + 0.02);
+  }
+  trem.connect(lp); lp.connect(out); out.connect(audioCtx.destination);
+  lfo.start(at); lfo.stop(at + len + 0.02);
 }
 function playUpgradeSoundClassic() { // 元のレベルアップ音（10%まとめ強化で使う）
   playTone(660, 0.08, 'triangle', 0.12, 880);
