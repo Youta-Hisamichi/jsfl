@@ -537,7 +537,7 @@ function onStageClear(passed) {
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
-  if (isBossStage && defeated) markBossBeaten(defeated.emoji); // 倒したボスを記録（塔のボスも通常ボスとして出るように）
+  if (isBossStage && defeated) markBossBeaten(defeated.emoji); if (isBossStage && defeated) rollForbiddenDrop(); // 禁断シリーズのドロップ // 倒したボスを記録（塔のボスも通常ボスとして出るように）
   game.totalKills++;
   if (typeof featureOnKill === 'function') featureOnKill(isBossStage);
   checkPowerUp(isBossStage);
@@ -549,7 +549,7 @@ function onStageClear(passed) {
 function advanceStage(passed, isBossStage) {
   if (passed) resetCombo();
   const wasTower = !!game.skipChallenge;
-  const easyBossKill = isBossStage && !game.bossLoop && bossTimeLeftMs >= BOSS_TIME_LIMIT_MS - TOWER_SUGGEST_FAST_KILL_MS; // ボスをあっさり倒した
+  const easyBossKill = isBossStage && !game.bossLoop && bossTimeLeftMs >= bossTimeLimitMs() - TOWER_SUGGEST_FAST_KILL_MS; // ボスをあっさり倒した
   if (game.skipChallenge) {
     showNotice(`🏰 試練の塔 突破！ ステージ${game.stage} のボスを撃破`);
     const skipped = game.skipChallenge.target - game.skipChallenge.origin;
@@ -636,6 +636,7 @@ function endDeathFx() {
 }
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
+function bossTimeLimitMs() { return BOSS_TIME_LIMIT_MS + 1000 * Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, (game.ownedArtifacts && game.ownedArtifacts.forbiddenWatch) || 0); } // 禁断の懐中時計で1個につき+1秒
 let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引く）
 const AUTO_BOSS_RETRY_LOOPS = 4; // ループを4周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
@@ -645,7 +646,7 @@ function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.is
 function tickBossTimer() {
   const now = Date.now(), boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0);
   if (!boss || filmMode || phase !== 'battle') { bossTimerLastAt = now; if (!boss) bossTimerFor = null; return; }
-  if (bossTimerFor !== boss) { bossTimerFor = boss; bossTimeLeftMs = BOSS_TIME_LIMIT_MS; bossTimerLastAt = now; return; }
+  if (bossTimerFor !== boss) { bossTimerFor = boss; bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = now; return; }
   if (boss.spawnTimer > 0) { bossTimerLastAt = now; return; } // 出現演出中は数えない
   bossTimeLeftMs -= Math.min(100, now - bossTimerLastAt); bossTimerLastAt = now; // 一時停止中やタブ切り替え中は進まない
   if (bossTimeLeftMs <= 0) { if (game.skipChallenge) { onPlayerDeath(); } else bossDefeated('time'); }
@@ -765,7 +766,7 @@ function bossContinue() {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (boss) boss.continued = true;
   const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = null; }
-  bossTimeLeftMs = BOSS_TIME_LIMIT_MS; bossTimerLastAt = Date.now(); lastBossTickSec = 0;
+  bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = Date.now(); lastBossTickSec = 0;
   phase = 'battle'; bossContReason = null;
   if (p) { spawnDamageText(p.x, p.y - p.radius - 20, '✨ コンテニュー！', '#7fe8ff', 0.012, true); spawnHitParticles(p.x, p.y, '#7fe8ff'); }
   playHealSound(); updateHPUI();
@@ -1270,6 +1271,29 @@ function applyForbiddenSword(e) { // 禁断の剣：1個につきボスのHPを1
   spawnDamageText(e.x, e.y - e.radius - 34, `🗡️ 禁断の剣がボスを斬り裂いた！ HP -${n}%`, '#d07bff', 0.01, true);
   for (let i = 0; i < 16; i++) particles.push({ x: e.x + (Math.random() - 0.5) * e.radius * 2, y: e.y + (Math.random() - 0.5) * e.radius * 2, vx: (Math.random() - 0.5) * 3, vy: -1 - Math.random() * 2, life: 1, color: i % 2 ? '#c04cff' : '#ff4c8a', decay: 0.025 });
   playTone(180, 0.4, 'sawtooth', 0.12, 60); shakeScreenLight(); updateHPUI();
+}
+// 禁断シリーズのドロップ：★4（ナイフ）はボスから、★5（剣・懐中時計）はジェムで挑む試練の塔ボスからだけ、まれに
+const FORBIDDEN_DROPS = [
+  { id: 'forbiddenKnife', normal: 0.02, tower: 0.05, gemTower: 0.05 },
+  { id: 'forbiddenSword', normal: 0, tower: 0, gemTower: 0.03 },
+  { id: 'forbiddenWatch', normal: 0, tower: 0, gemTower: 0.03 },
+];
+function rollForbiddenDrop() {
+  const ch = game.skipChallenge, kind = ch ? (ch.currency === 'gem' ? 'gemTower' : 'tower') : 'normal';
+  let delay = 2600;
+  for (const d of FORBIDDEN_DROPS) {
+    const owned = (game.ownedArtifacts && game.ownedArtifacts[d.id]) || 0;
+    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind]) continue;
+    gainArtifact(d.id); renderArtifactList(); saveGame();
+    const a = ARTIFACT_BY_ID[d.id];
+    setTimeout(() => { // ボス撃破の演出のあとに
+      spawnDamageText(arena.x, arena.y - 70, `${a.icon} ${a.name}がドロップ！（${game.ownedArtifacts[d.id]}個目）`, RARITY_INFO[a.rarity].color, 0.008, true);
+      showNotice(`${RARITY_INFO[a.rarity].label}の遺物「${a.name}」を手に入れた！ ${ARTIFACT_CURRENT[d.id] ? ARTIFACT_CURRENT[d.id](Math.min(ARTIFACT_STACK_LIMIT[d.id], game.ownedArtifacts[d.id])) : ''}`, false, 3500);
+      playGachaSound(a.rarity); shakeScreenLight();
+      if (typeof offerShareMoment === 'function') offerShareMoment(`${a.icon} ${a.name}を入手！`, `${RARITY_INFO[a.rarity].label}の禁断の遺物がドロップ！`);
+    }, delay);
+    delay += 1500;
+  }
 }
 function applyForbiddenKnife(e) { // 禁断のナイフ：雑魚が現れたとき、1本につきHPを1%削る（最大50本）
   const n = Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, (game.ownedArtifacts && game.ownedArtifacts.forbiddenKnife) || 0);
