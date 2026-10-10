@@ -1619,9 +1619,8 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
-  chips.push({ html: `🔮 帰還ボーナス ${COIN_ICO} +${formatCoinNumber(bonusCoins)}${LOGIN_RARITY_MULT[rarity] > 1 ? `（×${LOGIN_RARITY_MULT[rarity]}）` : ''}` }); // 合計の内訳
   { const capped = awayMs >= IDLE_REWARD_MAX_MS, hrs = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 3600000; chips.push({ special: capped, html: `⏳ 放置報酬 ${hrs.toFixed(1)}時間ぶん / 最大${IDLE_REWARD_MAX_MS / 3600000}時間${capped ? '（上限！こまめに戻ろう）' : ''}` }); }
-  if (idleKills > 0) chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ ${COIN_ICO} +${formatCoinNumber(idleCoins)}` });
+  chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！ ${COIN_ICO} +${formatCoinNumber(bonusCoins + idleCoins)}${LOGIN_RARITY_MULT[rarity] > 1 ? `（×${LOGIN_RARITY_MULT[rarity]}）` : ''}` }); // 帰還ボーナスのコインもここにまとめる（大きな数字と同じ）
   if (idleChests > 0) chips.push({ special: true, html: `🎁 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label + idleChestRarities[k]).join('・')}）` });
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
