@@ -1262,6 +1262,7 @@ function spawnNextEnemy() {
   balls = [...allies, makeBall(false)];
 }
 function bossLandingFx(e) { // ボス着地：地響き・砂煙・名乗り
+  if (!game.skipChallenge) setTimeout(applyBombDebt, 300); // 雑魚戦で爆弾に当たった分
   shakeScreen(); thump(70, 28, 0.7, 0.65); thump(140, 50, 0.4, 0.35, 'sawtooth'); playNoiseBurst(0.5, 0.35);
   for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; spawnHitParticles(e.x + Math.cos(a) * e.radius * 1.2, e.y + e.radius * 0.6 + Math.sin(a) * e.radius * 0.35, i % 2 ? '#c8b89a' : '#8d7f68'); }
   bossLandRing = { x: e.x, y: e.y + e.radius * 0.6, r: e.radius, t: Date.now() };

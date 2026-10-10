@@ -1411,6 +1411,15 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   }
   updateStatsUI();
 }
+const BOMB_DEBT_PER_HIT = 0.1; // 雑魚戦で爆弾に1回当たるごとに、ボス戦開始時のHPが最大HPの10%減る
+function applyBombDebt() { // ボス戦の始まりに、たまった爆弾のダメージを受ける
+  const d = game.bombDebt || 0; if (!(d > 0)) return;
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  game.bombDebt = 0;
+  pl.hp = Math.max(1, Math.round(pl.maxHp * (1 - d)));
+  spawnDamageText(pl.x, pl.y - pl.radius - 28, `💥 爆弾のダメージが残っている… HP ${Math.round(pl.hp / pl.maxHp * 100)}%`, '#ff7a5c', 0.01, true);
+  updateHPUI();
+}
 function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな吹き飛ぶ
   o.broken = true;
   const R = o.r * 4.5;
@@ -1424,6 +1433,10 @@ function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな
     const d = Math.hypot(e.x - o.x, e.y - o.y);
     if (d > R + (e.radius || 0)) continue;
     applyHitKnockback(e, o, e.isPlayer ? 6 : 9);
+    if (isMainPlayerBall(e) && !isBossFight() && !game.skipChallenge) { // 雑魚戦で爆弾に当たると、そのダメージはボス戦に持ち越し（HPは1までしか減らない）
+      game.bombDebt = Math.min(1, (game.bombDebt || 0) + BOMB_DEBT_PER_HIT);
+      spawnDamageText(e.x, e.y - e.radius - 22, `💥 HP -${Math.round(BOMB_DEBT_PER_HIT * 100)}%（ボス戦に持ち越し 計${Math.round(game.bombDebt * 100)}%）`, '#ff7a5c', 0.012, true);
+    }
     if (e.isPlayer || e.isDying || e.hp <= 0 || e.spawnTimer > 0) continue;
     const dmg = Math.max(1, Math.round(e.maxHp * (e.isBoss ? 0.08 : 0.3)));
     e.hp -= dmg; trackDamage(dmg);
