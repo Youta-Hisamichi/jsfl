@@ -174,15 +174,6 @@
   </div>
 
   <!-- ===== コイン強化タブ ===== -->
-  <div class="tab-page" data-tab="upgrade">
-    <div class="upgrade-panel">
-      <div class="shopkeeper" data-npc-tab="upgrade"></div>
-      <div class="upgrade-title"><i class="coin-ico"></i> コイン強化（転生するとリセット・長押しで連続強化）</div>
-      <button class="auto-toggle-btn" id="autoUpgradeBtn">🤖 オート強化 OFF</button>
-      <div class="upgrade-list" id="upgradeList"></div>
-    </div>
-  </div>
-
   <!-- ===== コインショップタブ ===== -->
   <div class="tab-page" data-tab="coinshop">
     <div class="artifact-panel">
@@ -226,7 +217,12 @@
         <p>招集するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
         <p>仲間・覚醒・招集費用は転生ですべてリセットされます。</p>
       </details>
+      <div class="my-char-box">
       <button class="my-char-card" id="myCharCard"></button>
+      <div class="mcb-title"><i class="coin-ico"></i> 自キャラ強化（長押しで連続強化・転生でリセット）</div>
+      <button class="auto-toggle-btn" id="autoUpgradeBtn">🤖 オート強化 OFF</button>
+      <div class="upgrade-list" id="upgradeList"></div>
+      </div>
       <div class="cp-hero">
         <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
         <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
@@ -357,8 +353,7 @@
 
 <div class="tab-bar" id="tabBar">
   <button class="tab-btn active" data-tab="game"><span class="tab-icon">🎮</span><span class="tab-label" data-i18n="tabGame">ゲーム</span></button>
-  <button class="tab-btn" data-tab="upgrade"><span class="tab-icon">⚔️</span><span class="tab-label" data-i18n="tabUpgrade">強化</span></button>
-  <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
+    <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
   <button class="tab-btn" data-tab="coinshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabShop">スキル</span></button>
   <button class="tab-btn" data-tab="artifact" style="display:none"><span class="tab-icon">🏺</span><span class="tab-label" data-i18n="tabArtifact">遺物</span></button>
   <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabGem">ショップ</span></button>

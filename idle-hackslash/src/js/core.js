@@ -205,11 +205,10 @@ function renderShopkeeper(tab) {
   });
 }
 const TAB_LISTS = {
-  upgrade: [() => renderUpgradeList()],
   coinshop: [() => renderCoinShopList()],
   gemshop: [() => renderShopList(), () => renderSupergemShopList()],
   gacha: [() => renderEvolutionList()],
-  companion: [() => renderCompanionList()],
+  companion: [() => renderCompanionList(), () => renderUpgradeList()], // 自キャラの強化は仲間ページにある
   ranking: [() => renderRanking()],
 };
 const dirtyTabLists = new Set(Object.keys(TAB_LISTS));
@@ -1270,6 +1269,7 @@ function formatUpgradeStat(id, v) {
   if (id === 'tackle' || id === 'compAtk' || id === 'melee' || id === 'rush' || id === 'cAtk' || id === 'cHp' || id === 'cSpd') return '×' + (v >= 1000 ? formatCoinNumber(Math.round(v)) : +v.toFixed(2));
   return formatCoinNumber(Math.round(v));
 }
+const UPGRADE_SHOWN = ['atk', 'hp']; // 仲間全体の強化（cAtk・cSpd・cHp）は廃止（今のLvの効果は転生まで残る）
 function renderUpgradeList() {
   const row = ([id, upgrade]) => {
     const level = game.upgrades[id];
@@ -1297,7 +1297,7 @@ function renderUpgradeList() {
       <button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${formatCoinNumber(maxCount)} Lv.</span></button>
     </div>`;
   };
-  upgradeList.innerHTML = Object.entries(UPGRADES).map(row).join('');
+  upgradeList.innerHTML = Object.entries(UPGRADES).filter(([id]) => UPGRADE_SHOWN.includes(id)).map(row).join('');
 }
 var shopSortOrder = null;
 const SHOP_ITEM_ART = { sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'auto', potion: 'bluepot', redPotion: 'redpot', partySlot: 'party', skillSlot: 'book', weaponSlot: 'axe', summoner: 'emblem' }; // ショップの絵のアイコン

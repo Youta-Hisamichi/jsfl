@@ -1,10 +1,9 @@
 // 序盤の導線：ページ（タブ）を少しずつ解放・初心者ミッション・ボスに負けたときの次の目安
 // ---- ページの段階的な解放 ----
-const TAB_UNLOCK_STAGE = { upgrade: 2, companion: 5, coinshop: 8, gacha: 11, records: 14, gemshop: 17, ranking: 20 }; // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
+const TAB_UNLOCK_STAGE = { companion: 2, coinshop: 8, gacha: 11, records: 14, gemshop: 17, ranking: 20 }; // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
 const TAB_UNLOCK_INFO = {
-  upgrade: 'コインで攻撃力やHPを強化できます',
   records: '目標を達成するとジェムがもらえます',
-  companion: '仲間を招集して一緒に戦おう！初回は無料！',
+  companion: '自キャラの攻撃力・HPを強化！ 仲間の招集もここで（初回無料）',
   ranking: 'ほかのプレイヤーと記録を競おう',
   coinshop: 'スキルを覚えて戦いを有利に進めよう',
   gemshop: 'ジェムでアイテムやレア仲間を手に入れよう',
@@ -55,7 +54,7 @@ const upLv = id => (game.upgrades && game.upgrades[id]) || 0;
 const anyCompanion = () => (game.companionSummons || 0) > 0 || Object.values(game.companions.recruited || {}).some(Boolean);
 const BEGINNER_MISSIONS = [
   { text: 'ステージ3に到達する', get: () => game.bestStage || 1, goal: 3, gems: 1 },
-  { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1 },
+  { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1, hint: '仲間ページの自キャラ強化' },
   { text: '溜めMAX（×3）で攻撃する', get: () => game.obFlags && game.obFlags.chargeMax ? 1 : 0, goal: 1, gems: 1, hint: '攻撃せずに待つほど次の一撃が強くなる' },
   { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 2, hint: '仲間ページの招集ガチャ（初回無料）' },
   { text: '「こうかばつぐん！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
