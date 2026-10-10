@@ -2392,3 +2392,8 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .gr-bubble::before { content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fffaf0; border-left: 0; }
 .gr-bubble b { display: block; font-size: 0.66rem; color: #b06a00; margin-bottom: 1px; }
 @keyframes grHop { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+/* ヘッダーのコイン・ジェムの台：横長の絵を細い枠に押し込むと縦に伸びて見えるので、両端は形を保って真ん中だけ伸ばす */
+.top-header .th-item.coin, .top-header .th-item.gem { background: none !important; border-style: solid !important; border-color: transparent !important; border-width: 0 34px !important; border-image: var(--ui2-coinbar) 0 60 fill / 0 34px stretch !important; padding-left: 2px !important; }
+.top-header .th-item.gem { border-image-source: var(--ui2-gembar) !important; padding-right: 0 !important; }
+.top-header .th-item.coin { border-left-width: 34px !important; padding-left: 0 !important; margin-left: 0; }
+.top-header .th-item.coin .coin-ico { margin-left: -24px; }
