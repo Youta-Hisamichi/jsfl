@@ -2542,3 +2542,24 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .evd-week div.today { background: rgba(255,215,107,0.3); outline: 2px solid #ffd76b; }
 .evd-close { width: 100%; }
 .run-banner { width: min(340px, 92vw); box-sizing: border-box; }
+/* レビューのお願い */
+.rv-panel { text-align: center; max-width: 320px; }
+.rv-ico .comp-sprite { width: 72px; height: 72px; object-fit: contain; image-rendering: pixelated; }
+.rv-title { font-weight: 900; font-size: 1.1rem; color: #ffd76b; margin: 4px 0; }
+.rv-text { font-size: 0.82rem; line-height: 1.6; }
+.rv-stars { font-size: 1.8rem; color: #ffd23f; letter-spacing: 4px; margin: 6px 0; text-shadow: 0 0 10px rgba(255,210,63,0.6); }
+.rv-yes { width: 100%; margin-bottom: 6px; }
+.rv-no { margin-top: 6px; background: none; border: none; color: var(--text-dim); font-size: 0.7rem; text-decoration: underline; cursor: pointer; }
+.rv-fb { width: 100%; height: 80px; margin: 8px 0; border-radius: 8px; padding: 6px; box-sizing: border-box; }
+/* デバッグ：遺物一覧・イベント確認 */
+.dbga-panel { max-width: 380px; }
+.dbga-list { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+.dbga-row { display: flex; align-items: center; gap: 6px; padding: 3px 4px; border-radius: 8px; background: rgba(255,255,255,0.06); font-size: 0.72rem; }
+.dbga-row.off { opacity: 0.55; }
+.dbga-ico { width: 32px; flex: none; text-align: center; font-size: 1.3rem; } .dbga-ico .ico-img { width: 30px; height: 30px; }
+.dbga-main { flex: 1; display: flex; flex-direction: column; min-width: 0; } .dbga-main small { font-size: 0.6rem; color: var(--text-dim); }
+.dbga-n { display: flex; align-items: center; gap: 2px; font-weight: 900; font-size: 0.7rem; }
+.dbga-n button, .dbge-g button { padding: 2px 6px; border-radius: 6px; border: none; background: #3a4a7a; color: #fff; font-size: 0.68rem; cursor: pointer; }
+.dbga-sep { text-align: center; font-size: 0.65rem; color: var(--text-dim); margin: 4px 0; }
+.dbge-h { font-weight: 900; font-size: 0.78rem; margin: 6px 0 3px; }
+.dbge-g { display: flex; flex-wrap: wrap; gap: 4px; }

@@ -985,6 +985,8 @@ debugRow.addEventListener('click', event => {
     showNotice('DEBUG: セーブデータを削除し、ゲームを最初からやり直しました');
     return;
   }
+  if (action === 'eventDbg') { openEventDebug(); return; }
+  if (action === 'artifactDbg') { openArtifactDebug(); return; }
   if (action === 'guerrilla') { if (typeof startGuerrilla === 'function') startGuerrilla(); return; }
   if (action === 'runStart') { if (typeof openRunStartDialog === 'function') openRunStartDialog(); return; }
   if (action === 'gimmick') { if (typeof dbgNextGimmick === 'function') dbgNextGimmick(); return; }
