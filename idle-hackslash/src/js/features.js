@@ -178,6 +178,18 @@ function heroChuuni(kind, force) {
   chuuniLast = t; chuuniAt = now;
   companionSay(hero, t, 1800 + t.length * 70);
 }
+function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語は1文字ずつ、句読点・「…」の直後で切りやすく）
+  const lines = []; let cur = '';
+  for (const ch of text) {
+    if (ctx.measureText(cur + ch).width > maxW && cur) {
+      const k = Math.max(cur.lastIndexOf('、'), cur.lastIndexOf('…'), cur.lastIndexOf('！'), cur.lastIndexOf(' '));
+      if (k >= cur.length - 6 && k > 2) { lines.push(cur.slice(0, k + 1)); cur = cur.slice(k + 1); } else { lines.push(cur); cur = ''; }
+    }
+    cur += ch;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
 function drawSpeech() {
   if (!speech.length) return;
   const now = Date.now();
@@ -185,11 +197,15 @@ function drawSpeech() {
   for (const s of speech) {
     const b = s.ball, a = Math.min(1, (s.until - now) / 300);
     ctx.save(); ctx.globalAlpha = a; ctx.font = '700 11px sans-serif';
-    const w = ctx.measureText(s.text).width + 14, h = 20, x = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), up = b.y - (b.radius || 14) * 2.3 - h >= 30, y = up ? b.y - (b.radius || 14) * 2.3 - h : b.y + (b.radius || 14) * 1.5 + 6; // 上に入りきらなければ下に出す
-    ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.strokeStyle = 'rgba(60,40,10,0.7)'; ctx.lineWidth = 1.5;
+    const maxW = Math.min(150, size * 0.46), lines = wrapSpeech(s.text, maxW), lh = 13;
+    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 14, h = lines.length * lh + 7;
+    const r = b.radius || 14, up = b.y - r * 2.3 - h >= 30;
+    const x = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), y = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
+    ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.strokeStyle = 'rgba(60,40,10,0.45)'; ctx.lineWidth = 1.2; // 半透明（戦場が透けて見える）
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
     ctx.beginPath(); if (up) { ctx.moveTo(b.x - 5, y + h); ctx.lineTo(b.x, y + h + 6); ctx.lineTo(b.x + 5, y + h); } else { ctx.moveTo(b.x - 5, y); ctx.lineTo(b.x, y - 6); ctx.lineTo(b.x + 5, y); } ctx.fill();
-    ctx.fillStyle = '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.text, x + w / 2, y + h / 2 + 1);
+    ctx.fillStyle = '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 4 + lh * i + lh / 2));
     ctx.restore();
   }
 }
