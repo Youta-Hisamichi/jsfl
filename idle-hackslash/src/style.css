@@ -2563,3 +2563,10 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .dbga-sep { text-align: center; font-size: 0.65rem; color: var(--text-dim); margin: 4px 0; }
 .dbge-h { font-weight: 900; font-size: 0.78rem; margin: 6px 0 3px; }
 .dbge-g { display: flex; flex-wrap: wrap; gap: 4px; }
+/* 初心者ミッション：小さめに・分数は次の行・ゲーム画面の下へ少しはみ出す */
+.ob-mission { bottom: -10px; padding: 3px 7px; gap: 0; max-width: 52%; }
+.ob-mission .obm-head { font-size: 0.54rem; }
+.ob-mission .obm-text { font-size: 0.66rem; line-height: 1.25; }
+.ob-mission .obm-text b { display: block; font-size: 0.64rem; }
+.ob-mission .obm-sub { font-size: 0.54rem; }
+.ob-mission .obm-claim { font-size: 0.6rem; padding: 0 5px; margin-top: 1px; }
