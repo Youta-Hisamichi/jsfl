@@ -2372,3 +2372,5 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .l7-day .ico-redpot { width: 1.4em; height: 1.4em; vertical-align: -0.3em; }
 .l7-day.big small { color: #6a3a50 !important; }
 .l7-day.big b { color: #5a1a40; }
+/* デバッグボタンは画面左下に固定（フッターのタブに重ならない高さ） */
+.cmd-bar .dbg-mini, #debugToggleBtn { position: fixed !important; left: 6px !important; right: auto !important; bottom: calc(var(--tabbar-h, 64px) + 6px + env(safe-area-inset-bottom, 0px)) !important; top: auto !important; transform: none !important; margin: 0 !important; z-index: 60; background: rgba(12,14,30,0.75) !important; color: #e8ecf8 !important; border: 1px solid rgba(255,255,255,0.35) !important; }

@@ -295,3 +295,7 @@ function comboListHtml() {
   if (!on.length) return `<div class="combo-box"><b>🤝 組み合わせボーナス</b><small>特定の仲間をそろえるとボーナス（仲間をタップで詳細）</small></div>`;
   return `<div class="combo-box"><b>🤝 発動中の組み合わせボーナス</b>${on.map(c => `<span class="combo-chip">${c.name}：${c.desc}</span>`).join('')}</div>`;
 }
+
+// フッター（タブ）の高さをCSSに渡す（デバッグボタンをフッターの上に置くため）
+{ const setTabH = () => { const t = document.getElementById('tabBar'); if (t) document.documentElement.style.setProperty('--tabbar-h', t.getBoundingClientRect().height + 'px'); };
+  setTabH(); window.addEventListener('resize', setTabH); setTimeout(setTabH, 1000); }
