@@ -2571,3 +2571,39 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .ob-mission .obm-sub { font-size: 0.54rem; }
 .ob-mission .obm-claim { font-size: 0.6rem; padding: 0 5px; margin-top: 1px; }
 .fb-my code { flex: 0 1 auto; font-size: 1rem; font-weight: 900; letter-spacing: 1px; color: #ffd76b; } /* 短くなった挑戦状コードは大きく */
+/* オープニング */
+.op-ov { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; color: #fff; cursor: pointer; background: #05060f; transition: background 1s, opacity 0.6s; }
+.op-ov.out { opacity: 0; }
+.op-ov[data-bg="night"] { background: radial-gradient(circle at 50% 40%, #1a2050, #05060f 70%); }
+.op-ov[data-bg="red"] { background: radial-gradient(circle at 50% 40%, #5a1020, #12040a 75%); }
+.op-ov[data-bg="dawn"] { background: linear-gradient(180deg, #1b2250 0%, #a34a6a 60%, #ffb36b 100%); }
+.op-ov[data-bg="sky"] { background: linear-gradient(180deg, #3a7bd5 0%, #8fd3ff 70%, #fff4d0 100%); }
+.op-ov[data-bg="title"] { background: radial-gradient(circle at 50% 45%, #2c3a8a, #0a0d24 75%); }
+.op-stage { position: relative; width: min(360px, 92vw); height: 52vh; display: flex; align-items: center; justify-content: center; }
+.op-stage.in > * { animation: opIn 0.9s ease-out both; }
+@keyframes opIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } }
+.op-circle { position: absolute; width: 100%; opacity: 0.85; filter: drop-shadow(0 0 18px #8fb4ff); animation: opIn 1.2s ease-out both, opSpin 40s linear infinite !important; }
+@keyframes opSpin { to { transform: rotate(360deg); } }
+.op-bosses { position: relative; width: 100%; height: 100%; }
+.op-bosses img { position: absolute; width: 58%; left: calc(var(--i) * 21%); top: calc(10% + var(--i) * 12%); filter: brightness(0.55) drop-shadow(0 0 14px #ff2a4a); animation: opIn 0.8s calc(var(--i) * 0.35s) both, opFloat 2.4s ease-in-out infinite alternate; }
+@keyframes opFloat { to { transform: translateY(-8px); } }
+.op-march { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.op-march span { width: 30%; animation: opMarch 1.4s calc(var(--i) * 0.12s) ease-in-out infinite alternate; }
+.op-march img { width: 100%; image-rendering: pixelated; filter: drop-shadow(0 0 6px #ff4a4a); }
+@keyframes opMarch { from { transform: translateX(-6px); } to { transform: translateX(6px) translateY(-4px); } }
+.op-hero { position: relative; z-index: 2; width: 48%; image-rendering: pixelated; filter: drop-shadow(0 0 16px rgba(255,240,180,0.9)); animation: opIn 1s ease-out both, opFloat 1.6s ease-in-out infinite alternate !important; }
+.op-light { position: absolute; width: 90%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255,240,180,0.85), rgba(255,200,120,0) 65%); }
+.op-aura { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; border: 3px solid rgba(200,120,255,0.8); box-shadow: 0 0 30px #b06cff, inset 0 0 30px #b06cff; animation: opPulse 0.8s ease-in-out infinite alternate !important; }
+@keyframes opPulse { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1.1); opacity: 1; } }
+.op-party { position: absolute; bottom: 4%; display: flex; gap: 2px; width: 100%; justify-content: center; }
+.op-party img { width: 15%; image-rendering: pixelated; animation: opIn 0.6s calc(0.3s + var(--i) * 0.15s) both; }
+.op-title { position: absolute; top: 4%; z-index: 3; display: flex; flex-direction: column; align-items: center; text-shadow: 0 0 12px #6ca0ff, 0 3px 0 #000; }
+.op-title small { font-size: 1.1rem; font-weight: 900; color: #ffd76b; letter-spacing: 3px; }
+.op-title b { font-size: 3.4rem; font-weight: 900; letter-spacing: 6px; line-height: 1.1; background: linear-gradient(180deg, #fff, #ffd76b 55%, #ff9f43); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #3a1a00); }
+.op-title span { font-size: 0.7rem; letter-spacing: 3px; color: #c8d4ff; }
+.op-stage .op-hero:last-of-type { margin-top: 30%; }
+.op-tap { position: absolute; bottom: -2%; font-weight: 900; letter-spacing: 4px; color: #fff; animation: opBlink 1s ease-in-out infinite alternate !important; }
+@keyframes opBlink { from { opacity: 0.25; } }
+.op-text { min-height: 5.5em; width: min(360px, 90vw); margin-top: 10px; white-space: pre-line; text-align: center; font-size: 1.05rem; font-weight: 800; line-height: 1.7; text-shadow: 0 2px 4px #000; }
+.op-skip { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.35); color: #fff; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
+.op-title b { background: none; -webkit-background-clip: initial; background-clip: initial; color: #ffe27a; filter: none; text-shadow: 0 0 18px rgba(255,200,80,0.8), 0 3px 0 #7a3a00, 0 5px 6px #000; }
