@@ -2481,3 +2481,42 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .rf-main small { font-size: 0.62rem; color: #aab4d0; }
 .rf-gem { font-size: 0.7rem; font-weight: 900; color: #64e8ff; }
 .rf-row.got .rf-gem { color: #7ee787; }
+/* シェア画像カード */
+.share-card-wrap { margin: 4px auto 8px; max-width: 260px; }
+.share-card-wrap img { display: block; width: 100%; aspect-ratio: 1; border-radius: 10px; background: #171c3e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.share-card-hint { font-size: 0.6rem; color: var(--text-dim); margin-top: 3px; }
+.share-img-btn { width: 100%; margin: 8px 0 4px; }
+.share-reward-note { font-size: 0.72rem; font-weight: 800; color: #ffb14f; min-height: 1em; }
+#shareModal .share-text { height: 64px; }
+/* シェアしたくなる瞬間のボタン */
+.moment-share { position: absolute; right: 8px; top: 42px; z-index: 8; display: flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 12px; border: 2px solid #fff; background: linear-gradient(180deg, #ff8ad8, #8a5cff); color: #fff; font-weight: 900; font-size: 0.78rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform: translateX(140%); transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); cursor: pointer; }
+.moment-share small { font-size: 0.6rem; font-weight: 800; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.moment-share.show { transform: none; animation: obmPulse 0.8s ease-in-out 0.4s infinite alternate; }
+/* 今日の勇者占い */
+.fortune-btn { display: block; width: 100%; margin: 0 0 8px; padding: 8px 10px; border-radius: 12px; border: 2px solid #b48cff; background: linear-gradient(180deg, rgba(90,60,160,0.9), rgba(50,30,100,0.9)); color: #fff; font-weight: 800; font-size: 0.82rem; cursor: pointer; }
+.fortune-btn b { color: #ffd76b; } .fortune-btn.new b { color: #fff; background: #ff5c7a; border-radius: 999px; padding: 0 6px; font-size: 0.65rem; }
+.fortune-btn.new { animation: obmPulse 0.9s ease-in-out infinite alternate; }
+.ft-panel { text-align: center; max-width: 330px; }
+.ft-title { font-weight: 900; color: #c8b6ff; font-size: 1rem; }
+.ft-rank { font-size: 3.4rem; font-weight: 900; line-height: 1.2; text-shadow: 0 0 18px currentColor; animation: gachaPop 0.5s cubic-bezier(.34,1.56,.64,1); }
+.ft-msg { font-size: 0.82rem; line-height: 1.5; margin: 2px 0 8px; }
+.ft-rows { display: flex; flex-direction: column; gap: 4px; text-align: left; font-size: 0.78rem; }
+.ft-rows > div { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.07); }
+.ft-rows b { display: flex; align-items: center; gap: 4px; color: #ffd76b; }
+.ft-rows .comp-sprite { width: 28px; height: 28px; object-fit: contain; image-rendering: pixelated; }
+.ft-eff { margin: 8px 0; font-weight: 900; color: #7ee787; font-size: 0.86rem; }
+.ft-share { width: 100%; margin-bottom: 6px; }
+/* フレンドの挑戦状 */
+.friend-box { margin: 0 0 10px; padding: 8px 10px; border-radius: 12px; background: rgba(20,24,48,0.55); border: 1px solid rgba(100,232,255,0.4); color: #e8ecf8; }
+.fb-title { font-weight: 900; color: #64e8ff; font-size: 0.86rem; margin-bottom: 4px; }
+.fb-my { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 0.7rem; }
+.fb-my code { flex: 1 1 100%; padding: 4px 6px; border-radius: 6px; background: rgba(0,0,0,0.35); font-size: 0.66rem; word-break: break-all; user-select: all; }
+.fb-copy, #fbAddBtn { padding: 4px 10px; border-radius: 8px; border: none; background: linear-gradient(180deg, #4fc3ff, #2f8cff); color: #fff; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
+.fb-in { display: flex; gap: 4px; margin-top: 6px; }
+.fb-in input { flex: 1; min-width: 0; padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.74rem; }
+.fb-note { font-size: 0.62rem; color: #aab4d0; margin: 4px 0; }
+.fb-list { display: flex; flex-direction: column; gap: 2px; }
+.fb-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.74rem; }
+.fb-row b { flex: 1; } .fb-row em { font-style: normal; font-weight: 900; color: #ffb14f; }
+.fb-row.beat em { color: #7ee787; }
+.fb-empty { font-size: 0.7rem; color: #aab4d0; }

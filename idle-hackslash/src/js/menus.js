@@ -596,6 +596,7 @@ function renderRanking() {
   const entries = RIVALS.map((r, i) => ({ name: r.name, score: isDaily ? Math.round(getRivalDailyScore(r, i, selectedKey) * rivalFactor) : mode.rival(r, i), isPlayer: false }));
   const myScore = isDaily ? getDailyClearsForDate(selectedKey) : mode.mine();
   entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
+  if (typeof friendRankEntries === 'function') entries.push(...friendRankEntries(rankingMode)); // 挑戦状を登録したフレンド
   entries.sort((a, b) => b.score - a.score);
   const fmt = v => isDaily ? v + ' クリア' : mode.fmt(v);
   lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title, score: fmt(myScore) };
