@@ -120,7 +120,7 @@ updateTabLocks(); updateMission();
 const FEATURE_UNLOCKS = {
   tower: { ok: () => isTowerUnlocked(), img: 'assets/img/ui/bar/btn_tower.webp', title: '🏰 試練の塔が解放！', body: [
     'コイン（好きなステージを指定するときはジェム）を払って、<b>先のステージのボス</b>にいきなり挑戦できます。',
-    '勝てばそのステージまで<b>一気にワープ</b>！ 飛ばしたステージが多いほど良い<b>遺物</b>がもらえます。',
+    '勝てばそのステージまで<b>一気にワープ</b>！ 飛ばしたステージが多いほど良い<b>報酬</b>がもらえます。',
     '負けても元のステージに戻るだけなので、気軽に挑戦しよう。',
     '画面下の「試練の塔」ボタンから挑戦できます。'] },
   reborn: { ok: () => isRebornUnlocked(), img: 'assets/img/ui/bar/btn_reborn.webp', title: '🌌 転生が解放！', body: [
