@@ -2438,3 +2438,15 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #myCharCard .mc-ud .ht { color: #4b2fa8; }
 #myCharCard .mc-ud .up { color: #0e7a3a; }
 #myCharCard .mc-ud .dn { color: #b3261e; }
+/* 仲間ページのキャラカード：ショップの仲間ページと同じ台（金の縁の羊皮紙・紺のキャラ枠・リボンの名前） */
+.companion-list .companion-card.recruited { border: 3px solid #b8862e !important; border-radius: 8px !important; background: linear-gradient(180deg, #f7ecd2, #ecdcb6) !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; color: #3a2a10 !important; }
+.companion-list .companion-card.recruited .cc-portrait { background: radial-gradient(circle, #2c3f7a, #0e1630) !important; border: 2px solid #c99a3a !important; box-shadow: inset 0 0 0 1px #6a4a10 !important; border-radius: 8px !important; }
+.companion-list .companion-card .cc-name { color: #3a2a10; }
+.companion-list .companion-card .cc-name b.cc-ribbon { display: inline-block; max-width: 100%; padding: 3px 16px 3px 12px; color: #fff; font-size: 0.82rem; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px #000; vertical-align: middle; }
+.companion-list .companion-card .cc-trait { background: rgba(255,255,255,0.55); color: #4a3418; }
+.companion-list .companion-card .cc-rarity, .companion-list .companion-card .cc-cost { text-shadow: none; }
+.companion-list .cp-tile { border: 3px solid #b8862e !important; border-radius: 8px !important; background: linear-gradient(180deg, #f7ecd2, #ecdcb6) !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.25) !important; color: #3a2a10 !important; }
+.companion-list .cp-tile .cp-tile-img { display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; margin-bottom: 2px; border-radius: 8px; background: radial-gradient(circle, #2c3f7a, #0e1630); border: 2px solid #c99a3a; overflow: hidden; }
+.companion-list .cp-tile .cp-tile-img .comp-sprite { width: 52px; height: 52px; margin: 0; }
+.companion-list .cp-tile.sealed .cp-tile-img .comp-sprite { filter: brightness(0) invert(0.6) opacity(0.75); }
+.companion-list .cp-tile .cp-tile-lock { color: #6a5838; }
