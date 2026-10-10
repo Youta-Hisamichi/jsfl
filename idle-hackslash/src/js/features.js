@@ -102,6 +102,45 @@ const COMP_TALK = {
   archangel: { i: ['地上の花は美しいですね', 'あなたたちに祝福を', '天界からも、見守っています', '愛と裁きは表裏一体', '翼が…少し疲れました'], k: ['裁きは下されました', '光に還りなさい', '赦しを'] },
   bahamut:   { i: ['…退屈だ', '我が咆哮で大地が震える', '強き者よ、我の前に立て', '人の子よ、なかなかやる', '千年の眠りから覚めた甲斐があった'], k: ['塵となれ', '…脆い', '竜王の前に立つからだ'] },
 };
+const COMP_TALK_LOW = { // p: やられそう / d: やられた
+  villager: { p: ['ひぃぃ、もう無理だべ〜！', '母ちゃん、助けてけろ…'], d: ['畑に…帰りてぇ…', 'おら…ここまでだべ…'] },
+  merchant: { p: ['こ、これは大赤字…！', '命あっての商売ですぞ…！'], d: ['店じまい…ですな…', '投資…失敗…'] },
+  hobbit: { p: ['うわわ、ちょっとピンチ！', 'もうひとつ朝ごはん食べとけば…'], d: ['おうちに…帰りたい…', 'ごめん…ここまで…'] },
+  dog: { p: ['キャンキャン！（いたい！）', 'クゥン…（こわい…）'], d: ['キャイン…', 'クゥ〜ン…'] },
+  penguin: { p: ['ペ、ペンチ…じゃなくてピンチだペン！', 'とけそうだペン…！'], d: ['もう…泳げないペン…', '南極…見たかったペン…'] },
+  hamster: { p: ['ほっぺの豆、もう空っぽでチュ！', 'チュ、チュウ〜！ ピンチでチュ！'], d: ['巣に…帰るでチュ…', 'チュ…'] },
+  cat: { p: ['シャーッ！ 近寄るニャ！', 'し、しっぽが…！'], d: ['ニャ…ん…', '九つの命…あと八つ…ニャ…'] },
+  warrior: { p: ['ぐっ…効いてねぇぞ…！', 'まだ…立てる…！'], d: ['すまねぇ…あとは任せた…', '筋肉が…足りなかった…'] },
+  mage: { p: ['ちょっと、詠唱の邪魔しないで！', 'う、うそ…魔力が…！'], d: ['こんなはずじゃ…', '次は…もっと派手に…'] },
+  priest: { p: ['わ、私が倒れたら誰が回復を…！', '神よ…お力を…！'], d: ['皆さん…どうかご無事で…', '祈りが…届かない…'] },
+  monk: { p: ['この程度…修行のうち…！', '呼吸を…整えろ…！'], d: ['師匠…申し訳…ない…', '修行…不足…'] },
+  archer: { p: ['近すぎる…！', '狙いが…定まらない…！'], d: ['矢が…尽きた…', '森の声が…遠い…'] },
+  thief: { p: ['やべっ、ずらかるか…！？', 'こ、こういうの苦手なんだよ！'], d: ['お宝…まだ…', 'へへ…ドジっちまった…'] },
+  dancer: { p: ['ステップが…乱れる…！', 'まだ踊れるわ…！'], d: ['カーテン…コール…', '最後の…舞…'] },
+  bard: { p: ['悲劇の章に…入ってしまう…！', 'この歌はハッピーエンドのはずだ…！'], d: ['この物語の…続きを…', '弦が…切れた…'] },
+  lancer: { p: ['ちっ…間合いを詰められた…！', '槍が…重い…！'], d: ['大物…だった…', '槍が…折れた…'] },
+  alchemist: { p: ['ちょ、実験失敗っぽい！', '回復薬…どこにしまったっけ…！'], d: ['研究…まだ途中なのに…', 'ちょっと…爆発しすぎた…'] },
+  musketeer: { p: ['弾薬…残りわずか…！', '隊列…維持…困難…！'], d: ['任務…失敗で…あります…', '撤退…であります…'] },
+  bunny: { p: ['ツキが…逃げてく〜！', 'オールインしすぎた〜！'], d: ['ゲーム…オーバー…', 'ハズレ…ちゃった…'] },
+  golem: { p: ['…ヒビ、ハイッタ', '…マダ、マモル'], d: ['…ガラガラ…', '…オヤスミ…'] },
+  tamer: { p: ['みんな、わたしを守って〜！', 'こ、怖くなんかないもん…！'], d: ['みんな…ごめんね…', 'もふもふ…したかった…'] },
+  heavy: { p: ['鎧が…へこんだ…！', 'まだ…盾は…ある…！'], d: ['盾が…砕けた…', '鉄壁…破れたり…'] },
+  cavalry: { p: ['愛馬よ、もう少しだ…！', '退くな…退くなぁ…！'], d: ['落馬…無念…', '愛馬よ…すまぬ…'] },
+  samurai: { p: ['…浅い', '…まだ斬れる'], d: ['…無念', '…散る、か'] },
+  summoner: { p: ['霊獣たち…私を守って…！', '契約の力が…弱まって…！'], d: ['霊獣たち…還りなさい…', '星が…見えない…'] },
+  sage: { p: ['わしも…年じゃのう…', 'こ、腰が…！'], d: ['わしの…書物を…頼む…', 'ふぉ…ふぉ…'] },
+  fortune: { p: ['こ、こんな未来は…見えてなかった…！', '水晶が…曇る…！'], d: ['占い…はずれちゃった…', 'これも…運命ね…'] },
+  ninja: { p: ['…不覚', '…まだ影は消えぬ'], d: ['…ここまで', '…影に…還る'] },
+  pirate: { p: ['船が…傾いてきやがった…！', 'ラム酒…ラム酒をくれ…！'], d: ['船が…沈む…', '海に…還るぜ…'] },
+  paladin: { p: ['盾よ…持ちこたえよ…！', '光よ…我に力を…！'], d: ['光が…遠のく…', '皆を…守れ…なかった…'] },
+  princess: { p: ['ド、ドレスが…！', 'わたくし、まだ負けませんわ…！'], d: ['お父様…ごめんなさい…', 'お城に…帰りたい…'] },
+  dragon: { p: ['いたいいたい〜！', 'ガオ…（こわい）'], d: ['ガオ…ぉ…', 'おなか…すいた…'] },
+  dragoon: { p: ['翼が…重い…！', '竜よ…まだ飛べるか…！'], d: ['空が…遠い…', '竜よ…すまぬ…'] },
+  pegasus: { p: ['天馬が…怯えてる…！', '高度が…下がる…！'], d: ['翼が…折れた…', '空へ…帰ろう…'] },
+  king: { p: ['よ、余を守れぇ！', '王冠が…ずれる…！'], d: ['余も…ここまでか…', '国を…頼むぞ…'] },
+  archangel: { p: ['翼が…傷ついて…', '祝福を…もう一度…'], d: ['天へ…還ります…', '光あれ…'] },
+  bahamut: { p: ['…小賢しい', 'この我に…傷を…！？'], d: ['この我を…倒すか…', '…千年後に…また会おう'] },
+};
 let compTalkAt = 0, compTalkLast = '';
 function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとりごと / 'k' 撃破）
   const now = Date.now(); if (!force && now - compTalkAt < 3000) return;
@@ -125,7 +164,9 @@ const CHUUNI = {
   pinch: ['くっ…まだだ、まだ終わらんよ…！', 'この痛み…悪くない', '覚醒の時は…近い…！', '俺の中の何かが…目覚める…', 'ここからが…本当の俺だ…！'],
   escape: ['逃げるか…賢明な判断だ', 'フッ…命拾いしたな', '追わぬ…それが強者の余裕', '置いていったか…その金貨、もらっておこう'],
   event: ['この気配…ただ事ではないな', '天が…俺に味方している', '世界が…歪み始めた…', '面白くなってきたじゃないか'],
-  down: ['ここまでか…だが我が魂は不滅…', '次の転生で…会おう…', '世界よ…すまない…'],
+  down: ['ここまでか…だが我が魂は不滅…', '次の転生で…会おう…', '世界よ…すまない…', 'バカな…この俺が…！？', '封印が…暴走…する…', 'フッ…今日のところは…引き分けに…しておいて…やる…', '覚えていろ…俺は何度でも…蘇る…', '我が右腕よ…なぜ応えぬ…', 'これも…運命（さだめ）か…'],
+  timeout: ['時が…俺を見放したか…', 'くっ…時間の魔術か…！', '刻（とき）よ止まれ…！ …止まらない…', '次こそは…時をも斬る…'],
+  pinch2: ['まだだ…まだ倒れるわけには…！', '視界が…紅く染まる…', 'ここで散るなら…それも美学…いや、まだだ！', '我が魂よ…燃え尽きるには早い…！', '回復…いや、気合いだ…！'],
 };
 let chuuniLast = '', chuuniAt = 0;
 function heroChuuni(kind, force) {
@@ -144,10 +185,10 @@ function drawSpeech() {
   for (const s of speech) {
     const b = s.ball, a = Math.min(1, (s.until - now) / 300);
     ctx.save(); ctx.globalAlpha = a; ctx.font = '700 11px sans-serif';
-    const w = ctx.measureText(s.text).width + 14, h = 20, x = Math.max(4, Math.min((sizeH ? size : size) - w - 4, b.x - w / 2)), y = b.y - (b.radius || 14) * 2.3 - h;
+    const w = ctx.measureText(s.text).width + 14, h = 20, x = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), up = b.y - (b.radius || 14) * 2.3 - h >= 30, y = up ? b.y - (b.radius || 14) * 2.3 - h : b.y + (b.radius || 14) * 1.5 + 6; // 上に入りきらなければ下に出す
     ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.strokeStyle = 'rgba(60,40,10,0.7)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(b.x - 5, y + h); ctx.lineTo(b.x, y + h + 6); ctx.lineTo(b.x + 5, y + h); ctx.fill();
+    ctx.beginPath(); if (up) { ctx.moveTo(b.x - 5, y + h); ctx.lineTo(b.x, y + h + 6); ctx.lineTo(b.x + 5, y + h); } else { ctx.moveTo(b.x - 5, y); ctx.lineTo(b.x, y - 6); ctx.lineTo(b.x + 5, y); } ctx.fill();
     ctx.fillStyle = '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.text, x + w / 2, y + h / 2 + 1);
     ctx.restore();
   }
@@ -344,7 +385,7 @@ function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(i
 
 // ===== 既存処理へのフック =====
 { const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); offerBossAdBuff(); }, BOSS_WARNING_MS + 600); }; }
-{ const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) companionSay(b, ((COMP_PROFILE[id] || {}).say || HERO_SAY)[3]); } }; }
+{ const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pool[Math.floor(Math.random() * pool.length)], 2600); } } }; }
 { const orig = playRewardedVideo; playRewardedVideo = function (done, txt) { return orig(() => { questTick('ad'); done(); }, txt); }; }
 { const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
   orig(box, results, count, best); questTick('gacha', count);
@@ -357,14 +398,30 @@ function featureOnKill(isBoss) {
   questTick('kill'); if (isBoss) { questTick('boss'); addBond(3); setTimeout(() => sayByEvent(2), 600); } else addBond(1);
 }
 setInterval(() => { if (Math.random() < 0.06 && phase === 'battle' && getActiveTab() === 'game' && !isBossFight()) compTalk('i'); }, 500); // ときどき仲間がひとこと
-{ let wasBoss = false, lastGm = null, pinchSaid = false;
+{ let wasBoss = false, lastGm = null;
   setInterval(() => { // 勇者のひとりごと・場面ごとのセリフ
     if (phase !== 'battle' || getActiveTab() !== 'game') return;
     const boss = isBossFight(); if (boss && !wasBoss) setTimeout(() => heroChuuni('boss', true), 1200); wasBoss = boss;
     const g = typeof gm === 'object' ? gm.key : null; if (g && g !== lastGm) setTimeout(() => heroChuuni('event', true), 2800); lastGm = g;
-    const h = balls.find(b => isMainPlayerBall(b)), pinch = !!(h && h.inPinch); if (pinch && !pinchSaid) heroChuuni('pinch', true); pinchSaid = pinch;
+    for (const b of balls) { // やられそう：HPが30%以下になったら1回（50%以上に戻るとまた言える）
+      if (!b.isPlayer || b.isClone || !(b.maxHp > 0)) continue;
+      const r = b.hp / b.maxHp;
+      if (r > 0.5 || b.hp <= 0) { if (r > 0.5) b.lowSaid = false; continue; }
+      if (r > 0.3 || b.lowSaid) continue;
+      b.lowSaid = true;
+      if (isMainPlayerBall(b)) { if (getHeroChar()) { const L = COMP_TALK_LOW[getHeroChar()]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); } else heroChuuni(Math.random() < 0.5 ? 'pinch' : 'pinch2', true); }
+      else if (b.isCompanion) { const L = COMP_TALK_LOW[b.companionId]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); }
+    }
     if (Math.random() < 0.04) heroChuuni('idle');
   }, 500); }
+function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
+  const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
+  const id = getHeroChar();
+  if (id) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(h, pool[Math.floor(Math.random() * pool.length)], 2600); }
+  else { const pool = CHUUNI[kind]; const t = pool[Math.floor(Math.random() * pool.length)]; chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600); }
+}
+{ const orig = bossDefeated; bossDefeated = function (reason) { heroDownSay(reason === 'time' ? 'timeout' : 'down'); return orig.apply(this, arguments); }; }
+{ const orig = failSkipChallenge; failSkipChallenge = function () { if (!(game.skipChallenge && game.skipChallenge.lost)) heroDownSay('down'); return orig.apply(this, arguments); }; }
 { const orig = startEnemyEscape; startEnemyEscape = function (e) { orig(e); setTimeout(() => heroChuuni('escape'), 900); }; }
 { const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
 checkDailyLogin(); questState();
