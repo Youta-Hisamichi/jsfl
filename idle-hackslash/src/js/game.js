@@ -53,6 +53,7 @@ function step() {
   }
   if (!e.isBoss && !e.spawnTimer && !game.skipChallenge && game.stage % 10 !== 0 && !filmMode) { // 雑魚はしばらく倒せないと逃げて、次の雑魚が出てくる
     e.liveFrames = (e.liveFrames || 0) + speedMult;
+    if (!e.escapeWarned && e.liveFrames >= ENEMY_PASS_FRAMES - ESCAPE_WARN_FRAMES) { e.escapeWarned = true; spawnDamageText(escTextX(e), e.y - e.radius - 18, '💦 にげそう…（逃げてもコイン30%）', '#cfe8ff', 0.008); }
     if (e.liveFrames >= ENEMY_PASS_FRAMES) startEnemyEscape(e);
   }
   let battleEnded = false;
@@ -486,16 +487,22 @@ statModal.addEventListener('click', event => { if (event.target === statModal) c
 const ENEMY_PASS_FRAMES = 60 * 15, ENEMY_ESCAPE_FRAMES = 36; // 雑魚がにげるまで約15秒・にげる演出の長さ
 function startEnemyEscape(e) {
   e.escaping = ENEMY_ESCAPE_FRAMES; e.vx = e.vy = 0;
-  spawnDamageText(e.x, e.y - e.radius - 16, '💨 にげた！', '#e8e8e8', 0.012, true);
+  spawnDamageText(escTextX(e), e.y - e.radius - 16, '💨 にげた！', '#e8e8e8', 0.012, true);
   playTone(700, 0.18, 'square', 0.03, 1400);
+  // 逃げながらコインを落としていく（撃破の30%）。もらえたことが分かるように、敵の位置からコインを散らして音も鳴らす
+  const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * ESCAPE_COIN_RATE)); game.coins += c;
+  spawnCoinDrop(e.x, e.y, c, 4);
+  for (let i = 0; i < 4; i++) setTimeout(() => playCoinChime(i), 250 + i * 60);
+  const tx = escTextX(e);
+  setTimeout(() => spawnDamageText(tx, e.y - e.radius - 2, `💰 おとしもの +${formatCoinNumber(c)} 🟡`, '#ffd76b', 0.009, true), 200);
+  setTimeout(() => spawnDamageText(tx, e.y + 14, `（撃破の${Math.round(ESCAPE_COIN_RATE * 100)}%）`, '#ffe9a8', 0.011), 350);
+  updateStatsUI();
 }
+function escTextX(e) { const m = Math.min(110, arena.radius * 0.6); return Math.max(arena.x - arena.radius + m, Math.min(arena.x + arena.radius - m, e.x)); } // 長い文字が画面の端で切れないように
+const ESCAPE_WARN_FRAMES = 60 * 4; // 逃げる4秒前に予告
 const EARLY_KILL_CHEST_CHANCE = 0.08, ESCAPE_COIN_RATE = 0.3;
 function onStageClear(passed) {
-  if (passed) { // 逃げられても撃破の30%のコインは入る
-    const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * ESCAPE_COIN_RATE)); game.coins += c;
-    spawnDamageText(arena.x, arena.y - 20, `+${formatCoinNumber(c)} 🟡`, '#ffd76b', 0.016, true);
-    return advanceStage(true);
-  }
+  if (passed) return advanceStage(true); // 逃げられたときのコイン（撃破の30%）は startEnemyEscape で渡し済み
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
   const b = computeBonuses();
   const isBossStage = game.stage % 10 === 0;
