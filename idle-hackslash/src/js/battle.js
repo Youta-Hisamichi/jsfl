@@ -1512,6 +1512,8 @@ function spawnLoginConfetti(rarity) {
   }
   box.innerHTML = html;
 }
+const SURPRISE_CHEST_WEIGHTS = { mythic: 0.2, legendary: 1, epic: 3.125 }; // 帰還ボーナスのサプライズ宝箱は★3（エピック）以上だけ。比率は転生報酬と同じ
+function rollSurpriseChestRarity() { const ks = Object.keys(SURPRISE_CHEST_WEIGHTS); let r = Math.random() * ks.reduce((a, k) => a + SURPRISE_CHEST_WEIGHTS[k], 0); for (const k of ks) if ((r -= SURPRISE_CHEST_WEIGHTS[k]) < 0) return k; return 'epic'; }
 function checkLoginBonus(awayMs) {
   if (!(awayMs >= RETURN_MIN_MS) || loginBonusModal.classList.contains('show')) return;
   const tier = getReturnTier(awayMs);
@@ -1522,7 +1524,7 @@ function checkLoginBonus(awayMs) {
   const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
   const chest = Math.random() < reward.chest; // サプライズ宝箱：遺物かジェムの山
-  const chestArtifact = chest ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null; // サプライズ宝箱は遺物（ジェムは動画を見たときだけ）
+  const chestArtifact = chest ? { rarity: rollSurpriseChestRarity() } : null; // サプライズ宝箱は★3以上の宝箱（左下に持てる。ジェムは動画を見たときだけ）
   const bonusPotion = rIdx >= 2 ? 1 : 0;
   const bonusArtifact = rarity === 'legendary' ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
   const fakeOut = rIdx >= 2 && Math.random() < 0.5;
@@ -1540,7 +1542,7 @@ function checkLoginBonus(awayMs) {
   game.lastSeenAt = Date.now();
   game.coins += bonusCoins;
   const stockArt = a => { if (!Array.isArray(game.rebirthChests)) game.rebirthChests = []; game.rebirthChests.push(a.id); }; // 遺物は開けずに宝箱として左下へ（中身は開けるまで秘密）
-  if (chestArtifact) stockArt(chestArtifact);
+  if (chestArtifact) hcIdle[chestArtifact.rarity] = (hcIdle[chestArtifact.rarity] || 0) + 1; // ★付きの宝箱として左下へ
   if (bonusPotion) game.potions = (game.potions || 0) + bonusPotion;
   if (bonusArtifact) stockArt(bonusArtifact);
   if (chestArtifact || bonusArtifact) renderChestTray();
