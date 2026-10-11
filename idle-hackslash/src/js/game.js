@@ -2009,7 +2009,7 @@ function drawBall(ball) {
     }
     { // 溜めの秒数（前の攻撃からのカウントアップ）と最大
       const maxS = (HERO_WAIT_MAX - 1) * heroWaitRateMs() / 1000, sec = Math.min(maxS, (w - 1) * heroWaitRateMs() / 1000), full = w >= HERO_WAIT_MAX;
-      const txt = full ? `MAX ×${HERO_WAIT_MAX}` : `${sec.toFixed(1)} / ${maxS.toFixed(1)}秒`, y = ball.y - ball.radius * 2.6 - 6;
+      const txt = full ? `MAX ×${HERO_WAIT_MAX}` : `${sec.toFixed(1)} / ${+maxS.toFixed(1)}秒`, y = ball.y - ball.radius * 2.6 - 6;
       ctx.save(); ctx.font = `900 ${full ? 11 : 10}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(txt, ball.x, y);
       ctx.fillStyle = full ? '#ff7b8a' : '#ffd08a'; ctx.fillText(txt, ball.x, y); ctx.restore();
