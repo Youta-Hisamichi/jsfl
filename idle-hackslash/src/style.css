@@ -2615,3 +2615,34 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .go-skull { width: 132px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); animation: goSkullIn 0.7s 0.25s cubic-bezier(.3,1.5,.5,1) both, goSkullBob 2.4s 1s ease-in-out infinite; transform-origin: 50% 100%; }
 @keyframes goSkullIn { 0% { transform: translateX(24px) scale(0.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
 @keyframes goSkullBob { 0%, 100% { transform: none; } 50% { transform: scaleY(0.96) translateY(1px); } }
+
+/* ===== スキルページ：魔導書の図書館（skill/*.webp の素材） ===== */
+.tab-page[data-tab="coinshop"] > .artifact-panel { position: relative; background: linear-gradient(180deg, rgba(8,12,30,0.15) 0px, rgba(8,12,30,0.55) 260px, #0c1228 520px, #0a0f22 100%), url(assets/img/ui/skill/bg.webp) 50% 0 / auto 520px no-repeat, #0a0f22 !important; border: 1px solid #3a4a78 !important; border-image: none !important; border-radius: 14px; color: #e8ecf6; --text: #e8ecf6; --text-dim: #b4bdd6; box-shadow: inset 0 0 30px rgba(0,0,0,0.55); padding-top: 8px; }
+.tab-page[data-tab="coinshop"] > .artifact-panel::before { display: none; }
+.tab-page[data-tab="coinshop"] .page-head { display: none; }
+.skp-hero { position: relative; display: flex; align-items: center; height: 80px; margin: 0 0 2px; }
+.skp-npc { position: relative; z-index: 2; width: 88px; height: auto; margin: -4px -24px -2px -6px; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6)); cursor: pointer; }
+.skp-npc.hop { animation: skHop 0.35s ease-out; }
+.skp-title { position: relative; z-index: 1; flex: 0 1 300px; aspect-ratio: 600 / 151; background: url(assets/img/ui/skill/title.webp) center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; padding-left: 18%; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6)); }
+.skp-title span { font-size: clamp(1.5rem, 8vw, 2.1rem); font-weight: 900; letter-spacing: 3px; color: #ffd84a; text-shadow: -2px -2px 0 #5a2a04, 2px -2px 0 #5a2a04, -2px 2px 0 #5a2a04, 2px 2px 0 #5a2a04, 0 -2px 0 #5a2a04, 0 2px 0 #5a2a04, -2px 0 0 #5a2a04, 2px 0 0 #5a2a04, 0 4px 0 #2a1402, 0 0 10px rgba(255,200,80,0.6); }
+.tab-page[data-tab="coinshop"] .shopkeeper { margin: 0 0 6px; }
+.tab-page[data-tab="coinshop"] .shopkeeper .sk-img { display: none; }
+.tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble { margin: 0; min-height: 44px; padding: 7px 16px 8px; border: none; border-radius: 0; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.76rem; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble::before, .tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble::after { display: none; }
+.tab-page[data-tab="coinshop"] .shopkeeper .sk-name { color: #ffd76b; font-size: 0.72rem; }
+.tab-page[data-tab="coinshop"] .cp-help { margin: 4px 0 2px; padding: 0; background: none; border-radius: 0; color: #c8d0e6; }
+.tab-page[data-tab="coinshop"] .cp-help summary { list-style: none; display: flex; align-items: center; height: 30px; padding-left: 13%; max-width: 330px; background: url(assets/img/ui/skill/helpbar.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="coinshop"] .cp-help summary::-webkit-details-marker { display: none; }
+.tab-page[data-tab="coinshop"] .cp-help p { margin: 5px 6px 0; padding: 0 2px; }
+.tab-page[data-tab="coinshop"] .cp-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+.tab-page[data-tab="coinshop"] .weapon-slot-head { color: #c8d0e6; font-size: 0.88rem; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="coinshop"] .weapon-slot-head > span:first-child::before { content: '✦ '; color: #e8c46a; }
+.tab-page[data-tab="coinshop"] .weapon-slot-head b { color: #fff; font-size: 1.05rem; }
+.tab-page[data-tab="coinshop"] .weapon-slot-head button { min-width: 116px; aspect-ratio: 248 / 76; border: none; border-image: none; padding: 0 10px; background: url(assets/img/ui/skill/btn_blue.webp) center / 100% 100% no-repeat; font-size: 0.78rem; line-height: 1.15; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="coinshop"] .weapon-slot-head button:active { transform: scale(0.95); }
+.tab-page[data-tab="coinshop"] > .artifact-panel > .title { color: #f3e7c4; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.tab-page[data-tab="coinshop"] .gacha-art-btn .gab-sub { color: #c8d4f0; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="coinshop"] .sk-empty { color: #c8d0e6; }
+.tab-page[data-tab="coinshop"] .sk-section-divider { opacity: 0.9; }
+.tab-page[data-tab="coinshop"] .sk-section-divider::before { box-shadow: none; }
+.tab-page[data-tab="coinshop"] .sk-section-divider span { background: #0a0f22; color: #e8c060; }

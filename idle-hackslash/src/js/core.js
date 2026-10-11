@@ -196,6 +196,8 @@ function renderShopkeeper(tab) {
     const oldBubble = el.querySelector('.sk-bubble');
     if (oldBubble && el.querySelector('.sk-img')) { oldBubble.innerHTML = `<span class="sk-name">${info.name}</span>${line}`; return; } // 2回目以降は絵を作り直さずセリフだけ替える（絵がちらつかない）
     el.innerHTML = `<img class="sk-img" src="${NPC_SPRITES[info.npc]}" alt="${info.name}"><div class="sk-bubble"><span class="sk-name">${info.name}</span>${line}</div>`;
+    const hero = el.closest('.artifact-panel') && el.closest('.artifact-panel').querySelector('.skp-npc'); // スキルページは大きい絵をタップ
+    if (hero) hero.onclick = () => { hero.classList.remove('hop'); void hero.offsetWidth; hero.classList.add('hop'); el.querySelector('.sk-img').onclick(); };
     el.querySelector('.sk-img').onclick = () => { // タップすると別のセリフ
       const img = el.querySelector('.sk-img');
       img.classList.remove('hop'); void img.offsetWidth; img.classList.add('hop');
