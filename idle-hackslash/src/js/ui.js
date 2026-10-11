@@ -965,7 +965,7 @@ debugRow.addEventListener('click', event => {
     game.bestStage = Math.max(game.bestStage, game.stage);
     balls = spawnBattleBalls(); meteors = []; adds = []; clearEnemyTraitObjects();
     refreshPlayerBallStats(true); updateHPUI();
-    stageAnnounceText = 'ステージ' + formatStageNumber(game.stage) + ` 敵${getStageEnemyCount(game.stage)}体！`;
+    stageAnnounceText = 'ステージ' + formatStageNumber(game.stage);
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     startBgm('normal');
   }

@@ -568,7 +568,7 @@ function advanceStage(passed, isBossStage) {
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
   if (easyBossKill && !wasTower && !stillLooping && Math.random() < TOWER_SUGGEST_CHANCE) setTimeout(maybeSuggestTower, 2200); // ボスをあっさり倒した直後に、たまに試練の塔をおすすめ
   if (!stillLooping || loopAnnounceCount % 5 === 0) { // ループ中の「◯階 ループ中」は5周に1回だけ出す
-    stageAnnounceText = 'ステージ' + formatStageNumber(game.stage) + '' + (stillLooping ? ' ループ中' : isSwarmStage(game.stage) ? ` 敵${getStageEnemyCount(game.stage)}体！` : '');
+    stageAnnounceText = 'ステージ' + formatStageNumber(game.stage) + '' + (stillLooping ? ' ループ中' : '');
     stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
     if (!stillLooping && game.stage > 1 && game.stage % 10 === 1) showNotice(`🌍 ${getStageZone(game.stage).name}エリアに突入！`, false, 2600); // 新しいエリアに入ったら大きく知らせる
   }
