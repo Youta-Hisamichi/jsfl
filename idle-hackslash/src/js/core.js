@@ -1138,7 +1138,7 @@ const game = {
   companionUnlocks: {}, // 転生ショップで開放した仲間 { id: true }（転生しても残る）
   companionBook: {}, // 仲間図鑑 { id: true }（一度でも仲間にしたことがある。転生しても残る）
   companionSummons: 0, // 今回の周回で仲間召喚した回数（召喚費用の上昇に使う）
-  companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
+  companions: { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) },
   startedAt: Date.now(),
   playTimeMs: 0, // 実プレイ時間（ゲーム画面が表示されている間だけ加算）
   lastLoginDate: null,
@@ -1245,7 +1245,7 @@ function computeBonuses() {
   for (const id in COMPANIONS) {
     if (!game.companions.recruited[id]) continue;
     const c = COMPANIONS[id];
-    const level = game.companions.level[id] || 0;
+    const level = c.stat === 'hp' && typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HP系の特技はHPの強化Lvで伸びる
     const bonus = c.baseBonus + level * c.perLevel;
     if (c.stat === 'hp') b.hpMult += bonus;
     if (c.stat === 'atk') b.atkMult += bonus;

@@ -737,7 +737,7 @@ function getCompanionPower(id) { return (1 + COMPANION_AWAKEN_BONUS * getCompani
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const c = COMPANIONS[id];
-  const level = game.companions.level[id] || 0;
+  const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
   const baseBonus = c.baseBonus + level * c.perLevel;
   const playerMaxHP = getPlayerMaxHP();
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」

@@ -4,7 +4,7 @@ const GIMMICKS = {
   stars:     { name: '流れ星の夜', icon: '🌠', desc: '落ちた星にさわるかタップでコイン', coin: 1, tint: 'rgba(10,16,60,0.28)' },
   night:     { name: '月夜の草原', icon: '🌙', desc: '暗い夜。ホタルを集めるとコイン', coin: 1.3 },
   wind:      { name: '強風注意報', icon: '🍃', desc: 'みんな風に流される！ コイン×1.2', coin: 1.2 },
-  fireworks: { name: '花火大会', icon: '🎆', desc: '夜空に花火。コイン×1.3', coin: 1.3, tint: 'rgba(8,10,40,0.3)' },
+  fireworks: { name: '花火大会', icon: '🎆', desc: '夜空に花火。コイン×1.3', coin: 1.3, tint: 'rgba(6,8,34,0.45)' },
   treasure:  { name: '宝さがし', icon: '🗺️', desc: '✕じるしの上を通ると宝箱！', coin: 1 },
   thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.3)' },
   bubbles:   { name: 'シャボン玉の庭', icon: '🫧', desc: 'シャボン玉を割るとコイン', coin: 1 },
@@ -82,7 +82,7 @@ function tickGimmick(sp) {
   if (gm.t >= gm.nextAt) {
     if (key === 'stars') { gm.nextAt = gm.t + gRand(70, 130); const tx = gRand(A.l + 30, A.r - 30), ty = gRand(A.t + 40, A.b - 30); gm.fx.push({ kind: 'shoot', x: tx - 160, y: ty - 220, tx, ty, life: 1 }); }
     else if (key === 'bubbles') { gm.nextAt = gm.t + gRand(25, 50); gm.items.push({ kind: 'bubble', x: gRand(A.l + 20, A.r - 20), y: A.b + 20, vy: -gRand(0.4, 0.9), r: gRand(9, 17), ph: Math.random() * 6 }); }
-    else if (key === 'fireworks') { gm.nextAt = gm.t + gRand(45, 90); const x = gRand(A.l + 40, A.r - 40), y = gRand(A.t + 40, A.t + A.h * 0.45); gm.fx.push({ kind: 'rocket', x, y: A.b, ty: y, life: 1, col: `hsl(${Math.floor(Math.random() * 360)},95%,65%)` }); playTone(300, 0.35, 'sine', 0.025, 900); }
+    else if (key === 'fireworks') { gm.nextAt = gm.t + gRand(35, 75); for (let k = Math.random() < 0.3 ? 2 : 1; k > 0; k--) { const x = gRand(A.l + 40, A.r - 40), y = gRand(A.t + 40, A.t + A.h * 0.45); gm.fx.push({ kind: 'rocket', x, y: A.b + k * 30, ty: y, life: 1, hue: Math.floor(Math.random() * 360) }); } playTone(300, 0.35, 'sine', 0.025, 900); } // ときどき2発同時
     else if (key === 'thunder') { gm.nextAt = gm.t + gRand(170, 240); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'warn', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'rocks') { gm.nextAt = gm.t + gRand(140, 210); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'coinrain') { gm.nextAt = gm.t + gRand(14, 30); gm.items.push({ kind: 'coin', x: gRand(A.l + 16, A.r - 16), y: A.t - 10, vy: gRand(1.2, 2), spin: Math.random() * 6, landY: gRand(A.t + A.h * 0.3, A.b - 16) }); }
@@ -121,8 +121,8 @@ function tickGimmick(sp) {
   // 演出
   for (const f of gm.fx) {
     if (f.kind === 'shoot') { f.life -= 0.05 * sp; if (f.life <= 0) { f.dead = true; gm.items.push({ kind: 'star', x: f.tx, y: f.ty, life: 1 }); playTone(1500, 0.12, 'sine', 0.04, 2400); spawnHitParticles(f.tx, f.ty, '#fff6b0'); } }
-    else if (f.kind === 'rocket') { f.y -= 5 * sp; if (f.y <= f.ty) { f.dead = true; const parts = []; for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, s = gRand(1.6, 2.8); parts.push({ x: f.x, y: f.ty, vx: Math.cos(a) * s, vy: Math.sin(a) * s }); } gm.fx.push({ kind: 'burst', parts, life: 1, col: f.col }); thump(90, 40, 0.25, 0.25); playNoiseBurst(0.18, 0.12); } }
-    else if (f.kind === 'burst') { f.life -= 0.018 * sp; for (const p of f.parts) { p.x += p.vx * sp; p.y += p.vy * sp; p.vy += 0.03 * sp; p.vx *= 0.985; } if (f.life <= 0) f.dead = true; }
+    else if (f.kind === 'rocket') { f.y -= 5 * sp; f.trail = f.trail || []; f.trail.push({ x: f.x + gRand(-1, 1), y: f.y, l: 1 }); for (const t of f.trail) t.l -= 0.06 * sp; f.trail = f.trail.filter(t => t.l > 0); if (f.y <= f.ty) { f.dead = true; gm.fx.push(makeFireworkBurst(f.x, f.ty, f.hue)); thump(90, 40, 0.25, 0.25); playNoiseBurst(0.18, 0.12); } }
+    else if (f.kind === 'burst') { f.life -= (f.type === 'willow' ? 0.010 : 0.014) * sp; for (const p of f.parts) { p.px = p.x; p.py = p.y; p.x += p.vx * sp; p.y += p.vy * sp; p.vy += (f.type === 'willow' ? 0.045 : 0.03) * sp; p.vx *= Math.pow(0.975, sp); p.vy *= Math.pow(0.985, sp); } if (f.life <= 0) f.dead = true; }
     else if (f.kind === 'warn' || f.kind === 'rockfall') {
       f.t += sp; if (f.target && !f.target.isDying && f.target.hp > 0) { f.x = f.target.x; f.y = f.target.y; }
       if (f.t >= 50) { f.dead = true; gimmickStrike(f); }
@@ -216,10 +216,54 @@ function drawGimmickItem(it, now) {
     ctx.fillStyle = '#d33'; ctx.fillRect(x - 8, it.y - 4, 16, 3);
   }
 }
+// ===== 花火：加算合成で光る（光の粒は色ごとにぼかした絵を作って使い回す） =====
+const gGlowCache = {};
+function gGlow(hue, light = 70) {
+  const k = hue + ':' + light; if (gGlowCache[k]) return gGlowCache[k];
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32; const c = cv.getContext('2d');
+  const g = c.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.18, `hsla(${hue},100%,${Math.min(95, light + 15)}%,0.95)`); g.addColorStop(0.45, `hsla(${hue},100%,${light}%,0.45)`); g.addColorStop(1, `hsla(${hue},100%,${light - 20}%,0)`);
+  c.fillStyle = g; c.fillRect(0, 0, 32, 32); return (gGlowCache[k] = cv);
+}
+const FIREWORK_TYPES = ['peony', 'peony', 'ring', 'double', 'willow', 'multi'];
+function makeFireworkBurst(x, y, hue) {
+  const type = FIREWORK_TYPES[Math.floor(Math.random() * FIREWORK_TYPES.length)], parts = [];
+  const add = (n, sMin, sMax, h) => { for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + gRand(-0.05, 0.05), s = gRand(sMin, sMax); parts.push({ x, y, px: x, py: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, hue: h, tw: Math.random() * 6 }); } };
+  if (type === 'ring') add(48, 3.0, 3.2, hue);
+  else if (type === 'double') { add(40, 2.6, 3.4, hue); add(24, 1.1, 1.6, (hue + 150) % 360); }
+  else if (type === 'willow') add(56, 1.4, 3.0, 42); // 金色のしだれ柳
+  else if (type === 'multi') { for (let i = 0; i < 60; i++) { const a = Math.random() * Math.PI * 2, s = gRand(0.8, 3.4); parts.push({ x, y, px: x, py: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, hue: Math.floor(Math.random() * 360), tw: Math.random() * 6 }); } }
+  else add(60, 1.0, 3.4, hue);
+  return { kind: 'burst', type, x, y, hue, parts, life: 1 };
+}
+function drawFireworkBurst(f) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const age = 1 - f.life;
+  if (age < 0.25) { // 開いた瞬間のまぶしい光
+    const r = 30 + age * 360, a = (1 - age / 0.25) * 0.55, g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+    g.addColorStop(0, `hsla(${f.hue},100%,90%,${a})`); g.addColorStop(0.4, `hsla(${f.hue},100%,65%,${a * 0.45})`); g.addColorStop(1, `hsla(${f.hue},100%,50%,0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  const t = Date.now() / 60, fade = Math.min(1, f.life * 1.6), sz = f.type === 'willow' ? 9 : 11;
+  ctx.lineCap = 'round';
+  for (const p of f.parts) {
+    let al = fade;
+    if (f.life < 0.35) al *= 0.45 + 0.55 * Math.abs(Math.sin(t + p.tw * 3)); // 消えぎわにチカチカ
+    ctx.globalAlpha = al * 0.7; ctx.strokeStyle = `hsl(${p.hue},100%,65%)`; ctx.lineWidth = 2;
+    const tl = f.type === 'willow' ? 7 : 4; // 尾の長さ
+    ctx.beginPath(); ctx.moveTo(p.x - p.vx * tl, p.y - p.vy * tl); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.globalAlpha = al; ctx.drawImage(gGlow(p.hue), p.x - sz / 2, p.y - sz / 2, sz, sz);
+  }
+  ctx.restore();
+}
 function drawGimmickFx(f, now) {
   if (f.kind === 'shoot') { const t = 1 - f.life, x = f.x + (f.tx - f.x) * t, y = f.y + (f.ty - f.y) * t; const g = ctx.createLinearGradient(x - 40, y - 55, x, y); g.addColorStop(0, 'rgba(255,250,200,0)'); g.addColorStop(1, 'rgba(255,250,200,0.95)'); ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 40, y - 55); ctx.lineTo(x, y); ctx.stroke(); }
-  else if (f.kind === 'rocket') { ctx.fillStyle = '#fff2c0'; ctx.beginPath(); ctx.arc(f.x, f.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
-  else if (f.kind === 'burst') { ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.col; for (const p of f.parts) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; }
+  else if (f.kind === 'rocket') { // 上がっていく火の玉と火の粉の尾（加算合成で光る）
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const t of f.trail || []) { ctx.globalAlpha = t.l * 0.8; ctx.drawImage(gGlow(40), t.x - 5, t.y - 5, 10, 10); }
+    ctx.globalAlpha = 1; ctx.drawImage(gGlow(45), f.x - 12, f.y - 12, 24, 24); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore(); }
+  else if (f.kind === 'burst') drawFireworkBurst(f);
   else if (f.kind === 'warn' || f.kind === 'rockfall') { const p = f.t / 50; ctx.strokeStyle = f.kind === 'warn' ? `rgba(255,230,90,${0.4 + p * 0.5})` : `rgba(255,120,60,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     if (f.kind === 'rockfall') { const A = gArea(), y = A.t - 30 + (f.y - A.t + 30) * p * p; ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 16 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; if (!(typeof drawObstacleSprite === 'function' && drawObstacleSprite('rock', f.x, y, 34, p * 4))) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(f.x, y, 15, 0, Math.PI * 2); ctx.fill(); } } }
   else if (f.kind === 'bolt') { const A = gArea(); ctx.strokeStyle = `rgba(255,250,200,${f.life})`; ctx.lineWidth = 4; ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 18; ctx.beginPath(); let x = f.x + gRand(-20, 20), y = A.t; ctx.moveTo(x, y); const n = 7; for (let i = 1; i <= n; i++) { y = A.t + (f.y - A.t) * i / n; x = i === n ? f.x : f.x + gRand(-18, 18); ctx.lineTo(x, y); } ctx.stroke(); ctx.shadowBlur = 0; }

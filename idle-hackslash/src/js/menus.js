@@ -135,19 +135,32 @@ function renderRebirthShopList() {
   }).join('');
 }
 
-function getCompanionMaxLevels(id, budget = game.coins) {
-  const c = COMPANIONS[id];
-  let level = game.companions.level[id] || 0, coins = budget, count = 0, total = 0;
+// 仲間の強化は自キャラと同じく「攻撃力」と「HP」を別々に上げる（level＝攻撃力、hpLv＝HP）
+const COMP_UP_COST_RATE = 0.5; // 2つに分けたので1回の値段は半分（両方上げると前と同じ）
+function compHpLv(id) { const m = game.companions.hpLv; return (m && m[id]) || 0; }
+function compUpLv(id, kind = 'atk') { return kind === 'hp' ? compHpLv(id) : (game.companions.level[id] || 0); }
+function setCompUpLv(id, kind, v) { if (kind === 'hp') { if (!game.companions.hpLv) game.companions.hpLv = {}; game.companions.hpLv[id] = v; } else game.companions.level[id] = v; }
+function compUpCost(id, lv) { return Math.max(1, coinPrice(COMPANIONS[id].levelCostBase * COMP_UP_COST_RATE * (lv + 1))); }
+function getCompanionMaxLevels(id, budget = game.coins, kind = 'atk') {
+  let level = compUpLv(id, kind), coins = budget, count = 0, total = 0;
   while (count < 9999) {
-    const cost = coinPrice(c.levelCostBase * (level + 1));
+    const cost = compUpCost(id, level);
     if (coins < cost) break;
     coins -= cost; total += cost; level++; count++;
   }
   return { count, total };
 }
-function getCompanionLevelCost(id) {
-  const c = COMPANIONS[id];
-  return coinPrice(c.levelCostBase * (game.companions.level[id] + 1));
+function getCompanionLevelCost(id, kind = 'atk') { return compUpCost(id, compUpLv(id, kind)); }
+function compUpStat(id, kind, lv) { // そのLvのときの攻撃力・最大HP（表示用）
+  const old = compUpLv(id, kind); setCompUpLv(id, kind, lv);
+  const v = kind === 'hp' ? getCompanionMaxHP(id) : getCompanionBaseAtk(id);
+  setCompUpLv(id, kind, old); return v;
+}
+function compUpRowHtml(id, kind) {
+  const lv = compUpLv(id, kind), cost = getCompanionLevelCost(id, kind);
+  const maxLv = getCompanionMaxLevels(id, game.coins, kind).count, pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET, kind).count;
+  const hp = kind === 'hp', d = hp ? ' data-kind="hp"' : '';
+  return `<div class="cc-up ${hp ? 'hp' : 'atk'}"><div class="cc-up-info"><b>${hp ? '❤️ 最大HP' : '⚔️ 攻撃力'} <small>Lv.${formatCoinNumber(lv)}</small></b><span>${formatCoinNumber(compUpStat(id, kind, lv))} → <b>${formatCoinNumber(compUpStat(id, kind, lv + 1))}</b></span><span class="cc-up-cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div><div class="cc-level-row cc-side"><button class="cc-lvup ${game.coins < cost ? 'is-disabled' : ''}" ${hp ? `data-companion-hp="${id}"` : `data-companion-level="${id}"`}><b>+1</b><span>Lv.UP</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-companion-level-pct="${id}"${d}>${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}"${d}>10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-companion-level-max="${id}"${d}>${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}"${d}>MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button>`}</div></div>`;
 }
 // 自キャラ：勇者か、獲得済みの仲間から選ぶ（見た目と属性が変わる）
 function renderMyCharCard() {
@@ -249,12 +262,8 @@ function renderCompanionList() {
     const rar = RARITY_INFO[c.rarity];
     const aw = getCompanionAwaken(id);
     const level = game.companions.level[id];
-    const cost = getCompanionLevelCost(id);
-    const disabled = game.coins < cost;
-    const maxLv = getCompanionMaxLevels(id).count;
-    const pctLv = getCompanionMaxLevels(id, game.coins * PCT_BUDGET).count;
     const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
-    return `<div class="companion-card recruited cc-side-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-cost">次のLv ${COIN_ICO} ${formatCoinNumber(cost)}</div></div><div class="cc-level-row cc-side"><button class="cc-lvup ${disabled ? 'is-disabled' : ''}" data-companion-level="${id}"><b>+1</b><span>Lv.UP</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-companion-level-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pctLv < 1 ? 'is-disabled' : ''}" data-companion-level-pct="${id}">10% <span>+${formatCoinNumber(pctLv)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-companion-level-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${maxLv < 1 ? 'is-disabled' : ''}" data-companion-level-max="${id}">MAX <span>+${formatCoinNumber(maxLv)} Lv.</span></button>`}</div></div>`;
+    return `<div class="companion-card recruited cc-up-layout" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber(level)}</span></div><div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div></div></div>`;
   }).join('');
   const othersHtml = others.map(([id, c]) => {
     const rar = RARITY_INFO[c.rarity];

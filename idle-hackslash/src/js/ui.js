@@ -486,7 +486,7 @@ function applyPowerUp(c) {
     updateSkillButtonVisibility(); renderSkillGacha();
   } else if (c.kind === 'compPick') {
     const id = c.id, has = getCompanionCount(id) > 0;
-    if (has) { game.companions.level[id] = (game.companions.level[id] || 0) + c.n; showNotice(`🐾 ${COMPANIONS[id].name} がレベルアップ！（Lv${game.companions.level[id] + 1}）`); }
+    if (has) { setCompUpLv(id, 'hp', compHpLv(id) + c.n); game.companions.level[id] = (game.companions.level[id] || 0) + c.n; showNotice(`🐾 ${COMPANIONS[id].name} がレベルアップ！（Lv${game.companions.level[id] + 1}）`); }
     else {
       const r = grantCompanion(id);
       syncCompanionBalls(r.id).forEach(cb => spawnHitParticles(cb.x, cb.y, '#ff9a4f'));
@@ -538,7 +538,7 @@ function fullReset() {
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
-  game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
+  game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
   lastAccelAt = Date.now() - ACCEL_COOLDOWN;
   accelEndAt = 0;
@@ -844,7 +844,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'dismissCompanions') { // 仲間を全員パーティから外す（図鑑・開放状況はそのまま）
-    game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
+    game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
     balls = balls.filter(ball => !ball.isCompanion);
     showNotice('🐾 仲間を全員パーティから外しました');
     renderCompanionList(); refreshPlayerBallStats(false); updateStatsUI(); saveGame();
@@ -1851,31 +1851,33 @@ companionList.addEventListener('click', event => {
   if (maxBtn) {
     const isPct = maxBtn.dataset.companionLevelPct !== undefined;
     if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; }
-    const id = isPct ? maxBtn.dataset.companionLevelPct : maxBtn.dataset.companionLevelMax;
-    const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins);
+    const id = isPct ? maxBtn.dataset.companionLevelPct : maxBtn.dataset.companionLevelMax, kind = maxBtn.dataset.kind || 'atk';
+    const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins, kind);
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
     spendCoins(total);
-    game.companions.level[id] += count;
+    setCompUpLv(id, kind, compUpLv(id, kind) + count);
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
     playUpgradeSound();
-    showNotice(`${COMPANIONS[id].name} が Lv.${formatCoinNumber(game.companions.level[id])} に！（+${formatCoinNumber(count)}）`);
+    showNotice(`${COMPANIONS[id].name} の${kind === 'hp' ? '最大HP' : '攻撃力'}が Lv.${formatCoinNumber(compUpLv(id, kind))} に！（+${formatCoinNumber(count)}）`);
     updateStatsUI();
     updateHPUI();
     renderCompanionList();
     return;
   }
-  const levelBtn = event.target.closest('[data-companion-level]');
+  const levelBtn = event.target.closest('[data-companion-level], [data-companion-hp]');
   if (levelBtn) {
     if (consumeHoldClick()) return;
-    levelUpCompanion(levelBtn.dataset.companionLevel, event.clientX, event.clientY);
+    const hp = levelBtn.dataset.companionHp !== undefined;
+    levelUpCompanion(hp ? levelBtn.dataset.companionHp : levelBtn.dataset.companionLevel, event.clientX, event.clientY, hp ? 'hp' : 'atk');
+    renderCompanionList();
   }
 });
-function levelUpCompanion(id, x, y) {
-  const cost = getCompanionLevelCost(id);
+function levelUpCompanion(id, x, y, kind = 'atk') {
+  const cost = getCompanionLevelCost(id, kind);
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
   spendCoins(cost);
-  game.companions.level[id]++;
+  setCompUpLv(id, kind, compUpLv(id, kind) + 1);
   refreshPlayerBallStats(false);
   refreshCompanionBalls();
   playUpgradeSound();
@@ -1890,6 +1892,7 @@ const HOLD_MIN_INTERVAL_MS = 40;
 const HOLD_TARGETS = [
   { attr: 'upgrade', action: levelUpUpgrade },
   { attr: 'companionLevel', action: levelUpCompanion },
+  { attr: 'companionHp', action: (id, x, y) => levelUpCompanion(id, x, y, 'hp') },
   { attr: 'rebirthShop', action: (id, x, y) => buyRebirthItem(id, x, y, true) },
   { attr: 'goalClaim', action: claimRecordGoal }, // 戦績の報酬は押しっぱなしで一気に受け取れる
 ];
@@ -1898,7 +1901,7 @@ let holdRepeated = false;
 // 押しっぱなし中の合計（回数・レベル・能力値・消費コイン/ジェム）を指の近くに出す
 const holdSum = document.createElement('div'); holdSum.className = 'hold-sum'; document.body.appendChild(holdSum);
 let holdSnap = null, holdSumTimer = null;
-function holdLevel(t, id) { return t.attr === 'upgrade' ? game.upgrades[id] : t.attr === 'companionLevel' ? game.companions.level[id] : 0; }
+function holdLevel(t, id) { return t.attr === 'upgrade' ? game.upgrades[id] : t.attr === 'companionLevel' ? game.companions.level[id] : t.attr === 'companionHp' ? compHpLv(id) : 0; }
 function showHoldSum() {
   if (!holdSnap || !holdSnap.n) return;
   const { t, id } = holdSnap, dc = game.coins - holdSnap.coins, dg = game.gems - holdSnap.gems, dl = holdLevel(t, id) - holdSnap.level;
@@ -1925,7 +1928,7 @@ function consumeHoldClick() {
 document.addEventListener('pointerdown', event => {
   stopHold();
   holdRepeated = false;
-  const el = event.target.closest('[data-upgrade], [data-companion-level], [data-rebirth-shop], [data-goal-claim]');
+  const el = event.target.closest('[data-upgrade], [data-companion-level], [data-companion-hp], [data-rebirth-shop], [data-goal-claim]');
   if (!el) return;
   const target = HOLD_TARGETS.find(t => el.dataset[t.attr] !== undefined);
   const id = el.dataset[target.attr];
@@ -2856,6 +2859,7 @@ for (const id in GACHA_POOL) {
   if (typeof game.gachaShards[id] !== 'number') game.gachaShards[id] = 0;
 }
 if (!game.companions.level) game.companions.level = {};
+if (!game.companions.hpLv) game.companions.hpLv = { ...game.companions.level }; // 攻撃力とHPを分ける前のセーブは、HPも今のLvから
 if (!game.companions.hp) game.companions.hp = {};
 if (!game.companions.alive) game.companions.alive = {};
 for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive', 'downStages']) { const m = game.companions[k]; if (m) for (const id in m) if (!COMPANIONS[id]) delete m[id]; } // 仲間を一新したので、いなくなった職業の記録は消す

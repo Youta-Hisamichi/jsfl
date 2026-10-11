@@ -2660,3 +2660,18 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="gemshop"] .shopkeeper .sk-name { color: #ffd76b; font-size: 0.72rem; }
 .tab-page[data-tab="gemshop"] > .artifact-panel .title { color: #f3e7c4; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 .gacha-art-btn.is-disabled { opacity: 0.92; }
+/* 仲間カード：攻撃力・最大HPの強化を2行で（自キャラの強化と同じ +1／10%／MAX） */
+.companion-card.cc-up-layout .cc-body { width: 100%; }
+.companion-card .cc-ups { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.companion-card .cc-up { display: flex; align-items: stretch; gap: 4px; min-height: 44px; }
+.companion-card .cc-up-info { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 6px; align-items: center; padding: 3px 8px; border-radius: 8px; background: rgba(255,248,226,0.75); border: 1px solid rgba(160,110,40,0.45); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); font-size: 0.7rem; color: #3a2a14; }
+.companion-card .cc-up-info > b { grid-column: 1; grid-row: 1 / 3; font-size: 0.74rem; line-height: 1.2; white-space: nowrap; }
+.companion-card .cc-up-info > b small { display: block; font-size: 0.66rem; color: #6a4a1a; }
+.companion-card .cc-up-info > span { grid-column: 2; justify-self: end; white-space: nowrap; font-weight: 700; }
+.companion-card .cc-up-info > span b { color: #c25a00; }
+.companion-card .cc-up.hp .cc-up-info > span b { color: #d0304a; }
+.companion-card .cc-up-info .cc-up-cost { font-size: 0.68rem; color: #8a5a10; }
+.companion-card .cc-up .cc-level-row.cc-side { margin: 0; }
+.companion-card .cc-up .cc-side button.cc-lvup { flex: 0 0 44px; }
+.companion-card .cc-up .cc-side button.cc-max-btn.cc-pct-btn { flex: 0 0 46px; }
+.companion-card .cc-up .cc-side button.cc-max-btn:not(.cc-pct-btn) { flex: 0 0 50px; }

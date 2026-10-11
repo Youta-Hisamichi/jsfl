@@ -142,6 +142,23 @@ const COMP_TALK_LOW = { // p: やられそう / d: やられた
   bahamut: { p: ['…小賢しい', 'この我に…傷を…！？'], d: ['この我を…倒すか…', '…千年後に…また会おう'] },
 };
 let compTalkAt = 0, compTalkLast = '';
+// ===== ときどき言うメタ発言（ひとりごとの約15%） =====
+const META_RATE = 0.15;
+const META_HERO = [
+  '我を動かすその指…貴様、プレイヤーだな？', '放置しても強くなる…それがこの世界の理（ことわり）。', 'スマホの充電は大丈夫か？我の魔力より先に尽きるぞ。',
+  'タップしすぎだ。画面が割れても知らんぞ。', '転生ボタン…押したいのか？押すのか？', 'ガチャの確率…信じるかどうかは貴様次第だ。',
+  '開発者よ…我をもっと強くしろ。', 'セーブは自動だ。安心して閉じるがいい。', '……今、ロード画面のTips読み飛ばしただろ。',
+  'この敵…さっきも倒した気がする。', 'BGMが盛り上がってきた…ボスが近いな。', '吹き出しが少し透けているのは、我の優しさだ。',
+  () => `ステージ${game.stage}…画面の向こうの貴様、ちゃんと見ているか？`, () => `累計${(game.totalKills || 0).toLocaleString('ja-JP')}体…数えているのは誰なのだ？`,
+];
+const META_COMP = [
+  '自キャラばっかりじゃなくて、こっちもLv上げてね。', '攻撃力とHP、別々に上げられるようになったんだって！', '解雇だけは勘弁してください…。',
+  '棺桶で引きずられるの、けっこう酔うんだよね。', '放置中もちゃんと戦ってるの、気づいてる？', 'ねえ、画面の外から誰か見てない？',
+  '今の、スクショ撮った？', '★5じゃなくても、わたしがいるからいいでしょ？', '勇者さん、セリフ多くない？',
+  'いいなあ、勇者は中二病セリフ専用枠があって。', '次の転生でも、また招集してね。', 'パーティ枠の都合で呼ばれた気がする…。',
+  () => `もう${(game.totalKills || 0).toLocaleString('ja-JP')}体倒したんだって。数えてる人すごい。`,
+];
+function metaLine(list, last) { const pool = list.map(t => typeof t === 'function' ? t() : t).filter(t => t !== last); return pool[Math.floor(Math.random() * pool.length)]; }
 function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとりごと / 'k' 撃破）
   const now = Date.now(); if (!force && now - compTalkAt < 3000) return;
   const list = balls.filter(b => b.isCompanion && b.hp > 0 && !speech.some(s => s.ball === b));
@@ -150,7 +167,7 @@ function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとり�
   let pool = T ? T[kind] : null;
   if (kind === 'i' && P) pool = [...(pool || []), P.say[0]]; // 登場ゼリフもまぜる
   if (!pool || !pool.length) return;
-  pool = pool.filter(t => t !== compTalkLast); const t = pool[Math.floor(Math.random() * pool.length)];
+  pool = pool.filter(t => t !== compTalkLast); const t = kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pool[Math.floor(Math.random() * pool.length)];
   compTalkLast = t; compTalkAt = now;
   companionSay(b, t, 1800 + t.length * 70);
 }
@@ -174,7 +191,7 @@ function heroChuuni(kind, force) {
   const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
   const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
   const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
-  const t = pool[Math.floor(Math.random() * pool.length)];
+  const t = kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pool[Math.floor(Math.random() * pool.length)];
   chuuniLast = t; chuuniAt = now;
   companionSay(hero, t, 1800 + t.length * 70);
 }
