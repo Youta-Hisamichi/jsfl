@@ -2197,7 +2197,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .gacha-art-btn .gab-cost { margin-top: -4px; padding: 2px 14px; border-radius: 999px; background: linear-gradient(180deg, #3a2f5c, #241c3e); border: 1.5px solid #ffd76b; color: #fff; font-weight: 900; font-size: 0.9rem; line-height: 1.3; white-space: nowrap; }
 .gacha-art-btn .gab-cost .coin-ico { vertical-align: -0.15em; }
 .gacha-art-btn .gab-sub { font-size: 0.66rem; color: var(--text-dim); font-weight: 700; }
-.gacha-art-btn.is-disabled .gacha-art { filter: grayscale(0.55) brightness(0.85) drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
+.gacha-art-btn.is-disabled .gacha-art { filter: grayscale(1) brightness(0.75) drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
 .gacha-art-btn.is-disabled .gab-cost { border-color: #8a8fa3; color: #c8c8d0; }
 /* 動画を見て💎5 GET：絵のボタン */
 .reward-ad-btn[data-reward-ad].ad-art-btn { width: 100%; max-width: 250px; padding: 0; border: none; border-image: none; background: none; box-shadow: none; transition: transform 0.1s; }
@@ -2630,11 +2630,11 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble { margin: 0; min-height: 44px; padding: 7px 16px 8px; border: none; border-radius: 0; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.76rem; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 .tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble::before, .tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble::after { display: none; }
 .tab-page[data-tab="coinshop"] .shopkeeper .sk-name { color: #ffd76b; font-size: 0.72rem; }
-.tab-page[data-tab="coinshop"] .cp-help { margin: 4px 0 2px; padding: 0; background: none; border-radius: 0; color: #c8d0e6; }
-.tab-page[data-tab="coinshop"] .cp-help summary { list-style: none; display: flex; align-items: center; height: 30px; padding-left: 13%; max-width: 330px; background: url(assets/img/ui/skill/helpbar.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
-.tab-page[data-tab="coinshop"] .cp-help summary::-webkit-details-marker { display: none; }
-.tab-page[data-tab="coinshop"] .cp-help p { margin: 5px 6px 0; padding: 0 2px; }
-.tab-page[data-tab="coinshop"] .cp-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+.tab-page[data-tab="coinshop"] .cp-help, .tab-page[data-tab="gemshop"] .cp-help { margin: 4px 0 2px; padding: 0; background: none; border-radius: 0; color: #c8d0e6; }
+.tab-page[data-tab="coinshop"] .cp-help summary, .tab-page[data-tab="gemshop"] .cp-help summary { list-style: none; display: flex; align-items: center; height: 30px; padding-left: 13%; max-width: 330px; background: url(assets/img/ui/skill/helpbar.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="coinshop"] .cp-help summary::-webkit-details-marker, .tab-page[data-tab="gemshop"] .cp-help summary::-webkit-details-marker { display: none; }
+.tab-page[data-tab="coinshop"] .cp-help p, .tab-page[data-tab="gemshop"] .cp-help p { margin: 5px 6px 0; padding: 0 2px; }
+.tab-page[data-tab="coinshop"] .cp-help[open], .tab-page[data-tab="gemshop"] .cp-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head { color: #c8d0e6; font-size: 0.88rem; font-weight: 800; text-shadow: 0 1px 2px #000; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head > span:first-child::before { content: '✦ '; color: #e8c46a; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head b { color: #fff; font-size: 1.05rem; }
@@ -2646,3 +2646,17 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="coinshop"] .sk-section-divider { opacity: 0.9; }
 .tab-page[data-tab="coinshop"] .sk-section-divider::before { box-shadow: none; }
 .tab-page[data-tab="coinshop"] .sk-section-divider span { background: #0a0f22; color: #e8c060; }
+
+/* ===== ショップ上部：看板を左寄せ・エメラ姫のセリフ・背景（スキルページと同じ作り） ===== */
+.tab-page[data-tab="gemshop"] > .artifact-panel { position: relative; background: linear-gradient(180deg, rgba(40,16,8,0.35) 0px, rgba(30,12,10,0.6) 240px, #1a1014 480px, #120c12 100%), url(assets/img/ui/skill/bg.webp) 50% 0 / auto 480px no-repeat, #120c12 !important; border: 1px solid #6a4a2a !important; border-image: none !important; border-radius: 14px; color: #f3ead6; --text: #f3ead6; --text-dim: #cdbfa4; box-shadow: inset 0 0 30px rgba(0,0,0,0.55); padding-top: 8px; }
+.tab-page[data-tab="gemshop"] > .artifact-panel::before { display: none; }
+.tab-page[data-tab="gemshop"] .shop-hero { justify-content: flex-start; margin: -2px -6px 2px; }
+.tab-page[data-tab="gemshop"] .shop-banner { max-width: 320px; cursor: pointer; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6)); }
+.tab-page[data-tab="gemshop"] .shop-banner.hop { animation: skHop 0.35s ease-out; }
+.tab-page[data-tab="gemshop"] .shopkeeper { margin: 0 0 8px; }
+.tab-page[data-tab="gemshop"] .shopkeeper .sk-img { display: none; }
+.tab-page[data-tab="gemshop"] .shopkeeper .sk-bubble { margin: 0; min-height: 44px; padding: 7px 16px 8px; border: none; border-radius: 0; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.76rem; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="gemshop"] .shopkeeper .sk-bubble::before, .tab-page[data-tab="gemshop"] .shopkeeper .sk-bubble::after { display: none; }
+.tab-page[data-tab="gemshop"] .shopkeeper .sk-name { color: #ffd76b; font-size: 0.72rem; }
+.tab-page[data-tab="gemshop"] > .artifact-panel .title { color: #f3e7c4; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.gacha-art-btn.is-disabled { opacity: 0.92; }

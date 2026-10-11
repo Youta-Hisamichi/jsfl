@@ -37,8 +37,9 @@ function renderSkillGacha() {
   // 装備枠に空きがなければガチャボタンは隠す（枠を増やすとまた出る）
   const sFull = eq.length >= slots, wFull = weq.length >= wslots;
   const sg = document.getElementById('skillGachaBtn'), wg = document.getElementById('weaponGachaBtn');
-  if (sg) sg.hidden = sFull;
-  if (wg) wg.hidden = wFull;
+  // 回せないとき（枠がいっぱい・コイン不足・引けるものなし）は消さずにグレーにする
+  if (sg) { sg.hidden = false; sg.dataset.full = sFull || !skillGachaPool().length ? '1' : ''; if (sg.dataset.full) sg.classList.add('is-disabled'); }
+  if (wg) { wg.hidden = false; wg.dataset.full = wFull || !weaponGachaPool().length ? '1' : ''; if (wg.dataset.full) wg.classList.add('is-disabled'); }
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）

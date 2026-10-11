@@ -1421,8 +1421,8 @@ function weaponGachaPull(event, isReroll) {
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; renderCoinShopList(); weaponGachaPull(ev, true); };
   showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動（転生まで外せません）' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
 }
-document.getElementById('skillGachaBtn').addEventListener('click', event => { if (!skGachaBusy) skillGachaPull(event, false); });
-document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (!skGachaBusy) weaponGachaPull(event, false); });
+document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } skillGachaPull(event, false); });
+document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
   const equip = event.target.closest('[data-skill-equip]');
