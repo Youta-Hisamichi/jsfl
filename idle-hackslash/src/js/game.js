@@ -715,7 +715,6 @@ function resumeGameOverForTab() { // ゲーム画面に戻ったとき
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
-  { const im = document.getElementById('goCoffin'); if (im && !im.src && typeof getCoffinSprite === 'function') im.src = getCoffinSprite().toDataURL(); } // ゲームオーバー画面に棺桶
   document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
   document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? bossAdviceHtml(reason) : '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;

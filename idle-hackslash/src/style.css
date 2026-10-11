@@ -2609,3 +2609,9 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .op-title b { background: none; -webkit-background-clip: initial; background-clip: initial; color: #ffe27a; filter: none; text-shadow: 0 0 18px rgba(255,200,80,0.8), 0 3px 0 #7a3a00, 0 5px 6px #000; }
 /* イベントボタンを右上に置くので、敵の特性バッジはその下へ */
 .arena-wrap:has(#eventChip) .enemy-trait-badge { top: 30px; }
+/* ゲームオーバー：棺桶と骸骨を並べる */
+.go-grave { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin: 2px auto 0; }
+.go-grave .go-coffin { width: 88px; margin: 0; image-rendering: auto; }
+.go-skull { width: 132px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); animation: goSkullIn 0.7s 0.25s cubic-bezier(.3,1.5,.5,1) both, goSkullBob 2.4s 1s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes goSkullIn { 0% { transform: translateX(24px) scale(0.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes goSkullBob { 0%, 100% { transform: none; } 50% { transform: scaleY(0.96) translateY(1px); } }

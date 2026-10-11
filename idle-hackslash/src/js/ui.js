@@ -2927,7 +2927,9 @@ if (document.readyState === 'complete') setTimeout(preloadUiImages, 300); else w
 
 // 棺桶の絵（ドット絵を一度だけ作ってキャッシュ）と、引っぱるロープ
 let coffinSprite = null;
+const coffinImg = new Image(); coffinImg.src = 'assets/img/ui/go/coffin.webp'; // 描き込んだ棺桶の絵（読み込めるまでは下の手作りドット絵）
 function getCoffinSprite() { // 斜め上から見た（クォータービューの）棺桶のドット絵
+  if (coffinImg.complete && coffinImg.naturalWidth) return coffinImg;
   if (coffinSprite) return coffinSprite;
   const W = 40, H = 34, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const c = cv.getContext('2d');
@@ -2966,9 +2968,9 @@ function drawCoffin(ball, appear) {
     const mx = (lead.x + ball.x) / 2, my = (lead.y + ball.y) / 2 + 6;
     ctx.beginPath(); ctx.moveTo(lead.x, lead.y); ctx.quadraticCurveTo(mx, my, ball.x, ball.y); ctx.stroke(); ctx.restore();
   }
-  const img = getCoffinSprite(), w = pl.radius * 2.7 * (0.6 + 0.4 * appear), h = w * img.height / img.width;
+  const img = getCoffinSprite(), w = pl.radius * (img === coffinImg ? 2.2 : 2.7) * (0.6 + 0.4 * appear), h = w * img.height / img.width;
   ctx.save(); ctx.translate(ball.x, ball.y); // 回さずに元の絵の向きのまま
-  ctx.imageSmoothingEnabled = false; ctx.globalAlpha = Math.min(1, appear * 1.5);
+  ctx.imageSmoothingEnabled = img === coffinImg; ctx.globalAlpha = Math.min(1, appear * 1.5);
   ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(1, h * 0.32, w * 0.42, h * 0.2, 0, 0, Math.PI * 2); ctx.fill(); // 影
   ctx.drawImage(img, -w / 2, -h / 2, w, h);
   const left = game.companions.downStages && game.companions.downStages[ball.companionId]; // 復活まであと何階
