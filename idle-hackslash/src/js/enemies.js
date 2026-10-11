@@ -1365,7 +1365,7 @@ function obstacleFloorEffect(o, ball, now) { // ダッシュパネル・ワー�
     if (ball.isPlayer) { // 自分や仲間はしばらくダメージ倍増
       ball.dashPowerUntil = now + DASH_POWER_MS;
       thump(400, 1400, 0.14, 0.07, 'sawtooth'); thump(800, 1600, 0.1, 0.05, 'square', 0.05);
-      spawnDamageText(ball.x, ball.y - ball.radius - 12, `≫ ダッシュ！ ダメージ×${DASH_DMG_MULT}`, '#ff6b6b', 0.025, true);
+      spawnDamageText(ball.x, ball.y - ball.radius - 12, `≫ ダッシュ！ DMG×${DASH_DMG_MULT}`, '#ff6b6b', 0.025, true);
     }
   } else if (o.kind === 'portal' && o.pair && now - (ball.warpAt || 0) > 1000) {
     const t = o.pair, sp = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / sp, uy = ball.vy / sp;

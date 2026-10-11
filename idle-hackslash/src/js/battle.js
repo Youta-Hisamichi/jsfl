@@ -1757,7 +1757,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 const RECORD_BADGE_INTERVAL_MS = 2500;
-const RECORD_LABELS = { damage: 'MAX ダメージ', dps: 'MAX DPS' };
+const RECORD_LABELS = { damage: 'MAX DMG', dps: 'MAX DPS' };
 const recordBadge = document.getElementById('recordBadge');
 ['animationend', 'animationcancel'].forEach(type => {
   recordBadge.addEventListener(type, () => recordBadge.classList.remove('show'));
