@@ -2521,7 +2521,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .fb-row.beat em { color: #7ee787; }
 .fb-empty { font-size: 0.7rem; color: #aab4d0; }
 /* カレンダーイベント */
-.event-chip { position: absolute; left: 6px; top: 30px; z-index: 6; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,180,90,0.8); background: rgba(40,16,40,0.7); color: #ffe9a8; font-size: 0.66rem; font-weight: 800; cursor: pointer; }
+.event-chip { position: absolute; right: 6px; top: 6px; z-index: 6; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,180,90,0.8); background: rgba(40,16,40,0.7); color: #ffe9a8; font-size: 0.66rem; font-weight: 800; cursor: pointer; }
 .event-chip b { color: #fff; }
 .event-chip.hot { border-color: #fff; background: linear-gradient(90deg, #ff5c7a, #ff9f43); color: #fff; animation: obmPulse 0.7s ease-in-out infinite alternate; }
 .evd-panel { max-width: 360px; text-align: left; }
@@ -2607,3 +2607,5 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .op-text { min-height: 5.5em; width: min(360px, 90vw); margin-top: 10px; white-space: pre-line; text-align: center; font-size: 1.05rem; font-weight: 800; line-height: 1.7; text-shadow: 0 2px 4px #000; }
 .op-skip { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.35); color: #fff; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
 .op-title b { background: none; -webkit-background-clip: initial; background-clip: initial; color: #ffe27a; filter: none; text-shadow: 0 0 18px rgba(255,200,80,0.8), 0 3px 0 #7a3a00, 0 5px 6px #000; }
+/* イベントボタンを右上に置くので、敵の特性バッジはその下へ */
+.arena-wrap:has(#eventChip) .enemy-trait-badge { top: 30px; }
