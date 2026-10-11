@@ -245,6 +245,17 @@ const BGM_SONGS = {
     kickBoost: 1.4,
     drums: 'k h s k - k s h | k h s k - k s h | k h s k - k s h | k h s k s s ks s | k h s k - k s h | k h s k - k s h | k h s k - k s h | ks s ks s ks ks ks ks',
   },
+  boss22: { // ボス21 鋼の格闘王：分厚いシンセブラスのキメと8分で突き進むオクターブベースに、堂々と花道を歩む旋律（80年代格闘技団体の入場テーマ系）
+    bpm: 150,
+    echo: { time: 0.24, feedback: 0.25, wet: 0.17 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.036, notes: 'E5 = = - E5 = = - | E5 = = - G5 = A5 = | B5 = = = = = = = | - - - - D6 C6 B5 A5 | B5 = = = = = A5 G5 | A5 = = = E5 = = = | F#5 = = = G5 = A5 = | B5 = = = = = - - | B5 = = = = = D6 = | C6 = = B5 A5 = G5 = | A5 = = = F#5 = D#5 = | B4 = = = = = - - | E6 = = = D6 = C6 = | D6 = = = A5 = = = | D6 = = = C6 = B5 = | B5 = = = = = G5 A5 | C6 = = = B5 = A5 = | A5 = = = D6 = F#6 = | G6 = = = F#6 = E6 = | D#6 = = = F#6 = B5 =' },
+      { type: 'vrc6pulse12', gain: 0.02, notes: 'E4+G4+B4 = = - E4+G4+B4 = = - | E4+G4+B4 = = - E4+G4+B4 = = - | E4+G4+B4 = = = = = = = | D4+F#4+A4 = = = = = = = | E4+G4+B4 - - E4+G4+B4 - - E4+G4+B4 - | C4+E4+G4 - - C4+E4+G4 - - C4+E4+G4 - | D4+F#4+A4 - - D4+F#4+A4 - - D4+F#4+A4 - | E4+G4+B4 - - E4+G4+B4 - - E4+G4+B4 - | E4+G4+B4 - - E4+G4+B4 - - E4+G4+B4 - | C4+E4+G4 - - C4+E4+G4 - - C4+E4+G4 - | D#4+F#4+B4 - - D#4+F#4+B4 - - D#4+F#4+B4 - | E4+G4+B4 - - E4+G4+B4 - - E4+G4+B4 - | C4+E4+G4 - - C4+E4+G4 - - C4+E4+G4 - | D4+F#4+A4 - - D4+F#4+A4 - - D4+F#4+A4 - | D4+G4+B4 - - D4+G4+B4 - - D4+G4+B4 - | E4+G4+B4 - - E4+G4+B4 - - E4+G4+B4 - | C4+E4+A4 - - C4+E4+A4 - - C4+E4+A4 - | D4+F#4+A4 - - D4+F#4+A4 - - D4+F#4+A4 - | D4+G4+B4 - - D4+G4+B4 - - D4+G4+B4 - | D#4+F#4+B4 - - D#4+F#4+B4 - - D#4+F#4+B4 -' },
+      { type: 'vrc6saw', gain: 0.056, notes: 'E2 = = - E2 = = - | E2 = = - E2 = = - | E2 E2 E3 E2 E2 E3 E2 E3 | D2 D2 D3 D2 D2 D3 D2 D3 | E2 E2 E3 E2 E2 E3 E2 E3 | C2 C2 C3 C2 C2 C3 C2 C3 | D2 D2 D3 D2 D2 D3 D2 D3 | E2 E2 E3 E2 E2 E3 E2 E3 | E2 E2 E3 E2 E2 E3 E2 E3 | C2 C2 C3 C2 C2 C3 C2 C3 | B1 B1 B2 B1 B1 B2 B1 B2 | E2 E2 E3 E2 E2 E3 E2 E3 | C2 C2 C3 C2 C2 C3 C2 C3 | D2 D2 D3 D2 D2 D3 D2 D3 | G1 G1 G2 G1 G1 G2 G1 G2 | E2 E2 E3 E2 E2 E3 E2 E3 | A1 A1 A2 A1 A1 A2 A1 A2 | D2 D2 D3 D2 D2 D3 D2 D3 | G1 G1 G2 G1 G1 G2 G1 G2 | B1 B1 B2 B1 B1 B2 B1 B2' },
+    ],
+    kickBoost: 1.35,
+    drums: 'k - - - k - - - | k - - - k - s s | k h s h k h s h | s s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
+  },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
     kickBoost: 1.3,
@@ -652,7 +663,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss15', 'boss16', 'boss17', 'boss21'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -705,6 +716,7 @@ const BGM_INFO = [
   { key: 'boss16', name: 'ボス15 戦闘民族の襲来', desc: 'せき立てる分散和音とうなるオクターブベースに乗って、荒々しい旋律が空から襲来した強敵と激突する。VRC6風チップチューン。ホ短調（ファミコンの格闘アニメRPGのボス戦の作風）・BPM190' },
   { key: 'boss17', name: 'ボス16 摩天楼の夜狩り', desc: '16分で脈打つシンセベースと切り込む和音に乗って、クールな旋律が夜の摩天楼を駆け抜ける。凄腕の始末屋の夜。VRC6風チップチューン。嬰ヘ短調（80年代シティ系アニメのシンセロックの作風）・BPM126' },
   { key: 'boss21', name: 'ボス20 宿命の血統', desc: '熱く刻む8ビートとうなるベースに乗って、激しくも気高い旋律が宿命の敵へ立ち向かう。血統に刻まれた誇りの戦い。VRC6風チップチューン。イ短調（熱血バトル漫画アニメのロックOPの作風）・BPM184' },
+  { key: 'boss22', name: 'ボス21 鋼の格闘王', desc: '分厚いシンセブラスのキメと8分で突き進むオクターブベースに乗って、堂々とした旋律が花道を歩む。リングへ向かう格闘王の入場。VRC6風チップチューン。ホ短調（80年代格闘技団体の入場テーマの作風）・BPM150' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
