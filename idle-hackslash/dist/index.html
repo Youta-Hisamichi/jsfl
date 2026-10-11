@@ -233,16 +233,16 @@
         <p>招集するたびに費用が上がります。同じ仲間でも人数が増えます（パーティ枠は最初1人、ジェムで最大8人まで拡張・拡張は転生しても残る）。満員のときは代わりに「覚醒」（攻撃力・HP +20%、最大★5）。</p>
         <p>仲間・覚醒・招集費用は転生ですべてリセットされます。</p>
       </details>
-      <div class="my-char-box">
-      <button class="my-char-card" id="myCharCard"></button>
-      <button class="auto-toggle-btn" id="autoUpgradeBtn">🤖 オート強化 OFF</button>
-      <div class="upgrade-list" id="upgradeList"></div>
-      </div>
       <div class="cp-hero">
         <div class="cp-stat"><span class="cp-stat-label">🐾 パーティ</span><span class="cp-stat-val" id="partyCount">0 / 1</span><div class="cp-bar"><i id="partyBar"></i></div></div>
         <div class="cp-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
       </div>
       <div class="gacha-actions pull-row"><button class="gacha-art-btn" id="compGachaBtn" aria-label="招集ガチャ"></button></div>
+      <div class="my-char-box"><!-- 自キャラはパーティの仲間のすぐ上 -->
+      <button class="my-char-card" id="myCharCard"></button>
+      <button class="auto-toggle-btn" id="autoUpgradeBtn">🤖 オート強化 OFF</button>
+      <div class="upgrade-list" id="upgradeList"></div>
+      </div>
       <div class="party-row"><div class="weapon-slot-head party-slot-head" id="partySlotBtn"></div><button class="comp-lock-btn" id="compLockBtn">📜 解雇・採用<br><small>招集する仲間を選ぶ</small></button></div>
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
