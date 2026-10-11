@@ -99,9 +99,10 @@ function updateCompSummonVisibility() {
   if (!cgb) return;
   const full = getCompanionTotal() >= getPartyLimit();
   const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
-  cgb.classList.toggle('is-disabled', game.coins < cost1);
+  cgb.classList.toggle('is-disabled', full || game.coins < cost1); // 満員・コイン不足のときは消さずにグレー
+  cgb.dataset.full = full ? '1' : '';
   { const h = gachaArtHtml(0, cost1 ? `${COIN_ICO} ${formatCoinNumber(cost1)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
-  cgb.parentElement.style.display = full ? 'none' : '';
+  cgb.parentElement.style.display = '';
 }
 function renderRebirthShopList() {
   const newTabIds = (Array.isArray(game.rebirthShopNew) ? game.rebirthShopNew : []).filter(id => REBIRTH_SHOP_ITEMS[id]).map(id => getRebirthItemCategory(REBIRTH_SHOP_ITEMS[id]));
@@ -344,7 +345,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
     renderCompanionList();
   };
-  runGachaCountdown(bestRarity, reveal, box);
+  runGachaCountdown(bestRarity, reveal, box, { skippable: true }); // タップで演出をスキップ
 }
 function showCompanionGachaResult(box, results, count, bestRarity) {
   box.style.display = 'block';
@@ -364,7 +365,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateStatsUI();
   updateHPUI();
 }
-document.getElementById('compGachaBtn').addEventListener('click', event => runCompanionGacha(1, getCompSummonCost(1), event));
+document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, getCompSummonCost(1), event); });
 ['compGachaResult', 'gachaResult'].forEach(boxId => { // 招集ガチャ・進化ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
   const box = document.getElementById(boxId), ov = document.createElement('div'); if (!box) return;
   ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);
