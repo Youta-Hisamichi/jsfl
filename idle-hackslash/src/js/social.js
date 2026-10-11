@@ -130,7 +130,7 @@ const FORTUNES = [
   { rank: '末吉', col: '#64e8ff', coin: 0.05, msg: '今は力をためる時。溜めMAXの一撃を信じて' },
   { rank: '凶', col: '#b8a0ff', coin: 0, msg: '逆に考えるんだ。ここからは上がるだけさ（明日はきっと良い日）' },
 ];
-const LUCKY_THINGS = ['宝箱', '溜めMAX', 'ボス戦', 'ガチャ', '流れ星', '風船', '強化', '試練の塔', '転生', '仲間招集'];
+const LUCKY_THINGS = ['宝箱', '溜めMAX', 'ボス戦', 'ガチャ', '流れ星', '強化', '試練の塔', '転生', '仲間招集'];
 function myPlayerSeed() { if (!game.playerSeed) game.playerSeed = Math.floor(Math.random() * 1e9); return game.playerSeed; }
 function todayFortune() {
   const r = stageRand((parseInt(todayKey().replace(/\D/g, ''), 10) % 1000003) + myPlayerSeed() % 9973);
