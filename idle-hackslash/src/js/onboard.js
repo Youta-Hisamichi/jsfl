@@ -222,7 +222,7 @@ function updateGoalChip() {
   const ms = typeof getMilestoneBoss === 'function' && goal % 100 === 0 ? getMilestoneBoss(goal) : null;
   const sig = goal + ':' + best;
   if (sig === goalSig) return; goalSig = sig;
-  el.innerHTML = `🎯 目標 <b>ステージ${formatStageNumber(goal)}</b>${ms ? ' <span>👑</span>' : ''}`;
+  el.innerHTML = `🎯 目標 <b>ステージ${formatStageNumber(goal)}</b>${ms ? ' <span>👑</span>' : ''}<span class="gc-final">｜🏆最終 100万</span>`;
   el.style.display = game.skipChallenge ? 'none' : '';
 }
 setInterval(() => { try { updateGoalChip(); } catch (e) { console.error(e); } }, 1000);

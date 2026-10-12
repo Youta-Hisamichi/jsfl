@@ -62,9 +62,52 @@ function playOpening(onEnd) {
 setTimeout(() => {
   if (game.openingSeen) return;
   if ((game.bestStage || 1) > 1 || (game.reincarnations || 0) > 0) { game.openingSeen = true; return; } // 既存のセーブには出さない
-  playOpening();
+  playOpening(() => setTimeout(() => openFinalGoal(true), 500)); // オープニングのあとに最終目標を見せる
 }, 900);
 // 設定画面のスタッフロールの下に「オープニングを見る」
 { const cb = document.getElementById('creditsBtn');
   if (cb) { cb.insertAdjacentHTML('afterend', '<button class="modal-shop-btn" id="openingBtn"><span class="msb-name">📖 オープニングを見る</span></button>');
     document.getElementById('openingBtn').addEventListener('click', () => { const sm = document.getElementById('settingsModal'); if (sm) sm.classList.remove('show'); playOpening(); }); } }
+
+// ===== ゲームの最終目標：ステージ100万（魔王の玉座） =====
+const FINAL_GOAL_STAGE = 1000000;
+OPENING_SCENES.splice(OPENING_SCENES.length - 1, 0, { bg: 'red', text: '魔王が待つのは、遥か彼方――\nステージ100万。', art: 'goal' });
+{ const orig = openingArt; openingArt = function (kind) {
+  if (kind === 'goal') return `<div class="op-goal"><small>最終目標</small><b>STAGE</b><strong>1,000,000</strong><span>👑 魔王の玉座</span></div>${ENEMY_SPRITES.b_darkWitch ? `<img class="op-goal-boss" src="${ENEMY_SPRITES.b_darkWitch}" alt="">` : ''}`;
+  return orig.apply(this, arguments);
+}; }
+function finalGoalPct(stage) { return Math.min(100, Math.log10(Math.max(1, stage)) / Math.log10(FINAL_GOAL_STAGE) * 100); } // 桁で進むので対数（10・100・1000…で等間隔）
+function openFinalGoal(first) {
+  if (document.querySelector('.fg-panel')) return; // 二重に開かない
+  game.finalGoalSeen = true;
+  const best = Math.max(1, game.bestStage || 1), pct = finalGoalPct(best), left = Math.max(0, FINAL_GOAL_STAGE - best);
+  const marks = [10, 100, 1000, 10000, 100000, 1000000].map(v => `<i style="left:${finalGoalPct(v)}%" class="${best >= v ? 'on' : ''}"><span>${v >= 10000 ? (v / 10000) + '万' : v.toLocaleString('ja-JP')}</span></i>`).join('');
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 85;
+  ov.innerHTML = `<div class="modal-panel fg-panel">
+    <div class="fg-head">🏆 このゲームの最終目標</div>
+    <div class="fg-goal"><small>魔王の玉座</small><b>ステージ <em>1,000,000</em></b></div>
+    <div class="fg-text">果てしなく続くステージを進み、<b>ステージ100万</b>で待つ魔王を倒せ！<br>力尽きても<b>転生</b>すれば強くなって、もっと先へ行ける。</div>
+    <div class="fg-bar"><div class="fg-fill" style="width:${pct}%"></div>${marks}<div class="fg-me" style="left:${pct}%">⚔️</div></div>
+    <div class="fg-now">最高到達 <b>ステージ${formatStageNumber(best)}</b>${left ? `　あと <b>${formatStageNumber(left)}</b>` : '　<b>制覇！</b>'}</div>
+    <button class="modal-close-btn fg-ok">${first ? '冒険に出発！' : '閉じる'}</button></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.querySelector('.fg-ok').addEventListener('click', close);
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  try { playLoginBonusSound(); } catch (e) {}
+}
+// すでに遊んでいる人にも一度だけ見せる（ほかのダイアログが開いていないとき）
+{ let tries = 0; const t = setInterval(() => {
+  if (game.finalGoalSeen || ++tries > 40) { clearInterval(t); return; }
+  if (!game.openingSeen || openingOn || document.querySelector('.modal-overlay.show, .op-ov')) return;
+  clearInterval(t); openFinalGoal(false);
+}, 3000); }
+// 上の「🎯 目標」チップをタップすると最終目標を見られる
+document.addEventListener('click', e => { if (e.target.closest('#goalChip')) openFinalGoal(false); });
+// 本当に100万に届いたら全クリアのお祝い
+setInterval(() => {
+  if (game.finalGoalCleared || (game.bestStage || 0) < FINAL_GOAL_STAGE) return;
+  game.finalGoalCleared = true; game.gems += 1000;
+  try { showRunBanner('🏆 全クリア！！', 'ステージ100万に到達して魔王の玉座を制覇！ +💎1000'); } catch (e) { showNotice('🏆 全クリア！ ステージ100万到達 +💎1000', false, 6000); }
+  try { playLoginBonusSound(); updateStatsUI(); saveGame(); } catch (e) {}
+}, 2000);

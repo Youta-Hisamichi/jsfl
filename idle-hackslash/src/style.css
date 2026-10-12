@@ -2675,3 +2675,31 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .companion-card .cc-up .cc-side button.cc-lvup { flex: 0 0 44px; }
 .companion-card .cc-up .cc-side button.cc-max-btn.cc-pct-btn { flex: 0 0 46px; }
 .companion-card .cc-up .cc-side button.cc-max-btn:not(.cc-pct-btn) { flex: 0 0 50px; }
+/* ===== 最終目標（ステージ100万） ===== */
+.goal-chip { pointer-events: auto; cursor: pointer; }
+.goal-chip .gc-final { margin-left: 4px; color: #ffb36b; font-weight: 800; }
+.op-goal { position: absolute; top: 12%; z-index: 3; display: flex; flex-direction: column; align-items: center; text-shadow: 0 0 14px #ff5a5a, 0 3px 0 #000; animation: opGoalIn 1.2s ease-out both; }
+.op-goal small { font-size: 1rem; font-weight: 900; color: #ffd76b; letter-spacing: 4px; }
+.op-goal b { font-size: 1.6rem; font-weight: 900; color: #fff; letter-spacing: 8px; margin-top: 4px; }
+.op-goal strong { font-size: 3.2rem; font-weight: 900; letter-spacing: 2px; line-height: 1.05; background: linear-gradient(180deg, #fff, #ffd76b 50%, #ff6a3a); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #3a0a00); }
+.op-goal span { margin-top: 6px; font-size: 1rem; font-weight: 900; color: #ffb3b3; }
+.op-goal-boss { position: absolute; bottom: 22%; width: 46%; max-width: 220px; opacity: 0.85; filter: drop-shadow(0 0 18px rgba(255,60,80,0.8)) brightness(0.8); animation: opGoalBoss 2.4s ease-in-out infinite alternate; }
+@keyframes opGoalIn { 0% { transform: scale(2.2); opacity: 0; filter: blur(6px); } 60% { opacity: 1; } 100% { transform: none; opacity: 1; filter: none; } }
+@keyframes opGoalBoss { from { transform: translateY(0) scale(1); } to { transform: translateY(-8px) scale(1.04); } }
+.fg-panel { max-width: 360px; text-align: center; background: radial-gradient(120% 80% at 50% 0%, #3a1630, #170a1c 70%) !important; border: 2px solid #ffb36b !important; border-image: none !important; border-radius: 16px; color: #fff; box-shadow: 0 0 30px rgba(255,140,80,0.4); }
+.fg-head { font-size: 0.86rem; font-weight: 900; color: #ffd76b; letter-spacing: 2px; }
+.fg-goal { margin: 6px 0 4px; display: flex; flex-direction: column; align-items: center; }
+.fg-goal small { font-size: 0.72rem; font-weight: 800; color: #ffb3b3; }
+.fg-goal b { font-size: 1.1rem; font-weight: 900; }
+.fg-goal em { font-style: normal; font-size: 2rem; letter-spacing: 1px; background: linear-gradient(180deg, #fff, #ffd76b 50%, #ff6a3a); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #3a0a00); }
+.fg-text { font-size: 0.76rem; line-height: 1.6; color: #f1e6f0; margin: 4px 0 18px; }
+.fg-text b { color: #ffd76b; }
+.fg-bar { position: relative; height: 12px; margin: 0 14px 22px; border-radius: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,200,120,0.5); }
+.fg-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: linear-gradient(90deg, #ff9f43, #ffd76b); box-shadow: 0 0 8px rgba(255,200,100,0.8); }
+.fg-bar i { position: absolute; top: -3px; width: 2px; height: 18px; margin-left: -1px; background: rgba(255,255,255,0.35); }
+.fg-bar i.on { background: #ffd76b; }
+.fg-bar i span { position: absolute; top: 19px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 0.56rem; color: #cbbcd0; white-space: nowrap; }
+.fg-bar i.on span { color: #ffd76b; font-weight: 800; }
+.fg-me { position: absolute; top: -20px; transform: translateX(-50%); font-size: 0.9rem; filter: drop-shadow(0 1px 2px #000); }
+.fg-now { font-size: 0.78rem; margin-bottom: 10px; color: #e8dcef; }
+.fg-now b { color: #fff; }
