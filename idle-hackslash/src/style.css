@@ -2853,3 +2853,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 /* 仲間・進化・戦績・ランキングのセリフ枠はショップと同じ吹き出し（skill/plate.webp） */
 .tab-page[data-tab="companion"] .shopkeeper .sk-bubble, .tab-page[data-tab="gacha"] .shopkeeper .sk-bubble, .tab-page[data-tab="records"] .shopkeeper .sk-bubble, .tab-page[data-tab="ranking"] .shopkeeper .sk-bubble { min-height: 44px; padding: 7px 16px 8px 22px; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="companion"] .shopkeeper .sk-name, .tab-page[data-tab="gacha"] .shopkeeper .sk-name, .tab-page[data-tab="records"] .shopkeeper .sk-name, .tab-page[data-tab="ranking"] .shopkeeper .sk-name { position: static; display: block; font-size: 0.72rem; }
+/* タイトル文字を枠の空白（紺の部分）の真ん中に */
+.skp-title { padding: 6.7% 9.3% 5% 28.7% !important; }
+.tab-page[data-tab="gacha"] > .artifact-panel > .page-head, .tab-page[data-tab="records"] > .artifact-panel > .page-head, .tab-page[data-tab="ranking"] > .artifact-panel > .page-head { box-sizing: border-box; padding: 5.9% 0 2.1%; line-height: 1; }
