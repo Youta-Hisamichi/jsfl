@@ -42,7 +42,7 @@ function giveMonthRewards() {
   while (st.got < MONTH_REWARDS.length && st.n >= MONTH_REWARDS[st.got].at) {
     const r = MONTH_REWARDS[st.got]; st.got++;
     if (r.gems) game.gems += r.gems; else if (r.chest) dropTreasureChest(r.chest);
-    eventBanner(`${ev.icon} ${ev.itemName}を${r.at}個集めた！`, r.gems ? `ごほうび 💎${r.gems}` : `ごほうび ${RARITY_INFO[r.chest].label}の宝箱`);
+    eventBanner(`${ev.icon} ${ev.itemName}を${r.at}個集めた！`, r.gems ? `ごほうび 💎${r.gems}` : `ごほうび ${RARITY_INFO[r.chest].label.replace('コモン', 'ノーマル')}の宝箱`);
   }
   updateStatsUI(); saveGame();
 }

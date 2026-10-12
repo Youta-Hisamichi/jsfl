@@ -787,7 +787,7 @@ debugRow.addEventListener('click', event => {
     saveGame();
   }
   if (action === 'pause') { setUserPaused(!userPaused); return; }
-  if (action.startsWith('chest:')) { const k = action.slice(6), hc = getHeldChests(); hc[k] = (hc[k] || 0) + 5; renderChestTray(k); saveGame(); showNotice(`DEBUG: ${RARITY_INFO[k].label}の宝箱 +5（${hc[k]}個）`); return; }
+  if (action.startsWith('chest:')) { const k = action.slice(6), hc = getHeldChests(); hc[k] = (hc[k] || 0) + 5; renderChestTray(k); saveGame(); showNotice(`DEBUG: ${RARITY_INFO[k].label.replace('コモン', 'ノーマル')}の宝箱 +5（${hc[k]}個）`); return; }
   if (action === 'bossCont' || action === 'bossContFinal') { // ボス戦にしてから敗北画面を出す
     switchTab('game');
     if (!isBossFight()) { if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10; balls = spawnBattleBalls(); adds = []; }

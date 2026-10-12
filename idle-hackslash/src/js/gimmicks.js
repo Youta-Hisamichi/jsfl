@@ -398,7 +398,7 @@ function openTansu(o) {
   if (r < 0.45) { const c = Math.round(unit * (0.3 + Math.random() * 0.5)); game.coins += c; spawnCoinDrop(x, o.y, c, 3); txt = `💰 ${formatCoinNumber(c)}コインを見つけた！`; playCoinChime(gm.broke % 13); }
   else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '🌿 やくそうを見つけた！ HP回復'; col = '#7ee787'; }
   else if (r < 0.65) { game.gems += 1; txt = '💎 ジェムを見つけた！'; col = '#64e8ff'; playCoinChime(10); }
-  else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
+  else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
   else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキル全快ポーションを見つけた！'; col = '#ff8ad8'; }
   else { txt = TANSU_JUNK[Math.floor(Math.random() * TANSU_JUNK.length)]; col = '#c8c8d0'; }
   spawnDamageText(x, y, txt, col, 0.016, r < 0.74);

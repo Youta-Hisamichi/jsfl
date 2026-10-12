@@ -1408,7 +1408,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     else { const c = coinsFor(1.2); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🏛️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
     const rar = rollChestRarity(6, 'rare'); // 魔導コンテナは良い宝箱が出やすい
-    spawnDamageText(x, y, `📦 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.012, true); dropTreasureChest(rar);
+    spawnDamageText(x, y, `📦 ${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱！`, RARITY_INFO[rar].color, 0.012, true); dropTreasureChest(rar);
   }
   updateStatsUI();
 }
@@ -1544,7 +1544,7 @@ function openQBox(o) {
   o.used = true; o.popAt = Date.now();
   playTone(988, 0.07, 'square', 0.08); setTimeout(() => playTone(1319, 0.2, 'square', 0.08), 70); // ピコーン
   const r = Math.random(), x = o.x, y = o.y - o.r - 10;
-  if (r < 0.2) { const rar = rollChestRarity(2); spawnDamageText(x, y, `🎁 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
+  if (r < 0.2) { const rar = rollChestRarity(2); spawnDamageText(x, y, `🎁 ${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
   else if (r < 0.55) { const coins = Math.max(1, Math.round(stageCoinRaw() * 2.5)); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
   else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
   else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
@@ -1569,7 +1569,7 @@ function hatchEgg(o, byEnemy = false) {
   if (!o.eggMonsterInside || !main) {
     if (byEnemy) { spawnDamageText(o.x, o.y - 14, '🥚 敵に割られた…', '#9aa0b4', 0.016, true); playTone(220, 0.18, 'triangle', 0.06, 150); return; } // 敵が割ったときはアイテムなし
     const rar = o.eggRarity || 'common';
-    spawnDamageText(o.x, o.y - 14, `🥚 中から${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); return;
+    spawnDamageText(o.x, o.y - 14, `🥚 中から${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); return;
   }
   const m = makeAddEnemy(main);
   m.emoji = EGG_MONSTERS[Math.floor(Math.random() * EGG_MONSTERS.length)]; m.shape = 'emoji';
