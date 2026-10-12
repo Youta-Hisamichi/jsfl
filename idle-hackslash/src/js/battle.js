@@ -1494,7 +1494,7 @@ function getDailyClearsForDate(key) {
 }
 
 const LOGIN_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
-const LOGIN_RARITY_TITLES = { common: 'NORMAL', rare: 'RARE!', epic: 'EPIC!!', legendary: 'LEGENDARY!!!' };
+const LOGIN_RARITY_TITLES = { common: 'コモン', rare: 'レア！', epic: 'エピック！！', legendary: 'レジェンド！！！' }; // レア度の呼び名はほかの画面と同じ
 let loginGachaSkip = null; // 演出中にタップしたら最後まで早送り
 function renderLoginDays(pos) {
   const cycle = LOGIN_BONUS_TABLE.length;
@@ -1581,12 +1581,9 @@ function checkLoginBonus(awayMs) {
   };
   later(cycle, 200);
   // 結果が出たら、プレゼント箱を「手に入った一番良い宝箱」の絵に（宝箱がなければコイン）
-  const gotChests = [chestArtifact && chestArtifact.rarity, bonusArtifact && bonusArtifact.rarity, ...CHEST_RARITIES.filter(k => idleChestRarities[k])].filter(Boolean);
-  const bestChest = CHEST_RARITIES.filter(k => gotChests.includes(k)).pop();
-  const orbIcon = bestChest ? (xi(CHEST_ICON[bestChest]) || '🎁') : (xi('x_coin') || '🟡');
-  const showRarity = (r, withUp) => {
+  const showRarity = (r, withUp) => { // 真ん中の宝箱は帰還ボーナスのレア度（★）と同じ色の宝箱（サプライズ宝箱などは下の欄に出る）
     const info = RARITY_INFO[r];
-    orb.innerHTML = orbIcon;
+    orb.innerHTML = xi(CHEST_ICON[r]) || '🎁';
     panel.style.setProperty('--lb', info.color);
     orb.style.setProperty('--orb', info.color);
     orb.className = 'lb-orb burst';
