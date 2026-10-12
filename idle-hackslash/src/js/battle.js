@@ -1891,6 +1891,25 @@ document.getElementById('chestTray').addEventListener('click', ev => {
 // 宝箱ダイアログ：開けるまで・閉じるまで戦闘は止まる。動画を見ると中身3倍
 const chestModal = document.getElementById('chestModal');
 let chestPausedPhase = null;
+// 宝箱の中身：同じものが何個も出たら、絵を何枚か重ねて拡大しつつ「×個数」をカウントアップ
+function lootStackHtml(icon, n, t0) {
+  if (!(n > 1)) return `<div class="cl-ico">${icon}</div>`;
+  const k = Math.min(3, n);
+  return `<div class="cl-ico cl-stack" style="--t0:${t0}s">${Array.from({ length: k }, (_, j) => `<span class="cl-st" style="--j:${k - 1 - j}">${icon}</span>`).join('')}<b class="cl-cnt" data-n="${n}" data-t0="${t0}">×1</b></div>`;
+}
+function countUpLootStacks(root) {
+  root.querySelectorAll('.cl-cnt').forEach(el => {
+    const n = +el.dataset.n, start = performance.now() + (+el.dataset.t0 + 0.35) * 1000, dur = Math.min(1200, 350 + n * 60);
+    let last = 1;
+    const step = now => {
+      if (!el.isConnected) return;
+      const t = Math.max(0, Math.min(1, (now - start) / dur)), v = Math.max(1, Math.round(1 + (n - 1) * (1 - Math.pow(1 - t, 2))));
+      if (v !== last) { last = v; el.textContent = '×' + v; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); if (v % Math.max(1, Math.ceil(n / 12)) === 0) playTone(900 + Math.min(v, 30) * 25, 0.03, 'square', 0.02); }
+      if (t < 1) requestAnimationFrame(step); else el.classList.add('done');
+    };
+    requestAnimationFrame(step);
+  });
+}
 function openChestDialog(rarity) {
   chestPausedPhase = phase; phase = 'paused';
   if (rarity === 'all') { openAllChestDialog(); return; }
@@ -1953,9 +1972,10 @@ function openChestBatchDialog(rarity) {
     const order = g => g.art ? -RARITY_ORDER.indexOf(g.art.rarity) : 1;
     const cards = [...groups.values()].sort((x, y) => order(x) - order(y)).map((g, i) => {
       const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
-      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}"><div class="cl-ico">${COIN_ICO}</div><div class="cl-name">コイン${g.count > 1 ? ' ×' + g.count : ''}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
+      const t0 = Math.min(i, 20) * 0.06;
+      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(COIN_ICO, g.count, t0)}<div class="cl-name">コイン</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       const c = RARITY_INFO[g.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}<div class="cl-ico">${ico(g.art)}</div><div class="cl-name">${g.art.name}${g.n > 1 ? ' ×' + g.n : ''}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(ico(g.art), g.n, t0)}<div class="cl-name">${g.art.name}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? g.art.rarity : 'coin')); } // カードが並ぶのに合わせてポンポン
@@ -1963,6 +1983,7 @@ function openChestBatchDialog(rarity) {
     document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁'; // 開けた宝箱（そのレア度の宝箱の絵）
     document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
     document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
+    countUpLootStacks(document.getElementById('chestModalText'));
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
