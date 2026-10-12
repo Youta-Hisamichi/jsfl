@@ -2767,3 +2767,40 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #bossContModal .go2 .go-giveup-btn { aspect-ratio: 400 / 112; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_gray.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
 #bossContModal .go2 .go-giveup-btn .msb-name { font-size: 5.2cqw; color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
 #bossContModal .go2 .go-reborn-btn { aspect-ratio: 400 / 113; margin: 0; padding: 0 !important; border: none !important; border-radius: 0; background: url(assets/img/ui/go2/btn_purple.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 5cqw; font-weight: 900; text-shadow: 0 2px 3px rgba(0,0,0,0.8); box-shadow: none !important; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+
+/* ===== 仲間ページ（ui/comp の絵：青い図書館） ===== */
+.tab-page[data-tab="companion"] > .artifact-panel { position: relative; background: linear-gradient(180deg, rgba(8,12,34,0.2) 0px, rgba(8,12,34,0.55) 420px, #0b1128 820px, #0a0f22 100%), url(assets/img/ui/skill/bg.webp) 50% 0 / auto 820px no-repeat, #0a0f22 !important; border: 1px solid #3a4a78 !important; border-image: none !important; border-radius: 14px; color: #e8ecf6; --text: #e8ecf6; --text-dim: #b4bdd6; box-shadow: inset 0 0 30px rgba(0,0,0,0.55); padding-top: 8px; }
+.tab-page[data-tab="companion"] > .artifact-panel::before { display: none; }
+.tab-page[data-tab="companion"] .page-head { display: none; }
+.cpp-title { display: block; width: min(300px, 78%); margin: 0 auto 2px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+.tab-page[data-tab="companion"] .shopkeeper { position: relative; align-items: center; gap: 0; margin: 0 0 6px; }
+.tab-page[data-tab="companion"] .shopkeeper .sk-img { content: url(assets/img/ui/comp/npc.webp); position: relative; z-index: 2; width: 72px; height: auto; margin-right: -18px; image-rendering: auto; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6)); }
+.tab-page[data-tab="companion"] .shopkeeper .sk-bubble { margin: 0; min-height: 58px; padding: 26px 14px 10px 30px; border: none; border-radius: 0; background: url(assets/img/ui/comp/speech.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.76rem; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="companion"] .shopkeeper .sk-bubble::before, .tab-page[data-tab="companion"] .shopkeeper .sk-bubble::after { display: none; }
+.tab-page[data-tab="companion"] .shopkeeper .sk-name { position: absolute; left: 14%; top: 14%; color: #ffd76b; font-size: 0.68rem; }
+.tab-page[data-tab="companion"] .cp-help { margin: 2px 0 4px; padding: 0; background: none; border-radius: 0; color: #c8d0e6; }
+.tab-page[data-tab="companion"] .cp-help summary { list-style: none; width: min(230px, 62%); aspect-ratio: 420 / 84; background: url(assets/img/ui/comp/helpbar.webp) left center / 100% 100% no-repeat; color: transparent; font-size: 0; cursor: pointer; }
+.tab-page[data-tab="companion"] .cp-help summary::-webkit-details-marker { display: none; }
+.tab-page[data-tab="companion"] .cp-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.75); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+.tab-page[data-tab="companion"] .cp-help p { margin: 5px 8px 0; }
+.tab-page[data-tab="companion"] .cp-hero { gap: 6px; }
+.tab-page[data-tab="companion"] .cp-stat { aspect-ratio: 360 / 174; padding: 9% 10% 0 !important; border: none !important; border-radius: 0; background: url(assets/img/ui/comp/stat.webp) center / 100% 100% no-repeat !important; display: flex; flex-direction: column; justify-content: flex-start; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="companion"] .cp-stat-label { color: #f3e7c4; font-size: 0.72rem; }
+.tab-page[data-tab="companion"] .cp-stat-val { color: #fff; font-size: 1.45rem; text-align: center; text-shadow: 0 2px 3px #000; }
+.tab-page[data-tab="companion"] .cp-bar { height: 8px; margin: 2px 2% 0; background: rgba(0,0,0,0.55); border: 1px solid rgba(120,140,200,0.5); }
+.tab-page[data-tab="companion"] .party-row { gap: 4px; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > span:first-child { flex: 0 0 auto; width: 33%; aspect-ratio: 320 / 64; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: #f3e7c4; font-size: 0.72rem; font-weight: 800; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > span:first-child b { color: #fff; font-size: 1rem; margin-left: 4px; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { flex: 1; aspect-ratio: 236 / 114; border: none !important; border-image: none !important; background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat !important; padding: 0 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 0.74rem; font-weight: 900; line-height: 1.2; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="companion"] .party-row #compLockBtn { margin: 0; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max { flex: 1; text-align: center; }
+.tab-page[data-tab="companion"] .gacha-art-btn .gab-cost { min-width: 120px; padding: 6px 20px; border: none; border-radius: 0; background: url(assets/img/ui/comp/cost.webp) center / 100% 100% no-repeat; }
+.tab-page[data-tab="companion"] .my-char-box { padding: 0; background: none; border: none; }
+.tab-page[data-tab="companion"] .my-char-card { min-height: 104px; padding: 12px 14px 12px 14px !important; border: none !important; border-radius: 0 !important; background: linear-gradient(rgba(10,16,40,0.35), rgba(10,16,40,0.35)), url(assets/img/ui/comp/card.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; color: #fff; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.55)); }
+.tab-page[data-tab="companion"] .my-char-card .mc-ico { width: 78px; height: 78px; border-radius: 4px; border: 3px solid #d9a93f; background: radial-gradient(circle, #24407a, #0e1a3a) !important; box-shadow: 0 0 0 1px #6a4410; }
+.tab-page[data-tab="companion"] .my-char-card .mc-main small { display: inline-block; padding: 1px 12px; border-radius: 6px; background: linear-gradient(180deg, #e0943a, #9a5414); border: 1px solid #ffd27a; color: #fff !important; font-size: 0.72rem !important; font-weight: 900; }
+.tab-page[data-tab="companion"] .my-char-card .mc-name b { color: #fff; font-size: 1.15rem; }
+.tab-page[data-tab="companion"] .my-char-card .mc-go { width: 76px; aspect-ratio: 236 / 114; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.82rem; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { display: block; width: min(300px, 86%); aspect-ratio: 498 / 61; margin: 6px auto 6px; padding: 0; border: none !important; border-radius: 0; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 0.74rem; font-weight: 800; text-shadow: 0 1px 2px #000; opacity: 1; }
+.tab-page[data-tab="companion"] .cp-sec { color: #f3e7c4; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
+.tab-page[data-tab="companion"] .cp-empty { color: #c8d0e6; background: rgba(10,16,40,0.6); }
