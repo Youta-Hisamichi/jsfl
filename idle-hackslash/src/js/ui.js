@@ -134,10 +134,39 @@ function drawTextWithCoin(line, cx, y, sz) { // 「+123 🟡」の🟡をコイ�
   });
   ctx.textAlign = align;
 }
+// 浮かぶ文字が重ならないように：重なった文字どうしを少しずつ押し離す（新しい文字ほど上・横へ逃がす）
+function layoutDamageTexts() {
+  const list = damageTexts;
+  for (const d of list) {
+    if (d.w === undefined) {
+      ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
+      const lines = d.text.split('\n');
+      d.w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 4;
+      d.h = lines.length * (d.big ? 20 : 15);
+      d.ox = d.ox || 0; d.oy = d.oy || 0;
+    }
+  }
+  for (let iter = 0; iter < 2; iter++) {
+    for (let j = 1; j < list.length; j++) {
+      const b = list[j]; if (b.life <= 0) continue;
+      for (let i = 0; i < j; i++) {
+        const a = list[i]; if (a.life <= 0.08) continue;
+        const ax = a.x + a.ox, ay = a.y + a.oy - a.h / 2, bx = b.x + b.ox, by = b.y + b.oy - b.h / 2;
+        const ovx = (a.w + b.w) / 2 - Math.abs(ax - bx), ovy = (a.h + b.h) / 2 - Math.abs(ay - by);
+        if (ovx <= 0 || ovy <= 0) continue;
+        if (ovy <= ovx * 1.4) { const m = Math.min(ovy, 4); if (by <= ay) b.oy -= m; else b.oy += m * 0.5, a.oy -= m * 0.5; } // 縦にずらす（新しい方を上へ）
+        else { const m = Math.min(ovx, 4) / 2, dir = bx >= ax ? 1 : -1; b.ox += m * dir; a.ox -= m * dir; } // 横にずらす
+        b.oy = Math.max(-90, Math.min(40, b.oy)); b.ox = Math.max(-70, Math.min(70, b.ox));
+      }
+    }
+  }
+}
 function drawDamageTexts() {
+  layoutDamageTexts();
   ctx.save();
   ctx.textAlign = 'center';
   for (const d of damageTexts) {
+    const dx0 = d.x, dy0 = d.y; d.x += d.ox || 0; d.y += d.oy || 0;
     ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
     ctx.globalAlpha = Math.max(0, Math.min(1, d.life / 0.3)); // 最後の3割になるまではくっきり表示し、そこから消える
     ctx.fillStyle = d.color;
@@ -151,6 +180,7 @@ function drawDamageTexts() {
       ctx.strokeText(line, d.x, ly);
       ctx.fillText(line, d.x, ly);
     });
+    d.x = dx0; d.y = dy0;
   }
   ctx.globalAlpha = 1;
   ctx.restore();
