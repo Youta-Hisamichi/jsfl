@@ -2890,3 +2890,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .mkt-news { margin: 8px 0 4px; padding: 6px 8px; border-radius: 8px; background: rgba(255,248,226,0.08); border: 1px solid rgba(201,154,58,0.6); font-size: 0.7rem; line-height: 1.6; }
 .mkt-news > b { color: #ffd76b; } .mkt-news small { display: block; color: #9aa6c8; font-size: 0.6rem; }
 .mkt-me, .mkt-rule { font-size: 0.66rem; line-height: 1.5; color: #c8d0e6; margin: 4px 0; } .mkt-me small { color: #9aa6c8; } .mkt-rule b { color: #ffd76b; }
+/* 転生ルールのチップは宝箱と重ならないよう右上（イベントボタンの下）へ */
+.run-rule-chip { left: auto !important; right: 6px; top: 30px !important; }
+.arena-wrap:has(#runRuleChip:not([style*="none"])) .enemy-trait-badge { top: 54px; }
