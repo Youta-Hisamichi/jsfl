@@ -2742,3 +2742,28 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .lb7-ok:active { transform: translate(-50%, -50%) scale(0.96); }
 .lb7-note { margin-top: 6px; text-align: center; font-size: 0.72rem; font-weight: 700; color: #e6ebff; text-shadow: 0 1px 3px #000; }
 .lb7-note b { color: #ffd76b; }
+/* ===== GAME OVER（ui/go2 の絵：紫の魔導書庫） ===== */
+#bossContModal .go-panel.go2 { position: relative; width: min(370px, 92vw); padding: 6cqw 6cqw 7cqw !important; background: radial-gradient(120% 70% at 50% 35%, rgba(40,10,80,0.25), rgba(6,2,16,0.75) 80%), url(assets/img/ui/go2/bg.webp) center / cover no-repeat, #0c0618 !important; border: 1px solid rgba(160,110,255,0.5) !important; border-radius: 10px; box-shadow: 0 0 30px rgba(130,70,255,0.45), inset 0 0 40px rgba(0,0,0,0.7) !important; overflow: visible; }
+#bossContModal .go2-orn { position: absolute; left: 50%; width: 92%; transform: translateX(-50%); pointer-events: none; filter: drop-shadow(0 0 6px rgba(160,90,255,0.6)); }
+#bossContModal .go2-orn.top { top: -3.5cqw; }
+#bossContModal .go2-orn.bottom { bottom: -3.5cqw; transform: translateX(-50%) scaleY(-1); }
+#bossContModal .go2 .go-logo { width: 96%; margin: 0 auto -1cqw; filter: drop-shadow(0 0 10px rgba(170,90,255,0.6)); }
+#bossContModal .go2-grave { display: flex; justify-content: center; margin: 0 0 -1cqw; }
+#bossContModal .go2-grave img { width: 52%; height: auto; image-rendering: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7)); animation: goCoffinDrop 0.6s cubic-bezier(.3,1.6,.5,1) both; }
+#bossContModal .go2 h2 { display: flex; align-items: center; justify-content: center; gap: 2cqw; margin: 0; font-size: 7cqw; font-weight: 900; color: #ffd76b; text-shadow: -2px -2px 0 #3a1a00, 2px -2px 0 #3a1a00, -2px 2px 0 #3a1a00, 2px 2px 0 #3a1a00, 0 3px 4px rgba(0,0,0,0.8); }
+#bossContModal .go2-ti { width: 8cqw; height: 8cqw; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6)); }
+#bossContModal .go2-count { display: flex; align-items: center; justify-content: center; gap: 2cqw; margin: 0 0 2cqw; }
+#bossContModal .go2-dv { width: 26%; height: auto; opacity: 0.95; }
+#bossContModal .go2-dv.l { transform: scaleX(-1); }
+#bossContModal .go2 .boss-cont-count { height: 16cqw; margin: 0; gap: 0.5cqw; background: none; text-shadow: none; }
+#bossContModal .go2-num { display: block; height: 100%; aspect-ratio: 116 / 120; background: url(assets/img/ui/go2/nums.webp) 0 0 / 1000% 100% no-repeat; filter: drop-shadow(0 0 8px rgba(255,90,60,0.7)) drop-shadow(0 3px 3px rgba(0,0,0,0.8)); }
+#bossContModal .go2-advice { margin: 0 0 4cqw !important; padding: 5cqw 6cqw !important; background: url(assets/img/ui/go2/advice.webp) center / 100% 100% no-repeat !important; border: none !important; color: #f1eafc !important; font-size: 3.3cqw; line-height: 1.65; }
+#bossContModal .go2-advice:empty { display: none; }
+#bossContModal .go2-advice .boss-advice { background: none !important; border: none !important; padding: 0 !important; margin: 0 !important; color: #f1eafc; }
+#bossContModal .go2-advice b { color: #ffd76b; font-size: 1.15em; }
+#bossContModal .go2 .go-btns { gap: 2.5cqw; }
+#bossContModal .go2 .go-ad-btn { aspect-ratio: 400 / 114; padding: 0 0 0 13cqw !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_blue.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+#bossContModal .go2 .go-ad-text { font-size: 4.6cqw; }
+#bossContModal .go2 .go-giveup-btn { aspect-ratio: 400 / 112; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_gray.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+#bossContModal .go2 .go-giveup-btn .msb-name { font-size: 5.2cqw; color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
+#bossContModal .go2 .go-reborn-btn { aspect-ratio: 400 / 113; margin: 0; padding: 0 !important; border: none !important; border-radius: 0; background: url(assets/img/ui/go2/btn_purple.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 5cqw; font-weight: 900; text-shadow: 0 2px 3px rgba(0,0,0,0.8); box-shadow: none !important; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }

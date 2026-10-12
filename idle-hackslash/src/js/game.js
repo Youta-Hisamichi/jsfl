@@ -715,7 +715,7 @@ function resumeGameOverForTab() { // ゲーム画面に戻ったとき
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
-  document.getElementById('bossContTitle').textContent = reason === 'time' ? '⏱ 時間切れ…' : 'ボスに敗北…';
+  document.getElementById('bossContTitle').innerHTML = reason === 'time' ? '<img class="go2-ti" src="assets/img/ui/go2/clock.webp" alt="">時間切れ…' : '<img class="go2-ti" src="assets/img/ui/go2/skull.webp" alt="">ボスに敗北…';
   document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? bossAdviceHtml(reason) : '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
@@ -750,7 +750,7 @@ let bossContTimer = null, bossContLeft = 0;
 function startBossContCountdown() {
   clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
   const el = document.getElementById('bossContCount');
-  const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.textContent = String(n); /* 数字の画像は一旦使わない */ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
+  const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.innerHTML = String(n).split('').map(d => `<i class="go2-num" style="background-position:${d / 9 * 100}% 0"></i>`).join(''); /* 数字は絵の文字 */ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
   show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
     if (!bossContModal.classList.contains('show')) { clearInterval(bossContTimer); return; }
