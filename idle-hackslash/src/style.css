@@ -2893,3 +2893,5 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 /* 転生ルールのチップは宝箱と重ならないよう右上（イベントボタンの下）へ */
 .run-rule-chip { left: auto !important; right: 6px; top: 30px !important; }
 .arena-wrap:has(#runRuleChip:not([style*="none"])) .enemy-trait-badge { top: 54px; }
+.tab-page[data-tab="ranking"] .gacha-actions.rank-tabs { gap: 3px; }
+.tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull { font-size: 0.6rem !important; letter-spacing: -0.02em; }
