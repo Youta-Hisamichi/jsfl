@@ -1851,7 +1851,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
   if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
   const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * tier.mult);
-  if (tier.mult > (game.evoBestMult || 0)) { game.evoBestMult = tier.mult; game.evoBestCount = 1; } else if (tier.mult === game.evoBestMult) game.evoBestCount = (game.evoBestCount || 0) + 1; // ランキング「MAX一撃進化」
+  if (tier.mult > (game.evoBestMult || 0)) game.evoBestMult = tier.mult; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
   showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}`,

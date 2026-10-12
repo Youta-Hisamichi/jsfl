@@ -557,7 +557,7 @@ const RANK_MODES = {
   stage: { title: 'ベストステージ', mine: () => game.bestStage || 1, rival: r => r.stageScore, fmt: v => `ステージ ${formatCoinNumber(v)}` },
   coins: { title: 'MAXコイン', mine: () => Math.floor(game.bestCoins || 0), rival: (r, i) => Math.round(Math.pow(10, 2.5 + r.stageScore / 26) * (0.5 + rivalSeed(i, 11))), fmt: v => `${formatCoinNumber(v)} 枚` },
   kills: { title: 'MAXキル数', mine: () => Math.floor(game.totalKills || 0), rival: (r, i) => Math.round(r.stageScore * 40 * (0.6 + rivalSeed(i, 23) * 0.9)), fmt: v => `${formatCoinNumber(v)} 体` },
-  evo: { title: 'MAX一撃進化', mine: () => Math.round((game.evoBestMult || 0) * 10000) + Math.min(999, game.evoBestCount || 0), rival: (r, i) => { const q = rivalSeed(i, 53), m = q < 0.25 ? 3 : q < 0.6 ? 2 : q < 0.85 ? 1.5 : 1.2; return Math.round(m * 10000) + 1 + Math.floor(Math.pow(rivalSeed(i, 59), 2.5) * (m === 3 ? 60 : 120)); }, fmt: v => v < 10000 ? '記録なし' : `×${Math.floor(v / 1000) / 10}（${v % 1000}回）` }, // 1回の進化ガチャで何倍進化したかの最高（同じ倍率なら出した回数で並べる）
+  evo: { title: 'MAX一撃進化', mine: () => game.evoBestMult || 0, rival: (r, i) => { const m = 1.1 * Math.pow(10, Math.pow(rivalSeed(i, 53), 1.8) * 2.2) * (0.8 + rivalSeed(i, 61) * 0.5); return m < 10 ? Math.round(m * 10) / 10 : Math.round(m); }, fmt: v => v ? `×${fmtEvoRate(v)}` : '記録なし' }, // 1回の進化ガチャで何倍進化したかの最高
   dps: { title: 'MAX DPS', mine: () => Math.floor(game.maxDps || 0), rival: (r, i) => Math.round(Math.pow(10, 1.6 + r.stageScore / 30) * (0.5 + rivalSeed(i, 37))), fmt: v => `${formatCoinNumber(v)} DPS` },
 };
 let lastRankInfo = null;
