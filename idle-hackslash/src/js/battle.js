@@ -1,7 +1,7 @@
 const ENEMY_TRAITS = {
   'emoji:🥬': 'spinGuard', 'emoji:🧙': 'attackMagic', 'emoji:🪖': 'charge', 'emoji:🔪': 'charge', 'emoji:🌑': 'deathMagic', 'emoji:⚫': 'merge', 'emoji:🩶': 'grow', 'emoji:🩷': 'healMagic', 'emoji:🔷': 'split', 'emoji:🦕': 'homing', 'emoji:🟩': 'split', 'emoji:🐟': 'charge', 'emoji:🦒': 'grow', 'emoji:🥒': 'charge', 'emoji:🦎': 'charge', 'emoji:🦀': 'spinGuard', 'emoji:🥈': 'spinGuard', 'emoji:🌈': 'healMagic', 'emoji:🟨': 'split', 'emoji:🦋': 'merge', 'emoji:🔥': 'mines', 'emoji:💋': 'healMagic', 'emoji:🛡️': 'spinGuard', 'emoji:🗡️': 'charge', 'emoji:🪲': 'spinGuard', 'boss:💪': 'grow', 'emoji:🐻': 'berserk', 'emoji:🦞': 'deathMagic', 'emoji:🦫': 'charge', 'boss:👁️': 'attackMagic', 'boss:🕸️': 'homing', 'boss:🪦': 'deathMagic', 'boss:🦍': 'berserk',
   'emoji:🧛': 'healMagic', 'emoji:🌕': 'berserk', 'emoji:⚡': 'grow', 'emoji:💧': 'split', 'boss:⚰️': 'deathMagic', 'boss:⚔️': 'charge', 'boss:🫧': 'megaSlime', 'boss:😈': 'attackMagic',
-  'boss:🌋': 'attackMagic', 'boss:🧊': 'homing', 'boss:🗿': 'spinGuard', 'boss:🩸': 'berserk', 'boss:😇': 'healMagic', 'boss:👀': 'homing', 'boss:🐙': 'grow', 'boss:☠️': 'deathMagic', 'boss:🐺': 'berserk', 'boss:🌳': 'healMagic', 'boss:🧜': 'attackMagic', 'boss:🪓': 'berserk', 'boss:🔮': 'attackMagic', 'boss:🖤': 'charge', 'boss:📦': 'charge', 'boss:🏮': 'deathMagic', 'boss:🪨': 'spinGuard', 'boss:🪶': 'healMagic', 'boss:❄️': 'homing', 'boss:🌊': 'charge', 'boss:🌌': 'grow', 'boss:🧸': 'grow', 'boss:⚜️': 'spinGuard', 'boss:☄️': 'berserk', 'boss:🧿': 'spinGuard', 'boss:💘': 'attackMagic', 'boss:🐋': 'charge', 'boss:🕯️': 'deathMagic', 'boss:🦑': 'grow', 'boss:🎎': 'charge', 'boss:🐍': 'homing', 'boss:🥇': 'berserk', 'boss:🏇': 'charge', 'boss:🛕': 'spinGuard', 'boss:🌺': 'healMagic', 'boss:🪐': 'attackMagic', 'boss:🔆': 'spinGuard', 'boss:🟥': 'berserk', 'boss:🐴': 'charge', 'boss:☀️': 'attackMagic', 'boss:🐚': 'homing', 'boss:🦚': 'berserk', 'boss:⌛': 'spinGuard', 'boss:🎙️': 'charge', 'boss:🦉': 'spinGuard', 'boss:🎒': 'charge', 'boss:🐶': 'berserk', 'boss:🌞': 'attackMagic', 'boss:🟪': 'deathMagic', 'boss:🍫': 'healMagic', 'boss:🏁': 'charge', 'boss:🥀': 'berserk', 'boss:🎍': 'spinGuard', 'boss:⚱️': 'deathMagic', 'boss:🛐': 'healMagic', 'boss:🪑': 'spinGuard', 'boss:🌲': 'berserk', 'boss:🦴': 'attackMagic', 'boss:💙': 'homing', 'boss:🦜': 'attackMagic', 'boss:🐊': 'homing',
+  'boss:🌋': 'attackMagic', 'boss:🧊': 'homing', 'boss:🗿': 'spinGuard', 'boss:🩸': 'berserk', 'boss:😇': 'healMagic', 'boss:👀': 'homing', 'boss:🐙': 'grow', 'boss:☠️': 'deathMagic', 'boss:🐺': 'berserk', 'boss:🌳': 'healMagic', 'boss:🧜': 'attackMagic', 'boss:🪓': 'berserk', 'boss:🔮': 'attackMagic', 'boss:🖤': 'charge', 'boss:📦': 'charge', 'boss:🏮': 'deathMagic', 'boss:🪨': 'spinGuard', 'boss:🪶': 'healMagic', 'boss:❄️': 'homing', 'boss:🌊': 'charge', 'boss:🌌': 'grow', 'boss:🧸': 'grow', 'boss:⚜️': 'spinGuard', 'boss:☄️': 'berserk', 'boss:🧿': 'spinGuard', 'boss:💘': 'attackMagic', 'boss:🐋': 'charge', 'boss:🕯️': 'deathMagic', 'boss:🦑': 'grow', 'boss:🎎': 'flurry', 'boss:🌩️': 'flurry', 'boss:🐍': 'homing', 'boss:🥇': 'berserk', 'boss:🏇': 'charge', 'boss:🛕': 'spinGuard', 'boss:🌺': 'healMagic', 'boss:🪐': 'attackMagic', 'boss:🔆': 'spinGuard', 'boss:🟥': 'berserk', 'boss:🐴': 'charge', 'boss:☀️': 'attackMagic', 'boss:🐚': 'homing', 'boss:🦚': 'berserk', 'boss:⌛': 'spinGuard', 'boss:🎙️': 'charge', 'boss:🦉': 'spinGuard', 'boss:🎒': 'charge', 'boss:🐶': 'berserk', 'boss:🌞': 'attackMagic', 'boss:🟪': 'deathMagic', 'boss:🍫': 'healMagic', 'boss:🏁': 'charge', 'boss:🥀': 'berserk', 'boss:🎍': 'spinGuard', 'boss:⚱️': 'deathMagic', 'boss:🛐': 'healMagic', 'boss:🪑': 'spinGuard', 'boss:🌲': 'berserk', 'boss:🦴': 'attackMagic', 'boss:💙': 'homing', 'boss:🦜': 'attackMagic', 'boss:🐊': 'homing',
   'emoji:👑': 'spinGuard', 'emoji:🐧': 'attackMagic', 'emoji:🪼': 'healMagic', 'emoji:🛢️': 'mines', 
   'emoji:👾': 'spinGuard', 'emoji:💀': 'spinGuard',
   'shape:spike': 'split',
@@ -19,14 +19,15 @@ const MULTIPLY_TRAITS = new Set(['split', 'splitMany', 'merge', 'stack', 'jumbo'
 const MULTIPLY_TRAIT_FROM = 20;    // この階までは分裂・増える系を使ってこない
 const MULTIPLY_TRAIT_CHANCE = 0.15; // その特徴を持つ敵が実際に使ってくる確率（デバッグで出した敵はいつも使う）
 const ENEMY_TRAIT_DESCS = {
+  flurry: '一瞬ためたあと、細かい刃を猛烈な勢いで連射してくる（1発は弱いが数がとにかく多い。岩の陰や素早い移動でかわせる）',
   berserk: 'HPが半分を切るか時間が経つと発狂：動きが速くなり、クリティカルを連発して暴れる。そのかわり受けるダメージが1.5倍（防御ダウン）',
   charge: '溜めてから高速で突進してくる', spinGuard: 'バリア中はダメージを弾く（メタルスライムは常に硬く、ダメージを75%カット）', split: '倒すと分裂する', splitMany: '倒すと2〜3体に分裂する（オレンジ→グリーン→ブラッドの順に大量。ブラッドは攻撃で吸血してHP回復）', grow: '時間とともに巨大化して強くなる',
   attackMagic: '詠唱して火の玉を撃ってくる（魔法封じで止まる）', healMagic: '詠唱してHPを回復する（魔法封じで止まる）', homing: '追尾弾を撃ってくる（魔法封じで止まる）',
   mines: '足元に炎を残す（燃え上がった炎に触れるとダメージ）', deathMagic: '一定確率で即死させる魔法を唱える（魔法封じで止まる）', merge: '近くの雑魚と合体して強くなる', stack: '縦に積み重なっている。HPが減るたびに上から1体ずつ崩れ落ちて、別々に襲ってくる', jumbo: 'チビスライムの群れで現れ、しばらくすると集まってジャンボスライムに合体する（先に倒すほど弱くなる）',
 };
-const ENEMY_TRAIT_LABELS = { berserk: '発狂', stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体', megaSlime: '分裂合体' };
+const ENEMY_TRAIT_LABELS = { flurry: '猛連撃', berserk: '発狂', stack: '積み重なり', jumbo: 'ジャンボ合体', charge: '突進', spinGuard: 'バリア', split: '分裂', splitMany: '大分裂', grow: '巨大化', attackMagic: '攻撃魔法', healMagic: '回復魔法', homing: 'ホーミング弾', mines: '炎の罠', deathMagic: '即死魔法', merge: '合体', megaSlime: '分裂合体' };
 const MAGIC_TRAITS = { attackMagic: 1, healMagic: 1, homing: 1, deathMagic: 1 }; // 魔法封じで止まる特性
-const TRAIT_CD = { berserk: [420, 600], charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
+const TRAIT_CD = { flurry: [220, 320], berserk: [420, 600], charge: [240, 360], spinGuard: [300, 420], attackMagic: [300, 420], healMagic: [360, 480], homing: [260, 380], mines: [240, 330], deathMagic: [480, 600], merge: [200, 280] }; // 次の行動までのフレーム（ゲーム速度1倍）
 const SPLIT_TIMES = 2;         // 分裂できる回数
 const SPLIT_CONFIG = {
   spike:       { times: 1, children: 1, hpRate: 0.18 }, // 分裂は1回だけ・増えても1〜2体（基本は1対1で戦う）
@@ -313,7 +314,29 @@ function updateEnemyTraits(a, e, speedMult) {
     const disabled = isDisabled(e);
     if (!disabled) e.traitCd -= speedMult;
     if (e.traitState) e.traitTimer -= speedMult;
-    if (trait === 'charge') {
+    if (trait === 'flurry') { // 猛連撃：ためてから細かい刃を猛烈に連射
+      if (!e.traitState && e.traitCd <= 0) {
+        e.traitState = 'windup'; e.traitTimer = 32; e.traitFreeze = true;
+        spawnDamageText(e.x, e.y - e.radius - 24, '⚡ 猛連撃！！', '#ff5c8a', 0.018, true);
+        playTone(220, 0.35, 'sawtooth', 0.1, 880);
+      } else if (e.traitState === 'windup' && e.traitTimer <= 0) {
+        e.traitState = 'flurry'; e.traitTimer = 150; e.traitFreeze = false; e.flurryAcc = 0; e.flurryN = 0;
+        shakeScreenLight();
+      } else if (e.traitState === 'flurry') {
+        if (e.traitTimer <= 0 || disabled) { e.traitState = null; e.traitCd = randTraitCd(trait); }
+        else {
+          e.flurryAcc += speedMult;
+          const col = e.emoji === '🌩️' ? '#ffe36b' : '#ff8fd0';
+          while (e.flurryAcc >= 2.4) {
+            e.flurryAcc -= 2.4; e.flurryN++;
+            const ang = Math.atan2(a.y - e.y, a.x - e.x) + (Math.random() - 0.5) * 0.75, sp = 6 + Math.random() * 2.4;
+            enemyShots.push({ x: e.x + Math.cos(ang) * e.radius * 0.6, y: e.y + Math.sin(ang) * e.radius * 0.6, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: 110, dmg: e.atk * 0.14, kind: 'needle', col, owner: e });
+            if (e.flurryN % 3 === 0) playTone(1500 + Math.random() * 500, 0.03, 'square', 0.025, 900);
+          }
+          e.vx *= 0.9; e.vy *= 0.9; // 撃っている間はほぼ足を止める
+        }
+      }
+    } else if (trait === 'charge') {
       if (!e.traitState && e.traitCd <= 0) {
         e.traitState = 'windup'; e.traitTimer = 40; e.traitFreeze = true;
         spawnDamageText(e.x, e.y - e.radius - 22, '！', '#ff6b6b', 0.025, true);
@@ -464,7 +487,7 @@ function updateEnemyTraits(a, e, speedMult) {
     else if (obstacleHit(sh.x, sh.y, 4)) { sh.life = 0; spawnHitParticles(sh.x, sh.y, '#b9b2a6'); } // 岩の陰に隠れれば弾を防げる
     if (sh.life > 0 && a.hp > 0 && Math.hypot(sh.x - a.x, sh.y - a.y) < a.radius + 6) {
       sh.life = 0;
-      if (damagePlayerByTrait(a, sh.owner || e, sh.dmg, sh.kind === 'fire' ? '#ff9f43' : '#c792ea')) playerDown = true;
+      if (damagePlayerByTrait(a, sh.owner || e, sh.dmg, sh.kind === 'fire' ? '#ff9f43' : sh.col || '#c792ea')) playerDown = true;
     }
   }
   enemyShots = enemyShots.filter(sh => sh.life > 0);
@@ -514,6 +537,13 @@ function drawEnemyTraitEffects() {
     ctx.restore();
   }
   for (const sh of enemyShots) {
+    if (sh.kind === 'needle') { // 細かい刃：進む向きに細長く光る
+      const sp = Math.hypot(sh.vx, sh.vy) || 1, ux = sh.vx / sp, uy = sh.vy / sp;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+      ctx.strokeStyle = sh.col; ctx.globalAlpha = 0.8; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(sh.x - ux * 12, sh.y - uy * 12); ctx.lineTo(sh.x + ux * 4, sh.y + uy * 4); ctx.stroke();
+      ctx.strokeStyle = '#fff'; ctx.globalAlpha = 1; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sh.x - ux * 8, sh.y - uy * 8); ctx.lineTo(sh.x + ux * 4, sh.y + uy * 4); ctx.stroke();
+      ctx.restore(); continue;
+    }
     ctx.save();
     const col = sh.kind === 'fire' ? '#ff9f43' : '#c792ea';
     ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.fillStyle = col;
