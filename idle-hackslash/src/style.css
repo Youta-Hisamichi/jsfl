@@ -2804,3 +2804,23 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { display: block; width: min(300px, 86%); aspect-ratio: 498 / 61; margin: 6px auto 6px; padding: 0; border: none !important; border-radius: 0; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 0.74rem; font-weight: 800; text-shadow: 0 1px 2px #000; opacity: 1; }
 .tab-page[data-tab="companion"] .cp-sec { color: #f3e7c4; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
 .tab-page[data-tab="companion"] .cp-empty { color: #c8d0e6; background: rgba(10,16,40,0.6); }
+/* 仲間ページ下部（パーティメンバー・待機中の仲間）も紺と金の枠に */
+.tab-page[data-tab="companion"] .cp-sec { border-left: none; padding: 0 0 0 16px; width: min(260px, 72%); aspect-ratio: 498 / 61; align-items: center; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat; color: #ffe9b0; font-size: 0.8rem; margin: 14px 0 6px; }
+.tab-page[data-tab="companion"] .cp-sec b { background: linear-gradient(180deg, #e0943a, #9a5414); border: 1px solid #ffd27a; }
+.tab-page[data-tab="companion"] .companion-list .companion-card.recruited { border: 14px solid transparent !important; border-image: url(assets/img/ui/comp/card.webp) 30 fill / 14px stretch !important; border-radius: 0 !important; background: linear-gradient(rgba(8,14,36,0.55), rgba(8,14,36,0.55)) padding-box !important; box-shadow: none !important; padding: 2px !important; color: #e8ecf6 !important; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.55)); }
+.tab-page[data-tab="companion"] .companion-list .companion-card.recruited .cc-portrait { border: 3px solid #d9a93f !important; box-shadow: 0 0 0 1px #6a4410 !important; border-radius: 4px !important; }
+.tab-page[data-tab="companion"] .companion-list .companion-card .cc-name { color: #fff; }
+.tab-page[data-tab="companion"] .companion-list .companion-card .cc-rarity { color: #c8d0e6; }
+.tab-page[data-tab="companion"] .companion-list .cc-chip { background: rgba(10,16,40,0.85); border-color: rgba(201,154,58,0.7); color: #e8ecf6; }
+.tab-page[data-tab="companion"] .companion-list .cc-chip.atk { color: #ff9a7a; }
+.tab-page[data-tab="companion"] .companion-list .companion-card .cc-trait { background: rgba(10,16,40,0.75); border-left-color: #d9a93f; color: #e8ecf6; }
+.tab-page[data-tab="companion"] .companion-list .cc-up-info { background: linear-gradient(180deg, #16234a, #0c142e); border: 2px solid #c99a3a; box-shadow: inset 0 0 0 1px #4a3410, inset 0 1px 0 rgba(255,255,255,0.12); color: #e8ecf6; }
+.tab-page[data-tab="companion"] .companion-list .cc-up-info > b small { color: #c8d0e6; }
+.tab-page[data-tab="companion"] .companion-list .cc-up-info > span b { color: #ffd76b; }
+.tab-page[data-tab="companion"] .companion-list .cc-up.hp .cc-up-info > span b { color: #ff8fa0; }
+.tab-page[data-tab="companion"] .companion-list .cc-up-info .cc-up-cost { color: #ffd76b; }
+.tab-page[data-tab="companion"] .companion-list .cc-side button.cc-max-btn.is-disabled { border-image-source: none !important; border: 2px solid #c99a3a !important; border-radius: 6px; background: linear-gradient(180deg, #1a2752, #0c142e) !important; box-shadow: inset 0 0 0 1px #4a3410; color: #9aa6c8; }
+.tab-page[data-tab="companion"] .companion-list .cp-tile { border: 12px solid transparent !important; border-image: url(assets/img/ui/comp/stat.webp) 28 fill / 12px stretch !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; padding: 0 0 2px !important; color: #e8ecf6 !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="companion"] .companion-list .cp-tile .cp-tile-img { border: 2px solid #d9a93f; border-radius: 4px; margin-top: -4px; }
+.tab-page[data-tab="companion"] .companion-list .cp-tile-name { color: #fff; }
+.tab-page[data-tab="companion"] .companion-list .cp-tile .cp-tile-lock { color: #c8d0e6; }
