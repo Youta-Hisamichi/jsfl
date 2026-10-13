@@ -616,3 +616,21 @@ const HERO_BRAG = {
   }
   return orig.apply(this, arguments);
 }; }
+
+// ===== 自キャラの「ざわ…ざわ…」系ゼリフ（ギャンブル漫画の作風・勇者でも仲間を自キャラにしていても） =====
+const KAIJI_RATE = 0.12;
+const KAIJI_SAY = {
+  idle: ['ざわ…ざわ…', 'ここは…勝負どころ…！', '考えろ…考えるんだ…！', 'まだだ…まだ終わらんっ…！', '一歩踏み出す勇気…それだけが…道を開く…！', 'この階…ただの階じゃない…', '流れは…来ている…！', '圧倒的…放置…！'],
+  kill: ['通った…！通ったぞ…！', 'くっ…勝った…勝ったんだ…！', 'これが…これこそが…勝利…！', 'ククク…読み通り…！'],
+  boss: ['ざわ…ざわ…ざわ…', '来やがった…本物の…化け物…！', 'ここで退いたら…一生…負け犬…！'],
+  pinch: ['ぐっ…ぐにゃあ…', 'ま…まずい…！', '負けるわけには…いかない…っ！', '悪魔的…状況…！'],
+};
+let kaijiAt = 0;
+function kaijiSay(kind) {
+  const pl = balls.find(b => isMainPlayerBall(b)); if (!pl || pl.hp <= 0) return false;
+  const now = Date.now(); if (now - kaijiAt < 5000 || Math.random() > KAIJI_RATE) return false;
+  const pool = KAIJI_SAY[kind] || KAIJI_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  kaijiAt = now; if (typeof chuuniAt !== 'undefined') chuuniAt = now; companionSay(pl, t, 1800 + t.length * 80); return true;
+}
+{ const orig = heroChuuni; heroChuuni = function (kind) { const k = kind === 'pinch2' ? 'pinch' : kind; if (KAIJI_SAY[k] && kaijiSay(k)) return; return orig.apply(this, arguments); }; }
+setInterval(() => { if (phase === 'battle' && getHeroChar()) kaijiSay('idle'); }, 6000); // 仲間を自キャラにしているときも時々
