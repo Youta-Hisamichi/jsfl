@@ -50,7 +50,7 @@ let speech = [];
 function companionSay(ball, text, ms = 2400) {
   if (!ball || !text) return;
   speech = speech.filter(s => s.ball !== ball);
-  speech.push({ ball, text, until: Date.now() + ms });
+  speech.push({ ball, text, until: Date.now() + ms + 700 });
 }
 function sayByEvent(kind, pick) { // kind: 0=登場 1=ボス戦 2=ボス撃破 3=ダウン
   const allies = balls.filter(b => b.isPlayer && !b.isClone && (b.hp > 0 || kind === 3));
@@ -210,22 +210,60 @@ function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語�
 function drawSpeech() {
   if (!speech.length) return;
   const now = Date.now();
-  speech = speech.filter(s => s.until > now && balls.includes(s.ball));
+  speech = speech.filter(s => s.until > now && (balls.includes(s.ball) || adds.includes(s.ball)));
+  const placed = [];
   for (const s of speech) {
     const b = s.ball, a = Math.min(1, (s.until - now) / 300);
-    ctx.save(); ctx.globalAlpha = a; ctx.font = '700 11px sans-serif';
-    const maxW = Math.min(150, size * 0.46), lines = wrapSpeech(s.text, maxW), lh = 13;
-    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 14, h = lines.length * lh + 7;
+    ctx.save(); ctx.globalAlpha = a; ctx.font = '800 12px sans-serif';
+    const maxW = Math.min(160, size * 0.48), lines = wrapSpeech(s.text, maxW), lh = 14;
+    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * lh + 8;
     const r = b.radius || 14, up = b.y - r * 2.3 - h >= 30;
-    const x = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), y = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
-    ctx.fillStyle = 'rgba(255,255,255,0.72)'; ctx.strokeStyle = 'rgba(60,40,10,0.45)'; ctx.lineWidth = 1.2; // 半透明（戦場が透けて見える）
+    let tx = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), ty = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
+    // 高速で動いても読めるよう、吹き出しはゆっくり追いかける（キャラに直結させない）
+    if (s.x === undefined) { s.x = tx; s.y = ty; } else { s.x += (tx - s.x) * 0.09; s.y += (ty - s.y) * 0.09; }
+    let x = s.x, y = s.y;
+    for (const p of placed) if (x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y) y = up ? p.y - h - 3 : p.y + p.h + 3; // ほかの吹き出しと重ならないように
+    placed.push({ x, y, w, h });
+    const en = !b.isPlayer, tailX = Math.max(x + 8, Math.min(x + w - 8, b.x)), tailUp = b.y > y + h / 2;
+    ctx.fillStyle = en ? 'rgba(40,12,20,0.88)' : 'rgba(255,255,255,0.88)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); if (up) { ctx.moveTo(b.x - 5, y + h); ctx.lineTo(b.x, y + h + 6); ctx.lineTo(b.x + 5, y + h); } else { ctx.moveTo(b.x - 5, y); ctx.lineTo(b.x, y - 6); ctx.lineTo(b.x + 5, y); } ctx.fill();
-    ctx.fillStyle = '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.beginPath(); if (tailUp) { ctx.moveTo(tailX - 5, y + h); ctx.lineTo(b.x, Math.min(b.y - r, y + h + 9)); ctx.lineTo(tailX + 5, y + h); } else { ctx.moveTo(tailX - 5, y); ctx.lineTo(b.x, Math.max(b.y + r, y - 9)); ctx.lineTo(tailX + 5, y); } ctx.fill();
+    ctx.fillStyle = en ? '#ffe3e8' : '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 4 + lh * i + lh / 2));
     ctx.restore();
   }
 }
+// ===== 敵もしゃべる（ザコのひとりごと・ボスの登場／ピンチ／勝ち誇り） =====
+const ENEMY_SAY = {
+  idle: ['グルル…', 'ここは通さん！', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', '仲間を呼ぶぞ！', 'オレ、強い', 'まだまだ増えるぞ〜', 'いたいのはイヤ…'],
+  slime: ['ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜'],
+  hit: ['いてっ！', 'ぐぬぬ…', 'やるな…！', 'ひぃ！'],
+  boss: ['よくぞ来た…だがここまでだ！', '我が前にひれ伏せ！', 'この階は通さぬ', 'ふん、虫ケラが', '退屈しのぎにはなりそうだ'],
+  bossHalf: ['…少しはやるようだな', 'ほう、本気を出すか', 'おのれ…！', 'まだ終わらんぞ！'],
+  bossLow: ['ば、ばかな…！', 'このままでは…！', '覚えておれ…！', 'ぐおおお…！'],
+  bossWin: ['フハハハ！弱すぎる！', '出直してこい', 'その程度か勇者よ'],
+};
+let enemySayAt = 0;
+function enemySay(b, kind, force) {
+  if (!b || b.isDying || b.isPlayer) return;
+  const now = Date.now(); if (!force && now - enemySayAt < 3500) return;
+  const pool = ENEMY_SAY[kind] || ENEMY_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  enemySayAt = now; companionSay(b, t, 1800 + t.length * 80);
+}
+setInterval(() => {
+  if (phase !== 'battle') return;
+  const foes = [...balls, ...adds].filter(b => !b.isPlayer && !b.isDying && b.hp > 0 && !(b.spawnTimer > 0));
+  const boss = foes.find(b => b.isBoss);
+  if (boss) {
+    const f = boss.hp / (boss.maxHp || 1);
+    if (!boss.saidIntro) { boss.saidIntro = true; enemySay(boss, 'boss', true); return; }
+    if (f < 0.5 && !boss.saidHalf) { boss.saidHalf = true; enemySay(boss, 'bossHalf', true); return; }
+    if (f < 0.15 && !boss.saidLow) { boss.saidLow = true; enemySay(boss, 'bossLow', true); return; }
+  }
+  if (!foes.length || Math.random() > 0.3) return;
+  const e = foes[Math.floor(Math.random() * foes.length)];
+  enemySay(e, e.hp < e.maxHp * 0.5 && Math.random() < 0.5 ? 'hit' : (typeof isSlimeSprite === 'function' && isSlimeSprite(e.sprite || '') ? 'slime' : 'idle'));
+}, 1500);
 { const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawSpeech(); drawBossBuffIcon(); } catch (e) {} }; }
 
 // ===== 絆レベル（一緒に戦うほど上がる。Lvごとに攻撃力・HP +3%） =====
@@ -563,3 +601,4 @@ function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナ
   }
   return r;
 }; }
+{ const orig = bossDefeated; bossDefeated = function (reason) { const boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying); if (boss && phase === 'battle') enemySay(boss, 'bossWin', true); return orig.apply(this, arguments); }; } // 負けたらボスが勝ち誇る
