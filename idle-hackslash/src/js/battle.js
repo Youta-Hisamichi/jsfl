@@ -1859,7 +1859,7 @@ window.addEventListener('pointerdown', () => {
 const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数
 const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6', mythic: 'x_chest6' };
-const CHEST_COIN_MULT = { common: 1, rare: 3, epic: 10, legendary: 40, mythic: 200 };
+const CHEST_COIN_MULT = { common: 3, rare: 8, epic: 25, legendary: 77, mythic: 255 }; // 宝箱のコイン：開けたステージのザコ1体ぶん×この数
 const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.9, mythic: 1 };
 function getHeldChests() { // 古いセーブ（個数だけ）はノーマルとして扱う
   if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
@@ -2071,7 +2071,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   const isCoin = Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   let loot;
   if (isCoin) {
-    const bonus = Math.round(stageCoinRaw() * 2 * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
+    const bonus = Math.round(stageCoinRaw() * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
     pendingChestCoins += bonus; coinDisplayHold += bonus; // コインの演出は宝箱を閉じたときに（表示の数字も回収されるまで増やさない）
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${COIN_ICO} ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
