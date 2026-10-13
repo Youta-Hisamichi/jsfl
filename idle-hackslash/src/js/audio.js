@@ -168,18 +168,6 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - sh - h - kh - h - sh - h - | kh - h - sh - h - kh - h - sh - h - | kh - h - sh - h - kh - h - s s s s | k s s s s s s s ks s s s s s s s'
   },
-  boss13: { // ボス12 不屈の挑戦者：高らかに鳴るファンファーレと駆け上がる分散和音に、何度でも立ち上がる不屈の旋律（ボクシング映画のテーマ系）
-    bpm: 200,
-    echo: { time: 0.2, feedback: 0.2, wet: 0.15 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.036, notes: 'D5 = D5 D5 A5 = = = | G5 = F#5 = E5 = D5 = | F#5 = F#5 F#5 A5 = D6 = | C#6 = = = = = - - | B5 = = A5 F#5 = = D5 | E5 = = = G5 = B5 = | G#5 = = = B5 = E6 = | E6 = = = C#6 = A5 = | B5 = A5 G5 D5 = G5 = | C#6 = B5 A5 E5 = A5 = | D6 = C#6 B5 F#5 = B5 = | F#6 = = = = = E6 = | D6 = = B5 = = G5 = | E6 = = C#6 = = A5 = | F#6 = = = A6 = = = | D6 = = = = = - -' },
-      { type: 'vrc6pulse12', gain: 0.014, notes: 'D4 F#4 A4 D5 A4 F#4 A4 F#4 | G3 B3 D4 G4 D4 B3 D4 B3 | D4 F#4 A4 D5 A4 F#4 A4 F#4 | A3 C#4 E4 A4 E4 C#4 E4 C#4 | B3 D4 F#4 B4 F#4 D4 F#4 D4 | G3 B3 D4 G4 D4 B3 D4 B3 | E4 G#4 B4 E5 B4 G#4 B4 G#4 | A3 C#4 E4 A4 E4 C#4 E4 C#4 | G3 B3 D4 G4 D4 B3 D4 B3 | A3 C#4 E4 A4 E4 C#4 E4 C#4 | B3 D4 F#4 B4 F#4 D4 F#4 D4 | B3 D4 F#4 B4 F#4 D4 F#4 D4 | G3 B3 D4 G4 D4 B3 D4 B3 | A3 C#4 E4 A4 E4 C#4 E4 C#4 | D4 F#4 A4 D5 A4 F#4 A4 F#4 | D4 F#4 A4 D5 A4 F#4 A4 F#4' },
-      { type: 'vrc6pulse12', gain: 0.01, notes: '- D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 | - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 - B3+D4+F#4 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 | - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4' },
-      { type: 'vrc6saw', gain: 0.056, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | E1 E2 E1 E2 E1 E2 E1 E2 | A1 A2 A1 A2 A1 A2 A1 A2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | B1 B2 B1 B2 B1 B2 B1 B2 | B1 B2 B1 B2 B1 B2 B1 B2 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3 | D2 D3 D2 D3 D2 D3 D2 D3' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
-  },
   boss15: { // ボス14 逆転の大勝負：せわしなく刻む弦の分散和音と突き上げるベースに、重厚で劇的な短調の旋律（企業ドラマの決戦テーマ系）
     bpm: 280,
     echo: { time: 0.2, feedback: 0.22, wet: 0.15 },
@@ -255,6 +243,17 @@ const BGM_SONGS = {
     ],
     kickBoost: 1.35,
     drums: 'k - - - k - - - | k - - - k - s s | k h s h k h s h | s s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
+  },
+  boss23: { // ボス22 吸血鬼狩りの鞭：チェンバロ風に駆ける分散和音と刻むベースに、哀愁と気高さのある短調の旋律（16ビット版ゴシックアクションの主人公テーマ系）
+    bpm: 160,
+    echo: { time: 0.22, feedback: 0.28, wet: 0.2 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.034, notes: 'D5 = = A4 D5 = F5 = | E5 = D5 = C#5 = A4 = | D5 = = F5 A5 = G5 F5 | E5 = = = = = - - | F5 = = D5 F5 = A5 = | G5 = F5 = E5 = C5 = | D5 = E5 F5 G5 = A5 = | A5 = = = = = - - | A#5 = A5 = G5 = F5 = | G5 = F5 = E5 = D5 = | F5 = E5 = D5 = C#5 = | E5 = = = A4 = = = | A#5 = A5 = G5 = A#5 = | D6 = C6 = A#5 = A5 = | G5 = A5 = A#5 = C#6 = | D6 = = = = = - - | D6 = C6 A#5 A5 = D6 = | C6 = A#5 A5 G5 = C6 = | A#5 = A5 G5 F5 = A#5 = | A5 = = = C#6 = E6 = | F6 = E6 D6 C#6 = A5 = | D6 = C6 A#5 A5 = F5 = | G5 = A5 = A#5 = C#6 = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.016, notes: 'D4 F4 A4 A5 A4 F4 D4 F4 | C#4 E4 A4 A5 A4 E4 C#4 E4 | D4 F4 A4 A5 A4 F4 D4 F4 | C#4 E4 A4 A5 A4 E4 C#4 E4 | D4 F4 A4 A5 A4 F4 D4 F4 | C4 E4 G4 G5 G4 E4 C4 E4 | D4 F4 A4 A5 A4 F4 D4 F4 | C#4 E4 A4 A5 A4 E4 C#4 E4 | A#3 D4 F4 F5 F4 D4 A#3 D4 | G3 A#3 D4 D5 D4 A#3 G3 A#3 | D4 F4 A4 A5 A4 F4 D4 F4 | C#4 E4 A4 A5 A4 E4 C#4 E4 | A#3 D4 F4 F5 F4 D4 A#3 D4 | F3 A3 C4 C5 C4 A3 F3 A3 | G3 A#3 D4 D5 D4 A#3 G3 A#3 | C#4 E4 A4 A5 A4 E4 C#4 E4 | D4 F4 A4 A5 A4 F4 D4 F4 | C4 E4 G4 G5 G4 E4 C4 E4 | A#3 D4 F4 F5 F4 D4 A#3 D4 | C#4 E4 A4 A5 A4 E4 C#4 E4 | D4 F4 A4 A5 A4 F4 D4 F4 | A#3 D4 F4 F5 F4 D4 A#3 D4 | G3 A#3 D4 D5 D4 A#3 G3 A#3 | C#4 E4 A4 A5 A4 E4 C#4 E4' },
+      { type: 'vrc6saw', gain: 0.054, notes: 'D2 D2 D3 D2 D2 D2 D3 D2 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | A1 A1 A2 A1 A1 A1 A2 A1 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | G2 G2 G3 G2 G2 G2 G3 G2 | D2 D2 D3 D2 D2 D2 D3 D2 | A1 A1 A2 A1 A1 A1 A2 A1 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | F2 F2 F3 F2 F2 F2 F3 F2 | G2 G2 G3 G2 G2 G2 G3 G2 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2 | C2 C2 C3 C2 C2 C2 C3 C2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | G2 G2 G3 G2 G2 G2 G3 G2 | A1 A1 A2 A1 A1 A1 A2 A1' },
+    ],
+    kickBoost: 1.25,
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
@@ -663,7 +662,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss13', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -711,12 +710,12 @@ const BGM_INFO = [
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
   { key: 'boss12', name: 'ボス11 決戦の旅路', desc: '駆け上がる弦の刻みとうなるベースに乗って、気高く劇的な旋律が挑みかかる。旅の果てに立ちはだかる強敵との決戦。VRC6風チップチューン。ト短調（HD-2D系RPGのボス戦の作風）・BPM176' },
-  { key: 'boss13', name: 'ボス12 不屈の挑戦者', desc: '高らかに鳴るファンファーレと駆け上がる分散和音に乗って、何度倒れても立ち上がる不屈の旋律が頂上を目指す。VRC6風チップチューン。ニ長調（ボクシング映画のテーマの作風）・BPM200' },
   { key: 'boss15', name: 'ボス14 逆転の大勝負', desc: 'せわしなく刻む弦の分散和音と突き上げるベースに乗って、重厚で劇的な旋律が一歩も引かずに立ち向かう。土壇場からの大逆転劇。VRC6風チップチューン。イ短調（企業ドラマの決戦テーマの作風）・BPM140' },
   { key: 'boss16', name: 'ボス15 戦闘民族の襲来', desc: 'せき立てる分散和音とうなるオクターブベースに乗って、荒々しい旋律が空から襲来した強敵と激突する。VRC6風チップチューン。ホ短調（ファミコンの格闘アニメRPGのボス戦の作風）・BPM190' },
   { key: 'boss17', name: 'ボス16 摩天楼の夜狩り', desc: '16分で脈打つシンセベースと切り込む和音に乗って、クールな旋律が夜の摩天楼を駆け抜ける。凄腕の始末屋の夜。VRC6風チップチューン。嬰ヘ短調（80年代シティ系アニメのシンセロックの作風）・BPM126' },
   { key: 'boss21', name: 'ボス20 宿命の血統', desc: '熱く刻む8ビートとうなるベースに乗って、激しくも気高い旋律が宿命の敵へ立ち向かう。血統に刻まれた誇りの戦い。VRC6風チップチューン。イ短調（熱血バトル漫画アニメのロックOPの作風）・BPM184' },
   { key: 'boss22', name: 'ボス21 鋼の格闘王', desc: '分厚いシンセブラスのキメと8分で突き進むオクターブベースに乗って、堂々とした旋律が花道を歩む。リングへ向かう格闘王の入場。VRC6風チップチューン。ホ短調（80年代格闘技団体の入場テーマの作風）・BPM150' },
+  { key: 'boss23', name: 'ボス22 吸血鬼狩りの鞭', desc: 'チェンバロ風に駆ける分散和音と刻むベースに乗って、哀愁と気高さのある旋律が闇の城を駆け上がる。吸血鬼を狩る一族の宿命の戦い。VRC6風チップチューン。ニ短調（16ビット版ゴシックアクションの主人公テーマの作風）・BPM160' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },

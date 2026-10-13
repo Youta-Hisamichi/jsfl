@@ -225,7 +225,7 @@ function drawSpeech() {
     for (const p of placed) if (x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y) y = up ? p.y - h - 3 : p.y + p.h + 3; // ほかの吹き出しと重ならないように
     placed.push({ x, y, w, h });
     const en = !b.isPlayer, tailX = Math.max(x + 8, Math.min(x + w - 8, b.x)), tailUp = b.y > y + h / 2;
-    ctx.fillStyle = en ? 'rgba(40,12,20,0.88)' : 'rgba(255,255,255,0.88)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
+    ctx.fillStyle = en ? 'rgba(40,12,20,0.6)' : 'rgba(255,255,255,0.6)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
     ctx.beginPath(); if (tailUp) { ctx.moveTo(tailX - 5, y + h); ctx.lineTo(b.x, Math.min(b.y - r, y + h + 9)); ctx.lineTo(tailX + 5, y + h); } else { ctx.moveTo(tailX - 5, y); ctx.lineTo(b.x, Math.max(b.y + r, y - 9)); ctx.lineTo(tailX + 5, y); } ctx.fill();
     ctx.fillStyle = en ? '#ffe3e8' : '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
