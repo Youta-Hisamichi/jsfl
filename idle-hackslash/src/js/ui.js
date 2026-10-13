@@ -177,6 +177,11 @@ function drawDamageTexts() {
     lines.forEach((line, i) => {
       const ly = d.y - (lines.length - 1 - i) * lineHeight;
       if (line.includes('🟡') && COIN_IMG.complete && COIN_IMG.naturalWidth) { drawTextWithCoin(line, d.x, ly, d.big ? 18 : 14); return; }
+      if (d.img && i === 0 && d.img.complete && d.img.naturalWidth) { // 文字の左に絵（宝箱など）
+        const sz = d.big ? 26 : 20, tw = ctx.measureText(line).width, x0 = d.x - (tw + sz + 3) / 2;
+        ctx.drawImage(d.img, x0, ly - sz * 0.8, sz, sz);
+        ctx.strokeText(line, x0 + sz + 3 + tw / 2, ly); ctx.fillText(line, x0 + sz + 3 + tw / 2, ly); return;
+      }
       ctx.strokeText(line, d.x, ly);
       ctx.fillText(line, d.x, ly);
     });

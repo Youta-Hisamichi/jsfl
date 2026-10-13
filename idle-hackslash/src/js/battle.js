@@ -1871,7 +1871,8 @@ function dropTreasureChest(rarity) {
   if (CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0) >= CHEST_STOCK_MAX) { spawnDamageText(arena.x, arena.y + 30, `🎁 宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); return; }
   hc[rarity] = (hc[rarity] || 0) + 1;
   const info = RARITY_INFO[rarity];
-  spawnDamageText(arena.x, arena.y + 30, `🎁 ${info.label.replace('コモン', 'ノーマル')}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
+  spawnDamageText(arena.x, arena.y + 30, `${info.label.replace('コモン', 'ノーマル')}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
+  { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } // 文字の左にその宝箱の絵
   playLoginBonusSound();
   renderChestTray(rarity);
   saveGame();
