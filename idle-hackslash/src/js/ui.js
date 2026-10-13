@@ -550,14 +550,14 @@ function setUserPaused(on) {
   if (audioCtx) { if (on) audioCtx.suspend(); else audioCtx.resume(); } // BGM・効果音も止める
   if (typeof appPause !== 'undefined') appPause.set(on); // 時計・タイマー・アニメも止める（ゲーム以外のページやカウントダウンも）
 }
-document.getElementById('gamePauseBtn').addEventListener('click', ev => { ev.stopPropagation(); setUserPaused(!userPaused); });
+document.getElementById('gamePauseBtn').addEventListener('click', ev => { ev.stopPropagation(); document.body.classList.remove('silent-pause'); setUserPaused(!userPaused); });
 document.addEventListener('keydown', ev => {
   if (ev.key !== 't' && ev.key !== 'T') return;
   if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return; // 文字入力中は無視
+  document.body.classList.toggle('silent-pause', !userPaused); // Tキーはキャプチャ用：一時停止中の表示を出さない
   setUserPaused(!userPaused); // どのページでも止められる
 });
 document.getElementById('pauseBadge').addEventListener('click', () => setUserPaused(false));
-{ const g = document.createElement('div'); g.id = 'appPauseOv'; g.className = 'app-pause-ov'; g.innerHTML = '<b>⏸ 一時停止中</b><small>T キー・タップで再開</small>'; document.body.appendChild(g); g.addEventListener('click', () => setUserPaused(false)); }
 new MutationObserver(() => { if (audioCtx && !userPaused) { if (rewardAdModal.classList.contains('show')) audioCtx.suspend(); else audioCtx.resume(); } }).observe(rewardAdModal, { attributes: true, attributeFilter: ['class'] }); // リワード動画の再生中はゲームも音も止める
 
 function fullReset() {
