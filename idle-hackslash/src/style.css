@@ -2895,3 +2895,9 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .arena-wrap:has(#runRuleChip:not([style*="none"])) .enemy-trait-badge { top: 54px; }
 .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs { gap: 3px; }
 .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull { font-size: 0.6rem !important; letter-spacing: -0.02em; }
+/* アプリ全体の一時停止：CSSのアニメも止め、ゲーム以外のページでも分かるように全面に表示 */
+body.user-paused *, body.user-paused *::before, body.user-paused *::after { animation-play-state: paused !important; }
+.app-pause-ov { display: none; position: fixed; inset: 0; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; text-shadow: 0 2px 4px #000; }
+.app-pause-ov b { font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; }
+.app-pause-ov small { font-size: 0.8rem; opacity: 0.9; }
+body.user-paused .app-pause-ov { display: flex; }
