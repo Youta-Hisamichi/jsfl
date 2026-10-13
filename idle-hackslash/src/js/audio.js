@@ -255,6 +255,18 @@ const BGM_SONGS = {
     kickBoost: 1.25,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
+  boss24: { // ボス23 三柱の荒神：うねるオルガン風ベースと刻む弦、ざらついたブラスの和音に、荘厳で悲壮な短調の旋律（16ビットRPGの神々との決戦曲系・GBA風音源）
+    bpm: 152,
+    echo: { time: 0.26, feedback: 0.3, wet: 0.22 },
+    tracks: [
+      { type: 'gbabrass', gain: 0.048, notes: 'C5 = = = G4 = C5 D5 | D#5 = = = D5 = C5 = | C5 = = D#5 G5 = = = | G5 = F5 = D5 = B4 = | C5 = = = G4 = C5 D5 | D#5 = = = F5 = G5 = | G#5 = = G5 F5 = D#5 = | D5 = = = = = - - | F5 = G#5 = C6 = = = | C6 = A#5 = G#5 = G5 = | G#5 = = G5 F5 = D#5 = | D5 = D#5 = F5 = G5 = | G#5 = = = C6 = = = | C#6 = = = F5 = = = | F5 = G#5 = B5 = D6 = | D6 = = = B5 = = = | C6 = = = D#6 = = = | D#6 = D6 = C6 = G#5 = | A#5 = = = D6 = F6 = | G6 = = = = = - -' },
+      { type: 'gbastring', gain: 0.028, notes: 'C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 F4 G#4 F4 C4 F4 G#4 F4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 F4 G#4 F4 C4 F4 G#4 F4 | C#4 F4 G#4 F4 C#4 F4 G#4 F4 | D4 F4 G#4 F4 D4 F4 G#4 F4 | B3 D4 G4 D4 B3 D4 G4 D4 | C4 D#4 G4 D#4 C4 D#4 G4 D#4 | C4 D#4 G#4 D#4 C4 D#4 G#4 D#4 | D4 F4 A#4 F4 D4 F4 A#4 F4 | B3 D4 G4 D4 B3 D4 G4 D4' },
+      { type: 'gbabrass', gain: 0.02, notes: 'C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G#4 = = - - - C4+D#4+G#4 - | B3+D4+G4 - B3+D4+G4 - B3+D4+G4 = = = | C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G#4 = = - - - C4+D#4+G#4 - | B3+D4+G4 - B3+D4+G4 - B3+D4+G4 = = = | C4+F4+G#4 = = - - - C4+F4+G#4 - | C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G#4 = = - - - C4+D#4+G#4 - | B3+D4+G4 - B3+D4+G4 - B3+D4+G4 = = = | C4+F4+G#4 = = - - - C4+F4+G#4 - | C#4+F4+G#4 = = - - - C#4+F4+G#4 - | D4+F4+G#4 = = - - - D4+F4+G#4 - | B3+D4+G4 - B3+D4+G4 - B3+D4+G4 = = = | C4+D#4+G4 = = - - - C4+D#4+G4 - | C4+D#4+G#4 = = - - - C4+D#4+G#4 - | D4+F4+A#4 = = - - - D4+F4+A#4 - | B3+D4+G4 - B3+D4+G4 - B3+D4+G4 = = =' },
+      { type: 'gbabass', gain: 0.068, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | G1 G2 G1 G2 G1 G2 G1 G2 | F2 F3 F2 F3 F2 F3 F2 F3 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | G1 G2 G1 G2 G1 G2 G1 G2 | F2 F3 F2 F3 F2 F3 F2 F3 | C#2 C#3 C#2 C#3 C#2 C#3 C#2 C#3 | D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | G#1 G#2 G#1 G#2 G#1 G#2 G#1 G#2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | G1 G2 G1 G2 G1 G2 G1 G2' },
+    ],
+    kickBoost: 1.3,
+    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks ks ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks ks ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks ks ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks ks ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k s k s ks ks ks ks'
+  },
   boss: { // ボス1：高速アクションのボス戦のような、シンコペーションの連打メロディとうねるオクターブベースで疾走するハ短調の曲
     bpm: 168,
     kickBoost: 1.3,
@@ -526,6 +538,9 @@ const PCE_WAVETABLES = {
   vrc6pulse25: i => i < 8 ? 31 : 0,                                     // デューティ4/16
   vrc6pulse12: i => i < 4 ? 31 : 0,                                     // デューティ2/16：細く鋭い音
   vrc6saw:     i => Math.floor(i * 7 / 32) * 5,                         // 7段の階段のこぎり波：太いベース
+  gbabrass:  i => Math.round((Math.round((31 - i) * 0.7 + 9.3 * Math.sin(Math.PI * 2 * i / 32)) ) / 2) * 2, // GBA風：ざらっとしたブラス（荒い量子化）
+  gbastring: i => Math.round(15.5 + 10 * Math.sin(Math.PI * 2 * i / 32) + 4 * Math.sin(Math.PI * 6 * i / 32) + 2.5 * Math.sin(Math.PI * 10 * i / 32)), // GBA風：弦の刻み
+  gbabass:   i => Math.round((i < 16 ? 24 : 7) + 6 * Math.sin(Math.PI * 2 * i / 32)), // GBA風：芯のあるベース
 };
 const pceWaveCache = new WeakMap();
 function getPceWave(type) {
@@ -662,7 +677,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -716,6 +731,7 @@ const BGM_INFO = [
   { key: 'boss21', name: 'ボス20 宿命の血統', desc: '熱く刻む8ビートとうなるベースに乗って、激しくも気高い旋律が宿命の敵へ立ち向かう。血統に刻まれた誇りの戦い。VRC6風チップチューン。イ短調（熱血バトル漫画アニメのロックOPの作風）・BPM184' },
   { key: 'boss22', name: 'ボス21 鋼の格闘王', desc: '分厚いシンセブラスのキメと8分で突き進むオクターブベースに乗って、堂々とした旋律が花道を歩む。リングへ向かう格闘王の入場。VRC6風チップチューン。ホ短調（80年代格闘技団体の入場テーマの作風）・BPM150' },
   { key: 'boss23', name: 'ボス22 吸血鬼狩りの鞭', desc: 'チェンバロ風に駆ける分散和音と刻むベースに乗って、哀愁と気高さのある旋律が闇の城を駆け上がる。吸血鬼を狩る一族の宿命の戦い。VRC6風チップチューン。ニ短調（16ビット版ゴシックアクションの主人公テーマの作風）・BPM160' },
+  { key: 'boss24', name: 'ボス23 三柱の荒神', desc: 'うねるオルガン風のベースと刻む弦、ざらついたブラスの和音に乗って、荘厳で悲壮な旋律が三柱の神々に挑む。GBA風音源。ハ短調（16ビットRPGの神々との決戦曲の作風）・BPM152' },
   { key: 'boss8', name: 'ボス8 破滅の螺旋', desc: '半音ずつ沈んでいくベースと悲鳴のような旋律、最後に駆け上がって頭に戻る緊迫の死闘。VRC6風チップチューン。イ短調（ファミコンのゴシックアクション系の作風）・BPM178' },
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
