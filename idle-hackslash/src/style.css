@@ -2901,3 +2901,8 @@ body.user-paused *, body.user-paused *::before, body.user-paused *::after { anim
 .app-pause-ov b { font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; }
 .app-pause-ov small { font-size: 0.8rem; opacity: 0.9; }
 body.silent-pause .pause-badge { display: none !important; } /* Tキーで止めたときは表示なし（キャプチャ用） */
+/* 設定画面：項目名は白字＋しっかりした黒い縁取り（白いぼかしはやめる） */
+#settingsModal .settings-page .settings-row > label, #settingsModal .settings-page .settings-row > span, #settingsModal .settings-page .speed-value, #settingsModal .settings-page .modal-sub[data-i18n="contactRow"], #settingsModal .settings-page .dev-id > span { color: #fff !important; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1.2px 0 #000, 0 1.2px 0 #000, -1.2px 0 0 #000, 1.2px 0 0 #000 !important; }
+#settingsModal .settings-page .settings-row > label *, #settingsModal .settings-page .settings-row > span * { color: inherit !important; text-shadow: inherit !important; }
+#settingsModal .settings-page .settings-head { color: #ffe08a !important; text-shadow: -1.5px -1.5px 0 #3a1a00, 1.5px -1.5px 0 #3a1a00, -1.5px 1.5px 0 #3a1a00, 1.5px 1.5px 0 #3a1a00, 0 3px 4px rgba(0,0,0,0.6) !important; }
+#settingsModal .settings-page .modal-sub[data-i18n="contactRow"] a { color: #8fdcff !important; font-weight: 800; text-shadow: inherit !important; }
