@@ -1061,7 +1061,7 @@ const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🌑']; // 卵から出�
 const OBSTACLE_IMGS = {};
 Object.entries({
   rock: 'assets/img/obstacles/rock.webp', mossRock: 'assets/img/obstacles/mossRock.webp', magmaRock: 'assets/img/obstacles/magmaRock.webp',
-  qbox: 'assets/img/obstacles/qbox.webp', tansu: 'assets/img/obstacles/tansu.webp', tansu_open: 'assets/img/obstacles/tansu_open.webp',
+  qbox: 'assets/img/obstacles/qbox.webp', snowman: 'assets/img/obstacles/snowman.webp', tansu: 'assets/img/obstacles/tansu.webp', tansu_open: 'assets/img/obstacles/tansu_open.webp',
   crate: 'assets/img/obstacles/crate.webp', barrel: 'assets/img/obstacles/barrel.webp', ice: 'assets/img/obstacles/ice.webp',
   crystal: 'assets/img/obstacles/crystal.webp', techBox: 'assets/img/obstacles/techBox.webp', bomb: 'assets/img/obstacles/bomb.webp',
   slime: 'assets/img/obstacles/slime.webp', dash: 'assets/img/obstacles/dash.webp', portal: 'assets/img/obstacles/portal.webp',
@@ -1600,7 +1600,7 @@ function dashPanelDir(o, now) { return (o.dir || 0) + (o.seed < 0.5 ? 1 : -1) * 
 function drawObstacleSprite(key, x, y, size, rot) { // 障害物の画像（読み込めていなければ false）
   const img = OBSTACLE_IMGS[key];
   if (!img || !img.complete || !img.naturalWidth) return false;
-  ctx.imageSmoothingEnabled = !!rot || key.startsWith('orb_') || key === 'qbox'; // 回転させる絵はなめらかに（ドット拡大のままだとガタつく）
+  ctx.imageSmoothingEnabled = !!rot || key.startsWith('orb_') || key === 'qbox' || key === 'snowman'; // 回転させる絵はなめらかに（ドット拡大のままだとガタつく）
   if (rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.drawImage(img, -size / 2, -size / 2, size, size); ctx.restore(); }
   else ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
   ctx.imageSmoothingEnabled = true;

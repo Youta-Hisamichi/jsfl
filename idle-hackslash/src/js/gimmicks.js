@@ -9,7 +9,6 @@ const GIMMICKS = {
   thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.3)' },
   bubbles:   { name: 'シャボン玉の庭', icon: '🫧', desc: 'シャボン玉を割るとコイン', coin: 1 },
   gold:      { name: 'ゴールドラッシュ', icon: '💰', desc: '撃破コイン×2！', coin: 2, tint: 'rgba(255,200,40,0.08)' },
-  whirl:     { name: '大渦の間', icon: '🌀', desc: '中心のまわりをぐるぐる流される', coin: 1.2 },
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
   rocks:     { name: '落石注意', icon: '🪨', desc: '岩が降ってきて敵をつぶす', coin: 1.1 },
   snow:      { name: '雪まつり', icon: '⛄', desc: '雪が舞う。雪だるまを壊すとコイン', coin: 1 },
@@ -22,7 +21,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'whirl', 'snow', 'rocks', 'haste', 'slime'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -91,14 +90,12 @@ function tickGimmick(sp) {
     else if (key === 'wind') { gm.nextAt = gm.t + 2; gm.fx.push({ kind: 'streak', x: gRand(A.l, A.r), y: gRand(A.t, A.b), life: 1, len: gRand(20, 60) }); }
     else gm.nextAt = gm.t + 60;
   }
-  // 流れる力（風・渦）
-  if (key === 'wind' || key === 'whirl') {
+  // 流れる力（風）
+  if (key === 'wind') {
     gm.wind += 0.0015 * sp;
     for (const b of [...balls, ...adds]) {
       if (b.isDying || b.spawnTimer > 0 || (b.isCompanion && b.hp <= 0) || b.isBoss) continue;
-      let fx, fy;
-      if (key === 'wind') { fx = Math.cos(gm.wind) * 0.06; fy = Math.sin(gm.wind) * 0.06; }
-      else { const dx = b.x - arena.x, dy = b.y - arena.y, d = Math.hypot(dx, dy) || 1; fx = (-dy / d) * 0.07 - dx / d * 0.012; fy = (dx / d) * 0.07 - dy / d * 0.012; }
+      const fx = Math.cos(gm.wind) * 0.06, fy = Math.sin(gm.wind) * 0.06;
       b.vx += fx * sp; b.vy += fy * sp;
     }
   }
@@ -166,7 +163,6 @@ function drawGimmick() {
   if (key === 'night') drawGimmickDark(A, 'rgba(4,6,28,0.62)', 70);
   if (key === 'gold') { for (let i = 0; i < 14; i++) { const t = now / 900 + i * 1.7, x = A.l + ((i * 97 + now / 40) % A.w), y = A.t + ((i * 61 + Math.sin(t) * 40 + A.h) % A.h); ctx.globalAlpha = 0.4 + 0.4 * Math.sin(t * 3); ctx.fillStyle = '#ffe36b'; gStar(x, y, 4); } ctx.globalAlpha = 1; }
   if (key === 'treasure' && gm.spot && !gm.treasureDone) { const s = 11 + Math.sin(now / 200) * 2; ctx.strokeStyle = 'rgba(200,30,30,0.85)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(gm.spot.x - s, gm.spot.y - s); ctx.lineTo(gm.spot.x + s, gm.spot.y + s); ctx.moveTo(gm.spot.x + s, gm.spot.y - s); ctx.lineTo(gm.spot.x - s, gm.spot.y + s); ctx.stroke(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(now / 150); ctx.fillStyle = '#fff6b0'; gStar(gm.spot.x + 12, gm.spot.y - 12, 3); ctx.globalAlpha = 1; }
-  if (key === 'whirl') { ctx.strokeStyle = 'rgba(160,220,255,0.18)'; ctx.lineWidth = 3; for (let i = 0; i < 4; i++) { ctx.beginPath(); for (let a = 0; a < 5.5; a += 0.15) { const rr = 10 + a * A.w * 0.075, an = a + i * Math.PI / 2 + now / 900; const x = arena.x + Math.cos(an) * rr, y = arena.y + Math.sin(an) * rr; a ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); } }
   if (key === 'slime') { ctx.globalAlpha = 0.14 + 0.05 * Math.sin(now / 300); ctx.fillStyle = '#5be07a'; fillArenaRect(); ctx.globalAlpha = 1; }
   if (key === 'haste') { ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2; for (let i = 0; i < 10; i++) { const y = A.t + ((i * 83 + now / 3) % A.h), x = A.l + ((i * 151) % A.w); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 40); ctx.stroke(); } }
   if (key === 'thunder' || key === 'rocks') { // 雨
@@ -208,6 +204,7 @@ function drawGimmickItem(it, now) {
     const a = 0.6 + 0.4 * Math.sin(it.ph * 3); ctx.fillStyle = `rgba(214,255,122,${a})`; ctx.shadowColor = '#d6ff7a'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(it.x, it.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
   } else if (it.kind === 'snowman') {
     const dx = it.shake && now - it.shake < 200 ? Math.sin(now / 20) * 3 : 0, x = it.x + dx;
+    if (typeof drawObstacleSprite === 'function' && drawObstacleSprite('snowman', x, it.y - 2, 44)) return;
     ctx.fillStyle = '#f4f8ff'; ctx.strokeStyle = '#b8c6dc'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(x, it.y + 6, 13, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(x, it.y - 11, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
