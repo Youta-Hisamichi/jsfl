@@ -3219,3 +3219,18 @@ document.getElementById('rankTopBtn').addEventListener('click', () => { // ラ�
 })();
 function updateDbgRebornBtn() { const b = document.getElementById('dbgRebornAlwaysBtn'); if (b) { b.textContent = `🌌 転生ボタン常時表示：${game.dbgRebornAlways ? 'ON' : 'OFF'}`; b.classList.toggle('dbg-on', !!game.dbgRebornAlways); } }
 updateDbgRebornBtn();
+
+// デバッグ：出てきた敵（図鑑キー）を順に覚えておき、「1個前の敵を出す」で呼び戻す
+const dbgEnemyHist = [];
+setInterval(() => {
+  const e = balls.find(b => !b.isPlayer && !b.isDying && b.hp > 0); if (!e) return;
+  const key = getEnemyBookKey(e); if (!ENEMY_BOOK_BY_KEY[key]) return;
+  if (dbgEnemyHist[dbgEnemyHist.length - 1] !== key) { dbgEnemyHist.push(key); if (dbgEnemyHist.length > 50) dbgEnemyHist.shift(); }
+}, 300);
+document.getElementById('dbgPrevEnemyBtn').addEventListener('click', () => {
+  if (dbgEnemyHist.length < 2) { showNotice('DEBUG: 1個前の敵の記録がまだありません', true); return; }
+  dbgEnemyHist.pop(); const key = dbgEnemyHist.pop(); // 今の敵を捨てて、その前の敵を出す（出したらまた記録される）
+  const b = document.createElement('button'); b.dataset.debug = 'enemy:' + key; b.style.display = 'none';
+  debugRow.appendChild(b); b.click(); b.remove();
+  showNotice(`DEBUG: 1個前の敵「${ENEMY_BOOK_BY_KEY[key].name}」を出しました`);
+});
