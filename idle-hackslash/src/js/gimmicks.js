@@ -17,7 +17,7 @@ const GIMMICKS = {
   slime:     { name: 'ぷるぷる床', icon: '🟢', desc: '跳ね返りが強くなる。コイン×1.2', coin: 1.2 },
   pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
-  blocks:    { name: 'ブロック叩きまくり', icon: '🧱', desc: 'ハテナブロックを何度も叩いてコイン', coin: 1 },
+  blocks:    { name: 'ハテナボックス叩きまくり', icon: '❓', desc: 'ハテナボックスを何度も叩いてコイン', coin: 1 },
   tansu:     { name: 'タンス開けまくり', icon: '🗄️', desc: 'タンスを調べまくってお宝さがし！', coin: 1 },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
@@ -381,7 +381,7 @@ let gmRegrowT = 0;
   if (o.multi <= 0) { o.used = true; return orig.apply(this, arguments); } // 最後は通常のハテナボックスの中身
   const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * 0.35));
   game.coins += c; spawnCoinDrop(o.x, o.y - o.r, c, 2);
-  spawnDamageText(o.x, o.y - o.r - 10, `🧱 +${formatCoinNumber(c)}（あと${o.multi}）`, '#ffd76b', 0.022);
+  spawnDamageText(o.x, o.y - o.r - 10, `🟡 +${formatCoinNumber(c)}（あと${o.multi}）`, '#ffd76b', 0.022);
   playTone(988, 0.06, 'square', 0.06); setTimeout(() => playCoinChime(gm.broke % 13), 50);
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }; }
