@@ -1061,7 +1061,7 @@ const EGG_MONSTERS = ['🐉', '🦖', '🐲', '💀', '🌑']; // 卵から出�
 const OBSTACLE_IMGS = {};
 Object.entries({
   rock: 'assets/img/obstacles/rock.webp', mossRock: 'assets/img/obstacles/mossRock.webp', magmaRock: 'assets/img/obstacles/magmaRock.webp',
-  tansu: 'assets/img/obstacles/tansu.webp', tansu_open: 'assets/img/obstacles/tansu_open.webp',
+  qbox: 'assets/img/obstacles/qbox.webp', tansu: 'assets/img/obstacles/tansu.webp', tansu_open: 'assets/img/obstacles/tansu_open.webp',
   crate: 'assets/img/obstacles/crate.webp', barrel: 'assets/img/obstacles/barrel.webp', ice: 'assets/img/obstacles/ice.webp',
   crystal: 'assets/img/obstacles/crystal.webp', techBox: 'assets/img/obstacles/techBox.webp', bomb: 'assets/img/obstacles/bomb.webp',
   slime: 'assets/img/obstacles/slime.webp', dash: 'assets/img/obstacles/dash.webp', portal: 'assets/img/obstacles/portal.webp',
@@ -1600,7 +1600,7 @@ function dashPanelDir(o, now) { return (o.dir || 0) + (o.seed < 0.5 ? 1 : -1) * 
 function drawObstacleSprite(key, x, y, size, rot) { // 障害物の画像（読み込めていなければ false）
   const img = OBSTACLE_IMGS[key];
   if (!img || !img.complete || !img.naturalWidth) return false;
-  ctx.imageSmoothingEnabled = !!rot || key.startsWith('orb_'); // 回転させる絵はなめらかに（ドット拡大のままだとガタつく）
+  ctx.imageSmoothingEnabled = !!rot || key.startsWith('orb_') || key === 'qbox'; // 回転させる絵はなめらかに（ドット拡大のままだとガタつく）
   if (rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.drawImage(img, -size / 2, -size / 2, size, size); ctx.restore(); }
   else ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
   ctx.imageSmoothingEnabled = true;
@@ -1666,10 +1666,14 @@ function drawObstacles() {
       } else {
       const pop = now - (o.popAt || 0) < 200 ? -Math.sin((now - o.popAt) / 200 * Math.PI) * 6 : 0, h = o.r * 0.9, bob = o.used ? 0 : Math.sin(now / 300 + o.seed * 6) * 1.5;
       ctx.translate(0, pop + bob);
+      if (o.used) ctx.filter = 'grayscale(0.85) brightness(0.6)'; // 使い終わった箱は暗く
+      const qok = drawObstacleSprite('qbox', o.x, o.y, o.r * 2.3); ctx.filter = 'none';
+      if (!qok) {
       ctx.fillStyle = o.used ? '#8a5a2c' : '#ffbf1f'; ctx.fillRect(o.x - h, o.y - h, h * 2, h * 2);
       ctx.strokeStyle = o.used ? '#4a2e12' : '#a8560a'; ctx.lineWidth = 2.5; ctx.strokeRect(o.x - h, o.y - h, h * 2, h * 2);
       ctx.fillStyle = o.used ? '#5e3c1c' : '#a8560a'; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { ctx.beginPath(); ctx.arc(o.x + sx * h * 0.72, o.y + sy * h * 0.72, 1.6, 0, Math.PI * 2); ctx.fill(); }); // 鋲
       if (!o.used) { ctx.font = `900 ${Math.round(h * 1.5)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#7a3a00'; ctx.fillText('?', o.x + 1.5, o.y + 2.5); ctx.fillStyle = '#fff6d0'; ctx.fillText('?', o.x, o.y + 1); }
+      }
       }
     } else if (o.kind === 'egg') { // 卵（ひびが増え、割れそうになると震える）
       const wob = o.hp <= 1 ? Math.sin(now / 40) * 0.12 : now - (o.shakeAt || 0) < 200 ? Math.sin(now / 25) * 0.15 : 0;
