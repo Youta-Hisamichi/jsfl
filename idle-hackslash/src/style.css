@@ -2762,7 +2762,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 #bossContModal .go2-advice .boss-advice { background: none !important; border: none !important; padding: 0 !important; margin: 0 !important; color: #f1eafc; }
 #bossContModal .go2-advice b { color: #ffd76b; font-size: 1.15em; }
 #bossContModal .go2 .go-btns { gap: 2.5cqw; }
-#bossContModal .go2 .go-ad-btn { aspect-ratio: 400 / 114; padding: 0 0 0 13cqw !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_blue.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+#bossContModal .go2 .go-ad-btn { aspect-ratio: 406 / 120; padding: 0 0 0 13cqw !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_blue.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
 #bossContModal .go2 .go-ad-text { font-size: 4.6cqw; }
 #bossContModal .go2 .go-giveup-btn { aspect-ratio: 400 / 112; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/go2/btn_gray.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
 #bossContModal .go2 .go-giveup-btn .msb-name { font-size: 5.2cqw; color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
