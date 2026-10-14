@@ -3040,3 +3040,4 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 /* 「＋枠を増やす」系と「解雇・採用」ボタンの台：青地に金の飾り枠（仲間・スキル共通） */
 .tab-page[data-tab="coinshop"] .weapon-slot-head button { aspect-ratio: 248 / 85; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 248 / 92; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
+#skillGachaBtn, #weaponGachaBtn { max-width: 290px; } /* スキル・サブウェポンのガチャボタンは少し小さめに */
