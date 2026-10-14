@@ -3014,8 +3014,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] #totalUserCount::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat; opacity: 0.6; }
 .tab-page[data-tab="ranking"] #rankingTitle, .tab-page[data-tab="ranking"] #rankDateNav { background: rgba(10,8,20,0.5) !important; }
 .tab-page[data-tab="ranking"] .friend-box { border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: rgba(10,10,30,0.5) padding-box !important; }
-/* 進化ページの背景：浮かぶ大水晶の祭壇 */
-.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.1) 0px, rgba(20,8,34,0.4) 340px, rgba(16,8,28,0.85) 500px, #120a1e 590px, #120a1e 100%), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / 100% auto no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
+/* 進化ページの背景：浮かぶ大水晶の祭壇（ページ全体に敷き、暗くするのは控えめに） */
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.15), rgba(20,8,34,0.3)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
 /* スキルページの背景：緑の魔導書の間 */
 .tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.45) 420px, rgba(4,18,10,0.85) 700px, #06140c 920px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
 /* スキルページのカード：仲間ページのタイル（紺地＋金の飾り枠）に合わせる */
