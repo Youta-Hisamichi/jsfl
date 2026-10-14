@@ -3041,3 +3041,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head button { aspect-ratio: 248 / 85; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 248 / 92; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
 #skillGachaBtn, #weaponGachaBtn { max-width: 290px; } /* スキル・サブウェポンのガチャボタンは少し小さめに */
+/* スキル・ショップの「〜のしくみ」：▶とⓘは絵ではなく文字で（横長の帯に合わせて伸びないように） */
+.tab-page[data-tab="coinshop"] .cp-help summary, .tab-page[data-tab="gemshop"] .cp-help summary { padding-left: 16px !important; gap: 6px; background-image: url(assets/img/ui/rb/helpbar_plain.webp) !important; }
+.tab-page[data-tab="coinshop"] .cp-help summary::before, .tab-page[data-tab="gemshop"] .cp-help summary::before { content: '▶'; flex: none; font-size: 0.6rem; color: #f3e7c4; transition: transform 0.2s; }
+.tab-page[data-tab="coinshop"] .cp-help[open] summary::before, .tab-page[data-tab="gemshop"] .cp-help[open] summary::before { transform: rotate(90deg); }
+.cp-help .ch-i { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 1.15em; height: 1.15em; border-radius: 50%; border: 1.5px solid #e8c46a; color: #ffe08a; font-size: 0.75em; font-weight: 900; font-style: normal; font-family: Georgia, "Times New Roman", serif; line-height: 1; }
