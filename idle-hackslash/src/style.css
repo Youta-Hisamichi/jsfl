@@ -2934,7 +2934,14 @@ body.silent-pause .pause-badge { display: none !important; } /* Tキーで止め
 .gacha-result[class*="rarity-"]:not(.gacha-summoning) .gr-btn-row { position: relative; margin-top: 10px; }
 .gacha-result[class*="rarity-"]:not(.gacha-summoning) .gm-item { background: rgba(0,0,0,0.35) !important; }
 
-.gacha-result[class*="rarity-"]:not(.gacha-summoning) .gr-title * { -webkit-text-fill-color: transparent; color: transparent !important; }
+.gacha-result.rarity-mythic:not(.gacha-summoning) .gr-title * { -webkit-text-fill-color: transparent; color: transparent !important; }
+/* 虹色の文字は★5（ミシック）だけ。ほかはレア度の色の極太文字 */
+.gacha-result[class*="rarity-"]:not(.rarity-mythic):not(.gacha-summoning) .gr-title { background: none !important; -webkit-text-fill-color: var(--grc, #fff); color: var(--grc, #fff) !important; text-shadow: -2px -2px 0 #1a0a2a, 2px -2px 0 #1a0a2a, -2px 2px 0 #1a0a2a, 2px 2px 0 #1a0a2a, 0 3px 4px rgba(0,0,0,0.6); }
+.gacha-result[class*="rarity-"]:not(.rarity-mythic):not(.gacha-summoning) .gr-title * { -webkit-text-fill-color: inherit; color: inherit !important; }
+.gacha-result.rarity-common:not(.gacha-summoning) { --grc: #f2f4f8; }
+.gacha-result.rarity-rare:not(.gacha-summoning) { --grc: #7cc8ff; }
+.gacha-result.rarity-epic:not(.gacha-summoning) { --grc: #e0a8ff; }
+.gacha-result.rarity-legendary:not(.gacha-summoning) { --grc: #ffd76b; }
 /* ドーピングの種 */
 .seed-float { position: absolute; right: 6px; bottom: 54px; z-index: 8; width: 38px; height: 38px; padding: 0; border-radius: 10px; border: 2px solid #8a6a3a; background: linear-gradient(180deg, #3a2a18, #1a1208); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.6); font-size: 1.2rem; line-height: 1; cursor: pointer; }
 .seed-float b { position: absolute; right: -8px; bottom: -8px; padding: 0 5px; border-radius: 999px; border: 1.5px solid #c9a24a; background: #1a1208; color: #fff; font-size: 0.7rem; font-weight: 900; line-height: 1.3; }
