@@ -3016,8 +3016,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] .friend-box { border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: rgba(10,10,30,0.5) padding-box !important; }
 /* 進化ページの背景：浮かぶ大水晶の祭壇（ページ全体に敷き、暗くするのは控えめに） */
 .tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.15), rgba(20,8,34,0.3)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
-/* スキルページの背景：緑の魔導書の間 */
-.tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.45) 420px, rgba(4,18,10,0.85) 700px, #06140c 920px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
+/* スキルページの背景：緑の錬金術の塔 */
+.tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.3) 360px, rgba(4,18,10,0.75) 520px, #06140c 600px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
 /* スキルページのカード：仲間ページのタイル（紺地＋金の飾り枠）に合わせる */
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card { border: 12px solid transparent !important; border-image: url(assets/img/ui/comp/stat.webp) 28 fill / 12px stretch !important; background: none !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 0 4px !important; gap: 3px; color: #e8ecf6 !important; text-shadow: 0 1px 2px #000 !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); --text: #e8ecf6; --text-dim: #c8d0e6; }
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top { flex-direction: column; gap: 2px; margin-top: -4px; }
