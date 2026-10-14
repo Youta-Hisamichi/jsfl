@@ -656,8 +656,8 @@ function pickGachaId() {
 }
 // ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 1.1・2・5・18・100倍 が出て（インフレと試練の塔が前提なので大きめ）、進化率に掛け算される =====
 const EVO_TIERS = [
-  { rarity: 'common', mult: 1.1, base: 72 }, { rarity: 'rare', mult: 2, base: 20 }, { rarity: 'epic', mult: 5, base: 6.5 },
-  { rarity: 'legendary', mult: 18, base: 1.35 }, { rarity: 'mythic', mult: 100, base: 0.15 },
+  { rarity: 'common', mult: 1.1, base: 71.2 }, { rarity: 'rare', mult: 2, base: 20 }, { rarity: 'epic', mult: 5, base: 6.5 },
+  { rarity: 'legendary', mult: 18, base: 2 }, { rarity: 'mythic', mult: 100, base: 0.3 },
 ];
 const EVO_MIN_GEMS = 5, EVO_RATE_CAP = 1e150;
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
