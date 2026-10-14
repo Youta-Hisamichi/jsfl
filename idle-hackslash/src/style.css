@@ -3032,3 +3032,6 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card.equipped { filter: drop-shadow(0 0 5px rgba(80,220,120,0.9)) drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
 /* 仲間ページ：解雇・採用と＋枠を増やすボタンの台（青地に金の八角枠） */
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 180 / 109; background: url(assets/img/ui/rb/comp_btn2.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 180 / 88; }
+.party-row #partySlotBtn .ps-cost { display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; }
+.party-row #partySlotBtn .ps-cost .ico-img, .party-row #partySlotBtn .ps-cost img { display: inline-block; width: 1em; height: 1em; }

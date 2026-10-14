@@ -252,7 +252,7 @@ function renderCompanionList() {
     const lim = getPartyLimit();
     psb.innerHTML = `<span>パーティ枠 <b>${getCompanionTotal()} / ${lim}</b></span>` + (lim >= COMPANION_PARTY_MAX // スキルの「＋枠を増やす」と同じ見た目
       ? '<span class="ws-max">枠MAX</span>'
-      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠を増やす<br>💎${getPartySlotCost()}</button>`);
+      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠を増やす<span class="ps-cost">💎${getPartySlotCost()}</span></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;
