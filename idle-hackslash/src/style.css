@@ -3003,3 +3003,5 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] > .artifact-panel { background: linear-gradient(180deg, rgba(30,6,6,0.1) 0px, rgba(30,6,6,0.45) 420px, rgba(24,6,6,0.85) 700px, #160606 920px, #160606 100%), url(assets/img/ui/rb/ranking_bg.webp) 50% 0 / 100% auto no-repeat, #160606 !important; border-color: #8a4a30 !important; }
 /* 進化ページの背景：紫の錬金術工房 */
 .tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.1) 0px, rgba(20,8,34,0.45) 420px, rgba(16,8,28,0.85) 700px, #120a1e 920px, #120a1e 100%), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / 100% auto no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
+/* スキルページの背景：緑の魔導書の間 */
+.tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.45) 420px, rgba(4,18,10,0.85) 700px, #06140c 920px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
