@@ -183,7 +183,7 @@ const SHOPKEEPERS = {
   coinshop:  { npc: 'sage',      name: '魔導書の賢者ソフィア', lines: ['スキルのことなら、この魔導書におまかせを。', '好きなスキルを選んで鍛えましょう！', '修行の代金はコインでけっこうですよ。', '戦闘中しか使えない技もあるので気をつけて。', 'サブウェポンも、ここで鍛えられます。'] },
   artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
   gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
-  gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの力を進化させてあげる。', '水晶玉が…光っているわ…！', 'ジェムを多く捧げるほど、運命は輝くわ。', '進化の羽があれば、×256も夢じゃないわよ。'] },
+  gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの力を進化させてあげる。', '水晶玉が…光っているわ…！', 'ジェムを多く捧げるほど、運命は輝くわ。', '進化の羽があれば、×100も夢じゃないわよ。'] },
   records:   { npc: 'elder',     name: '記録係の長老', lines: ['ほっほっ、よく戦っておるのう。', 'おぬしの戦いの記録、しっかり残しておるぞ。', '図鑑を埋めるのも冒険の楽しみじゃ。', '最高記録を更新する日が楽しみじゃわい。'] },
   ranking:   { npc: 'king',      name: 'アルス王', lines: ['よくぞ参った、勇者よ！', 'ランキングの頂点を目指すのだ！', '今日の戦果、期待しておるぞ。', '上位の者には、わしから称賛を贈ろう。'] },
   settings:  { npc: 'sister',    name: '案内係のシスター', lines: ['お困りのことはありませんか？', '音量はここで調整できますよ。', '遊び方はこちらからご覧ください。', 'ゆっくり休むことも大切ですよ。'] },
@@ -654,10 +654,10 @@ function pickGachaId() {
   }
   return Object.keys(GACHA_POOL)[0];
 }
-// ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 1.1・1.2・1.5・2・3倍 が出て、進化率に掛け算される =====
+// ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 1.1・2・5・18・100倍 が出て（インフレと試練の塔が前提なので大きめ）、進化率に掛け算される =====
 const EVO_TIERS = [
-  { rarity: 'common', mult: 1.1, base: 72 }, { rarity: 'rare', mult: 1.2, base: 20 }, { rarity: 'epic', mult: 1.5, base: 6.5 },
-  { rarity: 'legendary', mult: 2, base: 1.35 }, { rarity: 'mythic', mult: 3, base: 0.15 },
+  { rarity: 'common', mult: 1.1, base: 72 }, { rarity: 'rare', mult: 2, base: 20 }, { rarity: 'epic', mult: 5, base: 6.5 },
+  { rarity: 'legendary', mult: 18, base: 1.35 }, { rarity: 'mythic', mult: 100, base: 0.15 },
 ];
 const EVO_MIN_GEMS = 5, EVO_RATE_CAP = 1e150;
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
