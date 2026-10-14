@@ -403,3 +403,76 @@ function openTansu(o) {
   if (gm.broke % 15 === 0) { const b = Math.round(unit * 6); game.coins += b; spawnCoinBurst(arena.x, arena.y - 20, b, 8); spawnDamageText(arena.x, arena.y - 44, `🗄️ タンス ${gm.broke}段！ ボーナス`, '#ffe36b', 0.012, true); }
   updateStatsUI();
 }
+
+// ===== ドーピングの種（ドラクエの「ちからのたね」風）=====
+// タンス・壺・宝箱から出る。使うとその周回のあいだ能力アップ（転生でリセット）。使わなければ転生しても持ち越せる
+const SEEDS = {
+  atk: { icon: '🌰', name: '力の種', stat: '攻撃力', col: '#ff8a5c' },
+  hp:  { icon: '🍎', name: '命の木の実', stat: '最大HP', col: '#7ee787' },
+};
+const SEED_PER_USE = 0.05; // 1個につき +5%
+const SEED_CHEST_CHANCE = { common: 0.08, rare: 0.15, epic: 0.3, legendary: 0.6, mythic: 1 };
+const SEED_CHEST_COUNT = { common: 1, rare: 1, epic: 1, legendary: 2, mythic: 3 };
+function seedHeld(k) { return ((game.seeds || {})[k]) || 0; }
+function seedUsed(k) { return ((game.seedUsed || {})[k]) || 0; }
+function gainSeed(k, n = 1) { game.seeds = game.seeds || {}; game.seeds[k] = seedHeld(k) + n; updateSeedButton(); }
+function randomSeedKey() { return Math.random() < 0.5 ? 'atk' : 'hp'; }
+{ const orig = computeBonuses; computeBonuses = function () { const b = orig.apply(this, arguments); b.atkMult *= 1 + seedUsed('atk') * SEED_PER_USE; b.hpMult *= 1 + seedUsed('hp') * SEED_PER_USE; return b; }; }
+function useSeed(k, n) {
+  n = Math.min(n, seedHeld(k)); if (n <= 0) return;
+  game.seeds[k] -= n; game.seedUsed = game.seedUsed || {}; game.seedUsed[k] = seedUsed(k) + n;
+  if (typeof refreshPlayerBallStats === 'function') refreshPlayerBallStats(false);
+  const S = SEEDS[k], pl = balls.find(isMainPlayerBall);
+  if (pl) { spawnDamageText(pl.x, pl.y - pl.radius - 20, `${S.icon} ${S.stat} +${n * SEED_PER_USE * 100 | 0}%`, S.col, 0.014, true); spawnHitParticles(pl.x, pl.y, S.col); }
+  playTone(523, 0.08, 'triangle', 0.07, 784); setTimeout(() => playTone(784, 0.1, 'triangle', 0.07, 1047), 90); setTimeout(() => playTone(1047, 0.16, 'triangle', 0.07, 1568), 180);
+  updateSeedButton(); updateStatsUI(); saveGame();
+}
+const seedBtn = document.getElementById('seedBtn');
+function updateSeedButton() {
+  const held = seedHeld('atk') + seedHeld('hp'), used = seedUsed('atk') + seedUsed('hp');
+  seedBtn.style.display = held || used ? '' : 'none';
+  const html = `🌰<b>×${held}</b>`; if (seedBtn.dataset.html !== html) { seedBtn.innerHTML = html; seedBtn.dataset.html = html; }
+  seedBtn.classList.toggle('is-disabled', !held);
+  const t = document.getElementById('towerSeedBtn'); if (t) { t.style.display = held || used ? '' : 'none'; t.innerHTML = `🌰 種でドーピング <small>所持 ${held}個${used ? `／使用中 ${used}個` : ''}</small>`; }
+  const ov = document.querySelector('.seed-ov'); if (ov) renderSeedPanel(ov);
+}
+function renderSeedPanel(ov) {
+  ov.querySelector('.seed-list').innerHTML = Object.entries(SEEDS).map(([k, S]) => {
+    const h = seedHeld(k), u = seedUsed(k);
+    return `<div class="seed-row"><span class="seed-ico">${S.icon}</span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
+  }).join('');
+}
+function openSeedPanel() {
+  if (document.querySelector('.seed-ov')) return;
+  const ov = document.createElement('div'); ov.className = 'cl-overlay show seed-ov';
+  ov.innerHTML = `<div class="cl-panel seed-panel"><div class="seed-title">🌰 ドーピングの種</div><div class="seed-note">使うと転生するまで能力アップ（転生でリセット）。<br>使わずに持っていれば転生後も持ち越せます。<br>試練の塔やボスの前にどうぞ！</div><div class="seed-list"></div><button class="cl-close">閉じる</button></div>`;
+  document.body.appendChild(ov); renderSeedPanel(ov);
+  ov.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-seed]'); if (b) { useSeed(b.dataset.seed, b.dataset.n === 'all' ? seedHeld(b.dataset.seed) : 1); return; }
+    if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove();
+  });
+}
+seedBtn.addEventListener('click', openSeedPanel);
+document.getElementById('towerSeedBtn').addEventListener('click', openSeedPanel);
+updateSeedButton();
+// 入手：タンスの引き出し・壺・宝箱
+function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `${S.icon} ${S.name}${n > 1 ? ` ×${n}` : ''}を見つけた！`, S.col, 0.012, true); playCoinChime(11); }
+{ const orig = openTansu; openTansu = function (o) {
+  const before = gm.broke; orig.apply(this, arguments);
+  if (gm.broke !== before && Math.random() < 0.06) { const k = randomSeedKey(); gainSeed(k); setTimeout(() => seedDropText(k, 1, o.x, o.y - o.r - 34), 250); }
+}; }
+{ const orig = breakObstacleLoot; breakObstacleLoot = function (o) {
+  orig.apply(this, arguments);
+  if (o.kind === 'pot' && Math.random() < (o.gm ? 0.015 : 0.04)) { const k = randomSeedKey(); gainSeed(k); setTimeout(() => seedDropText(k, 1, o.x, o.y - 30), 250); }
+}; }
+{ const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
+  const loot = orig.apply(this, arguments);
+  if (Math.random() < (SEED_CHEST_CHANCE[rarity] || 0)) {
+    const k = randomSeedKey(), n = (SEED_CHEST_COUNT[rarity] || 1) * mult; gainSeed(k, n);
+    if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:${SEEDS[k].col}">${SEEDS[k].icon} ${SEEDS[k].name}も入っていた！ +${n}</b>`;
+    if (quiet) showNotice(`${SEEDS[k].icon} 宝箱から${SEEDS[k].name}を手に入れた！ +${n}`);
+  }
+  return loot;
+}; }
+// 転生で使った種の効果はリセット（持っている種はそのまま）
+{ const orig = completeReincarnation; completeReincarnation = function () { game.seedUsed = {}; const r = orig.apply(this, arguments); updateSeedButton(); return r; }; }
