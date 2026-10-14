@@ -3035,3 +3035,4 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 180 / 88; }
 .party-row #partySlotBtn .ps-cost { display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; }
 .party-row #partySlotBtn .ps-cost .ico-img, .party-row #partySlotBtn .ps-cost img { display: inline-block; width: 1em; height: 1em; }
+.tab-page[data-tab="companion"] .my-char-card .mc-go { aspect-ratio: 127 / 75; background: url(assets/img/ui/rb/comp_btn3.webp) center / 100% 100% no-repeat !important; } /* 自キャラの「変更」ボタンの台 */
