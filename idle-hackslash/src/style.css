@@ -3001,3 +3001,5 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="records"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,10,4,0.15) 0px, rgba(20,10,4,0.5) 380px, rgba(16,10,6,0.85) 640px, #120c08 820px, #120c08 100%), url(assets/img/ui/rb/records_bg.webp) 50% 0 / 100% auto no-repeat, #120c08 !important; border-color: #7a5a30 !important; }
 /* ランキングページの背景：黄金の白亜城 */
 .tab-page[data-tab="ranking"] > .artifact-panel { background: linear-gradient(180deg, rgba(30,18,4,0.05) 0px, rgba(30,18,4,0.4) 420px, rgba(24,14,4,0.85) 680px, #140e06 900px, #140e06 100%), url(assets/img/ui/rb/ranking_bg.webp) 50% 0 / 100% auto no-repeat, #140e06 !important; border-color: #8a6a30 !important; }
+/* 進化ページの背景：紫の錬金術工房 */
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.1) 0px, rgba(20,8,34,0.45) 420px, rgba(16,8,28,0.85) 700px, #120a1e 920px, #120a1e 100%), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / 100% auto no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
