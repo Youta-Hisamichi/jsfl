@@ -3000,8 +3000,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 #lbPanel.revealed .lb-rays { opacity: 0.22; }
 #lbPanel .lb-extras { margin: 4px -14px 8px; }
 #lbPanel .lb-chip { padding: 8px 2px; border-width: 0 22px; border-image-width: 0 22px; font-size: 0.63rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em; }
-/* ショップの背景：黄金の宝物庫 */
-.tab-page[data-tab="gemshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(30,18,4,0.1) 0px, rgba(30,18,4,0.45) 420px, rgba(24,14,4,0.85) 700px, #140e06 920px, #140e06 100%), url(assets/img/ui/rb/shop_bg.webp) 50% 0 / 100% auto no-repeat, #140e06 !important; border-color: #8a6a30 !important; }
+/* ショップの背景：黄金の魔法道具店 */
+.tab-page[data-tab="gemshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(30,18,4,0.1) 0px, rgba(30,18,4,0.3) 360px, rgba(24,14,4,0.75) 520px, #140e06 600px, #140e06 100%), url(assets/img/ui/rb/shop_bg.webp) 50% 0 / 100% auto no-repeat, #140e06 !important; border-color: #8a6a30 !important; }
 /* 仲間ページの背景：星空の城を望む大広間 */
 .tab-page[data-tab="companion"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,12,34,0.15) 0px, rgba(8,12,34,0.45) 380px, rgba(8,12,34,0.8) 640px, #0a0f22 820px, #0a0f22 100%), url(assets/img/ui/rb/comp_bg.webp) 50% 0 / 100% auto no-repeat, #0a0f22 !important; }
 /* 戦績ページの背景：トロフィーの並ぶ記念館 */
