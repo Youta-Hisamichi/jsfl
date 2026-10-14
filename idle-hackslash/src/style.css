@@ -2954,3 +2954,42 @@ body.gameover-lock .seed-float { opacity: 0.35; pointer-events: none; }
 .tower-seed-btn { display: block; width: 100%; margin: 6px 0; padding: 8px; border-radius: 10px; border: 2px solid #c9a24a; background: linear-gradient(180deg, #3a2a18, #1a1208); color: #ffd76b; font-weight: 900; font-size: 0.85rem; cursor: pointer; }
 .tower-seed-btn small { color: #e8dcc0; font-weight: 700; margin-left: 6px; }
 .seed-ov { z-index: 9500; }
+/* ===== 帰還ボーナス：ゴシックの大広間＋金縁の額（ui/rb/） ===== */
+body:has(#loginBonusModal.show) .run-banner { display: none; }
+#loginBonusModal #lbPanel { width: min(370px, 94vw); max-height: 96vh; overflow: hidden; padding: 22px 20px 20px !important; border: none !important; border-radius: 6px !important; box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
+  background: linear-gradient(180deg, rgba(8,6,30,0.35), rgba(6,8,30,0.55) 45%, rgba(4,6,22,0.9)), url(assets/img/ui/rb/bg.webp) center top / cover !important; color: #fff; }
+#loginBonusModal #lbPanel::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border: 26px solid transparent; border-image: url(assets/img/ui/rb/frame.webp) 52 / 26px stretch; }
+#loginBonusModal #lbPanel::before { display: none !important; }
+#lbPanel .lb-rays { top: 37%; width: 150%; }
+#lbPanel .lb-title { display: flex; align-items: center; justify-content: center; gap: 6px; height: 54px; margin: 0 -6px 4px; background: url(assets/img/ui/rb/title.webp) center / 100% 100% no-repeat; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.06em; line-height: 1;
+  background-color: transparent; color: #ffe08a; text-shadow: 0 2px 0 #7a4a00, 0 0 10px rgba(255,190,60,0.6); border: none; }
+#lbPanel #loginBonusStreak { margin: 0 0 6px; font-size: 0.8rem; font-weight: 800; color: #f4ead0; text-shadow: 0 1px 2px #000; animation: none; }
+#lbPanel .lb-days { gap: 4px; margin: 4px 0 0; }
+#lbPanel .lb-day { width: 46px; height: 46px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border: none; border-radius: 0; background: url(assets/img/ui/rb/slot.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.55rem; text-shadow: 0 1px 2px #000; }
+#lbPanel .lb-day b { font-size: 0.95rem; line-height: 1.05; }
+#lbPanel .lb-day.done b { color: #3fe06a; text-shadow: 0 0 4px #0a3, 0 1px 0 #041; }
+#lbPanel .lb-day.done { color: #e8f6e8; }
+#lbPanel .lb-day.today { transform: scale(1.14); color: #ffe08a; filter: drop-shadow(0 0 6px #ffc840) drop-shadow(0 0 2px #fff3); box-shadow: none; animation: rbToday 1s ease-in-out infinite alternate; }
+#lbPanel .lb-day.today b { font-size: 1.25rem; color: #ffe08a; text-shadow: 0 2px 0 #7a4a00; }
+#lbPanel .lb-day.big { background: url(assets/img/ui/rb/slot.webp) center / 100% 100% no-repeat; }
+@keyframes rbToday { from { filter: drop-shadow(0 0 3px #ffc840); } to { filter: drop-shadow(0 0 10px #ffc840); } }
+#lbPanel .lb-orb-wrap { position: relative; height: 112px; margin: 2px 0 0; }
+#lbPanel .lb-orb-wrap::before { content: ''; position: absolute; left: 50%; bottom: 0; width: 210px; height: 56px; transform: translateX(-50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; opacity: 0.9; filter: hue-rotate(200deg) saturate(1.6) brightness(1.3) drop-shadow(0 0 8px #48f); transform-origin: center; }
+#lbPanel .lb-orb { position: relative; width: 104px; height: 104px; background: none !important; box-shadow: none !important; filter: drop-shadow(0 0 14px var(--orb, #ffd76b)) drop-shadow(0 6px 6px rgba(0,0,0,0.6)); }
+#lbPanel .lb-orb .ico-img, #lbPanel .lb-orb img { width: 96px; height: 96px; }
+#lbPanel .lb-rarity { font-size: 1.15rem; margin-top: 2px; }
+#lbPanel #loginSlotBox { position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; height: 78px; margin: 6px -8px 4px; padding: 0; border: none !important; border-radius: 0; box-shadow: none !important;
+  background: url(assets/img/ui/rb/coinbox.webp) center / 100% 100% no-repeat; font-size: 2.3rem; }
+#lbPanel #loginSlotBox .coin-ico { width: 46px; height: 46px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+#lbPanel #loginSlotNum { background: linear-gradient(180deg, #fff6c8 10%, #ffd04a 50%, #e08a10 90%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 0 #5a2e00) drop-shadow(0 0 6px rgba(255,180,40,0.5)); }
+#lbPanel .lb-extras { flex-direction: column; flex-wrap: nowrap; gap: 3px; margin: 4px -6px 8px; }
+#lbPanel .lb-chip { display: block; padding: 7px 24px; border-radius: 0; text-align: left; font-size: 0.72rem; line-height: 1.3; color: #f4ead0; text-shadow: 0 1px 2px #000;
+  background: none !important; border: solid transparent; border-width: 0 24px; border-image: url(assets/img/ui/rb/chip.webp) 0 46 fill / 0 24px stretch; }
+#lbPanel .lb-chip.special { color: #fff; }
+#lbPanel .reward-ad-btn { height: 46px; padding: 0 !important; border: solid transparent !important; border-width: 0 18px !important; border-radius: 0 !important; box-shadow: none !important; background: none !important;
+  border-image: url(assets/img/ui/rb/btn_red.webp) 0 34 fill / 0 18px stretch !important; color: #fff !important; font-size: 0.95rem; font-weight: 900; text-shadow: 0 2px 0 #5a0010, 0 0 6px rgba(0,0,0,0.5); }
+#lbPanel .modal-close-btn { height: 46px; width: 100%; padding: 0 !important; border: solid transparent !important; border-width: 0 18px !important; border-radius: 0 !important; box-shadow: none !important; background: none !important;
+  border-image: url(assets/img/ui/rb/btn_blue.webp) 0 34 fill / 0 18px stretch !important; color: #fff !important; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.1em; text-shadow: 0 2px 0 #001a5a; }
+#lbPanel.revealed .lb-rays { opacity: 0.22; }
+#lbPanel .lb-extras { margin: 4px -14px 8px; }
+#lbPanel .lb-chip { padding: 8px 2px; border-width: 0 22px; border-image-width: 0 22px; font-size: 0.63rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em; }

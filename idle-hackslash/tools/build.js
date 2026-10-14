@@ -45,8 +45,10 @@ function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).flatMap
   const put = (rel, data) => { const f = path.join(DIST, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, data); files.push(rel); };
   // 小さな雑魚敵の絵（m_*.webp）はファイル数を抑えるため、JS に埋め込む（成果物のファイル数上限対策）
   const PACK_RE = /assets\/img\/enemies\/m_[A-Za-z0-9]+\.webp/g;
-  for (const f of walk(path.join(SRC, 'assets'))) { const rel = path.relative(SRC, f).split(path.sep).join('/'); if (rel.match(PACK_RE)) continue; put(rel, fs.readFileSync(f)); }
-  put('style.css', minCss);
+  // 帰還ボーナスなどの画面素材（ui/rb/）も、ファイル数を抑えるため CSS に埋め込む
+  const CSS_PACK_RE = /assets\/img\/ui\/rb\/[A-Za-z0-9_]+\.webp/g;
+  for (const f of walk(path.join(SRC, 'assets'))) { const rel = path.relative(SRC, f).split(path.sep).join('/'); if (rel.match(PACK_RE) || rel.match(CSS_PACK_RE)) continue; put(rel, fs.readFileSync(f)); }
+  put('style.css', minCss.replace(CSS_PACK_RE, p => `data:image/webp;base64,${fs.readFileSync(path.join(SRC, p)).toString('base64')}`));
   for (const f of jsFiles) put(f, minJs[f].replace(PACK_RE, p => { const fp = path.join(SRC, p); return fs.existsSync(fp) ? `data:image/webp;base64,${fs.readFileSync(fp).toString('base64')}` : p; }));
   // アプリのアイコン（主人公のドット絵を拡大）
   put('icons/icon.svg', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#1b2140"/><image href="../assets/img/misc/blHero.webp" x="4" y="4" width="56" height="56" style="image-rendering:pixelated"/></svg>`);
