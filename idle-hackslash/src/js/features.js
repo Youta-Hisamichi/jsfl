@@ -423,8 +423,8 @@ document.addEventListener('click', ev => {
   q[t].claimed[i] = true; game.gems += m.gems; playRegisterSound && playRegisterSound();
   showTapError(`🎯 +💎${m.gems}`, ev.clientX, ev.clientY); updateStatsUI(); saveGame(); renderQuests();
 });
-{ // 戦績ページの上にミッション欄を置く
-  const sec = document.querySelector('.tab-page[data-tab="records"] .rec-sec[data-rec-sec="stats"]');
+{ // 戦績ページの「ミッション」タブにミッション欄を置く
+  const sec = document.querySelector('.tab-page[data-tab="records"] .rec-sec[data-rec-sec="mission"]');
   if (sec) { const box = document.createElement('div'); box.id = 'questBox'; box.className = 'quest-box'; sec.insertBefore(box, sec.firstChild); }
   document.querySelectorAll('.tab-btn[data-tab="records"]').forEach(b => b.addEventListener('click', () => setTimeout(renderQuests, 0)));
 }

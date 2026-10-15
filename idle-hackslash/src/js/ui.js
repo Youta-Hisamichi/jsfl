@@ -3164,13 +3164,13 @@ setInterval(() => {
   if (el.textContent !== txt) el.textContent = txt;
 }, 500);
 
-// 戦績ページは上のタブで「戦績／敵図鑑／BGM図鑑」を切り替える（最後に見たタブを覚えておく）
+// 戦績ページは上のタブで「戦績／ミッション／敵図鑑／BGM図鑑」を切り替える（最後に見たタブを覚えておく）
 (() => {
   const tabs = document.querySelectorAll('[data-rec-tab]'), secs = document.querySelectorAll('[data-rec-sec]');
   const show = key => {
     tabs.forEach(t => t.classList.toggle('active', t.dataset.recTab === key));
     secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
-    if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook();
+    if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
     try { localStorage.setItem('recTab', key); } catch (e) {}
   };
   tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.recTab)));
