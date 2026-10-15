@@ -1277,12 +1277,15 @@ const FORBIDDEN_DROPS = [
   { id: 'forbiddenSword', normal: 0, tower: 0, gemTower: 0.03 },
   { id: 'forbiddenWatch', normal: 0, tower: 0, gemTower: 0.03 },
 ];
+const FORBIDDEN_HP_CUT = ['forbiddenKnife', 'forbiddenSword']; // 敵のHPを最初から削る遺物
+function forbiddenDropDecay(owned) { return 1 / (1 + owned * 0.2); } // 0個:100%・5個:50%・10個:33%・20個:20%・45個:10%
 function rollForbiddenDrop() {
   const ch = game.skipChallenge, kind = ch ? (ch.currency === 'gem' ? 'gemTower' : 'tower') : 'normal';
   let delay = 2600;
   for (const d of FORBIDDEN_DROPS) {
     const owned = (game.ownedArtifacts && game.ownedArtifacts[d.id]) || 0;
-    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind] * (typeof eventDropMult === 'function' ? eventDropMult() : 1)) continue; // 日曜はドロップ率2倍
+    const decay = FORBIDDEN_HP_CUT.includes(d.id) ? forbiddenDropDecay(owned) : 1; // 敵のHPを最初から削る遺物は、持っている数が多いほど出にくい
+    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind] * decay * (typeof eventDropMult === 'function' ? eventDropMult() : 1)) continue; // 日曜はドロップ率2倍
     gainArtifact(d.id); renderArtifactList(); saveGame();
     const a = ARTIFACT_BY_ID[d.id];
     setTimeout(() => { // ボス撃破の演出のあとに
