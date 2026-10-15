@@ -3137,3 +3137,4 @@ body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { position: relat
 body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble::before, body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble::after { display: none !important; }
 body .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { position: static !important; display: block; color: #ffd76b !important; font-size: 0.72rem; text-shadow: 0 1px 2px #000 !important; }
 .top-header .th-gear { width: 40px; height: 36px; background: url(assets/img/ui/rb/gear_btn.webp) center / contain no-repeat !important; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); } /* 右上の設定ボタン */
+.tab-page[data-tab="gacha"] .gen-hero .gh-npc { scale: -1 1; } /* 占い師は右（看板の方）を向かせる */
