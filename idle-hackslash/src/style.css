@@ -3159,3 +3159,5 @@ body #settingsModal .gen-hero { justify-content: center; padding-right: 20px; }
 /* タイトルの文字を看板の中央に（スキルは本の絵の右側の中央、ほかは看板の中央） */
 .skp-title { padding-left: 22% !important; }
 body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; padding-right: 3% !important; }
+.cp-help p { line-height: 1.6 !important; margin-top: 7px !important; }
+.cp-help[open] summary { margin-bottom: 2px; }

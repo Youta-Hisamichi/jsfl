@@ -3279,3 +3279,49 @@ document.getElementById('dbgPrevEnemyBtn').addEventListener('click', () => {
     panel.classList.add('gen-hero-panel');
   }
 })();
+// ガチャの結果が出ている間は、閉じるまで神聖な「ファー」という音を流す（戦闘のBGMは止めておく）
+let holyPad = null;
+function startHolyPad() {
+  if (holyPad || !audioCtx || bgmVol() <= 0) return;
+  const ac = audioCtx, t0 = ac.currentTime, vol = 0.09 * bgmVol() / 0.7;
+  const out = ac.createGain(); out.gain.setValueAtTime(0.0001, t0); out.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t0 + 1.6);
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.4;
+  const trem = ac.createGain(); trem.gain.value = 1; const lfo = ac.createOscillator(), lfoG = ac.createGain(); lfo.frequency.value = 0.35; lfoG.gain.value = 0.18; lfo.connect(lfoG); lfoG.connect(trem.gain); lfo.start(t0);
+  out.connect(lp); lp.connect(trem); trem.connect(ac.destination);
+  const oscs = [lfo];
+  [261.63, 329.63, 392, 523.25, 587.33, 783.99].forEach((f, i) => [-5, 5].forEach(cent => { // 聖歌隊のような和音（少しずらして重ね、ふくらみを出す）
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = i < 2 ? 'triangle' : 'sine'; o.frequency.value = f; o.detune.value = cent;
+    g.gain.value = i < 3 ? 0.22 : 0.12; o.connect(g); g.connect(out); o.start(t0); oscs.push(o);
+  }));
+  const bells = setInterval(() => { // ときどき澄んだベルがきらめく
+    if (!holyPad) return;
+    const f = [1046.5, 1318.5, 1568, 2093][Math.floor(Math.random() * 4)];
+    playTone(f, 0.9, 'sine', 0.03 * bgmVol() / 0.7);
+  }, 1300);
+  holyPad = { out, oscs, bells };
+  if (typeof currentBgmType !== 'undefined' && currentBgmType) stopBgm();
+}
+function stopHolyPad() {
+  if (!holyPad) return;
+  const { out, oscs, bells } = holyPad, t = audioCtx.currentTime;
+  holyPad = null; clearInterval(bells);
+  out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), t); out.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+  oscs.forEach(o => { try { o.stop(t + 0.7); } catch (e) {} });
+  refreshBgm(); // 元の曲に戻す
+}
+{ const orig = refreshBgm; refreshBgm = function () { if (holyPad) { if (currentBgmType) stopBgm(); return; } return orig.apply(this, arguments); }; }
+(() => {
+  const boxes = ['compGachaResult', 'gachaResult'].map(id => document.getElementById(id)).filter(Boolean);
+  let startTimer = 0;
+  const showing = () => boxes.some(b => b.style.display !== 'none' && !b.classList.contains('gacha-summoning') && b.innerHTML.trim())
+    || (skGachaModal.classList.contains('show') && !skGachaResult.classList.contains('gacha-summoning') && skGachaResult.innerHTML.trim());
+  const check = () => {
+    if (showing()) { if (!holyPad && !startTimer) startTimer = setTimeout(() => { startTimer = 0; if (showing()) startHolyPad(); }, 900); } // ファンファーレのあとで
+    else { clearTimeout(startTimer); startTimer = 0; stopHolyPad(); }
+  };
+  const mo = new MutationObserver(check);
+  [...boxes, skGachaResult, skGachaModal].forEach(el => el && mo.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }));
+})();
+// 「しくみ」ヘルプの文は、一文ごとに改行して読みやすく
+document.querySelectorAll('.cp-help p').forEach(p => { p.innerHTML = p.innerHTML.replace(/。(?=[^<\s）)])/g, '。<br>'); });
