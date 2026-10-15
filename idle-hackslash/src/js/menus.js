@@ -165,10 +165,11 @@ function compUpRowHtml(id, kind) {
 // 自キャラ：勇者か、獲得済みの仲間から選ぶ（見た目と属性が変わる）
 function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
-  el.style.display = COMPANION_IDS.some(isCharSummoned) ? '' : 'none'; // まだ誰も招集していなければ自キャラ変更は出さない
+  const canChange = COMPANION_IDS.some(isCharSummoned); // まだ誰も招集していなければ自キャラ変更は出さない
+  el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="mc-ico">${img}</span><span class="mc-main"><small>自キャラ</small><span class="mc-name"><b>${name}</b>${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span>${heroTypeHtml(id)}</span><span class="mc-go">変更 ▶</span>`;
+  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span>${heroTypeHtml(id)}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
 function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
   const info = heroTypeInfo(id);
@@ -233,6 +234,7 @@ function openCompInfo(id) {
   ov.querySelector('.ci-body').innerHTML = compInfoHtml(id);
   ov.classList.add('show');
 }
+const myCharBoxEl = document.getElementById('myCharBox'); // 一覧を描き直しても同じ要素を使い回す（ボタンの処理が付いている）
 function renderCompanionList() {
   renderMyCharCard();
   if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
@@ -245,7 +247,7 @@ function renderCompanionList() {
   document.getElementById('compBookBar').style.width = compRate + '%';
   const pc = document.getElementById('partyCount');
   if (pc) pc.innerHTML = `${getCompanionTotal()} / ${getPartyLimit()}<small>人</small>`;
-  document.getElementById('partyBar').style.width = Math.min(100, getCompanionTotal() / getPartyLimit() * 100) + '%';
+  { const pb = document.getElementById('partyBar'); if (pb) pb.style.width = Math.min(100, getCompanionTotal() / getPartyLimit() * 100) + '%'; }
   updateCompSummonVisibility();
   const psb = document.getElementById('partySlotBtn');
   if (psb) {
@@ -269,8 +271,10 @@ function renderCompanionList() {
     const rar = RARITY_INFO[c.rarity];
     return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span>${elemBadge(COMPANION_ELEMENT[id], 'el-tile')}<span class="cp-tile-lock">${isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
   }).join('');
-  companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + (mine.length ? `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length}</b></div>${mineHtml}` : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
+  companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + `<div class="cp-sec">⚔️ パーティメンバー <b>${mine.length + 1}</b></div><div id="myCharSlot"></div>` + (mine.length ? mineHtml : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
+  const slot = document.getElementById('myCharSlot');
+  if (myCharBoxEl && slot) slot.appendChild(myCharBoxEl); // 自キャラはパーティメンバーの先頭（同じカードの形）
 }
 
 const COMP_GACHA_BASE_COST = 20, COMP_GACHA_COST_GROWTH = 1.1;

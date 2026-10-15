@@ -1313,32 +1313,22 @@ function formatUpgradeStat(id, v) {
   return formatCoinNumber(Math.round(v));
 }
 const UPGRADE_SHOWN = ['atk', 'hp']; // 仲間全体の強化（cAtk・cSpd・cHp）は廃止（今のLvの効果は転生まで残る）
-function renderUpgradeList() {
+function renderUpgradeList() { // 自キャラの強化（仲間カードの強化行と同じ形）
   const row = ([id, upgrade]) => {
-    const level = game.upgrades[id];
+    const level = game.upgrades[id], hp = id === 'hp', cls = hp ? 'hp' : 'atk', label = hp ? '❤️ 最大HP' : '⚔️ 攻撃力';
     if (level >= getUpgradeLevelCap(id)) {
-      return `<div class="upgrade-row">
-      <div class="upgrade-btn upgrade-card is-disabled" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${formatCoinNumber(level)}（MAX）<span class="upgrade-value">${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cost">上限に達しました</span></div>
-      <button class="upgrade-max-btn one-btn is-disabled" data-upgrade="${id}">+1<span>Lv.</span></button>
-      <button class="upgrade-max-btn pct-btn is-disabled" data-upgrade-pct="${id}">10%<span>—</span></button>
-      <button class="upgrade-max-btn is-disabled" data-upgrade-max="${id}">MAX<span>—</span></button>
-    </div>`;
+      return `<div class="cc-up ${cls}" data-upgrade-card="${id}"><div class="cc-up-info"><b>${label} <small>Lv.${formatCoinNumber(level)}（MAX）</small></b><span>${formatUpgradeStat(id, getUpgradeStatValue(id))}</span><span class="cc-up-cost">上限に達しました</span></div><div class="cc-level-row cc-side"><button class="cc-lvup is-disabled" data-upgrade="${id}"><b>+1</b><span>Lv.UP</span></button><button class="cc-max-btn cc-pct-btn is-disabled" data-upgrade-pct="${id}">10% <span>—</span></button><button class="cc-max-btn is-disabled" data-upgrade-max="${id}">MAX <span>—</span></button></div></div>`;
     }
     const cost = getUpgradeCost(id);
     const maxCount = getMaxAffordableUpgradeLevels(id, game.coins);
     const pctCount = getMaxAffordableUpgradeLevels(id, game.coins * PCT_BUDGET);
     const nl = nextUpgradeLeap(level);
-    const leapTag = nl.target - level === 1 ? `<span class="upgrade-leap leap-next" style="--lc:${nl.leap.color}">✨ 次で${nl.leap.name}！（${nl.leap.every === 10 ? '+3%' : '×' + nl.leap.mult}）</span>` : ''; // あと1回で飛躍するときだけ知らせる
+    const leapTag = nl.target - level === 1 ? `<i class="upgrade-leap leap-next" style="--lc:${nl.leap.color}">✨次で${nl.leap.name}</i>` : ''; // あと1回で飛躍するときだけ知らせる
     const now = getUpgradeStatValue(id);
     game.upgrades[id] = level + 1;
     const next = getUpgradeStatValue(id);
     game.upgrades[id] = level;
-    return `<div class="upgrade-row">
-      <div class="upgrade-btn upgrade-card ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade-card="${id}"><span class="item-icon">${ico(upgrade)}</span> <b class="up-title">${upgrade.name}</b> Lv.${formatCoinNumber(level)}<span>${upgrade.desc}</span>${leapTag}<span class="upgrade-value">${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div>
-      <button class="upgrade-max-btn one-btn ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}">+1<span>Lv.UP</span></button>
-      ${bulkUpLocked(true) ? `<button class="upgrade-max-btn pct-btn is-disabled bulk-locked" data-upgrade-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="upgrade-max-btn pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10%<span>+${formatCoinNumber(pctCount)} Lv.</span></button>`}
-      ${bulkUpLocked(false) ? `<button class="upgrade-max-btn is-disabled bulk-locked" data-upgrade-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="upgrade-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX<span>+${formatCoinNumber(maxCount)} Lv.</span></button>`}
-    </div>`;
+    return `<div class="cc-up ${cls}" data-upgrade-card="${id}"><div class="cc-up-info"><b>${label} <small>Lv.${formatCoinNumber(level)}</small>${leapTag}</b><span>${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cc-up-cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div><div class="cc-level-row cc-side"><button class="cc-lvup ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><b>+1</b><span>Lv.UP</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-upgrade-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10% <span>+${formatCoinNumber(pctCount)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-upgrade-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX <span>+${formatCoinNumber(maxCount)} Lv.</span></button>`}</div></div>`;
   };
   upgradeList.innerHTML = Object.entries(UPGRADES).filter(([id]) => UPGRADE_SHOWN.includes(id)).map(row).join('');
 }

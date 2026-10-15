@@ -3107,3 +3107,19 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="gemshop"] .cp-book-stat .cp-stat-label { flex: none; color: #f3e7c4; font-size: 0.76rem; }
 .tab-page[data-tab="gemshop"] .cp-book-stat .cp-bar { flex: 1; order: 2; margin: 0; height: 8px; background: rgba(0,0,0,0.55); }
 .tab-page[data-tab="gemshop"] .cp-book-stat .cp-stat-val { flex: none; order: 3; color: #fff; font-size: 1rem; line-height: 1; }
+/* 自キャラ：パーティメンバーと同じカード（先頭） */
+.tab-page[data-tab="companion"] .companion-list .my-char-box { margin: 0 0 8px; }
+.tab-page[data-tab="companion"] .my-char-box .my-char-card { display: block; width: 100%; min-height: 0; margin: 0 !important; padding: 0 !important; border: none !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; text-align: left; color: inherit; cursor: pointer; }
+.tab-page[data-tab="companion"] .my-char-box .my-char-card.no-change { cursor: default; }
+.tab-page[data-tab="companion"] .my-char-box .my-char-card .cc-top, .my-char-box .my-char-card .cc-main, .my-char-box .my-char-card .cc-name, .my-char-box .my-char-card .cc-meta { display: flex; }
+.my-char-box .my-char-card .cc-main { flex-direction: column; align-items: flex-start; gap: 3px; }
+.my-char-box .my-char-card .cc-name { align-items: center; gap: 6px; flex-wrap: wrap; }
+.my-char-box .my-char-card .mc-tag { padding: 1px 8px; border-radius: 6px; background: linear-gradient(180deg, #e0943a, #9a5414); border: 1px solid #ffd27a; color: #fff; font-size: 0.66rem; font-weight: 900; }
+.my-char-box .my-char-card .cc-portrait .comp-sprite, .my-char-box .my-char-card .cc-portrait img { width: 56px; height: 56px; }
+#myCharCard .mc-ud { margin-top: 0; font-size: 0.66rem; }
+#myCharCard .mc-ud i { background: rgba(10,16,40,0.85); border: 1px solid rgba(201,154,58,0.7); }
+#myCharCard .mc-ud .ht { color: #c8b6ff; } #myCharCard .mc-ud .up { color: #63e394; } #myCharCard .mc-ud .dn { color: #ff8a8a; }
+.tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { flex: none; align-self: center; width: 64px; font-size: 0.8rem; }
+.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { width: min(280px, 90%); margin: 8px auto 2px; }
+.my-char-box .upgrade-leap.leap-next { display: block; font-style: normal; font-size: 0.56rem; color: var(--lc, #ffd76b); white-space: nowrap; }
+.tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { width: 76px; white-space: nowrap; display: flex; align-items: center; justify-content: center; }
