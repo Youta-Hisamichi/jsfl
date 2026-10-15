@@ -3143,3 +3143,16 @@ body .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { position: static !i
 #lbPanel #loginSlotBox { font-size: 1.75rem; gap: 8px; }
 #lbPanel #loginSlotBox .coin-ico { width: 36px; height: 36px; }
 #lbPanel #loginSlotNum { line-height: 1; white-space: nowrap; max-width: 62%; }
+/* 設定のタイトル：看板を文字に合った幅にして、文字を中央に */
+body #settingsModal .gen-hero-panel .gen-hero > .page-head { flex: 0 1 230px; padding: 5.9% 7% 2.1% 9% !important; }
+body #settingsModal .gen-hero { justify-content: center; padding-right: 20px; }
+/* ゲーム画面左下のミッション：左の余白をなくす */
+.ob-mission { left: 2px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+/* コンテニューの「1回まで」はボタンの中央に／あきらめるボタンは細く */
+#bossContModal .go2 .go-ad-btn { position: relative; }
+#bossContModal .go2 .go-ad-text small { position: absolute; left: 50%; bottom: 23%; transform: translateX(-50%); white-space: nowrap; }
+#bossContModal .go2 .go-ad-text { padding-bottom: 4.4cqw; }
+#bossContModal .go2 .go-giveup-btn { width: 74%; align-self: center; margin: 0 auto; }
+#bossContModal .go2 .go-giveup-btn .msb-name { font-size: 4.6cqw; }
+/* ポーズボタンは目立たないグレー */
+.game-pause-btn { border-color: #8a90a0 !important; background: radial-gradient(circle at 50% 35%, #3a3f4c, #15181f) !important; color: #c8ccd6 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.5) !important; }
