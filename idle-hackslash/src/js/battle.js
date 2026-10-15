@@ -1544,6 +1544,12 @@ function spawnLoginConfetti(rarity) {
 }
 const SURPRISE_CHEST_WEIGHTS = { mythic: 0.2, legendary: 1, epic: 3.125 }; // 帰還ボーナスのサプライズ宝箱は★3（エピック）以上だけ。比率は転生報酬と同じ
 function rollSurpriseChestRarity() { const ks = Object.keys(SURPRISE_CHEST_WEIGHTS); let r = Math.random() * ks.reduce((a, k) => a + SURPRISE_CHEST_WEIGHTS[k], 0); for (const k of ks) if ((r -= SURPRISE_CHEST_WEIGHTS[k]) < 0) return k; return 'epic'; }
+function fitLoginSlotNum() { // 桁が多いときは枠からはみ出さないよう文字を小さくする
+  const el = document.getElementById('loginSlotNum'); if (!el) return;
+  el.style.fontSize = ''; const max = el.parentElement.clientWidth * 0.62;
+  if (el.scrollWidth > max && max > 0) el.style.fontSize = Math.max(0.6, max / el.scrollWidth) + 'em';
+}
+if (typeof loginSlotNum !== 'undefined' && loginSlotNum) new MutationObserver(fitLoginSlotNum).observe(loginSlotNum, { childList: true, characterData: true, subtree: true });
 function checkLoginBonus(awayMs) {
   if (!(awayMs >= RETURN_MIN_MS) || loginBonusModal.classList.contains('show')) return;
   const tier = getReturnTier(awayMs);

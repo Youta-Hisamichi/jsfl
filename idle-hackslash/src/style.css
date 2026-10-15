@@ -3139,3 +3139,7 @@ body .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { position: static !i
 .top-header .th-gear { width: 40px; height: 36px; background: url(assets/img/ui/rb/gear_btn.webp) center / contain no-repeat !important; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); } /* 右上の設定ボタン */
 .tab-page[data-tab="gacha"] .gen-hero .gh-npc { scale: -1 1; } /* 占い師は右（看板の方）を向かせる */
 .tab-page[data-tab="companion"] .companion-list > .auto-toggle-btn { margin: 0 auto 8px; } /* オート強化は自キャラ枠の上 */
+/* 帰還ボーナスのコイン：枠（上下の宝石飾り）に被らない大きさに */
+#lbPanel #loginSlotBox { font-size: 1.75rem; gap: 8px; }
+#lbPanel #loginSlotBox .coin-ico { width: 36px; height: 36px; }
+#lbPanel #loginSlotNum { line-height: 1; white-space: nowrap; max-width: 62%; }
