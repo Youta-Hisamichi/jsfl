@@ -847,13 +847,17 @@ function playBgmTrack(type) {
   const resumeStep = bgmResume && bgmResume.type === type ? bgmResume.step : 0;
   if (type !== 'levelup') bgmResume = null;
   currentBgmType = type;
+  if ((NORMAL_BATTLE_SONGS.includes(type) || BOSS_BATTLE_SONGS.includes(type)) && type !== lastBattleBgm) { prevBattleBgm = lastBattleBgm; lastBattleBgm = type; } // デバッグ表示用：1つ前の戦闘曲
   clearTimeout(bgmTimer);
   stopSong();
   if (BGM_SONGS[type]) startSong(type, resumeStep); // 通常戦闘・ボス戦は多重トラックの曲（3択の後は続きから）
   else scheduleBgmStep(type, 0, bgmToken);
   updateDebugNowBgm();
 }
+var lastBattleBgm = null, prevBattleBgm = null;
 function updateDebugNowBgm() { // デバッグパネル上部に今の曲名を常に表示
+  const pe = document.getElementById('dbgPrevBgm');
+  if (pe) { const pi = prevBattleBgm && BGM_INFO.find(b => b.key === prevBattleBgm); pe.textContent = '⏮ 1つ前の戦闘曲：' + (!prevBattleBgm ? '（まだありません）' : pi ? pi.name : prevBattleBgm); }
   const el = document.getElementById('dbgNowBgm'); if (!el) return;
   const info = BGM_INFO.find(b => b.key === currentBgmType);
   el.textContent = '🎶 再生中：' + (!audioCtx || !currentBgmType ? '（まだ鳴っていません）' : info ? info.name : currentBgmType) + '　ⓘ';
