@@ -1684,6 +1684,24 @@ function playGachaSound(rarity) {
   notes.forEach((f, i) => setTimeout(() => playTone(f, 0.22, 'triangle', 0.2), i * 90));
   if (rarity === 'legendary' || rarity === 'epic' || rarity === 'mythic') playNoiseBurst(0.3, 0.15);
 }
+// 招集ガチャの結果：ありがたみのあるファンファーレ（ドン！→駆け上がり→ジャーン＋キラキラ。レア度が高いほど豪華に）
+function playSummonFanfare(rarity) {
+  const lv = { common: 0, rare: 1, epic: 2, legendary: 3, mythic: 4 }[rarity] || 0;
+  const v = 1 + lv * 0.12;
+  thump(120, 45, 0.35, 0.45 + lv * 0.08); noiseSweep(0.6 + lv * 0.15, 9000, 1800, 'highpass', 0.7, 0.25 + lv * 0.06); // ドン！シャララ
+  const run = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568].slice(0, 4 + Math.min(2, lv)); // 駆け上がる分散和音
+  run.forEach((f, i) => setTimeout(() => { playTone(f, 0.16, 'square', 0.05 * v); playTone(f, 0.2, 'triangle', 0.09 * v); }, 60 + i * 70));
+  let t = 60 + run.length * 70;
+  const chord = (root, dur, g) => [1, 1.25, 1.5, 2].forEach(r => { playTone(root * r, dur, 'sawtooth', 0.022 * g); playTone(root * r, dur, 'triangle', 0.06 * g); });
+  if (lv >= 2) { // タ・タ・ジャーン（♭6→♭7→1 の和音で盛り上げる）
+    setTimeout(() => chord(415.3, 0.18, v), t); setTimeout(() => chord(466.16, 0.18, v), t + 170); t += 340;
+  }
+  const hold = 0.9 + lv * 0.25;
+  setTimeout(() => { chord(523.25, hold, v); thump(65, 50, hold * 0.6, 0.3 + lv * 0.05, 'triangle'); playTone(2093, hold, 'sine', 0.05); if (lv >= 3) playTone(2637, hold, 'sine', 0.035); }, t);
+  const sparks = 6 + lv * 6; // キラキラ
+  for (let k = 0; k < sparks; k++) setTimeout(() => playTone(2400 + Math.random() * 2600, 0.08, 'sine', 0.035), t + 80 + k * (70 - lv * 6));
+  if (lv >= 3) for (let k = 0; k < 2; k++) setTimeout(() => playTone(600, 0.25, 'sawtooth', 0.05, 2400), t + 200 + k * 260); // キュイン
+}
 // パチンコ風：だんだん速くなるリール音＋ジャラジャラ、レア度が高いほどキュインキュイン
 let pachinkoTok = 0; // 結果が出たら（スキップしたときも）溜め音を止める
 function playPachinkoBuildUp(ms, rarity) {

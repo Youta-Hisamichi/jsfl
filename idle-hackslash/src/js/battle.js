@@ -2123,6 +2123,16 @@ function showTapError(text, clientX, clientY) {
   noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
 }
 
+function showTapOk(text, clientX, clientY) { // 成功のお知らせ（エラー音ではなく軽い「ピコン」）
+  battleNotice.textContent = text;
+  battleNotice.style.position = 'fixed';
+  battleNotice.style.left = clientX + 'px';
+  battleNotice.style.top = (clientY - 14) + 'px';
+  battleNotice.classList.remove('error'); battleNotice.classList.add('at-tap', 'show');
+  playTone(1318.5, 0.07, 'sine', 0.12); setTimeout(() => playTone(1975.5, 0.14, 'sine', 0.11), 70);
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
+}
 function resizeCanvas() {
   const rect = wrap.getBoundingClientRect();
   if (rect.width < 10) return;

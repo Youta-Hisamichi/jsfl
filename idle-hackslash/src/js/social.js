@@ -208,7 +208,17 @@ function renderFriendBox() {
     <div class="fb-in"><input id="fbCodeInput" placeholder="友達の挑戦状コードを貼り付け" autocomplete="off"><button id="fbAddBtn">登録</button></div>
     <div class="fb-note">${game.friendBonusGot ? '' : `はじめて登録すると 💎${FRIEND_FIRST_GEMS}・`}友達の最高ステージを超えるたびに 💎${FRIEND_BEAT_GEMS}</div>
     <div class="fb-list">${fr.length ? fr.slice().sort((a, b) => b.stage - a.stage).map(f => `<div class="fb-row ${f.beaten || me > f.stage ? 'beat' : ''}"><b>${f.name}</b><span>ステージ${f.stage}</span><em>${f.beaten || me > f.stage ? '✓ 突破' : `あと${f.stage - me + 1}`}</em></div>`).join('') : '<div class="fb-empty">まだフレンドがいません。コードを送り合って競おう！</div>'}</div>`;
-  document.getElementById('fbCopyBtn').onclick = async ev => { try { await navigator.clipboard.writeText(myRivalCode()); showTapError('📋 コピーしました', ev.clientX, ev.clientY); } catch (e) { showTapError('コードを長押しでコピーしてください', ev.clientX, ev.clientY); } };
+  document.getElementById('fbCopyBtn').onclick = async ev => {
+    const code = myRivalCode(), x = ev.clientX, y = ev.clientY;
+    try { await navigator.clipboard.writeText(code); showTapOk('📋 コピーしました', x, y); return; } catch (e) {}
+    try { // 埋め込み表示などでクリップボードが使えないときは、選択してコピー
+      const ta = document.createElement('textarea'); ta.value = code; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy'); ta.remove();
+      if (ok) { showTapOk('📋 コピーしました', x, y); return; }
+    } catch (e) {}
+    const el = document.getElementById('myRivalCode'); if (el) { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+    showTapOk('コードを選択しました。長押しでコピーしてください', x, y);
+  };
   document.getElementById('fbAddBtn').onclick = ev => { const msg = addFriendCode(document.getElementById('fbCodeInput').value); showNotice(msg, msg.startsWith('⚠️'), 2600); if (!msg.startsWith('⚠️')) { renderFriendBox(); if (typeof renderRanking === 'function') renderRanking(); } };
 }
 { const list = document.getElementById('rankingList');

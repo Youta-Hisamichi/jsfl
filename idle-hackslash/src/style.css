@@ -3156,3 +3156,6 @@ body #settingsModal .gen-hero { justify-content: center; padding-right: 20px; }
 #bossContModal .go2 .go-giveup-btn .msb-name { font-size: 4.6cqw; }
 /* ポーズボタンは目立たないグレー */
 .game-pause-btn { border-color: #8a90a0 !important; background: radial-gradient(circle at 50% 35%, #3a3f4c, #15181f) !important; color: #c8ccd6 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.5) !important; }
+/* タイトルの文字を看板の中央に（スキルは本の絵の右側の中央、ほかは看板の中央） */
+.skp-title { padding-left: 22% !important; }
+body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; padding-right: 3% !important; }

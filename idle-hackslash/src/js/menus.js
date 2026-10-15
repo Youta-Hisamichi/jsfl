@@ -374,7 +374,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   { const cb = document.getElementById('compGachaCloseBtn'), row = document.createElement('div'); row.className = 'gr-btn-row'; cb.before(row); row.insertAdjacentHTML('beforeend', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>`); cb.classList.add('gr-ok-btn'); row.appendChild(cb); row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } // 演出スキップの誤タップを防ぐため、引き直しと閉じるは左右に離して並べる
   document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });
-  playGachaSound(bestRarity);
+  playSummonFanfare(bestRarity); // 仲間が来た！のファンファーレ
   updateStatsUI();
   updateHPUI();
 }
