@@ -3081,3 +3081,6 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="gacha"] .cp-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.75); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
 .tab-page[data-tab="gacha"] .cp-help p { margin: 5px 8px 0; }
 .tab-page[data-tab="records"] .rec-tabs .sub-tab-btn { font-size: 0.74rem; padding-left: 2px; padding-right: 2px; white-space: nowrap; letter-spacing: -0.02em; } /* 4つ並ぶので少し詰める */
+/* 戦績ページ：明るい背景の上でも読めるよう、白文字＋黒フチ */
+.tab-page[data-tab="records"] [data-rec-sec="stats"] .settings-row label, .tab-page[data-tab="records"] [data-rec-sec="bgm"] .modal-sub { color: #fff !important; opacity: 1 !important; font-weight: 800; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 2px 3px rgba(0,0,0,0.7) !important; }
+.tab-page[data-tab="records"] [data-rec-sec="bgm"] > .title, .tab-page[data-tab="records"] [data-rec-sec="bestiary"] > .title { color: #fff !important; opacity: 1 !important; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 2px 3px rgba(0,0,0,0.7) !important; }
