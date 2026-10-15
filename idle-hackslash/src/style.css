@@ -3066,3 +3066,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 #settingsModal .settings-page .sk-name { color: #ffd76b !important; text-shadow: 0 1px 2px #000 !important; }
 .dbg-prev-bgm { grid-column: 1 / -1; font-size: 0.68rem; font-weight: 700; padding: 4px 8px; border-radius: 8px; border: 1px dashed rgba(255,177,79,0.5); color: var(--text-dim); background: rgba(255,177,79,0.05); }
 .tab-btn[data-tab="companion"] .tab-icon .ico-img { content: url(assets/img/ui/rb/tab_upgrade.webp); object-fit: contain; border-radius: 0; width: 2.3rem; height: 1.8rem; margin-top: -0.1rem; } /* 「強化」タブのアイコン（仲間の絵はページ内で使う） */
+/* 仲間ページの「しくみ」ボタン：スキルページと同じ見た目・大きさ */
+.tab-page[data-tab="companion"] .cp-help { margin: 4px 0 2px; }
+.tab-page[data-tab="companion"] .cp-help summary { display: flex; align-items: center; gap: 6px; width: auto; height: 30px; aspect-ratio: auto; max-width: 330px; padding-left: 16px; background: url(assets/img/ui/rb/helpbar_plain.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="companion"] .cp-help summary::before { content: '▶'; flex: none; font-size: 0.6rem; color: #f3e7c4; transition: transform 0.2s; }
+.tab-page[data-tab="companion"] .cp-help[open] summary::before { transform: rotate(90deg); }
