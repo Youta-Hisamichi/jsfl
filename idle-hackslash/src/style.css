@@ -3059,3 +3059,8 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .bag-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .bag-n { font-size: 1rem; font-weight: 900; color: #ffe08a; }
 .bag-side button { padding: 3px 10px; border: 7px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 7px stretch; background: none; color: #fff; font-weight: 900; font-size: 0.7rem; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.7); white-space: nowrap; }
+/* 設定画面のシスター：にじみ（明るい縁取り）をやめ、暗い吹き出しに白文字 */
+#settingsModal .settings-page .shopkeeper, #settingsModal .settings-page .shopkeeper * { text-shadow: none !important; }
+#settingsModal .settings-page .sk-bubble { margin: 0; min-height: 44px; padding: 7px 16px 8px; border: none; border-radius: 0; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat; color: #fff !important; text-shadow: 0 1px 2px #000 !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+#settingsModal .settings-page .sk-bubble::before, #settingsModal .settings-page .sk-bubble::after { display: none; }
+#settingsModal .settings-page .sk-name { color: #ffd76b !important; text-shadow: 0 1px 2px #000 !important; }

@@ -2634,7 +2634,7 @@ canvas.addEventListener('pointerdown', event => {
 
 try {
   const tryCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (tryCtx.state === 'running') { audioCtx = tryCtx; refreshBgm(); } else tryCtx.close();
+  if (tryCtx.state === 'running') audioCtx = tryCtx; else tryCtx.close(); // 曲はセーブ（音量）を読み込んでから鳴らす
 } catch (e) {}
 function unlockAudio() {
   ensureAudio(); refreshBgm(); if (typeof loadBossFinish === 'function') loadBossFinish(); // ボス撃破音を前もって読み込む
@@ -2852,6 +2852,7 @@ window.addEventListener('beforeunload', saveGame);
 window.addEventListener('pagehide', saveGame);
 
 loadGame();
+try { if (audioCtx) refreshBgm(); } catch (e) {} // 音量を読み込んでから曲を始める（読み込み前だと初期音量で一瞬鳴る）
 applyHeroChar(); // セーブから自キャラを戻す（読み込み前に一度描いているので、ここで描き直す）
 delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
 delete game.bounceAtkBonus;         // 壁反射での攻撃力上昇は廃止
