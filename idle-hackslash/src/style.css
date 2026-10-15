@@ -3096,3 +3096,14 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-btn.tab-locked::before { top: 22%; z-index: 2; }
 .tab-btn.has-new::after, .tab-btn.has-reward::after { top: 2px; right: 6%; z-index: 2; }
 .tab-btn.active { background: none !important; border: none !important; box-shadow: none !important; }
+/* 仲間ページ上部のパーティ人数：横長の小さいプレート1本に */
+.tab-page[data-tab="companion"] .cp-hero-party { grid-template-columns: 1fr; margin: 2px 0 6px; }
+.tab-page[data-tab="companion"] .cp-hero-party .cp-stat { aspect-ratio: auto; height: 40px; padding: 0 22px !important; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; max-width: 330px; margin: 0 auto; width: 100%; box-sizing: border-box; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="companion"] .cp-hero-party .cp-stat-label { flex: none; font-size: 0.74rem; }
+.tab-page[data-tab="companion"] .cp-hero-party .cp-bar { flex: 1; order: 2; margin: 0; }
+.tab-page[data-tab="companion"] .cp-hero-party .cp-stat-val { flex: none; order: 3; font-size: 1rem; line-height: 1; }
+/* ショップの「仲間」タブの仲間図鑑 */
+.tab-page[data-tab="gemshop"] .cp-book-stat { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; padding: 8px 12px; background: rgba(10,16,40,0.72); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+.tab-page[data-tab="gemshop"] .cp-book-stat .cp-stat-label { flex: none; color: #f3e7c4; font-size: 0.76rem; }
+.tab-page[data-tab="gemshop"] .cp-book-stat .cp-bar { flex: 1; order: 2; margin: 0; height: 8px; background: rgba(0,0,0,0.55); }
+.tab-page[data-tab="gemshop"] .cp-book-stat .cp-stat-val { flex: none; order: 3; color: #fff; font-size: 1rem; line-height: 1; }
