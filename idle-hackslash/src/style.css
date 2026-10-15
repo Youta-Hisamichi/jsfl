@@ -3084,3 +3084,15 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 /* 戦績ページ：明るい背景の上でも読めるよう、白文字＋黒フチ */
 .tab-page[data-tab="records"] [data-rec-sec="stats"] .settings-row label, .tab-page[data-tab="records"] [data-rec-sec="bgm"] .modal-sub { color: #fff !important; opacity: 1 !important; font-weight: 800; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 2px 3px rgba(0,0,0,0.7) !important; }
 .tab-page[data-tab="records"] [data-rec-sec="bgm"] > .title, .tab-page[data-tab="records"] [data-rec-sec="bestiary"] > .title { color: #fff !important; opacity: 1 !important; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 2px 3px rgba(0,0,0,0.7) !important; }
+/* 下のタブ：絵と文字が一体になった画像（上段がオフ・下段がオン） */
+.tab-bar { gap: 2px !important; }
+.tab-btn { padding: 0 !important; aspect-ratio: 160 / 186; background: none !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; min-width: 0; }
+.tab-btn .tab-icon { position: absolute; inset: 0; font-size: 0; background: url(assets/img/ui/rb/tabs.webp) var(--tx, 0%) 0% / 700% 200% no-repeat; transform: none !important; filter: none; transition: none; }
+.tab-btn .tab-icon > * { display: none !important; }
+.tab-btn .tab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.tab-btn.active .tab-icon { background-position-y: 100%; transform: none !important; filter: none !important; }
+.tab-btn.tab-locked .tab-icon { filter: grayscale(1) brightness(0.55) !important; opacity: 0.75; }
+.tab-btn[data-tab="game"] { --tx: 0%; } .tab-btn[data-tab="companion"] { --tx: 16.6667%; } .tab-btn[data-tab="coinshop"] { --tx: 33.3333%; } .tab-btn[data-tab="gemshop"] { --tx: 50%; } .tab-btn[data-tab="gacha"] { --tx: 66.6667%; } .tab-btn[data-tab="records"] { --tx: 83.3333%; } .tab-btn[data-tab="ranking"] { --tx: 100%; }
+.tab-btn.tab-locked::before { top: 22%; z-index: 2; }
+.tab-btn.has-new::after, .tab-btn.has-reward::after { top: 2px; right: 6%; z-index: 2; }
+.tab-btn.active { background: none !important; border: none !important; box-shadow: none !important; }
