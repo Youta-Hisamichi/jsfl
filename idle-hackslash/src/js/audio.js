@@ -168,17 +168,6 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - k - h - s - h - | k - h - s - h - s s s s ks s ks ks | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | h - - - h - - - h - - - h - - - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - h - h - sh - h - h - h - | kh - h - sh - h - kh - h - sh - h - | kh - h - sh - h - kh - h - sh - h - | kh - h - sh - h - kh - h - s s s s | k s s s s s s s ks s s s s s s s'
   },
-  boss15: { // ボス14 逆転の大勝負：せわしなく刻む弦の分散和音と突き上げるベースに、重厚で劇的な短調の旋律（企業ドラマの決戦テーマ系）
-    bpm: 280,
-    echo: { time: 0.2, feedback: 0.22, wet: 0.15 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.037, notes: 'E5 = = = = = = = A5 = = = = = G5 = | A5 = = = = = = = - - - - E5 = A5 = | C6 = = = = = = = B5 = = = A5 = = = | B5 = = = = = = = G5 = = = D5 = = = | E5 = = = = = = = A5 = = = C6 = = = | E6 = = = = = = = D6 = C6 = B5 = C6 = | D6 = = = = = = = F5 = = = A5 = = = | G#5 = = = = = = = - - - - - - - - | A5 = = = C6 = = = F6 = = = E6 = = = | D6 = = = B5 = = = G5 = = = B5 = = = | E6 = = = = = = = D6 = = = B5 = = = | C6 = = = = = = = A5 = = = - - - - | A5 = = = = = = = C6 = = = F6 = = = | D6 = = = = = = = G6 = = = F6 = = = | E6 = = = = = = = D6 = = = B5 = = = | G#5 = = = = = = = B5 = = = E6 = = =' },
-      { type: 'vrc6pulse12', gain: 0.015, notes: 'A3 C4 E4 A4 E4 C4 E4 C4 A3 C4 E4 A4 E4 C4 E4 C4 | A3 C4 E4 A4 E4 C4 E4 C4 A3 C4 E4 A4 E4 C4 E4 C4 | F3 A3 C4 F4 C4 A3 C4 A3 F3 A3 C4 F4 C4 A3 C4 A3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | A3 C4 E4 A4 E4 C4 E4 C4 A3 C4 E4 A4 E4 C4 E4 C4 | A3 C4 E4 A4 E4 C4 E4 C4 A3 C4 E4 A4 E4 C4 E4 C4 | D4 F4 A4 D5 A4 F4 A4 F4 D4 F4 A4 D5 A4 F4 A4 F4 | E3 G#3 B3 E4 B3 G#3 B3 G#3 E3 G#3 B3 E4 B3 G#3 B3 G#3 | F3 A3 C4 F4 C4 A3 C4 A3 F3 A3 C4 F4 C4 A3 C4 A3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | E3 G3 B3 E4 B3 G3 B3 G3 E3 G3 B3 E4 B3 G3 B3 G3 | A3 C4 E4 A4 E4 C4 E4 C4 A3 C4 E4 A4 E4 C4 E4 C4 | F3 A3 C4 F4 C4 A3 C4 A3 F3 A3 C4 F4 C4 A3 C4 A3 | G3 B3 D4 G4 D4 B3 D4 B3 G3 B3 D4 G4 D4 B3 D4 B3 | E3 G#3 B3 E4 B3 G#3 B3 G#3 E3 G#3 B3 E4 B3 G#3 B3 G#3 | E3 G#3 B3 E4 B3 G#3 B3 G#3 E3 G#3 B3 E4 B3 G#3 B3 G#3' },
-      { type: 'vrc6saw', gain: 0.06, notes: 'A1 - A1 - A2 - A1 - A1 - A1 - A2 - A1 - | A1 - A1 - A2 - A1 - A1 - A1 - A2 - A1 - | F1 - F1 - F2 - F1 - F1 - F1 - F2 - F1 - | G1 - G1 - G2 - G1 - G1 - G1 - G2 - G1 - | A1 - A1 - A2 - A1 - A1 - A1 - A2 - A1 - | A1 - A1 - A2 - A1 - A1 - A1 - A2 - A1 - | D2 - D2 - D3 - D2 - D2 - D2 - D3 - D2 - | E1 - E1 - E2 - E1 - E1 - E1 - E2 - E1 - | F1 - F1 - F2 - F1 - F1 - F1 - F2 - F1 - | G1 - G1 - G2 - G1 - G1 - G1 - G2 - G1 - | E1 - E1 - E2 - E1 - E1 - E1 - E2 - E1 - | A1 - A1 - A2 - A1 - A1 - A1 - A2 - A1 - | F1 - F1 - F2 - F1 - F1 - F1 - F2 - F1 - | G1 - G1 - G2 - G1 - G1 - G1 - G2 - G1 - | E1 - E1 - E2 - E1 - E1 - E1 - E2 - E1 - | E1 - E1 - E2 - E1 - E1 - E1 - E2 - E1 -' },
-    ],
-    kickBoost: 1.3,
-    drums: 'k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - s - k - s - s s s s ks s ks ks | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - h - s - h - k - k - s - h - | k - s - k - s - s s s s ks s ks ks'
-  },
   boss16: { // ボス15 戦闘民族の襲来：せき立てる分散和音とうなるオクターブベースに、荒々しく攻め込む短調の旋律（ファミコン格闘アニメRPGのボス戦系）
     bpm: 190,
     echo: { time: 0.16, feedback: 0.18, wet: 0.12 },
@@ -677,7 +666,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss15', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -725,7 +714,6 @@ const BGM_INFO = [
   { key: 'boss6', name: 'ボス6 血の月', desc: 'ナポリの和音で不気味に転じるゴシックな死闘。ホ短調（悪魔城系の作風）・BPM188' },
   { key: 'boss11', name: 'ボス10 天翔ける星の拳', desc: '疾走する8ビートに刻むコードとうなるベース、短調で熱く駆け出し、サビで長調へ一気に舞い上がる勇壮な旋律。VRC6風チップチューン。ロ短調（80年代バトルアニメの主題歌系の作風）・BPM168' },
   { key: 'boss12', name: 'ボス11 決戦の旅路', desc: '駆け上がる弦の刻みとうなるベースに乗って、気高く劇的な旋律が挑みかかる。旅の果てに立ちはだかる強敵との決戦。VRC6風チップチューン。ト短調（HD-2D系RPGのボス戦の作風）・BPM176' },
-  { key: 'boss15', name: 'ボス14 逆転の大勝負', desc: 'せわしなく刻む弦の分散和音と突き上げるベースに乗って、重厚で劇的な旋律が一歩も引かずに立ち向かう。土壇場からの大逆転劇。VRC6風チップチューン。イ短調（企業ドラマの決戦テーマの作風）・BPM140' },
   { key: 'boss16', name: 'ボス15 戦闘民族の襲来', desc: 'せき立てる分散和音とうなるオクターブベースに乗って、荒々しい旋律が空から襲来した強敵と激突する。VRC6風チップチューン。ホ短調（ファミコンの格闘アニメRPGのボス戦の作風）・BPM190' },
   { key: 'boss17', name: 'ボス16 摩天楼の夜狩り', desc: '16分で脈打つシンセベースと切り込む和音に乗って、クールな旋律が夜の摩天楼を駆け抜ける。凄腕の始末屋の夜。VRC6風チップチューン。嬰ヘ短調（80年代シティ系アニメのシンセロックの作風）・BPM126' },
   { key: 'boss21', name: 'ボス20 宿命の血統', desc: '熱く刻む8ビートとうなるベースに乗って、激しくも気高い旋律が宿命の敵へ立ち向かう。血統に刻まれた誇りの戦い。VRC6風チップチューン。イ短調（熱血バトル漫画アニメのロックOPの作風）・BPM184' },

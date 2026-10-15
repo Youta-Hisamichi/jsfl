@@ -2739,6 +2739,13 @@ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
 });
 const SKILL_BUTTON_KEYS = { specialBtn: 'skillSpecial', accelBtn: 'skillAccel', healBtn: 'skillHeal', barrierBtn: 'skillBarrier', poisonBtn: 'skillPoison', paralyzeBtn: 'skillParalyze', atkUpBtn: 'skillAtkUp', regenBtn: 'skillRegen', silenceBtn: 'skillSilence', deathBtn: 'skillDeath', halveBtn: 'skillHalve', coinStrikeBtn: 'skillCoinStrike', zeniBtn: 'skillZeni', mysteryBtn: 'skillMystery', compRushBtn: 'skillCompRush', novaBtn: 'skillNova', blastBtn: 'skillBlast' };
 function decorateSkillButton(btn) {
+  const first = btn.firstChild;
+  if (first && first.nodeType === 1 && first.classList.contains('comp-ico')) { // 🐾 が先に小さい仲間の絵に置き換わっていたら、スキルの絵にする
+    const img = document.createElement('img'); img.className = 'ico-img'; img.alt = ''; img.src = SKILL_GACHA_SKILLS[SKILL_BUTTON_KEYS[btn.id]].img;
+    btn.replaceChild(img, first);
+    const t = img.nextSibling; if (t && t.nodeType === 3) t.nodeValue = t.nodeValue.replace(/^\s+/, '');
+    return;
+  }
   const node = btn.firstChild;
   if (!node || node.nodeType !== 3) return; // すでに画像化済み
   const text = node.nodeValue;
