@@ -1553,10 +1553,9 @@ function checkLoginBonus(awayMs) {
   const b = computeBonuses();
   const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
-  const chest = Math.random() < reward.chest; // サプライズ宝箱：遺物かジェムの山
-  const chestArtifact = chest ? { rarity: rollSurpriseChestRarity() } : null; // サプライズ宝箱は★3以上の宝箱（左下に持てる。ジェムは動画を見たときだけ）
+  const chestArtifact = null; // サプライズ宝箱は廃止（ふつうに拾った宝箱とまぎらわしいため）
   const bonusPotion = rIdx >= 2 ? 1 : 0;
-  const bonusArtifact = rarity === 'legendary' ? pickWeightedArtifact(ARTIFACT_POOL, REBIRTH_REWARD_RARITY_WEIGHTS) : null;
+  const bonusArtifact = null; // ★4の帰還ボーナスのおまけ宝箱も同じ理由で廃止
   const fakeOut = rIdx >= 2 && Math.random() < 0.5;
   // 放置中の戦果：離れている間も自キャラは戦い続けていた（最大8時間ぶん）
   const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
