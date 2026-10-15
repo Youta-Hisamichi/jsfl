@@ -1265,7 +1265,7 @@ function showShopTab(key) {
   try { localStorage.setItem('shopTab', key); } catch (e) {}
 }
 document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
-{ let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'chara', 'charge'].includes(first) ? first : 'item'); }
+{ let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'chara', 'charge', 'bag'].includes(first) ? first : 'item'); }
 document.getElementById('myCharCard').addEventListener('click', openMyCharPicker);
 applyHeroChar();
 document.getElementById('compLockBtn').addEventListener('click', () => { // 仲間ページから、ショップの解雇・採用（仲間タブ）へ

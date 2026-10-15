@@ -476,3 +476,30 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
 }; }
 // 転生で使った種の効果はリセット（持っている種はそのまま）
 { const orig = completeReincarnation; completeReincarnation = function () { game.seedUsed = {}; const r = orig.apply(this, arguments); updateSeedButton(); return r; }; }
+
+// ===== ショップの「所持品」タブ：持っている消耗品・宝箱・種などを一覧（使えるものはここから使う） =====
+function bagRows() {
+  const rows = [], hc = getHeldChests();
+  rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
+  rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキル全快ポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
+  for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: S.icon, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
+  for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
+    rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label.replace('コモン', 'ノーマル')}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
+  rows.push({ icon: '🪽', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで使うと高レア度が出やすくなる', btn: `<button data-bag-go="gacha">進化へ</button>` });
+  if (game.hireTickets) rows.push({ icon: '🎫', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
+  return rows;
+}
+function renderBagList() {
+  const el = document.getElementById('bagList'); if (!el) return;
+  el.innerHTML = bagRows().map(r => `<div class="bag-row ${r.n ? '' : 'empty'}"><span class="bag-ico">${r.icon}</span><div class="bag-info"><b>${r.name}</b><span>${r.desc}</span></div><div class="bag-side"><span class="bag-n">×${formatCoinNumber(r.n)}</span>${r.btn || ''}</div></div>`).join('');
+}
+{ const orig = showShopTab; showShopTab = function (key) { orig.apply(this, arguments); if (key === 'bag') renderBagList(); }; }
+document.getElementById('bagList').addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.bagSeed) { openSeedPanel(); return; }
+  if (b.dataset.bagChest) { switchTab('game'); setTimeout(() => { if (phase === 'battle') openChestBatchDialog(b.dataset.bagChest); else showNotice('戦闘中に開けられます'); }, 200); return; }
+  if (b.dataset.bagGo === 'gacha') switchTab('gacha');
+  if (b.dataset.bagGo === 'chara') showShopTab('chara');
+});
+{ const orig = updateSeedButton; updateSeedButton = function () { orig.apply(this, arguments); const sec = document.querySelector('[data-shop-sec="bag"]'); if (sec && !sec.hidden) renderBagList(); }; }
+if (document.querySelector('[data-shop-sec="bag"]') && !document.querySelector('[data-shop-sec="bag"]').hidden) renderBagList();
