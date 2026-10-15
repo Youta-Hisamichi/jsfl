@@ -1276,7 +1276,9 @@ const FORBIDDEN_DROPS = [
   { id: 'forbiddenKnife', normal: 0.02, tower: 0.05, gemTower: 0.05 },
   { id: 'forbiddenSword', normal: 0, tower: 0, gemTower: 0.03 },
   { id: 'forbiddenWatch', normal: 0, tower: 0, gemTower: 0.03 },
+  { id: 'rareRing', normal: 0, tower: 0, gemTower: 0.008 }, // レアリング：ジェムで挑む試練の塔でだけ、まれに
 ];
+function rareRingMult() { return 1 + 0.5 * Math.min(ARTIFACT_STACK_LIMIT.rareRing, (game.ownedArtifacts && game.ownedArtifacts.rareRing) || 0); } // レアリング1個につきレア遺物のドロップ率 +50%
 const FORBIDDEN_HP_CUT = ['forbiddenKnife', 'forbiddenSword']; // 敵のHPを最初から削る遺物
 function forbiddenDropDecay(owned) { return 1 / (1 + owned * 0.2); } // 0個:100%・5個:50%・10個:33%・20個:20%・45個:10%
 function rollForbiddenDrop() {
@@ -1293,7 +1295,7 @@ function rollForbiddenDrop() {
         else if (!(kind === 'normal' && newRecord)) continue;
       }
     }
-    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind] * decay * (typeof eventDropMult === 'function' ? eventDropMult() : 1)) continue; // 日曜はドロップ率2倍
+    if (owned >= ARTIFACT_STACK_LIMIT[d.id] || Math.random() >= d[kind] * decay * rareRingMult() * (typeof eventDropMult === 'function' ? eventDropMult() : 1)) continue; // 日曜はドロップ率2倍
     gainArtifact(d.id); renderArtifactList(); saveGame();
     const a = ARTIFACT_BY_ID[d.id];
     setTimeout(() => { // ボス撃破の演出のあとに

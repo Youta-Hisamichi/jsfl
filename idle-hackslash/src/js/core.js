@@ -602,15 +602,16 @@ const ARTIFACT_ALL = [
   { id: 'forbiddenSword', icon: '🗡️', name: '禁断の剣', desc: 'ボス戦の開始時に、ボスのHPを1個につき1%削る（最大50個）', rarity: 'mythic' },
   { id: 'forbiddenKnife', icon: '🔪', name: '禁断のナイフ', desc: '雑魚が現れたとき、そのHPを1個につき1%削る（最大50個）', rarity: 'legendary' },
   { id: 'forbiddenWatch', icon: '⏱️', name: '禁断の懐中時計', desc: 'ボス戦の制限時間が1個につき1秒のびる（最大30個）', rarity: 'mythic' },
+  { id: 'rareRing', icon: '💍', name: 'レアリング', desc: '禁断シリーズなどレア遺物のドロップ率が1個につき +50%（最大2個）', rarity: 'legendary' },
 ];
 const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
 const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
-const ARTIFACT_STACK_LIMIT = { forbiddenSword: 50, forbiddenKnife: 50, forbiddenWatch: 30, pierceHoof: 3, hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
+const ARTIFACT_STACK_LIMIT = { rareRing: 2, forbiddenSword: 50, forbiddenKnife: 50, forbiddenWatch: 30, pierceHoof: 3, hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
 const ARTIFACT_BY_ID = {};
 ARTIFACT_ALL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
-const ARTIFACT_SHOWN = ['evoFeather', 'forbiddenSword', 'forbiddenKnife', 'forbiddenWatch'];
+const ARTIFACT_SHOWN = ['evoFeather', 'forbiddenSword', 'forbiddenKnife', 'forbiddenWatch', 'rareRing'];
 // 禁断シリーズはボスからしか出ない（★4はボス、★5はジェムで挑む試練の塔ボスだけ）。転生報酬などの抽選には入れない
-const BOSS_DROP_ONLY = ['forbiddenSword', 'forbiddenKnife', 'forbiddenWatch']; // 一旦これ以外の遺物は隠す（入手・表示・効果なし。所持数はセーブに残す）
+const BOSS_DROP_ONLY = ['forbiddenSword', 'forbiddenKnife', 'forbiddenWatch', 'rareRing']; // 一旦これ以外の遺物は隠す（入手・表示・効果なし。所持数はセーブに残す）
 const isArtifactShown = id => ARTIFACT_SHOWN.includes(id);
 const ARTIFACT_POOL = ARTIFACT_ALL.filter(a => isArtifactShown(a.id));
 
@@ -751,6 +752,7 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: '雑魚が現れたとき、そのHPを1%削る。ショップで買えるのは1本だけ（ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 30, unlockKey: 'forbiddenKnifeBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★5遺物）', desc: 'ボス戦の制限時間が1秒のびる。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大30個まで集まり1個ごとに+1秒）', cost: 60, unlockKey: 'forbiddenWatchBought' };
+SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_ring.webp', name: 'レアリング（★4遺物）', desc: '禁断シリーズなどレア遺物のドロップ率が +50%。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大2個・2個で +100%）', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
@@ -819,6 +821,7 @@ function getSubStatMult() { const s = getActiveSub(); return s ? s.statMult : 1;
 function coinPrice(cost) { const s = getActiveSub(); return s ? Math.max(1, Math.ceil(cost * s.coinPriceMult)) : cost; }
 function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult < 1 ? Math.max(1, Math.ceil(cost * s.gemPriceMult)) : cost; }
 ARTIFACT_ALL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
+ARTIFACT_BY_ID.rareRing.img = ICON_IMAGES.art_ring; // レアリングは指輪の絵を使い回す
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
 // 強化の仲間系3つのアイコン：仲間タブの絵＋それぞれの強化の絵（ファイル数を増やさないよう埋め込み）
@@ -833,7 +836,7 @@ ARTIFACT_POOL.forEach(a => {
 });
 if (REBIRTH_SHOP_ITEMS.heart) REBIRTH_SHOP_ITEMS.heart.cost = 1; // 1個目の商品は初回1ジェムで買える
 delete REBIRTH_SHOP_ITEMS.swordM; delete REBIRTH_SHOP_ITEMS.swordL;
-delete REBIRTH_SHOP_ITEMS.forbiddenSword; delete REBIRTH_SHOP_ITEMS.forbiddenKnife; delete REBIRTH_SHOP_ITEMS.forbiddenWatch; // 禁断の剣はふつうのショップで1個だけ売る（残りは転生報酬などから）
+delete REBIRTH_SHOP_ITEMS.forbiddenSword; delete REBIRTH_SHOP_ITEMS.forbiddenKnife; delete REBIRTH_SHOP_ITEMS.forbiddenWatch; delete REBIRTH_SHOP_ITEMS.rareRing; // 禁断の剣はふつうのショップで1個だけ売る（残りは転生報酬などから）
 const REBIRTH_COST_GROWTH = 1.25;
 function getRebirthItemCost(id) {
   const item = REBIRTH_SHOP_ITEMS[id];
@@ -885,7 +888,7 @@ const REBIRTH_SHOP_CATEGORIES = [ // タブのアイコンは強化ページと�
   { id: 'companion', label: `${xi('x_up_companion')} 仲間` },
 ];
 const ARTIFACT_CATEGORY = {
-  forbiddenSword: 'attack', forbiddenKnife: 'attack', forbiddenWatch: 'attack', heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
+  forbiddenSword: 'attack', forbiddenKnife: 'attack', forbiddenWatch: 'attack', rareRing: 'economy', heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
   book: 'defense', armor: 'defense', feather: 'defense',
   ring: 'economy', compass: 'economy', calendar: 'economy', rebirthOrb: 'economy', evoFeather: 'economy',
   banner: 'companion', amulet: 'companion', pierceHoof: 'attack',
@@ -901,7 +904,7 @@ function renderSubTabs(el, cats, current, onPick) {
   el.onclick = ev => { const btn = ev.target.closest('[data-subtab]'); if (btn) onPick(btn.dataset.subtab); };
 }
 const ARTIFACT_CURRENT = {
-  forbiddenSword: n => `ボス戦開始時 ボスHP -${n}%`, forbiddenKnife: n => `雑魚の出現時 HP -${n}%`, forbiddenWatch: n => `ボス戦の制限時間 +${n}秒`,
+  forbiddenSword: n => `ボス戦開始時 ボスHP -${n}%`, forbiddenKnife: n => `雑魚の出現時 HP -${n}%`, forbiddenWatch: n => `ボス戦の制限時間 +${n}秒`, rareRing: n => `レア遺物のドロップ率 +${n * 50}%`,
   pierceHoof: n => `吹っ飛ばし +${n*25}%`,
   heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
   compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
