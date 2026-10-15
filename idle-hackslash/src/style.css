@@ -2801,7 +2801,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="companion"] .my-char-card .mc-main small { display: inline-block; padding: 1px 12px; border-radius: 6px; background: linear-gradient(180deg, #e0943a, #9a5414); border: 1px solid #ffd27a; color: #fff !important; font-size: 0.72rem !important; font-weight: 900; }
 .tab-page[data-tab="companion"] .my-char-card .mc-name b { color: #fff; font-size: 1.15rem; }
 .tab-page[data-tab="companion"] .my-char-card .mc-go { width: 76px; aspect-ratio: 236 / 114; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.82rem; text-shadow: 0 1px 2px #000; }
-.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { display: block; width: min(300px, 86%); aspect-ratio: 498 / 61; margin: 6px auto 6px; padding: 0; border: none !important; border-radius: 0; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 0.74rem; font-weight: 800; text-shadow: 0 1px 2px #000; opacity: 1; }
+.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn, .tab-page[data-tab="companion"] .companion-list > .auto-toggle-btn { display: block; width: min(300px, 86%); aspect-ratio: 498 / 61; margin: 6px auto 6px; padding: 0; border: none !important; border-radius: 0; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 0.74rem; font-weight: 800; text-shadow: 0 1px 2px #000; opacity: 1; }
 .tab-page[data-tab="companion"] .cp-sec { color: #f3e7c4; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
 .tab-page[data-tab="companion"] .cp-empty { color: #c8d0e6; background: rgba(10,16,40,0.6); }
 /* 仲間ページ下部（パーティメンバー・待機中の仲間）も紺と金の枠に */
@@ -3120,7 +3120,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 #myCharCard .mc-ud i { background: rgba(10,16,40,0.85); border: 1px solid rgba(201,154,58,0.7); }
 #myCharCard .mc-ud .ht { color: #c8b6ff; } #myCharCard .mc-ud .up { color: #63e394; } #myCharCard .mc-ud .dn { color: #ff8a8a; }
 .tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { flex: none; align-self: center; width: 64px; font-size: 0.8rem; }
-.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { width: min(280px, 90%); margin: 8px auto 2px; }
+.tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn, .tab-page[data-tab="companion"] .companion-list > .auto-toggle-btn { width: min(280px, 90%); margin: 8px auto 2px; }
 .my-char-box .upgrade-leap.leap-next { display: block; font-style: normal; font-size: 0.56rem; color: var(--lc, #ffd76b); white-space: nowrap; }
 .tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { width: 76px; white-space: nowrap; display: flex; align-items: center; justify-content: center; }
 /* 仲間・進化・戦績・ランキング・設定の上部：スキル・ショップと同じ形（左に大きいキャラ＋看板／下に横長の吹き出し） */
@@ -3138,3 +3138,4 @@ body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble::before, body .ge
 body .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { position: static !important; display: block; color: #ffd76b !important; font-size: 0.72rem; text-shadow: 0 1px 2px #000 !important; }
 .top-header .th-gear { width: 40px; height: 36px; background: url(assets/img/ui/rb/gear_btn.webp) center / contain no-repeat !important; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); } /* 右上の設定ボタン */
 .tab-page[data-tab="gacha"] .gen-hero .gh-npc { scale: -1 1; } /* 占い師は右（看板の方）を向かせる */
+.tab-page[data-tab="companion"] .companion-list > .auto-toggle-btn { margin: 0 auto 8px; } /* オート強化は自キャラ枠の上 */
