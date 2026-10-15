@@ -3123,3 +3123,16 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn { width: min(280px, 90%); margin: 8px auto 2px; }
 .my-char-box .upgrade-leap.leap-next { display: block; font-style: normal; font-size: 0.56rem; color: var(--lc, #ffd76b); white-space: nowrap; }
 .tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { width: 76px; white-space: nowrap; display: flex; align-items: center; justify-content: center; }
+/* 仲間・進化・戦績・ランキング・設定の上部：スキル・ショップと同じ形（左に大きいキャラ＋看板／下に横長の吹き出し） */
+.gen-hero-panel > .cpp-title { display: none !important; }
+.gen-hero { position: relative; display: flex; align-items: center; height: 80px; margin: 0 0 4px; }
+.gen-hero .gh-npc { position: relative; z-index: 2; flex: none; width: 86px; height: 86px; object-fit: contain; margin: -4px -22px -2px -6px; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6)); cursor: pointer; }
+.gen-hero .gh-npc.pix { image-rendering: pixelated; }
+.gen-hero .gh-npc.hop { animation: skHop 0.35s ease-out; }
+body .gen-hero-panel .gen-hero > .page-head { display: flex !important; position: relative; z-index: 1; flex: 0 1 300px; width: auto !important; aspect-ratio: 700 / 149; box-sizing: border-box; margin: 0 !important; padding: 5.9% 0 2.1% 16% !important; gap: 6px; align-items: center; justify-content: center; line-height: 1; background: url(assets/img/ui/lb7/title.webp) center / 100% 100% no-repeat !important; color: #ffe08a !important; font-size: 1.4rem; letter-spacing: 3px; text-shadow: -2px -2px 0 #4a2604, 2px -2px 0 #4a2604, -2px 2px 0 #4a2604, 2px 2px 0 #4a2604, 0 3px 0 #2a1402 !important; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6)); }
+body .gen-hero-panel .gen-hero > .page-head .ico-img { width: 2.2rem; height: 2.2rem; margin: 2px 0 0; }
+body .gen-hero-panel.gen-hero-panel > .shopkeeper { display: block; margin: 0 0 8px !important; }
+body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-img { display: none !important; }
+body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { position: relative; display: block; margin: 0 !important; min-height: 44px; padding: 7px 16px 8px !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat !important; color: #fff !important; font-size: 0.76rem; text-align: left; text-shadow: 0 1px 2px #000 !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble::before, body .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble::after { display: none !important; }
+body .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { position: static !important; display: block; color: #ffd76b !important; font-size: 0.72rem; text-shadow: 0 1px 2px #000 !important; }

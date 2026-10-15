@@ -3243,3 +3243,21 @@ document.getElementById('dbgPrevEnemyBtn').addEventListener('click', () => {
   debugRow.appendChild(b); b.click(); b.remove();
   showNotice(`DEBUG: 1個前の敵「${ENEMY_BOOK_BY_KEY[key].name}」を出しました`);
 });
+// スキル・ショップと同じ上部（左に大きいキャラ＋看板、その下に横長の吹き出し）を、仲間・進化・戦績・ランキング・設定にも
+(() => {
+  const NPC_BIG = { companion: 'assets/img/ui/comp/npc.webp' }; // 大きい絵があるものはそれを使う（ほかは小さいドット絵を拡大）
+  const targets = { companion: '.tab-page[data-tab="companion"] > .artifact-panel', gacha: '.tab-page[data-tab="gacha"] > .artifact-panel', records: '.tab-page[data-tab="records"] > .artifact-panel', ranking: '.tab-page[data-tab="ranking"] > .artifact-panel', settings: '#settingsModal .settings-page' };
+  for (const tab in targets) {
+    const panel = document.querySelector(targets[tab]), info = SHOPKEEPERS[tab];
+    const head = panel && panel.querySelector(':scope > .page-head'), sk = panel && panel.querySelector(':scope > .shopkeeper');
+    if (!head || !sk || !info) continue;
+    const hero = document.createElement('div'); hero.className = 'gen-hero';
+    const img = document.createElement('img'); img.className = 'gh-npc' + (NPC_BIG[tab] ? '' : ' pix'); img.alt = info.name; img.src = NPC_BIG[tab] || NPC_SPRITES[info.npc];
+    img.addEventListener('click', () => { // タップで跳ねて、別のセリフ
+      img.classList.remove('hop'); void img.offsetWidth; img.classList.add('hop');
+      const s = sk.querySelector('.sk-img'); if (s && s.onclick) s.onclick();
+    });
+    panel.insertBefore(hero, head); hero.append(img, head); panel.insertBefore(sk, hero.nextSibling);
+    panel.classList.add('gen-hero-panel');
+  }
+})();
