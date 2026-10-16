@@ -1788,7 +1788,7 @@ const SG_SHINE = {};
   const now = performance.now() / 1000;
   supergemShopList.querySelectorAll('.sub-btn, .gb-btn').forEach(b => {
     const k = b.dataset.subShop || b.dataset.supergemShop;
-    const s = SG_SHINE[k] || (SG_SHINE[k] = { dur: 2.8 + Math.random() * 3.4, off: Math.random() * 10 });
+    const s = SG_SHINE[k] || (SG_SHINE[k] = { dur: 8 + Math.random() * 6, off: Math.random() * 20 });
     b.style.setProperty('--sdur', s.dur.toFixed(2) + 's');
     b.style.setProperty('--sdel', (-((now + s.off) % s.dur)).toFixed(2) + 's');
   });
