@@ -3444,3 +3444,9 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .seed-ico .ico-img { width: 2.2rem; height: 2.2rem; display: block; }
 .bag-row .bag-ico img.ico-img { width: 94%; height: 94%; }
 .tab-page[data-tab="gemshop"] .shop-sec > .title { color: #fff !important; opacity: 1 !important; font-weight: 900; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 0 4px #000, 0 2px 3px #000 !important; } /* 背景に埋もれないよう縁取り */
+/* ショップのアイテム：所持品と同じ紺のアイテムベースを流用 */
+#shopList .shop-row { position: relative; grid-template-columns: minmax(0, 1fr) auto !important; aspect-ratio: 720 / 138; padding: 4px 4.5% 4px 20.5% !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; }
+#shopList .shop-row .sr-ico { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; }
+#shopList .shop-row .sr-ico > * { max-width: 86%; max-height: 86%; }
+#shopList .shop-row .sr-ico-emoji { border: none; background: none; }
+#shopList .shop-desc { color: #c8d0e6 !important; text-shadow: 0 1px 2px #000 !important; }
