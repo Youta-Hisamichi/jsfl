@@ -212,6 +212,16 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
+  loginbonus: { // ログインボーナス 今日のごほうび：鉄琴のきらめく旋律とオルガンの和音、跳ねるベースで「今日も来てくれてありがとう」の明るいループ（オリジナル）
+    bpm: 126,
+    echo: { time: 0.24, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'fmbell', gain: 0.042, notes: 'C6 = E6 = G6 = E6 = | F6 = A6 = G6 = - = | E6 = G6 = C7 = B6 A6 | G6 = = = - - E6 G6 | A6 = G6 = F6 = E6 = | D6 = E6 F6 G6 = - = | E6 = C6 = D6 = B5 = | C6 = = = - - - -' },
+      { type: 'pceorgan', gain: 0.011, notes: 'C4+E4+G4 = = = = = = = | F3+A3+C4 = = = = = = = | A3+C4+E4 = = = = = = = | G3+B3+D4 = = = = = = = | F3+A3+C4 = = = = = = = | G3+B3+D4 = = = = = = = | A3+C4+E4 = = = G3+B3+D4 = = = | C4+E4+G4 = = = = = = =' },
+      { type: 'fmbass', gain: 0.05, notes: 'C2 - C3 - G2 - C3 - | F2 - F3 - C3 - F3 - | A1 - A2 - E2 - A2 - | G1 - G2 - D2 - G2 - | F2 - F3 - C3 - F3 - | G1 - G2 - D2 - G2 - | A1 - A2 - G1 - G2 - | C2 - G2 - C2 - - -' },
+    ],
+    drums: 'k - h - s - h - | k - h - s - h h | k - h - s - h - | k - h - s - s s | k - h - s - h - | k - h - s - h h | k - h - s - h - | k - - - ks - - -',
+  },
   levelup: {
     bpm: 152,
     tracks: [
@@ -706,6 +716,7 @@ const BGM_INFO = [
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
+  { key: 'loginbonus', name: 'ログインボーナス 今日のごほうび', desc: 'ログインボーナスの画面で流れる、鉄琴のきらめく旋律とオルガンの和音、跳ねるベースの明るいループ。「今日も来てくれてありがとう」の気持ちを込めたオリジナル曲。ハ長調。' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },

@@ -377,6 +377,20 @@ function showLogin7(day, got) {
   ov.querySelector('.lb7-ok').addEventListener('click', () => ov.remove());
 }
 
+// ログインボーナス・帰還ボーナスの画面を出している間は、専用の曲を流し、後ろのゲームは止めておく
+function loginBonusOpen() { return !!document.querySelector('.lb7-ov') || (typeof loginBonusModal !== 'undefined' && loginBonusModal.classList.contains('show')); }
+{ const orig = refreshBgm; refreshBgm = function () { if (loginBonusOpen() && typeof playBgmTrack === 'function' && audioCtx && !(typeof holyPad !== 'undefined' && holyPad)) { playBgmTrack('loginbonus'); return; } return orig.apply(this, arguments); }; }
+{ let open = false, prev = null;
+  const check = () => {
+    const now = loginBonusOpen(); if (now === open) return; open = now;
+    if (now) { prev = phase === 'battle' ? 'battle' : null; if (prev) phase = 'paused'; }
+    else { if (prev && phase === 'paused') phase = prev; prev = null; }
+    try { refreshBgm(); } catch (e) {}
+  };
+  new MutationObserver(check).observe(document.body, { childList: true });
+  if (typeof loginBonusModal !== 'undefined') new MutationObserver(check).observe(loginBonusModal, { attributes: true, attributeFilter: ['class'] });
+}
+
 // ===== デイリー／ウィークリーミッション =====
 const QUESTS = {
   daily: [

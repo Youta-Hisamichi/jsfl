@@ -2704,7 +2704,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .fg-now { font-size: 0.78rem; margin-bottom: 10px; color: #e8dcef; }
 .fg-now b { color: #fff; }
 /* ===== 7日ログインボーナス（ui/lb7 の絵） ===== */
-.lb7-ov { background: rgba(0,0,0,0.6) !important; } /* 後ろのゲーム画面が透けて見える半透明の黒 */
+.lb7-ov { background: rgba(0,0,0,0.8) !important; } /* 後ろのゲーム画面が透けて見える半透明の黒 */
 .l7-panel.lb7 { width: min(380px, 94vw); max-width: none; padding: 0 !important; background: none !important; border: none !important; border-image: none !important; box-shadow: none !important; overflow: visible; color: #fff; }
 .lb7-title { position: relative; aspect-ratio: 700 / 149; margin: 0 auto -2px; width: 100%; background: url(assets/img/ui/lb7/title.webp) center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
 .lb7-title span { margin-top: 4%; font-size: clamp(1.1rem, 6vw, 1.5rem); font-weight: 900; color: #ffe08a; letter-spacing: 1px; text-shadow: -2px -2px 0 #4a2604, 2px -2px 0 #4a2604, -2px 2px 0 #4a2604, 2px 2px 0 #4a2604, 0 3px 0 #2a1402, 0 0 10px rgba(255,200,80,0.5); }
