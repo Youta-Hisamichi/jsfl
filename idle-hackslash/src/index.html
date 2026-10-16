@@ -136,6 +136,7 @@
       <div class="dbg-size" id="dbgSizeInfo" data-debug="size">📦 ゲーム容量：—</div>
       <div class="dbg-now-desc" id="dbgNowDesc" style="display:none"></div>
       <div class="debug-cat">💰 通貨</div>
+      <div class="dbg-prev-bgm dbg-supergem">🌟 所持スーパージェム: <span id="superGemsNum">0</span>円</div>
       <button data-debug="coins">+100 🟡</button><button data-debug="coins1000">+1000 🟡</button><button data-debug="gems">+10 💎</button><button data-debug="gems1000">+1000 💎</button><button data-debug="supergems">+10000円 🌟</button>
       <div class="debug-cat">🎁 宝箱（押すと+5個）</div>
       <button data-debug="chest:common">★1 コモン +5</button><button data-debug="chest:rare">★2 レア +5</button><button data-debug="chest:epic">★3 エピック +5</button><button data-debug="chest:legendary">★4 レジェンド +5</button><button data-debug="chest:mythic">★5 ミシック +5</button><button data-debug="chestClear">🗑 宝箱を全部消す</button>
@@ -272,7 +273,7 @@
         <div class="bag-list" id="bagList"></div>
       </div>
       <div class="shop-sec" data-shop-sec="charge" hidden>
-      <div class="supergem-note" id="supergemSection">🌟 所持スーパージェム: <span id="superGemsNum">0</span>円</div>
+      <div id="supergemSection"></div>
       <button class="modal-shop-btn" id="gemReturnBtn" style="display:none; justify-content:center; margin-bottom:8px; border-color:var(--gold); color:var(--gold);"><span class="msb-name">↩️ 元の画面に戻る</span></button>
       <div class="shop-list" id="supergemShopList"></div>
       </div>
@@ -299,7 +300,7 @@
   <div class="tab-page" data-tab="records">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="records"></div>
-      <div class="sub-tabs rec-tabs"><button class="sub-tab-btn active" data-rec-tab="stats">📊 戦績</button><button class="sub-tab-btn" data-rec-tab="mission">🎯 ミッション</button><button class="sub-tab-btn" data-rec-tab="bestiary">📖 敵図鑑</button><button class="sub-tab-btn" data-rec-tab="bgm">🎵 BGM図鑑</button></div>
+      <div class="sub-tabs rec-tabs"><button class="sub-tab-btn active" data-rec-tab="stats" aria-label="戦績"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_stats.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="mission" aria-label="ミッション"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_mission.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bestiary" aria-label="敵図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bestiary.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bgm" aria-label="BGM図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bgm.webp" alt=""></button></div>
       <div class="rec-sec" data-rec-sec="stats">
       <div class="settings-row">
         <div style="display:flex; gap:6px; align-items:center;">

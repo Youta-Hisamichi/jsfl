@@ -3345,3 +3345,7 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .bst-card.boss { filter: drop-shadow(0 0 4px #ba6cff) drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
 .bst-card.unknown { border-image: url(assets/img/ui/rec/bst_unknown.webp) 62 fill / 16px stretch; opacity: 1; color: #f2f4f8; --text: #f2f4f8; --text-dim: #e6e9f0; text-shadow: 0 1px 2px rgba(0,0,0,0.55); }
 .bst-card.unknown .bst-face { color: #f2f4f8; }
+/* 戦績上部タブ：枠画像＋アイコン付き文字画像 */
+.tab-page[data-tab="records"] .rec-tabs .sub-tab-btn { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 1; height: auto; min-height: 0; padding: 0 !important; background: url(assets/img/ui/rec/tab2_off.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="records"] .rec-tabs .sub-tab-btn.active { background-image: url(assets/img/ui/rec/tab2_on.webp) !important; filter: drop-shadow(0 0 4px rgba(90,170,255,0.7)); }
+.rec-tab-lbl { display: block; max-width: 86%; max-height: 68%; object-fit: contain; pointer-events: none; }
