@@ -3426,3 +3426,7 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 /* ショップのタイトル：1枚絵に差し替え */
 .tab-page[data-tab="gemshop"] .shop-banner { aspect-ratio: 640 / 182; max-width: 330px; background: url(assets/img/ui/shop/title.webp) center / 100% 100% no-repeat; }
 .tab-page[data-tab="gemshop"] .shop-banner .sb-title { display: none; }
+/* 所持品：アイテムベースを1枚絵に（左の枠にアイコン） */
+.bag-row { position: relative; min-height: 0; aspect-ratio: 720 / 138; padding: 4px 4.5% 4px 20.5%; border: none; border-image: none; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat; }
+.bag-row .bag-ico { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; border: none; border-radius: 0; background: none; }
+.bag-row .bag-ico .ico-img, .bag-row .bag-ico img, .bag-row .bag-ico .ico-redpot { width: 78%; height: 78%; object-fit: contain; }
