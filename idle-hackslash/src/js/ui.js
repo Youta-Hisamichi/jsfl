@@ -1861,6 +1861,7 @@ gacha10Btn.addEventListener('click', event => {
 });
 
 // 新しい進化：攻撃力かHPを選び、ジェムと羽の数を決めて進化
+const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic: 'UR' }; // 進化ガチャのレア度表記
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]'), fb = event.target.closest('[data-evo-fea]');
   const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, maxG = Math.max(EVO_MIN_GEMS, Math.floor(game.gems));
@@ -1879,7 +1880,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (tier.mult > (game.evoBestMult || 0)) game.evoBestMult = tier.mult; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${rarity.label} ×${tier.mult}`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${EVO_GRADE[tier.rarity]} ×${tier.mult}`,
     `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
     }, null);
