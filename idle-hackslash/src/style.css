@@ -3416,3 +3416,5 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .sub-body, #supergemShopList .gb-body { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 #supergemShopList .sub-btn, #supergemShopList .gb-btn { margin-bottom: 2px; }
 #supergemShopList .sub-btn:active, #supergemShopList .gb-btn:active { transform: scale(0.97); }
+/* 紋章2種は本体の枠が同じ大きさになるよう画像側で揃えた */
+#supergemShopList .sub-veteran, #supergemShopList .sub-hero { --ar: 612 / 173; }
