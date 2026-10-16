@@ -822,6 +822,7 @@ function isAdFree() { return !!getActiveSub(); }
 function getSubStatMult() { const s = getActiveSub(); return s ? s.statMult : 1; }
 function coinPrice(cost) { const s = getActiveSub(); return s ? Math.max(1, Math.ceil(cost * s.coinPriceMult)) : cost; }
 function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult < 1 ? Math.max(1, Math.ceil(cost * s.gemPriceMult)) : cost; }
+ICON_IMAGES.x_feather = ICON_IMAGES.art_evoFeather = 'assets/img/icons/bag_feather.webp'; // 進化の羽は所持品と同じアイコン
 ARTIFACT_ALL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 ARTIFACT_BY_ID.rareRing.img = ICON_IMAGES.art_ring; // レアリングは指輪の絵を使い回す
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });

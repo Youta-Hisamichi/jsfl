@@ -3469,3 +3469,4 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .evo-stake small { display: block; font-size: 0.62rem; color: #f0d8b0; font-weight: 700; }
 .evo-res-calc { display: block; margin-top: 4px; font-size: 0.42em !important; letter-spacing: 0; } /* 進化結果の内訳 */
 .evo-res-calc { -webkit-text-stroke: 0 !important; color: #fff !important; text-shadow: 0 1px 2px #000, 0 0 3px #000 !important; font-size: 0.4em !important; }
+.fea-ico { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -0.25em; }

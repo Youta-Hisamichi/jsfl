@@ -333,7 +333,7 @@ const LOGIN7 = [
   { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
   { label: '🧪×2', give: () => { game.potions = (game.potions || 0) + 2; return '回復ポーション×2'; } },
   { label: '💎5', give: () => { game.gems += 5; return '💎5'; } },
-  { label: '🪽×20', give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
+  { label: `${xi('x_feather', 'fea-ico')}×20`, give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
   { label: '💎8', give: () => { game.gems += 8; return '💎8'; } },
   { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全快ポーション×2'; } },
   { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic'); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
@@ -351,7 +351,7 @@ function checkDailyLogin() {
 // 7日ログインの画面（ui/lb7 の絵：盤面の上に報酬を重ねる。位置は盤面の絵 1274×1083 の座標）
 const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb7/gem.webp" alt="">', pot: '<i class="lb7-ico su-i_bluepot"></i>', red: '<i class="lb7-ico ico-redpot"></i>', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
 const LOGIN7_SHOW = [['gem', '×3'], ['pot', '×2'], ['gem', '×5'], ['feather', '×20'], ['gem', '×8'], ['red', '×2']];
-function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.art_feather}" alt="">` : LB7_ICON[k]; }
+function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.x_feather}" alt="">` : LB7_ICON[k]; }
 function showLogin7(day, got) {
   const P = (x, y) => `left:${(x / 1274 * 100).toFixed(2)}%;top:${(y / 1083 * 100).toFixed(2)}%`;
   const CX = [240, 637, 1034], CY = [182, 457];
