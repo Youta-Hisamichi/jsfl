@@ -367,7 +367,7 @@ function showLogin7(day, got) {
     <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>
     <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b><span>${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</span></div></div>
     <div class="lb7-board">${glow}${cells}
-      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}"><img class="lb7-ico lb7-chest" src="${ICON_IMAGES.x_chest6}" alt=""><span class="lb7-gem10">${LB7_ICON.gem}<b>10</b></span><b>確定</b></div></div>
+      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}"><img class="lb7-ico lb7-chest" src="${ICON_IMAGES.x_chest7}" alt=""><span class="lb7-gem10">${LB7_ICON.gem}<b>10</b></span><b>確定</b></div></div>
       <div class="lb7-got" style="${P(637, 872)}">${todayIco}</div>
       <button class="lb7-ok" style="${P(637, 977)}">受け取る</button>
     </div>

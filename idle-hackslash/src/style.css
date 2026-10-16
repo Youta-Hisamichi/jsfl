@@ -3418,3 +3418,7 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .sub-btn:active, #supergemShopList .gb-btn:active { transform: scale(0.97); }
 /* 紋章2種は本体の枠が同じ大きさになるよう画像側で揃えた */
 #supergemShopList .sub-veteran, #supergemShopList .sub-hero { --ar: 612 / 173; }
+/* ショップのタブ：戦績ページのタブ枠を流用 */
+.shop-tabs .sub-tab-btn { aspect-ratio: 3 / 1 !important; background: url(assets/img/ui/rec/tab2_off.webp) center / 100% 100% no-repeat !important; color: #fff !important; text-shadow: 0 1px 2px #000 !important; }
+.shop-tabs .sub-tab-btn.active { background: url(assets/img/ui/rec/tab2_on.webp) center / 100% 100% no-repeat !important; color: #fff !important; text-shadow: 0 1px 2px #001a4a, 0 0 3px #001a4a !important; filter: drop-shadow(0 0 4px rgba(90,170,255,0.7)); }
+.shop-tabs .sub-tab-btn.active .st-ico { filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }

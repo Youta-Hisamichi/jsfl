@@ -725,7 +725,7 @@ const DEBUG_ACTION_LABELS = {
   gems: 'DEBUG: ジェム +10 を付与しました',
   gems1000: 'DEBUG: ジェム +1000 を付与しました',
   coins1000: 'DEBUG: コイン +1000 を付与しました',
-  supergems: 'DEBUG: スーパージェム +10000円 を付与しました',
+  supergems: 'DEBUG: リアルマネー +10000円 を付与しました',
   special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
   prev: 'DEBUG: 1ステージ戻しました',
   next: 'DEBUG: 1ステージ進めました',
@@ -1258,7 +1258,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   }
 }
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
-// ショップのタブ：アイテム／キャラ（解雇・採用）／課金（スーパージェム）
+// ショップのタブ：アイテム／キャラ（解雇・採用）／課金（リアルマネー）
 function showShopTab(key) {
   document.querySelectorAll('[data-shop-tab]').forEach(t => t.classList.toggle('active', t.dataset.shopTab === key));
   document.querySelectorAll('[data-shop-sec]').forEach(sec => { sec.hidden = sec.dataset.shopSec !== key; });
@@ -1586,7 +1586,7 @@ supergemShopList.addEventListener('click', event => {
   if (!button) return;
   const id = button.dataset.supergemShop;
   const item = SUPERGEM_SHOP_ITEMS[id];
-  if (game.superGems < item.cost) { showTapError('スーパージェムが足りません', event.clientX, event.clientY); return; }
+  if (game.superGems < item.cost) { showTapError('リアルマネーが足りません', event.clientX, event.clientY); return; }
   game.superGems -= item.cost;
   const gain = { small: 20, medium: 110, large: 605, huge: 1331 }[id] || 0;
   game.gems += gain;
@@ -1613,7 +1613,7 @@ function buySubscription(id, event) {
   const sub = SUBSCRIPTIONS[id];
   const active = getActiveSub();
   if (!isSubActive(id) && active && active.rank > sub.rank) { showTapError('上位の紋章が有効です', event.clientX, event.clientY); return; }
-  if (game.superGems < sub.cost) { showTapError('スーパージェムが足りません', event.clientX, event.clientY); return; }
+  if (game.superGems < sub.cost) { showTapError('リアルマネーが足りません', event.clientX, event.clientY); return; }
   game.superGems -= sub.cost;
   if (!game.subscriptions) game.subscriptions = {};
   const from = Math.max(Date.now(), game.subscriptions[id] || 0); // 加入中なら残り期間に上乗せ
