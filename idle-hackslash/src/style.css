@@ -3230,3 +3230,11 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .lb7-cell.today .lb7-rw { animation: lb7TodayPulse 0.9s ease-in-out infinite; }
 @keyframes lb7TodayPulse { 0%, 100% { transform: scale(1.14); } 50% { transform: scale(1.04); } }
 .lb7-day7.today .lb7-sure { animation: lb7Sure 0.45s ease-in-out infinite alternate !important; }
+.lb7-sure .lb7-ico.lb7-chest { border-radius: 0; box-shadow: none; filter: drop-shadow(0 0 6px #ffd34a) drop-shadow(0 2px 2px rgba(0,0,0,0.6)); }
+.lb7-sure .lb7-gem10 { display: flex; align-items: center; gap: 1px; margin: 0 2px 0 -4px; background: none; }
+.lb7-sure .lb7-gem10 .lb7-ico { width: clamp(24px, 7vw, 32px); height: clamp(24px, 7vw, 32px); border-radius: 0; box-shadow: none; }
+.lb7-sure .lb7-gem10 b { font-size: clamp(1rem, 5vw, 1.3rem); letter-spacing: 0; }
+.lb7-sure { white-space: nowrap; }
+.lb7-sure > b { flex: none; }
+.lb7-sure .lb7-gem10 b { color: #fff; text-shadow: -1.5px -1.5px 0 #4a0c1a, 1.5px -1.5px 0 #4a0c1a, -1.5px 1.5px 0 #4a0c1a, 1.5px 1.5px 0 #4a0c1a; }
+.lb7-sure .lb7-gem10::before { content: '＋'; color: #ffe08a; font-weight: 900; margin-right: 2px; font-size: clamp(0.9rem, 4vw, 1.1rem); }

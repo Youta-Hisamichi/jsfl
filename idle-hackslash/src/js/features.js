@@ -328,7 +328,7 @@ function heroSignature(ball) { // 自キャラにした仲間ごとの技名と�
   return c.rarity === 'mythic' ? 2 : c.rarity === 'legendary' ? 1.7 : 1.5;
 }
 
-// ===== 7日ログイン（7日目は仲間確定） =====
+// ===== 7日ログイン（7日目は★5宝箱＋ジェム10個が確定） =====
 const LOGIN7 = [
   { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
   { label: '🧪×2', give: () => { game.potions = (game.potions || 0) + 2; return '回復ポーション×2'; } },
@@ -336,7 +336,7 @@ const LOGIN7 = [
   { label: '🪽×20', give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
   { label: '💎8', give: () => { game.gems += 8; return '💎8'; } },
   { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全快ポーション×2'; } },
-  { label: '🐾確定', give: () => { const pool = COMPANION_IDS.filter(id => !isCompLocked(id)); const id = pool.length ? pool[Math.floor(Math.random() * pool.length)] : 'villager'; const r = grantCompanion(id); refreshCompanionBalls && refreshCompanionBalls(); if (RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary')) setTimeout(() => rareCutIn(id), 400); return `仲間確定！ ${COMPANIONS[id].name}（${r.label}）`; } },
+  { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic'); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
 ];
 function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
 function checkDailyLogin() {
@@ -367,11 +367,11 @@ function showLogin7(day, got) {
     <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>
     <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b><span>${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</span></div></div>
     <div class="lb7-board">${glow}${cells}
-      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}">${LB7_ICON.party}<b>確定</b></div></div>
+      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}"><img class="lb7-ico lb7-chest" src="${ICON_IMAGES.x_chest6}" alt=""><span class="lb7-gem10">${LB7_ICON.gem}<b>10</b></span><b>確定</b></div></div>
       <div class="lb7-got" style="${P(637, 872)}">${todayIco}</div>
       <button class="lb7-ok" style="${P(637, 977)}">受け取る</button>
     </div>
-    <div class="lb7-note">毎日ログインで報酬アップ！ 7日目は<b>仲間確定</b></div></div>`;
+    <div class="lb7-note">毎日ログインで報酬アップ！ 7日目は<b>★5宝箱＋💎10確定</b></div></div>`;
   document.body.appendChild(ov);
   playLoginBonusSound && playLoginBonusSound();
   ov.querySelector('.lb7-ok').addEventListener('click', () => ov.remove());
