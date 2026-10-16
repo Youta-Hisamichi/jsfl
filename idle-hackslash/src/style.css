@@ -3462,3 +3462,4 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .sub-btn, #supergemShopList .gb-btn { animation: sgGlow 2.4s ease-in-out infinite; }
 #supergemShopList .gb-btn:nth-child(odd), #supergemShopList .sub-btn:nth-child(even) { animation-delay: -1.2s; }
 #supergemShopList .sub-btn::after, #supergemShopList .gb-btn::after { content: ''; display: block !important; position: absolute; inset: 0; left: 0; width: auto; height: auto; transform: none; opacity: 1; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.45) 50%, transparent 60%) 0 0 / 60% 100% no-repeat; -webkit-mask: var(--bnr) center / 100% 100% no-repeat; mask: var(--bnr) center / 100% 100% no-repeat; animation: sgShine 3.6s ease-in-out infinite; }
+#supergemShopList .sub-btn::after, #supergemShopList .gb-btn::after { animation-duration: var(--sdur, 3.6s); animation-delay: var(--sdel, 0s); }
