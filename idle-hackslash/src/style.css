@@ -3471,3 +3471,7 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .evo-res-calc { -webkit-text-stroke: 0 !important; color: #fff !important; text-shadow: 0 1px 2px #000, 0 0 3px #000 !important; font-size: 0.4em !important; }
 .fea-ico { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -0.25em; }
 .evo-row .evo-lbl { display: flex; align-items: center; gap: 4px; } .evo-row .evo-lbl-ico { width: 30px; height: 30px; object-fit: contain; flex: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); } /* 進化の個数設定：左端のアイコンを大きく */
+/* 仲間ページの見出し：戦績の短い枠を借りて幅を狭く、アイコンはタブと同じ勇者 */
+body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head { flex: 0 1 236px !important; background-image: url(assets/img/ui/rec/title.webp) !important; aspect-ratio: 654 / 208 !important; padding: 4% 0 3% 4% !important; margin-left: 8px !important; }
+body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico-img { content: url(assets/img/ui/rb/tab_upgrade.webp); width: 2.9rem; height: 2.3rem; object-fit: contain; margin: 0; }
+body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico-img { width: 3.4rem; height: 2.7rem; margin: -2px 0 0; }
