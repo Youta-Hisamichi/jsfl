@@ -226,9 +226,4 @@ function renderFriendBox() {
   document.querySelectorAll('.tab-btn[data-tab="ranking"]').forEach(b => b.addEventListener('click', () => setTimeout(renderFriendBox, 0)));
   renderFriendBox();
 }
-// 占いは戦績ページの上・ゲーム画面の下のボタンから
-{ const host = document.getElementById('questBox');
-  if (host) { const b = document.createElement('button'); b.className = 'fortune-btn'; b.id = 'fortuneBtn'; host.parentNode.insertBefore(b, host); b.addEventListener('click', openFortune); }
-  const upd = () => { const b = document.getElementById('fortuneBtn'); if (!b) return; const seen = game.fortuneDate === todayKey(); b.innerHTML = seen ? `🔮 今日の勇者占い：<b>${todayFortune().rank}</b>（もう一度見る）` : '🔮 今日の勇者占いを見る <b>NEW</b>'; b.classList.toggle('new', !seen); };
-  upd(); setInterval(upd, 5000);
-}
+// 戦績ページ（ミッション上部）の占いボタンは削除

@@ -3324,3 +3324,16 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .cp-prof b, .cp-prof strong { color: #ffd76b !important; }
 .cp-prof [class*="bond"], .cp-prof .cpp-bond { color: #ff8fc0 !important; }
 .cp-prof .cpp-combo, .cp-prof .cpp-combo * { color: #c8d0e6 !important; } .cp-prof .cpp-combo b { color: #9aa4c0 !important; } .cp-prof .cpp-combo b.on { color: #63e394 !important; }
+/* スキル／サブウェポン上部：しくみ・装備枠・枠を増やすを横1列に。説明は行の下に開く */
+.tab-page[data-tab="coinshop"] .sk-headrow { display: flex; align-items: center; gap: 6px; margin: 4px 0 6px; }
+.tab-page[data-tab="coinshop"] .sk-headrow .cp-help { flex: 0 0 auto; margin: 0; }
+.tab-page[data-tab="coinshop"] .sk-headrow .cp-help[open] { padding: 0; background: none; border: none; }
+.tab-page[data-tab="coinshop"] .sk-headrow .cp-help summary { width: 104px; max-width: none; height: 30px; font-size: 0.74rem; padding-left: 10px !important; white-space: nowrap; cursor: pointer; }
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head { flex: 1 1 auto; min-width: 0; margin: 0; gap: 6px; font-size: 0.76rem; }
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head > span:first-child { white-space: nowrap; }
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head b { font-size: 0.9rem; }
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head button { min-width: 100px; font-size: 0.7rem; }
+.tab-page[data-tab="coinshop"] .cp-help-body { display: none; margin: -2px 0 8px; padding: 2px 0 6px; color: #c8d0e6; font-size: 0.8rem; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+.tab-page[data-tab="coinshop"] .sk-headrow:has(.cp-help[open]) + .cp-help-body { display: block; }
+.tab-page[data-tab="coinshop"] .cp-help-body p { margin: 5px 8px 0; }
+.tab-page[data-tab="coinshop"] .cp-help-body p { line-height: 1.5; }

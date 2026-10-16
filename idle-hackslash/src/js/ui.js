@@ -3329,4 +3329,4 @@ function stopHolyPad() {
   [...boxes, skGachaResult, skGachaModal].forEach(el => el && mo.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }));
 })();
 // 「しくみ」ヘルプの文は、一文ごとに改行して読みやすく
-document.querySelectorAll('.cp-help p').forEach(p => { p.innerHTML = p.innerHTML.replace(/。(?=[^<\s）)])/g, '。<br>'); });
+document.querySelectorAll('.cp-help p, .cp-help-body p').forEach(p => { p.innerHTML = p.innerHTML.replace(/。(?=[^<\s）)])/g, '。<br>'); });
