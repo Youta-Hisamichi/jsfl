@@ -349,7 +349,7 @@ function checkDailyLogin() {
   setTimeout(() => showLogin7(day, got), 1200);
 }
 // 7日ログインの画面（ui/lb7 の絵：盤面の上に報酬を重ねる。位置は盤面の絵 1274×1083 の座標）
-const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb7/gem.webp" alt="">', pot: '<i class="lb7-ico su-i_bluepot"></i>', red: '<i class="lb7-ico ico-redpot"></i>', party: '<i class="lb7-ico su-i_party"></i>' };
+const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb7/gem.webp" alt="">', pot: '<i class="lb7-ico su-i_bluepot"></i>', red: '<i class="lb7-ico ico-redpot"></i>', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
 const LOGIN7_SHOW = [['gem', '×3'], ['pot', '×2'], ['gem', '×5'], ['feather', '×20'], ['gem', '×8'], ['red', '×2']];
 function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.art_feather}" alt="">` : LB7_ICON[k]; }
 function showLogin7(day, got) {
@@ -743,3 +743,36 @@ const BOSS_SAY = {
   if (idx !== undefined && lines && lines[idx] && !b.isDying) { const t = lines[idx]; enemySayAt = Date.now(); companionSay(b, t, 2000 + t.length * 80); return; }
   return orig.apply(this, arguments);
 }; }
+
+// ===== お知らせ（右上のボタン → 一覧のページ）。新しいお知らせがあると赤い点 =====
+const NEWS = [ // 新しいものを上に。id は増やしていく
+  { id: 8, date: '2026/10/16', tag: '新機能', title: 'お知らせページができました', body: '右上の📢ボタンから、アップデートやイベントの情報を見られるようになりました。' },
+  { id: 7, date: '2026/10/16', tag: '新機能', title: 'キャラエディット登場！', body: '名前・性別・語尾（にゃん／にょ／ぞい／自由）・髪や服やマントの色を決められます。\n設定の「🎨 キャラエディット」からいつでも変更できます。🎲ランダムもあります。' },
+  { id: 6, date: '2026/10/16', tag: 'BGM', title: 'ログインボーナスに専用BGM', body: 'ログインボーナスの画面では専用の曲が流れ、後ろのゲームは一時停止するようになりました。' },
+  { id: 5, date: '2026/10/16', tag: '改善', title: '戦績ページに「ミッション」タブ', body: 'デイリー・ウィークリーミッションは、戦績ページの「🎯 ミッション」タブにまとまりました。' },
+  { id: 4, date: '2026/10/16', tag: '改善', title: 'ガチャの結果がもっと豪華に', body: '招集ガチャの結果にファンファーレが鳴り、結果を閉じるまで神聖な音が流れるようになりました。' },
+  { id: 3, date: '2026/10/15', tag: '新アイテム', title: 'レアリングがショップに登場', body: 'レア遺物（禁断シリーズ）のドロップ率が1個につき+50%（最大2個）。\nショップで1つ購入でき、ジェムで挑む試練の塔でもまれにドロップします。' },
+  { id: 2, date: '2026/10/15', tag: '新機能', title: 'ドーピングの種', body: '力の種・命の木の実を使うと攻撃力・HPが上がります（転生でリセット）。\nタンス・壺・宝箱から手に入ります。' },
+  { id: 1, date: '2026/10/01', tag: 'イベント', title: 'ハロウィン・パーティー開催中', body: '雑魚を倒すと🎃カボチャが出ます。\n集めた数に応じてジェムや宝箱のごほうび！（10月末まで）' },
+];
+function newsUnread() { return NEWS.length && NEWS[0].id > (game.newsSeen || 0); }
+function updateNewsDot() { const b = document.getElementById('newsBtn'); if (b) b.classList.toggle('unread', !!newsUnread()); }
+function openNews() {
+  let ov = document.getElementById('newsModal');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'newsModal'; ov.className = 'modal-overlay'; ov.style.zIndex = 72;
+    ov.innerHTML = '<div class="modal-panel news-panel"><div class="news-title">📢 お知らせ</div><div class="news-list"></div><button class="modal-close-btn news-close">閉じる</button></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', ev => {
+      if (ev.target === ov || ev.target.closest('.news-close')) { ov.classList.remove('show'); return; }
+      const it = ev.target.closest('.news-item'); if (it) it.classList.toggle('open');
+    });
+  }
+  const seen = game.newsSeen || 0;
+  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-h">${n.title}</div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div></div>`).join('');
+  ov.classList.add('show');
+  game.newsSeen = NEWS[0].id; updateNewsDot(); saveGame();
+  if (typeof playTone === 'function') playTone(1047, 0.06, 'square', 0.04);
+}
+document.getElementById('newsBtn').addEventListener('click', openNews);
+updateNewsDot();

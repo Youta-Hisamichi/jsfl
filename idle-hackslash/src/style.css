@@ -3203,3 +3203,22 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 /* 宝箱の「開けずに戻る」は目立たないグレー */
 .modal-shop-btn.chest-cancel-btn { opacity: 1; border: 8px solid transparent !important; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 8px stretch !important; background: none !important; box-shadow: none !important; min-height: 0; padding: 6px 10px !important; }
 .modal-shop-btn.chest-cancel-btn .msb-name { color: #e4e6ec !important; font-size: 0.85rem; text-shadow: 0 1px 1px rgba(0,0,0,0.6) !important; }
+/* お知らせボタン（設定ボタンと同じ青い枠）とページ */
+.top-header .th-news { position: relative; flex: 0 0 auto; width: 40px; height: 36px; padding: 0; border: none; background: url(assets/img/ui/rb/frame_btn.webp) center / contain no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.top-header .th-news span { font-size: 1.05rem; line-height: 1; transform: translateY(-1px); }
+.top-header .th-news .th-news-dot { display: none; position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: #ff4f6d; box-shadow: 0 0 0 2px #0e1528; }
+.top-header .th-news.unread .th-news-dot { display: block; animation: tabDot 1.2s ease-in-out infinite; }
+.top-header .th-right { gap: 8px !important; }
+.news-panel { width: min(380px, 94vw); max-height: 86vh; display: flex; flex-direction: column; padding: 16px 14px 14px !important; border: 14px solid transparent !important; border-image: url(assets/img/ui/comp/card.webp) 30 fill / 14px stretch !important; background: linear-gradient(rgba(8,14,36,0.94), rgba(8,14,36,0.94)) padding-box !important; color: #e8ecf6; }
+.news-title { font-size: 1.3rem; font-weight: 900; color: #ffe08a; text-align: center; letter-spacing: 2px; margin-bottom: 8px; text-shadow: -1.5px -1.5px 0 #4a2604, 1.5px -1.5px 0 #4a2604, -1.5px 1.5px 0 #4a2604, 1.5px 1.5px 0 #4a2604; }
+.news-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+.news-item { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(201,154,58,0.55); background: rgba(16,26,60,0.85); cursor: pointer; text-align: left; }
+.news-head { display: flex; align-items: center; gap: 6px; font-size: 0.66rem; }
+.news-tag { padding: 1px 7px; border-radius: 999px; font-weight: 900; color: #fff; background: #4a6ad0; }
+.news-tag.t-新機能 { background: #2f9a52; } .news-tag.t-イベント { background: #d0602a; } .news-tag.t-BGM { background: #8a4ac8; } .news-tag.t-新アイテム { background: #c89a20; }
+.news-new { color: #ff5a7a; font-weight: 900; font-size: 0.66rem; }
+.news-date { margin-left: auto; color: #9aa4c0; }
+.news-h { margin-top: 4px; font-size: 0.86rem; font-weight: 900; color: #fff; }
+.news-body { display: none; margin-top: 4px; font-size: 0.74rem; line-height: 1.6; color: #c8d0e6; }
+.news-item.open .news-body { display: block; }
+.news-close { margin-top: 10px; }
