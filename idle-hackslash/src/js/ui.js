@@ -726,6 +726,7 @@ const DEBUG_ACTION_LABELS = {
   gems1000: 'DEBUG: ジェム +1000 を付与しました',
   coins1000: 'DEBUG: コイン +1000 を付与しました',
   supergems: 'DEBUG: リアルマネー +10000円 を付与しました',
+  feathers: 'DEBUG: 進化の羽 +10 を付与しました',
   special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
   prev: 'DEBUG: 1ステージ戻しました',
   next: 'DEBUG: 1ステージ進めました',
@@ -757,6 +758,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'gems1000') game.gems += 1000;
   if (action === 'coins1000') game.coins += 1000;
   if (action === 'supergems') game.superGems += 10000;
+  if (action === 'feathers') { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 10; renderEvolutionList(); }
   if (action === 'die') {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (phase !== 'battle' || !player) { showNotice('DEBUG: 戦闘中のみ使えます', true); return; }
