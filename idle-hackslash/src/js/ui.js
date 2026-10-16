@@ -1367,6 +1367,7 @@ document.getElementById('weaponList').addEventListener('click', event => {
     return;
   }
   const b = event.target.closest('[data-weapon-buy]'); if (!b) return;
+  if (!holdDispatching && consumeHoldClick()) return; // 長押しで連続強化した直後のクリックは無視
   const id = b.dataset.weaponBuy, cost = getWeaponBuyCost(id);
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
   spendCoins(cost);
@@ -1466,6 +1467,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
   const equip = event.target.closest('[data-skill-equip]');
   if (buy) {
+    if (!holdDispatching && consumeHoldClick()) return; // 長押しで連続強化した直後のクリックは無視
     const id = buy.dataset.skillBuy;
     const sk = SKILL_GACHA_SKILLS[id];
     const owned = !!game.shopOwned[id];
@@ -1955,13 +1957,22 @@ const HOLD_TARGETS = [
   { attr: 'companionHp', action: (id, x, y) => levelUpCompanion(id, x, y, 'hp') },
   { attr: 'rebirthShop', action: (id, x, y) => buyRebirthItem(id, x, y, true) },
   { attr: 'goalClaim', action: claimRecordGoal }, // 戦績の報酬は押しっぱなしで一気に受け取れる
+  { attr: 'skillBuy', action: (id, x, y) => holdClickBuy(`[data-skill-buy="${id}"]`, x, y, () => getSkillLevel(id)) }, // スキルの+1
+  { attr: 'weaponBuy', action: (id, x, y) => holdClickBuy(`[data-weapon-buy="${id}"]`, x, y, () => getWeaponLv(id)) }, // サブウェポンの+1
 ];
+let holdDispatching = false;
+function holdClickBuy(sel, x, y, getLv) { // 押しっぱなし中は、その+1ボタンのクリックを繰り返す（Lvが上がらなければ止める）
+  const el = document.querySelector(sel); if (!el || el.classList.contains('is-disabled')) return false;
+  const before = getLv(); holdDispatching = true;
+  try { el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y })); } finally { holdDispatching = false; }
+  return getLv() > before;
+}
 let holdTimer = null;
 let holdRepeated = false;
 // 押しっぱなし中の合計（回数・レベル・能力値・消費コイン/ジェム）を指の近くに出す
 const holdSum = document.createElement('div'); holdSum.className = 'hold-sum'; document.body.appendChild(holdSum);
 let holdSnap = null, holdSumTimer = null;
-function holdLevel(t, id) { return t.attr === 'upgrade' ? game.upgrades[id] : t.attr === 'companionLevel' ? game.companions.level[id] : t.attr === 'companionHp' ? compHpLv(id) : 0; }
+function holdLevel(t, id) { return t.attr === 'upgrade' ? game.upgrades[id] : t.attr === 'companionLevel' ? game.companions.level[id] : t.attr === 'companionHp' ? compHpLv(id) : t.attr === 'skillBuy' ? getSkillLevel(id) : t.attr === 'weaponBuy' ? getWeaponLv(id) : 0; }
 function showHoldSum() {
   if (!holdSnap || !holdSnap.n) return;
   const { t, id } = holdSnap, dc = game.coins - holdSnap.coins, dg = game.gems - holdSnap.gems, dl = holdLevel(t, id) - holdSnap.level;
@@ -1988,7 +1999,7 @@ function consumeHoldClick() {
 document.addEventListener('pointerdown', event => {
   stopHold();
   holdRepeated = false;
-  const el = event.target.closest('[data-upgrade], [data-companion-level], [data-companion-hp], [data-rebirth-shop], [data-goal-claim]');
+  const el = event.target.closest('[data-upgrade], [data-companion-level], [data-companion-hp], [data-rebirth-shop], [data-goal-claim], [data-skill-buy], [data-weapon-buy]');
   if (!el) return;
   const target = HOLD_TARGETS.find(t => el.dataset[t.attr] !== undefined);
   const id = el.dataset[target.attr];
