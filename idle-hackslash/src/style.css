@@ -3405,3 +3405,14 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .gb-body, #supergemShopList .gb-t4 .gb-body { top: 49%; bottom: 9%; }
 #supergemShopList .gb-amount { font-size: 0.74rem; line-height: 1.15; }
 #supergemShopList .gb-price { min-width: 75%; font-size: 0.76rem; line-height: 1.25; }
+/* 課金ページ：1枚絵のボタン（文字は絵に含まれるので重ねない） */
+#supergemShopList .sub-btn, #supergemShopList .gb-btn { aspect-ratio: var(--ar); padding: 0; background: var(--bnr) center / 100% 100% no-repeat !important; }
+#supergemShopList .sub-veteran { --ar: 600 / 158; }
+#supergemShopList .sub-hero { --ar: 600 / 167; }
+#supergemShopList .gb-t1 { --ar: 600 / 114; }
+#supergemShopList .gb-t2 { --ar: 600 / 121; }
+#supergemShopList .gb-t3 { --ar: 600 / 131; }
+#supergemShopList .gb-t4 { --ar: 600 / 138; }
+#supergemShopList .sub-body, #supergemShopList .gb-body { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#supergemShopList .sub-btn, #supergemShopList .gb-btn { margin-bottom: 2px; }
+#supergemShopList .sub-btn:active, #supergemShopList .gb-btn:active { transform: scale(0.97); }
