@@ -1033,7 +1033,7 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
 function compKind(id) { return (COMPANIONS[id] && COMPANIONS[id].kind) || id; } // 能力の種類（同じ能力を別の職業でも使い回す）
 const COMPANION_SPRITES = {};
 Object.keys(COMPANIONS).forEach(id => { COMPANION_SPRITES[id] = `assets/img/companions/${id}.webp`; });
-const PLAYER_SPRITE = document.getElementById('blHero').src; // 画像の本体は起動画面の<img>にある（二重に持たない）
+var PLAYER_SPRITE = document.getElementById('blHero').src; // 画像の本体は起動画面の<img>にある（二重に持たない）
 const playerSpriteImg = new Image();
 playerSpriteImg.src = PLAYER_SPRITE;
 stagePlayerMark.src = PLAYER_SPRITE; // ステージ進行ゲージの自キャラアイコン

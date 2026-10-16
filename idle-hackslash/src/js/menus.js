@@ -167,7 +167,7 @@ function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
   const canChange = COMPANION_IDS.some(isCharSummoned); // まだ誰も招集していなければ自キャラ変更は出さない
   el.classList.toggle('no-change', !canChange);
-  const id = getHeroChar(), name = id ? COMPANIONS[id].name : '勇者';
+  const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
   el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span>${heroTypeHtml(id)}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
