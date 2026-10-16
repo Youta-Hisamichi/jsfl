@@ -407,8 +407,8 @@ function openTansu(o) {
 // ===== ドーピングの種（ドラクエの「ちからのたね」風）=====
 // タンス・壺・宝箱から出る。使うとその周回のあいだ能力アップ（転生でリセット）。使わなければ転生しても持ち越せる
 const SEEDS = {
-  atk: { icon: '🌰', name: '力の種', stat: '攻撃力', col: '#ff8a5c' },
-  hp:  { icon: '🍎', name: '命の木の実', stat: '最大HP', col: '#7ee787' },
+  atk: { icon: '🌰', img: 'assets/img/icons/bag_seedAtk.webp', name: 'パワーの種', stat: '攻撃力', col: '#ff8a5c' },
+  hp:  { icon: '🍎', img: 'assets/img/icons/bag_seedHp.webp', name: 'HPの種', stat: '最大HP', col: '#7ee787' },
 };
 const SEED_PER_USE = 0.05; // 1個につき +5%
 const SEED_CHEST_CHANCE = { common: 0.08, rare: 0.15, epic: 0.3, legendary: 0.6, mythic: 1 };
@@ -439,7 +439,7 @@ function updateSeedButton() {
 function renderSeedPanel(ov) {
   ov.querySelector('.seed-list').innerHTML = Object.entries(SEEDS).map(([k, S]) => {
     const h = seedHeld(k), u = seedUsed(k);
-    return `<div class="seed-row"><span class="seed-ico">${S.icon}</span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
+    return `<div class="seed-row"><span class="seed-ico"><img class="ico-img" src="${S.img}" alt=""></span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
   }).join('');
 }
 function openSeedPanel() {
@@ -482,11 +482,11 @@ function bagRows() {
   const rows = [], hc = getHeldChests();
   rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
   rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキル全快ポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
-  for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: S.icon, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
+  for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label.replace('コモン', 'ノーマル')}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
-  rows.push({ icon: '🪽', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで使うと高レア度が出やすくなる', btn: `<button data-bag-go="gacha">進化へ</button>` });
-  if (game.hireTickets) rows.push({ icon: '🎫', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
+  rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_feather.webp" alt="">', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで使うと高レア度が出やすくなる', btn: `<button data-bag-go="gacha">進化へ</button>` });
+  if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
 }
 function renderBagList() {

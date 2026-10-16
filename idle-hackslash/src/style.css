@@ -3441,3 +3441,5 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .bag-side button[data-bag-go="chara"] { aspect-ratio: 271 / 79; background-image: url(assets/img/ui/shop/btn_chara.webp); }
 .bag-side button[data-bag-seed] { width: auto; height: 27px; }
 .bag-side button[data-bag-chest]:active, .bag-side button[data-bag-go]:active { transform: scale(0.94); }
+.seed-ico .ico-img { width: 2.2rem; height: 2.2rem; display: block; }
+.bag-row .bag-ico img.ico-img { width: 94%; height: 94%; }
