@@ -154,6 +154,9 @@ function showFeatureUnlock(key) {
   ov.querySelector('.fu-title').textContent = f.title;
   ov.querySelector('.fu-body').innerHTML = f.body.map(t => `<p>${t}</p>`).join('');
   ov.classList.add('show');
+  const ok = ov.querySelector('.fu-ok'); // 連打で読む前に閉じないよう、OK は少し待ってから出す
+  ok.disabled = true; ok.classList.remove('fu-ok-in'); clearTimeout(ov._okT);
+  ov._okT = setTimeout(() => { ok.disabled = false; ok.classList.add('fu-ok-in'); }, 1500);
   playTone(784, 0.12, 'square', 0.05, 1175); setTimeout(() => playTone(1568, 0.25, 'square', 0.05, 2093), 140);
 }
 setInterval(() => { try { updateFeatureUnlocks(); } catch (e) { console.error(e); } }, 700);

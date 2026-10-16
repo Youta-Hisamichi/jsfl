@@ -3197,3 +3197,6 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .ce-gender button[data-ce-gender="female"].on { background: linear-gradient(180deg, #c85a9a, #7a2a62); }
 .ce-endtext { margin-top: 6px; }
 .levelup-pop { text-shadow: -1.5px -1.5px 0 #3a1a00, 1.5px -1.5px 0 #3a1a00, -1.5px 1.5px 0 #3a1a00, 1.5px 1.5px 0 #3a1a00, 0 0 8px rgba(255,160,40,0.8), 0 3px 2px rgba(0,0,0,0.6); } /* 下の文字の上でも読めるよう黒フチ */
+/* 転生・試練の塔の解放ダイアログ：OK は少し待ってから出す */
+#featureUnlockModal .fu-ok { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
+#featureUnlockModal .fu-ok.fu-ok-in { visibility: visible; opacity: 1; transform: none; }
