@@ -1883,7 +1883,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${EVO_GRADE[tier.rarity]} ×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × 🪽${feathers}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${EVO_GRADE[tier.rarity]} ×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × 🪽${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
     `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
     }, null);

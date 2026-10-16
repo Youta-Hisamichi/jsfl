@@ -485,7 +485,7 @@ function bagRows() {
   for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label.replace('コモン', 'ノーマル')}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
-  rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_feather.webp" alt="">', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで捧げた枚数が倍率に掛け算される', btn: `<button data-bag-go="gacha">進化へ</button>` });
+  rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_feather.webp" alt="">', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで1枚ごとに倍率+0.1倍（1枚で×1.1）', btn: `<button data-bag-go="gacha">進化へ</button>` });
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
 }

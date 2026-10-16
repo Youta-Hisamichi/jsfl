@@ -577,7 +577,7 @@ const ARTIFACT_ALL = [
   { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
   { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
-  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。捧げた枚数が進化の倍率に掛け算される（使うと減る）', rarity: 'common' },
+  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。1枚ごとに進化の倍率が+0.1倍（1枚で×1.1）（使うと減る）', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
   { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
@@ -664,7 +664,8 @@ const EVO_MIN_GEMS = 1, EVO_RATE_CAP = 1e150; // ジェム1個から引ける
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
 function evoLuck(gems, feathers) { return 0; } // 確率は固定（捧げた数は倍率に掛かる）
-function evoStake(gems, feathers) { return Math.max(1, gems) * Math.max(1, feathers); } // 一発倍率＝ジェム数×羽数（羽0なら×1）
+function evoFeatherMult(feathers) { return 1 + 0.1 * Math.max(0, feathers); } // 羽1枚ごとに +0.1倍（1枚で×1.1、10枚で×2）
+function evoStake(gems, feathers) { return Math.max(1, gems) * evoFeatherMult(feathers); } // 一発倍率＝ジェム数×羽の倍率
 function evoOdds(gems, feathers) {
   const L = evoLuck(gems, feathers), w = EVO_TIERS.map((t, i) => t.base * Math.pow(1 + L, i * 1.2)), sum = w.reduce((a, b) => a + b, 0);
   return w.map(x => x / sum);
