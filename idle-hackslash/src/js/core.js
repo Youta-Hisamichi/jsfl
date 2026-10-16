@@ -660,10 +660,10 @@ const EVO_TIERS = [
   { rarity: 'common', mult: 1.1, base: 71.2 }, { rarity: 'rare', mult: 2, base: 20 }, { rarity: 'epic', mult: 5, base: 6.5 },
   { rarity: 'legendary', mult: 18, base: 2 }, { rarity: 'mythic', mult: 100, base: 0.3 },
 ];
-const EVO_MIN_GEMS = 5, EVO_RATE_CAP = 1e150;
+const EVO_MIN_GEMS = 1, EVO_LUCK_BASE = 5, EVO_RATE_CAP = 1e150; // ジェム1個から引ける（運の補正は5個から上がる）
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
-function evoLuck(gems, feathers) { return Math.max(0, Math.log2(Math.max(EVO_MIN_GEMS, gems) / EVO_MIN_GEMS)) * 0.35 + feathers * 0.3; } // ジェムを多く・羽を多く捧げるほど高レア度が出やすい
+function evoLuck(gems, feathers) { return Math.max(0, Math.log2(Math.max(EVO_LUCK_BASE, gems) / EVO_LUCK_BASE)) * 0.35 + feathers * 0.3; } // ジェムを多く・羽を多く捧げるほど高レア度が出やすい
 function evoOdds(gems, feathers) {
   const L = evoLuck(gems, feathers), w = EVO_TIERS.map((t, i) => t.base * Math.pow(1 + L, i * 1.2)), sum = w.reduce((a, b) => a + b, 0);
   return w.map(x => x / sum);
