@@ -826,8 +826,10 @@ function markCompanionDead(id) {
   const cp = game.companions;
   if (cp.alive[id] === false) return;
   cp.alive[id] = false; cp.hp[id] = 0;
-  cp.downStages = cp.downStages || {}; cp.downStages[id] = COMPANION_DOWN_STAGES;
+  game.compDeaths = game.compDeaths || {}; const n = game.compDeaths[id] = (game.compDeaths[id] || 0) + 1; // 倒れた回数（転生でリセット）
+  cp.downStages = cp.downStages || {}; cp.downStages[id] = compDownStagesFor(n);
 }
+function compDownStagesFor(n) { return COMPANION_DOWN_STAGES + (n - 1) * 2; } // 倒れるたびに復活までが2階ずつ伸びる（3→5→7…）
 function canCompanionRevive(id) { // 階を進むたびに1つ減らし、0になったら復活
   const cp = game.companions;
   if (cp.alive[id] !== false || !cp.downStages || !cp.downStages[id]) return true;
@@ -1038,7 +1040,7 @@ function completeReincarnation() {
   balls = balls.filter(ball => !ball.isCompanion);
   renderCompanionList();
   const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
-  game.gems += rebirthGemGain; game.reincarnations++;
+  game.gems += rebirthGemGain; game.reincarnations++; game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
   renderArtifactList();
   updateStatsUI();
   saveGame();

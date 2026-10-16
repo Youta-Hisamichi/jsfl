@@ -777,13 +777,14 @@ function openNews() {
 document.getElementById('newsBtn').addEventListener('click', openNews);
 updateNewsDot();
 
-// ===== 仲間ページ：倒れている仲間をジェムですぐ全員復活 =====
-const REVIVE_ALL_GEMS = 3;
+// ===== 仲間ページ：倒れている仲間をコインですぐ全員復活 =====
+function reviveAllCost() { const ids = downCompanionIds(); return Math.max(10, Math.round(stageCoinRaw() * 15 * ids.reduce((s, id) => s + ((game.compDeaths || {})[id] || 1), 0))); } // 今のステージの稼ぎ×倒れた回数ぶん
 function downCompanionIds() { const cp = game.companions; return Object.keys(COMPANIONS).filter(id => cp.recruited[id] && cp.alive[id] === false); }
 function reviveAllCompanions(ev) {
   const ids = downCompanionIds(); if (!ids.length) return;
-  if (game.gems < REVIVE_ALL_GEMS) { if (typeof promptGemShortage === 'function') promptGemShortage(REVIVE_ALL_GEMS, { returnTo: () => switchTab('companion') }); else showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
-  game.gems -= REVIVE_ALL_GEMS;
+  const cost = reviveAllCost();
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, ev.clientX, ev.clientY); return; }
+  spendCoins(cost);
   const cp = game.companions;
   ids.forEach(id => {
     cp.alive[id] = true; cp.hp[id] = getCompanionMaxHP(id); if (cp.downStages) delete cp.downStages[id];
@@ -799,8 +800,10 @@ function updateReviveAllBtn() {
   if (!b) { b = document.createElement('button'); b.id = 'reviveAllBtn'; b.className = 'revive-all-btn'; b.addEventListener('click', reviveAllCompanions); row.after(b); }
   const n = downCompanionIds().length;
   b.style.display = n ? '' : 'none';
-  b.innerHTML = `✨ 倒れた仲間をすぐ復活（${n}人）<span>💎${REVIVE_ALL_GEMS}</span>`;
-  b.classList.toggle('is-disabled', game.gems < REVIVE_ALL_GEMS);
+  if (!n) return;
+  const cost = reviveAllCost();
+  b.innerHTML = `✨ 倒れた仲間をすぐ復活（${n}人）<span>${COIN_ICO}${formatCoinNumber(cost)}</span>`;
+  b.classList.toggle('is-disabled', game.coins < cost);
 }
 { const orig = renderCompanionList; renderCompanionList = function () { const r = orig.apply(this, arguments); try { updateReviveAllBtn(); } catch (e) {} return r; }; }
 setInterval(() => { if (typeof activeTabCache !== 'undefined' && activeTabCache === 'companion') try { updateReviveAllBtn(); } catch (e) {} }, 1000);

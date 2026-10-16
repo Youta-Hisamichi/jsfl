@@ -3475,3 +3475,9 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head { flex: 0 1 236px !important; background-image: url(assets/img/ui/rec/title.webp) !important; aspect-ratio: 654 / 208 !important; padding: 4% 0 3% 4% !important; margin-left: 8px !important; }
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico-img { content: url(assets/img/ui/rb/tab_upgrade.webp); width: 2.9rem; height: 2.3rem; object-fit: contain; margin: 0; }
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico-img { width: 3.4rem; height: 2.7rem; margin: -2px 0 0; }
+/* 倒れている仲間：アイコンを暗くして棺桶と「あと○階」 */
+.companion-card.is-down .cc-portrait > :not(.cc-down):not(.cc-lv) { filter: grayscale(1) brightness(0.45); }
+.companion-card.is-down { box-shadow: inset 0 0 0 2px rgba(255,80,80,0.55); }
+.cc-portrait { position: relative; }
+.cc-down { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 1.5rem; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 2px #000); }
+.cc-down b { padding: 1px 5px; border-radius: 999px; background: rgba(160,20,30,0.92); color: #fff; font-size: 0.56rem; font-weight: 900; white-space: nowrap; }
