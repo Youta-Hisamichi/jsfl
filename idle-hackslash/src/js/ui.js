@@ -1868,7 +1868,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]'), fb = event.target.closest('[data-evo-fea]');
   const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, maxG = Math.max(EVO_MIN_GEMS, Math.floor(game.gems));
   if (kindBtn) { evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
-  if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); renderEvolutionList(); return; }
+  if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
   if (fb) { const d = fb.dataset.evoFea; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(owned * Math.abs(parseFloat(d)) / 100)) : Number(d); evoFeathers = d === 'max' ? owned : Math.max(0, Math.min(owned, evoFeathers + step)); renderEvolutionList(); return; }
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
