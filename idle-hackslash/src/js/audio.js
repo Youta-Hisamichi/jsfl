@@ -212,15 +212,15 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
-  loginbonus: { // ログインボーナス 砂漠のバザー：くねる異国の音階（フリジアン・ドミナント）の旋律と、ドローンの5度、太鼓のようなはずむベース。にぎやかな砂漠の市場のループ（VRC6風・オリジナル）
-    bpm: 132,
-    echo: { time: 0.23, feedback: 0.24, wet: 0.17 },
+  loginbonus: { // ログインボーナス 黄金のカジノ：きらびやかなブラスの和音のキメ、跳ねるスウィングの旋律、ウォーキングベース。ネオンが輝く賭博場のような陽気なループ（VRC6風・オリジナル）
+    bpm: 168,
+    echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 D#5 F#5 G5 A5 = G5 F#5 | G5 = F#5 D#5 D5 = - = | A5 A#5 A5 G5 F#5 G5 A5 = | D6 = C6 A#5 A5 = - = | A#5 A5 G5 F#5 G5 A5 A#5 A5 | G5 F#5 D#5 F#5 D5 = - = | D5 D#5 F#5 D#5 G5 F#5 A5 G5 | F#5 D#5 D5 = = - - -' },
-      { type: 'vrc6pulse12', gain: 0.012, notes: 'D4+A4 = = = = = = = | G3+D4 = = = = = = = | D4+A4 = = = = = = = | C4+G4 = = = = = = = | D4+A4 = = = = = = = | G3+D4 = = = = = = = | D4+A4 = = = C4+G4 = = = | D4+A4 = = = = = = =' },
-      { type: 'vrc6saw', gain: 0.052, notes: 'D2 - - D2 A2 - D2 - | G1 - - G1 D2 - G1 - | D2 - - D2 A2 - D2 - | C2 - - C2 G2 - C2 - | D2 - - D2 A2 - D2 - | G1 - - G1 D2 - G1 - | D2 - - D2 C2 - - C2 | D2 - A1 - D2 - - -' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'C6 = - G5 A5 = C6 = | D#6 D6 C6 A5 G5 = - = | F5 = A5 = C6 = D6 = | C6 = A#5 = A5 = - = | C6 = - G5 A5 = C6 = | E6 = D6 = C6 = A5 = | A#5 = A5 = G5 = E5 = | F5 = = = - - C6 -' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: 'C5+E5+A5 - C5+E5+A5 - - C5+E5+A5 - - | A#4+D5+G5 - A#4+D5+G5 - - A#4+D5+G5 - - | A4+C5+F5 - A4+C5+F5 - - A4+C5+F5 - - | G4+C5+E5 - G4+C5+E5 - - G4+A#4+E5 - - | C5+E5+A5 - C5+E5+A5 - - C5+E5+A5 - - | A4+D5+F#5 - A4+D5+F#5 - - A4+D5+F#5 - - | A#4+D5+G5 - - - G4+A#4+E5 - - - | A4+C5+F5 = = = A4+C5+F5 - - -' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'F2 - A2 - C3 - D3 - | G2 - A#2 - D3 - E3 - | F2 - A2 - C3 - A2 - | C2 - E2 - G2 - A#2 - | F2 - A2 - C3 - D3 - | D2 - F#2 - A2 - C3 - | G2 - - - C2 - - - | F2 - C2 - F2 - - -' },
     ],
-    drums: 'k - - k s - h h | k - - k s - h - | k - - k s - h h | k - h k s s h - | k - - k s - h h | k - - k s - h - | k - - k s - h h | k k s - ks - - -',
+    drums: 'k - h s - h k h | k - h s - h k s | k - h s - h k h | k - h s s h ks - | k - h s - h k h | k - h s - h k s | k - h s k - h s | k - ks - ks - - -',
   },
   levelup: {
     bpm: 152,
@@ -716,7 +716,7 @@ const BGM_INFO = [
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
-  { key: 'loginbonus', name: 'ログインボーナス 砂漠のバザー', desc: 'ログインボーナスの画面で流れる、くねる異国の音階の旋律とドローンの5度、太鼓のようにはずむベースの曲。にぎやかな砂漠の市場をイメージしたオリジナル曲。VRC6風チップチューン。ニ音のフリジアン・ドミナント。' },
+  { key: 'loginbonus', name: 'ログインボーナス 黄金のカジノ', desc: 'ログインボーナスの画面で流れる、きらびやかなブラスのキメと跳ねるスウィングの旋律、ウォーキングベースの陽気な曲。ネオン輝く賭博場をイメージしたオリジナル曲。VRC6風チップチューン。ヘ長調。' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },

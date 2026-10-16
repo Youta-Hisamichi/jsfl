@@ -361,7 +361,7 @@ function showLogin7(day, got) {
   const glow = ti >= 0 ? `<img class="lb7-glow" src="assets/img/ui/lb7/glow.webp" alt="" style="${P(CX[ti % 3], CY[Math.floor(ti / 3)] - 18)}">` : '';
   const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
   const face = gid === 'hero' ? '<img class="lb7-portrait" src="assets/img/ui/lb7/portrait.webp" alt="">' : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
-  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<b>${got}</b>`;
+  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<b>${String(got).replace('（', '<br><small>（')}${String(got).includes('（') ? '</small>' : ''}</b>`;
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb7">
     <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>

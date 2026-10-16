@@ -3222,3 +3222,4 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .news-body { display: none; margin-top: 4px; font-size: 0.74rem; line-height: 1.6; color: #c8d0e6; }
 .news-item.open .news-body { display: block; }
 .news-close { margin-top: 10px; }
+.lb7-got { transform: translate(-50%, -62%); } .lb7-got b { white-space: nowrap; line-height: 1.1; text-align: center; font-size: 0.82em; } .lb7-got b small { font-size: 0.78em; }
