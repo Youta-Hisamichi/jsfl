@@ -3223,3 +3223,10 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .news-item.open .news-body { display: block; }
 .news-close { margin-top: 10px; }
 .lb7-got { transform: translate(-50%, -62%); } .lb7-got b { white-space: nowrap; line-height: 1.1; text-align: center; font-size: 0.82em; } .lb7-got b small { font-size: 0.78em; }
+/* 今日のマスがはっきり分かるよう、光る枠をくっきり明滅させる（「確定」の下の今日の報酬欄は不要なので消す） */
+.lb7-got { display: none !important; }
+.lb7-glow { animation: lb7Blink 0.9s ease-in-out infinite !important; }
+@keyframes lb7Blink { 0%, 100% { opacity: 1; filter: brightness(1.25) drop-shadow(0 0 10px #ffd34a); } 50% { opacity: 0.35; filter: brightness(1) drop-shadow(0 0 2px #ffd34a); } }
+.lb7-cell.today .lb7-rw { animation: lb7TodayPulse 0.9s ease-in-out infinite; }
+@keyframes lb7TodayPulse { 0%, 100% { transform: scale(1.14); } 50% { transform: scale(1.04); } }
+.lb7-day7.today .lb7-sure { animation: lb7Sure 0.45s ease-in-out infinite alternate !important; }
