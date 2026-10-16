@@ -1081,7 +1081,7 @@ function showLevelUpPop(x, y, text) {
 }
 function showUpgradeLevelUpPop(id, x, y, text) {
   const item = upgradeList.querySelector(`[data-upgrade-card="${id}"]`);
-  if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+  if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; } // 行の上端から出す（行の文字にかぶらないように）
   showLevelUpPop(x, y, text);
 }
 // オート強化：ONにすると、たまったコインで攻撃力・最大HPのうち安い方を自動で上げ続ける（放置向け）

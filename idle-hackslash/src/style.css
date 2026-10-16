@@ -158,13 +158,13 @@ h1 { font-size: 1.2rem; font-weight: 800; margin: 16px 0 2px; text-align: center
 .upgrade-group-title:first-child { margin-top: 0; }
 .purchase-pop { z-index: 96; text-align: center; line-height: 1.2; }
 .purchase-pop small { display: block; font-size: 0.72rem; font-style: normal; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
-.levelup-pop { white-space: pre-line; text-align: center; line-height: 1.25; position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 1.6s ease-out forwards; }
-@keyframes levelUpPop {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
-  10% { opacity: 1; transform: translate(-50%, -80%) scale(1.25); }
-  20% { transform: translate(-50%, -95%) scale(1); }
-  70% { opacity: 1; transform: translate(-50%, -140%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -190%) scale(1); }
+.levelup-pop { white-space: pre-line; text-align: center; line-height: 1.25; position: fixed; z-index: 80; pointer-events: none; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.15rem; font-style: italic; color: #ffd76b; text-shadow: 0 0 6px rgba(255,160,40,0.9), 0 2px 0 #8a4b00; animation: levelUpPop 1.05s ease-out forwards; }
+@keyframes levelUpPop { /* 押した場所より上から出して、下の文字にかぶらないように。動きも短めに */
+  0% { opacity: 0; transform: translate(-50%, -110%) scale(0.6); }
+  12% { opacity: 1; transform: translate(-50%, -150%) scale(1.25); }
+  24% { transform: translate(-50%, -165%) scale(1); }
+  70% { opacity: 1; transform: translate(-50%, -200%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -240%) scale(1); }
 }
 .levelup-pop .lv-leap { color: #7ff3ff; text-shadow: 0 0 8px rgba(60,180,255,0.95), 0 2px 0 #0a3a7a; font-size: 1.1em; } /* 飛躍の行は水色で目立たせる */
 .item-icon { font-size: 1.5em; vertical-align: middle; line-height: 1; }
@@ -3196,3 +3196,4 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .ce-opts button.on { border-color: #ffd76b; background: linear-gradient(180deg, #3a5aa8, #1a2c66); color: #fff; box-shadow: 0 0 8px rgba(255,215,107,0.5); }
 .ce-gender button[data-ce-gender="female"].on { background: linear-gradient(180deg, #c85a9a, #7a2a62); }
 .ce-endtext { margin-top: 6px; }
+.levelup-pop { text-shadow: -1.5px -1.5px 0 #3a1a00, 1.5px -1.5px 0 #3a1a00, -1.5px 1.5px 0 #3a1a00, 1.5px 1.5px 0 #3a1a00, 0 0 8px rgba(255,160,40,0.8), 0 3px 2px rgba(0,0,0,0.6); } /* 下の文字の上でも読めるよう黒フチ */
