@@ -3317,3 +3317,10 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-stat { display: block; margin-top: 3px; padding: 3px 6px; border-radius: 4px; background: rgba(10,16,40,0.75); border: 1px solid rgba(201,154,58,0.5); color: #e8ecf6; font-size: 0.6rem; line-height: 1.5; }
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-stat b { color: #ffd76b; }
 .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-desc { display: block !important; overflow: visible !important; -webkit-line-clamp: unset !important; max-height: none !important; height: auto !important; white-space: normal !important; text-overflow: clip !important; } .tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-stat { white-space: normal; overflow: visible; }
+/* 仲間の説明（プロフィール欄）：明るい・暗いどちらの画面でも読めるよう、紺地に明るい文字で固定 */
+.cp-prof { background: rgba(14,22,50,0.92) !important; border: 1px solid rgba(201,154,58,0.6) !important; color: #e8ecf6 !important; }
+.cp-prof .cpp-text, .cp-prof .cpp-like { color: #e8ecf6 !important; }
+.cp-prof .cpp-say { color: #ffd76b !important; }
+.cp-prof b, .cp-prof strong { color: #ffd76b !important; }
+.cp-prof [class*="bond"], .cp-prof .cpp-bond { color: #ff8fc0 !important; }
+.cp-prof .cpp-combo, .cp-prof .cpp-combo * { color: #c8d0e6 !important; } .cp-prof .cpp-combo b { color: #9aa4c0 !important; } .cp-prof .cpp-combo b.on { color: #63e394 !important; }
