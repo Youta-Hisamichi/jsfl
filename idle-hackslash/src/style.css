@@ -3423,3 +3423,6 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .shop-tabs .sub-tab-btn.active { background: url(assets/img/ui/rec/tab2_on.webp) center / 100% 100% no-repeat !important; color: #fff !important; text-shadow: 0 1px 2px #001a4a, 0 0 3px #001a4a !important; filter: drop-shadow(0 0 4px rgba(90,170,255,0.7)); }
 .shop-tabs .sub-tab-btn.active .st-ico { filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
 #supergemShopList .sub-veteran, #supergemShopList .sub-hero { width: 90%; justify-self: center; margin-left: auto; margin-right: auto; } /* 紋章2つは少し小さく */
+/* ショップのタイトル：1枚絵に差し替え */
+.tab-page[data-tab="gemshop"] .shop-banner { aspect-ratio: 640 / 182; max-width: 330px; background: url(assets/img/ui/shop/title.webp) center / 100% 100% no-repeat; }
+.tab-page[data-tab="gemshop"] .shop-banner .sb-title { display: none; }
