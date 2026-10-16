@@ -804,3 +804,21 @@ function updateReviveAllBtn() {
 }
 { const orig = renderCompanionList; renderCompanionList = function () { const r = orig.apply(this, arguments); try { updateReviveAllBtn(); } catch (e) {} return r; }; }
 setInterval(() => { if (typeof activeTabCache !== 'undefined' && activeTabCache === 'companion') try { updateReviveAllBtn(); } catch (e) {} }, 1000);
+
+// スキル・サブウェポンの 10%／MAX 一括レベルアップ
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-sk-bulk]'); if (!b) return;
+  const isPct = b.dataset.skBulk === 'pct', kind = b.dataset.skKind, id = b.dataset.skId;
+  if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; }
+  const r = skLvSim(kind, id, isPct ? game.coins * PCT_BUDGET : game.coins);
+  if (r.n < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', ev.clientX, ev.clientY); return; }
+  spendCoins(r.spent);
+  const store = kind === 'skill' ? game.skillLevels : game.weapons, from = store[id] || 0;
+  store[id] = from + r.n;
+  const to = store[id], leap = Math.floor(to / 100) > Math.floor(from / 100) ? 2 : Math.floor(to / 10) > Math.floor(from / 10) ? 1 : 0;
+  const name = kind === 'skill' ? SKILL_GACHA_SKILLS[id].name : WEAPONS[id].name;
+  showLevelUpPop(ev.clientX, ev.clientY, `Lv${to}！ +${formatCoinNumber(r.n)}Lv`);
+  if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else if (isPct) playUpgradeSoundClassic(); else playUpgradeSound();
+  showNotice(`${name} を ${r.n}Lv 一括強化！`);
+  updateStatsUI(); renderCoinShopList(); saveGame();
+});

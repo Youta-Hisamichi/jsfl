@@ -1,3 +1,15 @@
+// スキル・サブウェポンのLvアップ（仲間ページと同じ +1／10%／MAX）
+function skLvSim(kind, id, budget) { // 予算で何Lv上げられるか（費用は1Lvごとに変わるので1つずつ数える）
+  const store = kind === 'skill' ? (game.skillLevels = game.skillLevels || {}) : (game.weapons = game.weapons || {});
+  const orig = store[id], costOf = () => kind === 'skill' ? getSkillBuyCost(id) : getWeaponBuyCost(id), cap = kind === 'skill' ? SKILL_MAX_LEVEL : WEAPON_MAX_LV;
+  let n = 0, spent = 0;
+  while (n < 5000 && (store[id] || 0) < cap) { const c = costOf(); if (spent + c > budget) break; spent += c; store[id] = (store[id] || 0) + 1; n++; }
+  store[id] = orig; return { n, spent };
+}
+function skUpBtns(kind, id, cost) {
+  const pct = skLvSim(kind, id, game.coins * PCT_BUDGET).n, max = skLvSim(kind, id, game.coins).n, d = `data-sk-kind="${kind}" data-sk-id="${id}"`;
+  return `<div class="cc-level-row cc-side"><button class="cc-lvup ${game.coins < cost ? 'is-disabled' : ''}" ${kind === 'skill' ? `data-skill-buy="${id}"` : `data-weapon-buy="${id}"`}><b>+1</b><span>${COIN_ICO}${formatCoinNumber(cost)}</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-sk-bulk="pct" ${d}>${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pct < 1 ? 'is-disabled' : ''}" data-sk-bulk="pct" ${d}>10% <span>+${formatCoinNumber(pct)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-sk-bulk="max" ${d}>${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${max < 1 ? 'is-disabled' : ''}" data-sk-bulk="max" ${d}>MAX <span>+${formatCoinNumber(max)} Lv.</span></button>`}</div>`;
+}
 function renderSkillGacha() {
   const head = document.getElementById('skillSlotHead');
   const slots = getSkillSlots();
@@ -16,7 +28,9 @@ function renderSkillGacha() {
     const coinIco = xi('x_coin') || '🟡';
     const buyLabel = !owned ? `解放 ${coinIco}${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ ${coinIco}${formatCoinNumber(cost)}`;
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` + `<span class="sk-lv-sub">（威力×${+skillPower(id).toFixed(1)}・待機 -${Math.round(skillCdCut(lv) * 100)}%）</span>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}</div><div class="sk-btns">${owned && !maxed ? `<button class="sk-lvup ${game.coins < cost ? 'is-disabled' : ''}" data-skill-buy="${id}"><b>+1 Lv.UP</b><span>${COIN_ICO} ${formatCoinNumber(cost)}</span></button>` : ''}${equipBtn}</div></div>`;
+    const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
+    const est = formatCoinNumber(getPlayerAtk() * nowP);
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">⚔️ 威力 ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 -${Math.round(skillCdCut(lv) * 100)}%<br>目安 ≈ ${est}（攻撃力×威力）</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'; // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -28,7 +42,8 @@ function renderSkillGacha() {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = !lv ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
-    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b><span class="sk-lv-sub">（威力×${+pw.toFixed(1)}）</span>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}</div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? `<button class="sk-lvup ${game.coins < cost ? 'is-disabled' : ''}" data-weapon-buy="${id}"><b>+1 Lv.UP</b><span>${COIN_ICO} ${formatCoinNumber(cost)}</span></button>` : ''}${equipBtn}</div></div>`;
+    const pwN = weaponDmg(1, lv + 1), atk = getPlayerAtk();
+    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || '<div class="sk-empty">まだサブウェポンがありません。上のガチャで手に入れよう</div>'; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, `${COIN_ICO} ${formatCoinNumber(cost)}`, label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
