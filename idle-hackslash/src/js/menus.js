@@ -1782,14 +1782,3 @@ function rerollCompanionGacha(event) {
   renderCompanionList(); // 一覧も引く前に戻す
   runCompanionGacha(count, 0, event, true);
 }
-// 課金アイテムの光の帯：アイテムごとにランダムな周期とずれ（描き直しても位相が飛ばないよう時刻基準で負の遅延にする）
-const SG_SHINE = {};
-{ const orig = renderSupergemShopList; renderSupergemShopList = function () { orig.apply(this, arguments);
-  const now = performance.now() / 1000;
-  supergemShopList.querySelectorAll('.sub-btn, .gb-btn').forEach(b => {
-    const k = b.dataset.subShop || b.dataset.supergemShop;
-    const s = SG_SHINE[k] || (SG_SHINE[k] = { dur: 8 + Math.random() * 6, off: Math.random() * 20 });
-    b.style.setProperty('--sdur', s.dur.toFixed(2) + 's');
-    b.style.setProperty('--sdel', (-((now + s.off) % s.dur)).toFixed(2) + 's');
-  });
-}; }
