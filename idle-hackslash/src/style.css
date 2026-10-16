@@ -3481,3 +3481,12 @@ body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico
 .cc-portrait { position: relative; }
 .cc-down { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 1.5rem; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 2px #000); }
 .cc-down b { padding: 1px 5px; border-radius: 999px; background: rgba(160,20,30,0.92); color: #fff; font-size: 0.56rem; font-weight: 900; white-space: nowrap; }
+/* 試練の塔：説明は「しくみ」ボタンの中に */
+#stageSkipModal .tower-help { margin: 4px 0 8px; padding: 0; background: none; border: none; border-radius: 0; color: #c8d0e6; text-align: left; }
+#stageSkipModal .tower-help summary { list-style: none; display: flex; align-items: center; gap: 6px; width: 104px; height: 30px; box-sizing: border-box; padding-left: 10px; background: url(assets/img/ui/rb/helpbar_plain.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.74rem; white-space: nowrap; text-shadow: 0 1px 2px #000; cursor: pointer; }
+#stageSkipModal .tower-help summary::-webkit-details-marker { display: none; }
+#stageSkipModal .tower-help summary::before { content: '▶'; flex: none; font-size: 0.6rem; color: #f3e7c4; transition: transform 0.2s; }
+#stageSkipModal .tower-help[open] summary::before { transform: rotate(90deg); }
+#stageSkipModal .tower-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.75); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; }
+#stageSkipModal .tower-help p { margin: 5px 8px 0; font-size: 0.74rem; line-height: 1.5; }
+.tab-page[data-tab="gemshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,6,24,0.3) 0px, rgba(8,6,24,0.5) 300px, rgba(8,6,24,0.65) 100%), url(assets/img/ui/shop/bg.webp) 50% 0 / 100% auto repeat-y, #0c0a1e !important; } /* ショップの背景をもう少し暗く */
