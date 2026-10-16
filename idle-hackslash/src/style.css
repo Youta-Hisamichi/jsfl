@@ -3185,3 +3185,14 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .ce-btns button { flex: 1; padding: 11px 6px; border-radius: 10px; font-size: 0.95rem; font-weight: 900; cursor: pointer; }
 .ce-ok { border: 2px solid #ffe08a; background: linear-gradient(180deg, #4fb0ff, #1f5fd0); color: #fff; text-shadow: 0 1px 2px #0a2a6a; box-shadow: 0 3px 0 #0f3a80; }
 .ce-cancel { flex: 0 0 34% !important; border: 2px solid #6a7290; background: linear-gradient(180deg, #3a4058, #1c2030); color: #e0e4ee; }
+.ce-stage { width: 100%; max-width: 300px; }
+.ce-stage .ce-hero { display: block; margin: 2px auto 0; }
+.ce-rand { position: absolute; right: 0; top: 6px; z-index: 2; padding: 6px 10px; border-radius: 999px; border: 2px solid #ffe08a; background: linear-gradient(180deg, #b06aff, #6a2fc8); color: #fff; font-size: 0.78rem; font-weight: 900; text-shadow: 0 1px 2px #2a0a5a; box-shadow: 0 3px 0 #3a1478; cursor: pointer; }
+.ce-rand:active { transform: translateY(2px); box-shadow: 0 1px 0 #3a1478; }
+.ce-say { margin: 0 0 8px; padding: 6px 10px; border-radius: 8px; background: rgba(255,250,235,0.95); color: #3a2a14; font-size: 0.8rem; font-weight: 700; text-align: left; }
+.ce-say b { margin-right: 4px; color: #b06a00; font-size: 0.72rem; }
+.ce-opts { display: flex; flex-wrap: wrap; gap: 4px; }
+.ce-opts button { flex: 1 1 auto; padding: 6px 6px; border-radius: 6px; border: 1.5px solid #4a5a8a; background: linear-gradient(180deg, #1a2752, #0c142e); color: #e8ecf6; font-size: 0.72rem; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.ce-opts button.on { border-color: #ffd76b; background: linear-gradient(180deg, #3a5aa8, #1a2c66); color: #fff; box-shadow: 0 0 8px rgba(255,215,107,0.5); }
+.ce-gender button[data-ce-gender="female"].on { background: linear-gradient(180deg, #c85a9a, #7a2a62); }
+.ce-endtext { margin-top: 6px; }

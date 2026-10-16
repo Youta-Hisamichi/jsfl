@@ -365,7 +365,7 @@ function showLogin7(day, got) {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb7">
     <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>
-    <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? '勇者' : COMPANIONS[gid].name}</b><span>${say}</span></div></div>
+    <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b><span>${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</span></div></div>
     <div class="lb7-board">${glow}${cells}
       <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}">${LB7_ICON.party}<b>確定</b></div></div>
       <div class="lb7-got" style="${P(637, 872)}"><img class="lb7-ico" src="assets/img/ui/lb7/gift.webp" alt="">${todayIco}</div>
@@ -587,7 +587,8 @@ function pickGreeter() { // 勇者か招集した仲間から（だれもいな�
 function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナス
   const id = pickGreeter(), g = GREET_SAY[id];
   let t = g[kind]; if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
-  const name = id === 'hero' ? '勇者' : COMPANIONS[id].name;
+  const name = id === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[id].name;
+  if (id === 'hero' && typeof heroSay === 'function') t = heroSay(t); // 勇者のセリフは語尾付き
   const ico = id === 'hero' ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id);
   return `<div class="greet"><span class="gr-ico">${ico}</span><div class="gr-bubble"><b>${name}</b>${t}</div></div>`;
 }

@@ -46,9 +46,10 @@ function playOpening(onEnd) {
     const sc = OPENING_SCENES[i];
     ov.dataset.bg = sc.bg;
     stage.innerHTML = openingArt(sc.art); stage.classList.remove('in'); void stage.offsetWidth; stage.classList.add('in');
-    textEl.textContent = ''; textEl.dataset.full = sc.text;
+    const txt = sc.art === 'heroTalk' ? sc.text.replace(/「(.*)」/, (m0, t) => '「' + heroSay(t) + '」') : sc.text; // 勇者のセリフは語尾付き
+    textEl.textContent = ''; textEl.dataset.full = txt;
     let n = 0;
-    if (sc.text) typing = setInterval(() => { n++; textEl.textContent = sc.text.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= sc.text.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
+    if (txt) typing = setInterval(() => { n++; textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
     if (sc.art === 'bosses') { thump(70, 30, 0.6, 0.5); }
     if (sc.art === 'hero') { playTone(523, 0.3, 'triangle', 0.06, 1046); }
     if (sc.art === 'title') { playLoginBonusSound && playLoginBonusSound(); shakeScreenLight && shakeScreenLight(); }
@@ -125,11 +126,23 @@ const HERO_PRESETS = [ // 見た目プリセット（髪・服・マントの組
   { name: '星の王子', hair: 8, outfit: 6, cape: 2 }, { name: '桜の剣士', hair: 7, outfit: 7, cape: 5 },
 ];
 const HERO_ORIG_SRC = PLAYER_SPRITE;
+const HERO_GENDER_SRC = { male: HERO_ORIG_SRC, female: HERO_ORIG_SRC }; // 性別ごとの勇者の絵（女の子の絵はあとで差し替え。今は同じ絵）
+const HERO_ENDINGS = [['普通', ''], ['にゃん', 'にゃん'], ['にょ', 'にょ'], ['ぞい', 'ぞい'], ['自由に決める', null]];
+const HERO_RANDOM_NAMES = { male: ['アレン', 'カイト', 'レオン', 'ユウ', 'ジーク', 'ソラ', 'リク', 'ハヤテ', 'ルーク', 'ガルド'], female: ['エマ', 'リナ', 'ミア', 'セレナ', 'ユイ', 'ルナ', 'アリサ', 'ヒカリ', 'ノエル', 'サクラ'] };
+function heroName() { return game.username || '勇者'; }
+function heroEnding() { const e = game.heroEnding || 0; return e === 4 ? String(game.heroEndingText || '').slice(0, 6) : (HERO_ENDINGS[e] || HERO_ENDINGS[0])[1]; }
+function heroSay(text, ending) { // 勇者のセリフに語尾を付ける（文の終わりごと。「。」「！」などの記号の前に入れる）
+  const end = ending != null ? ending : heroEnding(); if (!end || !text) return text;
+  return String(text).split(/(?<=[。！？!?♪])/).map(sen => {
+    const m = sen.match(/^([\s\S]*?)([。！？!?♪…・ー〜～\s]*)$/); if (!m || !m[1] || m[1].endsWith(end)) return sen;
+    return m[1] + end + m[2];
+  }).join('');
+}
 let heroBaseImg = null;
-function heroLook() { const l = game.heroLook || {}; return { hair: l.hair || 0, outfit: l.outfit || 0, cape: l.cape || 0 }; }
+function heroLook() { const l = game.heroLook || {}; return { hair: l.hair || 0, outfit: l.outfit || 0, cape: l.cape || 0, gender: l.gender === 'female' ? 'female' : 'male' }; }
 function recolorHero(look) { // 勇者の絵の髪・服・マントの色を塗り替えた画像（data URL）を作る
   const img = heroBaseImg; if (!img || !img.naturalWidth) return HERO_ORIG_SRC;
-  if (!look.hair && !look.outfit && !look.cape) return HERO_ORIG_SRC;
+  if (!look.hair && !look.outfit && !look.cape) return HERO_GENDER_SRC[look.gender] || HERO_ORIG_SRC;
   const W = img.naturalWidth, H = img.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0);
   let d; try { d = x.getImageData(0, 0, W, H); } catch (e) { return HERO_ORIG_SRC; }
@@ -164,32 +177,63 @@ function openCharEdit(first, onDone) {
   let ov = document.getElementById('charEditOv');
   if (ov) ov.remove();
   ov = document.createElement('div'); ov.id = 'charEditOv'; ov.className = 'ce-ov';
-  const look = heroLook(); let name = game.username || '';
-  const sw = part => HERO_COLORS[part].map(([n, , col], i) => `<button class="ce-sw ${look[part] === i ? 'on' : ''}" data-ce-part="${part}" data-ce-i="${i}" style="--c:${col}" title="${n}"><i></i><span>${n}</span></button>`).join('');
+  const look = heroLook(); let ending = game.heroEnding || 0, endingText = game.heroEndingText || '';
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const sw = part => HERO_COLORS[part].map(([n, , col], i) => `<button class="ce-sw" data-ce-part="${part}" data-ce-i="${i}" style="--c:${col}" title="${n}"><i></i><span>${n}</span></button>`).join('');
   ov.innerHTML = `<div class="ce-panel"><div class="ce-title">🎨 キャラエディット</div>${first ? '<div class="ce-sub">冒険に出る勇者の姿を決めよう！（あとから設定で変えられます）</div>' : ''}
-    <div class="ce-stage"><img class="ce-hero" alt=""></div>
-    <label class="ce-name"><span>名前</span><input type="text" maxlength="12" placeholder="名無しの勇者" value="${name.replace(/"/g, '&quot;')}"></label>
+    <div class="ce-stage"><img class="ce-hero" alt=""><button class="ce-rand" title="ランダム">🎲 ランダム</button></div>
+    <div class="ce-say"></div>
+    <label class="ce-name"><span>名前</span><input type="text" maxlength="12" placeholder="名無しの勇者" value="${esc(game.username || '')}"></label>
+    <div class="ce-sec">性別</div><div class="ce-opts ce-gender"><button data-ce-gender="male">♂ 男の子</button><button data-ce-gender="female">♀ 女の子</button></div>
+    <div class="ce-sec">語尾</div><div class="ce-opts ce-ending">${HERO_ENDINGS.map(([n], i) => `<button data-ce-end="${i}">${n}</button>`).join('')}</div>
+    <label class="ce-name ce-endtext"><span>語尾</span><input type="text" maxlength="6" placeholder="例：でござる" value="${esc(endingText)}"></label>
     <div class="ce-sec">見た目プリセット</div><div class="ce-presets">${HERO_PRESETS.map((p, i) => `<button class="ce-pre" data-ce-pre="${i}">${p.name}</button>`).join('')}</div>
     <div class="ce-sec">髪の色</div><div class="ce-row">${sw('hair')}</div>
     <div class="ce-sec">服の色</div><div class="ce-row">${sw('outfit')}</div>
     <div class="ce-sec">マントの色</div><div class="ce-row">${sw('cape')}</div>
     <div class="ce-btns">${first ? '' : '<button class="ce-cancel">やめる</button>'}<button class="ce-ok">${first ? 'この姿で冒険へ！' : '決定'}</button></div></div>`;
   document.body.appendChild(ov);
-  const heroImg = ov.querySelector('.ce-hero');
-  const refresh = () => { heroImg.src = recolorHero(look); ov.querySelectorAll('.ce-sw').forEach(b => b.classList.toggle('on', look[b.dataset.cePart] === +b.dataset.ceI)); ov.querySelectorAll('.ce-pre').forEach(b => { const p = HERO_PRESETS[+b.dataset.cePre]; b.classList.toggle('on', p.hair === look.hair && p.outfit === look.outfit && p.cape === look.cape); }); };
+  const heroImg = ov.querySelector('.ce-hero'), nameIn = ov.querySelector('.ce-name input'), endIn = ov.querySelector('.ce-endtext input');
+  const curEnding = () => ending === 4 ? endIn.value.trim().slice(0, 6) : HERO_ENDINGS[ending][1];
+  const SAMPLE = ['よし、行くぞ！', '今日もがんばる。', 'この剣で世界を救う！'];
+  let sampleI = 0;
+  const refresh = (img = true) => {
+    if (img) heroImg.src = recolorHero(look);
+    ov.querySelectorAll('.ce-sw').forEach(b => b.classList.toggle('on', look[b.dataset.cePart] === +b.dataset.ceI));
+    ov.querySelectorAll('.ce-pre').forEach(b => { const p = HERO_PRESETS[+b.dataset.cePre]; b.classList.toggle('on', p.hair === look.hair && p.outfit === look.outfit && p.cape === look.cape); });
+    ov.querySelectorAll('[data-ce-gender]').forEach(b => b.classList.toggle('on', b.dataset.ceGender === look.gender));
+    ov.querySelectorAll('[data-ce-end]').forEach(b => b.classList.toggle('on', +b.dataset.ceEnd === ending));
+    ov.querySelector('.ce-endtext').style.display = ending === 4 ? '' : 'none';
+    ov.querySelector('.ce-say').innerHTML = `<b>${esc(nameIn.value.trim() || '勇者')}</b>「${esc(heroSay(SAMPLE[sampleI], curEnding()))}」`;
+  };
+  const hop = () => { heroImg.classList.remove('hop'); void heroImg.offsetWidth; heroImg.classList.add('hop'); };
   refresh();
   requestAnimationFrame(() => ov.classList.add('show'));
+  nameIn.addEventListener('input', () => refresh(false)); endIn.addEventListener('input', () => refresh(false));
   ov.addEventListener('click', ev => {
-    const s = ev.target.closest('[data-ce-part]'), p = ev.target.closest('[data-ce-pre]');
-    if (s) { look[s.dataset.cePart] = +s.dataset.ceI; playTone(988, 0.05, 'square', 0.04); refresh(); heroImg.classList.remove('hop'); void heroImg.offsetWidth; heroImg.classList.add('hop'); return; }
-    if (p) { const pr = HERO_PRESETS[+p.dataset.cePre]; look.hair = pr.hair; look.outfit = pr.outfit; look.cape = pr.cape; playTone(1175, 0.06, 'square', 0.04); refresh(); heroImg.classList.remove('hop'); void heroImg.offsetWidth; heroImg.classList.add('hop'); return; }
+    const s = ev.target.closest('[data-ce-part]'), p = ev.target.closest('[data-ce-pre]'), g = ev.target.closest('[data-ce-gender]'), e = ev.target.closest('[data-ce-end]');
+    if (s) { look[s.dataset.cePart] = +s.dataset.ceI; playTone(988, 0.05, 'square', 0.04); refresh(); hop(); return; }
+    if (p) { const pr = HERO_PRESETS[+p.dataset.cePre]; look.hair = pr.hair; look.outfit = pr.outfit; look.cape = pr.cape; playTone(1175, 0.06, 'square', 0.04); refresh(); hop(); return; }
+    if (g) { look.gender = g.dataset.ceGender; playTone(1047, 0.06, 'square', 0.04); refresh(); hop(); return; }
+    if (e) { ending = +e.dataset.ceEnd; sampleI = (sampleI + 1) % SAMPLE.length; playTone(880, 0.05, 'square', 0.04); refresh(false); if (ending === 4) endIn.focus(); return; }
+    if (ev.target.closest('.ce-rand')) { // ランダム：性別・名前・語尾・色をまとめて決める
+      const r = n => Math.floor(Math.random() * n);
+      look.gender = Math.random() < 0.5 ? 'male' : 'female';
+      look.hair = r(HERO_COLORS.hair.length); look.outfit = r(HERO_COLORS.outfit.length); look.cape = r(HERO_COLORS.cape.length);
+      const names = HERO_RANDOM_NAMES[look.gender]; nameIn.value = names[r(names.length)];
+      ending = r(4); sampleI = r(SAMPLE.length);
+      playTone(660, 0.05, 'square', 0.05); setTimeout(() => playTone(990, 0.08, 'square', 0.05), 60);
+      refresh(); hop(); return;
+    }
     if (ev.target.closest('.ce-cancel')) { ov.classList.remove('show'); setTimeout(() => ov.remove(), 250); if (onDone) onDone(); return; }
     if (ev.target.closest('.ce-ok')) {
       game.heroLook = { ...look }; game.charEditSeen = true;
-      game.username = ov.querySelector('.ce-name input').value.trim().slice(0, 12);
+      game.heroEnding = ending; game.heroEndingText = endIn.value.trim().slice(0, 6);
+      if (ending === 4 && !game.heroEndingText) game.heroEnding = 0; // 空なら普通
+      game.username = nameIn.value.trim().slice(0, 12);
       if (typeof usernameInput !== 'undefined' && usernameInput) usernameInput.value = game.username;
       applyHeroLook(); saveGame();
-      if (typeof renderRanking === 'function') try { renderRanking(); } catch (e) {}
+      if (typeof renderRanking === 'function') try { renderRanking(); } catch (err) {}
       if (typeof playRegisterSound === 'function') playRegisterSound();
       ov.classList.remove('show'); setTimeout(() => ov.remove(), 250);
       if (onDone) onDone();
