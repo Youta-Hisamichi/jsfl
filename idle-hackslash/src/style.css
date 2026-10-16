@@ -3461,3 +3461,4 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .sub-btn, #supergemShopList .gb-btn { animation: sgGlow 2.4s ease-in-out infinite; }
 #supergemShopList .gb-btn:nth-child(odd), #supergemShopList .sub-btn:nth-child(even) { animation-delay: -1.2s; }
 #supergemShopList .sub-btn::after, #supergemShopList .gb-btn::after { display: none !important; } /* 光の帯は無し */
+.gacha-art-btn .gab-sub { color: #fff !important; font-size: 0.74rem; font-weight: 900; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 0 4px #000, 0 2px 3px #000 !important; } /* ガチャボタン下の説明を縁取りで目立たせる */
