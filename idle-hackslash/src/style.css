@@ -3435,3 +3435,9 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 /* 所持品の「使う」ボタン：1枚絵（文字は絵に含まれる） */
 .bag-side button[data-bag-seed] { width: 64px; aspect-ratio: 198 / 84; padding: 0; border: none; border-image: none; background: url(assets/img/ui/shop/btn_use.webp) center / 100% 100% no-repeat; color: transparent; text-shadow: none; font-size: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
 .bag-side button[data-bag-seed]:active { transform: scale(0.94); }
+/* 所持品の「開ける」「進化へ」「仲間タブへ」も1枚絵ボタン */
+.bag-side button[data-bag-chest], .bag-side button[data-bag-go] { height: 27px; aspect-ratio: 233 / 84; padding: 0; border: none; border-image: none; background: url(assets/img/ui/shop/btn_open.webp) center / 100% 100% no-repeat; color: transparent; text-shadow: none; font-size: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+.bag-side button[data-bag-go="gacha"] { background-image: url(assets/img/ui/shop/btn_evo.webp); }
+.bag-side button[data-bag-go="chara"] { aspect-ratio: 271 / 79; background-image: url(assets/img/ui/shop/btn_chara.webp); }
+.bag-side button[data-bag-seed] { width: auto; height: 27px; }
+.bag-side button[data-bag-chest]:active, .bag-side button[data-bag-go]:active { transform: scale(0.94); }
