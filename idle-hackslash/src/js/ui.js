@@ -1878,11 +1878,12 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   game.gems -= gems; if (feathers) game.ownedArtifacts.evoFeather = owned - feathers;
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
   if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
-  const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * tier.mult);
-  if (tier.mult > (game.evoBestMult || 0)) game.evoBestMult = tier.mult; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
+  const stake = evoStake(gems, feathers), total = tier.mult * stake;
+  const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * total);
+  if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${EVO_GRADE[tier.rarity]} ×${tier.mult}`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)} ${EVO_GRADE[tier.rarity]} ×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × 🪽${feathers}` : ''}</small>`,
     `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
     }, null);

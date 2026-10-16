@@ -3463,3 +3463,9 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #supergemShopList .sub-btn::after, #supergemShopList .gb-btn::after { display: none !important; } /* 光の帯は無し */
 .gacha-art-btn .gab-sub { color: #fff !important; font-size: 0.74rem; font-weight: 900; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 0 4px #000, 0 2px 3px #000 !important; } /* ガチャボタン下の説明を縁取りで目立たせる */
 .tab-page[data-tab="gacha"] .evo-row { padding: 0 16px !important; gap: 3px; } .tab-page[data-tab="gacha"] .evo-row .evo-lbl { white-space: nowrap; font-size: 0.72rem; } .tab-page[data-tab="gacha"] .evo-row button { min-width: 28px; padding: 4px 4px; font-size: 0.68rem; } .tab-page[data-tab="gacha"] .evo-row .evo-val { min-width: 44px; } /* ±10%ボタンが増えたので詰める */
+/* 進化：一発倍率（ジェム数×羽数）の表示 */
+.evo-stake { margin: 6px 0 4px; padding: 6px 10px; text-align: center; border-radius: 8px; border: 1.5px solid #e8a33a; background: linear-gradient(180deg, rgba(90,30,10,0.85), rgba(40,12,8,0.85)); color: #ffe6b0; font-weight: 900; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
+.evo-stake b { color: #ffd76b; font-size: 1.15rem; margin: 0 2px; }
+.evo-stake small { display: block; font-size: 0.62rem; color: #f0d8b0; font-weight: 700; }
+.evo-res-calc { display: block; margin-top: 4px; font-size: 0.42em !important; letter-spacing: 0; } /* 進化結果の内訳 */
+.evo-res-calc { -webkit-text-stroke: 0 !important; color: #fff !important; text-shadow: 0 1px 2px #000, 0 0 3px #000 !important; font-size: 0.4em !important; }
