@@ -3430,3 +3430,5 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .bag-row { position: relative; min-height: 0; aspect-ratio: 720 / 138; padding: 4px 4.5% 4px 20.5%; border: none; border-image: none; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat; }
 .bag-row .bag-ico { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; border: none; border-radius: 0; background: none; }
 .bag-row .bag-ico .ico-img, .bag-row .bag-ico img, .bag-row .bag-ico .ico-redpot { width: 78%; height: 78%; object-fit: contain; }
+/* ショップの背景：縦長の1枚絵（下に行くほど少し暗くして文字を読みやすく） */
+.tab-page[data-tab="gemshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,8,30,0.05) 0px, rgba(10,8,30,0.3) 300px, rgba(10,8,30,0.5) 100%), url(assets/img/ui/shop/bg.webp) 50% 0 / 100% auto repeat-y, #0c0a1e !important; }
