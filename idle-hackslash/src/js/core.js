@@ -498,7 +498,7 @@ privacyBtn.addEventListener('click', () => {
   infoModalBody.textContent = I18N[currentLang].privacyText;
   infoModal.classList.add('show');
 });
-const GAME_TITLE = '放置系ハクスラスラローム';
+const GAME_TITLE = '放置系ハクスラ無限反射';
 const GAME_VERSION = '1.0.0';
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;

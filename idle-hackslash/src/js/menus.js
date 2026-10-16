@@ -997,7 +997,7 @@ function drawPullMash() { // 連打倍率をキャラの頭上に1つだけ表�
 }
 function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const dur = (900 + 1100 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6 + 8 * lv;
+  const dur = (1700 + 2300 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 7 + 9 * lv; // 飛ぶ時間を長く・少し速くして、たくさん跳ね返るように
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
