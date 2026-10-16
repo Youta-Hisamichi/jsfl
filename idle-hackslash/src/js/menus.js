@@ -99,7 +99,7 @@ let evoKind = 'atk', evoGems = 1, evoFeathers = 0;
 function renderEvolutionList() {
   const el = document.getElementById('evoPanel'); if (!el) return;
   const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0;
-  evoGems = Math.max(EVO_MIN_GEMS, Math.min(game.evoLastGems || 1, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = Math.max(0, Math.min(evoFeathers, owned));
+  evoGems = Math.max(EVO_MIN_GEMS, Math.min(game.evoLastGems || 1, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = Math.max(0, Math.min(game.evoLastFeathers || 0, owned)); // 前回の設定（所持数を超えたら所持数まで）
   const odds = evoOdds(evoGems, evoFeathers), fmtRate = v => '×' + (v < 1000 ? +v.toFixed(2) : formatCoinNumber(v));
   el.innerHTML = `<div class="evo-rates"><div class="evo-rate ${evoKind === 'atk' ? 'on' : ''}" data-evo-kind="atk"><span>⚔️ 攻撃力進化</span><b>${fmtRate(getEvoRate('atk'))}</b></div><div class="evo-rate ${evoKind === 'hp' ? 'on' : ''}" data-evo-kind="hp"><span>❤️ HP進化</span><b>${fmtRate(getEvoRate('hp'))}</b></div></div>
     <div class="evo-row"><span class="evo-lbl">💎 ジェム</span><button data-evo-gems="-10%">-10%</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="10%">+10%</button><button data-evo-gems="max">MAX</button></div>
