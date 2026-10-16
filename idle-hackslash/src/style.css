@@ -3349,3 +3349,31 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="records"] .rec-tabs .sub-tab-btn { display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 1; height: auto; min-height: 0; padding: 0 !important; background: url(assets/img/ui/rec/tab2_off.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="records"] .rec-tabs .sub-tab-btn.active { background-image: url(assets/img/ui/rec/tab2_on.webp) !important; filter: drop-shadow(0 0 4px rgba(90,170,255,0.7)); }
 .rec-tab-lbl { display: block; max-width: 86%; max-height: 68%; object-fit: contain; pointer-events: none; }
+/* 課金ページ：紋章・ジェム袋は1枚絵のバナー。名前・アイコン・バッジは絵に含まれるので隠し、説明と値段だけ空欄に重ねる */
+#supergemShopList .gb-btn, #supergemShopList .sub-btn { display: block; position: relative; padding: 0; border: none !important; border-radius: 0; box-shadow: none !important; overflow: visible; background: var(--bnr) center / 100% 100% no-repeat !important; aspect-ratio: var(--ar); filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+#supergemShopList .gb-btn::after, #supergemShopList .sub-btn::after { display: none; }
+#supergemShopList .gb-icons, #supergemShopList .gb-name, #supergemShopList .gb-badge, #supergemShopList .sub-emblem, #supergemShopList .sub-name { display: none; }
+#supergemShopList .sub-veteran { --bnr: url(assets/img/ui/shop/sub_veteran.webp); --ar: 514 / 122; }
+#supergemShopList .sub-hero { --bnr: url(assets/img/ui/shop/sub_hero.webp); --ar: 514 / 119; }
+#supergemShopList .gb-t1 { --bnr: url(assets/img/ui/shop/gb1.webp); --ar: 514 / 93; }
+#supergemShopList .gb-t2 { --bnr: url(assets/img/ui/shop/gb2.webp); --ar: 514 / 92; }
+#supergemShopList .gb-t3 { --bnr: url(assets/img/ui/shop/gb3.webp); --ar: 514 / 90; }
+#supergemShopList .gb-t4 { --bnr: url(assets/img/ui/shop/gb4.webp); --ar: 514 / 110; }
+#supergemShopList .sub-body { position: absolute; left: 30%; right: 17%; top: 47%; bottom: 9%; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+#supergemShopList .sub-desc { font-size: 0.58rem; line-height: 1.25; color: #fff; }
+#supergemShopList .sub-status { font-size: 0.56rem; line-height: 1.2; }
+#supergemShopList .sub-price { margin-top: 1px; padding: 0 10px; font-size: 0.78rem; text-shadow: none; }
+#supergemShopList .gb-body { position: absolute; left: 30%; right: 6%; top: 46%; bottom: 10%; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
+#supergemShopList .gb-t3 .gb-body { left: 32%; }
+#supergemShopList .gb-t4 .gb-body { left: 34%; top: 50%; }
+#supergemShopList .gb-amount { font-size: 0.92rem; }
+#supergemShopList .gb-price { margin: 0; padding: 1px 12px; font-size: 0.86rem; text-shadow: none; }
+#supergemShopList .is-disabled { opacity: 1; }
+#supergemShopList .sub-btn.is-active { filter: drop-shadow(0 0 5px #2ea043) drop-shadow(0 3px 4px rgba(0,0,0,0.5)); }
+/* 紋章：絵の空欄には値段だけ。説明と加入状況はバナーの下に */
+#supergemShopList .sub-btn { aspect-ratio: auto; background: var(--bnr) center top / 100% auto no-repeat !important; padding: calc(100% * 119 / 514) 0 4px; }
+#supergemShopList .sub-body { position: static; display: block; margin: -4px 4% 0; padding: 4px 8px 5px; background: rgba(8,12,28,0.78); border: 1px solid rgba(220,180,90,0.55); border-radius: 0 0 8px 8px; text-align: center; }
+#supergemShopList .sub-desc { display: block; font-size: 0.66rem; line-height: 1.35; }
+#supergemShopList .sub-status { display: block; font-size: 0.62rem; }
+#supergemShopList .sub-price { position: absolute; left: 32%; top: 0; margin-top: 14.5%; padding: 1px 14px; font-size: 0.9rem; }
+#supergemShopList .gb-body { top: 50%; bottom: 8%; }
