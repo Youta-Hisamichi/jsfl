@@ -3238,3 +3238,43 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 .lb7-sure > b { flex: none; }
 .lb7-sure .lb7-gem10 b { color: #fff; text-shadow: -1.5px -1.5px 0 #4a0c1a, 1.5px -1.5px 0 #4a0c1a, -1.5px 1.5px 0 #4a0c1a, 1.5px 1.5px 0 #4a0c1a; }
 .lb7-sure .lb7-gem10::before { content: '＋'; color: #ffe08a; font-weight: 900; margin-right: 2px; font-size: clamp(0.9rem, 4vw, 1.1rem); }
+/* ===== 戦績ページ（新デザイン：城の背景・アイコン枠つきの行） ===== */
+.tab-page[data-tab="records"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,20,50,0) 0, rgba(10,20,50,0) 520px, rgba(8,14,36,0.5) 900px), url(assets/img/ui/rec/bg.webp) 50% 0 / 100% auto no-repeat, #6a5a48 !important; }
+.tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head, body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { background-image: url(assets/img/ui/rec/title.webp) !important; aspect-ratio: 654 / 208 !important; padding: 4% 0 3% 4% !important; }
+body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { background-image: url(assets/img/ui/rec/speech.webp) !important; padding: 9px 18px 10px !important; }
+.tab-page[data-tab="records"] .rec-tabs .sub-tab-btn { background: url(assets/img/ui/rec/tab_off.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="records"] .rec-tabs .sub-tab-btn.active { background: url(assets/img/ui/rec/tab_on.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="records"] #usernameInput { background: url(assets/img/ui/rec/input.webp) center / 100% 100% no-repeat !important; border: none !important; color: #fff !important; padding: 10px 14px !important; }
+.tab-page[data-tab="records"] .settings-row #usernameSaveBtn { border: none !important; border-image: none !important; background: url(assets/img/ui/rec/save.webp) center / 100% 100% no-repeat !important; color: #fff !important; font-weight: 900; text-shadow: 0 1px 2px #0a2a6a; }
+.tab-page[data-tab="records"] .rg-claim-all { border: none !important; border-image: none !important; background: url(assets/img/ui/rec/gold.webp) center / 100% 100% no-repeat !important; min-height: 52px; box-shadow: none !important; }
+.tab-page[data-tab="records"] .record-panel { border: 26px solid transparent !important; border-image: url(assets/img/ui/rec/panel.webp) 30 fill / 22px stretch !important; background: #efe0bd padding-box !important; padding: 0 2px !important; }
+.tab-page[data-tab="records"] .record-panel.one .record.rec-v2 { display: grid !important; grid-template-columns: 54px auto 1fr auto; grid-template-rows: auto auto auto; column-gap: 8px; row-gap: 3px; align-items: center; padding: 10px 4px 10px 2px !important; border-bottom: 1px solid rgba(150,110,50,0.35); background: none !important; }
+.tab-page[data-tab="records"] .record.rec-v2:last-child { border-bottom: none; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico { grid-column: 1; grid-row: 1 / 4; align-self: center; position: relative; width: 54px; height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: url(assets/img/ui/rec/icobox.webp) center / 100% 100% no-repeat; border-radius: 6px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico img { width: 46px; height: 38px; margin-top: 3px; object-fit: contain; border-radius: 4px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico i { font-style: normal; font-size: 1.6rem; line-height: 40px; height: 40px; filter: drop-shadow(0 2px 1px rgba(0,0,0,0.35)); }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico b { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); padding: 1px 6px; border-radius: 4px; background: linear-gradient(180deg, #23365e, #12203e); border: 1px solid #c9a24a; color: #fff; font-size: 0.56rem; font-weight: 900; letter-spacing: 0.04em; white-space: nowrap; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-tag { grid-column: 2; grid-row: 1; min-height: 24px; padding: 2px 22px 2px 8px; background: url(assets/img/ui/rec/ribbon.webp) left center / 100% 100% no-repeat !important; clip-path: none !important; box-shadow: none !important; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-tag .rec-k { display: none; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-tag .rec-n { font-size: 0.74rem; font-weight: 900; color: #3a2610; white-space: nowrap; }
+.tab-page[data-tab="records"] .record.rec-v2 > strong { grid-column: 3; grid-row: 1; justify-self: start; font-size: 1.15rem !important; white-space: nowrap; }
+.tab-page[data-tab="records"] .record.rec-v2 > span:not(.rec-ico):not(.rec-tag) { grid-column: 3; grid-row: 2; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal { display: contents !important; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-bar { grid-column: 2 / 4; grid-row: 2; height: 9px; margin: 2px 0 0; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-text { grid-column: 2 / 4; grid-row: 3; justify-self: end; font-size: 0.64rem; white-space: nowrap; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-reward { grid-column: 2 / 4; grid-row: 3; justify-self: start; font-size: 0.62rem; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim { grid-column: 4; grid-row: 1 / 4; align-self: center; width: 104px; margin-right: 16px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-done { grid-column: 4; grid-row: 1 / 4; align-self: center; }
+.tab-page[data-tab="records"] .record-panel { border-image: url(assets/img/ui/rec/panel.webp) 34 / 20px stretch !important; padding: 2px 4px !important; }
+.tab-page[data-tab="records"] .record-panel.one .record.rec-v2 { grid-template-columns: 50px minmax(0, max-content) minmax(0, 1fr) auto; column-gap: 6px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico { width: 50px; height: 54px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-ico img { width: 42px; height: 34px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-tag .rec-n { font-size: 0.68rem; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-tag { padding-right: 16px; }
+.tab-page[data-tab="records"] .record.rec-v2 > strong { font-size: 1rem !important; overflow: hidden; text-overflow: ellipsis; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim { width: 86px; margin-right: 13px; font-size: 0.62rem; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim b { margin-left: 18px; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-text { font-size: 0.6rem; }
+.tab-page[data-tab="records"] .record.rec-v2 > strong { grid-column: 3 / 5; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim, .tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-done { grid-row: 2 / 4; }
+.tab-page[data-tab="records"] .record-panel { background: #efe0bd border-box !important; background-clip: border-box !important; }
