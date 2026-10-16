@@ -2074,21 +2074,21 @@ rebirthShopList.addEventListener('click', event => {
   buyRebirthItem(button.dataset.rebirthShop, event.clientX, event.clientY, false);
 });
 
-const SHARE_HASHTAG = '#放置系ハクスラ無限反射';
+const SHARE_HASHTAG = '#放置系ハクスラスラローム';
 function buildShareText(kind) {
   const b = computeBonuses();
   const found = ENEMY_BOOK.filter(entry => (game.bestiary || {})[entry.key]).length;
   const comp = (Math.floor(found / ENEMY_BOOK.length * 1000) / 10).toFixed(1);
   if (kind === 'records') {
-    return `【放置系ハクスラ無限反射 戦績】\n🏔 最高到達 ステージ${game.bestStage}\n⚔️ 累計キル ${game.totalKills.toLocaleString('ja-JP')}\n💥 最大ダメージ ${Math.floor(game.maxDamage || 0).toLocaleString('ja-JP')}\n🌌 転生 ${game.reincarnations}回\n📖 敵図鑑 ${found}/${ENEMY_BOOK.length}（${comp}%）\n${SHARE_HASHTAG}`;
+    return `【放置系ハクスラスラローム 戦績】\n🏔 最高到達 ステージ${game.bestStage}\n⚔️ 累計キル ${game.totalKills.toLocaleString('ja-JP')}\n💥 最大ダメージ ${Math.floor(game.maxDamage || 0).toLocaleString('ja-JP')}\n🌌 転生 ${game.reincarnations}回\n📖 敵図鑑 ${found}/${ENEMY_BOOK.length}（${comp}%）\n${SHARE_HASHTAG}`;
   }
   if (kind === 'ranking') {
     if (!lastRankInfo) renderRanking();
     const info = lastRankInfo;
-    return `【放置系ハクスラ無限反射 ランキング】\n🏆 ${info.label}ランキングで ${info.rank}位！（${info.score}）\n${SHARE_HASHTAG}`;
+    return `【放置系ハクスラスラローム ランキング】\n🏆 ${info.label}ランキングで ${info.rank}位！（${info.score}）\n${SHARE_HASHTAG}`;
   }
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-  return `放置系ハクスラ無限反射で ステージ${game.stage} に挑戦中！\n⚔️ ATK ${player ? player.atk : getPlayerAtk()} ／ 🏔 最高 ステージ${game.bestStage} ／ 🌌 転生 ${game.reincarnations}回\n${SHARE_HASHTAG}`;
+  return `放置系ハクスラスラロームで ステージ${game.stage} に挑戦中！\n⚔️ ATK ${player ? player.atk : getPlayerAtk()} ／ 🏔 最高 ステージ${game.bestStage} ／ 🌌 転生 ${game.reincarnations}回\n${SHARE_HASHTAG}`;
 }
 const shareModal = document.getElementById('shareModal');
 const shareTextEl = document.getElementById('shareText');

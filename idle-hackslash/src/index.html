@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="floor-bg">
-<div id="bootLoading"><div class="bl-run"><img id="blHero" src="assets/img/misc/blHero.webp" alt=""><i class="bl-dust"></i><i class="bl-dust d2"></i><div class="bl-ground"></div></div><div class="bl-title">放置系ハクスラ<br>無限反射</div><div class="bl-text">NOW LOADING<span>.</span><span>.</span><span>.</span></div><div class="bl-bar"><i></i></div><div class="bl-tip" id="blTip"></div></div>
+<div id="bootLoading"><div class="bl-run"><img id="blHero" src="assets/img/misc/blHero.webp" alt=""><i class="bl-dust"></i><i class="bl-dust d2"></i><div class="bl-ground"></div></div><div class="bl-title">放置系ハクスラ<br>スラローム</div><div class="bl-text">NOW LOADING<span>.</span><span>.</span><span>.</span></div><div class="bl-bar"><i></i></div><div class="bl-tip" id="blTip"></div></div>
 <script>(function () { // 起動中のヒント（本体の読み込みより先に表示）
   var tips = ['画面をドラッグすると移動、離すと逆方向へ引っ張り攻撃！', '引っ張る距離が長いほど引っ張り攻撃は強力に', '短いタップで周りの敵を切り払える', '敵の足元に赤い予告が出たら範囲の外へ逃げよう', '攻撃した直後の敵は隙だらけ。今がダメージ2倍のチャンス', '経験値ダイヤを集めてレベルアップ！3択から強化を選べる', '武器スキルは一定時間ごとに自動で発動する', '攻撃UP・リヒールは取得するだけで常に効く', '壁で跳ね返るたびに反射の連鎖音が上がっていく', 'ボスは10ステージごとに登場。HPと回復を整えて挑もう', '転生すると強力な遺物と💎がもらえる', '10ステージごとにエリアが変わり、出てくる敵も変わる', 'スキルはゲーム画面の「スキル入れ替え」から付け替えられる'];
   var el = document.getElementById('blTip'); if (el) el.textContent = '💡 ' + tips[Math.floor(Math.random() * tips.length)];
 })();</script>
 <canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
 
-<h1 style="display:none;">⚔️ 放置系ハクスラ無限反射</h1>
+<h1 style="display:none;">⚔️ 放置系ハクスラスラローム</h1>
 
 <div class="top-header" id="topHeader">
   <span class="th-item coin"><i class="coin-ico"></i> <span id="headerCoins">0</span></span>
@@ -626,7 +626,7 @@
       </div>
     </div>
     <div class="settings-game-head">
-      <div class="sgh-title" id="settingsGameTitle">放置系ハクスラ無限反射</div>
+      <div class="sgh-title" id="settingsGameTitle">放置系ハクスラスラローム</div>
       <div class="sgh-ver" id="settingsGameVersion"></div>
     </div>
     <div class="settings-row">

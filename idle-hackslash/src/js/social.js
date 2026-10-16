@@ -16,7 +16,7 @@ async function makeShareCard() {
   c.strokeStyle = '#ffd76b'; c.lineWidth = 10; c.strokeRect(24, 24, S - 48, S - 48);
   c.strokeStyle = 'rgba(255,215,107,0.4)'; c.lineWidth = 3; c.strokeRect(44, 44, S - 88, S - 88);
   c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.fillStyle = '#ffd76b'; c.font = '900 46px sans-serif'; c.fillText('放置系ハクスラ 無限反射', S / 2, 104);
+  c.fillStyle = '#ffd76b'; c.font = '900 46px sans-serif'; c.fillText('放置系ハクスラ スラローム', S / 2, 104);
   // 見出し（瞬間 or 冒険の記録）
   const head = shareMoment ? shareMoment.title : '🗡️ 冒険の記録';
   c.fillStyle = '#fff'; c.font = '900 64px sans-serif'; c.shadowColor = '#000'; c.shadowBlur = 12;

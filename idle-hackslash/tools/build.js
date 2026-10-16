@@ -79,7 +79,7 @@ window.__imgUrl=one;})();`;
   // アプリのアイコン（主人公のドット絵を拡大）
   put('icons/icon.svg', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#1b2140"/><image href="../assets/img/misc/blHero.webp" x="4" y="4" width="56" height="56" style="image-rendering:pixelated"/></svg>`);
   const manifest = {
-    name: '放置系ハクスラ無限反射', short_name: '無限反射', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
+    name: '放置系ハクスラスラローム', short_name: 'スラローム', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
     background_color: '#0c0e16', theme_color: '#1b2140', lang: 'ja',
     icons: ['192', '512'].map(s => ({ src: `icons/icon-${s}.png`, sizes: `${s}x${s}`, type: 'image/png', purpose: 'any maskable' })),
   };
