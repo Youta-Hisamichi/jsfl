@@ -3200,3 +3200,6 @@ body .gen-hero-panel .gen-hero > .page-head { padding-left: 5% !important; paddi
 /* 転生・試練の塔の解放ダイアログ：OK は少し待ってから出す */
 #featureUnlockModal .fu-ok { visibility: hidden; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
 #featureUnlockModal .fu-ok.fu-ok-in { visibility: visible; opacity: 1; transform: none; }
+/* 宝箱の「開けずに戻る」は目立たないグレー */
+.modal-shop-btn.chest-cancel-btn { opacity: 1; border: 8px solid transparent !important; border-image: url(assets/img/ui/skin/btn_gray.webp) 13 fill / 8px stretch !important; background: none !important; box-shadow: none !important; min-height: 0; padding: 6px 10px !important; }
+.modal-shop-btn.chest-cancel-btn .msb-name { color: #e4e6ec !important; font-size: 0.85rem; text-shadow: 0 1px 1px rgba(0,0,0,0.6) !important; }
