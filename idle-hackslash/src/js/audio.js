@@ -626,7 +626,8 @@ function startSong(type, startStep = 0) {
     const target = getBossPinchTempo();
     s.tempo += (target - s.tempo) * (target > s.tempo ? 0.06 : 0.03); // じわじわ速く／ゆっくり元に戻す
     s.stepDur = s.baseStepDur / s.tempo;
-    while (s.next < audioCtx.currentTime + 0.15) {
+    if (s.next < audioCtx.currentTime + 0.01) s.next = audioCtx.currentTime + 0.03; // 処理が詰まって遅れたときは、過去の時刻に鳴らさず少し先から続ける（ブツッという音を防ぐ）
+    while (s.next < audioCtx.currentTime + 0.3) {
       for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, s.bus));
       const dr = s.song.drumSteps[s.step];
       if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost);
@@ -1211,6 +1212,7 @@ function playPowerUpBlip() {
   });
 }
 function playChainSound(n) {
+  playBubblePop(n);
   const step = Math.min(n - 2, 14); // 2コンボ目から始めて最大15段
   const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
   const freq = 523.25 * Math.pow(2, semis / 12); // C5 から上昇
@@ -1218,6 +1220,21 @@ function playChainSound(n) {
   playTone(freq, 0.08 + heat * 0.06, 'triangle', 0.12 + heat * 0.08, freq * 1.06);
   if (step >= 4) playTone(freq * 1.5, 0.07 + heat * 0.05, 'sine', 0.05 + heat * 0.05);           // 5度上の和音
   if (step >= 9) setTimeout(() => playTone(freq * 2, 0.06, 'square', 0.04 + heat * 0.03), 40); // きらめき
+}
+function playBubblePop(n) { // シャボン玉がパチンと割れる音（連鎖が進むほど高く・軽く）
+  if (!audioCtx) return;
+  const ac = audioCtx, t = ac.currentTime + 0.005, v = (game.sfxVolume ?? 0.7) * 0.5;
+  if (v <= 0) return;
+  const k = Math.min(n - 2, 14), f0 = 700 + k * 90 + Math.random() * 80;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 3.2, t + 0.045);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22 * v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+  o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.08);
+  const len = Math.floor(ac.sampleRate * 0.02), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const ns = ac.createBufferSource(), hp = ac.createBiquadFilter(), ng = ac.createGain();
+  hp.type = 'highpass'; hp.frequency.value = 3500; ns.buffer = buf; ng.gain.value = 0.12 * v;
+  ns.connect(hp); hp.connect(ng); ng.connect(ac.destination); ns.start(t);
 }
 function playStageClearSound() {
   if (activeTabCache !== 'game') return; // ゲーム画面以外ではクリア音を鳴らさない

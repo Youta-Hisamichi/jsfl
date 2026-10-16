@@ -776,3 +776,31 @@ function openNews() {
 }
 document.getElementById('newsBtn').addEventListener('click', openNews);
 updateNewsDot();
+
+// ===== 仲間ページ：倒れている仲間をジェムですぐ全員復活 =====
+const REVIVE_ALL_GEMS = 3;
+function downCompanionIds() { const cp = game.companions; return Object.keys(COMPANIONS).filter(id => cp.recruited[id] && cp.alive[id] === false); }
+function reviveAllCompanions(ev) {
+  const ids = downCompanionIds(); if (!ids.length) return;
+  if (game.gems < REVIVE_ALL_GEMS) { if (typeof promptGemShortage === 'function') promptGemShortage(REVIVE_ALL_GEMS, { returnTo: () => switchTab('companion') }); else showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
+  game.gems -= REVIVE_ALL_GEMS;
+  const cp = game.companions;
+  ids.forEach(id => {
+    cp.alive[id] = true; cp.hp[id] = getCompanionMaxHP(id); if (cp.downStages) delete cp.downStages[id];
+    balls.filter(b => b.isCompanion && b.companionId === id).forEach(b => { b.hp = b.maxHp || cp.hp[id]; spawnHitParticles(b.x, b.y, '#fff4b8'); spawnDamageText(b.x, b.y - (b.radius || 16) - 14, '✨ 復活！', '#fff4b8', 0.014, true); });
+  });
+  if (typeof refreshCompanionBalls === 'function') refreshCompanionBalls();
+  playHealSound && playHealSound(); updateStatsUI(); saveGame(); renderCompanionList();
+  showNotice(`✨ 仲間 ${ids.length}人が復活した！`);
+}
+function updateReviveAllBtn() {
+  let b = document.getElementById('reviveAllBtn');
+  const row = document.querySelector('.tab-page[data-tab="companion"] .party-row'); if (!row) return;
+  if (!b) { b = document.createElement('button'); b.id = 'reviveAllBtn'; b.className = 'revive-all-btn'; b.addEventListener('click', reviveAllCompanions); row.after(b); }
+  const n = downCompanionIds().length;
+  b.style.display = n ? '' : 'none';
+  b.innerHTML = `✨ 倒れた仲間をすぐ復活（${n}人）<span>💎${REVIVE_ALL_GEMS}</span>`;
+  b.classList.toggle('is-disabled', game.gems < REVIVE_ALL_GEMS);
+}
+{ const orig = renderCompanionList; renderCompanionList = function () { const r = orig.apply(this, arguments); try { updateReviveAllBtn(); } catch (e) {} return r; }; }
+setInterval(() => { if (typeof activeTabCache !== 'undefined' && activeTabCache === 'companion') try { updateReviveAllBtn(); } catch (e) {} }, 1000);

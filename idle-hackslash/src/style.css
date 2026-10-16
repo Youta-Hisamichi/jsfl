@@ -3278,3 +3278,9 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="records"] .record.rec-v2 > strong { grid-column: 3 / 5; }
 .tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim, .tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-done { grid-row: 2 / 4; }
 .tab-page[data-tab="records"] .record-panel { background: #efe0bd border-box !important; background-clip: border-box !important; }
+.revive-all-btn { display: block; width: min(320px, 92%); margin: 6px auto 8px; padding: 9px 12px; border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_green.webp) 13 fill / 8px stretch; background: none; color: #fff; font-size: 0.82rem; font-weight: 900; text-shadow: 0 1px 2px #0a3a12; cursor: pointer; animation: rvPulse 1.2s ease-in-out infinite alternate; }
+.revive-all-btn span { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: rgba(0,0,0,0.35); }
+.revive-all-btn.is-disabled { filter: grayscale(0.7) brightness(0.8); animation: none; }
+@keyframes rvPulse { to { filter: brightness(1.15) drop-shadow(0 0 6px rgba(120,255,140,0.7)); } }
+/* 設定画面のシスターは看板の方（右）を向かせる */
+#settingsModal .gen-hero .gh-npc { scale: -1 1; }
