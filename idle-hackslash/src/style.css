@@ -3338,3 +3338,5 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="coinshop"] .cp-help-body p { margin: 5px 8px 0; }
 .tab-page[data-tab="coinshop"] .cp-help-body p { line-height: 1.5; }
 .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head > span:first-child { flex: 1 1 auto; text-align: center; } /* 装備枠テキストを中央に */
+/* 「しくみ」ボタンはスキルページと同じ短い幅で統一 */
+.tab-page[data-tab="companion"] .cp-help summary, .tab-page[data-tab="gacha"] .cp-help summary, .tab-page[data-tab="gemshop"] .cp-help summary { width: 104px; max-width: none; box-sizing: border-box; font-size: 0.74rem; padding-left: 10px !important; white-space: nowrap; cursor: pointer; }
