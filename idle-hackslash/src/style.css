@@ -3443,3 +3443,4 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .bag-side button[data-bag-chest]:active, .bag-side button[data-bag-go]:active { transform: scale(0.94); }
 .seed-ico .ico-img { width: 2.2rem; height: 2.2rem; display: block; }
 .bag-row .bag-ico img.ico-img { width: 94%; height: 94%; }
+.tab-page[data-tab="gemshop"] .shop-sec > .title { color: #fff !important; opacity: 1 !important; font-weight: 900; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 0 4px #000, 0 2px 3px #000 !important; } /* 背景に埋もれないよう縁取り */
