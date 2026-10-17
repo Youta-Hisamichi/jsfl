@@ -18,10 +18,11 @@ const GIMMICKS = {
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
   blocks:    { name: 'ハテナボックス叩きまくり', icon: '❓', desc: 'ハテナボックスを何度も叩いてコイン', coin: 1 },
   tansu:     { name: 'タンス開けまくり', icon: '🗄️', desc: 'タンスを調べまくってお宝さがし！', coin: 1 },
+  castle:    { name: '王城の決戦', icon: '🏰', desc: 'シャンデリアが落ちて敵に大ダメージ。コイン×1.3', coin: 1.3, tint: 'rgba(40,10,6,0.12)' },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime', 'castle'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -83,6 +84,7 @@ function tickGimmick(sp) {
     else if (key === 'bubbles') { gm.nextAt = gm.t + gRand(25, 50); gm.items.push({ kind: 'bubble', x: gRand(A.l + 20, A.r - 20), y: A.b + 20, vy: -gRand(0.4, 0.9), r: gRand(9, 17), ph: Math.random() * 6 }); }
     else if (key === 'fireworks') { gm.nextAt = gm.t + gRand(35, 75); for (let k = Math.random() < 0.3 ? 2 : 1; k > 0; k--) { const x = gRand(A.l + 40, A.r - 40), y = gRand(A.t + 40, A.t + A.h * 0.45); gm.fx.push({ kind: 'rocket', x, y: A.b + k * 30, ty: y, life: 1, hue: Math.floor(Math.random() * 360) }); } playTone(300, 0.35, 'sine', 0.025, 900); } // ときどき2発同時
     else if (key === 'thunder') { gm.nextAt = gm.t + gRand(170, 240); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'warn', target: e, x: e.x, y: e.y, t: 0 }); } }
+    else if (key === 'castle') { gm.nextAt = gm.t + gRand(150, 230); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', chand: true, target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'rocks') { gm.nextAt = gm.t + gRand(140, 210); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'coinrain') { gm.nextAt = gm.t + gRand(14, 30); gm.items.push({ kind: 'coin', x: gRand(A.l + 16, A.r - 16), y: A.t - 10, vy: gRand(1.2, 2), spin: Math.random() * 6, landY: gRand(A.t + A.h * 0.3, A.b - 16) }); }
     else if (key === 'night') { gm.nextAt = gm.t + 120; if (gm.items.filter(i => i.kind === 'firefly').length < 6) gm.items.push(makeFirefly(A)); }
@@ -262,7 +264,7 @@ function drawGimmickFx(f, now) {
     ctx.restore(); }
   else if (f.kind === 'burst') drawFireworkBurst(f);
   else if (f.kind === 'warn' || f.kind === 'rockfall') { const p = f.t / 50; ctx.strokeStyle = f.kind === 'warn' ? `rgba(255,230,90,${0.4 + p * 0.5})` : `rgba(255,120,60,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-    if (f.kind === 'rockfall') { const A = gArea(), y = A.t - 30 + (f.y - A.t + 30) * p * p; ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 16 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; if (!(typeof drawObstacleSprite === 'function' && drawObstacleSprite('rock', f.x, y, 34, p * 4))) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(f.x, y, 15, 0, Math.PI * 2); ctx.fill(); } } }
+    if (f.kind === 'rockfall') { const A = gArea(), y = A.t - 30 + (f.y - A.t + 30) * p * p; ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 16 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; if (f.chand) drawChandelier(f.x, y, 1); else if (!(typeof drawObstacleSprite === 'function' && drawObstacleSprite('rock', f.x, y, 34, p * 4))) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(f.x, y, 15, 0, Math.PI * 2); ctx.fill(); } } }
   else if (f.kind === 'bolt') { const A = gArea(); ctx.strokeStyle = `rgba(255,250,200,${f.life})`; ctx.lineWidth = 4; ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 18; ctx.beginPath(); let x = f.x + gRand(-20, 20), y = A.t; ctx.moveTo(x, y); const n = 7; for (let i = 1; i <= n; i++) { y = A.t + (f.y - A.t) * i / n; x = i === n ? f.x : f.x + gRand(-18, 18); ctx.lineTo(x, y); } ctx.stroke(); ctx.shadowBlur = 0; }
   else if (f.kind === 'crash') { ctx.strokeStyle = `rgba(200,180,150,${f.life})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (2 - f.life), 0, Math.PI * 2); ctx.stroke(); }
   else if (f.kind === 'flake') { ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.s * 0.5, 0, Math.PI * 2); ctx.fill(); }
@@ -503,3 +505,46 @@ document.getElementById('bagList').addEventListener('click', ev => {
 });
 { const orig = updateSeedButton; updateSeedButton = function () { orig.apply(this, arguments); const sec = document.querySelector('[data-shop-sec="bag"]'); if (sec && !sec.hidden) renderBagList(); }; }
 if (document.querySelector('[data-shop-sec="bag"]') && !document.querySelector('[data-shop-sec="bag"]').hidden) renderBagList();
+
+// ===== 王城の決戦：赤じゅうたん・石の柱・王家の旗・たいまつ、落ちてくるシャンデリア =====
+function drawCastleHall(A, now) {
+  const cx = (A.l + A.r) / 2, w = A.w * 0.34;
+  // 中央の赤じゅうたん（金の縁取り）
+  const g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0); g.addColorStop(0, '#7a0c14'); g.addColorStop(0.5, '#b0182a'); g.addColorStop(1, '#7a0c14');
+  ctx.globalAlpha = 0.78; ctx.fillStyle = g; ctx.fillRect(cx - w / 2, A.t - 10, w, A.h + 20);
+  ctx.globalAlpha = 0.9; ctx.fillStyle = '#e0b048'; ctx.fillRect(cx - w / 2, A.t - 10, 4, A.h + 20); ctx.fillRect(cx + w / 2 - 4, A.t - 10, 4, A.h + 20);
+  ctx.fillStyle = 'rgba(224,176,72,0.55)'; for (let y = A.t + 20; y < A.b; y += 46) { ctx.beginPath(); ctx.moveTo(cx, y - 8); ctx.lineTo(cx + 8, y); ctx.lineTo(cx, y + 8); ctx.lineTo(cx - 8, y); ctx.closePath(); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  // 左右の石の柱と旗・たいまつ
+  const rows = 3;
+  for (let i = 0; i < rows; i++) {
+    const y = A.t + A.h * (i + 0.5) / rows;
+    for (const side of [-1, 1]) {
+      const x = side < 0 ? A.l + 22 : A.r - 22, pw = 26, ph = A.h / rows * 0.8;
+      const pg = ctx.createLinearGradient(x - pw / 2, 0, x + pw / 2, 0); pg.addColorStop(0, '#5d5a66'); pg.addColorStop(0.45, '#b9b5c2'); pg.addColorStop(1, '#4a4754');
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(x - pw / 2 + 5, y - ph / 2 + 6, pw, ph);
+      ctx.fillStyle = pg; ctx.fillRect(x - pw / 2, y - ph / 2, pw, ph);
+      ctx.fillStyle = '#8c8896'; ctx.fillRect(x - pw / 2 - 4, y - ph / 2 - 6, pw + 8, 8); ctx.fillRect(x - pw / 2 - 4, y + ph / 2 - 2, pw + 8, 8);
+      // 旗（柱の内側に下がる）
+      const bx = x + side * -26, by = y - ph / 2 + 4, bw = 18, bh = ph * 0.55, sway = Math.sin(now / 700 + i + side) * 2;
+      ctx.fillStyle = '#1d3f9a'; ctx.beginPath(); ctx.moveTo(bx - bw / 2, by); ctx.lineTo(bx + bw / 2, by); ctx.lineTo(bx + bw / 2 + sway, by + bh); ctx.lineTo(bx + sway, by + bh - 7); ctx.lineTo(bx - bw / 2 + sway, by + bh); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#e8c45a'; ctx.fillRect(bx - bw / 2, by, bw, 3); ctx.beginPath(); ctx.arc(bx + sway / 2, by + bh * 0.42, 4, 0, Math.PI * 2); ctx.fill();
+      // たいまつの灯り（ゆらめく）
+      const fl = 0.75 + 0.25 * Math.sin(now / 90 + i * 2 + side * 3), tx = x, ty = y - ph / 2 + ph * 0.6;
+      const lg = ctx.createRadialGradient(tx, ty, 0, tx, ty, 46 * fl); lg.addColorStop(0, 'rgba(255,190,90,0.38)'); lg.addColorStop(1, 'rgba(255,140,40,0)');
+      ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(tx, ty, 46 * fl, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd36a'; ctx.beginPath(); ctx.ellipse(tx, ty - 4, 4 * fl, 7 * fl, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+function drawChandelier(x, y, a) {
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
+  ctx.strokeStyle = '#7a5a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -60); ctx.lineTo(0, -10); ctx.stroke();
+  ctx.fillStyle = '#d9a93f'; ctx.strokeStyle = '#6a4a10'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(0, 0, 22, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  for (const dx of [-18, -6, 6, 18]) { ctx.fillStyle = '#f4ead0'; ctx.fillRect(dx - 2, -12, 4, 9); ctx.fillStyle = '#ffcf5a'; ctx.beginPath(); ctx.ellipse(dx, -15, 2.5, 4, 0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = '#9fd8ff'; for (const dx of [-14, 0, 14]) { ctx.beginPath(); ctx.moveTo(dx, 5); ctx.lineTo(dx + 3, 11); ctx.lineTo(dx, 17); ctx.lineTo(dx - 3, 11); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+{ const orig = getFloorKey; getFloorKey = function (stage) { return typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'castle' ? 'redCarpet' : orig.apply(this, arguments); }; } // 王城は赤じゅうたんの床
+{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { if (curGimmick() === 'castle') { ctx.save(); arenaPath(); ctx.clip(); drawCastleHall(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; } // 王の間の飾りは床と一緒に（キャラの下に）描く
