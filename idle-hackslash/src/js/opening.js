@@ -256,10 +256,13 @@ function decorateSettingsPage() {
     if (first) { icon = first.outerHTML; label = nm.textContent.trim(); }
     else { const m = nm.textContent.trim().match(/^(\S+)\s+(.+)$/); if (!m) return; icon = m[1]; label = m[2]; }
     b.classList.add('st-item');
+    const IC = { howToPlayBtn: 'howto', contactBtn: 'contact', termsBtn: 'terms', privacyBtn: 'privacy', faqBtn: 'faq', creditsBtn: 'credits', charEditBtn: 'chara', openingBtn: 'opening', fundsActBtn: 'funds' }; // 項目アイコンの絵
+    if (IC[b.id]) icon = `<img src="assets/img/ui/set/i_${IC[b.id]}.webp" alt="">`;
     b.innerHTML = `<span class="st-ico">${icon}</span><span class="msb-name">${label}</span><span class="st-arrow"></span>`;
   });
   [['bgmVolRange'], ['sfxVolRange']].forEach(([id]) => { const r = document.getElementById(id); if (r) r.style.setProperty('--v', r.value + '%'); });
   const vb = document.getElementById('vibrationBtn'); if (vb) vb.classList.toggle('st-on', game.vibration !== false);
+  const vl = page.querySelector('[data-i18n="vibrationLabel"]'); if (vl && !vl.querySelector('.st-vib')) vl.innerHTML = '<img class="st-vib" src="assets/img/ui/set/vib.webp" alt="">' + vl.textContent.replace(/^\S*📳\S*\s*/, '').trim();
 }
 ['bgmVolRange', 'sfxVolRange'].forEach(id => { const r = document.getElementById(id); if (r) r.addEventListener('input', () => r.style.setProperty('--v', r.value + '%')); });
 document.getElementById('vibrationBtn') && document.getElementById('vibrationBtn').addEventListener('click', () => setTimeout(decorateSettingsPage, 0));

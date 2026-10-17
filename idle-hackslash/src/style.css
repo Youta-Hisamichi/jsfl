@@ -3548,3 +3548,29 @@ body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico
 #settingsModal .st2 .settings-game-head { border: 2px solid #c9962e; border-radius: 8px; }
 #settingsModal .st2 .st-item .st-ico img { width: 30px; height: 30px; object-fit: contain; vertical-align: middle; } #settingsModal .st2 .settings-row:has(#vibrationBtn) > label { font-size: 0.86rem; white-space: nowrap; }
 #settingsModal .st2 .st-item .msb-name { font-size: clamp(0.78rem, 3.9vw, 0.95rem); letter-spacing: -0.02em; } #settingsModal .st2 .st-item { gap: 8px; }
+/* ===== 設定画面：専用素材 ===== */
+#settingsModal .settings-page.st2 { border-width: 74px 30px 50px !important; border-image: url(assets/img/ui/set/panel.webp) 165 68 112 fill / 74px 30px 50px stretch !important; background: none !important; padding: 0 6px 6px !important; overflow: visible; }
+#settingsModal .settings-page.st2::before { display: none !important; }
+body #settingsModal .st2 .gen-hero { height: auto; margin: -66px -14px 6px; padding: 0 !important; justify-content: center; aspect-ratio: 800 / 267; background: url(assets/img/ui/set/title.webp) center / contain no-repeat; }
+body #settingsModal .st2 .gen-hero > * { visibility: hidden; }
+#settingsModal .st2 .settings-row { background: linear-gradient(180deg, rgba(36,62,128,0.6), rgba(12,24,60,0.6)); border: 1px solid rgba(140,170,255,0.25); }
+/* スライダー */
+#settingsModal .st2 input[type="range"] { height: auto; aspect-ratio: 500 / 64; margin: 6px 0 0; padding: 0 7.6%; box-sizing: border-box; border: none; border-radius: 0; box-shadow: none; background: linear-gradient(180deg, #5fb4ff, #1a6fe8 55%, #0d4fbf) left 52% / var(--v, 50%) 30% no-repeat content-box, url(assets/img/ui/set/track.webp) center / 100% 100% no-repeat; }
+#settingsModal .st2 input[type="range"]::-webkit-slider-thumb { width: 32px; height: 38px; border: none; border-radius: 0; background: url(assets/img/ui/set/knob.webp) center / contain no-repeat; box-shadow: none; }
+#settingsModal .st2 input[type="range"]::-moz-range-thumb { width: 32px; height: 38px; border: none; border-radius: 0; background: url(assets/img/ui/set/knob.webp) center / contain no-repeat; }
+/* 振動スイッチ */
+#settingsModal .st2 #vibrationBtn, #settingsModal .st2 #vibrationBtn.st-on { width: 96px; height: auto; aspect-ratio: 209 / 90; padding: 0 !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; background: url(assets/img/ui/set/off.webp) center / 100% 100% no-repeat !important; }
+#settingsModal .st2 #vibrationBtn.st-on { background-image: url(assets/img/ui/set/on.webp) !important; }
+#settingsModal .st2 #vibrationBtn .msb-name, #settingsModal .st2 #vibrationBtn::after { display: none !important; }
+#settingsModal .st2 [data-i18n="vibrationLabel"] { display: inline-flex; align-items: center; gap: 4px; }
+#settingsModal .st2 .st-vib { width: 34px; height: 34px; object-fit: contain; }
+/* 項目ボタン */
+#settingsModal .st2 .st-item { aspect-ratio: 885 / 136; min-height: 0; padding: 0 16% 0 8.5% !important; border: none !important; border-image: none !important; box-shadow: none !important; background: url(assets/img/ui/set/row.webp) center / 100% 100% no-repeat !important; gap: 8px; }
+#settingsModal .st2 .st-item .st-arrow { display: none; }
+#settingsModal .st2 .st-item .st-ico { width: 36px; }
+#settingsModal .st2 .st-item .st-ico img { width: 36px; height: 36px; }
+#settingsModal .settings-page.st2 { overflow-y: auto !important; overflow-x: hidden !important; border-width: 56px 30px 44px !important; border-image: url(assets/img/ui/set/panel.webp) 125 68 100 fill / 56px 30px 44px stretch !important; }
+body #settingsModal .st2 .gen-hero { margin: -6px -10px 6px; }
+#settingsModal .st2 .st-item { padding-right: 21% !important; }
+#settingsModal .st2 .st-item .msb-name { font-size: clamp(0.74rem, 3.6vw, 0.9rem); }
+#settingsModal .st2 #vibrationBtn, #settingsModal .st2 #vibrationBtn.st-on { width: 82px; } #settingsModal .st2 .settings-row:has(#vibrationBtn) > label { font-size: 0.8rem; min-width: 0; }
