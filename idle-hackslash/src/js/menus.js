@@ -639,7 +639,7 @@ function renderRanking() {
     const wi = { 'w-god': '🔥', 'w-pro': '👑', 'w-master': '👑', 'w-class': '👑' };
     const wall = RANK_WALLS[i] && i < shown.length ? `<div class="rank-wall ${RANK_WALLS[i][1]}"><span><i>${wi[RANK_WALLS[i][1]]}</i>${RANK_WALLS[i][0]}<i>${wi[RANK_WALLS[i][1]]}</i></span></div>` : '';
     const cls = i < 3 ? `top${i + 1}` : i < 10 ? 'top10' : '';
-    const no = i < 3 ? `<span class="rank-medal">${RANK_ICONS[i]}</span>` : `${i + 1}<small>位</small>`;
+    const no = i < 3 ? '' : `${i + 1}<small>位</small>`; // 1〜3位は枠の絵に順位が入っている
     return `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}"><span class="rank-no">${no}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${fmt(entry.score)}</span></div>`.replace(/^/, wall);
   }).join('');
 }
