@@ -261,10 +261,14 @@ function decorateSettingsPage() {
     b.innerHTML = `<span class="st-ico">${icon}</span><span class="msb-name">${label}</span><span class="st-arrow"></span>`;
   });
   [['bgmVolRange'], ['sfxVolRange']].forEach(([id]) => { const r = document.getElementById(id); if (r) r.style.setProperty('--v', r.value + '%'); });
+  const setIco = (el, ico) => { if (!el || el.querySelector('.st-hico')) return; el.innerHTML = `<img class="st-hico" src="assets/img/ui/set/${ico}.webp" alt="">` + el.textContent.replace(/^[^\s]*\s+/, '').trim(); };
+  setIco(page.querySelector('[data-i18n="langLabel"]'), 'i_globe'); setIco(page.querySelector('[data-i18n="devLabel"]'), 'i_person');
+  page.querySelectorAll('a.modal-shop-btn .msb-name').forEach(n => setIco(n, /YouTube/.test(n.textContent) ? 'i_yt' : 'i_x'));
   const vb = document.getElementById('vibrationBtn'); if (vb) vb.classList.toggle('st-on', game.vibration !== false);
   const vl = page.querySelector('[data-i18n="vibrationLabel"]'); if (vl && !vl.querySelector('.st-vib')) vl.innerHTML = '<img class="st-vib" src="assets/img/ui/set/vib.webp" alt="">' + vl.textContent.replace(/^\S*📳\S*\s*/, '').trim();
 }
 ['bgmVolRange', 'sfxVolRange'].forEach(id => { const r = document.getElementById(id); if (r) r.addEventListener('input', () => r.style.setProperty('--v', r.value + '%')); });
 document.getElementById('vibrationBtn') && document.getElementById('vibrationBtn').addEventListener('click', () => setTimeout(decorateSettingsPage, 0));
 settingsBtn.addEventListener('click', () => setTimeout(decorateSettingsPage, 0));
+document.querySelectorAll('#settingsModal .lang-btn').forEach(b => b.addEventListener('click', () => setTimeout(decorateSettingsPage, 0)));
 setTimeout(decorateSettingsPage, 0);
