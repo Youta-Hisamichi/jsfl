@@ -244,3 +244,24 @@ function openCharEdit(first, onDone) {
 { const ob = document.getElementById('openingBtn');
   if (ob) { ob.insertAdjacentHTML('beforebegin', '<button class="modal-shop-btn" id="charEditBtn"><span class="msb-name">🎨 キャラエディット（名前・見た目）</span></button>');
     document.getElementById('charEditBtn').addEventListener('click', () => { const sm = document.getElementById('settingsModal'); if (sm && typeof closeSettingsModal === 'function') closeSettingsModal(); openCharEdit(false); }); } }
+// ===== 設定画面のデザイン（紺の金縁パネル・金のスライダー・羊皮紙の項目ボタン） =====
+function decorateSettingsPage() {
+  const page = document.querySelector('#settingsModal .settings-page'); if (!page) return;
+  page.classList.add('st2');
+  page.querySelectorAll('.settings-btn-row > .modal-shop-btn:not(.lang-btn):not([href])').forEach(b => {
+    if (b.classList.contains('st-item')) return;
+    const nm = b.querySelector('.msb-name'); if (!nm) return;
+    const first = nm.firstElementChild && nm.firstChild === nm.firstElementChild ? nm.firstElementChild : null; // 絵文字が画像に置き換わっていることもある
+    let icon, label;
+    if (first) { icon = first.outerHTML; label = nm.textContent.trim(); }
+    else { const m = nm.textContent.trim().match(/^(\S+)\s+(.+)$/); if (!m) return; icon = m[1]; label = m[2]; }
+    b.classList.add('st-item');
+    b.innerHTML = `<span class="st-ico">${icon}</span><span class="msb-name">${label}</span><span class="st-arrow"></span>`;
+  });
+  [['bgmVolRange'], ['sfxVolRange']].forEach(([id]) => { const r = document.getElementById(id); if (r) r.style.setProperty('--v', r.value + '%'); });
+  const vb = document.getElementById('vibrationBtn'); if (vb) vb.classList.toggle('st-on', game.vibration !== false);
+}
+['bgmVolRange', 'sfxVolRange'].forEach(id => { const r = document.getElementById(id); if (r) r.addEventListener('input', () => r.style.setProperty('--v', r.value + '%')); });
+document.getElementById('vibrationBtn') && document.getElementById('vibrationBtn').addEventListener('click', () => setTimeout(decorateSettingsPage, 0));
+settingsBtn.addEventListener('click', () => setTimeout(decorateSettingsPage, 0));
+setTimeout(decorateSettingsPage, 0);

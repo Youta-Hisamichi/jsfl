@@ -3515,3 +3515,36 @@ body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico
 .chest-panel:has(#chestCancelBtn) .chest-big.shake { animation: chestPulseC 1s ease-in-out infinite; }
 @keyframes chestPulseC { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } }
 .chest-stars b { font-size: clamp(0.95rem, 4.6vw, 1.2rem); }
+/* ===== 設定画面：紺の金縁パネル＋金のスライダー＋羊皮紙の項目ボタン ===== */
+#settingsModal .settings-page.st2 { background: #0e1b3e !important; border: 18px solid transparent !important; border-image: url(assets/img/ui/comp/stat.webp) 40 fill / 18px stretch !important; border-radius: 0 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important; padding: 6px 4px 10px !important; color: #fff; }
+#settingsModal .settings-page.st2::before { opacity: 0.18 !important; filter: none !important; }
+#settingsModal .st2 .settings-row { margin: 0 0 6px; padding: 8px 10px 10px; border-radius: 8px; background: linear-gradient(180deg, rgba(30,52,110,0.55), rgba(10,20,52,0.55)); border: 1px solid rgba(120,160,255,0.25); }
+#settingsModal .st2 .settings-row > label { display: flex; align-items: center; justify-content: space-between; color: #fff !important; font-size: 0.95rem; font-weight: 900; text-shadow: 0 1px 2px #000 !important; }
+#settingsModal .st2 #bgmVolVal, #settingsModal .st2 #sfxVolVal { min-width: 52px; padding: 1px 8px; text-align: center; border: 2px solid #d9a93f; border-radius: 6px; background: #0a1230; color: #fff !important; font-size: 0.85rem; box-shadow: inset 0 0 0 1px #4a3208; }
+/* スライダー */
+#settingsModal .st2 input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 14px; margin: 10px 0 2px; border-radius: 999px; border: 2px solid #c9962e; box-shadow: 0 0 0 1px #4a3208, inset 0 1px 2px rgba(0,0,0,0.5); background: linear-gradient(90deg, #1a7cff, #2f9bff) 0 0 / var(--v, 50%) 100% no-repeat, linear-gradient(180deg, #fff4c8, #e8c46a); }
+#settingsModal .st2 input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; border: 3px solid #e8c46a; background: radial-gradient(circle at 40% 35%, #cfeaff 0 18%, #3aa0ff 35%, #0b4fb8 75%); box-shadow: 0 0 0 1px #4a3208, 0 0 8px rgba(255,220,120,0.8); cursor: pointer; }
+#settingsModal .st2 input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #e8c46a; background: radial-gradient(circle at 40% 35%, #cfeaff 0 18%, #3aa0ff 35%, #0b4fb8 75%); }
+/* 振動のON/OFFスイッチ */
+#settingsModal .st2 .settings-row:has(#vibrationBtn) { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#settingsModal .st2 #vibrationBtn { position: relative; flex: none; width: 92px; height: 34px; margin: 0; padding: 0 0 0 14px !important; border: 2px solid #c9962e !important; border-image: none !important; border-radius: 999px !important; background: linear-gradient(180deg, #5a6378, #2c3346) !important; box-shadow: 0 0 0 1px #4a3208 !important; justify-content: flex-start !important; }
+#settingsModal .st2 #vibrationBtn.st-on { background: linear-gradient(180deg, #2f8cff, #0b4fb8) !important; }
+#settingsModal .st2 #vibrationBtn .msb-name { color: #fff !important; font-size: 0.95rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
+#settingsModal .st2 #vibrationBtn::after { content: ''; position: absolute; top: 2px; right: 3px; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff8d0, #e8b53a 60%, #a8741a); box-shadow: 0 1px 2px rgba(0,0,0,0.5); transition: right 0.15s; }
+#settingsModal .st2 #vibrationBtn:not(.st-on) { padding: 0 14px 0 0 !important; justify-content: flex-end !important; }
+#settingsModal .st2 #vibrationBtn:not(.st-on)::after { right: calc(100% - 29px); }
+/* 項目ボタン：羊皮紙＋左にアイコン＋右に矢印 */
+#settingsModal .st2 .settings-btn-row { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+#settingsModal .st2 .st-item { position: relative; display: flex !important; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0 !important; padding: 2px 6px 2px 10px !important; border: 9px solid transparent !important; border-image: url(assets/img/ui/skin/panel_parch2.webp) 16 fill / 9px stretch !important; border-radius: 0 !important; background: none !important; box-shadow: 0 0 0 2px #c9962e, 0 2px 4px rgba(0,0,0,0.5) !important; text-align: left; }
+#settingsModal .st2 .st-item .st-ico { flex: none; width: 34px; font-size: 1.6rem; line-height: 1; text-align: center; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4)); }
+#settingsModal .st2 .st-item .msb-name { flex: 1; min-width: 0; color: #2a1a06 !important; font-size: 0.95rem; font-weight: 900; text-shadow: 0 1px 0 rgba(255,240,200,0.8) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#settingsModal .st2 .st-item .st-arrow { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #c9962e; background: radial-gradient(circle, #e9d6a8, #b8935a); box-shadow: inset 0 0 0 1px #fff3cc; position: relative; }
+#settingsModal .st2 .st-item .st-arrow::after { content: ''; position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: translate(-35%, -50%); border-left: 11px solid #1f6fe0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; filter: drop-shadow(0 0 1px #0a2a6a); }
+#settingsModal .st2 .st-item:active { transform: scale(0.98); }
+/* 言語・開発者の欄 */
+#settingsModal .st2 .settings-row .settings-btn-row { flex-direction: row; }
+#settingsModal .st2 .settings-row .modal-shop-btn { flex: 1; }
+#settingsModal .st2 .modal-sub, #settingsModal .st2 .modal-sub * { color: #c8d0e6 !important; }
+#settingsModal .st2 .settings-game-head { border: 2px solid #c9962e; border-radius: 8px; }
+#settingsModal .st2 .st-item .st-ico img { width: 30px; height: 30px; object-fit: contain; vertical-align: middle; } #settingsModal .st2 .settings-row:has(#vibrationBtn) > label { font-size: 0.86rem; white-space: nowrap; }
+#settingsModal .st2 .st-item .msb-name { font-size: clamp(0.78rem, 3.9vw, 0.95rem); letter-spacing: -0.02em; } #settingsModal .st2 .st-item { gap: 8px; }
