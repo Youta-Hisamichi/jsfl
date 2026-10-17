@@ -3510,3 +3510,8 @@ body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button > * { display: none !important; }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-child(2) > .msb-name { display: block !important; color: #3a1c06; font-size: clamp(1rem, 5.6vw, 1.45rem); font-weight: 900; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgba(255,240,200,0.8); }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button:active { background: rgba(255,255,255,0.12) !important; }
+/* 宝箱：小さめにして、回転ではなく拡大縮小でゆらす。×個数も控えめに */
+.chest-panel:has(#chestCancelBtn) .chest-big { width: 22%; top: 10%; }
+.chest-panel:has(#chestCancelBtn) .chest-big.shake { animation: chestPulseC 1s ease-in-out infinite; }
+@keyframes chestPulseC { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.1); } }
+.chest-stars b { font-size: clamp(0.95rem, 4.6vw, 1.2rem); }
