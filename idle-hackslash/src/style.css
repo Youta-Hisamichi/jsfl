@@ -3726,3 +3726,6 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="ranking"] #rankTopBtn > * { visibility: hidden; }
 .tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-no { left: 3%; width: 14% !important; font-size: clamp(0.72rem, 3.5vw, 0.9rem); letter-spacing: -0.03em; }
 .tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-score { left: 78.5%; right: 3.5%; font-size: clamp(0.6rem, 3vw, 0.76rem); letter-spacing: -0.03em; }
+body .tab-page[data-tab="ranking"] .gen-hero { aspect-ratio: 900 / 198; margin: 0 0 -2px; }
+body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { aspect-ratio: 900 / 109; padding: 5% 6% 0 !important; }
+body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { visibility: hidden; height: 0; overflow: hidden; } /* 名前は絵に入っている */
