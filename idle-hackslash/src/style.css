@@ -3646,3 +3646,14 @@ body .tab-page[data-tab="gacha"] .gen-hero-panel.gen-hero-panel > .shopkeeper > 
 .evr-5 .evr-num { background: none; color: #fff; filter: none; text-shadow: -2px -2px 0 #3a1060, 2px -2px 0 #3a1060, -2px 2px 0 #3a1060, 2px 2px 0 #3a1060, 0 0 10px #ff7ad8, 0 0 18px #6ad8ff; }
 .evr .evr-m { left: 3%; width: 18%; font-size: clamp(0.72rem, 3.6vw, 0.9rem); }
 .evr .evr-rate { top: 71%; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #000; }
+/* 結果カード：全体を小さく・文字ははみ出さない配置に */
+#skGachaModal .sk-gacha-panel:has(.evr) { width: min(86vw, 340px); }
+#skGachaModal .gacha-result.evr { aspect-ratio: 480 / 560; }
+.evr .evr-frame { left: 6%; width: 88%; }
+.evr .evr-sword { width: 36%; top: 3%; }
+.evr .evr-plate { left: 8%; width: 84%; top: 27%; }
+.evr .evr-num { left: 14%; right: 14%; font-size: clamp(1.3rem, 7vw, 1.9rem); }
+.evr .evr-g, .evr .evr-f { font-size: clamp(0.72rem, 3.6vw, 0.9rem); top: 61.5%; height: 9%; }
+.evr .evr-g { left: 33%; width: 20%; } .evr .evr-f { left: 64%; width: 20%; }
+.evr .evr-rate { position: absolute; top: auto; bottom: -11%; left: -10%; right: -10%; font-size: clamp(0.66rem, 3.3vw, 0.82rem); }
+.evr .evr-rate { left: 50%; right: auto; transform: translateX(-50%); bottom: -9%; padding: 4px 14px; border: 1.5px solid #c9962e; border-radius: 999px; background: rgba(8,10,28,0.88); }
