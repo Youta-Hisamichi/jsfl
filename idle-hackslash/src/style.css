@@ -3622,3 +3622,27 @@ body .tab-page[data-tab="gacha"] .gen-hero-panel.gen-hero-panel > .shopkeeper > 
 .tab-page[data-tab="gacha"] .evo-odd i { font-size: 0.74rem; }
 .tab-page[data-tab="gacha"] #evoGoBtn .gab-cost { min-width: 0; width: 82%; aspect-ratio: 700 / 81; display: flex; align-items: center; justify-content: center; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/evo/cost.webp) center / 100% 100% no-repeat !important; font-size: 0.95rem; }
 .tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,6,30,0.1), rgba(10,6,30,0.35)), url(assets/img/ui/evo/bg.webp) 50% 0 / cover no-repeat, #140c2a !important; } .tab-page[data-tab="gacha"] .evo-odd span { font-size: 0.62rem; }
+/* ===== 進化ガチャの結果：レア度別の1枚絵 ===== */
+#skGachaModal .sk-gacha-panel:has(.evr) { background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 400px); max-width: none; }
+#skGachaModal .gacha-result.evr { position: relative; width: 100%; aspect-ratio: 480 / 600; padding: 0; margin: 0; border: none; border-radius: 0; background: none !important; box-shadow: none; overflow: visible; }
+.evr .evr-frame { position: absolute; left: 0; top: 0; width: 100%; animation: evrIn 0.35s ease-out; }
+.evr .evr-sword { position: absolute; left: 50%; top: 4%; width: 52%; transform: translateX(-50%); z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); animation: evrPop 0.45s cubic-bezier(.2,1.6,.4,1) both; }
+.evr .evr-heart { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); z-index: 2; font-size: 5rem; }
+.evr .evr-plate { position: absolute; left: 2%; width: 96%; top: 30%; z-index: 3; animation: evrPop 0.45s 0.1s cubic-bezier(.2,1.6,.4,1) both; }
+.evr .evr-plate > img { display: block; width: 100%; }
+.evr .evr-num { position: absolute; left: 10%; right: 10%; top: 36%; height: 23%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: clamp(1.9rem, 10vw, 2.6rem); font-weight: 900; line-height: 1; letter-spacing: -0.02em; text-shadow: 0 3px 0 #1a1006, 0 0 8px rgba(0,0,0,0.7); -webkit-text-stroke: 1.5px #2a1a08; }
+.evr-2 .evr-num { color: #e8f6ff; } .evr-3 .evr-num { color: #f2e4ff; } .evr-4 .evr-num { color: #ffe6a0; }
+.evr-5 .evr-num { background: linear-gradient(90deg, #7fe7ff, #b6ff8a, #ffe36b, #ff9ed8, #c49bff); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 0; filter: drop-shadow(0 2px 0 #1a1006) drop-shadow(0 0 3px #000); }
+.evr .evr-m, .evr .evr-g, .evr .evr-f { position: absolute; top: 61.5%; height: 9%; display: flex; align-items: center; color: #fff; font-size: clamp(0.85rem, 4.4vw, 1.1rem); font-weight: 900; text-shadow: 0 2px 0 #1a1006, 0 0 4px #000; }
+.evr .evr-m { left: 5%; width: 16%; justify-content: center; } .evr .evr-g { left: 30%; } .evr .evr-f { left: 62%; }
+.evr .evr-rate { position: absolute; left: 0; right: 0; top: 70.5%; text-align: center; color: #fff; font-size: clamp(0.72rem, 3.7vw, 0.92rem); font-weight: 900; white-space: nowrap; text-shadow: 0 1px 0 #000, 0 0 4px #000, 0 0 2px #000; }
+.evr .evr-rate b { color: #ffe84a; }
+.evr .evr-ok { position: absolute; left: 18%; right: 18%; top: 76%; height: 13%; border: none; background: none; cursor: pointer; border-radius: 999px; }
+.evr .evr-ok:active { background: rgba(255,255,255,0.15); }
+@keyframes evrIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes evrPop { from { opacity: 0; transform: translateX(var(--tx, 0)) scale(0.5); } to { opacity: 1; transform: translateX(var(--tx, 0)) scale(1); } }
+.evr .evr-sword { --tx: -50%; }
+.evr .evr-num { font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', system-ui, sans-serif; font-weight: 900; -webkit-text-stroke: 0; text-shadow: -2px -2px 0 #1a1006, 2px -2px 0 #1a1006, -2px 2px 0 #1a1006, 2px 2px 0 #1a1006, 0 4px 0 #1a1006, 0 0 10px rgba(0,0,0,0.7); }
+.evr-5 .evr-num { background: none; color: #fff; filter: none; text-shadow: -2px -2px 0 #3a1060, 2px -2px 0 #3a1060, -2px 2px 0 #3a1060, 2px 2px 0 #3a1060, 0 0 10px #ff7ad8, 0 0 18px #6ad8ff; }
+.evr .evr-m { left: 3%; width: 18%; font-size: clamp(0.72rem, 3.6vw, 0.9rem); }
+.evr .evr-rate { top: 71%; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #000; }
