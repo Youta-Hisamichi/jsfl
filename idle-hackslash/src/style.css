@@ -3747,3 +3747,12 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="coinshop"] .shopkeeper .sk-bubble { padding: 0 6% !important; font-size: 0.74rem; }
 .tab-page[data-tab="coinshop"] .sk-headrow .cp-help summary { width: 112px !important; height: 36px !important; padding-left: 16px !important; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head button, .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head button { width: 112px !important; height: 36px !important; padding: 0 14px !important; }
+/* 起動ローディング：魔法陣が回り、進み具合を％で見せる */
+#bootLoading { overflow: hidden; background: radial-gradient(circle at 50% 42%, #2a2f6a 0%, #121638 55%, #070918 100%) !important; transition: opacity 0.45s; }
+#bootLoading .bl-circle { position: absolute; left: 50%; top: 42%; width: min(150vw, 640px); transform: translate(-50%, -50%); opacity: 0.22; animation: blCircle 24s linear infinite; pointer-events: none; }
+@keyframes blCircle { to { transform: translate(-50%, -50%) rotate(360deg); } }
+#bootLoading > *:not(.bl-circle) { position: relative; z-index: 1; }
+#bootLoading .bl-bar { width: min(260px, 70vw); height: 10px; border: 2px solid #c9962e; box-shadow: 0 0 0 1px #3a2408, 0 0 10px rgba(255,215,107,0.35); background: rgba(0,0,0,0.45); }
+#bootLoading .bl-bar i { width: 3%; animation: none; transition: width 0.25s ease-out; background: linear-gradient(90deg, #ffd76b, #ffb84a 50%, #64e8ff); box-shadow: 0 0 8px rgba(255,215,107,0.8); }
+#bootLoading .bl-pct { margin-top: -6px; color: #ffe08a; font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 1px 3px #000; }
+#bootLoading .bl-tip { min-height: 3em; }
