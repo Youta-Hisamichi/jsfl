@@ -3756,3 +3756,5 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #bootLoading .bl-bar i { width: 3%; animation: none; transition: width 0.25s ease-out; background: linear-gradient(90deg, #ffd76b, #ffb84a 50%, #64e8ff); box-shadow: 0 0 8px rgba(255,215,107,0.8); }
 #bootLoading .bl-pct { margin-top: -6px; color: #ffe08a; font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em; text-shadow: 0 1px 3px #000; }
 #bootLoading .bl-tip { min-height: 3em; }
+.tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-name { left: 17.5%; right: 24%; }
+.tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-name { left: 19%; }
