@@ -3574,3 +3574,22 @@ body #settingsModal .st2 .gen-hero { margin: -6px -10px 6px; }
 #settingsModal .st2 .st-item { padding-right: 21% !important; }
 #settingsModal .st2 .st-item .msb-name { font-size: clamp(0.74rem, 3.6vw, 0.9rem); }
 #settingsModal .st2 #vibrationBtn, #settingsModal .st2 #vibrationBtn.st-on { width: 82px; } #settingsModal .st2 .settings-row:has(#vibrationBtn) > label { font-size: 0.8rem; min-width: 0; }
+/* ===== 設定画面の下部：言語・ゲーム名・開発者・閉じる ===== */
+#settingsModal .st2 .settings-row:has(#langJaBtn), #settingsModal .st2 .settings-row:has(.dev-id) { padding: 0; background: none; border: none; }
+#settingsModal .st2 .settings-row:has(#langJaBtn) > label, #settingsModal .st2 .settings-row:has(.dev-id) > label, #settingsModal .st2 .modal-sub[data-i18n="contactRow"] { display: flex; align-items: center; gap: 6px; margin: 0 0 6px !important; padding: 7px 16px; border: 2px solid #c9962e; border-radius: 6px; background: linear-gradient(180deg, #1c3a86, #0b1d4e); box-shadow: inset 0 0 0 1px #4a3208, 0 2px 3px rgba(0,0,0,0.5); color: #fff !important; font-size: 0.92rem; font-weight: 900; text-shadow: 0 1px 2px #000 !important; }
+#settingsModal .st2 .modal-sub[data-i18n="contactRow"] { font-size: 0.78rem; }
+#settingsModal .st2 .settings-row:has(#langJaBtn) .settings-btn-row, #settingsModal .st2 .settings-row:has(.dev-id) .settings-btn-row { flex-direction: column; gap: 6px; margin: 0 0 6px; }
+#settingsModal .st2 .settings-row:has(#langJaBtn) .modal-shop-btn, #settingsModal .st2 .settings-row:has(.dev-id) .modal-shop-btn { width: 100%; aspect-ratio: 885 / 110; min-height: 0; margin: 0 !important; padding: 0 22% 0 9% !important; display: flex !important; align-items: center; justify-content: flex-start !important; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/set/row.webp) center / 100% 100% no-repeat !important; text-decoration: none; }
+#settingsModal .st2 .settings-row:has(#langJaBtn) .modal-shop-btn .msb-name, #settingsModal .st2 .settings-row:has(.dev-id) .modal-shop-btn .msb-name { color: #2a1a06 !important; font-size: 0.95rem; font-weight: 900; text-decoration: none; text-shadow: 0 1px 0 rgba(255,240,200,0.8) !important; }
+#settingsModal .st2 .lang-btn.active { filter: drop-shadow(0 0 5px rgba(120,190,255,0.9)) !important; }
+#settingsModal .st2 .lang-btn.active .msb-name::after { content: ' ✔'; color: #1f6fe0; }
+/* ゲーム名 */
+#settingsModal .st2 .settings-game-head { position: relative; margin: 2px 0 8px; padding: 12px 8px 10px; border: 3px solid #d9a93f; border-radius: 10px; box-shadow: inset 0 0 0 1px #4a3208, 0 0 0 1px #4a3208, 0 3px 6px rgba(0,0,0,0.5); background: radial-gradient(circle at 12% 50%, rgba(140,110,255,0.25), transparent 30%), radial-gradient(circle at 88% 50%, rgba(140,110,255,0.25), transparent 30%), linear-gradient(180deg, #1c2a6a, #0b1440); }
+#settingsModal .st2 .sgh-title { font-size: 1.3rem; background: linear-gradient(180deg, #ffffff, #9fd4ff 60%, #4a9cff); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #0a1a50); }
+#settingsModal .st2 .sgh-ver { color: #fff; opacity: 0.9; font-size: 0.74rem; }
+/* 開発者 */
+#settingsModal .st2 .dev-id { margin: 0 0 6px; padding: 8px 12px; border: 2px solid #c9962e; border-radius: 8px; background: linear-gradient(180deg, #13245c, #0a1438); color: #fff; box-shadow: inset 0 0 0 1px #4a3208; }
+#settingsModal .st2 .dev-id img { width: 58px; height: 58px; }
+/* 閉じる */
+#settingsModal .st2 #settingsCloseBtn { margin-top: 4px; padding: 12px 0; border: 3px solid #d9a93f !important; border-radius: 999px !important; background: linear-gradient(180deg, #4fb0ff, #1a6fe8 55%, #0b4fbf) !important; box-shadow: 0 0 0 1px #4a3208, inset 0 2px 0 rgba(255,255,255,0.4), 0 3px 6px rgba(0,0,0,0.5) !important; color: #fff !important; font-size: 1.1rem; font-weight: 900; text-shadow: 0 2px 2px #0a2a6a !important; }
+#settingsModal .st2 .modal-sub[data-i18n="contactRow"] { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(0.66rem, 3.3vw, 0.8rem); padding: 8px 12px; } #settingsModal .st2 .modal-sub[data-i18n="contactRow"]::before { content: "✉️ "; }
