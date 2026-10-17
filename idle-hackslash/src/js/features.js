@@ -1,0 +1,827 @@
+// キャラの魅力・継続・課金まわりの追加機能
+// セリフ／絆レベル／プロフィール／組み合わせボーナス／★4・★5の専用演出／自キャラの専用技／
+// 7日ログイン／デイリー・ウィークリーミッション／転生で解放されるものの見える化／ピックアップ採用券／ボス戦前の動画バフ
+
+// ===== 仲間のプロフィールとセリフ =====
+// p: プロフィール（一言紹介）, like: 好きなもの, say: [登場・招集, ボス戦開始, ボス撃破, 倒れたとき]
+const COMP_PROFILE = {
+  villager:  { p: '畑仕事が日課ののんびり屋。戦いは苦手だけど、拾い物の天才。', like: 'とれたての野菜', say: ['今日もいい天気だべ', 'ひぃっ、でっかいのが来たべ！', 'やったべ！ごちそうだべ！', '畑…頼んだ…べ…'] },
+  merchant:  { p: 'どんな戦場でも商売を忘れない根っからのあきんど。', like: '金貨の音', say: ['毎度ありっ！', 'ボス討伐…いい儲け話ですな', '戦利品は山分けで！', '店じまい…です…'] },
+  hobbit:    { p: '小さな体に大きな運を持つ旅人。いつも笑顔。', like: '2回目の朝ごはん', say: ['冒険だ冒険だ！', 'うわぁ、大きい…でも負けない！', 'ラッキー！', 'もう…歩けない…'] },
+  dog:       { p: '勇者に拾われた元・野良犬。かみつき攻撃が自慢。', like: '骨とボール', say: ['ワンッ！', 'ガルルル…！', 'ワオーン！', 'くぅーん…'] },
+  penguin:   { p: '南の海から来た兵士。暑いのは苦手。', like: '氷とサカナ', say: ['ペン！', '氷づけにしてやるペン！', '勝利のペン！', 'とけちゃう…ペン…'] },
+  hamster:   { p: 'ほっぺに豆を詰めて戦う小さな射手。', like: 'ひまわりの種', say: ['チュッ！', '豆鉄砲、全弾発射！', 'ほっぺパンパン！', 'チュ…ゥ…'] },
+  cat:       { p: '勇者の昔からの相棒。気まぐれだけど頼れる。', like: '日なたぼっこ', say: ['ニャ！', 'シャーッ！', 'ニャンとも気分がいいニャ', 'ニャ…ふにゃ…'] },
+  warrior:   { p: '仲間思いの熱血戦士。雄叫びで皆を奮い立たせる。', like: '大盛りの肉', say: ['オレに任せろ！', 'うおおおおっ！！', '見たか、これが力だ！', 'すまねぇ…あとは頼む…'] },
+  mage:      { p: '爆発魔法が大好きな見習い魔法使い。', like: '派手な花火', say: ['魔法の時間よ！', '全部まとめて吹き飛ばすわ！', 'ふふん、当然でしょ？', '魔力…切れ…'] },
+  priest:    { p: '仲間を必ず連れて帰ると誓った癒し手。', like: '静かな祈りの時間', say: ['神のご加護を', '皆さん、私の後ろへ！', 'みんな無事でよかった…', 'どうか…みんなを…'] },
+  monk:      { p: '拳ひとつで山を砕くと噂の武道家。', like: '朝の修行', say: ['押忍！', '一撃必殺！', 'まだまだ修行が足りん！', '不覚…'] },
+  archer:    { p: '百歩先のリンゴも射抜く森の名手。', like: '静かな森', say: ['狙いは外さない', '弱点…見えた！', '命中！', '視界が…かすむ…'] },
+  thief:     { p: '盗みの腕は一流、根はいいやつ。', like: 'キラキラしたもの', say: ['お宝のにおいがするぜ', 'デカいの、財布はどこだ？', 'いただいたぜ！', 'ちっ…ドジった…'] },
+  dancer:    { p: '舞うたびに仲間の力を引き出す踊り子。', like: '拍手と喝采', say: ['さあ、踊りましょ♪', 'この舞で勝利を！', 'アンコールはいかが？', 'ステップ…乱れた…'] },
+  bard:      { p: '勇者の冒険を歌にして語り継ぐ吟遊詩人。', like: '新しい物語', say: ['歌に残る冒険を！', '英雄譚のクライマックスだ！', 'この勝利を歌にしよう♪', '物語は…まだ…'] },
+  lancer:    { p: '大物狩りを得意とする槍の名手。', like: '手ごわい相手', say: ['槍の錆にしてくれる', 'デカい相手ほど燃える！', '大物、討ち取ったり！', '槍が…折れた…'] },
+  alchemist: { p: '石をコインに変える研究に夢中の錬金術師。', like: '謎の薬品', say: ['実験開始よ！', 'いい素材になりそうね！', '大成功！', 'ちょっと…調合ミス…'] },
+  musketeer: { p: '一斉射撃で敵を蹴散らす銃士。礼儀正しい。', like: '磨きあげた銃', say: ['構え！', '撃てーっ！', '任務完了であります', '弾切れ…であります…'] },
+  bunny:     { p: '遊んでばかりに見えて、実は強運の持ち主。', like: 'カジノ', say: ['遊ぼ遊ぼ〜！', 'ここで大当たり狙いっ！', 'ジャックポット♪', 'ツキが…逃げた…'] },
+  golem:     { p: '古代の魔法で動く岩の兵士。無口だけど優しい。', like: '日光浴', say: ['…ゴゴ', '…マモル', '…ショウリ', '…ガラガラ…'] },
+  tamer:     { p: '魔物と心を通わせる不思議な少女。', like: 'もふもふの魔獣', say: ['みんな、行くよ！', 'あの子も仲良くなれるかな？', 'えらいえらい！', 'みんな…ごめんね…'] },
+  heavy:     { p: '分厚い鎧でどんな攻撃も受け止める壁。', like: '鎧の手入れ', say: ['盾は任せろ', 'この盾、砕けるものなら砕いてみろ！', '鉄壁、健在！', '鎧が…重い…'] },
+  cavalry:   { p: '戦場を駆け抜ける誇り高き騎兵。', like: '愛馬との遠乗り', say: ['いざ、突撃！', '全軍、続けーっ！', '勝鬨をあげよ！', '落馬…無念…'] },
+  samurai:   { p: '東の国から来た寡黙な剣士。居合の達人。', like: '緑茶と静寂', say: ['参る', '…斬る', '…またつまらぬものを斬った', '…未熟'] },
+  summoner:  { p: '霊獣たちを従える神秘的な召喚士。', like: '星空', say: ['来たれ、我が霊獣', '霊獣たちよ、力を！', '霊獣たち、ありがとう', '契約が…ほどける…'] },
+  sage:      { p: 'あらゆる魔導を修めた白ひげの賢者。', like: '古い書物', say: ['ふぉっふぉっ', '知恵と魔導、見せてやろう', '学ぶことの多い戦いじゃった', '歳には…勝てんのぅ…'] },
+  fortune:   { p: '水晶で未来を占う謎めいた占い師。', like: '満月の夜', say: ['未来が見えるわ…', 'この戦い…勝つ運命よ', 'ほら、占いどおり', 'こんな未来…見えなかった…'] },
+  ninja:     { p: '影から影へと渡る凄腕の忍。', like: '夜の静けさ', say: ['参上', '影より斬る…', '任務完了', '…不覚'] },
+  pirate:    { p: '七つの海を荒らした元・大海賊。宝に目がない。', like: 'ラム酒と宝箱', say: ['ヨーホー！', 'お宝の匂いがするぜぇ！', '全部いただきだ！', '船が…沈む…'] },
+  paladin:   { p: '聖なる盾で仲間を守る誇り高き騎士。', like: '朝の礼拝', say: ['聖なる光とともに', '我が盾の後ろに！', '光は闇に勝つ！', '光が…遠のく…'] },
+  princess:  { p: '城を飛び出して冒険を選んだお姫様。', like: '甘いお菓子', say: ['わたくしも戦いますわ！', 'ここで退くわけにはいきません！', 'お見事ですわ！', 'お父様…ごめんなさい…'] },
+  dragon:    { p: '勇者になついた若いドラゴン。火を吐くのが得意。', like: '焼いたお肉', say: ['ガオー！', 'ぜんぶ燃やしちゃうぞー！', 'ガオガオー！', 'きゅぅ…'] },
+  dragoon:   { p: '竜と共に天を舞う伝説の竜騎士。', like: '空の高み', say: ['天より来たる！', '竜の槍、受けてみよ！', '空は我らのものだ', '翼が…折れた…'] },
+  pegasus:   { p: '天馬を駆る気高き騎士。誰よりも速く空を翔ける。', like: '風を切る感覚', say: ['天馬よ、翔けよ！', '空から一気に決める！', '風が祝福している', '天馬…ごめんね…'] },
+  king:      { p: '自ら戦場に立つ型破りな王様。号令ひとつで皆が奮い立つ。', like: '民の笑顔', say: ['余が来たぞ！', '皆の者、かかれーっ！', 'あっぱれじゃ！', '余も…ここまでか…'] },
+  archangel: { p: '天界から舞い降りた大天使。慈愛と裁きを司る。', like: '世界の平和', say: ['天の祝福を', '裁きの時です', '光あれ', '天へ…還ります…'] },
+  bahamut:   { p: '全ての竜の王。その咆哮は大地を揺るがす。', like: '強き者との戦い', say: ['我が名はバハムート', '塵となれ！', '…悪くない', 'この我を…倒すか…'] },
+};
+const HERO_SAY = ['いくぞ！', '負けない…！', 'やったぁ！', 'まだ…だ…'];
+
+// 吹き出し（キャンバスに描く）
+let speech = [];
+function companionSay(ball, text, ms = 2400) {
+  if (!ball || !text) return;
+  speech = speech.filter(s => s.ball !== ball);
+  speech.push({ ball, text, until: Date.now() + ms + 700 });
+}
+function sayByEvent(kind, pick) { // kind: 0=登場 1=ボス戦 2=ボス撃破 3=ダウン
+  const allies = balls.filter(b => b.isPlayer && !b.isClone && (b.hp > 0 || kind === 3));
+  if (!allies.length) return;
+  const list = pick ? allies.filter(pick) : allies;
+  const b = list[Math.floor(Math.random() * list.length)]; if (!b) return;
+  const id = b.isCompanion ? b.companionId : getHeroChar();
+  if (!id && isMainPlayerBall(b)) return heroChuuni(['boss', 'boss', 'bossKill', 'down'][kind] || 'idle', true);
+  const lines = (id && COMP_PROFILE[id] && COMP_PROFILE[id].say) || HERO_SAY;
+  companionSay(b, lines[kind]);
+}
+// ===== 仲間のおしゃべり（ひとりごと i ／ 撃破 k）。性格ごとにたくさん =====
+const COMP_TALK = {
+  villager:  { i: ['畑のカボチャ、そろそろ収穫だべ', 'おら、戦いより草むしりのほうが得意だべ…', 'あ、ここに100ゴールド落ちてたべ', '母ちゃん、おら元気にやってるべ', '勇者さま、腹へってねぇか？'], k: ['や、やっつけたべ！', 'クワも捨てたもんじゃねぇべ', 'ひゃー、助かったべ'] },
+  merchant:  { i: ['この戦場、商売のにおいがしますな', 'いまなら薬草、勇者さま価格でお譲りしますよ', '金は天下の回りもの…でも回ってこない', '在庫、在庫…帳簿が合わん', 'ヒヒッ、相場が動いてますな'], k: ['毎度ありっ！', '戦利品の査定はおまかせを', '利益確定ですな'] },
+  hobbit:    { i: ['そろそろお茶の時間じゃない？', '冒険って、思ったより歩くね！', 'ポケットに何が入ってるか当てて！', '家の暖炉が恋しいなぁ', 'なんだか今日はツイてる気がする！'], k: ['やったー！', '小さくたって強いんだぞ！', 'えへへ、ラッキー！'] },
+  dog:       { i: ['ワンワン！（散歩たのしい！）', 'クンクン…お肉のにおい！', 'しっぽブンブン！', 'ワフッ（ほめて！）', '…zzz（寝てる）'], k: ['ワンッ！（とったどー）', 'ガウッ！', 'ワフワフ！（ほめて！）'] },
+  penguin:   { i: ['ここ、ちょっと暑くないペン？', 'サカナ食べたいペン…', '飛べないけど泳ぎは速いペン', 'ペンギン歩き、見てるペン？', '南極に帰りたいペン…'], k: ['ペペーン！', '冷凍保存完了ペン', 'カチコチだペン！'] },
+  hamster:   { i: ['ほっぺの中、満タンでチュ', 'ひまわりの種、あと3つでチュ', 'カラカラ回したい気分でチュ', '小さいからって甘く見るなでチュ', 'ポリポリ…あ、聞こえてたでチュ？'], k: ['命中でチュ！', '豆鉄砲、効いたでチュ', 'チュッチュー！'] },
+  cat:       { i: ['ふぁ〜…眠いニャ', '勇者、なでてもいいニャよ', '日なたはどこニャ？', 'べ、別についてきたわけじゃないニャ', 'ネズミのにおいがするニャ…'], k: ['ニャッ！', '爪の手入れが役に立ったニャ', '当然ニャ'] },
+  warrior:   { i: ['腹が減っては戦はできん！', '筋肉は裏切らない！', '今日もいい汗かくぞー！', 'オレの背中は任せたぜ！', 'もっと強いヤツはいねぇのか！'], k: ['どうだぁっ！', 'まだまだいけるぞ！', 'オラァ！'] },
+  mage:      { i: ['もっと派手な魔法、使いたいわね', '杖の調子がいいわ', '魔法学校の宿題、まだ終わってない…', '爆発は芸術よ！', 'あんたたち、巻き込まれても知らないわよ'], k: ['ドカーン！ 最高！', '完璧な詠唱だったわ', '燃え尽きなさい！'] },
+  priest:    { i: ['どうか皆さんにご加護を', 'ケガをしたらすぐ言ってくださいね', '今日の祈りは、少し長めに…', '怖くないですよ、私がいます', 'みんなで帰りましょうね'], k: ['安らかに…', 'お許しください…', '神よ、感謝します'] },
+  monk:      { i: ['精神統一…', '拳は語る', '修行に終わりなし！', '腹筋、あと千回！', '心技体、すべて整った'], k: ['破ッ！', '一撃入魂！', '押忍！'] },
+  archer:    { i: ['風向き、よし', '矢の残りは…まだ十分', '森の声が聞こえる', '動くな…狙いがぶれる', '的は小さいほど燃えるの'], k: ['命中', 'ど真ん中', '逃がさない'] },
+  thief:     { i: ['おっと、これはオレの財布だ', '鍵ならどんなのでも開けてやるぜ', 'キラキラ…あれは宝石か？', 'へへっ、手癖が悪くてね', '足音？ オレは立てないよ'], k: ['いただき！', 'チョロいぜ', 'へへっ、ちょろいもんだ'] },
+  dancer:    { i: ['ステップ、ステップ♪', '戦場もわたしのステージよ', '拍手はまだかしら？', 'くるっと回って〜♪', 'リズムに乗って戦いましょ'], k: ['フィナーレ♪', 'ブラボー！', 'ご清聴ありがとう♪'] },
+  bard:      { i: ['ラ〜ラ〜♪ 勇者の歌〜♪', 'この旅も、いつか詩になる', '新しい曲が浮かんだ！', '弦の調子を合わせておこう', '聴いてくれ、即興の一曲を'], k: ['見事な一幕だ！', '今のは歌にしよう', '韻を踏んで勝利！'] },
+  lancer:    { i: ['もっと大きな獲物はいないのか', '槍は一突き、それで十分', '間合いを読むのがコツだ', '小物には興味がない', '構えに隙なし'], k: ['一突き！', '貫いた！', 'まだ物足りんな'] },
+  alchemist: { i: ['この石、金に変わらないかしら', '新しい薬、誰か試してみない？', 'フラスコが…ちょっと泡立ってる', '理論上は爆発しないはず', '実験ノート、また1ページ増えたわ'], k: ['データ採取完了！', '仮説どおりね', '反応、良好！'] },
+  musketeer: { i: ['弾薬の点検、異常なし', '隊列を乱さないように！', '銃身を磨くのが日課であります', '狙え、撃て、の繰り返しです', '勇者殿、ご命令を！'], k: ['撃破であります！', '命中、確認！', '次弾装填！'] },
+  bunny:     { i: ['今日のラッキーナンバーは7！', '一発大逆転、狙っちゃう？', 'ぴょんぴょん♪', 'チップ、もうちょっと欲しいな〜', 'ギャンブルは計画的にね♪'], k: ['大当たり〜♪', 'ラッキー！', 'ぴょーん♪'] },
+  golem:     { i: ['…ゴゴゴ', '…オヒサマ、アタタカイ', '…ユウシャ、マモル', '…（コケ、ハエテキタ）', '…ゴ？'], k: ['…ツブシタ', '…ゴゴッ', '…ヨシ'] },
+  tamer:     { i: ['あの魔物、もふもふしてる…！', 'みんな、ごはんの時間だよ〜', '仲良くなれない子はいないの', 'よしよし、いい子いい子', 'ねえ、あの子飼っちゃダメ？'], k: ['ごめんね…', 'えらいえらい、よく頑張ったね', 'みんな、ナイス！'] },
+  heavy:     { i: ['鎧が重い…だがそれがいい', '後ろにいろ、オレが受ける', '盾の傷は勲章だ', '歩くの、ちょっと遅いがな', 'どんな攻撃も通さん'], k: ['鉄壁の勝利だ', '押しつぶした', 'フン'] },
+  cavalry:   { i: ['愛馬の調子は上々だ', '風を切って駆けたいものだ', '突撃の号令はまだか！', '騎士道とは、誇りなり', 'よーし、どうどう'], k: ['蹴散らした！', '突破！', '見事なり、我が愛馬'] },
+  samurai:   { i: ['…', '…茶が飲みたい', '刀は心を映す', '…風が変わった', '無駄な動きはせぬ'], k: ['…斬', '…御免', '…またつまらぬものを斬った'] },
+  summoner:  { i: ['霊獣たちが騒いでいる…', '星の巡りがいいわ', '契約の紋が光ってる', '目に見えないものほど、大切なのよ', '霊獣たち、今日もよろしくね'], k: ['霊獣たち、よくやったわ', '還りなさい', '契約成就'] },
+  sage:      { i: ['ふぉっふぉっ、若いのう', '昔はわしもブイブイ言わせたもんじゃ', '知識は力じゃよ', 'はて、メガネはどこじゃったか', '腰が…いや、まだまだ現役じゃ'], k: ['ふぉっふぉっ', '年の功じゃな', '見たか、魔導の神髄を'] },
+  fortune:   { i: ['水晶に…あなたの未来が見えるわ', '今日のラッキーカラーは金色', 'この先、大きな出会いがあるわね', '星が…ざわめいている', '占い料？ 出世払いでいいわよ'], k: ['占いどおりね', '運命には逆らえないのよ', 'ふふ、見えていたわ'] },
+  ninja:     { i: ['…（気配を消している）', '影に潜む…', '任務遂行中', '…背後は任せろ', 'ニンニン'], k: ['…始末した', '御免', '影縫い、完了'] },
+  pirate:    { i: ['ヨーホー！ ラム酒はどこだ？', '宝の地図、どこにしまったかな', '海が恋しいぜ', '野郎ども、気合い入れろ！', 'この剣は昔、伝説の海賊から…いや、なんでもねぇ'], k: ['お宝いただき！', 'ガハハハ！', '海の藻屑になりな！'] },
+  paladin:   { i: ['聖なる光が我らを導く', '弱き者を守るのが騎士の務め', '祈りを忘れずに', '盾に誓って、皆を守る', '正義は必ず勝つ'], k: ['光あれ！', '正義の鉄槌！', '悪は滅びた'] },
+  princess:  { i: ['お城の外って、こんなに広いのですね', 'お菓子の時間はまだかしら', 'ドレスが汚れても気にしませんわ', 'わたくし、強くなりましてよ', 'お父様には内緒ですわよ？'], k: ['お見事ですわ！', 'えいっ、ですわ！', 'ごきげんよう'] },
+  dragon:    { i: ['おなかすいたー！', 'お肉焼いてあげよっか？', 'ガオー！（あくび）', 'もっと大きくなったら勇者を乗せるんだ', 'しっぽ、ふまないでね'], k: ['こんがり！', 'ガオー！', 'まるやきー！'] },
+  dragoon:   { i: ['空の上は静かでいい', '竜と心をひとつに', '跳ぶぞ…', '高みから全てが見える', '我が槍に迷いなし'], k: ['天誅！', '竜の怒りを知れ', '舞い降りた'] },
+  pegasus:   { i: ['天馬が風を感じてる', '空を翔けるのは気持ちいいよ', 'ペガサスの毛並み、きれいでしょ？', '雲の上には何があると思う？', '一気に駆け抜けよう！'], k: ['空から一閃！', '速さが勝負！', 'いい風だった！'] },
+  king:      { i: ['余の国は今日も平和かのう', '皆の者、苦しゅうない', '王冠がちと重いわい', '民のため、余も戦うぞ', '王たるもの、前に立たねばな'], k: ['あっぱれじゃ！', '余の力、見たか！', 'うむ、よきかな'] },
+  archangel: { i: ['地上の花は美しいですね', 'あなたたちに祝福を', '天界からも、見守っています', '愛と裁きは表裏一体', '翼が…少し疲れました'], k: ['裁きは下されました', '光に還りなさい', '赦しを'] },
+  bahamut:   { i: ['…退屈だ', '我が咆哮で大地が震える', '強き者よ、我の前に立て', '人の子よ、なかなかやる', '千年の眠りから覚めた甲斐があった'], k: ['塵となれ', '…脆い', '竜王の前に立つからだ'] },
+};
+const COMP_TALK_LOW = { // p: やられそう / d: やられた
+  villager: { p: ['ひぃぃ、もう無理だべ〜！', '母ちゃん、助けてけろ…'], d: ['畑に…帰りてぇ…', 'おら…ここまでだべ…'] },
+  merchant: { p: ['こ、これは大赤字…！', '命あっての商売ですぞ…！'], d: ['店じまい…ですな…', '投資…失敗…'] },
+  hobbit: { p: ['うわわ、ちょっとピンチ！', 'もうひとつ朝ごはん食べとけば…'], d: ['おうちに…帰りたい…', 'ごめん…ここまで…'] },
+  dog: { p: ['キャンキャン！（いたい！）', 'クゥン…（こわい…）'], d: ['キャイン…', 'クゥ〜ン…'] },
+  penguin: { p: ['ペ、ペンチ…じゃなくてピンチだペン！', 'とけそうだペン…！'], d: ['もう…泳げないペン…', '南極…見たかったペン…'] },
+  hamster: { p: ['ほっぺの豆、もう空っぽでチュ！', 'チュ、チュウ〜！ ピンチでチュ！'], d: ['巣に…帰るでチュ…', 'チュ…'] },
+  cat: { p: ['シャーッ！ 近寄るニャ！', 'し、しっぽが…！'], d: ['ニャ…ん…', '九つの命…あと八つ…ニャ…'] },
+  warrior: { p: ['ぐっ…効いてねぇぞ…！', 'まだ…立てる…！'], d: ['すまねぇ…あとは任せた…', '筋肉が…足りなかった…'] },
+  mage: { p: ['ちょっと、詠唱の邪魔しないで！', 'う、うそ…魔力が…！'], d: ['こんなはずじゃ…', '次は…もっと派手に…'] },
+  priest: { p: ['わ、私が倒れたら誰が回復を…！', '神よ…お力を…！'], d: ['皆さん…どうかご無事で…', '祈りが…届かない…'] },
+  monk: { p: ['この程度…修行のうち…！', '呼吸を…整えろ…！'], d: ['師匠…申し訳…ない…', '修行…不足…'] },
+  archer: { p: ['近すぎる…！', '狙いが…定まらない…！'], d: ['矢が…尽きた…', '森の声が…遠い…'] },
+  thief: { p: ['やべっ、ずらかるか…！？', 'こ、こういうの苦手なんだよ！'], d: ['お宝…まだ…', 'へへ…ドジっちまった…'] },
+  dancer: { p: ['ステップが…乱れる…！', 'まだ踊れるわ…！'], d: ['カーテン…コール…', '最後の…舞…'] },
+  bard: { p: ['悲劇の章に…入ってしまう…！', 'この歌はハッピーエンドのはずだ…！'], d: ['この物語の…続きを…', '弦が…切れた…'] },
+  lancer: { p: ['ちっ…間合いを詰められた…！', '槍が…重い…！'], d: ['大物…だった…', '槍が…折れた…'] },
+  alchemist: { p: ['ちょ、実験失敗っぽい！', '回復薬…どこにしまったっけ…！'], d: ['研究…まだ途中なのに…', 'ちょっと…爆発しすぎた…'] },
+  musketeer: { p: ['弾薬…残りわずか…！', '隊列…維持…困難…！'], d: ['任務…失敗で…あります…', '撤退…であります…'] },
+  bunny: { p: ['ツキが…逃げてく〜！', 'オールインしすぎた〜！'], d: ['ゲーム…オーバー…', 'ハズレ…ちゃった…'] },
+  golem: { p: ['…ヒビ、ハイッタ', '…マダ、マモル'], d: ['…ガラガラ…', '…オヤスミ…'] },
+  tamer: { p: ['みんな、わたしを守って〜！', 'こ、怖くなんかないもん…！'], d: ['みんな…ごめんね…', 'もふもふ…したかった…'] },
+  heavy: { p: ['鎧が…へこんだ…！', 'まだ…盾は…ある…！'], d: ['盾が…砕けた…', '鉄壁…破れたり…'] },
+  cavalry: { p: ['愛馬よ、もう少しだ…！', '退くな…退くなぁ…！'], d: ['落馬…無念…', '愛馬よ…すまぬ…'] },
+  samurai: { p: ['…浅い', '…まだ斬れる'], d: ['…無念', '…散る、か'] },
+  summoner: { p: ['霊獣たち…私を守って…！', '契約の力が…弱まって…！'], d: ['霊獣たち…還りなさい…', '星が…見えない…'] },
+  sage: { p: ['わしも…年じゃのう…', 'こ、腰が…！'], d: ['わしの…書物を…頼む…', 'ふぉ…ふぉ…'] },
+  fortune: { p: ['こ、こんな未来は…見えてなかった…！', '水晶が…曇る…！'], d: ['占い…はずれちゃった…', 'これも…運命ね…'] },
+  ninja: { p: ['…不覚', '…まだ影は消えぬ'], d: ['…ここまで', '…影に…還る'] },
+  pirate: { p: ['船が…傾いてきやがった…！', 'ラム酒…ラム酒をくれ…！'], d: ['船が…沈む…', '海に…還るぜ…'] },
+  paladin: { p: ['盾よ…持ちこたえよ…！', '光よ…我に力を…！'], d: ['光が…遠のく…', '皆を…守れ…なかった…'] },
+  princess: { p: ['ド、ドレスが…！', 'わたくし、まだ負けませんわ…！'], d: ['お父様…ごめんなさい…', 'お城に…帰りたい…'] },
+  dragon: { p: ['いたいいたい〜！', 'ガオ…（こわい）'], d: ['ガオ…ぉ…', 'おなか…すいた…'] },
+  dragoon: { p: ['翼が…重い…！', '竜よ…まだ飛べるか…！'], d: ['空が…遠い…', '竜よ…すまぬ…'] },
+  pegasus: { p: ['天馬が…怯えてる…！', '高度が…下がる…！'], d: ['翼が…折れた…', '空へ…帰ろう…'] },
+  king: { p: ['よ、余を守れぇ！', '王冠が…ずれる…！'], d: ['余も…ここまでか…', '国を…頼むぞ…'] },
+  archangel: { p: ['翼が…傷ついて…', '祝福を…もう一度…'], d: ['天へ…還ります…', '光あれ…'] },
+  bahamut: { p: ['…小賢しい', 'この我に…傷を…！？'], d: ['この我を…倒すか…', '…千年後に…また会おう'] },
+};
+let compTalkAt = 0, compTalkLast = '';
+// ===== ときどき言うメタ発言（ひとりごとの約15%） =====
+const META_RATE = 0.15;
+const META_HERO = [
+  '我を動かすその指…貴様、プレイヤーだな？', '放置しても強くなる…それがこの世界の理（ことわり）。', 'スマホの充電は大丈夫か？我の魔力より先に尽きるぞ。',
+  'タップしすぎだ。画面が割れても知らんぞ。', '転生ボタン…押したいのか？押すのか？', 'ガチャの確率…信じるかどうかは貴様次第だ。',
+  '開発者よ…我をもっと強くしろ。', 'セーブは自動だ。安心して閉じるがいい。', '……今、ロード画面のTips読み飛ばしただろ。',
+  'この敵…さっきも倒した気がする。', 'BGMが盛り上がってきた…ボスが近いな。', '吹き出しが少し透けているのは、我の優しさだ。',
+  () => `ステージ${game.stage}…画面の向こうの貴様、ちゃんと見ているか？`, () => `累計${(game.totalKills || 0).toLocaleString('ja-JP')}体…数えているのは誰なのだ？`,
+];
+const META_COMP = [
+  '自キャラばっかりじゃなくて、こっちもLv上げてね。', '攻撃力とHP、別々に上げられるようになったんだって！', '解雇だけは勘弁してください…。',
+  '棺桶で引きずられるの、けっこう酔うんだよね。', '放置中もちゃんと戦ってるの、気づいてる？', 'ねえ、画面の外から誰か見てない？',
+  '今の、スクショ撮った？', '★5じゃなくても、わたしがいるからいいでしょ？', '勇者さん、セリフ多くない？',
+  'いいなあ、勇者は中二病セリフ専用枠があって。', '次の転生でも、また招集してね。', 'パーティ枠の都合で呼ばれた気がする…。',
+  () => `もう${(game.totalKills || 0).toLocaleString('ja-JP')}体倒したんだって。数えてる人すごい。`,
+];
+function metaLine(list, last) { const pool = list.map(t => typeof t === 'function' ? t() : t).filter(t => t !== last); return pool[Math.floor(Math.random() * pool.length)]; }
+function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとりごと / 'k' 撃破）
+  const now = Date.now(); if (!force && now - compTalkAt < 3000) return;
+  const list = balls.filter(b => b.isCompanion && b.hp > 0 && !speech.some(s => s.ball === b));
+  const b = list[Math.floor(Math.random() * list.length)]; if (!b) return;
+  const T = COMP_TALK[b.companionId], P = COMP_PROFILE[b.companionId];
+  let pool = T ? T[kind] : null;
+  if (kind === 'i' && P) pool = [...(pool || []), P.say[0]]; // 登場ゼリフもまぜる
+  if (!pool || !pool.length) return;
+  pool = pool.filter(t => t !== compTalkLast); const t = kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pool[Math.floor(Math.random() * pool.length)];
+  compTalkLast = t; compTalkAt = now;
+  companionSay(b, t, 1800 + t.length * 70);
+}
+// ===== 勇者（自キャラを変えていないとき）の中二病ゼリフ =====
+const CHUUNI = {
+  idle: ['右腕が…疼く…！', '我が封印されし力、今こそ解き放つ時…', 'フッ…運命の歯車が回り始めたか', '静まれ…俺の左腕…！', 'この眼帯の下を見た者は、生きては帰れぬ', '俺の中のもう一人の俺が囁く…', '世界が俺を呼んでいる…', '真の力の0.1%も出していない', '風が…泣いている', '我が魂に刻まれし古の契約…', '俺に触れると火傷するぜ', '前世の記憶が…蘇る…', '漆黒の堕天使、ここに降臨', '時は満ちた…', 'この程度の敵、片目で十分だ', '月が紅い…今宵は荒れるぞ', '我が名を知る者は、もうこの世にいない', '選ばれし者の宿命か…', '封印が…解けかかっている…', '…運命（さだめ）とは、残酷なものだな', 'ククク…すべて計算通り', '因果律の外から来た男、それが俺だ', '我が邪気眼が…未来を視た…', 'この世界の理（ことわり）を、俺が書き換える', '俺の影に…何かが棲んでいる', '光と闇の狭間に生きる者…それが勇者だ', 'ノートに書いた技が、ついに使える…', '眠れる獅子が…目を覚ます', 'まだ本気を出す時ではない…', '我が剣は、星の声を聴く'],
+  kill: ['塵に還れ', '…またつまらぬものを斬ってしまった', '貴様の運命は、既に決まっていた', '安らかに眠れ…闇の中で', 'フッ…他愛もない', '名もなき者よ、さらばだ', '残像だ', '遅い…遅すぎる', '我が刃に斬れぬものなし', '悪いな…手加減は苦手でね'],
+  charge: ['喰らえ！ 終焉の黒炎（ダークネス・フレア）！', '奥義・虚無斬り（ヴォイド・スラッシュ）！', '解き放て、封印されし右腕よ！', '漆黒の断罪（ブラック・ジャッジメント）！', '天地開闢・絶影剣！', '滅びの序曲（エンド・プレリュード）！', '刻めッ！ 永劫回帰斬（エターナル・リターン）！', '我が魂の叫びを聞けェッ！'],
+  boss: ['来たか…宿命の相手よ', 'この時を待っていた…千年もの間な', '面白い…少しは楽しませてくれるのだろうな？', '我が真の力、見せてやろう…', '貴様が闇の眷属か…', 'フッ…ようやく本気を出せそうだ'],
+  bossKill: ['闇は…光に還った', '我が伝説に、また一頁が刻まれた', 'これが…選ばれし者の力だ', 'フッ…次の宿敵はどこだ', '俺に勝つには…千年早い', '封印、完了…'],
+  pinch: ['くっ…まだだ、まだ終わらんよ…！', 'この痛み…悪くない', '覚醒の時は…近い…！', '俺の中の何かが…目覚める…', 'ここからが…本当の俺だ…！'],
+  escape: ['逃げるか…賢明な判断だ', 'フッ…命拾いしたな', '追わぬ…それが強者の余裕', '置いていったか…その金貨、もらっておこう'],
+  event: ['この気配…ただ事ではないな', '天が…俺に味方している', '世界が…歪み始めた…', '面白くなってきたじゃないか'],
+  down: ['ここまでか…だが我が魂は不滅…', '次の転生で…会おう…', '世界よ…すまない…', 'バカな…この俺が…！？', '封印が…暴走…する…', 'フッ…今日のところは…引き分けに…しておいて…やる…', '覚えていろ…俺は何度でも…蘇る…', '我が右腕よ…なぜ応えぬ…', 'これも…運命（さだめ）か…'],
+  timeout: ['時が…俺を見放したか…', 'くっ…時間の魔術か…！', '刻（とき）よ止まれ…！ …止まらない…', '次こそは…時をも斬る…'],
+  pinch2: ['まだだ…まだ倒れるわけには…！', '視界が…紅く染まる…', 'ここで散るなら…それも美学…いや、まだだ！', '我が魂よ…燃え尽きるには早い…！', '回復…いや、気合いだ…！'],
+};
+let chuuniLast = '', chuuniAt = 0;
+function heroChuuni(kind, force) {
+  if (getHeroChar()) return; // 仲間を自キャラにしているときはその仲間のセリフ
+  const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
+  const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
+  const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
+  const t = kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pool[Math.floor(Math.random() * pool.length)];
+  chuuniLast = t; chuuniAt = now;
+  companionSay(hero, t, 1800 + t.length * 70);
+}
+function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語は1文字ずつ、句読点・「…」の直後で切りやすく）
+  const lines = []; let cur = '';
+  for (const ch of text) {
+    if (ctx.measureText(cur + ch).width > maxW && cur) {
+      const k = Math.max(cur.lastIndexOf('、'), cur.lastIndexOf('…'), cur.lastIndexOf('！'), cur.lastIndexOf(' '));
+      if (k >= cur.length - 6 && k > 2) { lines.push(cur.slice(0, k + 1)); cur = cur.slice(k + 1); } else { lines.push(cur); cur = ''; }
+    }
+    cur += ch;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+function drawSpeech() {
+  if (!speech.length) return;
+  const now = Date.now();
+  speech = speech.filter(s => s.until > now && (balls.includes(s.ball) || adds.includes(s.ball)));
+  const placed = [];
+  for (const s of speech) {
+    const b = s.ball, a = Math.min(1, (s.until - now) / 300);
+    ctx.save(); ctx.globalAlpha = a; ctx.font = '800 12px sans-serif';
+    const maxW = Math.min(160, size * 0.48), lines = wrapSpeech(s.text, maxW), lh = 14;
+    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * lh + 8;
+    const r = b.radius || 14, up = b.y - r * 2.3 - h >= 30;
+    let tx = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), ty = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
+    // 高速で動いても読めるよう、吹き出しはゆっくり追いかける（キャラに直結させない）
+    if (s.x === undefined) { s.x = tx; s.y = ty; } else { s.x += (tx - s.x) * 0.09; s.y += (ty - s.y) * 0.09; }
+    let x = s.x, y = s.y;
+    for (const p of placed) if (x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y) y = up ? p.y - h - 3 : p.y + p.h + 3; // ほかの吹き出しと重ならないように
+    placed.push({ x, y, w, h });
+    const en = !b.isPlayer, tailX = Math.max(x + 8, Math.min(x + w - 8, b.x)), tailUp = b.y > y + h / 2;
+    ctx.fillStyle = en ? 'rgba(40,12,20,0.6)' : 'rgba(255,255,255,0.6)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); if (tailUp) { ctx.moveTo(tailX - 5, y + h); ctx.lineTo(b.x, Math.min(b.y - r, y + h + 9)); ctx.lineTo(tailX + 5, y + h); } else { ctx.moveTo(tailX - 5, y); ctx.lineTo(b.x, Math.max(b.y + r, y - 9)); ctx.lineTo(tailX + 5, y); } ctx.fill();
+    ctx.fillStyle = en ? '#ffe3e8' : '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 4 + lh * i + lh / 2));
+    ctx.restore();
+  }
+}
+// ===== 敵もしゃべる（ザコのひとりごと・ボスの登場／ピンチ／勝ち誇り） =====
+const ENEMY_SAY = {
+  idle: ['グルル…', 'ここは通さん！', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', '仲間を呼ぶぞ！', 'オレ、強い', 'まだまだ増えるぞ〜', 'いたいのはイヤ…'],
+  slime: ['ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜'],
+  hit: ['いてっ！', 'ぐぬぬ…', 'やるな…！', 'ひぃ！'],
+  boss: ['よくぞ来た…だがここまでだ！', '我が前にひれ伏せ！', 'この階は通さぬ', 'ふん、虫ケラが', '退屈しのぎにはなりそうだ'],
+  bossHalf: ['…少しはやるようだな', 'ほう、本気を出すか', 'おのれ…！', 'まだ終わらんぞ！'],
+  bossLow: ['ば、ばかな…！', 'このままでは…！', '覚えておれ…！', 'ぐおおお…！'],
+  bossWin: ['フハハハ！弱すぎる！', '出直してこい', 'その程度か勇者よ'],
+};
+let enemySayAt = 0;
+function enemySay(b, kind, force) {
+  if (!b || b.isDying || b.isPlayer) return;
+  const now = Date.now(); if (!force && now - enemySayAt < 3500) return;
+  const pool = ENEMY_SAY[kind] || ENEMY_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  enemySayAt = now; companionSay(b, t, 1800 + t.length * 80);
+}
+setInterval(() => {
+  if (phase !== 'battle') return;
+  const foes = [...balls, ...adds].filter(b => !b.isPlayer && !b.isDying && b.hp > 0 && !(b.spawnTimer > 0));
+  const boss = foes.find(b => b.isBoss);
+  if (boss) {
+    const f = boss.hp / (boss.maxHp || 1);
+    if (!boss.saidIntro) { boss.saidIntro = true; enemySay(boss, 'boss', true); return; }
+    if (f < 0.5 && !boss.saidHalf) { boss.saidHalf = true; enemySay(boss, 'bossHalf', true); return; }
+    if (f < 0.15 && !boss.saidLow) { boss.saidLow = true; enemySay(boss, 'bossLow', true); return; }
+  }
+  if (!foes.length || Math.random() > 0.3) return;
+  const e = foes[Math.floor(Math.random() * foes.length)];
+  enemySay(e, e.hp < e.maxHp * 0.5 && Math.random() < 0.5 ? 'hit' : (typeof isSlimeSprite === 'function' && isSlimeSprite(e.sprite || '') ? 'slime' : 'idle'));
+}, 1500);
+{ const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawSpeech(); drawBossBuffIcon(); } catch (e) {} }; }
+
+// ===== 絆レベル（一緒に戦うほど上がる。Lvごとに攻撃力・HP +3%） =====
+const BOND_MAX = 10, BOND_BONUS = 0.03;
+function bondPoints(id) { return (game.bond && game.bond[id]) || 0; }
+function bondLevel(id) { return Math.min(BOND_MAX, Math.floor(Math.sqrt(bondPoints(id) / 5))); } // 5,20,45,80…ポイント
+function bondNext(id) { const lv = bondLevel(id); return lv >= BOND_MAX ? 0 : (lv + 1) * (lv + 1) * 5; }
+function bondMult(id) { return 1 + BOND_BONUS * bondLevel(id); }
+function addBond(n) {
+  if (!game.bond) game.bond = {};
+  for (const id in game.companions.recruited) if (game.companions.recruited[id] && game.companions.alive[id] !== false) {
+    const before = bondLevel(id); game.bond[id] = bondPoints(id) + n;
+    if (bondLevel(id) > before) { showNotice(`💞 ${COMPANIONS[id].name}との絆が Lv${bondLevel(id)} に！`, false, 2400); const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) companionSay(b, 'これからもよろしくね！'); }
+  }
+}
+
+// ===== 仲間同士の組み合わせボーナス =====
+const COMP_COMBOS = [
+  { ids: ['princess', 'king'], name: '王家の血筋', desc: '攻撃力 +15%', apply: b => { b.atkMult *= 1.15; } },
+  { ids: ['ninja', 'samurai'], name: '和の心', desc: 'クリティカル率 +10%', apply: b => { b.critChance += 0.1; } },
+  { ids: ['priest', 'paladin'], name: '聖なる誓い', desc: '最大HP +20%', apply: b => { b.hpMult *= 1.2; } },
+  { ids: ['mage', 'sage'], name: '魔導の師弟', desc: '攻撃力 +12%', apply: b => { b.atkMult *= 1.12; } },
+  { ids: ['villager', 'merchant'], name: '村の市場', desc: 'コイン +20%', apply: b => { b.coinMult *= 1.2; } },
+  { ids: ['thief', 'pirate'], name: '盗賊団', desc: 'コイン +25%', apply: b => { b.coinMult *= 1.25; } },
+  { ids: ['dragon', 'dragoon'], name: '竜の絆', desc: '攻撃力 +20%', apply: b => { b.atkMult *= 1.2; } },
+  { ids: ['dancer', 'bard'], name: '旅芸人一座', desc: '攻撃力 +10%・コイン +10%', apply: b => { b.atkMult *= 1.1; b.coinMult *= 1.1; } },
+  { ids: ['cat', 'dog'], name: 'もふもふコンビ', desc: '移動速度 +8%', apply: b => { b.speedMult *= 1.08; } },
+  { ids: ['archangel', 'bahamut'], name: '天と竜の王', desc: '攻撃力・最大HP +30%', apply: b => { b.atkMult *= 1.3; b.hpMult *= 1.3; } },
+  { ids: ['cavalry', 'pegasus'], name: '騎士団', desc: 'ボスへのダメージ（攻撃力）+15%', apply: b => { b.atkMult *= 1.15; } },
+];
+function inParty(id) { return !!(game.companions.recruited[id] || getHeroChar() === id); }
+function activeCombos() { return COMP_COMBOS.filter(c => c.ids.every(inParty)); }
+function applyComboBonuses(b) { activeCombos().forEach(c => c.apply(b)); }
+
+// ===== ★4・★5の専用演出（招集でカットイン） =====
+function rareCutIn(id) {
+  const c = COMPANIONS[id]; if (!c) return;
+  const ov = document.createElement('div'); ov.className = 'rare-cutin r-' + c.rarity;
+  ov.innerHTML = `<div class="rc-band"><div class="rc-img">${companionIconHtml(id)}</div><div class="rc-text"><div class="rc-stars">${rarityStars(c.rarity)} ${RARITY_INFO[c.rarity].label}</div><div class="rc-name">${c.name}</div><div class="rc-line">「${(COMP_PROFILE[id] && COMP_PROFILE[id].say[0]) || ''}」</div></div></div>`;
+  document.body.appendChild(ov);
+  playBossFanfare(0); shakeScreenLight && shakeScreenLight();
+  ov.addEventListener('click', () => ov.remove());
+  setTimeout(() => ov.classList.add('out'), 2400); setTimeout(() => ov.remove(), 2900);
+}
+
+// ===== 自キャラの専用技（溜めMAXで当てたときに発動） =====
+const HERO_MOVES = {
+  bahamut: 'メガフレア', archangel: 'ジャッジメント', dragoon: 'ドラゴンダイブ', pegasus: 'ペガサスストライク', king: 'ロイヤルオーダー',
+  samurai: '居合・一閃', ninja: '影縫い', mage: 'エクスプロージョン', dragon: 'ファイアブレス', paladin: 'ホーリークロス', priest: 'ヒールライト', princess: 'プリンセスキス',
+};
+const HERO_TYPE_MOVE = { atk: '渾身の一撃', hp: '守護の一撃', speed: '疾風連撃', coin: '黄金スマッシュ' };
+let heroMoveCd = 0;
+function heroSignature(ball) { // 自キャラにした仲間ごとの技名と効果
+  const id = getHeroChar(); if (!id || Date.now() < heroMoveCd) return 1;
+  heroMoveCd = Date.now() + 1500;
+  const c = COMPANIONS[id], name = HERO_MOVES[id] || HERO_TYPE_MOVE[c.stat] || '必殺技';
+  spawnDamageText(ball.x, ball.y - ball.radius - 48, `✨ ${name}！`, '#ffe14f', 0.016, true);
+  companionSay(ball, name + '！', 1400);
+  if (c.stat === 'hp') { ball.hp = Math.min(ball.maxHp, ball.hp + ball.maxHp * 0.08); return 1.3; }
+  if (c.stat === 'coin') { const g = Math.max(1, Math.round(stageCoinRaw() * 0.5)); game.coins += g; spawnDamageText(ball.x, ball.y - ball.radius - 30, `+${formatCoinNumber(g)} 🟡`, '#ffd76b', 0.016, true); return 1.2; }
+  if (c.stat === 'speed') return 1.4;
+  return c.rarity === 'mythic' ? 2 : c.rarity === 'legendary' ? 1.7 : 1.5;
+}
+
+// ===== 7日ログイン（7日目は★5宝箱＋ジェム10個が確定） =====
+const LOGIN7 = [
+  { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
+  { label: '🧪×2', give: () => { game.potions = (game.potions || 0) + 2; return '回復ポーション×2'; } },
+  { label: '💎5', give: () => { game.gems += 5; return '💎5'; } },
+  { label: `${xi('x_feather', 'fea-ico')}×20`, give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
+  { label: '💎8', give: () => { game.gems += 8; return '💎8'; } },
+  { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全快ポーション×2'; } },
+  { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic'); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
+];
+function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+function checkDailyLogin() {
+  const today = todayKey(); if (game.login7Date === today) return;
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  game.login7Day = game.login7Date === todayKey(y) ? ((game.login7Day || 0) % 7) + 1 : 1; // 連続していなければ1日目から
+  game.login7Date = today;
+  const day = game.login7Day, got = LOGIN7[day - 1].give();
+  saveGame(); updateStatsUI();
+  setTimeout(() => showLogin7(day, got), 1200);
+}
+// 7日ログインの画面（ui/lb7 の絵：盤面の上に報酬を重ねる。位置は盤面の絵 1274×1083 の座標）
+const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb7/gem.webp" alt="">', pot: '<i class="lb7-ico su-i_bluepot"></i>', red: '<i class="lb7-ico ico-redpot"></i>', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
+const LOGIN7_SHOW = [['gem', '×3'], ['pot', '×2'], ['gem', '×5'], ['feather', '×20'], ['gem', '×8'], ['red', '×2']];
+function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.x_feather}" alt="">` : LB7_ICON[k]; }
+function showLogin7(day, got) {
+  const P = (x, y) => `left:${(x / 1274 * 100).toFixed(2)}%;top:${(y / 1083 * 100).toFixed(2)}%`;
+  const CX = [240, 637, 1034], CY = [182, 457];
+  const cells = LOGIN7_SHOW.map(([k, n], i) => { const d = i + 1, st = d < day ? 'got' : d === day ? 'today' : '';
+    return `<div class="lb7-cell ${st}" style="${P(CX[i % 3], CY[Math.floor(i / 3)])}"><span class="lb7-tab">${d}日目</span><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
+  const ti = day <= 6 ? day - 1 : -1;
+  const glow = ti >= 0 ? `<img class="lb7-glow" src="assets/img/ui/lb7/glow.webp" alt="" style="${P(CX[ti % 3], CY[Math.floor(ti / 3)] - 18)}">` : '';
+  const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
+  const face = gid === 'hero' ? '<img class="lb7-portrait" src="assets/img/ui/lb7/portrait.webp" alt="">' : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
+  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<b>${String(got).replace('（', '<br><small>（')}${String(got).includes('（') ? '</small>' : ''}</b>`;
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
+  ov.innerHTML = `<div class="modal-panel l7-panel lb7">
+    <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>
+    <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b><span>${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</span></div></div>
+    <div class="lb7-board">${glow}${cells}
+      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}"><img class="lb7-ico lb7-chest" src="${ICON_IMAGES.x_chest7}" alt=""><span class="lb7-gem10">${LB7_ICON.gem}<b>10</b></span><b>確定</b></div></div>
+      <div class="lb7-got" style="${P(637, 872)}">${todayIco}</div>
+      <button class="lb7-ok" style="${P(637, 977)}">受け取る</button>
+    </div>
+    <div class="lb7-note">毎日ログインで報酬アップ！ 7日目は<b>★5宝箱＋💎10確定</b></div></div>`;
+  document.body.appendChild(ov);
+  playLoginBonusSound && playLoginBonusSound();
+  ov.querySelector('.lb7-ok').addEventListener('click', () => ov.remove());
+}
+
+// ログインボーナス・帰還ボーナスの画面を出している間は、専用の曲を流し、後ろのゲームは止めておく
+function loginBonusOpen() { return !!document.querySelector('.lb7-ov') || (typeof loginBonusModal !== 'undefined' && loginBonusModal.classList.contains('show')); }
+{ const orig = refreshBgm; refreshBgm = function () { if (loginBonusOpen() && typeof playBgmTrack === 'function' && audioCtx && !(typeof holyPad !== 'undefined' && holyPad)) { playBgmTrack('loginbonus'); return; } return orig.apply(this, arguments); }; }
+{ let open = false, prev = null;
+  const check = () => {
+    const now = loginBonusOpen(); if (now === open) return; open = now;
+    if (now) { prev = phase === 'battle' ? 'battle' : null; if (prev) phase = 'paused'; }
+    else { if (prev && phase === 'paused') phase = prev; prev = null; }
+    try { refreshBgm(); } catch (e) {}
+  };
+  new MutationObserver(check).observe(document.body, { childList: true });
+  if (typeof loginBonusModal !== 'undefined') new MutationObserver(check).observe(loginBonusModal, { attributes: true, attributeFilter: ['class'] });
+}
+
+// ===== デイリー／ウィークリーミッション =====
+const QUESTS = {
+  daily: [
+    { key: 'kill', text: '敵を50体倒す', goal: 50, gems: 3 },
+    { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 3 },
+    { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 2 },
+    { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 2 },
+  ],
+  weekly: [
+    { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 15 },
+    { key: 'boss', text: 'ボスを30体倒す', goal: 30, gems: 15 },
+    { key: 'gacha', text: 'ガチャを30回引く', goal: 30, gems: 10 },
+    { key: 'login', text: '5日ログインする', goal: 5, gems: 20 },
+  ],
+};
+function weekKey(d = new Date()) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
+function questState() {
+  const q = game.quests || (game.quests = {}), dk = todayKey(), wk = weekKey();
+  if (!q.daily || q.daily.key !== dk) { q.daily = { key: dk, prog: {}, claimed: {} }; if (q.weekly && q.weekly.key === wk) q.weekly.prog.login = (q.weekly.prog.login || 0) + 1; }
+  if (!q.weekly || q.weekly.key !== wk) q.weekly = { key: wk, prog: { login: 1 }, claimed: {} };
+  return q;
+}
+function questTick(key, n = 1) {
+  const q = questState();
+  q.daily.prog[key] = (q.daily.prog[key] || 0) + n;
+  if (key !== 'login') q.weekly.prog[key] = (q.weekly.prog[key] || 0) + n;
+  questBadge();
+}
+function questReady() { const q = questState(); return ['daily', 'weekly'].some(t => QUESTS[t].some((m, i) => !q[t].claimed[i] && (q[t].prog[m.key] || 0) >= m.goal)); }
+function questBadge() { const b = document.querySelector('.tab-btn[data-tab="records"]'); if (b && questReady()) b.classList.add('has-reward'); }
+function renderQuests() {
+  const host = document.getElementById('questBox'); if (!host) return;
+  const q = questState();
+  const sec = t => `<div class="qb-sec"><div class="qb-head">${t === 'daily' ? '📅 デイリーミッション' : '🗓️ ウィークリーミッション'}</div>${QUESTS[t].map((m, i) => {
+    const v = Math.min(m.goal, q[t].prog[m.key] || 0), done = v >= m.goal, got = q[t].claimed[i];
+    return `<div class="qb-row ${got ? 'got' : done ? 'done' : ''}"><span class="qb-text">${m.text}<small>${v}/${m.goal}</small><i class="qb-bar"><i style="width:${v / m.goal * 100}%"></i></i></span>${got ? '<span class="qb-ok">✓ 受取済</span>' : `<button class="qb-claim" data-q="${t}:${i}" ${done ? '' : 'disabled'}>💎${m.gems}</button>`}</div>`;
+  }).join('')}</div>`;
+  host.innerHTML = sec('daily') + sec('weekly');
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-q]'); if (!b) return;
+  const [t, i] = b.dataset.q.split(':'), q = questState(), m = QUESTS[t][i];
+  if (q[t].claimed[i] || (q[t].prog[m.key] || 0) < m.goal) return;
+  q[t].claimed[i] = true; game.gems += m.gems; playRegisterSound && playRegisterSound();
+  showTapError(`🎯 +💎${m.gems}`, ev.clientX, ev.clientY); updateStatsUI(); saveGame(); renderQuests();
+});
+{ // 戦績ページの「ミッション」タブにミッション欄を置く
+  const sec = document.querySelector('.tab-page[data-tab="records"] .rec-sec[data-rec-sec="mission"]');
+  if (sec) { const box = document.createElement('div'); box.id = 'questBox'; box.className = 'quest-box'; sec.insertBefore(box, sec.firstChild); }
+  document.querySelectorAll('.tab-btn[data-tab="records"]').forEach(b => b.addEventListener('click', () => setTimeout(renderQuests, 0)));
+}
+
+// ===== 転生で解放されるものの見える化（転生確認ダイアログ） =====
+function rebornGoalsHtml() {
+  const next = (game.reincarnations || 0) + 1, items = [];
+  COMPANION_IDS.filter(id => typeof hireRebirthNeed === 'function' && hireRebirthNeed(id) === next).forEach(id => items.push(`${companionIconHtml(id)}<span>${COMPANIONS[id].name} が採用可能に${(game.bestStage || 1) < hireStageNeed(id) ? `（＋ステージ${formatStageNumber(hireStageNeed(id))}到達）` : ''}</span>`));
+  if (!(game.reincarnations > 0)) items.push('<span>🗝️ すべてのページ・試練の塔が最初から開放</span>');
+  items.push(`<span>🌌 転生Lv +${getRebirthLvGain(game.stage)}（全ステータスアップ）</span>`);
+  return `<div class="rg-box"><div class="rg-title">✨ 次の転生（${next}回目）で手に入るもの</div>${items.map(h => `<div class="rg-item">${h}</div>`).join('')}</div>`;
+}
+{ const orig = openRebornConfirm; openRebornConfirm = function (ctx) {
+  orig(ctx);
+  const panel = document.querySelector('#rebornConfirmModal .modal-panel'); if (!panel) return;
+  let box = document.getElementById('rebornGoals'); if (!box) { box = document.createElement('div'); box.id = 'rebornGoals'; const btns = panel.querySelector('#rebornConfirmOkBtn'); (btns ? btns.parentElement : panel).before(box); }
+  box.innerHTML = rebornGoalsHtml();
+}; }
+
+// ===== ピックアップ採用券（★4・★5の採用条件を1回だけ無視して解放） =====
+function useHireTicket(id) {
+  if (!(game.hireTickets > 0)) return false;
+  if (!confirm(`🎫 ピックアップ採用券を1枚使って「${COMPANIONS[id].name}」を解放しますか？（残り${game.hireTickets}枚）`)) return true;
+  game.hireTickets--; if (!game.ticketUnlocked) game.ticketUnlocked = {}; game.ticketUnlocked[id] = true;
+  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, '採用の条件なしで解放しました', 'ピックアップ解放！');
+  if (RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary')) rareCutIn(id);
+  renderCompLockList(); saveGame(); return true;
+}
+
+// ===== ボス戦前の動画バフ（攻撃力1.5倍・そのボス戦の間） =====
+let bossAdBuffFor = null, bossAdOfferFor = null;
+function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor) && isBossFight() ? 1.5 : 1; }
+function offerBossAdBuff() {
+  const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss || bossAdOfferFor === boss) return;
+  bossAdOfferFor = boss;
+  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+  let btn = document.getElementById('bossAdBuffBtn');
+  if (!btn) { btn = document.createElement('button'); btn.id = 'bossAdBuffBtn'; btn.className = 'boss-ad-buff'; wrap.appendChild(btn); }
+  btn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画で'}<b>攻撃力1.5倍</b><small>このボス戦の間</small>`;
+  btn.classList.add('show');
+  const hide = () => btn.classList.remove('show');
+  clearTimeout(btn._t); btn._t = setTimeout(hide, 8000);
+  btn.onclick = ev => {
+    ev.stopPropagation(); hide();
+    const give = () => { bossAdBuffFor = boss; questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力1.5倍！', '#ffd76b', 0.012, true); playBossFanfare(0); };
+    if (isAdFree()) give(); else playRewardedVideo(() => { rewardAdModal.classList.remove('show'); give(); }, '、このボス戦の間 攻撃力が1.5倍になります');
+  };
+}
+function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(isMainPlayerBall); if (b) { ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💪', b.x + b.radius, b.y - b.radius); ctx.restore(); } } }
+
+// ===== 既存処理へのフック =====
+{ const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); offerBossAdBuff(); }, BOSS_WARNING_MS + 600); }; }
+{ const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pool[Math.floor(Math.random() * pool.length)], 2600); } } }; }
+{ const orig = playRewardedVideo; playRewardedVideo = function (done, txt) { return orig(() => { questTick('ad'); done(); }, txt); }; }
+{ const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
+  orig(box, results, count, best); questTick('gacha', count);
+  const r = results.find(x => RARITY_ORDER.indexOf(COMPANIONS[x.id].rarity) >= RARITY_ORDER.indexOf('legendary')); if (r) rareCutIn(r.id);
+  setTimeout(() => { const b = balls.find(x => x.isCompanion && x.companionId === results[0].id); if (b) companionSay(b, COMP_PROFILE[results[0].id].say[0]); }, 600);
+}; }
+{ const orig = showSkGachaReveal; showSkGachaReveal = function () { questTick('gacha'); return orig.apply(this, arguments); }; }
+function featureOnKill(isBoss) {
+  if (!isBoss) { const r = Math.random(); if (r < 0.15) heroChuuni('kill'); else if (r < 0.32) compTalk('k'); }
+  questTick('kill'); if (isBoss) { questTick('boss'); addBond(3); setTimeout(() => sayByEvent(2), 600); } else addBond(1);
+}
+setInterval(() => { if (Math.random() < 0.06 && phase === 'battle' && getActiveTab() === 'game' && !isBossFight()) compTalk('i'); }, 500); // ときどき仲間がひとこと
+{ let wasBoss = false, lastGm = null;
+  setInterval(() => { // 勇者のひとりごと・場面ごとのセリフ
+    if (phase !== 'battle' || getActiveTab() !== 'game') return;
+    const boss = isBossFight(); if (boss && !wasBoss) setTimeout(() => heroChuuni('boss', true), 1200); wasBoss = boss;
+    const g = typeof gm === 'object' ? gm.key : null; if (g && g !== lastGm) setTimeout(() => heroChuuni('event', true), 2800); lastGm = g;
+    for (const b of balls) { // やられそう：HPが30%以下になったら1回（50%以上に戻るとまた言える）
+      if (!b.isPlayer || b.isClone || !(b.maxHp > 0)) continue;
+      const r = b.hp / b.maxHp;
+      if (r > 0.5 || b.hp <= 0) { if (r > 0.5) b.lowSaid = false; continue; }
+      if (r > 0.3 || b.lowSaid) continue;
+      b.lowSaid = true;
+      if (isMainPlayerBall(b)) { if (getHeroChar()) { const L = COMP_TALK_LOW[getHeroChar()]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); } else heroChuuni(Math.random() < 0.5 ? 'pinch' : 'pinch2', true); }
+      else if (b.isCompanion) { const L = COMP_TALK_LOW[b.companionId]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); }
+    }
+    if (Math.random() < 0.04) heroChuuni('idle');
+  }, 500); }
+function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
+  const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
+  const id = getHeroChar();
+  if (id) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(h, pool[Math.floor(Math.random() * pool.length)], 2600); }
+  else { const pool = CHUUNI[kind]; const t = pool[Math.floor(Math.random() * pool.length)]; chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600); }
+}
+{ const orig = bossDefeated; bossDefeated = function (reason) { heroDownSay(reason === 'time' ? 'timeout' : 'down'); return orig.apply(this, arguments); }; }
+{ const orig = failSkipChallenge; failSkipChallenge = function () { if (!(game.skipChallenge && game.skipChallenge.lost)) heroDownSay('down'); return orig.apply(this, arguments); }; }
+{ const orig = startEnemyEscape; startEnemyEscape = function (e) { orig(e); setTimeout(() => heroChuuni('escape'), 900); }; }
+{ const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
+checkDailyLogin(); questState();
+
+// ===== 仲間の詳細（プロフィール・絆・組み合わせ）とパーティの組み合わせ一覧 =====
+function compExtraHtml(id) {
+  const p = COMP_PROFILE[id]; if (!p) return '';
+  const lv = bondLevel(id), nx = bondNext(id), combos = COMP_COMBOS.filter(c => c.ids.includes(id));
+  return `<div class="cp-prof"><div class="cpp-text">${p.p}</div><div class="cpp-like">❤️ 好きなもの：${p.like}</div><div class="cpp-say">「${p.say[0]}」</div>`
+    + `<div class="cpp-bond">💞 絆Lv.${lv}${lv < BOND_MAX ? `（次まで ${nx - bondPoints(id)}）` : '（MAX）'}　攻撃力・HP +${Math.round((bondMult(id) - 1) * 100)}%</div>`
+    + (combos.length ? `<div class="cpp-combo">🤝 組み合わせ：${combos.map(c => `<b class="${activeCombos().includes(c) ? 'on' : ''}">${c.name}</b>（${c.ids.filter(x => x !== id).map(x => COMPANIONS[x].name).join('・')}と／${c.desc}）`).join('　')}</div>` : '') + '</div>';
+}
+function comboListHtml() {
+  const on = activeCombos();
+  if (!on.length) return ''; // 発動中のものがなければ何も出さない
+  return `<div class="combo-box"><b>🤝 発動中の組み合わせボーナス</b>${on.map(c => `<span class="combo-chip">${c.name}：${c.desc}</span>`).join('')}</div>`;
+}
+
+// フッター（タブ）の高さをCSSに渡す（デバッグボタンをフッターの上に置くため）
+{ const setTabH = () => { const t = document.getElementById('tabBar'); if (t) document.documentElement.style.setProperty('--tabbar-h', t.getBoundingClientRect().height + 'px'); };
+  setTabH(); window.addEventListener('resize', setTabH); setTimeout(setTabH, 1000); }
+
+// ===== 帰還ボーナス・ログインボーナスに、ランダムなキャラのひとこと =====
+// [おかえり（帰還ボーナス）, ログインボーナス]
+const GREET_SAY = {
+  hero:      [['フッ…待っていたぞ。闇の気配が濃くなっている', '戻ったか…俺の右腕も、お前を待ちわびていた', '留守の間、世界は俺がひとりで守っておいた'], ['今日もまた、選ばれし者の一日が始まる…', '契約の刻（とき）だ。今日の供物を受け取れ', '毎日来るとは…お前も運命に選ばれし者か']],
+  villager:  ['おかえりだべ！ 留守の間に畑で稼いでおいたべ', '今日もとれたて野菜…じゃなくてボーナスだべ！'],
+  merchant:  ['お帰りなさいませ！ 留守中の売上、しっかり預かってますよ', '毎度ありっ！ 本日のサービス品でございます'],
+  hobbit:    ['おかえり！ 朝ごはん2回分くらい待ってたよ！', '今日もいいことありそう！ はい、プレゼント！'],
+  dog:       ['ワンワン！（おかえり！しっぽ止まらない！）', 'ワフッ！（今日も遊ぼう！）'],
+  penguin:   ['おかえりペン！ 氷を用意して待ってたペン', '今日のおみやげだペン！'],
+  hamster:   ['おかえりでチュ！ ほっぺに貯めといたでチュ', '今日の種、わけてあげるでチュ！'],
+  cat:       ['…べ、別に待ってなかったニャ', '今日もなでていいニャよ。…特別ニャ'],
+  warrior:   ['おう、戻ったか！ 腕がなまってないか？', '今日も気合い入れていくぞ！'],
+  mage:      ['遅いわよ！ 魔法の練習、ひとりでしてたんだから', '今日はどれだけ吹き飛ばす？'],
+  priest:    ['ご無事で何よりです。お帰りなさい', '今日も皆さんにご加護がありますように'],
+  monk:      ['押忍！ 留守の間も修行を続けておりました', '今日の修行、始めますか！'],
+  archer:    ['おかえり。森は静かだったよ', '今日も狙いは完璧。いこう'],
+  thief:     ['よう、おかえり。留守中にちょっと稼いどいたぜ', 'へへっ、今日の戦利品、山分けな'],
+  dancer:    ['おかえりなさい♪ 再会の舞をどうぞ', '今日もステージの幕が上がるわ♪'],
+  bard:      ['おお、主役のお帰りだ！ 新しい歌ができたよ', '今日という新しい章を始めよう！'],
+  lancer:    ['戻ったか。手ごわい獲物が待ってるぞ', '今日も大物狩りといこう'],
+  alchemist: ['おかえり！ 留守中に実験が…いや、大成功よ！', '今日の試作品、受け取って！'],
+  musketeer: ['お帰りなさいませ、隊長殿！ 異常なしであります', '本日の補給物資であります！'],
+  bunny:     ['おかえり〜♪ ボーナスの大当たり、出てるかも！', '今日のラッキーアイテム、どうぞ♪'],
+  golem:     ['…オカエリ。…マッテタ', '…キョウモ、マモル'],
+  tamer:     ['おかえり！ 魔物たちもいい子にしてたよ', '今日もみんなで冒険しよ！'],
+  heavy:     ['戻ったか。留守はオレが守っておいた', '今日も盾は万全だ'],
+  cavalry:   ['お帰りなさいませ！ 愛馬も喜んでおります', '本日も駆けましょう！'],
+  samurai:   ['…おかえり。茶を淹れておいた', '…今日も、参る'],
+  summoner:  ['霊獣たちが、あなたの帰りを告げていたわ', '今日の星の巡りは…いい感じよ'],
+  sage:      ['ふぉっふぉっ、よう戻ったのう', '今日も学ぶことが多そうじゃな'],
+  fortune:   ['おかえりなさい。水晶に、あなたの帰りが映っていたわ', '今日の運勢は…大吉よ'],
+  ninja:     ['…おかえり。（ずっと影から見ていた）', '…本日の任務、承知'],
+  pirate:    ['ヨーホー！ 船長のお帰りだ！ お宝貯めといたぜ', '今日の宝、山分けだ！'],
+  paladin:   ['ご帰還、心よりお待ちしておりました', '今日も聖なる光とともに'],
+  princess:  ['お帰りなさいませ！ お茶会の準備ができておりますわ', '今日もよろしくお願いいたしますわ'],
+  dragon:    ['ガオー！ おかえり！ おなかすいた！', '今日もいっしょに燃やそー！'],
+  dragoon:   ['戻ったか。空から見守っていたぞ', '今日も高く跳ぼう'],
+  pegasus:   ['おかえり！ 天馬もうれしそう！', '今日もいい風が吹いてるよ！'],
+  king:      ['おお、よくぞ戻った！ 褒美をとらそう', '本日の褒美じゃ、受け取るがよい'],
+  archangel: ['おかえりなさい。天界から祝福を', '今日もあなたに光がありますように'],
+  bahamut:   ['…戻ったか、人の子よ。待ちくたびれたぞ', '今日の貢ぎ物…いや、褒美だ'],
+};
+function pickGreeter() { // 勇者か招集した仲間から（だれもいなければ勇者か、たまに未来の仲間がチラ見せ）
+  const own = COMPANION_IDS.filter(id => game.companions.recruited[id] && GREET_SAY[id]);
+  const pool = ['hero', ...own];
+  if (!own.length && Math.random() < 0.3) pool.push(...COMPANION_IDS.filter(id => GREET_SAY[id] && ['common', 'rare'].includes(COMPANIONS[id].rarity)));
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナス
+  const id = pickGreeter(), g = GREET_SAY[id];
+  let t = g[kind]; if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
+  const name = id === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[id].name;
+  if (id === 'hero' && typeof heroSay === 'function') t = heroSay(t); // 勇者のセリフは語尾付き
+  const ico = id === 'hero' ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id);
+  return `<div class="greet"><span class="gr-ico">${ico}</span><div class="gr-bubble"><b>${name}</b>${t}</div></div>`;
+}
+{ const orig = checkLoginBonus; checkLoginBonus = function () {
+  const was = loginBonusModal.classList.contains('show');
+  const r = orig.apply(this, arguments);
+  if (!was && loginBonusModal.classList.contains('show')) {
+    const days = document.getElementById('lbDays'); let el = document.getElementById('lbGreet');
+    if (!el && days) { el = document.createElement('div'); el.id = 'lbGreet'; days.parentNode.insertBefore(el, days); }
+    if (el) el.innerHTML = greetHtml(0);
+  }
+  return r;
+}; }
+{ const orig = bossDefeated; bossDefeated = function (reason) { const boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying); if (boss && phase === 'battle') enemySay(boss, 'bossWin', true); return orig.apply(this, arguments); }; } // 負けたらボスが勝ち誇る
+
+// ===== 勇者のうざい自慢ゼリフ（忙しいアピール・寝てない自慢・さりげなく強さ自慢の作風） =====
+const HERO_BRAG_RATE = 0.15;
+const HERO_BRAG = {
+  idle: ['いや〜昨日3時間しか寝てないわー。でも倒せちゃうんだよね', '別に強くなろうと思ってないんだけど、勝手にレベル上がっちゃうんだよね', '俺くらいになると、敵の方から寄ってきちゃうんだよね〜', 'え？この剣？ガチャで普通に出たやつだけど？', '修行とか全然してないわー。マジで才能だけでやってるから', '正直この階、目つぶってても余裕なんだよね', '最近忙しすぎて、魔王倒すヒマもないわー', '俺ってほら、放置してても強くなるタイプじゃん？', 'ぶっちゃけ回復とか使ったことないわー', 'いやーまた転生しちゃったわー。強くなりすぎて困るんだよね'],
+  kill: ['あれ？今の本気出してないんだけど？', 'いや〜今のは手加減したつもりだったんだけどな〜', 'また倒しちゃったわー。悪いことしたかな', '俺の通常攻撃、他の人の必殺技くらいあるらしいんだよね', 'え、今のでクリティカル？普通に殴っただけなんだけど'],
+};
+{ const orig = heroChuuni; heroChuuni = function (kind, force) {
+  if ((kind === 'idle' || kind === 'kill') && !getHeroChar() && Math.random() < HERO_BRAG_RATE) {
+    const hero = balls.find(b => isMainPlayerBall(b)), now = Date.now();
+    if (hero && (force || now - chuuniAt >= 3500)) { const pool = HERO_BRAG[kind].filter(t => t !== chuuniLast), t = pool[Math.floor(Math.random() * pool.length)]; chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70); return; }
+  }
+  return orig.apply(this, arguments);
+}; }
+
+// ===== 自キャラの「ざわ…ざわ…」系ゼリフ（ギャンブル漫画の作風・勇者でも仲間を自キャラにしていても） =====
+const KAIJI_RATE = 0.12;
+const KAIJI_SAY = {
+  idle: ['ざわ…ざわ…', 'ここは…勝負どころ…！', '考えろ…考えるんだ…！', 'まだだ…まだ終わらんっ…！', '一歩踏み出す勇気…それだけが…道を開く…！', 'この階…ただの階じゃない…', '流れは…来ている…！', '圧倒的…放置…！'],
+  kill: ['通った…！通ったぞ…！', 'くっ…勝った…勝ったんだ…！', 'これが…これこそが…勝利…！', 'ククク…読み通り…！'],
+  boss: ['ざわ…ざわ…ざわ…', '来やがった…本物の…化け物…！', 'ここで退いたら…一生…負け犬…！'],
+  pinch: ['ぐっ…ぐにゃあ…', 'ま…まずい…！', '負けるわけには…いかない…っ！', '悪魔的…状況…！'],
+};
+let kaijiAt = 0;
+function kaijiSay(kind) {
+  const pl = balls.find(b => isMainPlayerBall(b)); if (!pl || pl.hp <= 0) return false;
+  const now = Date.now(); if (now - kaijiAt < 5000 || Math.random() > KAIJI_RATE) return false;
+  const pool = KAIJI_SAY[kind] || KAIJI_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  kaijiAt = now; if (typeof chuuniAt !== 'undefined') chuuniAt = now; companionSay(pl, t, 1800 + t.length * 80); return true;
+}
+{ const orig = heroChuuni; heroChuuni = function (kind) { const k = kind === 'pinch2' ? 'pinch' : kind; if (KAIJI_SAY[k] && kaijiSay(k)) return; return orig.apply(this, arguments); }; }
+setInterval(() => { if (phase === 'battle' && getHeroChar()) kaijiSay('idle'); }, 6000); // 仲間を自キャラにしているときも時々
+
+// ===== ボスごとの専用ゼリフ [登場, HP半分, 瀕死, 勝ったとき] =====
+const BOSS_SAY = {
+  '⚔️': ['漆黒の刃、その身に刻め', '…剣筋が見えているだと？', '我が剣が…折れる…だと…', '剣の道、出直してこい'],
+  '👹': ['ガハハ！喰らってやる！', 'ちょこまかと…うっとうしい！', 'グオオ…この俺が…！', '骨までしゃぶってやったわ！'],
+  '💀': ['死者の軍勢よ、目覚めよ', '我が魔力を削るとは…', '肉体など…器にすぎぬ…', 'お前も我が配下に加えてやろう'],
+  '🦖': ['グルルル…ガアアア！！', 'ガウッ！？（痛がっている）', 'グ…グル…', 'ガアアアッ！（勝ち誇っている）'],
+  '🐲': ['蒼き空の王に挑むか', '鱗を貫くか…やるな', '天が…遠のく…', '空の高さを知るがいい'],
+  '🦔': ['近寄ると痛いぞ？', 'トゲが…何本か折れた…', 'もう丸まるしかない…', 'チクッとしただけで逃げたか'],
+  '⚰️': ['その魂、刈り取りに来た', '鎌がかすりもしない…？', '死神が…死ぬだと…？', '予定より早いお迎えだったな'],
+  '🦍': ['ウホッ！力こそすべて！', 'ウホ…意外とやる…', 'バナナ…食べたかった…', 'ウホホ！筋肉の勝ち！'],
+  '💪': ['見よ、この上腕二頭筋！', 'ぷるん…筋肉が揺れている…', 'プロテインが…足りない…', '筋トレしてから出直しな'],
+  '🫧': ['ぷくぷく…合体完了！', 'ちょっと縮んじゃった…', 'しぼんじゃう〜…', 'ぽよーん！大きさは正義！'],
+  '🌋': ['煉獄の炎で灰になれ', '熱が…逃げていく…', '炎が…消える…', '燃えカスすら残らなかったな'],
+  '🧊': ['凍てつく息吹を受けよ', '氷にヒビが…', '溶ける…溶けてしまう…', 'しばらく氷漬けで反省しろ'],
+  '🗿': ['……（ゴゴゴ）', '……（石が欠けた）', '……（ひびが全身に）', '……（勝ち誇っている）'],
+  '🩸': ['お前の血、うまそうだ', '血が…騒ぐ…！', '我が血が…流れすぎた…', 'ごちそうさま、勇者よ'],
+  '😇': ['ここより先は聖域です', '…その力、ただの人ではない', '主よ…お許しを…', '安らかに眠りなさい'],
+  '👀': ['全部見えているぞ', '見えているのに…避けられん…', '目が…目がぁ…', 'お前の負けも見えていた'],
+  '🐙': ['深淵へ引きずり込んでやる', '足を2本も持っていきやがって…', 'インクも…出ない…', '海の藻屑になるがいい'],
+  '☠️': ['骸骨王の前にひざまずけ', 'カタカタ…骨が鳴る…', '骨が…バラバラに…', 'お前も骨になれ'],
+  '🐺': ['三つの首が飢えている', '一つ目の首が…やられた…', 'クゥン…', '地獄の門は閉ざされたままだ'],
+  '🧜': ['私の歌に溺れなさい', '歌が…乱れる…', '声が…出ない…', '最後の歌はお気に召したかしら'],
+  '🪓': ['オーガの斧を受けてみろ！', '斧が…重くなってきた…', '王の座が…揺らぐ…', '真っ二つにしてやったわ！'],
+  '🔮': ['あなたの運命、もう占ってあるの', '…占いが外れるなんて', 'こんな未来…見えていなかった…', 'ほら、言った通りの結末でしょう？'],
+  '🖤': ['冥府の黒き鎧、砕けるものか', '鎧に…傷が…', '冥府へ…還る時か…', '冥府で待っているぞ'],
+  '📦': ['宝箱だと思ったか？', 'フタが…ガタガタする…', 'もう…開かない…', 'お宝はお前の方だったな'],
+  '🏮': ['冷たい夜にようこそ…', '…あたたかい人ね', '溶けて…しまう…', 'ずっと…ここにいてね…'],
+  '🪨': ['……苔が…伸びるまで…待つ…', '……少し…痛い…', '……もう…眠る…', '……百年…早い…'],
+  '🪶': ['燃え尽きても、私は蘇る', '羽根が…散っていく…', '灰の中から…また…', '何度でも舞い上がるわ'],
+  '❄️': ['ひざまずきなさい、氷の玉座の前に', '私の氷を…溶かすつもり？', '春が…来てしまう…', '永遠に凍っていなさい'],
+  '🌊': ['嵐を呼ぶ龍の怒りを見よ', '雷雲が…晴れていく…', '風が…止む…', '嵐は過ぎ去った。お前と共に'],
+  '🌌': ['何もかも…食べてあげる', 'お腹が…すいてきた…', '空っぽに…なっちゃう…', 'ごちそうさま、またね'],
+  '🧸': ['いっしょにあそぼ…？', 'ぬいぐるみ…やぶれちゃう…', 'わたも…出ちゃった…', 'ずっと、いっしょだよ…'],
+  '⚜️': ['天秤が告げる、汝の罪を', '天秤が…傾いている…', '裁かれるのは…私か…', '判決は下った'],
+  '☄️': ['溶岩の拳、受けきれるか！', '体が…冷えてきた…', '固まって…しまう…', '熱すぎて逃げ出したか'],
+  '🧿': ['結晶の輝き、その目に焼き付けろ', '欠片が…こぼれる…', '砕け散る…', '透き通るほどの完敗だな'],
+  '💘': ['あたしのこと、好きになっちゃう？', 'ちょっと！髪が乱れたじゃない！', 'もう…知らないっ！', 'えへへ、あたしの勝ち〜♡'],
+  '🐋': ['空を泳ぐ鯨に挑むとは', '大きな体が…重い…', '空から…落ちる…', '雲の上から見送ってやろう'],
+  '🕯️': ['ろうそくが尽きるまで、遊びましょう', '炎が…揺らいでいる…', '灯りが…消える…', '燭台に名前を刻んでおくわ'],
+  '🦑': ['深き底より、王が来た', '触腕が…しびれる…', '深海へ…帰らねば…', '水圧に耐えられなかったか'],
+  '🎎': ['桜吹雪の舞、見届けなさい', '花びらが…散っていく…', '今年の桜も…これまで…', '花と散るのも美しいでしょう？'],
+  '🐍': ['砂の女王に頭を垂れなさい', '砂が…まとわりつかない…', '砂に…還る…', '砂漠で迷子になっていなさい'],
+  '🥇': ['黄金に勝るものなど無い', '金メッキだと…？無礼な…', '輝きが…くすむ…', 'お前の価値は銅貨一枚だ'],
+  '🏇': ['二人の息、乱れはせん！', '相棒が…疲れている…', '人竜一体…ここまでか…', 'これが絆の力だ！'],
+  '🛕': ['城門は決して開かぬ', '城壁に…ひびが…', '落城…', '城の守りは完璧だ'],
+  '🌺': ['きれいな花には…毒があるのよ', '花びらが…しおれちゃう…', '枯れて…しまう…', 'いい肥料になってね'],
+  '🪐': ['火水風土、すべてが私の手に', '元素が…乱れる…', '四つの力が…散っていく…', '世界の理には逆らえないわ'],
+  '🔆': ['聖剣の輝きを恐れなさい', '聖剣が…重い…', '光が…弱まって…', '正義は勝つのよ'],
+  '🟥': ['紅蓮の剣、燃え上がれ！', 'まだ火は消えてない！', '炎が…尽きる…', '紅蓮に焼かれて眠りなさい'],
+  '🐴': ['戦場を駆ける黒き翼よ！', '愛馬が…息を切らしてる…', '天へ…帰る時か…', '勇者の魂、ヴァルハラへ運んでやろう'],
+  '☀️': ['太陽の恵みを、その身に', '雲が…かかってきた…', '日が…沈む…', '陽はまた昇る。私と共に'],
+  '🐚': ['海の神に祈りなさい', '真珠が…くもる…', '波が…引いていく…', '海の底でおやすみなさい'],
+  '🦚': ['黒翼の女帝の御前である', '羽が…乱れる…', '女帝の座が…', 'ひれ伏したまま朽ちなさい'],
+  '⌛': ['あなたの時間、止めてあげる', '砂時計が…ひっくり返された…', '時が…尽きる…', 'はい、時間切れ'],
+  '🎙️': ['どうもー！今日は勇者を倒す配信でーす', 'コメ欄が荒れてる…', '配信…切りま…す…', '高評価とチャンネル登録よろしく！'],
+  '🦉': ['知恵と戦の女神、ここに', '…想定外の戦術ね', '知恵が…及ばなかった…', '学びなさい、敗北から'],
+  '🎒': ['新入生だからって舐めんなよ！', 'くっ…先輩、強ぇ…', 'ば、番長の座が…', '明日から俺がパシらせてやる'],
+  '🐶': ['ワン！ルーンの力を見よ！', 'クゥーン…痛いワン…', 'お、お手…', 'ワンワン！勝ったワン！'],
+  '🌞': ['黄金の翼が、天を照らす', '光の翼が…欠けた…', '天へ…還る…', '光の前にすべてはひれ伏す'],
+  '🟪': ['紫焔の魔剣、その身で味わえ', '魔剣が…震えてる…', '紫の炎が…消える…', 'この剣、まだ満足していないわ'],
+  '🍫': ['甘くとろける魔力をどうぞ♡', 'チョコが…溶けちゃう…', 'ビターな結末…', 'ちょっと甘すぎたかしら？'],
+  '🏁': ['ぶっちぎりでいくぜぇ！', 'スピードが…落ちてる…', 'リタイア…', 'ゴール前でぶち抜いてやったぜ！'],
+  '🥀': ['血の薔薇を咲かせましょう', '薔薇が…散る…', '花びらが…すべて…', '美しく散ったわね'],
+  '🎍': ['新年早々、勝負よ！', 'おみくじ…凶だったかも…', '今年の運…使い果たした…', '今年もよろしくね、負け勇者さん'],
+  '⚱️': ['すべての終わりを告げに来ました', '終わりが…遠のく…？', '終わるのは…私の方…', 'ここが、あなたの終着点です'],
+  '🛐': ['聖十字の名のもとに', '十字が…ひび割れて…', '祈りが…届かない…', '悔い改めなさい'],
+  '🪑': ['玉座の前だ、頭が高い！', '騎士団の誇りにかけて…！', '玉座を…守れない…', '騎士団の門を叩くには早すぎたな'],
+  '🌲': ['ガオオオ！森の主の怒りを見よ！', 'グルル…翼が…', '森へ…帰る…', 'ガオッ！森は守られた！'],
+  '🦴': ['腐り果てても、竜は竜…', '骨が…崩れる…', 'また土に…還る…', 'お前も腐り落ちろ'],
+  '💙': ['蒼き炎は、熱くないとでも？', '蒼炎が…揺らぐ…', '炎が…凍える…', '青い炎の熱さ、覚えておきなさい'],
+  '🦜': ['燃える翼で空ごと焼いてあげる', '羽が…焦げた…', '空から…落ちる…', '焼き鳥にされたのはあなたの方ね'],
+  '🐊': ['しっぽで締め上げてあげる', 'うろこが…はがれる…', 'もう…巻きつけない…', 'ゆっくり眠りなさい'],
+  '🫠': ['ぼくがスライムの王さまだ！', 'ぷにぷにが…減ってきた…', 'とろけて…いく…', 'ぷるんっ！スライム最強！'],
+  '🎁': ['宝箱の王様のお出ましだ', 'フタが…歪んだ…', '中身…カラッポ…', 'お前を宝物庫にしまってやろう'],
+  '🌩️': ['雷鳴とともに来たれり！', 'ビリビリが…弱まって…', '雷雲が…散る…', '痺れて動けまい！'],
+  '🐢': ['甲羅の中は溶岩だぞ', '甲羅が…割れる…', 'もう…引っ込むしか…', 'のんびり勝たせてもらった'],
+  '🏯': ['百の鬼が、お前を囲む', '鬼どもが…逃げていく…', '夜が…明ける…', '百鬼夜行の仲間入りだ'],
+  '⚙️': ['ギギギ…排除…開始…', 'ギ…歯車…故障…', '機能…停止…', '排除…完了…'],
+  '🦈': ['深海に引きずり込んでやる', 'ヌル…すべって…', '海の底へ…', 'エサが一匹増えた'],
+  '🪆': ['ふたりで遊ぼ？', '片方が…こわれちゃう…', 'もう…ふたりで…いられない…', 'またふたりで遊ぼうね♪'],
+  '🌠': ['星をいくつ喰らったと思う？', '星が…足りない…', '星が…こぼれ落ちる…', 'お前も星屑にしてやった'],
+  '🌳': ['森を荒らす者よ…', '…根が…痛む…', '大地へ…還ろう…', '森の養分となれ'],
+  '👁️': ['ねえ…百の目で見てあげる', '目が…ちょっと痛い…', '目が…閉じちゃう…', 'ずっと見てるからね'],
+  '🕸️': ['巣にかかったのはあなたの方', '糸が…切れる…', '巣が…破れた…', 'ゆっくり味わってあげる'],
+  '🪦': ['……ひとつ…ふたつ…', '……数が…足りない…', '……井戸へ…帰る…', '……あなたも…井戸に…'],
+  '😈': ['よくぞここまで来た、勇者よ', 'ふふ…少しは楽しませてくれる', 'この魔王が…人間ごときに…！', 'ここが貴様の墓場だ'],
+};
+{ const orig = enemySay; enemySay = function (b, kind, force) {
+  const idx = { boss: 0, bossHalf: 1, bossLow: 2, bossWin: 3 }[kind];
+  const lines = b && b.isBoss && BOSS_SAY[b.emoji];
+  if (idx !== undefined && lines && lines[idx] && !b.isDying) { const t = lines[idx]; enemySayAt = Date.now(); companionSay(b, t, 2000 + t.length * 80); return; }
+  return orig.apply(this, arguments);
+}; }
+
+// ===== お知らせ（右上のボタン → 一覧のページ）。新しいお知らせがあると赤い点 =====
+const NEWS = [ // 新しいものを上に。id は増やしていく
+  { id: 8, date: '2026/10/16', tag: '新機能', title: 'お知らせページができました', body: '右上の📢ボタンから、アップデートやイベントの情報を見られるようになりました。' },
+  { id: 7, date: '2026/10/16', tag: '新機能', title: 'キャラエディット登場！', body: '名前・性別・語尾（にゃん／にょ／ぞい／自由）・髪や服やマントの色を決められます。\n設定の「🎨 キャラエディット」からいつでも変更できます。🎲ランダムもあります。' },
+  { id: 6, date: '2026/10/16', tag: 'BGM', title: 'ログインボーナスに専用BGM', body: 'ログインボーナスの画面では専用の曲が流れ、後ろのゲームは一時停止するようになりました。' },
+  { id: 5, date: '2026/10/16', tag: '改善', title: '戦績ページに「ミッション」タブ', body: 'デイリー・ウィークリーミッションは、戦績ページの「🎯 ミッション」タブにまとまりました。' },
+  { id: 4, date: '2026/10/16', tag: '改善', title: 'ガチャの結果がもっと豪華に', body: '招集ガチャの結果にファンファーレが鳴り、結果を閉じるまで神聖な音が流れるようになりました。' },
+  { id: 3, date: '2026/10/15', tag: '新アイテム', title: 'レアリングがショップに登場', body: 'レア遺物（禁断シリーズ）のドロップ率が1個につき+50%（最大2個）。\nショップで1つ購入でき、ジェムで挑む試練の塔でもまれにドロップします。' },
+  { id: 2, date: '2026/10/15', tag: '新機能', title: 'ドーピングの種', body: '力の種・命の木の実を使うと攻撃力・HPが上がります（転生でリセット）。\nタンス・壺・宝箱から手に入ります。' },
+  { id: 1, date: '2026/10/01', tag: 'イベント', title: 'ハロウィン・パーティー開催中', body: '雑魚を倒すと🎃カボチャが出ます。\n集めた数に応じてジェムや宝箱のごほうび！（10月末まで）' },
+];
+function newsUnread() { return NEWS.length && NEWS[0].id > (game.newsSeen || 0); }
+function updateNewsDot() { const b = document.getElementById('newsBtn'); if (b) b.classList.toggle('unread', !!newsUnread()); }
+function openNews() {
+  let ov = document.getElementById('newsModal');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'newsModal'; ov.className = 'modal-overlay'; ov.style.zIndex = 72;
+    ov.innerHTML = '<div class="modal-panel news-panel"><div class="news-title">📢 お知らせ</div><div class="news-list"></div><button class="modal-close-btn news-close">閉じる</button></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', ev => {
+      if (ev.target === ov || ev.target.closest('.news-close')) { ov.classList.remove('show'); return; }
+      const it = ev.target.closest('.news-item'); if (it) it.classList.toggle('open');
+    });
+  }
+  const seen = game.newsSeen || 0;
+  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-h">${n.title}</div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div></div>`).join('');
+  ov.classList.add('show');
+  game.newsSeen = NEWS[0].id; updateNewsDot(); saveGame();
+  if (typeof playTone === 'function') playTone(1047, 0.06, 'square', 0.04);
+}
+document.getElementById('newsBtn').addEventListener('click', openNews);
+updateNewsDot();
+
+// ===== 仲間ページ：倒れている仲間をコインですぐ全員復活 =====
+function reviveAllCost() { const ids = downCompanionIds(); return Math.max(10, Math.round(stageCoinRaw() * 15 * ids.reduce((s, id) => s + ((game.compDeaths || {})[id] || 1), 0))); } // 今のステージの稼ぎ×倒れた回数ぶん
+function downCompanionIds() { const cp = game.companions; return Object.keys(COMPANIONS).filter(id => cp.recruited[id] && cp.alive[id] === false); }
+function reviveAllCompanions(ev) {
+  const ids = downCompanionIds(); if (!ids.length) return;
+  const cost = reviveAllCost();
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, ev.clientX, ev.clientY); return; }
+  spendCoins(cost);
+  const cp = game.companions;
+  ids.forEach(id => {
+    cp.alive[id] = true; cp.hp[id] = getCompanionMaxHP(id); if (cp.downStages) delete cp.downStages[id];
+    balls.filter(b => b.isCompanion && b.companionId === id).forEach(b => { b.hp = b.maxHp || cp.hp[id]; spawnHitParticles(b.x, b.y, '#fff4b8'); spawnDamageText(b.x, b.y - (b.radius || 16) - 14, '✨ 復活！', '#fff4b8', 0.014, true); });
+  });
+  if (typeof refreshCompanionBalls === 'function') refreshCompanionBalls();
+  playHealSound && playHealSound(); updateStatsUI(); saveGame(); renderCompanionList();
+  showNotice(`✨ 仲間 ${ids.length}人が復活した！`);
+}
+function updateReviveAllBtn() {
+  let b = document.getElementById('reviveAllBtn');
+  const row = document.querySelector('.tab-page[data-tab="companion"] .party-row'); if (!row) return;
+  if (!b) { b = document.createElement('button'); b.id = 'reviveAllBtn'; b.className = 'revive-all-btn'; b.addEventListener('click', reviveAllCompanions); row.after(b); }
+  const n = downCompanionIds().length;
+  b.style.display = n ? '' : 'none';
+  if (!n) return;
+  const cost = reviveAllCost();
+  b.innerHTML = `✨ 倒れた仲間をすぐ復活（${n}人）<span>${COIN_ICO}${formatCoinNumber(cost)}</span>`;
+  b.classList.toggle('is-disabled', game.coins < cost);
+}
+{ const orig = renderCompanionList; renderCompanionList = function () { const r = orig.apply(this, arguments); try { updateReviveAllBtn(); } catch (e) {} return r; }; }
+setInterval(() => { if (typeof activeTabCache !== 'undefined' && activeTabCache === 'companion') try { updateReviveAllBtn(); } catch (e) {} }, 1000);
+
+// スキル・サブウェポンの 10%／MAX 一括レベルアップ
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-sk-bulk]'); if (!b) return;
+  const isPct = b.dataset.skBulk === 'pct', kind = b.dataset.skKind, id = b.dataset.skId;
+  if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; }
+  const r = skLvSim(kind, id, isPct ? game.coins * PCT_BUDGET : game.coins);
+  if (r.n < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', ev.clientX, ev.clientY); return; }
+  spendCoins(r.spent);
+  const store = kind === 'skill' ? game.skillLevels : game.weapons, from = store[id] || 0;
+  store[id] = from + r.n;
+  const to = store[id], leap = Math.floor(to / 100) > Math.floor(from / 100) ? 2 : Math.floor(to / 10) > Math.floor(from / 10) ? 1 : 0;
+  const name = kind === 'skill' ? SKILL_GACHA_SKILLS[id].name : WEAPONS[id].name;
+  showLevelUpPop(ev.clientX, ev.clientY, `Lv${to}！ +${formatCoinNumber(r.n)}Lv`);
+  if (leap) { showLeapBanner(leap >= 2 ? '超飛躍！！' : '飛躍！', leap); playLeapSound(leap); } else if (isPct) playUpgradeSoundClassic(); else playUpgradeSound();
+  showNotice(`${name} を ${r.n}Lv 一括強化！`);
+  updateStatsUI(); renderCoinShopList(); saveGame();
+});
