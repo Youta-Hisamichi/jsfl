@@ -1396,8 +1396,8 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   runGachaCountdown(rarity, () => {
     const info = RARITY_INFO[rarity];
     playPachinkoWin(rarity);
-    skGachaResult.className = 'gacha-result rarity-' + rarity;
-    skGachaResult.style.background = rarityBackground(rarity);
+    skGachaResult.className = 'gacha-result skr rarity-' + rarity; // スキル・サブウェポンの結果は紫の魔法陣パネル
+    skGachaResult.style.background = '';
     skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
     { const row = skGachaResult.querySelector('.gr-btn-row'); if (row) { row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } } // 演出スキップの連打で誤って押さないよう少しだけ待つ
     document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });

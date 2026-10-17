@@ -3758,3 +3758,32 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #bootLoading .bl-tip { min-height: 3em; }
 .tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-name { left: 17.5%; right: 24%; }
 .tab-page[data-tab="ranking"] .rank-row:not(.top1):not(.top2):not(.top3) .rank-name { left: 19%; }
+/* ===== スキル・サブウェポンのガチャ結果：紫の魔法陣パネル ===== */
+#skGachaModal .sk-gacha-panel:has(.skr) { background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 420px); max-width: none; }
+#skGachaModal .gacha-result.skr { position: relative; width: 100%; aspect-ratio: 720 / 599; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; box-shadow: none; overflow: visible; background: url(assets/img/ui/skr/panel.webp) center / 100% 100% no-repeat !important; animation: evrIn 0.3s ease-out; }
+.skr .gr-halo-wrap { position: absolute; left: 50%; top: 11%; width: 26%; aspect-ratio: 1; height: auto; margin: 0; transform: translateX(-50%); }
+.skr .gr-halo { display: none; }
+.skr .gr-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border: 4px solid #e8b53a; border-radius: 18%; background: radial-gradient(circle, #2a1a5a, #120a30); box-shadow: 0 0 0 2px #5a3a08, 0 0 18px rgba(255,220,120,0.8); overflow: hidden; }
+.skr .gr-icon .item-icon, .skr .gr-icon img { width: 100% !important; height: 100% !important; font-size: 3rem; display: flex; align-items: center; justify-content: center; object-fit: cover; }
+.skr .gr-icon .item-icon img { width: 100% !important; height: 100% !important; }
+.skr .gr-title { position: absolute; left: 0; right: 0; top: 49%; display: flex; align-items: center; justify-content: center; gap: 2px; margin: 0; padding: 0 2%; color: #ffe08a !important; font-size: clamp(1.15rem, 6.6vw, 1.8rem); font-weight: 900; line-height: 1.1; white-space: nowrap; text-shadow: -2px -2px 0 #3a1060, 2px -2px 0 #3a1060, -2px 2px 0 #3a1060, 2px 2px 0 #3a1060, 0 3px 0 #2a0840, 0 0 10px rgba(255,200,80,0.6); }
+.skr .gr-title::before, .skr .gr-title::after { content: ''; flex: none; width: 13%; aspect-ratio: 176 / 137; background: url(assets/img/ui/skr/orn_l.webp) center / contain no-repeat; }
+.skr .gr-title::after { background-image: url(assets/img/ui/skr/orn_r.webp); }
+.skr .gr-sub { position: absolute; left: 4%; right: 4%; top: 64%; margin: 0; text-align: center; color: #fff !important; font-size: clamp(0.72rem, 3.7vw, 0.92rem); font-weight: 900; text-shadow: -1px -1px 0 #3a1060, 1px -1px 0 #3a1060, -1px 1px 0 #3a1060, 1px 1px 0 #3a1060, 0 0 4px #000; }
+.skr .gr-btn-row { position: absolute; left: 6%; right: 6%; top: 74%; height: 17%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 4%; }
+.skr .gr-btn-row button { height: 100%; padding: 0 !important; margin: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; color: transparent !important; font-size: 0 !important; text-shadow: none !important; }
+.skr #skGachaRerollBtn { flex: 0 0 auto; aspect-ratio: 360 / 159; background: url(assets/img/ui/skr/reroll.webp) center / 100% 100% no-repeat !important; }
+.skr #skGachaCloseBtn { flex: 0 0 auto; aspect-ratio: 420 / 155; background: url(assets/img/ui/skr/ok.webp) center / 100% 100% no-repeat !important; }
+.skr .gr-btn-row button:active { transform: scale(0.95); }
+#skGachaModal .gacha-result.skr { border: none !important; box-shadow: none !important; outline: none !important; }
+#skGachaModal .gacha-result.skr::before, #skGachaModal .gacha-result.skr::after { display: none !important; }
+#skGachaModal .skr .gr-halo-wrap, #skGachaModal .skr .gr-title, #skGachaModal .skr .gr-sub, #skGachaModal .skr .gr-btn-row { position: absolute !important; margin: 0 !important; }
+#skGachaModal .skr .gr-title { color: #ffe08a !important; -webkit-text-fill-color: #ffe08a !important; background: linear-gradient(180deg, #fff6c0, #ffd040 55%, #e09018) !important; -webkit-background-clip: text !important; background-clip: text !important; -webkit-text-fill-color: transparent !important; filter: drop-shadow(0 2px 0 #3a1060) drop-shadow(0 0 2px #3a1060) drop-shadow(0 0 2px #3a1060); text-shadow: none !important; }
+#skGachaModal .skr .gr-title::before, #skGachaModal .skr .gr-title::after { -webkit-text-fill-color: initial; }
+#skGachaModal .skr .gr-btn-row button { outline: none !important; background-color: transparent !important; animation: none !important; overflow: visible; }
+#skGachaModal .skr .gr-btn-row button::before, #skGachaModal .skr .gr-btn-row button::after { display: none !important; content: none !important; }
+#skGachaModal .skr .gr-halo-wrap { top: 8% !important; width: 24% !important; }
+#skGachaModal .skr .gr-title { -webkit-text-stroke: 1.5px #3a1060; paint-order: stroke fill; font-size: clamp(1.25rem, 7vw, 1.9rem) !important; }
+#skGachaModal #skGachaResult.skr #skGachaRerollBtn, #skGachaModal #skGachaResult.skr #skGachaCloseBtn { border: none !important; box-shadow: none !important; }
+#skGachaModal #skGachaResult.skr .gr-halo-wrap { height: auto !important; aspect-ratio: 1 !important; }
+#skGachaModal #skGachaResult.skr .gr-title { -webkit-text-stroke: 0 !important; filter: drop-shadow(1.5px 0 0 #3a1060) drop-shadow(-1.5px 0 0 #3a1060) drop-shadow(0 1.5px 0 #3a1060) drop-shadow(0 -1.5px 0 #3a1060) drop-shadow(0 3px 2px rgba(0,0,0,0.6)) !important; }
