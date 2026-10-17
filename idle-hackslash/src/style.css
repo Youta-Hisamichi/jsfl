@@ -3731,3 +3731,4 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper .sk-name { visibility: hidden; height: 0; overflow: hidden; } /* 名前は絵に入っている */
 body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { padding: 4.2% 6% 0 !important; justify-content: flex-start !important; line-height: 1.3; }
 body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { padding: 6.2% 6% 0 !important; }
+body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { padding: 5% 6% 0 !important; line-height: 1.2; }
