@@ -997,7 +997,7 @@ function drawPullMash() { // 連打倍率をキャラの頭上に1つだけ表�
 }
 function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const dur = (1700 + 2300 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 7 + 9 * lv; // 飛ぶ時間を長く・少し速くして、たくさん跳ね返るように
+  const dur = (1300 + 1700 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6.5 + 8.5 * lv; // 通常の反射はほどほど（たくさん跳ねるのはスキル「無限反射」で）
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
@@ -1565,7 +1565,7 @@ function moveHoldRush(ball, speedMult) {
       if (taps) { const pl = balls.find(isMainPlayerBall); if (pl) { for (let i = 0; i < 6; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#ffe08a' : '#ffffff'); } thump(300, 900, 0.12, 0.06, 'sawtooth'); }
     }
     holdRush.ux = ux; holdRush.uy = uy;
-    const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (0.3 + 0.7 * Math.min(1, r * 1.6));
+    const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (holdRush.infinite ? 1 : 0.3 + 0.7 * Math.min(1, r * 1.6)); // 無限反射中は減速しない
     ball.vx = ux * sp; ball.vy = uy * sp;
   } else {
   const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
