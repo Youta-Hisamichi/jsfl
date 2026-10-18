@@ -212,7 +212,7 @@ const BGM_SONGS = {
     kickBoost: 1.3,
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s k s ks s ks ks'
   },
-  loginbonus: { // ログインボーナス 黄金のカジノ：きらびやかなブラスの和音のキメ、跳ねるスウィングの旋律、ウォーキングベース。ネオンが輝く賭博場のような陽気なループ（VRC6風・オリジナル）
+  loginbonus: { // 帰還ボーナス 黄金のカジノ：きらびやかなブラスの和音のキメ、跳ねるスウィングの旋律、ウォーキングベース。ネオンが輝く賭博場のような陽気なループ（VRC6風・オリジナル）
     bpm: 168,
     echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
     tracks: [
@@ -221,6 +221,16 @@ const BGM_SONGS = {
       { type: 'vrc6saw', gain: 0.05, notes: 'F2 - A2 - C3 - D3 - | G2 - A#2 - D3 - E3 - | F2 - A2 - C3 - A2 - | C2 - E2 - G2 - A#2 - | F2 - A2 - C3 - D3 - | D2 - F#2 - A2 - C3 - | G2 - - - C2 - - - | F2 - C2 - F2 - - -' },
     ],
     drums: 'k - h s - h k h | k - h s - h k s | k - h s - h k h | k - h s s h ks - | k - h s - h k h | k - h s - h k s | k - h s k - h s | k - ks - ks - - -',
+  },
+  dailybonus: { // ログインボーナス 朝の贈りもの：オルゴール風に転がる分散和音と弾むベースに、包みを開けるようにわくわく駆け上がる長調の旋律（オリジナル）
+    bpm: 132,
+    echo: { time: 0.23, feedback: 0.24, wet: 0.18 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'G5 = B5 = D6 = = B5 | E6 = D6 = B5 = G5 = | A5 = C6 = E6 = D6 C6 | B5 = A5 = F#5 = = - | G5 = B5 = D6 = G6 = | F#6 = D#6 = B5 = A5 = | G5 = E6 = D#6 = C6 = | B5 = A5 = G5 = = -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'G4 B4 D5 G5 D5 B4 D5 B4 | E4 G4 B4 E5 B4 G4 B4 G4 | C5 E5 G5 C6 G5 E5 G5 E5 | D4 F#4 A4 D5 A4 F#4 A4 F#4 | G4 B4 D5 G5 D5 B4 D5 B4 | B3 D#4 F#4 A4 F#4 D#4 B4 A4 | C5 E5 G5 E5 C5 D#5 G5 D#5 | G4 B4 D5 B4 D4 F#4 A4 F#4' },
+      { type: 'vrc6saw', gain: 0.048, notes: 'G2 - D3 - G2 - D3 - | E2 - B2 - E2 - B2 - | C2 - G2 - C3 - G2 - | D2 - A2 - D3 - C3 - | B1 - D2 - G2 - D2 - | B1 - F#2 - B2 - A2 - | C2 - G2 - C2 - G2 - | D2 - - - D2 - F#2 -' },
+    ],
+    drums: 'k - h - s - h - | k - h k s - h - | k - h - s - h - | k - h k s - s s | k - h - s - h - | k - h k s - h - | k - h - s - h k | k - s - ks - - -',
   },
   levelup: {
     bpm: 152,
@@ -717,7 +727,8 @@ const BGM_INFO = [
   { key: 'battle28', name: '戦闘28 鋼の疾風', desc: '刻み続けるベースと跳ねる分散和音、駆け上がって高く抜ける英雄的な旋律。VRC6風チップチューン。ホ短調→ト長調の明るい展開（ファミコンのロボットアクション系の作風）・BPM164' },
   { key: 'battle30', name: '戦闘30 おばけ退治の夜', desc: '跳ねるファンクのベースリフと裏拍で刻むカッティングに乗って、とぼけた旋律がお化けを追い回す。夜の街のにぎやかなお化け退治。VRC6風チップチューン。イ・ミクソリディアン（80年代コメディ映画のテーマの作風）・BPM116' },
   { key: 'battle34', name: '戦闘34 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
-  { key: 'loginbonus', name: 'ログインボーナス 黄金のカジノ', desc: 'ログインボーナスの画面で流れる、きらびやかなブラスのキメと跳ねるスウィングの旋律、ウォーキングベースの陽気な曲。ネオン輝く賭博場をイメージしたオリジナル曲。VRC6風チップチューン。ヘ長調。' },
+  { key: 'dailybonus', name: 'ログインボーナス 朝の贈りもの', desc: 'ログインボーナスの画面で流れる、オルゴール風に転がる分散和音と弾むベースに、包みを開けるようにわくわく駆け上がる長調の曲。オリジナル曲。VRC6風チップチューン。ト長調。' },
+  { key: 'loginbonus', name: '帰還ボーナス 黄金のカジノ', desc: '帰還ボーナスの画面で流れる、きらびやかなブラスのキメと跳ねるスウィングの旋律、ウォーキングベースの陽気な曲。ネオン輝く賭博場をイメージしたオリジナル曲。VRC6風チップチューン。ヘ長調。' },
   { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },

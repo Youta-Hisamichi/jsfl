@@ -373,16 +373,32 @@ function showLogin7(day, got) {
     </div>
     <div class="lb7-note">毎日ログインで報酬アップ！ 7日目は<b>★5宝箱＋💎10確定</b></div></div>`;
   document.body.appendChild(ov);
+  ov.querySelectorAll('.lb7-face img').forEach(fitSpriteToFace);
   playLoginBonusSound && playLoginBonusSound();
   ov.querySelector('.lb7-ok').addEventListener('click', () => ov.remove());
 }
 
+function fitSpriteToFace(img) { // 余白の多いドット絵（ペンギンなど）も、顔の丸枠いっぱいに大きく映す
+  const run = () => { try {
+    const w = img.naturalWidth, h = img.naturalHeight; if (!w || !h) return;
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, w, h).data; let l = w, t = h, r = -1, b = -1;
+    for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) if (d[(yy * w + xx) * 4 + 3] > 20) { if (xx < l) l = xx; if (xx > r) r = xx; if (yy < t) t = yy; if (yy > b) b = yy; }
+    if (r < 0) return;
+    const s = Math.max(1, Math.min(2.2, 0.95 * Math.max(w, h) / Math.max(r - l + 1, b - t + 1)));
+    img.style.transform = `scale(${s.toFixed(3)}) translate(${((w - l - r - 1) / 2 / w * 100).toFixed(2)}%, ${((h - t - b - 1) / 2 / h * 100).toFixed(2)}%)`;
+  } catch (e) {} };
+  if (img.complete) run(); else img.addEventListener('load', run, { once: true });
+}
+
 // ログインボーナス・帰還ボーナスの画面を出している間は、専用の曲を流し、後ろのゲームは止めておく
 function loginBonusOpen() { return !!document.querySelector('.lb7-ov') || (typeof loginBonusModal !== 'undefined' && loginBonusModal.classList.contains('show')); }
-{ const orig = refreshBgm; refreshBgm = function () { if (loginBonusOpen() && typeof playBgmTrack === 'function' && audioCtx && !(typeof holyPad !== 'undefined' && holyPad)) { playBgmTrack('loginbonus'); return; } return orig.apply(this, arguments); }; }
-{ let open = false, prev = null;
+{ const orig = refreshBgm; refreshBgm = function () { if (loginBonusOpen() && typeof playBgmTrack === 'function' && audioCtx && !(typeof holyPad !== 'undefined' && holyPad)) { playBgmTrack(document.querySelector('.lb7-ov') ? 'dailybonus' : 'loginbonus'); return; } return orig.apply(this, arguments); }; }
+{ let open = false, prev = null, lastDaily = false;
   const check = () => {
-    const now = loginBonusOpen(); if (now === open) return; open = now;
+    const now = loginBonusOpen(), daily = !!document.querySelector('.lb7-ov');
+    if (now === open) { if (now && daily !== lastDaily) { lastDaily = daily; try { refreshBgm(); } catch (e) {} } return; } // 帰還ボーナスとログインボーナスで曲を切り替える
+    open = now; lastDaily = daily;
     if (now) { prev = phase === 'battle' ? 'battle' : null; if (prev) phase = 'paused'; }
     else { if (prev && phase === 'paused') phase = prev; prev = null; }
     try { refreshBgm(); } catch (e) {}

@@ -19,10 +19,16 @@ const GIMMICKS = {
   blocks:    { name: 'ハテナボックス叩きまくり', icon: '❓', desc: 'ハテナボックスを何度も叩いてコイン', coin: 1 },
   tansu:     { name: 'タンス開けまくり', icon: '🗄️', desc: 'タンスを調べまくってお宝さがし！', coin: 1 },
   castle:    { name: '王城の決戦', icon: '🏰', desc: 'シャンデリアが落ちて敵に大ダメージ。コイン×1.3', coin: 1.3, tint: 'rgba(40,10,6,0.12)' },
+  village:   { name: 'のどかな村', icon: '🏡', desc: '逃げまわるニワトリにさわるとコイン', coin: 1.1 },
+  town:      { name: 'にぎわう城下町', icon: '🏘️', desc: '落とし物の財布を拾おう。コイン×1.4', coin: 1.4 },
+  ruins:     { name: '古代遺跡', icon: '🏛️', desc: '石柱が倒れて敵に大ダメージ。コイン×1.2', coin: 1.2, tint: 'rgba(60,40,10,0.08)' },
+  graveyard: { name: '真夜中の墓地', icon: '🪦', desc: '暗い墓場。人魂を集めるとコイン', coin: 1.3, tint: 'rgba(20,6,40,0.18)' },
+  shrine:    { name: '森の祠', icon: '⛩️', desc: '桜が舞う。お守りを拾うとコイン', coin: 1.1 },
+  church:    { name: '祈りの教会', icon: '⛪', desc: '聖なる光が敵を打つ。コイン×1.2', coin: 1.2, tint: 'rgba(255,240,200,0.06)' },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime', 'castle'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'fireworks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'shrine', 'church'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -187,7 +193,7 @@ function drawGimmickDark(A, col, lightR) { // 暗闇（味方とホタルのま�
   const hole = (x, y, r) => { const g = c.createRadialGradient(x * k, y * k, 0, x * k, y * k, r * k); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.6, 'rgba(0,0,0,0.7)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.beginPath(); c.arc(x * k, y * k, r * k, 0, Math.PI * 2); c.fill(); };
   for (const b of gimmickPlayerBalls()) hole(b.x, b.y, isMainPlayerBall(b) ? lightR * 1.5 : lightR);
   for (const e of gimmickEnemies()) hole(e.x, e.y, (e.radius || 14) * 2.2);
-  for (const it of gm.items) if (it.kind === 'firefly') hole(it.x, it.y, 34);
+  for (const it of gm.items) if (it.kind === 'firefly' || it.kind === 'wisp') hole(it.x, it.y, it.kind === 'wisp' ? 46 : 34);
   ctx.drawImage(gDarkCv, 0, 0, size, sizeH || size);
   // 月
   ctx.fillStyle = 'rgba(255,248,210,0.9)'; ctx.shadowColor = '#fff6c0'; ctx.shadowBlur = 24; ctx.beginPath(); ctx.arc(A.r - 34, A.t + 34, 14, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
@@ -548,3 +554,212 @@ function drawChandelier(x, y, a) {
 }
 { const orig = getFloorKey; getFloorKey = function (stage) { return typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'castle' ? 'redCarpet' : orig.apply(this, arguments); }; } // 王城は赤じゅうたんの床
 { const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { if (curGimmick() === 'castle') { ctx.save(); arenaPath(); ctx.clip(); drawCastleHall(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; } // 王の間の飾りは床と一緒に（キャラの下に）描く
+
+// ===== 村・町・遺跡・墓地・祠・教会のステージ（床の上に建物などを描き、それぞれの小さな遊びを足す） =====
+const GIMMICK_FLOORS = { village: 'lawn', town: 'town', ruins: 'ruins', graveyard: 'dirt', shrine: 'mossStone', church: 'brick' };
+{ const orig = getFloorKey; getFloorKey = function (stage) { const k = typeof gimmickForStage === 'function' && gimmickForStage(stage); return GIMMICK_FLOORS[k] || orig.apply(this, arguments); }; }
+function gWanderer(A, kind) { const a = Math.random() * Math.PI * 2; return { kind, x: gRand(A.l + 30, A.r - 30), y: gRand(A.t + 40, A.b - 40), vx: Math.cos(a), vy: Math.sin(a), ph: Math.random() * 6, turnAt: 0 }; }
+{ const orig = setupGimmick; setupGimmick = function (key) {
+  const before = gm.id; orig.apply(this, arguments); if (gm.id === before || !gm.key) return;
+  const A = gArea();
+  if (gm.key === 'village') for (let i = 0; i < 4; i++) gm.items.push(gWanderer(A, 'chicken'));
+  if (gm.key === 'graveyard') for (let i = 0; i < 5; i++) gm.items.push(gWanderer(A, 'wisp'));
+}; }
+{ const orig = tickGimmick; tickGimmick = function (sp) {
+  const due = gm.key && gm.t + sp >= gm.nextAt; // 元の処理が次の出現時刻を決める前に覚えておく
+  orig.apply(this, arguments);
+  const key = gm.key; if (!key || !GIMMICK_FLOORS[key]) return;
+  const A = gArea(), pls = gimmickPlayerBalls(), foes = gimmickEnemies();
+  const touch = (o, r) => pls.find(b => Math.hypot(b.x - o.x, b.y - o.y) < (b.radius || 12) + r);
+  if (due) {
+    if (key === 'village') { gm.nextAt = gm.t + gRand(160, 240); if (gm.items.filter(i => i.kind === 'chicken').length < 4) gm.items.push(gWanderer(A, 'chicken')); }
+    else if (key === 'graveyard') { gm.nextAt = gm.t + 110; if (gm.items.filter(i => i.kind === 'wisp').length < 5) gm.items.push(gWanderer(A, 'wisp')); }
+    else if (key === 'town') { gm.nextAt = gm.t + gRand(150, 230); gm.items.push({ kind: 'purse', x: gRand(A.l + 30, A.r - 30), y: gRand(A.t + 50, A.b - 40), life: 1 }); }
+    else if (key === 'shrine') { gm.nextAt = gm.t + gRand(130, 200); gm.items.push({ kind: 'omamori', x: gRand(A.l + 30, A.r - 30), y: gRand(A.t + 60, A.b - 40), life: 1, ph: Math.random() * 6 }); }
+    else if (key === 'ruins') { gm.nextAt = gm.t + gRand(150, 220); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', pillar: true, target: e, x: e.x, y: e.y, t: 0 }); } }
+    else if (key === 'church') { gm.nextAt = gm.t + gRand(160, 230); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'holyWarn', target: e, x: e.x, y: e.y, t: 0 }); } }
+  }
+  if (key === 'shrine' && Math.random() < 0.35 * sp) gm.fx.push({ kind: 'petal', x: gRand(A.l - 20, A.r), y: A.t - 8, vx: gRand(0.3, 0.8), vy: gRand(0.5, 1.0), rot: Math.random() * 6, s: gRand(3, 5) });
+  for (const it of gm.items) {
+    if (it.dead) continue;
+    if (it.kind === 'chicken' || it.kind === 'wisp') {
+      const near = it.kind === 'chicken' && pls.find(b => Math.hypot(b.x - it.x, b.y - it.y) < 70); // ニワトリは近づくと逃げる
+      if (near) { const d = Math.hypot(it.x - near.x, it.y - near.y) || 1; it.vx = (it.x - near.x) / d; it.vy = (it.y - near.y) / d; }
+      else if (gm.t > it.turnAt) { it.turnAt = gm.t + gRand(60, 150); const a = Math.random() * Math.PI * 2; it.vx = Math.cos(a); it.vy = Math.sin(a); }
+      const v = it.kind === 'wisp' ? 0.45 : near ? 1.6 : 0.6; it.ph += 0.08 * sp;
+      it.x += it.vx * v * sp; it.y += (it.vy * v + (it.kind === 'wisp' ? Math.sin(it.ph) * 0.4 : 0)) * sp;
+      if (it.x < A.l + 14 || it.x > A.r - 14) it.vx *= -1; if (it.y < A.t + 20 || it.y > A.b - 14) it.vy *= -1;
+      it.x = Math.max(A.l + 14, Math.min(A.r - 14, it.x)); it.y = Math.max(A.t + 20, Math.min(A.b - 14, it.y));
+      if (touch(it, 10)) popGimmickItem(it);
+    } else if (it.kind === 'purse' || it.kind === 'omamori') { it.life -= 0.0022 * sp; it.ph = (it.ph || 0) + 0.06 * sp; if (it.life <= 0) it.dead = true; else if (touch(it, 11)) popGimmickItem(it); }
+  }
+  gm.items = gm.items.filter(i => !i.dead);
+  for (const f of gm.fx) {
+    if (f.kind === 'petal') { f.x += (f.vx + Math.sin(gm.t * 0.03 + f.rot) * 0.5) * sp; f.y += f.vy * sp; f.rot += 0.06 * sp; if (f.y > A.b + 10) f.dead = true; }
+    else if (f.kind === 'holyWarn') { f.t += sp; if (f.target && !f.target.isDying && f.target.hp > 0) { f.x = f.target.x; f.y = f.target.y; } if (f.t >= 50) { f.dead = true; holyStrike(f); } }
+    else if (f.kind === 'holyBeam') { f.life -= 0.045 * sp; if (f.life <= 0) f.dead = true; }
+  }
+  gm.fx = gm.fx.filter(f => !f.dead);
+}; }
+function holyStrike(f) { // 教会：聖なる光の柱が敵を打つ
+  gm.fx.push({ kind: 'holyBeam', x: f.x, y: f.y, life: 1 });
+  playTone(880, 0.3, 'triangle', 0.05, 1760); setTimeout(() => playTone(1320, 0.35, 'sine', 0.04, 1980), 80);
+  for (let i = 0; i < 6; i++) spawnHitParticles(f.x + gRand(-14, 14), f.y + gRand(-14, 14), '#fff2b0');
+  for (const e of gimmickEnemies()) {
+    if (Math.hypot(e.x - f.x, e.y - f.y) > 36 + (e.radius || 0)) continue;
+    const dmg = Math.max(1, Math.round(e.maxHp * (e.isBoss ? 0.05 : 0.25)));
+    e.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(e, dmg, false, '#fff2b0'); onPlayerHitEnemy(e, dmg);
+  }
+}
+{ const orig = popGimmickItem; popGimmickItem = function (it) {
+  if (it.kind === 'chicken') { it.dead = true; playTone(900, 0.06, 'square', 0.04, 1400); setTimeout(() => playTone(1100, 0.05, 'square', 0.035, 700), 70); for (let i = 0; i < 4; i++) spawnHitParticles(it.x, it.y, '#ffffff'); gimmickGiveCoins(it.x, it.y, 0.3, '🐔'); return; }
+  if (it.kind === 'wisp') { it.dead = true; playTone(700, 0.2, 'sine', 0.04, 1400); spawnHitParticles(it.x, it.y, '#8fd8ff'); gimmickGiveCoins(it.x, it.y, 0.25, '👻'); return; }
+  if (it.kind === 'purse') { it.dead = true; playCoinChime(3); setTimeout(() => playCoinChime(6), 90); gimmickGiveCoins(it.x, it.y, 0.6, '👛'); return; }
+  if (it.kind === 'omamori') { it.dead = true; playTone(1200, 0.12, 'triangle', 0.05, 1800); spawnHitParticles(it.x, it.y, '#ff9fc0'); gimmickGiveCoins(it.x, it.y, 0.4, '🧧'); return; }
+  return orig.apply(this, arguments);
+}; }
+{ const orig = drawGimmickItem; drawGimmickItem = function (it, now) {
+  if (it.kind === 'chicken') {
+    const hop = Math.abs(Math.sin(it.ph * 2)) * 3, x = it.x, y = it.y - hop, f = it.vx < 0 ? -1 : 1;
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(x, it.y + 8, 9, 3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e8a33a'; ctx.fillRect(x - 3, y + 4, 2, 5); ctx.fillRect(x + 2, y + 4, 2, 5);
+    ctx.fillStyle = '#fbfbf5'; ctx.strokeStyle = '#9a9a90'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, 9, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + f * 7, y - 6, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e23a2a'; ctx.beginPath(); ctx.arc(x + f * 7, y - 11, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x + f * 10 - 1, y - 4, 2, 3);
+    ctx.fillStyle = '#f2a51a'; ctx.beginPath(); ctx.moveTo(x + f * 11, y - 7); ctx.lineTo(x + f * 15, y - 6); ctx.lineTo(x + f * 11, y - 4); ctx.fill();
+    ctx.fillStyle = '#222'; ctx.fillRect(x + f * 8 - 1, y - 8, 2, 2);
+    return;
+  }
+  if (it.kind === 'wisp') {
+    const a = 0.65 + 0.3 * Math.sin(it.ph * 2), x = it.x, y = it.y;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a; ctx.drawImage(gGlow(195, 65), x - 16, y - 16, 32, 32); ctx.restore();
+    ctx.fillStyle = `rgba(200,240,255,${a})`; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.quadraticCurveTo(x - 2 + Math.sin(it.ph) * 3, y + 10, x + Math.sin(it.ph * 1.5) * 4, y + 16); ctx.quadraticCurveTo(x + 4, y + 8, x + 6, y); ctx.fill();
+    return;
+  }
+  if (it.kind === 'purse') {
+    const x = it.x, y = it.y, bob = Math.sin(now / 200 + it.x) * 1.5; ctx.globalAlpha = Math.min(1, it.life * 4);
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x, y + 9, 9, 3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#9a5a26'; ctx.strokeStyle = '#4e2a0c'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2 + bob, 9, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#c47f3c'; ctx.beginPath(); ctx.moveTo(x - 5, y - 5 + bob); ctx.lineTo(x + 5, y - 5 + bob); ctx.lineTo(x + 7, y - 9 + bob); ctx.lineTo(x - 7, y - 9 + bob); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffd34a'; ctx.beginPath(); ctx.arc(x, y + 3 + bob, 3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+    return;
+  }
+  if (it.kind === 'omamori') {
+    const x = it.x, y = it.y + Math.sin(it.ph) * 2; ctx.globalAlpha = Math.min(1, it.life * 4);
+    ctx.shadowColor = '#ffd0e0'; ctx.shadowBlur = 10; ctx.fillStyle = '#d8304a'; ctx.strokeStyle = '#f2c65a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x - 6, y - 6); ctx.lineTo(x, y - 10); ctx.lineTo(x + 6, y - 6); ctx.lineTo(x + 6, y + 9); ctx.lineTo(x - 6, y + 9); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.fillStyle = '#f2c65a'; ctx.fillRect(x - 3, y - 2, 6, 7); ctx.strokeStyle = '#f2c65a'; ctx.beginPath(); ctx.moveTo(x, y - 10); ctx.lineTo(x, y - 15); ctx.stroke(); ctx.globalAlpha = 1;
+    return;
+  }
+  return orig.apply(this, arguments);
+}; }
+{ const orig = drawGimmickFx; drawGimmickFx = function (f, now) {
+  if (f.kind === 'petal') { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.fillStyle = 'rgba(255,190,210,0.9)'; ctx.beginPath(); ctx.ellipse(0, 0, f.s, f.s * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); return; }
+  if (f.kind === 'holyWarn') { const p = f.t / 50; ctx.strokeStyle = `rgba(255,240,170,${0.35 + p * 0.55})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke();
+    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(now / 600); ctx.strokeStyle = `rgba(255,230,140,${0.3 + p * 0.5})`; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); ctx.lineTo(Math.cos(a + Math.PI * 2 / 3) * 18, Math.sin(a + Math.PI * 2 / 3) * 18); } ctx.stroke(); ctx.restore(); return; }
+  if (f.kind === 'holyBeam') { const A = gArea(), w = 30 * (0.6 + f.life * 0.6); ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createLinearGradient(f.x - w, 0, f.x + w, 0); g.addColorStop(0, 'rgba(255,240,180,0)'); g.addColorStop(0.5, `rgba(255,250,220,${0.85 * f.life})`); g.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.fillStyle = g; ctx.fillRect(f.x - w, A.t - 10, w * 2, f.y - A.t + 10);
+    ctx.globalAlpha = f.life; ctx.drawImage(gGlow(48, 80), f.x - 40, f.y - 40, 80, 80); ctx.restore(); return; }
+  if (f.kind === 'rockfall' && f.pillar) { // 倒れてくる石柱（影→上から落ちる柱）
+    const p = f.t / 50, A = gArea(), y = A.t - 40 + (f.y - A.t + 40) * p * p;
+    ctx.strokeStyle = `rgba(255,170,80,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 18 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+    drawRuinPillar(f.x, y - 20, 16, 40, 0.3 * (1 - p)); return;
+  }
+  return orig.apply(this, arguments);
+}; }
+function drawRuinPillar(x, y, w, h, tilt = 0, broken = false) {
+  ctx.save(); ctx.translate(x, y + h / 2); ctx.rotate(tilt);
+  const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0); g.addColorStop(0, '#8a8072'); g.addColorStop(0.45, '#d8cdb6'); g.addColorStop(1, '#7a7062');
+  ctx.fillStyle = g; ctx.fillRect(-w / 2, -h, w, h);
+  ctx.strokeStyle = 'rgba(80,70,55,0.5)'; ctx.lineWidth = 1; for (let i = -w / 2 + 4; i < w / 2; i += 5) { ctx.beginPath(); ctx.moveTo(i, -h + 4); ctx.lineTo(i, -2); ctx.stroke(); }
+  ctx.fillStyle = '#a89c86'; ctx.fillRect(-w / 2 - 3, -4, w + 6, 5);
+  if (broken) { ctx.fillStyle = '#c9bea6'; ctx.beginPath(); ctx.moveTo(-w / 2, -h); ctx.lineTo(-w / 6, -h - 5); ctx.lineTo(w / 8, -h + 2); ctx.lineTo(w / 2, -h - 3); ctx.lineTo(w / 2, -h); ctx.closePath(); ctx.fill(); }
+  else ctx.fillRect(-w / 2 - 3, -h - 4, w + 6, 5);
+  ctx.restore();
+}
+// ---- 床の上の飾り（キャラの下に描く） ----
+function gHouse(x, y, w, h, roof, wall = '#e8d7b0') {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - w / 2 + 4, y - h + 6, w, h);
+  ctx.fillStyle = wall; ctx.fillRect(x - w / 2, y - h, w, h);
+  ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = 2; ctx.strokeRect(x - w / 2, y - h, w, h);
+  ctx.fillStyle = roof; ctx.beginPath(); ctx.moveTo(x - w / 2 - 6, y - h); ctx.lineTo(x, y - h - h * 0.75); ctx.lineTo(x + w / 2 + 6, y - h); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#6b4a2a'; ctx.fillRect(x - 5, y - 14, 10, 14);
+  ctx.fillStyle = '#ffe9a0'; ctx.fillRect(x - w / 2 + 5, y - h + 6, 8, 7); ctx.fillRect(x + w / 2 - 13, y - h + 6, 8, 7);
+}
+function drawVillageDecor(A, now) {
+  gHouse(A.l + 34, A.t + 62, 44, 32, '#b8462e'); gHouse(A.r - 34, A.t + 62, 44, 32, '#3f6fa8');
+  ctx.strokeStyle = '#8a5f30'; ctx.lineWidth = 3; // 柵
+  const fy = A.b - 22; ctx.beginPath(); ctx.moveTo(A.l + 8, fy); ctx.lineTo(A.l + A.w * 0.32, fy); ctx.moveTo(A.r - A.w * 0.32, fy); ctx.lineTo(A.r - 8, fy); ctx.stroke();
+  ctx.fillStyle = '#8a5f30'; for (let x = A.l + 10; x < A.l + A.w * 0.32; x += 14) ctx.fillRect(x, fy - 10, 3, 14); for (let x = A.r - A.w * 0.32; x < A.r - 8; x += 14) ctx.fillRect(x, fy - 10, 3, 14);
+  // 井戸
+  const wx = arena.x, wy = A.t + 46; ctx.fillStyle = '#8f8a80'; ctx.beginPath(); ctx.ellipse(wx, wy, 16, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#2b3550'; ctx.beginPath(); ctx.ellipse(wx, wy - 1, 11, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#7a4a22'; ctx.fillRect(wx - 15, wy - 26, 3, 24); ctx.fillRect(wx + 12, wy - 26, 3, 24); ctx.fillStyle = '#a3402a'; ctx.beginPath(); ctx.moveTo(wx - 20, wy - 24); ctx.lineTo(wx, wy - 36); ctx.lineTo(wx + 20, wy - 24); ctx.closePath(); ctx.fill();
+}
+function drawTownDecor(A, now) {
+  const cols = ['#c8392e', '#2e7bc8', '#e0a02a', '#3a9a5a'];
+  for (let i = 0; i < 4; i++) { // 屋台（しま模様の日よけ）
+    const x = A.l + A.w * (i + 0.5) / 4, y = i % 2 ? A.b - 18 : A.t + 30, w = A.w / 4 - 16;
+    ctx.fillStyle = '#7a5532'; ctx.fillRect(x - w / 2, y, w, 12);
+    for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? '#fff6e6' : cols[i]; ctx.fillRect(x - w / 2 + k * w / 6, y - 14, w / 6 + 0.5, 14); }
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(x - w / 2, y - 2, w, 3);
+    ctx.fillStyle = ['#e85c3a', '#f2d24a', '#7bd05a'][i % 3]; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(x - w / 2 + 8 + k * (w - 16) / 3, y + 4, 3.5, 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.strokeStyle = 'rgba(60,40,20,0.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(A.l, A.t + 70); ctx.quadraticCurveTo(arena.x, A.t + 92, A.r, A.t + 70); ctx.stroke(); // ちょうちんの紐
+  for (let i = 1; i < 8; i++) { const t = i / 8, x = A.l + A.w * t, y = A.t + 70 + 22 * 4 * t * (1 - t) * 0.98; const fl = 0.8 + 0.2 * Math.sin(now / 300 + i); ctx.fillStyle = `rgba(255,${150 + i * 10},80,${fl})`; ctx.beginPath(); ctx.ellipse(x, y + 6, 4, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+}
+function drawRuinsDecor(A, now) {
+  const spots = [[0.1, 0.22, 1], [0.9, 0.2, 0], [0.12, 0.8, 0], [0.88, 0.78, 1], [0.5, 0.12, 1]];
+  for (const [fx, fy, br] of spots) drawRuinPillar(A.l + A.w * fx, A.t + A.h * fy - 30, 18, br ? 22 : 36, 0, true);
+  ctx.strokeStyle = 'rgba(40,30,20,0.45)'; ctx.lineWidth = 2; // ひび割れ
+  for (const [x0, y0] of [[0.3, 0.4], [0.7, 0.6], [0.45, 0.85]]) { let x = A.l + A.w * x0, y = A.t + A.h * y0; ctx.beginPath(); ctx.moveTo(x, y); for (let k = 0; k < 4; k++) { x += 10 + (k * 7) % 9; y += (k % 2 ? -8 : 7); ctx.lineTo(x, y); } ctx.stroke(); }
+  ctx.fillStyle = 'rgba(90,140,60,0.35)'; for (const [x0, y0] of [[0.08, 0.3], [0.92, 0.28], [0.15, 0.86]]) { ctx.beginPath(); ctx.ellipse(A.l + A.w * x0, A.t + A.h * y0, 14, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+}
+function drawGraveyardDecor(A, now) {
+  const spots = [[0.12, 0.2], [0.3, 0.14], [0.7, 0.14], [0.88, 0.2], [0.1, 0.62], [0.9, 0.6], [0.2, 0.88], [0.8, 0.88]];
+  spots.forEach(([fx, fy], i) => {
+    const x = A.l + A.w * fx, y = A.t + A.h * fy;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x + 3, y + 2, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#7d7f8c'; ctx.strokeStyle = '#3e3f4a'; ctx.lineWidth = 1.5;
+    if (i % 3 === 1) { ctx.fillRect(x - 3, y - 26, 6, 26); ctx.fillRect(x - 10, y - 20, 20, 6); ctx.strokeRect(x - 3, y - 26, 6, 26); } // 十字架
+    else { ctx.beginPath(); ctx.moveTo(x - 10, y); ctx.lineTo(x - 10, y - 16); ctx.arc(x, y - 16, 10, Math.PI, 0); ctx.lineTo(x + 10, y); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#4e505c'; ctx.fillRect(x - 5, y - 15, 10, 2); ctx.fillRect(x - 4, y - 10, 8, 2); }
+  });
+  ctx.strokeStyle = '#2a2230'; ctx.lineWidth = 3; ctx.beginPath(); const tx = A.l + 14, ty = A.t + A.h * 0.42; ctx.moveTo(tx, ty + 40); ctx.lineTo(tx + 4, ty); ctx.moveTo(tx + 3, ty + 10); ctx.lineTo(tx + 22, ty - 6); ctx.moveTo(tx + 3, ty + 22); ctx.lineTo(tx + 18, ty + 18); ctx.stroke(); // 枯れ木
+}
+function drawShrineDecor(A, now) {
+  const x = arena.x, y = A.t + 66, w = Math.min(120, A.w * 0.4); // 鳥居
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - w / 2 + 4, y + 2, w, 4);
+  ctx.fillStyle = '#d8402e'; ctx.fillRect(x - w / 2 + 12, y - 48, 7, 50); ctx.fillRect(x + w / 2 - 19, y - 48, 7, 50);
+  ctx.fillRect(x - w / 2 + 4, y - 38, w - 8, 5);
+  ctx.fillStyle = '#2a2020'; ctx.beginPath(); ctx.moveTo(x - w / 2 - 6, y - 52); ctx.quadraticCurveTo(x, y - 46, x + w / 2 + 6, y - 52); ctx.lineTo(x + w / 2 + 2, y - 46); ctx.quadraticCurveTo(x, y - 41, x - w / 2 - 2, y - 46); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#d8402e'; ctx.fillRect(x - w / 2 - 2, y - 46, w + 4, 4);
+  for (const side of [-1, 1]) { // 石灯籠
+    const lx = arena.x + side * A.w * 0.36, ly = A.t + A.h * 0.42;
+    ctx.fillStyle = '#9c988c'; ctx.fillRect(lx - 3, ly - 20, 6, 20); ctx.fillRect(lx - 9, ly - 2, 18, 4); ctx.fillRect(lx - 8, ly - 30, 16, 10);
+    ctx.fillStyle = `rgba(255,200,110,${0.7 + 0.3 * Math.sin(now / 160 + side)})`; ctx.fillRect(lx - 4, ly - 27, 8, 5);
+    ctx.fillStyle = '#7d796e'; ctx.beginPath(); ctx.moveTo(lx - 12, ly - 30); ctx.lineTo(lx, ly - 38); ctx.lineTo(lx + 12, ly - 30); ctx.closePath(); ctx.fill();
+  }
+  for (const [fx, fy] of [[0.08, 0.15], [0.92, 0.14], [0.06, 0.9], [0.94, 0.88]]) { const cx = A.l + A.w * fx, cy = A.t + A.h * fy; ctx.fillStyle = 'rgba(255,180,205,0.75)'; for (let k = 0; k < 6; k++) { ctx.beginPath(); ctx.arc(cx + Math.cos(k) * 12, cy + Math.sin(k * 1.3) * 9, 9, 0, Math.PI * 2); ctx.fill(); } } // 桜の木
+}
+function drawChurchDecor(A, now) {
+  const cx = arena.x, aw = A.w * 0.18;
+  ctx.fillStyle = 'rgba(40,70,150,0.55)'; ctx.fillRect(cx - aw / 2, A.t - 10, aw, A.h + 20); // 青いじゅうたん
+  ctx.fillStyle = 'rgba(240,220,150,0.6)'; ctx.fillRect(cx - aw / 2, A.t - 10, 3, A.h + 20); ctx.fillRect(cx + aw / 2 - 3, A.t - 10, 3, A.h + 20);
+  for (let r = 0; r < 4; r++) for (const side of [-1, 1]) { // 長椅子
+    const y = A.t + A.h * (0.32 + r * 0.17), x0 = side < 0 ? A.l + 14 : cx + aw / 2 + 12, w = A.w / 2 - aw / 2 - 26;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x0 + 3, y + 3, w, 10); ctx.fillStyle = '#7a4a26'; ctx.fillRect(x0, y, w, 10); ctx.fillStyle = '#5a3418'; ctx.fillRect(x0, y - 4, w, 4);
+  }
+  const ax = cx, ay = A.t + 34; ctx.fillStyle = '#e8e0d0'; ctx.fillRect(ax - 26, ay - 8, 52, 16); ctx.fillStyle = '#d0a63a'; ctx.fillRect(ax - 2, ay - 26, 4, 18); ctx.fillRect(ax - 8, ay - 21, 16, 4); // 祭壇と十字架
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; // ステンドグラスの光
+  const cols = ['rgba(255,80,80,', 'rgba(80,140,255,', 'rgba(255,220,80,', 'rgba(100,220,140,'];
+  for (let i = 0; i < 4; i++) { const x = A.l + A.w * (0.12 + i * 0.25), a = 0.07 + 0.03 * Math.sin(now / 900 + i); ctx.fillStyle = cols[i] + a + ')'; ctx.beginPath(); ctx.moveTo(x - 10, A.t); ctx.lineTo(x + 10, A.t); ctx.lineTo(x + 40, A.t + A.h * 0.7); ctx.lineTo(x + 6, A.t + A.h * 0.7); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: drawRuinsDecor, graveyard: drawGraveyardDecor, shrine: drawShrineDecor, church: drawChurchDecor };
+{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { const d = GIMMICK_DECOR[curGimmick()]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
+{ const orig = drawGimmick; drawGimmick = function () { // 墓地は暗闇（人魂と味方のまわりだけ明るい）
+  if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
+  return orig.apply(this, arguments);
+}; }
