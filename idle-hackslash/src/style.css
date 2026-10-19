@@ -3967,3 +3967,4 @@ body:has(#newsModal.show) .run-banner, body:has(#settingsModal.show) .run-banner
 /* お知らせ・設定を開いている間：後ろの画面は隠してスクロールも止める（ヘッダーの後ろに透けないように） */
 html.panel-open, html.panel-open body { overflow: hidden !important; }
 html.panel-open .layout { visibility: hidden !important; }
+#newsModal .news-panel { --w: min(480px, calc(100vw - 4px)) !important; } #newsModal { padding-left: 0 !important; padding-right: 0 !important; } /* 設定ページと同じく横幅いっぱい */
