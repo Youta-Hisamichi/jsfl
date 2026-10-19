@@ -3844,3 +3844,23 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .seed-btns button small { display: block; font-size: 0.6rem; font-weight: 700; opacity: 0.9; line-height: 1.1; }
 .seed-btns { gap: 3px; }
 .seed-row .seed-ico { flex: none; } .seed-row .seed-ico .ico-img { width: 3.6rem !important; height: 3.6rem !important; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); } /* 使うダイアログの種アイコンは大きく */
+
+/* ドーピングの種を使った演出 */
+.seed-panel { position: relative; }
+.seed-use-fx { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: radial-gradient(circle at 50% 46%, rgba(255,140,60,0.35), rgba(0,0,0,0.55) 70%); border-radius: inherit; animation: sufBg 1.5s ease-out forwards; overflow: hidden; }
+.seed-use-fx.hp { background: radial-gradient(circle at 50% 46%, rgba(255,80,120,0.35), rgba(0,0,0,0.55) 70%); }
+.suf-rays { position: absolute; left: 50%; top: 42%; width: 300px; height: 300px; margin: -150px; border-radius: 50%; background: repeating-conic-gradient(rgba(255,230,140,0.35) 0 10deg, transparent 10deg 30deg); -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%); mask: radial-gradient(circle, #000 20%, transparent 68%); animation: sufRays 1.5s linear forwards; }
+.suf-ico { position: relative; width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 0 14px rgba(255,220,120,0.95)); animation: sufIco 0.9s cubic-bezier(.2,1.6,.4,1) both; }
+.suf-txt { position: relative; margin-top: 2px; font-size: 2.1rem; font-weight: 900; font-style: italic; color: #fff; -webkit-text-stroke: 2px #c0580a; text-shadow: 0 3px 0 #6a2400, 0 0 16px rgba(255,170,60,0.95); animation: sufTxt 0.5s cubic-bezier(.2,1.8,.4,1) 0.3s both; }
+.seed-use-fx.hp .suf-txt { -webkit-text-stroke-color: #b0204a; text-shadow: 0 3px 0 #5a0018, 0 0 16px rgba(255,90,140,0.95); }
+.suf-sub { position: relative; margin-top: 6px; padding: 3px 12px; border-radius: 999px; background: rgba(0,0,0,0.6); color: #ffe9b0; font-size: 0.75rem; font-weight: 800; animation: sufSub 0.4s ease-out 0.45s both; }
+.suf-sub b { color: #ffd76b; }
+.suf-spark { position: absolute; left: 50%; top: 40%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: #fff6c0; box-shadow: 0 0 8px #ffd76b, 0 0 14px #ffb84a; opacity: 0; animation: sufSpark 0.8s ease-out both; }
+.seed-row.seed-flash { animation: seedFlash 0.7s ease-out; }
+@keyframes sufBg { 0% { opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes sufRays { from { transform: scale(0.3) rotate(0deg); opacity: 0; } 20% { opacity: 1; } to { transform: scale(1.2) rotate(90deg); opacity: 0.6; } }
+@keyframes sufIco { 0% { transform: scale(0.2) translateY(30px); opacity: 0; } 50% { transform: scale(1.25) translateY(-6px); opacity: 1; } 100% { transform: scale(1) translateY(0); } }
+@keyframes sufTxt { from { transform: scale(2.4) rotate(-6deg); opacity: 0; } }
+@keyframes sufSub { from { transform: translateY(8px); opacity: 0; } }
+@keyframes sufSpark { 0% { transform: rotate(var(--a)) translateX(0) scale(1.4); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(0.2); opacity: 0; } }
+@keyframes seedFlash { 0% { filter: brightness(2); box-shadow: 0 0 16px #ffd76b; } 100% { filter: none; box-shadow: none; } }

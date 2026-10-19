@@ -431,9 +431,21 @@ function useSeed(k, n) {
   game.seeds[k] -= n; game.seedUsed = game.seedUsed || {}; game.seedUsed[k] = seedUsed(k) + n;
   if (typeof refreshPlayerBallStats === 'function') refreshPlayerBallStats(false);
   const S = SEEDS[k], pl = balls.find(isMainPlayerBall);
-  if (pl) { spawnDamageText(pl.x, pl.y - pl.radius - 20, `${S.icon} ${S.stat} +${n * SEED_PER_USE * 100 | 0}%`, S.col, 0.014, true); spawnHitParticles(pl.x, pl.y, S.col); }
-  playTone(523, 0.08, 'triangle', 0.07, 784); setTimeout(() => playTone(784, 0.1, 'triangle', 0.07, 1047), 90); setTimeout(() => playTone(1047, 0.16, 'triangle', 0.07, 1568), 180);
+  if (pl) { spawnDamageText(pl.x, pl.y - pl.radius - 20, `${S.stat} +${n * SEED_PER_USE * 100 | 0}%！`, S.col, 0.012, true); for (let i = 0; i < 14; i++) spawnHitParticles(pl.x + gRand(-18, 18), pl.y + gRand(-18, 18), i % 2 ? S.col : '#fff6c0'); }
+  seedUseFx(k, n);
+  try { playTone(392, 0.09, 'square', 0.05, 523); setTimeout(() => playTone(523, 0.09, 'square', 0.05, 659), 80); setTimeout(() => playTone(659, 0.09, 'square', 0.05, 784), 160); setTimeout(() => playTone(784, 0.12, 'square', 0.05, 1047), 240);
+    setTimeout(() => { playTone(1047, 0.35, 'triangle', 0.08, 2093); thump(110, 50, 0.3, 0.35); playCoinChime(9); }, 340); } catch (e) {}
+  if (typeof shakeScreenLight === 'function') setTimeout(shakeScreenLight, 340);
   updateSeedButton(); updateStatsUI(); saveGame();
+}
+function seedUseFx(k, n) { // 種を使った演出：ダイアログの中央で種がはじけて、効果を大きく表示
+  const S = SEEDS[k], host = document.querySelector('.seed-ov .seed-panel') || document.body;
+  const el = document.createElement('div'); el.className = 'seed-use-fx' + (k === 'hp' ? ' hp' : '');
+  el.innerHTML = `<div class="suf-rays"></div><img class="suf-ico" src="${S.img}" alt=""><div class="suf-txt">${S.stat} UP!</div><div class="suf-sub">${S.name}を${n}個使った　<b>+${Math.round(n * SEED_PER_USE * 100)}%</b>（合計 +${Math.round(seedUsed(k) * SEED_PER_USE * 100)}%）</div>`
+    + Array.from({ length: 16 }, (_, i) => `<i class="suf-spark" style="--a:${i * 22.5}deg;--d:${70 + (i % 3) * 26}px;animation-delay:${280 + (i % 4) * 30}ms"></i>`).join('');
+  host.appendChild(el);
+  const row = document.querySelector(`.seed-ov [data-seed="${k}"]`); const card = row && row.closest('.seed-row'); if (card) { card.classList.remove('seed-flash'); void card.offsetWidth; card.classList.add('seed-flash'); }
+  setTimeout(() => el.remove(), 1500);
 }
 const seedBtn = document.getElementById('seedBtn');
 function updateSeedButton() {
@@ -483,7 +495,12 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
   return loot;
 }; }
 // 転生で使った種の効果はリセット（持っている種はそのまま）
-{ const orig = completeReincarnation; completeReincarnation = function () { game.seedUsed = {}; const r = orig.apply(this, arguments); updateSeedButton(); return r; }; }
+// 使ったドーピングの種は、転生のときに進化の羽で還元（1個につき羽 SEED_FEATHER_REFUND 枚。転生報酬の羽に上乗せ）
+const SEED_FEATHER_REFUND = 1;
+function seedRefundFeathers() { return (seedUsed('atk') + seedUsed('hp')) * SEED_FEATHER_REFUND; }
+{ const orig = getRebirthFeatherGain; getRebirthFeatherGain = function () { return orig.apply(this, arguments) + seedRefundFeathers(); }; }
+{ const orig = completeReincarnation; completeReincarnation = function () { const used = seedUsed('atk') + seedUsed('hp'), r = orig.apply(this, arguments); game.seedUsed = {}; updateSeedButton(); if (used) setTimeout(() => showNotice(`🌱 使った種 ${used}個 → 進化の羽 +${used * SEED_FEATHER_REFUND}枚に還元！`), 600); return r; }; }
+{ const orig = rebornGoalsHtml; rebornGoalsHtml = function () { const h = orig.apply(this, arguments), used = seedUsed('atk') + seedUsed('hp'); if (!used) return h; return h.replace(/<\/div>$/, `<div class="rg-item"><img src="${SEEDS.atk.img}" alt=""><span>使った種 ${used}個 → 進化の羽 +${used * SEED_FEATHER_REFUND}枚に還元（転生報酬に込み）</span></div></div>`); }; }
 
 // ===== ショップの「所持品」タブ：持っている消耗品・宝箱・種などを一覧（使えるものはここから使う） =====
 function bagRows() {
