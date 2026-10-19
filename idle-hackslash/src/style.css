@@ -3897,3 +3897,4 @@ body .tab-page[data-tab="records"] .gen-hero { height: auto; justify-content: ce
 body .tab-page[data-tab="records"] .gen-hero .gh-npc { position: absolute; left: 0; top: 0; width: 28%; height: 100%; margin: 0; opacity: 0; }
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { flex: 0 1 380px !important; width: 100% !important; max-width: 380px; aspect-ratio: 900 / 300 !important; margin: 0 !important; padding: 0 !important; background: url(assets/img/ui/rec/title2.webp) center / 100% 100% no-repeat !important; border: none !important; }
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head > * { visibility: hidden; }
+body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 290 !important; } body .tab-page[data-tab="records"] .gen-hero { margin: 0 0 -10px !important; } /* 吹き出しとの隙間を詰める */
