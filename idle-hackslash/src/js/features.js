@@ -883,9 +883,9 @@ function startInfBounce() {
 function updateInfBounceBtn() {
   const b = document.getElementById('infBounceBtn'); if (!b) return;
   const active = holdRush && holdRush.infinite && Date.now() < holdRush.until, left = infBounceLeft();
-  const t = active ? `♾️ 反射中 ${Math.ceil((holdRush.until - Date.now()) / 1000)}s` : left > 0 ? cooldownLabel('infBounce', '♾️ 無限反射', left) : '♾️ 無限反射';
+  const t = active ? `反射中 ${Math.ceil((holdRush.until - Date.now()) / 1000)}s` : left > 0 ? cooldownLabel('infBounce', '無限反射', left) : '無限反射';
   if (b.textContent !== t) b.textContent = t;
-  b.classList.toggle('is-disabled', active || left > 0 || phase !== 'battle');
+  b.classList.toggle('is-disabled', !active && (left > 0 || phase !== 'battle')); b.classList.toggle('buffing', !!active); // 反射中は光らせる
 }
 document.getElementById('infBounceBtn').addEventListener('click', startInfBounce);
 setInterval(updateInfBounceBtn, 250); updateInfBounceBtn();

@@ -3823,3 +3823,5 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #rebornConfirmModal .reb2 #rebornConfirmTitle.long { font-size: calc(var(--u) * 25); white-space: normal; line-height: 1.15; }
 #rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 19.5); }
 #rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 18.5); padding-right: calc(var(--u) * 16); line-height: 1.45; }
+/* 無限反射スキルのボタン：専用の絵（枠ごと） */
+#skillRow.skill-strip #infBounceBtn { background: url(assets/img/ui/skill_infbounce.webp) center top / 54px 53px no-repeat !important; }
