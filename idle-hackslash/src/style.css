@@ -3921,3 +3921,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head > * { visibility: hidd
 body .tab-page[data-tab="ranking"] .gen-hero .gh-npc { position: absolute; left: 0; top: 0; width: 28%; height: 100%; margin: 0; opacity: 0; visibility: visible !important; }
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
+.skp-hero { width: 100%; max-width: 380px; margin: 0 auto 2px !important; aspect-ratio: 900 / 300 !important; background: url(assets/img/ui/skill2/title2.webp) center / 100% 100% no-repeat !important; } /* スキルのタイトル：新しい絵を中央に */
