@@ -3958,3 +3958,9 @@ body .tab-page[data-tab="companion"] .artifact-panel.gen-hero-panel::before { fi
 #newsModal .news-close { left: calc(var(--u) * (285 - 74)); width: calc(var(--u) * 460); bottom: calc(var(--u) * (199 - 133)); height: calc(var(--u) * 105); }
 #newsModal .news-item { padding-right: calc(var(--u) * 56) !important; } #newsModal .news-h { font-size: calc(var(--u) * 26) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #newsModal .news-date { font-size: calc(var(--u) * 21) !important; } #newsModal .news-new { font-size: calc(var(--u) * 17) !important; } #newsModal .news-list { margin-left: calc(var(--u) * -12) !important; margin-right: calc(var(--u) * -10) !important; }
 #newsModal .news-item.open::after { transform: translateY(-50%) !important; }
+#newsModal .news-close { bottom: calc(var(--u) * -133) !important; height: calc(var(--u) * 105) !important; } /* 閉じるボタンは下の枠（border）の中なので、マイナス位置で合わせる */
+/* お知らせも設定画面と同じく、上のヘッダーと下のタブの間に出す */
+#newsModal { z-index: 39 !important; top: var(--set-top, 48px) !important; bottom: var(--set-bot, 74px) !important; padding: 6px 4px !important; }
+body:has(#newsModal.show) #flyoutCanvas, body:has(#newsModal.show) #battleNotice, body:has(#newsModal.show) .goal-chip { visibility: hidden !important; }
+#newsModal .news-panel { max-height: 100% !important; }
+body:has(#newsModal.show) .run-banner, body:has(#settingsModal.show) .run-banner, body:has(#newsModal.show) .debug-toggle, body:has(#settingsModal.show) .debug-toggle { visibility: hidden !important; }

@@ -276,3 +276,10 @@ setTimeout(decorateSettingsPage, 0);
     if (h) m.style.setProperty('--set-top', Math.round(h.getBoundingClientRect().bottom) + 'px'); if (t) m.style.setProperty('--set-bot', Math.round(window.innerHeight - t.getBoundingClientRect().top) + 'px'); };
   const m = document.getElementById('settingsModal'); if (m) new MutationObserver(fit).observe(m, { attributes: true, attributeFilter: ['class'] }); window.addEventListener('resize', fit); }
 document.getElementById('tabBar')?.addEventListener('click', () => { const m = document.getElementById('settingsModal'); if (m && m.classList.contains('show')) document.getElementById('settingsCloseBtn')?.click(); }, true); // 設定中に下のタブを押したら設定を閉じてそのページへ
+{ const fitNews = () => { const h = document.getElementById('topHeader'), t = document.getElementById('tabBar'), m = document.getElementById('newsModal'); if (!m) return; // お知らせもヘッダーとタブの間に
+    if (h) m.style.setProperty('--set-top', Math.round(h.getBoundingClientRect().bottom) + 'px'); if (t) m.style.setProperty('--set-bot', Math.round(window.innerHeight - t.getBoundingClientRect().top) + 'px'); };
+  const nb = document.getElementById('newsBtn');
+  nb?.addEventListener('click', ev => { const m = document.getElementById('newsModal'); if (m && m.classList.contains('show')) { m.classList.remove('show'); ev.stopImmediatePropagation(); } }, true); // もう一度押すと閉じる
+  nb?.addEventListener('click', () => setTimeout(fitNews, 0));
+  window.addEventListener('resize', fitNews);
+  document.getElementById('tabBar')?.addEventListener('click', () => document.getElementById('newsModal')?.classList.remove('show'), true); }
