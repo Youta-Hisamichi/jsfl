@@ -1164,7 +1164,8 @@ const game = {
 
 
 // 転生Lv：転生前に進んだ階が深いほど多く上がる（10ステージごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
-const REBIRTH_LV_BONUS = 0.03;
+const REBIRTH_LV_BONUS = 0.03; // 旧方式（足し算）。今は使わず、転生回数の掛け算にした
+function rebirthPowerMult() { return 1 + (game.reincarnations || 0); } // 転生の効果：1回で2倍・2回で3倍・3回で4倍（攻撃力・最大HPに掛け算）
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
 const REBORN_UNLOCK_STAGE = 101, TOWER_UNLOCK_STAGE = 51; // 転生したことがなければ、転生・試練の塔はこのステージに着いてから
 function canShowReborn() { return (game.stage >= 3 || !!game.dbgRebornAlways) && isRebornUnlocked(); } // デバッグの「転生ボタン常時表示」ならステージに関係なく出す
@@ -1261,8 +1262,7 @@ function computeBonuses() {
 
   b.atkMult += game.rebirthBonus.atk;
   b.hpMult += game.rebirthBonus.hp;
-  const rlv = game.rebirthLv || 0; // 転生Lv：転生するたびに上がり、キャラの基礎能力がずっと強くなる
-  b.atkMult += rlv * REBIRTH_LV_BONUS; b.hpMult += rlv * REBIRTH_LV_BONUS;
+  { const rm = rebirthPowerMult(); b.atkMult *= rm; b.hpMult *= rm; } // 転生回数＋1倍（100階ごとに強くなる敵の壁を、転生で越えられるように）
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
   { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）

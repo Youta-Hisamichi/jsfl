@@ -464,7 +464,7 @@ function rebornGoalsHtml() {
   const next = (game.reincarnations || 0) + 1, items = [];
   COMPANION_IDS.filter(id => typeof hireRebirthNeed === 'function' && hireRebirthNeed(id) === next).forEach(id => items.push(`${companionIconHtml(id)}<span>${COMPANIONS[id].name} が採用可能に${(game.bestStage || 1) < hireStageNeed(id) ? `（＋ステージ${formatStageNumber(hireStageNeed(id))}到達）` : ''}</span>`));
   if (!(game.reincarnations > 0)) items.push('<span>🗝️ すべてのページ・試練の塔が最初から開放</span>');
-  items.push(`<span>🌌 転生Lv +${getRebirthLvGain(game.stage)}（全ステータスアップ）</span>`);
+  items.push(`<span>🌌 転生ボーナス ×${rebirthPowerMult()} → ×${rebirthPowerMult() + 1}（攻撃力・最大HP）</span>`);
   return `<div class="rg-box"><div class="rg-title">✨ 次の転生（${next}回目）で手に入るもの</div>${items.map(h => `<div class="rg-item">${h}</div>`).join('')}</div>`;
 }
 { const orig = openRebornConfirm; openRebornConfirm = function (ctx) {
