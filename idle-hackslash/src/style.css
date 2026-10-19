@@ -3920,3 +3920,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { visibility: visible 
 body .tab-page[data-tab="ranking"] .gen-hero > .page-head > * { visibility: hidden !important; }
 body .tab-page[data-tab="ranking"] .gen-hero .gh-npc { position: absolute; left: 0; top: 0; width: 28%; height: 100%; margin: 0; opacity: 0; visibility: visible !important; }
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
+body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
