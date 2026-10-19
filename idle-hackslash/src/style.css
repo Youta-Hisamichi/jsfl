@@ -3831,3 +3831,9 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #rebornConfirmModal .reb2 #rebornConfirmTitle { left: calc(var(--u) * 33); right: calc(var(--u) * 29); top: calc(var(--u) * (235 - 322)); height: calc(var(--u) * 65); padding: 0 calc(var(--u) * 10); }
 #rebornConfirmModal .reb2 #rebornConfirmTitle:not(.long) { visibility: hidden; } /* 絵に「本当に転生しますか？」が入っている */
 #rebornConfirmModal .reb2 #rebornConfirmTitle.long { font-size: calc(var(--u) * 22); line-height: 1.1; }
+/* 転生画面：パネルを画面いっぱいまで広げ、帯の右端の飾りに文字がかからないよう余白を取る */
+#rebornConfirmModal { padding-left: 4px !important; padding-right: 4px !important; }
+#rebornConfirmModal .modal-panel.reb2 { --w: min(99vw, 460px); padding-left: calc(var(--u) * 2) !important; padding-right: calc(var(--u) * 2) !important; }
+#rebornConfirmModal .reb2 .ri-sec { padding-right: calc(var(--u) * 34) !important; font-size: calc(var(--u) * 18.5); }
+#rebornConfirmModal .reb2 .rg-box { padding-right: calc(var(--u) * 34) !important; }
+#rebornConfirmModal .reb2 .reborn-reward { padding: 0 calc(var(--u) * 44) !important; gap: calc(var(--u) * 10); }
