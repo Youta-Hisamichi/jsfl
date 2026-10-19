@@ -89,7 +89,7 @@ window.__imgUrl=one;})();`;
   const distHtml = html
     .replace(IMG_RE, p => fs.existsSync(path.join(SRC, p)) ? dataUrl(p) : p) // index.html に直接書いた画像
     .replace(`<script src="${jsFiles[0]}"></script>`, () => packFiles.map(f => `<script src="${f}"></script>`).join('\n') + `\n<script>${IMG_HOOK}</script>\n<script src="${jsFiles[0]}"></script>`)
-    .replace('<link rel="stylesheet" href="style.css">', '<link rel="stylesheet" href="style.css">\n<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#1b2140">\n<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n<meta name="apple-mobile-web-app-capable" content="yes">')
+    .replace('<link rel="stylesheet" href="style.css">', '<link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="style.css"></noscript>\n<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#1b2140">\n<link rel="apple-touch-icon" href="icons/icon-192.png">\n<link rel="icon" href="icons/icon-192.png">\n<meta name="apple-mobile-web-app-capable" content="yes">')
     .replace('</body>', `<script>if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }</script>\n</body>`);
   put('index.html', distHtml);
   // ---- 容量レポート（デバッグ画面に表示）：dist/ の実ファイルを種類ごとに集計して JS に書き込む ----
