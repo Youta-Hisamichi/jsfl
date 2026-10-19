@@ -375,7 +375,22 @@ function showLogin7(day, got) {
   document.body.appendChild(ov);
   ov.querySelectorAll('.lb7-face img').forEach(fitSpriteToFace);
   playLoginBonusSound && playLoginBonusSound();
-  ov.querySelector('.lb7-ok').addEventListener('click', () => ov.remove());
+  ov.querySelector('.lb7-ok').addEventListener('click', ev => claimLogin7(ov, day, todayIco), { once: true });
+}
+function claimLogin7(ov, day, icoHtml) { // 受け取った演出：今日のマスに✔スタンプ → 中央に報酬が飛び出して「GET!」 → 少し見せてから閉じる
+  const btn = ov.querySelector('.lb7-ok'); btn.disabled = true; btn.textContent = '受け取りました！';
+  const cell = ov.querySelectorAll('.lb7-cell')[day - 1];
+  if (cell && !cell.querySelector('.lb7-chk')) { cell.classList.add('got', 'just-got'); cell.insertAdjacentHTML('beforeend', '<span class="lb7-chk lb7-stamp">✔</span>'); }
+  if (day === 7) ov.querySelector('.lb7-day7')?.classList.add('just-got');
+  const pop = document.createElement('div'); pop.className = 'lb7-claim';
+  pop.innerHTML = `<div class="lb7-claim-rays"></div><div class="lb7-claim-ico">${icoHtml}</div><div class="lb7-claim-txt">GET!</div><div class="lb7-claim-sub">${day}日目のログインボーナスを受け取りました</div>`
+    + Array.from({ length: 14 }, (_, i) => `<i class="lb7-spark" style="--a:${i * 360 / 14}deg;--d:${80 + (i % 3) * 30}px;animation-delay:${(i % 4) * 40}ms"></i>`).join('');
+  ov.appendChild(pop);
+  try { playCoinChime(5); setTimeout(() => playCoinChime(8), 140); setTimeout(() => playTone(1568, 0.25, 'triangle', 0.05, 2093), 260); } catch (e) {}
+  let closed = false;
+  const close = () => { if (closed) return; closed = true; ov.classList.add('lb7-closing'); setTimeout(() => ov.remove(), 300); };
+  setTimeout(() => pop.addEventListener('click', close), 400); // すぐ閉じたい人はタップで
+  setTimeout(close, 2000);
 }
 
 function fitSpriteToFace(img) { // 余白の多いドット絵（ペンギンなど）も、顔の丸枠いっぱいに大きく映す
@@ -484,9 +499,9 @@ function useHireTicket(id) {
   renderCompLockList(); saveGame(); return true;
 }
 
-// ===== ボス戦の動画バフ（攻撃力1.5倍・そのボス戦の間）：試練の塔に挑む直前のダイアログでだけ選べる（戦闘中に出すと誤タップするため） =====
+// ===== ボス戦の動画バフ（攻撃力2倍・そのボス戦の間）：試練の塔に挑む直前のダイアログでだけ選べる（戦闘中に出すと誤タップするため） =====
 let bossAdBuffFor = null, towerBuffPending = false;
-function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor) && isBossFight() ? 1.5 : 1; }
+function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor) && isBossFight() ? 2 : 1; }
 const towerReadyModal = document.getElementById('towerReadyModal');
 { const orig = startSkipChallenge; let pending = null, prevPhase = null;
   const close = () => { towerReadyModal.classList.remove('show'); if (phase === 'paused' && prevPhase) phase = prevPhase; prevPhase = null; };
@@ -494,7 +509,7 @@ const towerReadyModal = document.getElementById('towerReadyModal');
   startSkipChallenge = function (challenge) {
     pending = challenge; prevPhase = phase === 'battle' ? 'battle' : null; if (prevPhase) phase = 'paused'; // 見ている間は一時停止
     document.getElementById('towerReadyText').innerHTML = `<b>ステージ${formatStageNumber(challenge.target)}</b> のボスに挑みます。`;
-    document.getElementById('towerReadyAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'} 攻撃力1.5倍で挑む`;
+    document.getElementById('towerReadyAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'} 攻撃力2倍で挑む`;
     towerReadyModal.classList.add('show');
   };
   document.getElementById('towerReadyGoBtn').addEventListener('click', () => go(false));
@@ -502,13 +517,13 @@ const towerReadyModal = document.getElementById('towerReadyModal');
   document.getElementById('towerReadyAdBtn').addEventListener('click', () => {
     if (!pending) return;
     if (isAdFree()) { go('free'); return; }
-    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); go(true); }, '、このボス戦の間 攻撃力が1.5倍になります');
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); go(true); }, '、このボス戦の間 攻撃力が2倍になります');
   });
 }
 function applyTowerBuff() { // 塔のボスが出たら、選んでいた動画バフをかける
   if (!towerBuffPending) return; const kind = towerBuffPending; towerBuffPending = false;
   const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss) return;
-  bossAdBuffFor = boss; if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力1.5倍！', '#ffd76b', 0.012, true); playBossFanfare(0);
+  bossAdBuffFor = boss; if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力2倍！', '#ffd76b', 0.012, true); playBossFanfare(0);
 }
 function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(isMainPlayerBall); if (b) { ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💪', b.x + b.radius, b.y - b.radius); ctx.restore(); } } }
 
