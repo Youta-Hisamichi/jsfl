@@ -3823,8 +3823,6 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #rebornConfirmModal .reb2 #rebornConfirmTitle.long { font-size: calc(var(--u) * 25); white-space: normal; line-height: 1.15; }
 #rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 19.5); }
 #rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 18.5); padding-right: calc(var(--u) * 16); line-height: 1.45; }
-/* 無限反射スキルのボタン：専用の絵（枠ごと） */
-#skillRow.skill-strip #infBounceBtn { background: url(assets/img/ui/skill_infbounce.webp) center top / 54px 53px no-repeat !important; }
 /* 転生画面：ヘッダーは添付の絵（タイトル文字入り）。長い見出しのときだけ文字なしの帯に文字を重ねる */
 #rebornConfirmModal .modal-panel.reb2 { border-width: calc(var(--u) * 322) calc(var(--u) * 44) calc(var(--u) * 48) !important; border-image: url(assets/img/ui/reb/frame.webp) 322 44 48 fill / calc(var(--u) * 322) calc(var(--u) * 44) calc(var(--u) * 48) stretch !important; }
 #rebornConfirmModal .modal-panel.reb2:has(#rebornConfirmTitle.long) { border-image-source: url(assets/img/ui/reb/frame_blank.webp) !important; }

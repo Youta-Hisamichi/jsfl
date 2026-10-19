@@ -867,26 +867,3 @@ document.addEventListener('click', ev => {
   updateStatsUI(); renderCoinShopList(); saveGame();
 });
 
-// ===== 最初から使えるスキル「無限反射」：10秒間、減速せずに跳ね回り続ける（5分チャージ） =====
-const INF_BOUNCE_MS = 10000, INF_BOUNCE_CD = 5 * 60 * 1000;
-function infBounceLeft() { return Math.max(0, INF_BOUNCE_CD - (Date.now() - (game.infBounceAt || 0))); }
-function startInfBounce() {
-  if (phase !== 'battle' || infBounceLeft() > 0) return;
-  const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const en = nearestOf(pl, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
-  const ang = en ? Math.atan2(en.y - pl.y, en.x - pl.x) : Math.random() * Math.PI * 2;
-  launchPull(ang, 1);
-  if (holdRush) { holdRush.infinite = true; holdRush.dur = INF_BOUNCE_MS; holdRush.until = Date.now() + INF_BOUNCE_MS; holdRush.speed = Math.max(holdRush.speed, 15); }
-  game.infBounceAt = Date.now(); saveGame();
-  showNotice('♾️ 無限反射！ 10秒間 跳ね回り続ける！'); shakeScreenLight(); updateInfBounceBtn();
-}
-function updateInfBounceBtn() {
-  const b = document.getElementById('infBounceBtn'); if (!b) return;
-  const active = holdRush && holdRush.infinite && Date.now() < holdRush.until, left = infBounceLeft();
-  const t = active ? `反射中 ${Math.ceil((holdRush.until - Date.now()) / 1000)}s` : left > 0 ? cooldownLabel('infBounce', '無限反射', left) : '無限反射';
-  if (b.textContent !== t) b.textContent = t;
-  b.classList.toggle('is-disabled', !active && (left > 0 || phase !== 'battle')); b.classList.toggle('buffing', !!active); // 反射中は光らせる
-}
-document.getElementById('infBounceBtn').addEventListener('click', startInfBounce);
-{ const orig = resetAllSkillCooldowns; resetAllSkillCooldowns = function () { orig.apply(this, arguments); if (!(holdRush && holdRush.infinite && Date.now() < holdRush.until)) game.infBounceAt = 0; updateInfBounceBtn(); }; } // スキル全快ポーションで無限反射の待ち時間も消す
-setInterval(updateInfBounceBtn, 250); updateInfBounceBtn();
