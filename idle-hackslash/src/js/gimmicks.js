@@ -21,10 +21,10 @@ const GIMMICKS = {
   castle:    { name: '王城の決戦', icon: '🏰', desc: 'シャンデリアが落ちて敵に大ダメージ。コイン×1.3', coin: 1.3, tint: 'rgba(40,10,6,0.12)' },
   village:   { name: 'のどかな村', icon: '🏡', desc: '逃げまわるニワトリにさわるとコイン', coin: 1.1 },
   town:      { name: 'にぎわう城下町', icon: '🏘️', desc: '落とし物の財布を拾おう。コイン×1.4', coin: 1.4 },
-  ruins:     { name: '古代遺跡', icon: '🏛️', desc: '石柱が倒れて敵に大ダメージ。コイン×1.2', coin: 1.2, tint: 'rgba(60,40,10,0.08)' },
-  graveyard: { name: '真夜中の墓地', icon: '🪦', desc: '暗い墓場。人魂を集めるとコイン', coin: 1.3, tint: 'rgba(20,6,40,0.18)' },
+  ruins:     { name: '古代遺跡', icon: '🏛️', desc: '石柱が倒れて敵に大ダメージ。コイン×1.2', coin: 1.2 },
+  graveyard: { name: '真夜中の墓地', icon: '🪦', desc: '暗い墓場。人魂を集めるとコイン', coin: 1.3 },
   shrine:    { name: '森の祠', icon: '⛩️', desc: '桜が舞う。お守りを拾うとコイン', coin: 1.1 },
-  church:    { name: '祈りの教会', icon: '⛪', desc: '聖なる光が敵を打つ。コイン×1.2', coin: 1.2, tint: 'rgba(255,240,200,0.06)' },
+  church:    { name: '祈りの教会', icon: '⛪', desc: '聖なる光が敵を打つ。コイン×1.2', coin: 1.2 },
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
@@ -556,9 +556,14 @@ function drawChandelier(x, y, a) {
 { const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { if (curGimmick() === 'castle') { ctx.save(); arenaPath(); ctx.clip(); drawCastleHall(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; } // 王の間の飾りは床と一緒に（キャラの下に）描く
 
 // ===== 村・町・遺跡・墓地・祠・教会のステージ（床の上に建物などを描き、それぞれの小さな遊びを足す） =====
-const GIMMICK_FLOORS = { village: 'lawn', town: 'town', ruins: 'ruins', graveyard: 'dirt', shrine: 'mossStone', church: 'brick' };
+const GIMMICK_FLOORS = { village: 'st_village', town: 'st_town', ruins: 'st_ruins', graveyard: 'st_graveyard', shrine: 'st_shrine', church: 'st_church' };
+const STAGE_ART = {}; // 背景の一枚絵と小物の絵（読み込めるまでは床タイル＋プログラムで描いた飾りで代用）
+['village', 'town', 'ruins', 'graveyard', 'shrine', 'church'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/bg_${k}.webp`; STAGE_ART['bg_' + k] = im; });
+['chicken', 'chicken2', 'coins', 'purse', 'pillar', 'wisp', 'wisp2', 'omamori', 'holy'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/${k}.webp`; STAGE_ART[k] = im; });
+function stageArt(k) { const im = STAGE_ART[k]; return im && im.complete && im.naturalWidth ? im : null; }
+function drawStageSprite(k, x, y, h, flip = false) { const im = stageArt(k); if (!im) return false; const w = h * im.naturalWidth / im.naturalHeight; ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); return true; }
 { const orig = getFloorKey; getFloorKey = function (stage) { const k = typeof gimmickForStage === 'function' && gimmickForStage(stage); return GIMMICK_FLOORS[k] || orig.apply(this, arguments); }; }
-function gWanderer(A, kind) { const a = Math.random() * Math.PI * 2; return { kind, x: gRand(A.l + 30, A.r - 30), y: gRand(A.t + 40, A.b - 40), vx: Math.cos(a), vy: Math.sin(a), ph: Math.random() * 6, turnAt: 0 }; }
+function gWanderer(A, kind) { const a = Math.random() * Math.PI * 2; return { kind, alt: Math.random() < 0.4, x: gRand(A.l + 30, A.r - 30), y: gRand(A.t + 40, A.b - 40), vx: Math.cos(a), vy: Math.sin(a), ph: Math.random() * 6, turnAt: 0 }; }
 { const orig = setupGimmick; setupGimmick = function (key) {
   const before = gm.id; orig.apply(this, arguments); if (gm.id === before || !gm.key) return;
   const A = gArea();
@@ -619,6 +624,10 @@ function holyStrike(f) { // 教会：聖なる光の柱が敵を打つ
   return orig.apply(this, arguments);
 }; }
 { const orig = drawGimmickItem; drawGimmickItem = function (it, now) {
+  if (it.kind === 'chicken' && stageArt('chicken')) { const hop = Math.abs(Math.sin(it.ph * 2)) * 3; ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(it.x, it.y + 10, 10, 3, 0, 0, Math.PI * 2); ctx.fill(); drawStageSprite(it.alt ? 'chicken2' : 'chicken', it.x, it.y - hop, 26, it.vx > 0); return; }
+  if (it.kind === 'wisp' && stageArt('wisp')) { const a = 0.75 + 0.25 * Math.sin(it.ph * 2); ctx.save(); ctx.globalAlpha = a; ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(gGlow(it.alt ? 270 : 210, 65), it.x - 18, it.y - 18, 36, 36); ctx.restore(); ctx.save(); ctx.globalAlpha = a; drawStageSprite(it.alt ? 'wisp2' : 'wisp', it.x, it.y - 4, 30); ctx.restore(); return; }
+  if (it.kind === 'purse' && stageArt('purse')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(it.x, it.y + 10, 11, 3, 0, 0, Math.PI * 2); ctx.fill(); drawStageSprite('purse', it.x, it.y + Math.sin(now / 200 + it.x) * 1.5, 22); drawStageSprite('coins', it.x + 10, it.y + 6, 12); ctx.globalAlpha = 1; return; }
+  if (it.kind === 'omamori' && stageArt('omamori')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.save(); ctx.shadowColor = '#ffd0e0'; ctx.shadowBlur = 10; drawStageSprite('omamori', it.x, it.y + Math.sin(it.ph) * 2, 30); ctx.restore(); ctx.globalAlpha = 1; return; }
   if (it.kind === 'chicken') {
     const hop = Math.abs(Math.sin(it.ph * 2)) * 3, x = it.x, y = it.y - hop, f = it.vx < 0 ? -1 : 1;
     ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(x, it.y + 8, 9, 3, 0, 0, Math.PI * 2); ctx.fill();
@@ -658,6 +667,7 @@ function holyStrike(f) { // 教会：聖なる光の柱が敵を打つ
   if (f.kind === 'petal') { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.fillStyle = 'rgba(255,190,210,0.9)'; ctx.beginPath(); ctx.ellipse(0, 0, f.s, f.s * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); return; }
   if (f.kind === 'holyWarn') { const p = f.t / 50; ctx.strokeStyle = `rgba(255,240,170,${0.35 + p * 0.55})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke();
     ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(now / 600); ctx.strokeStyle = `rgba(255,230,140,${0.3 + p * 0.5})`; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); ctx.lineTo(Math.cos(a + Math.PI * 2 / 3) * 18, Math.sin(a + Math.PI * 2 / 3) * 18); } ctx.stroke(); ctx.restore(); return; }
+  if (f.kind === 'holyBeam' && stageArt('holy')) { const A = gArea(), im = stageArt('holy'), h = f.y - A.t + 40, w = Math.max(44, h * 0.3) * (0.7 + f.life * 0.5); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(1, f.life * 1.6); ctx.drawImage(im, f.x - w / 2, A.t - 10, w, h + 10); ctx.globalAlpha = f.life; ctx.drawImage(gGlow(48, 80), f.x - 40, f.y - 40, 80, 80); ctx.restore(); return; }
   if (f.kind === 'holyBeam') { const A = gArea(), w = 30 * (0.6 + f.life * 0.6); ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createLinearGradient(f.x - w, 0, f.x + w, 0); g.addColorStop(0, 'rgba(255,240,180,0)'); g.addColorStop(0.5, `rgba(255,250,220,${0.85 * f.life})`); g.addColorStop(1, 'rgba(255,240,180,0)');
     ctx.fillStyle = g; ctx.fillRect(f.x - w, A.t - 10, w * 2, f.y - A.t + 10);
@@ -666,7 +676,7 @@ function holyStrike(f) { // 教会：聖なる光の柱が敵を打つ
     const p = f.t / 50, A = gArea(), y = A.t - 40 + (f.y - A.t + 40) * p * p;
     ctx.strokeStyle = `rgba(255,170,80,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 18 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
-    drawRuinPillar(f.x, y - 20, 16, 40, 0.3 * (1 - p)); return;
+    if (!drawStageSprite('pillar', f.x, y - 22, 46)) drawRuinPillar(f.x, y - 20, 16, 40, 0.3 * (1 - p)); return;
   }
   return orig.apply(this, arguments);
 }; }
@@ -758,8 +768,11 @@ function drawChurchDecor(A, now) {
   ctx.restore();
 }
 const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: drawRuinsDecor, graveyard: drawGraveyardDecor, shrine: drawShrineDecor, church: drawChurchDecor };
-{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { const d = GIMMICK_DECOR[curGimmick()]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
+{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { const key = curGimmick(), bg = key && stageArt('bg_' + key); if (bg) { // 背景の一枚絵を戦う場所いっぱいに（はみ出す分は上下を切る）
+      const A = gArea(), s = Math.max(A.w / bg.naturalWidth, A.h / bg.naturalHeight), w = bg.naturalWidth * s, h = bg.naturalHeight * s;
+      ctx.save(); arenaPath(); ctx.clip(); ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
+    const d = GIMMICK_DECOR[key]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
 { const orig = drawGimmick; drawGimmick = function () { // 墓地は暗闇（人魂と味方のまわりだけ明るい）
-  if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
+  if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), stageArt('bg_graveyard') ? 'rgba(8,4,26,0.35)' : 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
   return orig.apply(this, arguments);
 }; }
