@@ -3911,3 +3911,5 @@ body #settingsModal .gen-hero-panel .gen-hero > .page-head > * { visibility: hid
 /* 設定画面はほかのページと同じく、上のヘッダーと下のタブの間に出す */
 #settingsModal { z-index: 39 !important; top: var(--set-top, 48px) !important; bottom: var(--set-bot, 74px) !important; background: #0a0c22 !important; }
 #settingsModal .settings-page.st2 { padding-top: 6px !important; }
+body #settingsModal .st2 .gen-hero { background: none !important; aspect-ratio: auto !important; margin: 4px 0 -2px !important; } /* 古いタイトル絵（gen-hero の背景）を消して、新しい絵だけにする */
+body #settingsModal .st2 .gen-hero > .page-head { visibility: visible !important; }
