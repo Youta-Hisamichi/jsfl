@@ -484,29 +484,36 @@ function useHireTicket(id) {
   renderCompLockList(); saveGame(); return true;
 }
 
-// ===== ボス戦前の動画バフ（攻撃力1.5倍・そのボス戦の間） =====
-let bossAdBuffFor = null, bossAdOfferFor = null;
+// ===== ボス戦の動画バフ（攻撃力1.5倍・そのボス戦の間）：試練の塔に挑む直前のダイアログでだけ選べる（戦闘中に出すと誤タップするため） =====
+let bossAdBuffFor = null, towerBuffPending = false;
 function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor) && isBossFight() ? 1.5 : 1; }
-function offerBossAdBuff() {
-  const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss || bossAdOfferFor === boss) return;
-  bossAdOfferFor = boss;
-  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
-  let btn = document.getElementById('bossAdBuffBtn');
-  if (!btn) { btn = document.createElement('button'); btn.id = 'bossAdBuffBtn'; btn.className = 'boss-ad-buff'; wrap.appendChild(btn); }
-  btn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画で'}<b>攻撃力1.5倍</b><small>このボス戦の間</small>`;
-  btn.classList.add('show');
-  const hide = () => btn.classList.remove('show');
-  clearTimeout(btn._t); btn._t = setTimeout(hide, 8000);
-  btn.onclick = ev => {
-    ev.stopPropagation(); hide();
-    const give = () => { bossAdBuffFor = boss; questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力1.5倍！', '#ffd76b', 0.012, true); playBossFanfare(0); };
-    if (isAdFree()) give(); else playRewardedVideo(() => { rewardAdModal.classList.remove('show'); give(); }, '、このボス戦の間 攻撃力が1.5倍になります');
+const towerReadyModal = document.getElementById('towerReadyModal');
+{ const orig = startSkipChallenge; let pending = null, prevPhase = null;
+  const close = () => { towerReadyModal.classList.remove('show'); if (phase === 'paused' && prevPhase) phase = prevPhase; prevPhase = null; };
+  const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); towerBuffPending = buff; orig(ch); };
+  startSkipChallenge = function (challenge) {
+    pending = challenge; prevPhase = phase === 'battle' ? 'battle' : null; if (prevPhase) phase = 'paused'; // 見ている間は一時停止
+    document.getElementById('towerReadyText').innerHTML = `<b>ステージ${formatStageNumber(challenge.target)}</b> のボスに挑みます。`;
+    document.getElementById('towerReadyAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'} 攻撃力1.5倍で挑む`;
+    towerReadyModal.classList.add('show');
   };
+  document.getElementById('towerReadyGoBtn').addEventListener('click', () => go(false));
+  document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); });
+  document.getElementById('towerReadyAdBtn').addEventListener('click', () => {
+    if (!pending) return;
+    if (isAdFree()) { go('free'); return; }
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); go(true); }, '、このボス戦の間 攻撃力が1.5倍になります');
+  });
+}
+function applyTowerBuff() { // 塔のボスが出たら、選んでいた動画バフをかける
+  if (!towerBuffPending) return; const kind = towerBuffPending; towerBuffPending = false;
+  const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss) return;
+  bossAdBuffFor = boss; if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力1.5倍！', '#ffd76b', 0.012, true); playBossFanfare(0);
 }
 function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(isMainPlayerBall); if (b) { ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💪', b.x + b.radius, b.y - b.radius); ctx.restore(); } } }
 
 // ===== 既存処理へのフック =====
-{ const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); offerBossAdBuff(); }, BOSS_WARNING_MS + 600); }; }
+{ const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); applyTowerBuff(); }, BOSS_WARNING_MS + 600); }; }
 { const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pool[Math.floor(Math.random() * pool.length)], 2600); } } }; }
 { const orig = playRewardedVideo; playRewardedVideo = function (done, txt) { return orig(() => { questTick('ad'); done(); }, txt); }; }
 { const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
