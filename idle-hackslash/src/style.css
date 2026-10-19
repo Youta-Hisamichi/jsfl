@@ -3864,3 +3864,4 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 @keyframes sufSub { from { transform: translateY(8px); opacity: 0; } }
 @keyframes sufSpark { 0% { transform: rotate(var(--a)) translateX(0) scale(1.4); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(0.2); opacity: 0; } }
 @keyframes seedFlash { 0% { filter: brightness(2); box-shadow: 0 0 16px #ffd76b; } 100% { filter: none; box-shadow: none; } }
+.seed-btns { flex-direction: column-reverse !important; } /* 上から 全部・10%使う・1個使う */
