@@ -2982,7 +2982,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 /* ショップの背景：浮遊城を望む魔法の道具屋 */
 .tab-page[data-tab="gemshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,8,30,0.1) 0px, rgba(10,8,30,0.3) 360px, rgba(10,8,28,0.75) 520px, #0c0a1e 600px, #0c0a1e 100%), url(assets/img/ui/rb/shop_bg.webp) 50% 0 / 100% auto no-repeat, #0c0a1e !important; border-color: #6a5a9a !important; }
 /* 仲間ページの背景：星空の城を望む大広間 */
-.tab-page[data-tab="companion"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,12,34,0.15) 0px, rgba(8,12,34,0.45) 380px, rgba(8,12,34,0.8) 640px, #0a0f22 820px, #0a0f22 100%), url(assets/img/ui/rb/comp_bg.webp) 50% 0 / 100% auto no-repeat, #0a0f22 !important; }
+.tab-page[data-tab="companion"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,12,34,0.15) 0px, rgba(8,12,34,0.45) 380px, rgba(8,12,34,0.8) 640px, #0a0f22 820px, #0a0f22 100%), url(assets/img/ui/rb/comp_bg_lt.webp) 50% 0 / 100% auto no-repeat, #0a0f22 !important; }
 /* 戦績ページの背景：夕陽の白亜城 */
 .tab-page[data-tab="records"] > .artifact-panel { background: linear-gradient(180deg, rgba(30,16,4,0.1) 0px, rgba(30,16,4,0.3) 480px, rgba(24,14,4,0.75) 700px, #140e06 800px, #140e06 100%), url(assets/img/ui/rb/records_bg.webp) 50% 0 / 100% auto no-repeat, #140e06 !important; border-color: #8a6a30 !important; }
 /* ランキングページの背景：赤の王の間 */
@@ -3922,3 +3922,6 @@ body .tab-page[data-tab="ranking"] .gen-hero .gh-npc { position: absolute; left:
 body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 300 !important; }
 .skp-hero { width: 100%; max-width: 380px; margin: 0 auto 2px !important; aspect-ratio: 900 / 300 !important; background: url(assets/img/ui/skill2/title2.webp) center / 100% 100% no-repeat !important; } /* スキルのタイトル：新しい絵を中央に */
+/* 仲間ページの背景を明るく（暗くするフィルターを外し、上に重ねる影を薄く） */
+body .tab-page[data-tab="companion"] .artifact-panel.gen-hero-panel::before { filter: brightness(1.05) saturate(1.05) !important; opacity: 1 !important; }
+.tab-page[data-tab="companion"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,12,34,0) 0px, rgba(8,12,34,0.15) 380px, rgba(8,12,34,0.55) 640px, #0a0f22 820px, #0a0f22 100%), url(assets/img/ui/rb/comp_bg_lt.webp) 50% 0 / 100% auto no-repeat, #0a0f22 !important; }
