@@ -513,7 +513,7 @@ const towerReadyModal = document.getElementById('towerReadyModal');
     towerReadyModal.classList.add('show');
   };
   document.getElementById('towerReadyGoBtn').addEventListener('click', () => go(false));
-  document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); });
+  document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); if (phase === 'battle' && !game.skipChallenge) { renderStageSkipList(); stageSkipModal.classList.add('show'); } }); // やめたら塔の階選びに戻る
   document.getElementById('towerReadyAdBtn').addEventListener('click', () => {
     if (!pending) return;
     if (isAdFree()) { go('free'); return; }
