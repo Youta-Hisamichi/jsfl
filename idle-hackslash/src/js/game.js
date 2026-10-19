@@ -1540,7 +1540,8 @@ stageSkipModal.addEventListener('click', event => { if (event.target === stageSk
 // スキルの待ち時間はジェムではリセットしない。ショップの「スキル全快ポーション」で全部まとめてリセットする
 function isSkillResetPending() { return false; }
 function cooldownLabel(key, label, remaining) {
-  return `${label}\n${Math.ceil(remaining / 1000)}秒`; // スキル名と残り秒数だけ
+  const s = Math.ceil(remaining / 1000), m = Math.floor(s / 60);
+  return `${label}\n${m ? `${m}分${String(s % 60).padStart(2, '0')}秒` : `${s}秒`}`; // スキル名と残り時間（1分以上は「4分50秒」）
 }
 function tryGemResetSkill() {} // 待ち時間中のタップは何もしない
 const SKILL_LAST_SETTERS = [v => { lastSpecialAt = v; }, v => { lastAccelAt = v; }, v => { lastHealAt = v; }, v => { lastBarrierAt = v; }, v => { lastHomingAt = v; }, v => { lastPoisonAt = v; }, v => { lastParalyzeAt = v; }, v => { lastSleepAt = v; }, v => { lastAtkUpAt = v; }, v => { lastRegenAt = v; }, v => { lastSilenceAt = v; }, v => { lastSacrificeAt = v; }, v => { lastDeathAt = v; }, v => { lastCoinStrikeAt = v; }, v => { lastZeniAt = v; }, v => { lastMysteryAt = v; }, v => { lastCompRushAt = v; }, v => { lastNovaAt = v; }, v => { lastBlastAt = v; }, v => { lastHalveAt = v; }];

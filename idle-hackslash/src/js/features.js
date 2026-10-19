@@ -888,4 +888,5 @@ function updateInfBounceBtn() {
   b.classList.toggle('is-disabled', !active && (left > 0 || phase !== 'battle')); b.classList.toggle('buffing', !!active); // 反射中は光らせる
 }
 document.getElementById('infBounceBtn').addEventListener('click', startInfBounce);
+{ const orig = resetAllSkillCooldowns; resetAllSkillCooldowns = function () { orig.apply(this, arguments); if (!(holdRush && holdRush.infinite && Date.now() < holdRush.until)) game.infBounceAt = 0; updateInfBounceBtn(); }; } // スキル全快ポーションで無限反射の待ち時間も消す
 setInterval(updateInfBounceBtn, 250); updateInfBounceBtn();
