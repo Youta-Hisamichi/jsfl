@@ -544,6 +544,7 @@ function drawCastleHall(A, now) {
   }
 }
 function drawChandelier(x, y, a) {
+  if (typeof stageArt === 'function' && stageArt('chandelier')) { ctx.save(); ctx.globalAlpha = a; drawStageSprite('chandelier', x, y - 10, 84); ctx.restore(); return; } // 王城の絵のシャンデリア
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
   ctx.strokeStyle = '#7a5a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -60); ctx.lineTo(0, -10); ctx.stroke();
   ctx.fillStyle = '#d9a93f'; ctx.strokeStyle = '#6a4a10'; ctx.lineWidth = 2;
@@ -553,13 +554,13 @@ function drawChandelier(x, y, a) {
   ctx.restore();
 }
 { const orig = getFloorKey; getFloorKey = function (stage) { return typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'castle' ? 'redCarpet' : orig.apply(this, arguments); }; } // 王城は赤じゅうたんの床
-{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { if (curGimmick() === 'castle') { ctx.save(); arenaPath(); ctx.clip(); drawCastleHall(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; } // 王の間の飾りは床と一緒に（キャラの下に）描く
+{ const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { if (curGimmick() === 'castle' && !(typeof stageArt === 'function' && stageArt('bg_castle'))) { ctx.save(); arenaPath(); ctx.clip(); drawCastleHall(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; } // 王の間の飾りは床と一緒に（キャラの下に）描く
 
 // ===== 村・町・遺跡・墓地・祠・教会のステージ（床の上に建物などを描き、それぞれの小さな遊びを足す） =====
 const GIMMICK_FLOORS = { village: 'st_village', town: 'st_town', ruins: 'st_ruins', graveyard: 'st_graveyard', shrine: 'st_shrine', church: 'st_church' };
 const STAGE_ART = {}; // 背景の一枚絵と小物の絵（読み込めるまでは床タイル＋プログラムで描いた飾りで代用）
-['village', 'town', 'ruins', 'graveyard', 'shrine', 'church'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/bg_${k}.webp`; STAGE_ART['bg_' + k] = im; });
-['chicken', 'chicken2', 'coins', 'purse', 'pillar', 'wisp', 'wisp2', 'omamori', 'holy'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/${k}.webp`; STAGE_ART[k] = im; });
+['village', 'town', 'ruins', 'graveyard', 'shrine', 'church', 'castle'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/bg_${k}.webp`; STAGE_ART['bg_' + k] = im; });
+['chicken', 'chicken2', 'coins', 'purse', 'pillar', 'wisp', 'wisp2', 'omamori', 'holy', 'chandelier'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/${k}.webp`; STAGE_ART[k] = im; });
 function stageArt(k) { const im = STAGE_ART[k]; return im && im.complete && im.naturalWidth ? im : null; }
 function drawStageSprite(k, x, y, h, flip = false) { const im = stageArt(k); if (!im) return false; const w = h * im.naturalWidth / im.naturalHeight; ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); return true; }
 { const orig = getFloorKey; getFloorKey = function (stage) { const k = typeof gimmickForStage === 'function' && gimmickForStage(stage); return GIMMICK_FLOORS[k] || orig.apply(this, arguments); }; }
