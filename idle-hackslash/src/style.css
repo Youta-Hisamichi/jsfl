@@ -3968,3 +3968,4 @@ body:has(#newsModal.show) .run-banner, body:has(#settingsModal.show) .run-banner
 html.panel-open, html.panel-open body { overflow: hidden !important; }
 html.panel-open .layout { visibility: hidden !important; }
 #newsModal .news-panel { --w: min(480px, calc(100vw - 4px)) !important; } #newsModal { padding-left: 0 !important; padding-right: 0 !important; } /* 設定ページと同じく横幅いっぱい */
+#newsModal .news-item { flex-shrink: 0 !important; } /* 高さが足りないときも記事は縮めず、一覧をスクロールさせる */
