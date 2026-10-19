@@ -651,8 +651,8 @@ function holyStrike(f) { // 教会：聖なる光の柱が敵を打つ
 { const orig = drawGimmickItem; drawGimmickItem = function (it, now) {
   if (it.kind === 'chicken' && stageArt('chicken')) { const hop = Math.abs(Math.sin(it.ph * 2)) * 3; ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(it.x, it.y + 10, 10, 3, 0, 0, Math.PI * 2); ctx.fill(); drawStageSprite(it.alt ? 'chicken2' : 'chicken', it.x, it.y - hop, 26, it.vx > 0); return; }
   if (it.kind === 'wisp' && stageArt('wisp')) { const a = 0.75 + 0.25 * Math.sin(it.ph * 2); ctx.save(); ctx.globalAlpha = a; ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(gGlow(it.alt ? 270 : 210, 65), it.x - 18, it.y - 18, 36, 36); ctx.restore(); ctx.save(); ctx.globalAlpha = a; drawStageSprite(it.alt ? 'wisp2' : 'wisp', it.x, it.y - 4, 30); ctx.restore(); return; }
-  if (it.kind === 'purse' && stageArt('purse')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(it.x, it.y + 10, 11, 3, 0, 0, Math.PI * 2); ctx.fill(); drawStageSprite('purse', it.x, it.y + Math.sin(now / 200 + it.x) * 1.5, 22); drawStageSprite('coins', it.x + 10, it.y + 6, 12); ctx.globalAlpha = 1; return; }
-  if (it.kind === 'omamori' && stageArt('omamori')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.save(); ctx.shadowColor = '#ffd0e0'; ctx.shadowBlur = 10; drawStageSprite('omamori', it.x, it.y + Math.sin(it.ph) * 2, 30); ctx.restore(); ctx.globalAlpha = 1; return; }
+  if (it.kind === 'purse' && stageArt('purse')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(it.x, it.y + 10, 11, 3, 0, 0, Math.PI * 2); ctx.fill(); drawStageSprite('purse', it.x, it.y + Math.sin(now / 200 + it.x) * 1.5, 24); drawStageSprite('coins', it.x + 10, it.y + 6, 12); ctx.globalAlpha = 1; return; }
+  if (it.kind === 'omamori' && stageArt('omamori')) { ctx.globalAlpha = Math.min(1, it.life * 4); ctx.save(); ctx.shadowColor = '#ffd0e0'; ctx.shadowBlur = 10; drawStageSprite('omamori', it.x, it.y + Math.sin(it.ph) * 2, 34); ctx.restore(); ctx.globalAlpha = 1; return; }
   if (it.kind === 'chicken') {
     const hop = Math.abs(Math.sin(it.ph * 2)) * 3, x = it.x, y = it.y - hop, f = it.vx < 0 ? -1 : 1;
     ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(x, it.y + 8, 9, 3, 0, 0, Math.PI * 2); ctx.fill();
@@ -795,7 +795,7 @@ function drawChurchDecor(A, now) {
 const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: drawRuinsDecor, graveyard: drawGraveyardDecor, shrine: drawShrineDecor, church: drawChurchDecor };
 { const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { const key = curGimmick(), bg = key && stageArt('bg_' + key); if (bg) { // 背景の一枚絵を戦う場所いっぱいに（はみ出す分は上下を切る）
       const A = gArea(), s = Math.max(A.w / bg.naturalWidth, A.h / bg.naturalHeight), w = bg.naturalWidth * s, h = bg.naturalHeight * s;
-      ctx.save(); arenaPath(); ctx.clip(); ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
+      ctx.save(); arenaPath(); ctx.clip(); if (key !== 'castle') ctx.imageSmoothingEnabled = false; /* ドット絵の背景はぼかさずにくっきり拡大 */ ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
     const d = GIMMICK_DECOR[key]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
 { const orig = drawGimmick; drawGimmick = function () { // 墓地は暗闇（人魂と味方のまわりだけ明るい）
   if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), stageArt('bg_graveyard') ? 'rgba(8,4,26,0.35)' : 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
