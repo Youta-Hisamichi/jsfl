@@ -3899,3 +3899,4 @@ body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { flex
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head > * { visibility: hidden; }
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 290 !important; } body .tab-page[data-tab="records"] .gen-hero { margin: 0 0 -10px !important; } /* 吹き出しとの隙間を詰める */
 .tab-page[data-tab="gemshop"] .shop-banner { aspect-ratio: 900 / 300 !important; max-width: 380px !important; background-image: url(assets/img/ui/shop/title2.webp) !important; } /* ショップのタイトル：店員つきの一枚絵 */
+.tab-page[data-tab="gemshop"] .shop-hero { justify-content: center !important; margin-left: 0 !important; margin-right: 0 !important; } /* タイトルは中央 */
