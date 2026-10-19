@@ -3865,3 +3865,25 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 @keyframes sufSpark { 0% { transform: rotate(var(--a)) translateX(0) scale(1.4); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(0.2); opacity: 0; } }
 @keyframes seedFlash { 0% { filter: brightness(2); box-shadow: 0 0 16px #ffd76b; } 100% { filter: none; box-shadow: none; } }
 .seed-btns { flex-direction: column-reverse !important; } /* 上から 全部・10%使う・1個使う */
+
+/* ===== ドーピングの種ダイアログ（見本の絵 seed_panel.webp：1168×1347 の座標を％で） ===== */
+.seed-panel.sd2 { position: relative; container-type: inline-size; width: min(96vw, 430px) !important; max-width: none !important; max-height: none !important; aspect-ratio: 1168 / 1347; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/seed_panel.webp) center / 100% 100% no-repeat !important; overflow: visible; display: block; }
+.sd2 .sd2-row { position: absolute; inset: 0; pointer-events: none; }
+.sd2 .sd2-row > * { pointer-events: auto; }
+.sd2 .sd2-stat { position: absolute; left: 34.3%; width: 34%; top: calc(47.4% + var(--y) * 24.4%); height: 8%; display: flex; flex-direction: column; justify-content: center; color: #fff; font-size: 4.3cqw; font-weight: 700; line-height: 1.32; text-align: left; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.sd2 .sd2-stat .sd2-n { color: #ffe83a; font-size: 1.15em; font-weight: 900; margin: 0 0.1em; }
+.sd2 .sd2-stat .sd2-eff { font-size: 1.15em; font-weight: 900; }
+.sd2 .sd2-eff.hp { color: #5be36a; } .sd2 .sd2-eff.atk { color: #ff6a4a; }
+.sd2 .sd2-b { position: absolute; left: 69.6%; width: 21.6%; padding: 0; border: none !important; background: transparent !important; box-shadow: none !important; cursor: pointer; border-radius: 1.5cqw; }
+.sd2 .b-all { top: calc(36.8% + var(--y) * 24.4%); height: 5.6%; }
+.sd2 .b-pct { top: calc(43.3% + var(--y) * 24.4%); height: 6.8%; }
+.sd2 .b-one { top: calc(51.1% + var(--y) * 24.4%); height: 6.6%; }
+.sd2 .sd2-pctn { position: absolute; left: 0; right: 0; bottom: 8%; text-align: center; color: #fff; font-size: 3.1cqw; font-weight: 900; text-shadow: 0 1px 2px #001a5a, 0 0 2px #001a5a; }
+.sd2 .sd2-b:active { transform: scale(0.95); background: rgba(255,255,255,0.12) !important; }
+.sd2 .sd2-b.is-disabled { background: rgba(0,0,0,0.55) !important; cursor: default; }
+.sd2 .sd2-close { position: absolute; left: 34.7%; width: 30.6%; top: 85.6%; height: 7.2%; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important; border-radius: 3cqw; }
+.sd2 .sd2-close:active { background: rgba(255,255,255,0.12) !important; }
+.sd2-row.seed-flash .sd2-stat { animation: seedFlash 0.7s ease-out; }
+.sd2 .sd2-stat { display: block !important; padding-top: 0.2em; font-size: 4.1cqw !important; }
+.sd2 .sd2-stat { font-size: 3.05cqw !important; line-height: 1.45 !important; padding-top: 0.5em !important; }
+.sd2 .sd2-pctn { font-size: 2.3cqw !important; bottom: 7% !important; }
