@@ -238,7 +238,7 @@ const ENEMY_SAY = {
   idle: ['グルル…', 'ここは通さん！', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', '仲間を呼ぶぞ！', 'オレ、強い', 'まだまだ増えるぞ〜', 'いたいのはイヤ…'],
   slime: ['ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜'],
   hit: ['いてっ！', 'ぐぬぬ…', 'やるな…！', 'ひぃ！'],
-  boss: ['よくぞ来た…だがここまでだ！', '我が前にひれ伏せ！', 'この階は通さぬ', 'ふん、虫ケラが', '退屈しのぎにはなりそうだ'],
+  boss: ['よくぞ来た…だがここまでだ！', '我が前にひれ伏せ！', 'このステージは通さぬ', 'ふん、虫ケラが', '退屈しのぎにはなりそうだ'],
   bossHalf: ['…少しはやるようだな', 'ほう、本気を出すか', 'おのれ…！', 'まだ終わらんぞ！'],
   bossLow: ['ば、ばかな…！', 'このままでは…！', '覚えておれ…！', 'ぐおおお…！'],
   bossWin: ['フハハハ！弱すぎる！', '出直してこい', 'その程度か勇者よ'],
@@ -659,7 +659,7 @@ function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナ
 // ===== 勇者のうざい自慢ゼリフ（忙しいアピール・寝てない自慢・さりげなく強さ自慢の作風） =====
 const HERO_BRAG_RATE = 0.15;
 const HERO_BRAG = {
-  idle: ['いや〜昨日3時間しか寝てないわー。でも倒せちゃうんだよね', '別に強くなろうと思ってないんだけど、勝手にレベル上がっちゃうんだよね', '俺くらいになると、敵の方から寄ってきちゃうんだよね〜', 'え？この剣？ガチャで普通に出たやつだけど？', '修行とか全然してないわー。マジで才能だけでやってるから', '正直この階、目つぶってても余裕なんだよね', '最近忙しすぎて、魔王倒すヒマもないわー', '俺ってほら、放置してても強くなるタイプじゃん？', 'ぶっちゃけ回復とか使ったことないわー', 'いやーまた転生しちゃったわー。強くなりすぎて困るんだよね'],
+  idle: ['いや〜昨日3時間しか寝てないわー。でも倒せちゃうんだよね', '別に強くなろうと思ってないんだけど、勝手にレベル上がっちゃうんだよね', '俺くらいになると、敵の方から寄ってきちゃうんだよね〜', 'え？この剣？ガチャで普通に出たやつだけど？', '修行とか全然してないわー。マジで才能だけでやってるから', '正直このステージ、目つぶってても余裕なんだよね', '最近忙しすぎて、魔王倒すヒマもないわー', '俺ってほら、放置してても強くなるタイプじゃん？', 'ぶっちゃけ回復とか使ったことないわー', 'いやーまた転生しちゃったわー。強くなりすぎて困るんだよね'],
   kill: ['あれ？今の本気出してないんだけど？', 'いや〜今のは手加減したつもりだったんだけどな〜', 'また倒しちゃったわー。悪いことしたかな', '俺の通常攻撃、他の人の必殺技くらいあるらしいんだよね', 'え、今のでクリティカル？普通に殴っただけなんだけど'],
 };
 { const orig = heroChuuni; heroChuuni = function (kind, force) {
@@ -673,7 +673,7 @@ const HERO_BRAG = {
 // ===== 自キャラの「ざわ…ざわ…」系ゼリフ（ギャンブル漫画の作風・勇者でも仲間を自キャラにしていても） =====
 const KAIJI_RATE = 0.12;
 const KAIJI_SAY = {
-  idle: ['ざわ…ざわ…', 'ここは…勝負どころ…！', '考えろ…考えるんだ…！', 'まだだ…まだ終わらんっ…！', '一歩踏み出す勇気…それだけが…道を開く…！', 'この階…ただの階じゃない…', '流れは…来ている…！', '圧倒的…放置…！'],
+  idle: ['ざわ…ざわ…', 'ここは…勝負どころ…！', '考えろ…考えるんだ…！', 'まだだ…まだ終わらんっ…！', '一歩踏み出す勇気…それだけが…道を開く…！', 'このステージ…ただのステージじゃない…', '流れは…来ている…！', '圧倒的…放置…！'],
   kill: ['通った…！通ったぞ…！', 'くっ…勝った…勝ったんだ…！', 'これが…これこそが…勝利…！', 'ククク…読み通り…！'],
   boss: ['ざわ…ざわ…ざわ…', '来やがった…本物の…化け物…！', 'ここで退いたら…一生…負け犬…！'],
   pinch: ['ぐっ…ぐにゃあ…', 'ま…まずい…！', '負けるわけには…いかない…っ！', '悪魔的…状況…！'],
@@ -818,9 +818,10 @@ updateNewsDot();
 // ===== 仲間ページ：倒れている仲間をコインですぐ全員復活 =====
 function reviveAllCost() { const ids = downCompanionIds(); return Math.max(10, Math.round(stageCoinRaw() * 15 * ids.reduce((s, id) => s + ((game.compDeaths || {})[id] || 1), 0))); } // 今のステージの稼ぎ×倒れた回数ぶん
 function downCompanionIds() { const cp = game.companions; return Object.keys(COMPANIONS).filter(id => cp.recruited[id] && cp.alive[id] === false); }
-function reviveAllCompanions(ev) {
-  const ids = downCompanionIds(); if (!ids.length) return;
-  const cost = reviveAllCost();
+function reviveOneCost(id) { return Math.max(10, Math.round(stageCoinRaw() * 15 * ((game.compDeaths || {})[id] || 1))); } // 1人ぶん（全員復活と同じ単価）
+function reviveAllCompanions(ev, only) {
+  const ids = only ? [only] : downCompanionIds(); if (!ids.length) return;
+  const cost = only ? reviveOneCost(only) : reviveAllCost();
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, ev.clientX, ev.clientY); return; }
   spendCoins(cost);
   const cp = game.companions;
@@ -830,8 +831,9 @@ function reviveAllCompanions(ev) {
   });
   if (typeof refreshCompanionBalls === 'function') refreshCompanionBalls();
   playHealSound && playHealSound(); updateStatsUI(); saveGame(); renderCompanionList();
-  showNotice(`✨ 仲間 ${ids.length}人が復活した！`);
+  showNotice(only ? `✨ ${COMPANIONS[only].name}が復活した！` : `✨ 仲間 ${ids.length}人が復活した！`);
 }
+document.addEventListener('click', ev => { const b = ev.target.closest('[data-revive-one]'); if (!b) return; ev.stopPropagation(); const id = b.dataset.reviveOne; if (game.companions.alive[id] === false) reviveAllCompanions(ev, id); }, true); // 仲間ごとの復活ボタン
 function updateReviveAllBtn() {
   let b = document.getElementById('reviveAllBtn');
   const row = document.querySelector('.tab-page[data-tab="companion"] .party-row'); if (!row) return;
@@ -844,6 +846,7 @@ function updateReviveAllBtn() {
   b.classList.toggle('is-disabled', game.coins < cost);
 }
 { const orig = renderCompanionList; renderCompanionList = function () { const r = orig.apply(this, arguments); try { updateReviveAllBtn(); } catch (e) {} return r; }; }
+setInterval(() => { if (typeof activeTabCache === 'undefined' || activeTabCache !== 'companion') return; document.querySelectorAll('[data-revive-one]').forEach(b => b.classList.toggle('is-disabled', game.coins < reviveOneCost(b.dataset.reviveOne))); }, 1000); // コインがたまったら押せる見た目に
 setInterval(() => { if (typeof activeTabCache !== 'undefined' && activeTabCache === 'companion') try { updateReviveAllBtn(); } catch (e) {} }, 1000);
 
 // スキル・サブウェポンの 10%／MAX 一括レベルアップ

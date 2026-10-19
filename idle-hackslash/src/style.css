@@ -3779,3 +3779,11 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 @keyframes lb7Spark { 0% { transform: rotate(var(--a)) translateX(0) scale(1.4); opacity: 1; } 100% { transform: rotate(var(--a)) translateX(var(--d)) scale(0.2); opacity: 0; } }
 @keyframes lb7Stamp { from { transform: scale(3) rotate(-20deg); opacity: 0; } }
 @keyframes lb7CellFlash { 0% { filter: brightness(2.2); } 100% { filter: none; } }
+
+/* 仲間ごとの復活ボタン（棺桶の下） */
+.cc-down .cc-revive { pointer-events: auto; margin-top: 2px; padding: 2px 6px; border: 1px solid #ffe08a; border-radius: 999px; background: linear-gradient(#3a9a5a, #1f6a3a); color: #fff; font-size: 0.52rem; font-weight: 900; white-space: nowrap; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.6); cursor: pointer; }
+.cc-down .cc-revive .coin-ico, .cc-down .cc-revive img { width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
+.cc-down .cc-revive.is-disabled { filter: grayscale(0.8) brightness(0.7); }
+/* ゲームオーバー：転生するボタンも「あきらめる」と同じ大きさに */
+#bossContModal .go2 .go-reborn-btn { width: 74%; align-self: center; margin: 0 auto; font-size: 4.6cqw; }
+#bossContModal .go2 .go-reborn-btn .ico-img, #bossContModal .go2 .go-reborn-btn img { width: 1.2em; height: 1.2em; }
