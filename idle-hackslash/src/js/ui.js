@@ -2144,10 +2144,11 @@ function openRebornConfirm(ctx) {
   rebornCtx = ctx || null;
   const g = getRebirthGemGain();
   document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `ステージ${formatStageNumber(game.stage)}で力尽きた…転生しますか？` : '本当に転生しますか？';
+  { const t = document.getElementById('rebornConfirmTitle'); t.classList.toggle('long', t.textContent.length > 12); } // 長い見出しは小さめの2行に
   document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せずステージ${formatStageNumber(Math.max(1, game.stage - 1))}で鍛え直す` : 'キャンセル';
   document.getElementById('rebornGemAmt').textContent = g;
   document.getElementById('rebornFeatherAmt').textContent = getRebirthFeatherGain();
-  document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で報酬3倍' : '🎬 動画を見て報酬3倍'} <b>💎 ${g * 3}</b>`;
+  document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁' : '<img class="rab-ico" src="assets/img/ui/reb/ico_clap.webp" alt="">'}<span class="rab-txt">${isAdFree() ? '紋章特典で報酬3倍' : '動画を見て報酬3倍'}</span><b><img class="rab-gem" src="assets/img/ui/lb7/gem.webp" alt="">${g * 3}</b>`;
   rebornConfirmModal.classList.add('show');
 }
 function closeRebornConfirm() { // キャンセル：コンテニュー画面に戻る／コンテニュー後の敗北ならいつもどおり前の階へ

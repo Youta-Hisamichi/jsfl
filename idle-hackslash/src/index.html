@@ -565,17 +565,16 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   </div>
 </div>
 <div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
-  <div class="modal-panel" style="text-align:center;">
-    <div class="reborn-big-icon"><span data-xi="x_reborn" data-xi-big>🌌</span></div>
+  <div class="modal-panel reb2" style="text-align:center;">
     <h2 id="rebornConfirmTitle">本当に転生しますか？</h2>
     <div class="reborn-info">
-      <div class="ri-sec ri-reset"><b>🔄 リセットされるもの</b><span>コイン・強化・ステージの進行・パーティの仲間（セットしたキャラ）・スキル・サブウェポン</span></div>
-      <div class="ri-sec ri-keep"><b>✅ リセットされないもの</b><span>ジェム・ショップで買ったアイテム・進化・転生ボーナス・図鑑や戦績</span></div>
+      <div class="ri-sec ri-reset"><img class="ri-ico" src="assets/img/ui/reb/ico_reset.webp" alt=""><div><b>リセットされるもの</b><span>コイン・強化・ステージの進行・パーティの仲間（セットしたキャラ）・スキル・サブウェポン</span></div></div>
+      <div class="ri-sec ri-keep"><img class="ri-ico" src="assets/img/ui/reb/ico_keep.webp" alt=""><div><b>リセットされないもの</b><span>ジェム・ショップで買ったアイテム・進化・転生ボーナス・図鑑や戦績</span></div></div>
     </div>
-    <div class="reborn-reward">転生報酬 <b>💎 <span id="rebornGemAmt">2</span></b>　<b><img class="fea-ico" src="assets/img/icons/bag_feather.webp" alt=""> 進化の羽 ×<span id="rebornFeatherAmt">10</span></b></div>
+    <div class="reborn-reward"><span class="rr-label">転生報酬</span><b class="rr-gem"><img class="rr-ico" src="assets/img/ui/lb7/gem.webp" alt=""><span id="rebornGemAmt">2</span></b><b class="rr-fea"><img class="rr-ico" src="assets/img/icons/bag_feather.webp" alt="">進化の羽 ×<span id="rebornFeatherAmt">10</span></b></div>
     <div class="modal-shop-list">
       <button class="reward-ad-btn reborn-ad-btn" id="rebornAdBtn">🎬 動画を見て報酬3倍 <b>💎 <span id="rebornGemAmt3">6</span></b></button>
-      <button class="modal-close-btn" id="rebornConfirmOkBtn"><span data-xi="x_reborn">🌌</span> 転生する</button>
+      <button class="modal-close-btn" id="rebornConfirmOkBtn" aria-label="転生する"><span data-xi="x_reborn">🌌</span> 転生する</button>
       <button class="modal-shop-btn" id="rebornConfirmCancelBtn" style="justify-content:center;"><span class="msb-name">キャンセル</span></button>
     </div>
   </div>

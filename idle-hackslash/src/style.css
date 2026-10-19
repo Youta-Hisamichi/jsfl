@@ -3787,3 +3787,39 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 /* ゲームオーバー：転生するボタンも「あきらめる」と同じ大きさに */
 #bossContModal .go2 .go-reborn-btn { width: 74%; align-self: center; margin: 0 auto; font-size: 4.6cqw; }
 #bossContModal .go2 .go-reborn-btn .ico-img, #bossContModal .go2 .go-reborn-btn img { width: 1.2em; height: 1.2em; }
+
+/* ===== 転生の確認画面（reb：見本の枠・帯・ボタン） ===== */
+#rebornConfirmModal .modal-panel.reb2 { --w: min(94vw, 400px); --u: calc(var(--w) / 663); position: relative; width: var(--w) !important; max-width: none !important; max-height: none !important; overflow: visible !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 calc(var(--u) * 10) calc(var(--u) * 4) !important;
+  border-style: solid !important; border-color: transparent !important; border-width: calc(var(--u) * 313) calc(var(--u) * 44) calc(var(--u) * 48) !important; border-image: url(assets/img/ui/reb/frame.webp) 313 44 48 fill / calc(var(--u) * 313) calc(var(--u) * 44) calc(var(--u) * 48) stretch !important; display: flex; flex-direction: column; gap: calc(var(--u) * 7); }
+#rebornConfirmModal { overflow-y: auto; align-items: flex-start; padding-top: max(10px, env(safe-area-inset-top)); }
+#rebornConfirmModal .reb2 #rebornConfirmTitle { position: absolute; left: calc(var(--u) * 70 - var(--u) * 44); right: calc(var(--u) * 70 - var(--u) * 44); top: calc(var(--u) * (230 - 313)); height: calc(var(--u) * 62); margin: 0; display: flex; align-items: center; justify-content: center; padding: 0 calc(var(--u) * 40); font-size: calc(var(--u) * 42); line-height: 1.05; font-weight: 900; letter-spacing: 0.02em; white-space: nowrap; background: linear-gradient(180deg, #fff6c8 0%, #ffd76b 45%, #e89a1e 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #4a2600) drop-shadow(0 0 4px rgba(0,0,0,0.6)); }
+#rebornConfirmModal .reb2 #rebornConfirmTitle:not(:empty) { font-size: clamp(calc(var(--u) * 26), calc(var(--u) * 42), calc(var(--u) * 42)); }
+#rebornConfirmModal .reb2 .reborn-big-icon { display: none; }
+#rebornConfirmModal .reb2 .reborn-info { gap: calc(var(--u) * 6); margin: 0; }
+#rebornConfirmModal .reb2 .ri-sec { display: flex; align-items: flex-start; gap: calc(var(--u) * 10); padding: calc(var(--u) * 14) calc(var(--u) * 26) calc(var(--u) * 14) calc(var(--u) * 22); border: none !important; border-radius: 0; background: url(assets/img/ui/reb/bar_red.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: calc(var(--u) * 20.5); line-height: 1.5; text-align: left; text-shadow: 0 1px 2px #000; }
+#rebornConfirmModal .reb2 .ri-keep { background-image: url(assets/img/ui/reb/bar_green.webp) !important; }
+#rebornConfirmModal .reb2 .ri-ico { flex: none; width: calc(var(--u) * 40); height: calc(var(--u) * 40); margin-top: calc(var(--u) * 2); }
+#rebornConfirmModal .reb2 .ri-sec b { display: block; margin: 0 0 1px; font-size: calc(var(--u) * 26); font-weight: 900; color: #ff5a6a !important; text-shadow: 0 2px 0 #3a0008, 0 0 6px rgba(0,0,0,0.6); }
+#rebornConfirmModal .reb2 .ri-keep b { color: #6dff7a !important; text-shadow: 0 2px 0 #00300a, 0 0 6px rgba(0,0,0,0.6); }
+#rebornConfirmModal .reb2 .reborn-reward { margin: 0; aspect-ratio: 904 / 124; display: flex; align-items: center; justify-content: center; gap: calc(var(--u) * 14); padding: 0 calc(var(--u) * 30); border: none !important; border-radius: 0; background: url(assets/img/ui/reb/bar_blue.webp) center / 100% 100% no-repeat !important; color: #fff; font-weight: 900; }
+#rebornConfirmModal .reb2 .rr-label { font-size: calc(var(--u) * 25); color: #e8f0ff; text-shadow: 0 2px 0 #0a1a4a; }
+#rebornConfirmModal .reb2 .reborn-reward b { display: inline-flex; align-items: center; gap: calc(var(--u) * 4); margin: 0; color: #5cf0ff; font-size: calc(var(--u) * 30); text-shadow: 0 2px 0 #062a5a, 0 0 8px rgba(80,220,255,0.5); }
+#rebornConfirmModal .reb2 .rr-fea { font-size: calc(var(--u) * 25) !important; }
+#rebornConfirmModal .reb2 .rr-ico { width: calc(var(--u) * 38); height: calc(var(--u) * 38); object-fit: contain; }
+#rebornConfirmModal .reb2 .rg-box { margin: 0; padding: calc(var(--u) * 14) calc(var(--u) * 28) calc(var(--u) * 16); border: none !important; border-radius: 0; background: url(assets/img/ui/reb/bar_brown.webp) center / 100% 100% no-repeat !important; }
+#rebornConfirmModal .reb2 .rg-title { display: flex; align-items: center; gap: calc(var(--u) * 6); font-size: calc(var(--u) * 24); color: #ffd84a; text-shadow: 0 2px 0 #3a2000; margin-bottom: calc(var(--u) * 4); }
+#rebornConfirmModal .reb2 .rg-item { font-size: calc(var(--u) * 20); color: #fff; text-shadow: 0 1px 2px #000; padding: calc(var(--u) * 2) 0 calc(var(--u) * 2) calc(var(--u) * 8); }
+#rebornConfirmModal .reb2 .rg-item img, #rebornConfirmModal .reb2 .rg-item .comp-sprite { width: calc(var(--u) * 46); height: calc(var(--u) * 46); }
+#rebornConfirmModal .reb2 .modal-shop-list { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 6); margin: 0; }
+#rebornConfirmModal .reb2 .reborn-ad-btn { width: 100%; aspect-ratio: 884 / 113; margin: 0; padding: 0 calc(var(--u) * 40); display: flex; align-items: center; justify-content: center; gap: calc(var(--u) * 10); border: none !important; border-radius: 0; background: url(assets/img/ui/reb/bar_orange.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; color: #fff; font-size: calc(var(--u) * 25); font-weight: 900; text-shadow: 0 2px 0 #7a1800, 0 0 4px rgba(0,0,0,0.5); animation: none; }
+#rebornConfirmModal .reb2 .reborn-ad-btn .rab-ico { width: calc(var(--u) * 40); height: calc(var(--u) * 40); }
+#rebornConfirmModal .reb2 .reborn-ad-btn b { display: inline-flex; align-items: center; gap: calc(var(--u) * 4); margin-left: calc(var(--u) * 10); font-size: calc(var(--u) * 30); color: #fff; }
+#rebornConfirmModal .reb2 .rab-gem { width: calc(var(--u) * 34); height: calc(var(--u) * 34); }
+#rebornConfirmModal .reb2 #rebornConfirmOkBtn { width: calc(100% + var(--u) * 24); aspect-ratio: 568 / 97; margin: 0; padding: 0; border: none !important; border-radius: 0; background: url(assets/img/ui/reb/btn_reborn.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; font-size: 0 !important; color: transparent !important; }
+#rebornConfirmModal .reb2 #rebornConfirmOkBtn > * { display: none; }
+#rebornConfirmModal .reb2 #rebornConfirmCancelBtn { width: 82%; aspect-ratio: 490 / 66; min-height: 0; margin: 0; padding: 0 calc(var(--u) * 30); border: none !important; border-image: none !important; border-radius: 0; background: url(assets/img/ui/reb/btn_cancel.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; }
+#rebornConfirmModal .reb2 #rebornConfirmCancelBtn .msb-name { color: #4a3016 !important; font-size: calc(var(--u) * 24); font-weight: 900; text-shadow: 0 1px 0 rgba(255,240,210,0.6); white-space: nowrap; }
+#rebornConfirmModal .reb2 #rebornConfirmOkBtn:active, #rebornConfirmModal .reb2 #rebornConfirmCancelBtn:active, #rebornConfirmModal .reb2 .reborn-ad-btn:active { transform: scale(0.97); }
+#rebornConfirmModal .reb2 #rebornConfirmTitle.long { font-size: calc(var(--u) * 25); white-space: normal; line-height: 1.15; }
+#rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 19.5); }
+#rebornConfirmModal .reb2 .ri-sec { font-size: calc(var(--u) * 18.5); padding-right: calc(var(--u) * 16); line-height: 1.45; }
