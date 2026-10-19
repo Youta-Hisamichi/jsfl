@@ -197,7 +197,7 @@ document.getElementById('skillRow').addEventListener('click', event => {
   const r = btn.getBoundingClientRect();
   let el = document.getElementById('skillChargePop');
   if (!el) { el = document.createElement('div'); el.id = 'skillChargePop'; el.className = 'skill-charge-pop'; document.body.appendChild(el); }
-  el.innerHTML = `⏳ チャージ中…<small>あと${m[1]}秒</small>`;
+  el.innerHTML = `⏳ チャージ中…`; // 残り時間はボタンの下に出ているので書かない
   el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = r.top + 'px';
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   playTone(660, 0.06, 'triangle', 0.04, 520);
