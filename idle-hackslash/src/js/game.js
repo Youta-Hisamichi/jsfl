@@ -1550,7 +1550,7 @@ function anySkillCoolingDown() { return [...document.querySelectorAll('#skillRow
 
 function getSpecialCooldown() {
   const b = computeBonuses();
-  return Math.round(skillCd('skillSpecial', SPECIAL_COOLDOWN) * Math.max(0.4, b.specialCooldownMult));
+  return Math.max(SKILL_MIN_CD, Math.round(skillCd('skillSpecial', SPECIAL_COOLDOWN) * Math.max(0.4, b.specialCooldownMult)));
 }
 function updateSpecialButton() {
   if (!game.shopOwned.skillSpecial) {

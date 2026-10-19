@@ -890,7 +890,7 @@ function drawEnemyTelegraphs() {
   }
 }
 
-const ATK_UP_COOLDOWN = 180 * 1000;
+const ATK_UP_COOLDOWN = SKILL_MIN_CD;
 const ATK_UP_MS = 20 * 1000;
 const ATK_UP_MULT = 1.5;
 let lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
@@ -916,7 +916,7 @@ function drawAtkUpEffects() {
   ctx.restore();
 }
 
-const POISON_COOLDOWN = 150 * 1000;
+const POISON_COOLDOWN = SKILL_MIN_CD;
 const POISON_BUFF_MS = 15 * 1000;
 const POISON_TICK_MS = 1000;
 const POISON_DURATION_MS = 6 * 1000;
@@ -994,7 +994,7 @@ function drawPoisonEffects() {
     ctx.restore();
   }
 }
-const PARALYZE_COOLDOWN = 150 * 1000;
+const PARALYZE_COOLDOWN = SKILL_MIN_CD;
 const PARALYZE_MS = 5 * 1000;
 const PARALYZE_BOSS_MS = 2.5 * 1000;
 const PARALYZE_DMG_MULT = 0.5;
@@ -1065,7 +1065,7 @@ function drawParalyzeEffects() {
     ctx.restore();
   }
 }
-const SLEEP_COOLDOWN = 150 * 1000;
+const SLEEP_COOLDOWN = SKILL_MIN_CD;
 const SLEEP_MS = 10 * 1000;
 const SLEEP_BOSS_MS = 5 * 1000;
 const SLEEP_WAKE_BONUS = 1.5; // 起こした一撃に、そのダメージ×1.5 を追加（合計2.5倍）

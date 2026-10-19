@@ -30,7 +30,7 @@ function renderSkillGacha() {
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP);
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">⚔️ 威力 ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 -${Math.round(skillCdCut(lv) * 100)}%<br>目安 ≈ ${est}（攻撃力×威力）</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">⚔️ 威力 ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>目安 ≈ ${est}（攻撃力×威力）</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'; // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -918,13 +918,13 @@ let damageTexts = [];
 let meteors = [];
 let audioCtx = null;
 let gameSpeed = Number(speedRange.value);
-const SPECIAL_COOLDOWN = 5 * 60 * 1000;
+const SPECIAL_COOLDOWN = SKILL_MIN_CD;
 let lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
-const ACCEL_COOLDOWN = 3 * 60 * 1000;
+const ACCEL_COOLDOWN = SKILL_MIN_CD;
 const ACCEL_DURATION = 15 * 1000;
 let lastAccelAt = Date.now() - ACCEL_COOLDOWN;
 let accelEndAt = 0;
-const HEAL_COOLDOWN = 90 * 1000;
+const HEAL_COOLDOWN = SKILL_MIN_CD;
 const TACKLE_CHARGE_MIN_MS = 350;   // これ以上押し続けるとタメ開始
 const TACKLE_CHARGE_FULL_MS = 1500; // フルチャージまでの時間
 const TACKLE_MIN_MULT = 2;          // 最小タメのダメージ倍率（攻撃力比）
@@ -1616,14 +1616,14 @@ const TAP_ACCEL_MAX = 5;        // 最大5倍速
 const TAP_DMG_PER_ACCEL = 0.5;  // 連打で加速した分だけ、次に敵にぶつかったときのダメージも上がる（1タップ +25%、最大 +200%）
 function getTapDmgMult(tapMult) { return 1 + Math.max(0, (tapMult || 1) - 1) * TAP_DMG_PER_ACCEL; }
 let lastHealAt = Date.now() - HEAL_COOLDOWN;
-const BARRIER_COOLDOWN = 4 * 60 * 1000;
+const BARRIER_COOLDOWN = SKILL_MIN_CD;
 const BARRIER_MAX_HITS = 5; // バリアが肩代わりできる被ダメージ回数
 const BARRIER_ORB_COUNT = 3;
 const BARRIER_ORBIT_RADIUS = 44;
 const BARRIER_ROT_SPEED = 0.06;
 let lastBarrierAt = Date.now() - BARRIER_COOLDOWN;
 
-const HOMING_COOLDOWN = 2 * 60 * 1000;
+const HOMING_COOLDOWN = SKILL_MIN_CD;
 const HOMING_MISSILE_COUNT = 6;
 const HOMING_DMG_MULT = 0.8;       // 1発あたり 攻撃力 × 0.8（命中判定・クリティカルあり）
 const HOMING_TURN_RATE = 0.1;      // 追尾の曲がりやすさ
@@ -1683,7 +1683,7 @@ function updateHomingMissiles(speedMult) {
   }
   homingMissiles = homingMissiles.filter(m => !m.hit && m.life > 0);
 }
-const REGEN_COOLDOWN = 150 * 1000;
+const REGEN_COOLDOWN = SKILL_MIN_CD;
 const REGEN_MS = 20 * 1000;
 const REGEN_RATIO_PER_SEC = 0.02; // 毎秒 最大HPの2%（20秒で合計40%）
 let lastRegenAt = Date.now() - REGEN_COOLDOWN;
@@ -1726,41 +1726,41 @@ function drawRegenEffects() {
   ctx.restore();
 }
 
-const SILENCE_COOLDOWN = 120 * 1000;
+const SILENCE_COOLDOWN = SKILL_MIN_CD;
 const SILENCE_MS = 15 * 1000;
 let lastSilenceAt = Date.now() - SILENCE_COOLDOWN;
 let silenceEndAt = 0;
 function isSilenced() { return Date.now() < silenceEndAt; }
-const SACRIFICE_COOLDOWN = 45 * 1000;
+const SACRIFICE_COOLDOWN = SKILL_MIN_CD;
 const SACRIFICE_HP_RATIO = 0.3;  // 現在HPの30%を削る
 const SACRIFICE_DMG_MULT = 8;    // 攻撃力の8倍ダメージ
 let lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
 const PINCH_HP_RATIO = 0.3;      // 背水：HPがこの割合以下で発動
-const SKILL_DEATH_COOLDOWN = 90 * 1000;
+const SKILL_DEATH_COOLDOWN = SKILL_MIN_CD;
 const DEATH_CHANCE = 0.3, DEATH_CHANCE_BOSS = 0.08; // 即死の成功率（通常／ボス）
-const SKILL_COINSTRIKE_COOLDOWN = 120 * 1000;
+const SKILL_COINSTRIKE_COOLDOWN = SKILL_MIN_CD;
 const COIN_STRIKE_MS = 20 * 1000;
 const COIN_STRIKE_KILL_MULT = 1.5; // コイン攻撃中の討伐コイン倍率
-const SKILL_ZENI_COOLDOWN = 30 * 1000;
+const SKILL_ZENI_COOLDOWN = SKILL_MIN_CD;
 const ZENI_MIN_COINS = 10;
 const ZENI_DMG_PER_COIN = 1.5;   // 投げたコイン1枚あたりのダメージ
-const SKILL_MYSTERY_COOLDOWN = 60 * 1000;
+const SKILL_MYSTERY_COOLDOWN = SKILL_MIN_CD;
 let lastDeathAt = Date.now() - SKILL_DEATH_COOLDOWN;
 let lastCoinStrikeAt = Date.now() - SKILL_COINSTRIKE_COOLDOWN;
 let coinStrikeEndAt = 0;
 let lastZeniAt = Date.now() - SKILL_ZENI_COOLDOWN;
 let lastMysteryAt = Date.now() - SKILL_MYSTERY_COOLDOWN;
-const SKILL_COMPRUSH_COOLDOWN = 60 * 1000;
+const SKILL_COMPRUSH_COOLDOWN = SKILL_MIN_CD;
 const COMP_RUSH_DMG_MULT = 4; // 仲間1体（人数込みの攻撃力）あたりのダメージ倍率
 let lastCompRushAt = Date.now() - SKILL_COMPRUSH_COOLDOWN;
-const SKILL_NOVA_COOLDOWN = 40 * 1000;
+const SKILL_NOVA_COOLDOWN = SKILL_MIN_CD;
 const NOVA_DMG_MULT = 4; // 敵1体あたり攻撃力の何倍か
 let lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
 let novaFx = null; // 全体攻撃の衝撃波 { start }
-const SKILL_BLAST_COOLDOWN = 90 * 1000;
+const SKILL_BLAST_COOLDOWN = SKILL_MIN_CD;
 const BLAST_DMG_MULT = 15; // 大爆発：敵1体あたり攻撃力の15倍（ボスは2割増しの手応え演出のみ）
 let lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
-const SKILL_HALVE_COOLDOWN = 60 * 1000;
+const SKILL_HALVE_COOLDOWN = SKILL_MIN_CD;
 const HALVE_CHANCE_BOSS = 0.15; // 半減魔法がボスに効く確率（効いたらそのボスにはもう効かない）
 let lastHalveAt = Date.now() - SKILL_HALVE_COOLDOWN;
 let blastFx = null; // 大爆発の閃光 { start }
