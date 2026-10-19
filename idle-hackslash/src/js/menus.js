@@ -440,16 +440,20 @@ function getEarlyHpRate(stage) {
 const COIN_LV_POW = 0.9, COIN_DIGIT_POW = 1.5;
 function stageCoinRaw(stage = game.stage) { return Math.pow(enemyLevel(stage), COIN_LV_POW) * Math.pow(stageDigits(stage), COIN_DIGIT_POW); }
 // 敵の強さの伸び
+// 100ステージごとに敵が一段強くなる（掛け算で積み重なる）。強化の飛躍で自キャラが際限なく敵を追い越さないように、エリアの壁を作る
+const ENEMY_ZONE_SPAN = 100, ENEMY_ZONE_HP = 2.5, ENEMY_ZONE_ATK = 2;
+function enemyZoneMult(stage) { const n = Math.floor((Math.max(1, stage) - 1) / ENEMY_ZONE_SPAN); return { hp: Math.pow(ENEMY_ZONE_HP, n), atk: Math.pow(ENEMY_ZONE_ATK, n) }; }
 function enemyInflation(stage) { return Math.pow(enemyLevel(stage), ENEMY_HP_POW) * stageDigits(stage); }
 function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
   const d = stageDigits(stage), lv = enemyLevel(stage);
-  const baseHp = Math.max(10, Math.round(ENEMY_HP_BASE * Math.pow(lv, ENEMY_HP_POW) * d * getEarlyHpRate(stage)));
-  const baseAtk = Math.max(1, Math.round(ENEMY_ATK_BASE * Math.pow(lv, ENEMY_ATK_POW) * d));
+  const z = enemyZoneMult(stage);
+  const baseHp = Math.max(10, Math.round(ENEMY_HP_BASE * Math.pow(lv, ENEMY_HP_POW) * d * getEarlyHpRate(stage) * z.hp));
+  const baseAtk = Math.max(1, Math.round(ENEMY_ATK_BASE * Math.pow(lv, ENEMY_ATK_POW) * d * z.atk));
   const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
   return {
-    hp: isBoss ? Math.round(baseHp * bossHpMult(stage) * (ms ? ms.hp : 1)) : baseHp,
-    atk: isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1)) : baseAtk,
+    hp: safeNum(isBoss ? Math.round(baseHp * bossHpMult(stage) * (ms ? ms.hp : 1)) : baseHp), // 何万階になっても Infinity にしない
+    atk: safeNum(isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1)) : baseAtk),
     isBoss, milestone: ms
   };
 }
