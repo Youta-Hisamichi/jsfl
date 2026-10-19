@@ -2903,6 +2903,7 @@ window.addEventListener('beforeunload', saveGame);
 window.addEventListener('pagehide', saveGame);
 
 loadGame();
+updateRedPotionButton(); // セーブを読んでから所持数を出し直す（読み込み前は×0のまま灰色になっていた）
 try { if (audioCtx) refreshBgm(); } catch (e) {} // 音量を読み込んでから曲を始める（読み込み前だと初期音量で一瞬鳴る）
 applyHeroChar(); // セーブから自キャラを戻す（読み込み前に一度描いているので、ここで描き直す）
 delete game.level; delete game.exp; // レベル制は廃止（古いセーブの値は使わない）
