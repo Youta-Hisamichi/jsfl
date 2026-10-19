@@ -3913,3 +3913,4 @@ body #settingsModal .gen-hero-panel .gen-hero > .page-head > * { visibility: hid
 #settingsModal .settings-page.st2 { padding-top: 6px !important; }
 body #settingsModal .st2 .gen-hero { background: none !important; aspect-ratio: auto !important; margin: 4px 0 -2px !important; } /* 古いタイトル絵（gen-hero の背景）を消して、新しい絵だけにする */
 body #settingsModal .st2 .gen-hero > .page-head { visibility: visible !important; }
+body:has(#settingsModal.show) #flyoutCanvas, body:has(#settingsModal.show) #battleNotice, body:has(#settingsModal.show) .goal-chip { visibility: hidden !important; } /* 設定画面を開いている間は、ゲーム画面の上に重ねて描く文字（コイン・ダメージなど）を隠す */
