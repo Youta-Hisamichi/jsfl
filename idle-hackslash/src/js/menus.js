@@ -971,6 +971,7 @@ const MANUAL_ATK_MULT = 2, AUTO_ATK_MULT = 0.6;
 // 引っ張りアタック中の連打：飛んでいる間に画面をタップするたびにダメージが上がる（その発射の間だけ）。跳ね返った回数が多いほど1タップの上がり幅も大きい
 const PULL_MASH_STEP = 0.4, PULL_MASH_MAX_MULT = 25; // 1タップごとの基本の上昇・連打倍率の上限
 const PULL_MASH_BOUNCE_BONUS = 0.5, PULL_MASH_BOUNCE_CAP = 8; // 跳ね返り1回ごとに上がり幅 +50%（8回まで）
+const INF_BOUNCE_ACCEL = 1.2, INF_BOUNCE_SPEED_CAP = 38; // 無限反射：10秒かけて速さが最大 +120% まで上がる（速すぎて敵をすり抜けない上限つき）
 const PULL_BOUNCE_ACCEL = 1.12, PULL_SPEED_MAX = 20; // 跳ね返るたびに少し加速（上限あり）
 const PULL_MASH_ACCEL = 0.06, PULL_MASH_ACCEL_MAX = 0.3, PULL_MASH_SPEED_EXTRA = 6; // 連打しながら跳ね返ると追加加速（1タップ +6%、最大 +30%、上限速度も +6）
 const CHAIN_SEMIS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]; // 連打の切り払い音の音階（1オクターブ半で頭打ち）
@@ -1569,7 +1570,7 @@ function moveHoldRush(ball, speedMult) {
       if (taps) { const pl = balls.find(isMainPlayerBall); if (pl) { for (let i = 0; i < 6; i++) spawnHitParticles(pl.x, pl.y, i % 2 ? '#ffe08a' : '#ffffff'); } thump(300, 900, 0.12, 0.06, 'sawtooth'); }
     }
     holdRush.ux = ux; holdRush.uy = uy;
-    const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.speed * (holdRush.infinite ? 1 : 0.3 + 0.7 * Math.min(1, r * 1.6)); // 無限反射中は減速しない
+    const r = Math.max(0, (holdRush.until - Date.now()) / holdRush.dur), sp = holdRush.infinite ? Math.min(INF_BOUNCE_SPEED_CAP, holdRush.speed * (1 + INF_BOUNCE_ACCEL * Math.pow(1 - r, 1.3))) : holdRush.speed * (0.3 + 0.7 * Math.min(1, r * 1.6)); // 無限反射中は減速せず、だんだん加速（最後は約2.2倍）
     ball.vx = ux * sp; ball.vy = uy * sp;
   } else {
   const en = nearestOf(ball, [...balls, ...adds].filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)));
