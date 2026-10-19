@@ -3835,3 +3835,11 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #rebornConfirmModal .reb2 .ri-sec { padding-right: calc(var(--u) * 34) !important; font-size: calc(var(--u) * 18.5); }
 #rebornConfirmModal .reb2 .rg-box { padding-right: calc(var(--u) * 34) !important; }
 #rebornConfirmModal .reb2 .reborn-reward { padding: 0 calc(var(--u) * 44) !important; gap: calc(var(--u) * 10); }
+
+/* 種ボタン：パワーの種の絵 */
+.seed-float .seed-btn-ico { display: block; width: 32px; height: 32px; margin: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
+.seed-float { display: flex; align-items: center; justify-content: center; }
+.tower-seed-btn .seed-btn-ico { width: 1.6em; height: 1.6em; vertical-align: -0.45em; margin-right: 4px; object-fit: contain; }
+.seed-title .seed-btn-ico { width: 1.5em; height: 1.5em; vertical-align: -0.4em; margin-right: 4px; object-fit: contain; }
+.seed-btns button small { display: block; font-size: 0.6rem; font-weight: 700; opacity: 0.9; line-height: 1.1; }
+.seed-btns { gap: 3px; }

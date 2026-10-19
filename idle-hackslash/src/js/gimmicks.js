@@ -439,24 +439,24 @@ const seedBtn = document.getElementById('seedBtn');
 function updateSeedButton() {
   const held = seedHeld('atk') + seedHeld('hp'), used = seedUsed('atk') + seedUsed('hp');
   seedBtn.style.display = held || used ? '' : 'none';
-  const html = `🌰<b>×${held}</b>`; if (seedBtn.dataset.html !== html) { seedBtn.innerHTML = html; seedBtn.dataset.html = html; }
+  const html = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt=""><b>×${held}</b>`; if (seedBtn.dataset.html !== html) { seedBtn.innerHTML = html; seedBtn.dataset.html = html; }
   seedBtn.classList.toggle('is-disabled', !held);
-  const t = document.getElementById('towerSeedBtn'); if (t) { t.style.display = held || used ? '' : 'none'; t.innerHTML = `🌰 種でドーピング <small>所持 ${held}個${used ? `／使用中 ${used}個` : ''}</small>`; }
+  const t = document.getElementById('towerSeedBtn'); if (t) { t.style.display = held || used ? '' : 'none'; t.innerHTML = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">種でドーピング <small>所持 ${held}個${used ? `／使用中 ${used}個` : ''}</small>`; }
   const ov = document.querySelector('.seed-ov'); if (ov) renderSeedPanel(ov);
 }
 function renderSeedPanel(ov) {
   ov.querySelector('.seed-list').innerHTML = Object.entries(SEEDS).map(([k, S]) => {
     const h = seedHeld(k), u = seedUsed(k);
-    return `<div class="seed-row"><span class="seed-ico"><img class="ico-img" src="${S.img}" alt=""></span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
+    return `<div class="seed-row"><span class="seed-ico"><img class="ico-img" src="${S.img}" alt=""></span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="pct" ${h ? '' : 'disabled'}>10%使う<small>${Math.max(1, Math.floor(h * 0.1))}個</small></button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
   }).join('');
 }
 function openSeedPanel() {
   if (document.querySelector('.seed-ov')) return;
   const ov = document.createElement('div'); ov.className = 'cl-overlay show seed-ov';
-  ov.innerHTML = `<div class="cl-panel seed-panel"><div class="seed-title">🌰 ドーピングの種</div><div class="seed-note">使うと転生するまで能力アップ（転生でリセット）。<br>使わずに持っていれば転生後も持ち越せます。<br>試練の塔やボスの前にどうぞ！</div><div class="seed-list"></div><button class="cl-close">閉じる</button></div>`;
+  ov.innerHTML = `<div class="cl-panel seed-panel"><div class="seed-title"><img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">ドーピングの種</div><div class="seed-note">使うと転生するまで能力アップ（転生でリセット）。<br>使わずに持っていれば転生後も持ち越せます。<br>試練の塔やボスの前にどうぞ！</div><div class="seed-list"></div><button class="cl-close">閉じる</button></div>`;
   document.body.appendChild(ov); renderSeedPanel(ov);
   ov.addEventListener('click', ev => {
-    const b = ev.target.closest('[data-seed]'); if (b) { useSeed(b.dataset.seed, b.dataset.n === 'all' ? seedHeld(b.dataset.seed) : 1); return; }
+    const b = ev.target.closest('[data-seed]'); if (b) { const k = b.dataset.seed, h = seedHeld(k); useSeed(k, b.dataset.n === 'all' ? h : b.dataset.n === 'pct' ? Math.max(1, Math.floor(h * 0.1)) : 1); return; /* 10%：持っている数の1割（最低1個） */ }
     if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove();
   });
 }
