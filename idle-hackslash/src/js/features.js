@@ -807,7 +807,7 @@ function openNews() {
     });
   }
   const seen = game.newsSeen || 0;
-  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-h">${n.title}</div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div></div>`).join('');
+  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span><div class="news-h">${n.title}</div>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div></div>`).join('');
   ov.classList.add('show');
   game.newsSeen = NEWS[0].id; updateNewsDot(); saveGame();
   if (typeof playTone === 'function') playTone(1047, 0.06, 'square', 0.04);

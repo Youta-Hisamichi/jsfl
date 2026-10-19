@@ -3925,3 +3925,25 @@ body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspe
 /* 仲間ページの背景を明るく（暗くするフィルターを外し、上に重ねる影を薄く） */
 body .tab-page[data-tab="companion"] .artifact-panel.gen-hero-panel::before { filter: brightness(1.05) saturate(1.05) !important; opacity: 1 !important; }
 .tab-page[data-tab="companion"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,12,34,0) 0px, rgba(8,12,34,0.15) 380px, rgba(8,12,34,0.55) 640px, #0a0f22 820px, #0a0f22 100%), url(assets/img/ui/rb/comp_bg_lt.webp) 50% 0 / 100% auto no-repeat, #0a0f22 !important; }
+/* ===== お知らせ：見本の枠（9スライス）。上＝タイトル、下＝閉じるボタンの絵。中身の長さに合わせて縦に伸びる ===== */
+#newsModal .news-panel { --w: min(400px, 96vw); --u: calc(var(--w) / 991); position: relative; width: var(--w) !important; max-width: none !important; max-height: 88vh; box-sizing: border-box; padding: 0 !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; overflow: visible !important;
+  border-style: solid !important; border-color: transparent !important; border-width: calc(var(--u) * 252) calc(var(--u) * 62) calc(var(--u) * 249) !important; border-image: url(assets/img/ui/news/panel.webp) 252 62 249 fill / calc(var(--u) * 252) calc(var(--u) * 62) calc(var(--u) * 249) stretch !important; }
+#newsModal .news-title { display: none !important; }
+#newsModal .news-list { gap: calc(var(--u) * 8); margin: calc(var(--u) * -6) calc(var(--u) * -18) 0; padding: 0 calc(var(--u) * 2); }
+#newsModal .news-item { border-style: solid !important; border-color: transparent !important; border-width: calc(var(--u) * 22) calc(var(--u) * 40) !important; border-image: url(assets/img/ui/news/item.webp) 22 40 fill / calc(var(--u) * 22) calc(var(--u) * 40) stretch !important; border-radius: 0 !important; background: none !important; padding: calc(var(--u) * 4) calc(var(--u) * 8) !important; }
+#newsModal .news-head { font-size: calc(var(--u) * 22); }
+#newsModal .news-tag { padding: calc(var(--u) * 4) calc(var(--u) * 14); border-radius: calc(var(--u) * 16); font-size: calc(var(--u) * 24); box-shadow: inset 0 calc(var(--u) * 2) 0 rgba(255,255,255,0.35), 0 calc(var(--u) * 2) calc(var(--u) * 3) rgba(0,0,0,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+#newsModal .news-date { color: #aab6d8; font-size: calc(var(--u) * 24); }
+#newsModal .news-h { margin-top: calc(var(--u) * 4); font-size: calc(var(--u) * 30); color: #ffe27a; text-shadow: 0 2px 0 #3a2000, 0 0 4px rgba(0,0,0,0.6); }
+#newsModal .news-body { font-size: calc(var(--u) * 24); color: #dfe6f8; }
+#newsModal .news-close { position: absolute; left: calc(var(--u) * (180 - 62)); width: calc(var(--u) * 630); bottom: calc(var(--u) * (87 - 249)); height: calc(var(--u) * 120); margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; color: transparent !important; font-size: 0 !important; border-radius: calc(var(--u) * 40); }
+#newsModal .news-close:active { background: rgba(255,255,255,0.12) !important; }
+#newsModal .news-item { position: relative; }
+#newsModal .news-item::before, #newsModal .news-item::after { content: ''; position: absolute; top: 50%; width: calc(var(--u) * 44); height: calc(var(--u) * 44); transform: translateY(-50%); background: url(assets/img/ui/news/gem_l.webp) center / contain no-repeat; pointer-events: none; }
+#newsModal .news-item::before { left: calc(var(--u) * -55); } #newsModal .news-item::after { right: calc(var(--u) * -55); background-image: url(assets/img/ui/news/gem_r.webp); }
+#newsModal .news-head { display: flex; align-items: center; gap: calc(var(--u) * 12); }
+#newsModal .news-head .news-h { margin: 0; flex: 1 1 auto; min-width: 0; }
+#newsModal .news-tag { flex: none; }
+#newsModal .news-date { flex: none; }
+#newsModal .news-new { flex: none; font-size: calc(var(--u) * 20); }
+#newsModal .news-h { font-size: calc(var(--u) * 27) !important; line-height: 1.25; }
