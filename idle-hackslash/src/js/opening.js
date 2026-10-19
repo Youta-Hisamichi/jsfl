@@ -283,3 +283,16 @@ document.getElementById('tabBar')?.addEventListener('click', () => { const m = d
   nb?.addEventListener('click', () => setTimeout(fitNews, 0));
   window.addEventListener('resize', fitNews);
   document.getElementById('tabBar')?.addEventListener('click', () => document.getElementById('newsModal')?.classList.remove('show'), true); }
+// お知らせ・設定：どちらかを開くともう片方は閉じる。開いている間はゲームを止め、後ろの画面を隠してスクロールも止める
+{ const news = () => document.getElementById('newsModal'), set = document.getElementById('settingsModal');
+  document.getElementById('settingsBtn')?.addEventListener('click', () => news()?.classList.remove('show'), true);
+  document.getElementById('newsBtn')?.addEventListener('click', () => { if (set.classList.contains('show') && !news()?.classList.contains('show')) document.getElementById('settingsCloseBtn')?.click(); }, true);
+  let newsPaused = null, wasOpen = false;
+  const sync = () => {
+    const nOpen = !!news()?.classList.contains('show'), open = nOpen || set.classList.contains('show');
+    if (nOpen && newsPaused === null && phase === 'battle') { newsPaused = 'battle'; phase = 'paused'; }
+    if (!nOpen && newsPaused) { if (phase === 'paused' && !set.classList.contains('show')) phase = newsPaused; newsPaused = null; }
+    if (open !== wasOpen) { wasOpen = open; document.documentElement.classList.toggle('panel-open', open); if (open) { window.scrollTo(0, 0); window.dispatchEvent(new Event('resize')); } }
+  };
+  new MutationObserver(sync).observe(set, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(() => { const n = news(); if (n && !n._obs) { n._obs = true; new MutationObserver(sync).observe(n, { attributes: true, attributeFilter: ['class'] }); sync(); } }).observe(document.body, { childList: true }); }

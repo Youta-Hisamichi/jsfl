@@ -3964,3 +3964,6 @@ body .tab-page[data-tab="companion"] .artifact-panel.gen-hero-panel::before { fi
 body:has(#newsModal.show) #flyoutCanvas, body:has(#newsModal.show) #battleNotice, body:has(#newsModal.show) .goal-chip { visibility: hidden !important; }
 #newsModal .news-panel { max-height: 100% !important; }
 body:has(#newsModal.show) .run-banner, body:has(#settingsModal.show) .run-banner, body:has(#newsModal.show) .debug-toggle, body:has(#settingsModal.show) .debug-toggle { visibility: hidden !important; }
+/* お知らせ・設定を開いている間：後ろの画面は隠してスクロールも止める（ヘッダーの後ろに透けないように） */
+html.panel-open, html.panel-open body { overflow: hidden !important; }
+html.panel-open .layout { visibility: hidden !important; }
