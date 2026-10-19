@@ -3843,3 +3843,4 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .seed-title .seed-btn-ico { width: 1.5em; height: 1.5em; vertical-align: -0.4em; margin-right: 4px; object-fit: contain; }
 .seed-btns button small { display: block; font-size: 0.6rem; font-weight: 700; opacity: 0.9; line-height: 1.1; }
 .seed-btns { gap: 3px; }
+.seed-row .seed-ico { flex: none; } .seed-row .seed-ico .ico-img { width: 3.6rem !important; height: 3.6rem !important; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); } /* 使うダイアログの種アイコンは大きく */

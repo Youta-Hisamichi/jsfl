@@ -447,7 +447,7 @@ function updateSeedButton() {
 function renderSeedPanel(ov) {
   ov.querySelector('.seed-list').innerHTML = Object.entries(SEEDS).map(([k, S]) => {
     const h = seedHeld(k), u = seedUsed(k);
-    return `<div class="seed-row"><span class="seed-ico"><img class="ico-img" src="${S.img}" alt=""></span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個　いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="pct" ${h ? '' : 'disabled'}>10%使う<small>${Math.max(1, Math.floor(h * 0.1))}個</small></button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
+    return `<div class="seed-row"><span class="seed-ico"><img class="ico-img" src="${S.img}" alt=""></span><div class="seed-info"><b>${S.name}</b><span>1個で${S.stat} +${SEED_PER_USE * 100}%</span><span>所持 <b>${h}</b>個<br>いまの効果 <b style="color:${S.col}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）</span></div><div class="seed-btns"><button data-seed="${k}" data-n="1" ${h ? '' : 'disabled'}>1個使う</button><button data-seed="${k}" data-n="pct" ${h ? '' : 'disabled'}>10%使う<small>${Math.max(1, Math.floor(h * 0.1))}個</small></button><button data-seed="${k}" data-n="all" ${h ? '' : 'disabled'}>全部</button></div></div>`;
   }).join('');
 }
 function openSeedPanel() {
