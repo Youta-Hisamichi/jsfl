@@ -3900,3 +3900,14 @@ body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head > * { 
 body .tab-page[data-tab="records"] .gen-hero-panel .gen-hero > .page-head { aspect-ratio: 900 / 290 !important; } body .tab-page[data-tab="records"] .gen-hero { margin: 0 0 -10px !important; } /* 吹き出しとの隙間を詰める */
 .tab-page[data-tab="gemshop"] .shop-banner { aspect-ratio: 900 / 300 !important; max-width: 380px !important; background-image: url(assets/img/ui/shop/title2.webp) !important; } /* ショップのタイトル：店員つきの一枚絵 */
 .tab-page[data-tab="gemshop"] .shop-hero { justify-content: center !important; margin-left: 0 !important; margin-right: 0 !important; } /* タイトルは中央 */
+/* ===== 設定画面：外枠なしで、聖堂の一枚絵を背景に（見本どおり） ===== */
+#settingsModal { padding: 0 !important; }
+#settingsModal .settings-page.st2 { width: 100% !important; max-width: 480px !important; height: 100% !important; max-height: none !important; margin: 0 auto; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; padding: max(10px, env(safe-area-inset-top)) 14px 24px !important; background: #0a0c22 url(assets/img/ui/set/bg2.webp) center top / cover no-repeat !important; background-attachment: local !important; }
+#settingsModal .st2 .gen-hero { height: auto !important; justify-content: center !important; padding: 0 !important; margin: 4px 0 -4px !important; }
+#settingsModal .st2 .gen-hero .gh-npc { position: absolute; left: 0; top: 0; width: 30%; height: 100%; margin: 0; opacity: 0; }
+body #settingsModal .st2.gen-hero-panel .gen-hero > .page-head, body #settingsModal .gen-hero-panel .gen-hero > .page-head { flex: 0 1 380px !important; width: 100% !important; max-width: 380px; aspect-ratio: 900 / 302 !important; margin: 0 !important; padding: 0 !important; background: url(assets/img/ui/set/title2.webp) center / 100% 100% no-repeat !important; border: none !important; }
+body #settingsModal .gen-hero-panel .gen-hero > .page-head > * { visibility: hidden; }
+#settingsModal .st2 .settings-row:has(input[type=range]), #settingsModal .st2 .settings-row:has(#vibrationBtn) { border: none !important; border-radius: 0 !important; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat !important; padding: 12px 16px 14px !important; } /* 音量・振動の枠は吹き出しと同じ金縁パネル */
+/* 設定画面はほかのページと同じく、上のヘッダーと下のタブの間に出す */
+#settingsModal { z-index: 39 !important; top: var(--set-top, 48px) !important; bottom: var(--set-bot, 74px) !important; background: #0a0c22 !important; }
+#settingsModal .settings-page.st2 { padding-top: 6px !important; }

@@ -272,3 +272,7 @@ document.getElementById('vibrationBtn') && document.getElementById('vibrationBtn
 settingsBtn.addEventListener('click', () => setTimeout(decorateSettingsPage, 0));
 document.querySelectorAll('#settingsModal .lang-btn').forEach(b => b.addEventListener('click', () => setTimeout(decorateSettingsPage, 0)));
 setTimeout(decorateSettingsPage, 0);
+{ const fit = () => { const h = document.getElementById('topHeader'), t = document.getElementById('tabBar'), m = document.getElementById('settingsModal'); if (!m) return; // 設定画面をヘッダーとタブの間にぴったり合わせる
+    if (h) m.style.setProperty('--set-top', Math.round(h.getBoundingClientRect().bottom) + 'px'); if (t) m.style.setProperty('--set-bot', Math.round(window.innerHeight - t.getBoundingClientRect().top) + 'px'); };
+  const m = document.getElementById('settingsModal'); if (m) new MutationObserver(fit).observe(m, { attributes: true, attributeFilter: ['class'] }); window.addEventListener('resize', fit); }
+document.getElementById('tabBar')?.addEventListener('click', () => { const m = document.getElementById('settingsModal'); if (m && m.classList.contains('show')) document.getElementById('settingsCloseBtn')?.click(); }, true); // 設定中に下のタブを押したら設定を閉じてそのページへ
