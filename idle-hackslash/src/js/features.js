@@ -1103,3 +1103,4 @@ for (const [H, C, E] of [[SNEAK_HERO, null, SNEAK_ENEMY], [DEMON_HERO, null, DEM
 }
 ENEMY_SAY.idle.push('これはこれは、勇者様ではないか。ククク', 'やれやれ、魔王様もなんでこんなガキの始末を');
 ENEMY_SAY.idle.push('ヤダアアアァーッ！！');
+CHUUNI.idle.push('失望させるなよ');
