@@ -4040,3 +4040,13 @@ html.panel-open .layout { visibility: hidden !important; }
 #stageSkipModal #stageSkipList { left: calc(var(--u) * 78) !important; top: calc(var(--u) * 920) !important; width: calc(var(--u) * 806) !important; grid-template-rows: repeat(5, calc(var(--u) * 98)) !important; gap: calc(var(--u) * 9) !important; }
 #stageSkipModal #stageSkipCloseBtn { left: calc(var(--u) * 290) !important; top: calc(var(--u) * 1478) !important; width: calc(var(--u) * 390) !important; height: calc(var(--u) * 120) !important; }
 body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !important; width: calc(100% + 20px) !important; max-width: 470px !important; margin: 0 -10px !important; } /* ランキングのタイトル画像を大きめに（パネルの余白まで使う） */
+/* 仲間ごとの復活ボタン：パネル右上に大きく置く */
+.companion-card .cc-revive-big { position: absolute !important; top: 2px !important; right: 2px !important; left: auto !important; bottom: auto !important; width: auto !important; height: auto !important; margin: 0 !important; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 104px; padding: 6px 12px; border: 2px solid #ffe08a; border-radius: 10px; background: linear-gradient(180deg, #4cc070, #1f7a40); color: #fff; font-weight: 900; line-height: 1.15; text-shadow: 0 1px 2px #000; box-shadow: 0 2px 0 #0d4020, 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.35); cursor: pointer; animation: ccReviveGlow 1.6s ease-in-out infinite alternate; }
+.companion-card .cc-revive-big b { font-size: 1rem; } .companion-card .cc-revive-big small { display: flex; align-items: center; gap: 3px; font-size: 0.8rem; font-weight: 900; }
+.companion-card .cc-revive-big .coin-ico, .companion-card .cc-revive-big img { width: 1.1em; height: 1.1em; }
+.companion-card .cc-revive-big:active { transform: translateY(1px) scale(0.97); }
+.companion-card .cc-revive-big.is-disabled { filter: grayscale(0.8) brightness(0.75); animation: none; }
+@keyframes ccReviveGlow { from { box-shadow: 0 2px 0 #0d4020, 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.35); } to { box-shadow: 0 2px 0 #0d4020, 0 0 14px rgba(120,255,160,0.75), inset 0 1px 0 rgba(255,255,255,0.35); } }
+.companion-card .cc-revive-big { flex-direction: row !important; gap: 6px !important; min-width: 0 !important; height: 34px !important; padding: 0 12px !important; } /* 名前の行の右側に1行で収める */
+.companion-card .cc-revive-big b { font-size: 0.95rem; } .companion-card .cc-revive-big small { font-size: 0.85rem; }
+.companion-card .cc-revive-big { top: -6px !important; right: -4px !important; height: 30px !important; } /* 2行目（覚醒の星）にかからない高さ */
