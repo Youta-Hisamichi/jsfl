@@ -939,7 +939,7 @@ const TOMINO_ENEMY = {
 for (const k in TOMINO_HERO) if (CHUUNI[k]) CHUUNI[k].push(...TOMINO_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...TOMINO_COMP[k].filter(() => Math.random() < 0.4)); // 仲間ごとに4割ずつ
 for (const k in TOMINO_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...TOMINO_ENEMY[k]);
-ENEMY_SAY.idle.push('オイラ悪いモンスターじゃないよ', 'た、助けてくれ！体が勝手に！');
+ENEMY_SAY.idle.push('オイラ悪いモンスターじゃないよ', 'た、助けてくれ！体が勝手に‥！');
 
 // ===== 風と森と生き物への想いを語る、終末ファンタジー風のセリフ（どれもオリジナルの文） =====
 const WIND_HERO = {
@@ -990,3 +990,30 @@ const ALCH_ENEMY = {
 for (const k in ALCH_HERO) if (CHUUNI[k]) CHUUNI[k].push(...ALCH_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...ALCH_COMP[k].filter(() => Math.random() < 0.4));
 for (const k in ALCH_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...ALCH_ENEMY[k]);
+
+// ===== 戦略・歴史・国家を冷静に語る、宇宙艦隊戦記風のセリフ（どれもオリジナルの文） =====
+const GALAXY_HERO = {
+  idle: ['勝つことより、負けない布陣を考えるほうがずっと難しい', '英雄なんてものは、後の歴史家がこしらえるものさ', '紅茶がもう一杯あれば、もう少し良い策が浮かぶんだが',
+    '戦争で得をする人間は、たいてい前線にはいない', '民主主義も専制も、結局は人が運ぶものだ', '退くべき時に退ける指揮官は、案外少ないんだよ',
+    '歴史に名を残すより、部下を一人でも多く帰したいね'],
+  kill: ['作戦通りだ。驚くほどのことじゃない', '敵の陣形に、隙があった。それだけさ'],
+  boss: ['さて…この会戦、歴史はどちらに味方するかな', '敵将は優秀だ。だからこそ、読める', '全軍に伝えろ。無理はするな、だが退くな'],
+  bossKill: ['勝ったか…だが、失ったものも数えねばな', '凱旋は好きじゃない。死んだ者の名を読み上げる時間になる'],
+  pinch: ['想定の範囲内だ…たぶんね', '逃げ道は確保してある。慌てるな'],
+  down: ['すまない…この先の歴史は、君たちに任せるよ…'],
+};
+const GALAXY_COMP = {
+  i: ['閣下、また昼寝ですか？ 作戦会議の時間ですよ', '補給線が伸びきっています。ご判断を', '命令とあらば、どこまでも', '提督の言う「たぶん」は、だいたい当たるのよね',
+    '我らが進むのは、銀河の果てか、歴史の果てか'],
+  k: ['敵前衛、崩れました！', '各個撃破、成功です！'],
+};
+const GALAXY_ENEMY = {
+  idle: ['我が艦隊の前に、障害など存在せぬ', '凡庸な指揮官に率いられた兵は、哀れなものだ', '旧き秩序は、今日ここで終わる'],
+  boss: ['宇宙を手に入れる…それが私の望みだ', '貴様を倒し、この銀河に新しい時代を開く', '戦う相手としては、申し分ない'],
+  bossHalf: ['面白い…私の想定を超えてくるとはな', 'これほどの用兵…一度、酒を酌み交わしたかった'],
+  bossLow: ['私は…少し、急ぎすぎたのかもしれん…', '夢の続きは…貴様に預けよう…'],
+  bossWin: ['卿もなかなかやるが、歴史を動かすのは私だ'],
+};
+for (const k in GALAXY_HERO) if (CHUUNI[k]) CHUUNI[k].push(...GALAXY_HERO[k]);
+for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...GALAXY_COMP[k].filter(() => Math.random() < 0.4));
+for (const k in GALAXY_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...GALAXY_ENEMY[k]);
