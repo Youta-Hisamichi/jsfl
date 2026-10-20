@@ -777,3 +777,6 @@ const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: d
   if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), stageArt('bg_graveyard') ? 'rgba(8,4,26,0.35)' : 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
   return orig.apply(this, arguments);
 }; }
+// 月夜の草原（ホタル）は、草原・森・河原の床で（雪原などエリアの床にしない）
+const NIGHT_FLOORS = ['mossStone', 'dirt', 'lawn', 'st_village']; // 1周目（3組目）は草原
+{ const orig = getFloorKey; getFloorKey = function (stage) { if (typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'night') return NIGHT_FLOORS[gimmickWindow(stage) % NIGHT_FLOORS.length]; return orig.apply(this, arguments); }; }
