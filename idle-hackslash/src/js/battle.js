@@ -1567,10 +1567,9 @@ function checkLoginBonus(awayMs) {
   const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
   const idleKills = Math.floor(idleMin * IDLE_KILLS_PER_MIN);
   const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE);
-  const hcIdle = getHeldChests(), heldNow = CHEST_RARITIES.reduce((n, k) => n + (hcIdle[k] || 0), 0);
-  let idleChests = Math.min(Math.floor(idleMin / IDLE_CHEST_EVERY_MIN), Math.max(0, CHEST_STOCK_MAX - heldNow));
-  const idleChestRarities = {};
-  for (let i = 0; i < idleChests; i++) { const k = rollChestRarity(); idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; }
+  const hcIdle = getHeldChests();
+  let idleChests = 0; const idleChestRarities = {};
+  for (let i = Math.floor(idleMin / IDLE_CHEST_EVERY_MIN); i > 0; i--) { const k = rollChestRarity(); if ((hcIdle[k] || 0) >= CHEST_STOCK_MAX) continue; idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; idleChests++; } // レア度ごとに最大100個
   game.coins += idleCoins;
   game.totalKills += idleKills;
   if (idleChests) renderChestTray();
@@ -1862,7 +1861,7 @@ window.addEventListener('pointerdown', () => {
 // 戦闘中に手に入れた宝箱はすぐ開けず、ステージ左下に並べておく。タップで開封
 // 宝箱にはレア度がある。ステージ左下にレア度ごとにまとめて「×個数」で表示し、タップで1個ずつ開封
 const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
-const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数
+const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数（レア度ごとに）
 const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6', mythic: 'x_chest7' };
 const CHEST_COIN_MULT = { common: 3, rare: 8, epic: 25, legendary: 77, mythic: 255 }; // 宝箱のコイン：開けたステージのザコ1体ぶん×この数
 const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.9, mythic: 1 };
@@ -1873,7 +1872,7 @@ function getHeldChests() { // 古いセーブ（個数だけ）はノーマル�
 function dropTreasureChest(rarity) {
   if (!rarity) rarity = rollChestRarity();
   const hc = getHeldChests();
-  if (CHEST_RARITIES.reduce((n, k) => n + (hc[k] || 0), 0) >= CHEST_STOCK_MAX) { spawnDamageText(arena.x, arena.y + 30, `🎁 宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); return; }
+  if ((hc[rarity] || 0) >= CHEST_STOCK_MAX) { const info = RARITY_INFO[rarity]; spawnDamageText(arena.x, arena.y + 30, `${info.label.replace('コモン', 'ノーマル')}の宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } return; } // レア度ごとに最大100個。文字の左にその宝箱の絵
   hc[rarity] = (hc[rarity] || 0) + 1;
   const info = RARITY_INFO[rarity];
   spawnDamageText(arena.x, arena.y + 30, `${info.label.replace('コモン', 'ノーマル')}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
