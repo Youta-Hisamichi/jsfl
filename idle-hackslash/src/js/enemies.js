@@ -315,7 +315,7 @@ function getEnemySpriteImg(enemy) {
 }
 function enemySpriteHtml(key, cls) { return ENEMY_SPRITES[key] ? `<img class="${cls || 'comp-sprite'}" src="${ENEMY_SPRITES[key]}" alt="">` : ''; }
 function stackSpriteHtml(layers) {
-  const base = layers.length >= 3 ? 1.3 : 1.5;
+  const base = layers.length >= 3 ? 1.3 : layers.length === 1 ? 2.2 : 1.5;
   let bottom = 0;
   return `<span class="bst-stack">${layers.map((key, i) => {
     const sz = base * Math.pow(0.8, i);
@@ -2093,4 +2093,13 @@ function applyHitKnockback(hitBall, sourceBall, force) {
   const dist = Math.hypot(dx, dy) || 1;
   hitBall.vx += (dx / dist) * force;
   hitBall.vy += (dy / dist) * force;
+}
+// 積み重なるスライムの新しい絵：三色団子は下から ピンク・青・緑 の3段（倒すと上から崩れる）、雪だるまは氷のスライム1体
+{ const P = 'assets/img/enemies/n2/';
+  for (const [k, f] of [['n2s:dangoPink', 'dango_pink'], ['n2s:dangoBlue', 'dango_blue'], ['n2s:dangoGreen', 'dango_green'], ['n2s:snowman', 'snowman']]) {
+    ENEMY_SPRITES[k] = P + f + '.webp'; const im = new Image(); im.src = ENEMY_SPRITES[k]; enemySpriteImgs[k] = im; SHAPE_ENEMY_SPRITE[k] = k;
+  }
+  STACK_LAYERS.slimeDango = ['n2s:dangoPink', 'n2s:dangoBlue', 'n2s:dangoGreen'];
+  STACK_LAYERS.slimeSnowman = ['n2s:snowman']; SHAPE_ENEMY_SPRITE.slimeSnowman = 'n2s:snowman'; SHAPE_ENEMY_SPRITE.slimeDango = 'n2s:dangoPink';
+  for (const e of ENEMY_BOOK) if (e.shape === 'slimeDango' || e.shape === 'slimeSnowman') e.sprite = SHAPE_ENEMY_SPRITE[e.shape];
 }
