@@ -4076,3 +4076,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .bst-card.unknown .bst-name, .bst-card.unknown .bst-info { color: #aab0bf !important; }
 .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 { width: 60px !important; height: 60px !important; background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; } .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 img { width: 60px !important; height: 60px !important; margin: 0 !important; border-radius: 0 !important; } /* 文字入りの新しい戦績アイコン */
 .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 { margin-left: -8px !important; } /* アイコンを少し左へ */
+.tab-page[data-tab="records"] .record-panel { border-image-source: url(assets/img/ui/rec/panel_frame.webp) !important; } /* 枠だけの絵（行の区切り飾りが左右の縁に伸びて残らないように） */
