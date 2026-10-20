@@ -2287,4 +2287,4 @@ function drawPinchAura() {
 for (const id of ['hero', ...Object.keys(COMPANIONS)]) SPRITE_FACING[id] = 1;
 // 新しい敵の絵は正面か左向きが多い（勇者が右にいるときは反転して向き合う）。右向きに描かれた絵だけ 1
 for (const k in ENEMY_SPRITES) if (/^n2s?:/.test(k)) SPRITE_FACING[k] = -1;
-for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕']) SPRITE_FACING[k] = 1; // ワイバーン・チビドラゴン
+for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕', 'n2:emoji:🌑']) SPRITE_FACING[k] = 1; // ワイバーン・チビドラゴン・闇の魔導士
