@@ -4023,3 +4023,4 @@ html.panel-open .layout { visibility: hidden !important; }
 #stageSkipModal .modal-panel { --w: min(100vw, 480px, calc(100dvh * 960 / 1639)); } /* 塔の絵が画面の高さに収まるように縮める（スクロールバーを出さない） */
 #stageSkipModal { align-items: center !important; overflow: hidden !important; overflow-y: hidden !important; scrollbar-width: none; } #stageSkipModal::-webkit-scrollbar { display: none; }
 .sd2 .sd2-stat { left: 30.6% !important; width: 37.6% !important; } /* 種のアイコンを小さくした分、文字を左へ寄せる */
+#towerReadyModal { background: rgba(6,8,14,0.55); } /* 後ろの試練の塔の画面が見えるように薄めに暗くする */

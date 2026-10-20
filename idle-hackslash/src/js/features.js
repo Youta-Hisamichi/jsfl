@@ -505,15 +505,16 @@ function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor
 const towerReadyModal = document.getElementById('towerReadyModal');
 { const orig = startSkipChallenge; let pending = null, prevPhase = null;
   const close = () => { towerReadyModal.classList.remove('show'); if (phase === 'paused' && prevPhase) phase = prevPhase; prevPhase = null; };
-  const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); towerBuffPending = buff; orig(ch); };
+  const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); stageSkipModal.classList.remove('show'); towerBuffPending = buff; orig(ch); };
   startSkipChallenge = function (challenge) {
     pending = challenge; prevPhase = phase === 'battle' ? 'battle' : null; if (prevPhase) phase = 'paused'; // 見ている間は一時停止
     document.getElementById('towerReadyText').innerHTML = `<b>ステージ${formatStageNumber(challenge.target)}</b> のボスに挑みます。`;
     document.getElementById('towerReadyAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'} 攻撃力2倍で挑む`;
+    stageSkipModal.classList.add('show'); // 確認は試練の塔の画面（背景・BGM）の上に出す
     towerReadyModal.classList.add('show');
   };
   document.getElementById('towerReadyGoBtn').addEventListener('click', () => go(false));
-  document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); if (phase === 'battle' && !game.skipChallenge) { renderStageSkipList(); stageSkipModal.classList.add('show'); } }); // やめたら塔の階選びに戻る
+  document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); renderStageSkipList(); }); // やめたら塔の階選びに戻る（塔の画面は開いたまま）
   document.getElementById('towerReadyAdBtn').addEventListener('click', () => {
     if (!pending) return;
     if (isAdFree()) { go('free'); return; }
