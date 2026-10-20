@@ -4098,3 +4098,17 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .bst-face img[src*="/n2/"], .bstz-face img[src*="/n2/"], #dbgMonGrid img[src*="/n2/"], .stage-mark[src*="/n2/"] { image-rendering: auto !important; } /* 新しい敵の絵はイラストなのでなめらかに */
 .tab-page[data-tab="records"] .rg-claim-all { width: 88% !important; margin: 2px auto 0 !important; } /* 全部受け取るボタンを少し小さく */
 .bst-stack img[src*="/n2/"] { image-rendering: auto !important; }
+/* 試練の塔：挑戦前の確認ダイアログ（見本の絵 1454×1033 を下地に、文字とボタンの押せる範囲を重ねる） */
+#towerReadyModal .modal-panel { --w: min(96vw, 480px); --u: calc(var(--w) / 1454); position: relative !important; width: var(--w) !important; max-width: none !important; height: calc(var(--u) * 1033) !important; max-height: none !important; padding: 0 !important; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/tower/ready_bg.webp) center / 100% 100% no-repeat !important; overflow: visible !important; }
+#towerReadyModal .modal-panel::before, #towerReadyModal .modal-panel::after, #towerReadyModal .tower-head { display: none !important; }
+#towerReadyModal #towerReadyText { position: absolute; left: calc(var(--u) * 100); width: calc(var(--u) * 1254); top: calc(var(--u) * 462); height: calc(var(--u) * 90); margin: 0 !important; display: flex; align-items: center; justify-content: center; color: #fff !important; font-size: calc(var(--u) * 46) !important; font-weight: 900; text-shadow: 0 2px 3px #000; white-space: nowrap !important; }
+#towerReadyModal #towerReadyText b { margin: 0 0.2em; color: #8fe8ff; font-size: 1.45em; text-shadow: 0 0 8px rgba(80,200,255,0.6), 0 2px 3px #000; }
+#towerReadyModal .modal-shop-list { position: static !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+#towerReadyModal .modal-shop-list > button { position: absolute !important; margin: 0 !important; padding: 0 !important; min-height: 0 !important; background: transparent !important; border: none !important; border-image: none !important; box-shadow: none !important; filter: none !important; border-radius: calc(var(--u) * 30) !important; cursor: pointer; }
+#towerReadyModal .modal-shop-list > button:active { background: rgba(255,255,255,0.12) !important; transform: scale(0.98); }
+#towerReadyModal #towerReadyAdBtn { left: calc(var(--u) * 150); width: calc(var(--u) * 1154); top: calc(var(--u) * 588); height: calc(var(--u) * 120); display: flex !important; align-items: center; justify-content: center; gap: calc(var(--u) * 14); color: #fff !important; font-size: calc(var(--u) * 48) !important; font-weight: 900; text-shadow: 0 2px 2px #0a2a6a, 0 0 4px rgba(0,30,90,0.6) !important; white-space: nowrap; }
+#towerReadyModal #towerReadyAdBtn b { color: #ffe27a; }
+#towerReadyModal #towerReadyAdBtn .trd-ico { font-size: 1.2em; margin-right: calc(var(--u) * 10); }
+#towerReadyModal #towerReadyGoBtn { left: calc(var(--u) * 134); width: calc(var(--u) * 1185); top: calc(var(--u) * 735); height: calc(var(--u) * 100); }
+#towerReadyModal #towerReadyCancelBtn { left: calc(var(--u) * 129); width: calc(var(--u) * 1190); top: calc(var(--u) * 855); height: calc(var(--u) * 110); }
+#towerReadyModal #towerReadyGoBtn .msb-name, #towerReadyModal #towerReadyCancelBtn .msb-name { visibility: hidden; }

@@ -508,8 +508,8 @@ const towerReadyModal = document.getElementById('towerReadyModal');
   const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); stageSkipModal.classList.remove('show'); towerBuffPending = buff; orig(ch); };
   startSkipChallenge = function (challenge) {
     pending = challenge; prevPhase = phase === 'battle' ? 'battle' : null; if (prevPhase) phase = 'paused'; // 見ている間は一時停止
-    document.getElementById('towerReadyText').innerHTML = `<b>ステージ${formatStageNumber(challenge.target)}</b> のボスに挑みます。`;
-    document.getElementById('towerReadyAdBtn').innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'} 攻撃力2倍で挑む`;
+    document.getElementById('towerReadyText').innerHTML = `ステージ<b>${formatStageNumber(challenge.target)}</b>のボスに挑みます。`;
+    document.getElementById('towerReadyAdBtn').innerHTML = `<span class="trd-ico">${isAdFree() ? '🎁' : '🎬'}</span><span>${isAdFree() ? '紋章特典で' : '動画を見て'} <b>攻撃力2倍</b>で挑む</span>`;
     stageSkipModal.classList.add('show'); // 確認は試練の塔の画面（背景・BGM）の上に出す
     towerReadyModal.classList.add('show');
   };
