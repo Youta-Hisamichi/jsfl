@@ -324,6 +324,9 @@ function stackSpriteHtml(layers) {
     return html;
   }).join('')}</span>`;
 }
+// 削除した敵（図鑑・出現・デバッグ一覧のすべてから外す。三色団子スライムの段の絵などとしては残る）
+const DELETED_ENEMIES = ['shape:slimeMatcha', 'emoji:m_leafling', 'emoji:m_skelDagger', 'emoji:m_bee', 'emoji:m_maneater3', 'emoji:m_frostCloud', 'emoji:m_blackSpider', 'emoji:m_shinobi', 'emoji:m_mossMonk', 'emoji:m_skelShield', 'emoji:m_ghoul'];
+for (const k of DELETED_ENEMIES) { const [t, id] = k.split(':'); if (t === 'emoji') { const i = EMOJI_ENEMIES.indexOf(id); if (i >= 0) EMOJI_ENEMIES.splice(i, 1); } else delete SHAPE_ENEMY_NAMES[id]; }
 const ENEMY_BOOK = [
   ...Object.keys(SHAPE_ENEMY_NAMES).map(shape => ({ key: 'shape:' + shape, kind: 'normal', name: SHAPE_ENEMY_NAMES[shape], shape, color: SHAPE_ENEMY_COLORS[shape], sprite: SHAPE_ENEMY_SPRITE[shape] })),
   ...EMOJI_ENEMIES.map(em => ({ key: 'emoji:' + em, kind: 'normal', name: EMOJI_ENEMY_NAMES[em], icon: em, sprite: EMOJI_ENEMY_SPRITE[em] })),
@@ -331,7 +334,7 @@ const ENEMY_BOOK = [
 ];
 const ENEMY_BOOK_BY_KEY = {};
 // デバッグで「削除」した敵は出現しなくなる（セーブに残る。↩で戻せる）
-function isEnemyRemoved(key) { return !!(game.removedEnemies && game.removedEnemies[key]); }
+function isEnemyRemoved(key) { return DELETED_ENEMIES.includes(key) || !!(game.removedEnemies && game.removedEnemies[key]); }
 function pickFrom(list) { return list[Math.floor(Math.random() * list.length)]; }
 let dbgMonKey = null;
 function renderDebugMonsters() {
@@ -493,6 +496,7 @@ const STAGE_ZONES = [
   { name: '遺跡',   normal: ['emoji:m_ghostKnight', 'emoji:m_holySlime', 'emoji:m_crystalSlime', 'emoji:💀', 'emoji:🧟', 'emoji:👻', 'emoji:⚫', 'emoji:🌑', 'emoji:👾', 'emoji:🛡️', 'emoji:🐲', 'emoji:🐉', 'emoji:m_skelSword', 'emoji:m_skelShield', 'emoji:m_skelDagger', 'emoji:m_mummy', 'emoji:m_bigBat', 'emoji:m_spider', 'emoji:m_clayGolem', 'emoji:m_mudGolem', 'emoji:m_redDrake', 'emoji:m_greenDrake', 'emoji:m_spikeBeast', 'emoji:m_purpleSpider'], boss: '⚔️', extraBosses: ['👀', '☠️', '⚜️', '🧿', '🥇', '🔆', '⌛', '⚱️'] },
   { name: '魔塔',   normal: ['emoji:m_holySlime', 'emoji:🌑', 'emoji:🗡️', 'emoji:🛡️', 'emoji:🦖', 'emoji:🐲', 'emoji:🌈', 'emoji:🐉', 'emoji:m_crystalElem', 'emoji:m_darkBall', 'emoji:m_voidBall', 'emoji:m_starKid', 'emoji:m_blackHole', 'emoji:m_blackMage'], boss: '🩸', extraBosses: ['😇', '🔮', '🌌', '🛕', '🪐', '🦚', '🥀'] },
 ];
+STAGE_ZONES.forEach(z => { z.normal = z.normal.filter(k => !DELETED_ENEMIES.includes(k)); }); // 削除した敵はエリアの顔ぶれからも外す
 const LATE_BOSSES = ['👹', '🦖', '⚰️', '💀']; // 100ステージ以降はボスの顔ぶれを広げて巡回
 function getStageZone(stage) { return STAGE_ZONES[Math.floor((Math.max(1, stage) - 1) / 10) % STAGE_ZONES.length]; }
 // ボス前のループ中は、そのエリア（10階）で出てきた雑魚からランダム（強さは今の階のまま）

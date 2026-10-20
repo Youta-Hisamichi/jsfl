@@ -3084,9 +3084,9 @@ function coffinThrowPos(ball) { // 投げられている棺桶の今の位置と
   if (k >= 1) { ball.coffinThrow = null; return null; }
   const e = t.target && balls.includes(t.target) ? t.target : null, tx = e ? e.x : t.sx, ty = e ? e.y : t.sy;
   let x, y, h;
-  if (k < COFFIN_HIT_AT) { const u = k / COFFIN_HIT_AT; x = t.sx + (tx - t.sx) * u; y = t.sy + (ty - t.sy) * u; h = Math.sin(u * Math.PI) * 70; t.hx = tx; t.hy = ty; }
+  if (k < COFFIN_HIT_AT) { const u = Math.pow(k / COFFIN_HIT_AT, 1.6); x = t.sx + (tx - t.sx) * u; y = t.sy + (ty - t.sy) * u; h = 0; t.hx = tx; t.hy = ty; if (Math.random() < 0.7) particles.push({ x, y, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5, life: 0.5, color: '#c8a070', decay: 0.07 }); } // 加速しながら一直線に突っ込む（土ぼこり）
   else { const u = (k - COFFIN_HIT_AT) / (1 - COFFIN_HIT_AT), hx = t.hx ?? tx, hy = t.hy ?? ty; x = hx + (ball.x - hx) * u; y = hy + (ball.y - hy) * u; h = Math.sin(u * Math.PI) * 40; }
-  return { x, y: y - h, gy: y, rot: k * t.spin * Math.PI };
+  return { x, y: y - h, gy: y, rot: 0 }; // 回転させずにまっすぐ突っ込む
 }
 function drawCoffin(ball, appear) {
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
