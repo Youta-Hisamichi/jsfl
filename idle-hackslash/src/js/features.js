@@ -1101,3 +1101,4 @@ for (const [H, C, E] of [[SNEAK_HERO, null, SNEAK_ENEMY], [DEMON_HERO, null, DEM
   if (C) for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...C[k].filter(() => Math.random() < 0.4));
   for (const k in E) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...E[k]);
 }
+ENEMY_SAY.idle.push('これはこれは、勇者様ではないか。ククク', 'やれやれ、魔王様もなんでこんなガキの始末を');
