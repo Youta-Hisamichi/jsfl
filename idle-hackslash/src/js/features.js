@@ -995,7 +995,7 @@ const WIND_ENEMY = {
 for (const k in WIND_HERO) if (CHUUNI[k]) CHUUNI[k].push(...WIND_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...WIND_COMP[k].filter(() => Math.random() < 0.4));
 for (const k in WIND_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...WIND_ENEMY[k]);
-ENEMY_SAY.idle.push('オニイ・・チャン', 'シテ・・コロシテ');
+ENEMY_SAY.idle.push('オニイ・・チャン', 'シテ‥コロシテ‥');
 
 // ===== 等価交換・錬成・兄弟の絆を語る、錬金術ファンタジー風のセリフ（どれもオリジナルの文） =====
 const ALCH_HERO = {
