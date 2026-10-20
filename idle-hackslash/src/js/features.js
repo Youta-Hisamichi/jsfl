@@ -868,3 +868,15 @@ document.addEventListener('click', ev => {
   updateStatsUI(); renderCoinShopList(); saveGame();
 });
 
+// 仲間ごとの復活ボタンを、名前・覚醒の行の右にある空きスペースの横まん中に置く
+function placeReviveButtons() {
+  document.querySelectorAll('.companion-card .cc-revive-big').forEach(btn => {
+    const card = btn.closest('.companion-card'), name = card.querySelector('.cc-name'); if (!name || !btn.offsetWidth) return;
+    const cr = card.getBoundingClientRect(), inner = cr.right - card.clientLeft; // 枠の内側の右端
+    const used = Math.max(...[...name.children, ...card.querySelectorAll('.cc-meta > *')].map(c => c.getBoundingClientRect().right), name.getBoundingClientRect().left); // 名前の行と覚醒の行の右端
+    const gap = (inner - used - btn.offsetWidth) / 2;
+    btn.style.setProperty('right', Math.max(-4, Math.round(gap)) + 'px', 'important');
+  });
+}
+new MutationObserver(() => requestAnimationFrame(placeReviveButtons)).observe(companionList, { childList: true });
+window.addEventListener('resize', placeReviveButtons);
