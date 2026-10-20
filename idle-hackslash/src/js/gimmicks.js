@@ -1,12 +1,12 @@
 // ---- ステージイベント（ギミック）：数ステージごとに見た目と遊びが変わる。序盤は毎回なにかが起きる ----
 // 3ステージ1組で同じイベントが続く（ボス階・試練の塔はお休み）。初めて見たイベントは「NEW!」でステージ図鑑に登録
 const GIMMICKS = {
-  stars:     { name: '流れ星の夜', icon: '🌠', desc: '落ちた星にさわるかタップでコイン', coin: 1, tint: 'rgba(10,16,60,0.28)' },
+  stars:     { name: '流れ星の夜', icon: '🌠', desc: '落ちた星にさわるかタップでコイン', coin: 1, tint: 'rgba(10,16,60,0.12)' },
   night:     { name: '月夜の草原', icon: '🌙', desc: '暗い夜。ホタルを集めるとコイン', coin: 1.3 },
   wind:      { name: '強風注意報', icon: '🍃', desc: 'みんな風に流される！ コイン×1.2', coin: 1.2 },
   fireworks: { name: '花火大会', icon: '🎆', desc: '夜空に花火。コイン×1.3', coin: 1.3, tint: 'rgba(6,8,34,0.2)' },
   treasure:  { name: '宝さがし', icon: '🗺️', desc: '✕じるしの上を通ると宝箱！', coin: 1 },
-  thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.3)' },
+  thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.14)' },
   bubbles:   { name: 'シャボン玉の庭', icon: '🫧', desc: 'シャボン玉を割るとコイン', coin: 1 },
   gold:      { name: 'ゴールドラッシュ', icon: '💰', desc: '撃破コイン×2！', coin: 2, tint: 'rgba(255,200,40,0.08)' },
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
@@ -167,7 +167,7 @@ function drawGimmick() {
   const key = curGimmick(); if (!key) return;
   const G = GIMMICKS[key], A = gArea(), now = Date.now();
   ctx.save(); arenaPath(); ctx.clip();
-  if (G.tint) { ctx.fillStyle = G.tint; fillArenaRect(); }
+  if (G.tint && !BRIGHT_FLOORS[getFloorKey(game.stage)]) { ctx.fillStyle = G.tint; fillArenaRect(); } // 雪原など明るい床はイベントの色かぶせで暗くしない
   if (key === 'night') drawGimmickDark(A, 'rgba(4,6,28,0.62)', 70);
   if (key === 'gold') { for (let i = 0; i < 14; i++) { const t = now / 900 + i * 1.7, x = A.l + ((i * 97 + now / 40) % A.w), y = A.t + ((i * 61 + Math.sin(t) * 40 + A.h) % A.h); ctx.globalAlpha = 0.4 + 0.4 * Math.sin(t * 3); ctx.fillStyle = '#ffe36b'; gStar(x, y, 4); } ctx.globalAlpha = 1; }
   if (key === 'treasure' && gm.spot && !gm.treasureDone) { const s = 11 + Math.sin(now / 200) * 2; ctx.strokeStyle = 'rgba(200,30,30,0.85)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(gm.spot.x - s, gm.spot.y - s); ctx.lineTo(gm.spot.x + s, gm.spot.y + s); ctx.moveTo(gm.spot.x + s, gm.spot.y - s); ctx.lineTo(gm.spot.x - s, gm.spot.y + s); ctx.stroke(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(now / 150); ctx.fillStyle = '#fff6b0'; gStar(gm.spot.x + 12, gm.spot.y - 12, 3); ctx.globalAlpha = 1; }
