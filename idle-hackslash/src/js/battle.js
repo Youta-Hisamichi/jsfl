@@ -655,7 +655,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, kind === 'rain' ? '上から降ってくるぞ！' : kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！（終わるとスキ）' : '！', '#ff4d4d', 0.02, true);
+    spawnDamageText(e.x, e.y - e.radius - 22, kind === 'rain' ? '上から降ってくるぞ！' : kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！' : '！', '#ff4d4d', 0.02, true);
     if (kind === 'jump') { thump(160, 520, 0.22, 0.12, 'square'); filteredNoise(0, 0.2, 0.12, 900, 1); } // 踏み切りの「ブワッ」
     else playTone(isBig ? 620 : 880, isBig ? 0.25 : 0.12, 'square', 0.06, isBig ? 420 : 660);
     return false;
