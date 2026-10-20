@@ -1102,3 +1102,4 @@ for (const [H, C, E] of [[SNEAK_HERO, null, SNEAK_ENEMY], [DEMON_HERO, null, DEM
   for (const k in E) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...E[k]);
 }
 ENEMY_SAY.idle.push('これはこれは、勇者様ではないか。ククク', 'やれやれ、魔王様もなんでこんなガキの始末を');
+ENEMY_SAY.idle.push('ヤダアアアァーッ！！');
