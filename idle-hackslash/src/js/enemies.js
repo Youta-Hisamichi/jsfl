@@ -305,7 +305,7 @@ const buildSlimeVariantsLater = () => scheduleIdle(buildSlimeVariants);
 if (enemySpriteImgs.slime.complete && enemySpriteImgs.slime.naturalWidth) buildSlimeVariantsLater();
 else enemySpriteImgs.slime.addEventListener('load', buildSlimeVariantsLater, { once: true });
 function getEnemySpriteKey(enemy) {
-  if (enemy.isBoss && enemy.megaPhase && enemy.megaPhase !== 'mega') return 'slime'; // 超ジャンボスライムは合体するまでミニスライムの姿
+  if (enemy.isBoss && enemy.megaPhase && enemy.megaPhase !== 'mega') return SHAPE_ENEMY_SPRITE.slimeChibi; // 超ジャンボスライムは合体するまでミニスライムの姿
   if (enemy.isBoss) return BOSS_ENEMY_SPRITE[enemy.emoji];
   return enemy.emoji ? EMOJI_ENEMY_SPRITE[enemy.emoji] : SHAPE_ENEMY_SPRITE[enemy.shape];
 }
