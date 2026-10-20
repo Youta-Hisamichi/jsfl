@@ -4052,3 +4052,13 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .companion-card .cc-revive-big { top: -6px !important; right: -4px !important; height: 30px !important; } /* 2行目（覚醒の星）にかからない高さ */
 .companion-card .cc-revive-big { top: 3px !important; } /* 枠の上とアイコン行の間で上下の余白をそろえる */
 @media (max-width: 440px) { .companion-card .cc-revive-big { top: -4px !important; } } /* 幅の狭いスマホでは覚醒の星にかからないよう少し上に */
+/* ショップ上部のタブ：枠・アイコン・文字を合成した絵（オフ／オン） */
+.shop-tabs { gap: 2px !important; }
+.shop-tabs .sub-tab-btn { aspect-ratio: 442 / 231 !important; padding: 0 !important; background: var(--sto) center / 100% 100% no-repeat !important; filter: none !important; font-size: 0 !important; color: transparent !important; text-shadow: none !important; }
+.shop-tabs .sub-tab-btn > * { display: none !important; }
+.shop-tabs .sub-tab-btn.active { background: var(--stn) center / 100% 100% no-repeat !important; filter: drop-shadow(0 0 5px rgba(90,170,255,0.8)) !important; }
+.shop-tabs .sub-tab-btn:active { transform: scale(0.96); }
+.shop-tabs [data-shop-tab="item"] { --sto: url(assets/img/ui/shop/tab_item_off.webp); --stn: url(assets/img/ui/shop/tab_item_on.webp); }
+.shop-tabs [data-shop-tab="chara"] { --sto: url(assets/img/ui/shop/tab_chara_off.webp); --stn: url(assets/img/ui/shop/tab_chara_on.webp); }
+.shop-tabs [data-shop-tab="charge"] { --sto: url(assets/img/ui/shop/tab_charge_off.webp); --stn: url(assets/img/ui/shop/tab_charge_on.webp); }
+.shop-tabs [data-shop-tab="bag"] { --sto: url(assets/img/ui/shop/tab_bag_off.webp); --stn: url(assets/img/ui/shop/tab_bag_on.webp); }
