@@ -11,7 +11,6 @@ const GIMMICKS = {
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
   rocks:     { name: '落石注意', icon: '🪨', desc: '岩が降ってきて敵をつぶす', coin: 1.1 },
   snow:      { name: '雪まつり', icon: '⛄', desc: '雪が舞う。雪だるまを壊すとコイン', coin: 1 },
-  coinrain:  { name: 'コインの雨', icon: '🪙', desc: '降ってくるコインを拾おう', coin: 1 },
   slime:     { name: 'ぷるぷる床', icon: '🟢', desc: '跳ね返りが強くなる。コイン×1.2', coin: 1.2 },
   pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
@@ -26,7 +25,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'coinrain', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名

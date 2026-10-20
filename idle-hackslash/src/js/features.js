@@ -939,3 +939,4 @@ const TOMINO_ENEMY = {
 for (const k in TOMINO_HERO) if (CHUUNI[k]) CHUUNI[k].push(...TOMINO_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...TOMINO_COMP[k].filter(() => Math.random() < 0.4)); // 仲間ごとに4割ずつ
 for (const k in TOMINO_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...TOMINO_ENEMY[k]);
+ENEMY_SAY.idle.push('オイラ悪いモンスターじゃないよ', 'た、助けてくれ！体が勝手に！');

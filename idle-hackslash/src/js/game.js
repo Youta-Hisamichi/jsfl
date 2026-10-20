@@ -53,7 +53,7 @@ function step() {
   }
   if (!e.isBoss && !e.spawnTimer && !game.skipChallenge && game.stage % 10 !== 0 && !filmMode) { // 雑魚はしばらく倒せないと逃げて、次の雑魚が出てくる
     e.liveFrames = (e.liveFrames || 0) + speedMult;
-    if (!e.escapeWarned && e.liveFrames >= ENEMY_PASS_FRAMES - ESCAPE_WARN_FRAMES) { e.escapeWarned = true; spawnDamageText(escTextX(e), e.y - e.radius - 18, pickFrom(['退路を探している…', 'こいつ…逃げる気か！', '敵が背を向けかけている…', '浮き足立っている…']) + '（逃げてもコイン30%）', '#cfe8ff', 0.008); }
+    if (!e.escapeWarned && e.liveFrames >= ENEMY_PASS_FRAMES - ESCAPE_WARN_FRAMES) { e.escapeWarned = true; spawnDamageText(escTextX(e), e.y - e.radius - 18, pickFrom(['退路を探している…', 'こいつ…逃げる気か！', '敵が背を向けかけている…', '浮き足立っている…']), '#cfe8ff', 0.008); }
     if (e.liveFrames >= ENEMY_PASS_FRAMES) startEnemyEscape(e);
   }
   let battleEnded = false;
