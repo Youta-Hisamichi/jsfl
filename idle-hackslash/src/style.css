@@ -4039,3 +4039,4 @@ html.panel-open .layout { visibility: hidden !important; }
 #stageSkipModal #towerSeedBtn small { font-size: calc(var(--u) * 26) !important; }
 #stageSkipModal #stageSkipList { left: calc(var(--u) * 78) !important; top: calc(var(--u) * 920) !important; width: calc(var(--u) * 806) !important; grid-template-rows: repeat(5, calc(var(--u) * 98)) !important; gap: calc(var(--u) * 9) !important; }
 #stageSkipModal #stageSkipCloseBtn { left: calc(var(--u) * 290) !important; top: calc(var(--u) * 1478) !important; width: calc(var(--u) * 390) !important; height: calc(var(--u) * 120) !important; }
+body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !important; width: calc(100% + 20px) !important; max-width: 470px !important; margin: 0 -10px !important; } /* ランキングのタイトル画像を大きめに（パネルの余白まで使う） */
