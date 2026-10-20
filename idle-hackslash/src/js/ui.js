@@ -1017,10 +1017,8 @@ debugRow.addEventListener('click', event => {
     showBossWarning();
     startBgm('boss');
   }
-  if (action === 'saveReset') {
-    clearSave();
-    fullReset();
-    showNotice('DEBUG: セーブデータを削除し、ゲームを最初からやり直しました');
+  if (action === 'saveReset') { // セーブを消して読み込み直す（進化など、すべてが最初の状態に戻る）
+    window.__noSave = true; clearSave(); location.reload();
     return;
   }
   if (action === 'opening') { playOpening(); return; }
@@ -1130,7 +1128,7 @@ function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
   const lv = Math.floor(to / leap.every) * leap.every;
-  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv)} ${leap.name}！ ${leap.every === 10 ? '+3%' : '×' + leap.mult}`);
+  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv + 1)} ${leap.name}！ ${leap.every === 10 ? '+3%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
   playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'companion' ? AUTO_UPGRADE_QUIET_VOL : 1); // オート強化は強化ページ以外では小さく
@@ -1153,7 +1151,7 @@ function levelUpUpgrade(id, x, y) {
   announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
-  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id])}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
+  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id] + 1)}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
   updateStatsUI();
   updateHPUI();
   return true;
@@ -1931,7 +1929,7 @@ companionList.addEventListener('click', event => {
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
     playUpgradeSound();
-    showNotice(`${COMPANIONS[id].name} の${kind === 'hp' ? '最大HP' : '攻撃力'}が Lv.${formatCoinNumber(compUpLv(id, kind))} に！（+${formatCoinNumber(count)}）`);
+    showNotice(`${COMPANIONS[id].name} の${kind === 'hp' ? '最大HP' : '攻撃力'}が Lv.${formatCoinNumber(compUpLv(id, kind) + 1)} に！（+${formatCoinNumber(count)}）`);
     updateStatsUI();
     updateHPUI();
     renderCompanionList();

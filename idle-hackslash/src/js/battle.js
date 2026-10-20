@@ -1324,6 +1324,7 @@ const SAVE_KEY = 'circle-battle-idle-save-v2'; // v2：数値バランスを作�
 let saveTimer = null;
 let suppressAutoSave = false; // デバッグのロード中は自動セーブで上書きしない
 function saveGame() {
+  if (window.__noSave) return; // セーブリセット中は書き戻さない
   if (suppressAutoSave) return;
   try {
     const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, savedAt: Date.now() };
