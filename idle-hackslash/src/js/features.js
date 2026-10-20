@@ -207,7 +207,34 @@ function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語�
   if (cur) lines.push(cur);
   return lines;
 }
+// 戦場の上に重なっているUI（ボタン・バッジ・イベント表示など）の場所を、ときどき調べておく
+let speechUIRects = [], speechUIAt = 0;
+function refreshSpeechUIRects() {
+  const cv = canvas, cr = cv.getBoundingClientRect(); if (!cr.width) return;
+  const k = size / cr.width, seen = new Set(), out = [];
+  for (let gy = 0; gy < 14; gy++) for (let gx = 0; gx < 10; gx++) {
+    const px = cr.left + (gx + 0.5) * cr.width / 10, py = cr.top + (gy + 0.5) * cr.height / 14;
+    const el = document.elementFromPoint(px, py); if (!el || el === cv || el.contains(cv) || seen.has(el)) continue;
+    seen.add(el); const r = el.getBoundingClientRect(); if (r.width * r.height > cr.width * cr.height * 0.4 || getComputedStyle(el).opacity === '0') continue; // 画面全体を覆うもの（ダイアログなど）は対象外
+    out.push({ x: (r.left - cr.left) * k - 4, y: (r.top - cr.top) * k - 4, w: r.width * k + 8, h: r.height * k + 8 });
+  }
+  for (const el of document.querySelectorAll('.arena-wrap > :not(canvas), [class*="banner"], [class*="notice"], [class*="chip"], [class*="toggle"], [id*="Banner"], [id*="Notice"]')) { // 押せない表示（帯やお知らせ）も対象
+    if (seen.has(el) || el.contains(cv)) continue; const r = el.getBoundingClientRect(); if (!r.width || r.right < cr.left || r.left > cr.right || r.bottom < cr.top || r.top > cr.bottom) continue;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity < 0.05 || r.width * r.height > cr.width * cr.height * 0.4) continue;
+    seen.add(el); out.push({ x: (r.left - cr.left) * k - 4, y: (r.top - cr.top) * k - 4, w: r.width * k + 8, h: r.height * k + 8 });
+  }
+  speechUIRects = out;
+}
+function avoidSpeechUI(x, y, w, h) { // UIと重なっていたら、上か下（近い方）へよける
+  for (let n = 0; n < 4; n++) {
+    const hit = speechUIRects.find(p => x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y); if (!hit) break;
+    const down = hit.y + hit.h + 2, upY = hit.y - h - 2;
+    y = (upY >= 2 && (y + h / 2 < hit.y + hit.h / 2 || down + h > sizeH - 2)) ? upY : Math.min(down, sizeH - h - 2);
+  }
+  return { x, y };
+}
 function drawSpeech() {
+  if (Date.now() - speechUIAt > 700) { speechUIAt = Date.now(); try { refreshSpeechUIRects(); } catch (e) {} }
   if (!speech.length) return;
   const now = Date.now();
   speech = speech.filter(s => s.until > now && (balls.includes(s.ball) || adds.includes(s.ball)));
@@ -219,10 +246,14 @@ function drawSpeech() {
     const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * lh + 8;
     const r = b.radius || 14, up = b.y - r * 2.3 - h >= 30;
     let tx = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), ty = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
-    // 高速で動いても読めるよう、吹き出しはゆっくり追いかける（キャラに直結させない）
-    if (s.x === undefined) { s.x = tx; s.y = ty; } else { s.x += (tx - s.x) * 0.09; s.y += (ty - s.y) * 0.09; }
+    // ふつうはキャラについていく。速く動いているときは、読めるようにその場に止めておく
+    const spd = Math.hypot(b.vx || 0, b.vy || 0);
+    if (s.x === undefined) { s.x = tx; s.y = ty; }
+    else if (spd < 2.5) { s.x += (tx - s.x) * 0.12; s.y += (ty - s.y) * 0.12; }
+    else if (Math.hypot(tx - s.x, ty - s.y) > 160) { s.x += (tx - s.x) * 0.02; s.y += (ty - s.y) * 0.02; } // 離れすぎたら少しずつ寄る
     let x = s.x, y = s.y;
     for (const p of placed) if (x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y) y = up ? p.y - h - 3 : p.y + p.h + 3; // ほかの吹き出しと重ならないように
+    { const p1 = avoidSpeechUI(x, y, w, h); x = p1.x; y = p1.y; }
     placed.push({ x, y, w, h });
     const en = !b.isPlayer, tailX = Math.max(x + 8, Math.min(x + w - 8, b.x)), tailUp = b.y > y + h / 2;
     ctx.fillStyle = en ? 'rgba(40,12,20,0.6)' : 'rgba(255,255,255,0.6)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
@@ -991,7 +1022,7 @@ for (const k in ALCH_HERO) if (CHUUNI[k]) CHUUNI[k].push(...ALCH_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...ALCH_COMP[k].filter(() => Math.random() < 0.4));
 for (const k in ALCH_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...ALCH_ENEMY[k]);
 
-// ===== 戦略・歴史・国家を冷静に語る、宇宙艦隊戦記風のセリフ（どれもオリジナルの文） =====
+// ===== 戦略・歴史・国家を冷静に語る、宇宙軍団戦記風のセリフ（どれもオリジナルの文） =====
 const GALAXY_HERO = {
   idle: ['勝つことより、負けない布陣を考えるほうがずっと難しい', '英雄なんてものは、後の歴史家がこしらえるものさ', '紅茶がもう一杯あれば、もう少し良い策が浮かぶんだが',
     '戦争で得をする人間は、たいてい前線にはいない', '民主主義も専制も、結局は人が運ぶものだ', '退くべき時に退ける指揮官は、案外少ないんだよ',
@@ -1008,7 +1039,7 @@ const GALAXY_COMP = {
   k: ['敵前衛、崩れました！', '各個撃破、成功です！'],
 };
 const GALAXY_ENEMY = {
-  idle: ['我が艦隊の前に、障害など存在せぬ', '凡庸な指揮官に率いられた兵は、哀れなものだ', '旧き秩序は、今日ここで終わる'],
+  idle: ['我が軍団の前に、障害など存在せぬ', '凡庸な指揮官に率いられた兵は、哀れなものだ', '旧き秩序は、今日ここで終わる'],
   boss: ['宇宙を手に入れる…それが私の望みだ', '貴様を倒し、この銀河に新しい時代を開く', '戦う相手としては、申し分ない'],
   bossHalf: ['面白い…私の想定を超えてくるとはな', 'これほどの用兵…一度、酒を酌み交わしたかった'],
   bossLow: ['私は…少し、急ぎすぎたのかもしれん…', '夢の続きは…貴様に預けよう…'],
