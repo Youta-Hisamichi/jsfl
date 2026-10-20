@@ -71,7 +71,7 @@ function setupGimmick(key) {
   playTone(660, 0.12, 'triangle', 0.06, 990); setTimeout(() => playTone(990, 0.16, 'triangle', 0.06, 1320), 120);
   const A = gArea();
   if (key === 'treasure') gm.spot = { x: gRand(A.l + A.w * 0.2, A.r - A.w * 0.2), y: gRand(A.t + A.h * 0.2, A.b - A.h * 0.2) };
-  if (key === 'snow') for (let i = 0; i < 3; i++) gm.items.push({ kind: 'snowman', x: gRand(A.l + 40, A.r - 40), y: gRand(A.t + 50, A.b - 40), hp: 3 });
+  if (key === 'snow') for (let i = 0; i < 3; i++) gm.items.push({ kind: 'snowman', x: gRand(A.l + 40, A.r - 40), y: gRand(A.t + 50, A.b - 40), hp: 3, flip: Math.random() < 0.5 }); // 向きは左右ランダム
   if (key === 'night') for (let i = 0; i < 6; i++) gm.items.push(makeFirefly(A));
   if (key === 'wind') gm.wind = Math.random() * Math.PI * 2;
 }
@@ -212,13 +212,16 @@ function drawGimmickItem(it, now) {
     const a = 0.6 + 0.4 * Math.sin(it.ph * 3); ctx.fillStyle = `rgba(214,255,122,${a})`; ctx.shadowColor = '#d6ff7a'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(it.x, it.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
   } else if (it.kind === 'snowman') {
     const dx = it.shake && now - it.shake < 200 ? Math.sin(now / 20) * 3 : 0, x = it.x + dx;
-    if (typeof drawObstacleSprite === 'function' && drawObstacleSprite('snowman', x, it.y - 2, 44)) return;
+    if (it.flip) { ctx.save(); ctx.translate(x * 2, 0); ctx.scale(-1, 1); } // 左右反転（x を軸に）
+    const drawn = typeof drawObstacleSprite === 'function' && drawObstacleSprite('snowman', x, it.y - 2, 44);
+    if (drawn) { if (it.flip) ctx.restore(); return; }
     ctx.fillStyle = '#f4f8ff'; ctx.strokeStyle = '#b8c6dc'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(x, it.y + 6, 13, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(x, it.y - 11, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#222'; ctx.fillRect(x - 4, it.y - 13, 2, 2); ctx.fillRect(x + 2, it.y - 13, 2, 2);
     ctx.fillStyle = '#ff8a2a'; ctx.beginPath(); ctx.moveTo(x, it.y - 10); ctx.lineTo(x + 7, it.y - 9); ctx.lineTo(x, it.y - 8); ctx.fill();
     ctx.fillStyle = '#d33'; ctx.fillRect(x - 8, it.y - 4, 16, 3);
+    if (it.flip) ctx.restore();
   }
 }
 // ===== 花火：加算合成で光る（光の粒は色ごとにぼかした絵を作って使い回す） =====
