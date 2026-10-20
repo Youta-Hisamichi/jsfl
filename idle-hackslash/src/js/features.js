@@ -940,3 +940,26 @@ for (const k in TOMINO_HERO) if (CHUUNI[k]) CHUUNI[k].push(...TOMINO_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...TOMINO_COMP[k].filter(() => Math.random() < 0.4)); // 仲間ごとに4割ずつ
 for (const k in TOMINO_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...TOMINO_ENEMY[k]);
 ENEMY_SAY.idle.push('オイラ悪いモンスターじゃないよ', 'た、助けてくれ！体が勝手に！');
+
+// ===== 風と森と生き物への想いを語る、終末ファンタジー風のセリフ（どれもオリジナルの文） =====
+const WIND_HERO = {
+  idle: ['風が…変わった。森が何かを伝えようとしている', 'この土地の木々は、まだ生きようとしている', '人は、森を焼かなければ生きられないのだろうか', '静かに…耳をすませば、大地の声が聞こえる',
+    '怒りに任せて剣を振るえば、もっと大きな怒りが返ってくる', '谷を渡る風が、今日は少し冷たい'],
+  kill: ['ごめんなさい…あなたも、生きたかったのね', 'もう苦しまなくていい…眠って', 'これ以上、傷つけ合う理由なんてないのに…'],
+  boss: ['あなたも…何かに怯えているのね', 'その怒り、私が受け止める！', '森を荒らす者は、ここで止める！'],
+  bossKill: ['どうか…次は穏やかな森に生まれて', '終わった…風が、やっと凪いだ'],
+  pinch: ['まだ倒れない…みんなが待ってる！', '痛みなんて…森の悲しみに比べれば！'],
+};
+const WIND_COMP = {
+  i: ['風の匂いが変わったわ。雨が来る', 'この虫たち、こっちを見てる…怒ってないといいけど', '森の奥は、人が思うより深いのよ', '大地が疲れてる…もう少し休ませてあげたい',
+    '谷のみんな、元気にしてるかな'],
+  k: ['許して…でも、通してもらうわ', 'これで…静かになった'],
+};
+const WIND_ENEMY = {
+  idle: ['ここは我らの森だ…出ていけ', 'ヒトの匂い…また焼きに来たのか', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ'],
+  boss: ['群れを傷つけたのは、お前たちか', 'この怒りは、千年の森の怒りだ', '風の谷の者よ…何をしに来た'],
+  bossLow: ['怒りが…静まっていく…', 'お前は…なぜ泣いている…'],
+};
+for (const k in WIND_HERO) if (CHUUNI[k]) CHUUNI[k].push(...WIND_HERO[k]);
+for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...WIND_COMP[k].filter(() => Math.random() < 0.4));
+for (const k in WIND_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...WIND_ENEMY[k]);
