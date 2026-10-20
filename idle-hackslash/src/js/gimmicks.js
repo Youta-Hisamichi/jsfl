@@ -460,7 +460,7 @@ function renderSeedPanel(ov) { // 見本の絵（seed_panel.webp）の上に、�
   ['hp', 'atk'].forEach(k => {
     const row = ov.querySelector(`.sd2-row[data-k="${k}"]`); if (!row) return;
     const S = SEEDS[k], h = seedHeld(k), u = seedUsed(k), pct = Math.max(1, Math.floor(h * 0.1));
-    row.querySelector('.sd2-stat').innerHTML = `所持 <b class="sd2-n">${h}</b> 個<br>いまの効果 <b class="sd2-eff ${k}">+${Math.round(u * SEED_PER_USE * 100)}%</b>（${u}個）`;
+    row.querySelector('.sd2-stat').innerHTML = `所持 <b class="sd2-n">${h}</b> 個<br>いまの効果 <b class="sd2-eff ${k}">+${Math.round(u * SEED_PER_USE * 100)}%</b> ${u}個`;
     row.querySelector('.sd2-pctn').textContent = `${h ? pct : 0}個`;
     row.querySelectorAll('[data-seed]').forEach(b => { b.disabled = !h; b.classList.toggle('is-disabled', !h); });
   });
