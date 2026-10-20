@@ -130,7 +130,7 @@ const HERO_GENDER_SRC = { male: HERO_ORIG_SRC, female: HERO_ORIG_SRC }; // 性�
 const HERO_ENDINGS = [['普通', ''], ['にゃん', 'にゃん'], ['にょ', 'にょ'], ['ぞい', 'ぞい'], ['自由に決める', null]];
 const HERO_RANDOM_NAMES = { male: ['アレン', 'カイト', 'レオン', 'ユウ', 'ジーク', 'ソラ', 'リク', 'ハヤテ', 'ルーク', 'ガルド'], female: ['エマ', 'リナ', 'ミア', 'セレナ', 'ユイ', 'ルナ', 'アリサ', 'ヒカリ', 'ノエル', 'サクラ'] };
 function heroName() { return game.username || '勇者'; }
-function heroEnding() { const e = game.heroEnding || 0; return e === 4 ? String(game.heroEndingText || '').slice(0, 6) : (HERO_ENDINGS[e] || HERO_ENDINGS[0])[1]; }
+function heroEnding() { return ''; /* キャラエディットの語尾は廃止（いつも普通のしゃべり方） */ const e = game.heroEnding || 0; return e === 4 ? String(game.heroEndingText || '').slice(0, 6) : (HERO_ENDINGS[e] || HERO_ENDINGS[0])[1]; }
 function heroSay(text, ending) { // 勇者のセリフに語尾を付ける（文の終わりごと。「。」「！」などの記号の前に入れる）
   const end = ending != null ? ending : heroEnding(); if (!end || !text) return text;
   return String(text).split(/(?<=[。！？!?♪])/).map(sen => {
@@ -177,7 +177,7 @@ function openCharEdit(first, onDone) {
   let ov = document.getElementById('charEditOv');
   if (ov) ov.remove();
   ov = document.createElement('div'); ov.id = 'charEditOv'; ov.className = 'ce-ov';
-  const look = heroLook(); let ending = game.heroEnding || 0, endingText = game.heroEndingText || '';
+  const look = heroLook(); let ending = 0, endingText = game.heroEndingText || '';
   const esc = t => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const sw = part => HERO_COLORS[part].map(([n, , col], i) => `<button class="ce-sw" data-ce-part="${part}" data-ce-i="${i}" style="--c:${col}" title="${n}"><i></i><span>${n}</span></button>`).join('');
   ov.innerHTML = `<div class="ce-panel"><div class="ce-title">🎨 キャラエディット</div>${first ? '<div class="ce-sub">冒険に出る勇者の姿を決めよう！（あとから設定で変えられます）</div>' : ''}
@@ -185,8 +185,8 @@ function openCharEdit(first, onDone) {
     <div class="ce-say"></div>
     <label class="ce-name"><span>名前</span><input type="text" maxlength="12" placeholder="名無しの勇者" value="${esc(game.username || '')}"></label>
     <div class="ce-sec">性別</div><div class="ce-opts ce-gender"><button data-ce-gender="male">♂ 男の子</button><button data-ce-gender="female">♀ 女の子</button></div>
-    <div class="ce-sec">語尾</div><div class="ce-opts ce-ending">${HERO_ENDINGS.map(([n], i) => `<button data-ce-end="${i}">${n}</button>`).join('')}</div>
-    <label class="ce-name ce-endtext"><span>語尾</span><input type="text" maxlength="6" placeholder="例：でござる" value="${esc(endingText)}"></label>
+    <div class="ce-sec" style="display:none">語尾</div><div class="ce-opts ce-ending" style="display:none">${HERO_ENDINGS.map(([n], i) => `<button data-ce-end="${i}">${n}</button>`).join('')}</div>
+    <label class="ce-name ce-endtext" style="display:none !important"><span>語尾</span><input type="text" maxlength="6" placeholder="例：でござる" value="${esc(endingText)}"></label>
     <div class="ce-sec">見た目プリセット</div><div class="ce-presets">${HERO_PRESETS.map((p, i) => `<button class="ce-pre" data-ce-pre="${i}">${p.name}</button>`).join('')}</div>
     <div class="ce-sec">髪の色</div><div class="ce-row">${sw('hair')}</div>
     <div class="ce-sec">服の色</div><div class="ce-row">${sw('outfit')}</div>
@@ -221,7 +221,7 @@ function openCharEdit(first, onDone) {
       look.gender = Math.random() < 0.5 ? 'male' : 'female';
       look.hair = r(HERO_COLORS.hair.length); look.outfit = r(HERO_COLORS.outfit.length); look.cape = r(HERO_COLORS.cape.length);
       const names = HERO_RANDOM_NAMES[look.gender]; nameIn.value = names[r(names.length)];
-      ending = r(4); sampleI = r(SAMPLE.length);
+      ending = 0; sampleI = r(SAMPLE.length);
       playTone(660, 0.05, 'square', 0.05); setTimeout(() => playTone(990, 0.08, 'square', 0.05), 60);
       refresh(); hop(); return;
     }
