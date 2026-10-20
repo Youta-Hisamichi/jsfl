@@ -4065,3 +4065,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .shop-tabs .sub-tab-btn { aspect-ratio: 514 / 174 !important; } .shop-tabs .sub-tab-btn.active { filter: none !important; } /* 新しいタブ絵（オンは絵の中で明るく大きい） */
 .exp-wrap .stage-mark-boss { transform: translate(-50%, -66%) !important; } /* ゴールのボスを枠の上下まん中あたりまで上げる */
 .dbg-now-stage { background: rgba(90,170,255,0.12) !important; border-color: rgba(90,170,255,0.45) !important; line-height: 1.5; }
+#shopList .sr-ico.su-i_party, .su-i_party { background: url(assets/img/ui/shop/i_party.webp) center / contain no-repeat !important; } /* パーティ枠+1 の新しいアイコン */
