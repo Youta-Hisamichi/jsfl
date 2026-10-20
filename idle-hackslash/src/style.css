@@ -4112,3 +4112,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #towerReadyModal #towerReadyGoBtn { left: calc(var(--u) * 134); width: calc(var(--u) * 1185); top: calc(var(--u) * 735); height: calc(var(--u) * 100); }
 #towerReadyModal #towerReadyCancelBtn { left: calc(var(--u) * 129); width: calc(var(--u) * 1190); top: calc(var(--u) * 855); height: calc(var(--u) * 110); }
 #towerReadyModal #towerReadyGoBtn .msb-name, #towerReadyModal #towerReadyCancelBtn .msb-name { visibility: hidden; }
+#towerReadyModal { background: rgba(0,0,0,0.78) !important; } /* 後ろの塔の画面を黒っぽく暗く沈める */
