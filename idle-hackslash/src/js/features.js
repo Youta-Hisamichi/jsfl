@@ -658,10 +658,10 @@ function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナ
 { const orig = bossDefeated; bossDefeated = function (reason) { const boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying); if (boss && phase === 'battle') enemySay(boss, 'bossWin', true); return orig.apply(this, arguments); }; } // 負けたらボスが勝ち誇る
 
 // ===== 勇者のうざい自慢ゼリフ（忙しいアピール・寝てない自慢・さりげなく強さ自慢の作風） =====
-const HERO_BRAG_RATE = 0.15;
+const HERO_BRAG_RATE = 0; // 自慢ゼリフは全部削除したので出さない
 const HERO_BRAG = {
-  idle: ['いや〜昨日3時間しか寝てないわー。でも倒せちゃうんだよね', '別に強くなろうと思ってないんだけど、勝手にレベル上がっちゃうんだよね', '俺くらいになると、敵の方から寄ってきちゃうんだよね〜', 'え？この剣？ガチャで普通に出たやつだけど？', '修行とか全然してないわー。マジで才能だけでやってるから', '正直このステージ、目つぶってても余裕なんだよね', '俺ってほら、放置してても強くなるタイプじゃん？', 'ぶっちゃけ回復とか使ったことないわー', 'いやーまた転生しちゃったわー。強くなりすぎて困るんだよね'],
-  kill: ['あれ？今の本気出してないんだけど？', 'いや〜今のは手加減したつもりだったんだけどな〜', 'また倒しちゃったわー。悪いことしたかな', '俺の通常攻撃、他の人の必殺技くらいあるらしいんだよね', 'え、今のでクリティカル？普通に殴っただけなんだけど'],
+  idle: [],
+  kill: [],
 };
 { const orig = heroChuuni; heroChuuni = function (kind, force) {
   if ((kind === 'idle' || kind === 'kill') && !getHeroChar() && Math.random() < HERO_BRAG_RATE) {
