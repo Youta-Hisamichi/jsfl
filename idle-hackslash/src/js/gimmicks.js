@@ -772,7 +772,7 @@ function drawChurchDecor(A, now) {
 const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: drawRuinsDecor, graveyard: drawGraveyardDecor, church: drawChurchDecor };
 { const orig = drawArenaFloor; drawArenaFloor = function () { const r = orig.apply(this, arguments); try { const key = curGimmick(), bg = key && stageArt('bg_' + key); if (bg) { // 背景の一枚絵を戦う場所いっぱいに（はみ出す分は上下を切る）
       const A = gArea(), s = Math.max(A.w / bg.naturalWidth, A.h / bg.naturalHeight), w = bg.naturalWidth * s, h = bg.naturalHeight * s;
-      ctx.save(); arenaPath(); ctx.clip(); if (key !== 'castle') ctx.imageSmoothingEnabled = false; /* ドット絵の背景はぼかさずにくっきり拡大 */ ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
+      ctx.save(); arenaPath(); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; /* 背景は高解像度にした絵なので、なめらかに縮小して描く */ ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
     const d = GIMMICK_DECOR[key]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
 { const orig = drawGimmick; drawGimmick = function () { // 墓地は暗闇（人魂と味方のまわりだけ明るい）
   if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), stageArt('bg_graveyard') ? 'rgba(8,4,26,0.35)' : 'rgba(8,4,26,0.55)', 75); ctx.restore(); }

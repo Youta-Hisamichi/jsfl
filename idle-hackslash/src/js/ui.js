@@ -3099,7 +3099,7 @@ if (window.ResizeObserver) { const ro = new ResizeObserver(() => requestAnimatio
 if (document.querySelector('.cmd-bar .tower-row')) new MutationObserver(() => requestAnimationFrame(fitCmdBarText)).observe(document.querySelector('.cmd-bar .tower-row'),{ childList: true, subtree: true, characterData: true });
 window.addEventListener('load', fitCmdBarText);
 
-const REC_ICONS = { bestStage: 'i_stage', bestCoins: 'i_coin', totalKills: 'i_skull', totalTaps: 'i_tap', totalBounces: 'i_boom', maxBounceChain: '🔗', reincarnations: '🌌', rebirthLvNum: '✨', totalSpent: '💸', maxDamage: '💥', maxDps: '⚡', maxCombo: '🔥', bestTowerJump: '🗼', critRateNum: '🎯', critMultNum: '⚔️', accuracyNum: '👁️', evasionNum: '💨', bossDmgNum: '👑', counterNum: '🛡️', startedAtText: '📅', playTime: '⏳' }; // 戦績の各行の左のアイコン
+const REC_ICONS = { bestStage: 'r2_stage', bestCoins: 'r2_coin', totalKills: 'r2_skull', totalTaps: 'r2_tap', totalBounces: 'r2_boom', maxBounceChain: 'r2_chain', reincarnations: 'r2_reborn', rebirthLvNum: 'r2_rebirthlv', totalSpent: 'r2_spent', maxDamage: 'r2_maxdmg', maxDps: 'r2_maxdps', maxCombo: 'r2_combo', bestTowerJump: 'r2_tower', critRateNum: 'r2_critrate', critMultNum: 'r2_critmult', accuracyNum: 'r2_hit', evasionNum: 'r2_evade', bossDmgNum: 'r2_boss', counterNum: 'r2_counter', startedAtText: 'r2_start', playTime: 'r2_playtime' }; // 戦績の各行の左のアイコン
 // 戦績の各行：先頭の「BEST」などと項目名を1つの札（タグ）にまとめる（見た目用）
 (function wrapRecordTags() {
   document.querySelectorAll('.record-panel.one .record').forEach(row => {
@@ -3115,7 +3115,7 @@ const REC_ICONS = { bestStage: 'i_stage', bestCoins: 'i_coin', totalKills: 'i_sk
     tag.append(k, n); row.insertBefore(tag, row.firstChild);
     const key = row.dataset.goalRow || (strong && strong.id) || '';
     const ico = REC_ICONS[key] || '📜', box = document.createElement('span'); box.className = 'rec-ico';
-    box.innerHTML = (ico.startsWith('i_') ? `<img src="assets/img/ui/rec/${ico}.webp" alt="">` : `<i>${ico}</i>`) + (k.textContent ? `<b>${k.textContent}</b>` : '');
+    box.innerHTML = /^(i|r2)_/.test(ico) ? `<img src="assets/img/ui/rec/${ico}.webp" alt="">` + (k.textContent && !ico.startsWith('r2_') ? `<b>${k.textContent}</b>` : '') : `<i>${ico}</i>` + (k.textContent ? `<b>${k.textContent}</b>` : ''); if (ico.startsWith('r2_')) box.classList.add('rec-ico2'); // r2_ の絵は BEST などの文字入り
     row.insertBefore(box, row.firstChild); row.classList.add('rec-v2');
   });
 })();
