@@ -2103,3 +2103,6 @@ function applyHitKnockback(hitBall, sourceBall, force) {
   STACK_LAYERS.slimeSnowman = ['n2s:snowman']; SHAPE_ENEMY_SPRITE.slimeSnowman = 'n2s:snowman'; SHAPE_ENEMY_SPRITE.slimeDango = 'n2s:dangoPink';
   for (const e of ENEMY_BOOK) if (e.shape === 'slimeDango' || e.shape === 'slimeSnowman') e.sprite = SHAPE_ENEMY_SPRITE[e.shape];
 }
+// ボス「超ジャンボスライム」も新しいジャンボスライムの絵で描く
+for (const em in BOSS_ENEMY_SPRITE) if (BOSS_ENEMY_SPRITE[em] === 'slimeJumbo' && ENEMY_SPRITES['n2:shape:slimeJumbo']) BOSS_ENEMY_SPRITE[em] = 'n2:shape:slimeJumbo';
+for (const e of ENEMY_BOOK) if (e.kind === 'boss' && e.sprite === 'slimeJumbo') e.sprite = BOSS_ENEMY_SPRITE[e.icon];
