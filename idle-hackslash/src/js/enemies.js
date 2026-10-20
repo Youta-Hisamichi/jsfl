@@ -1588,7 +1588,7 @@ function hatchEgg(o, byEnemy = false) {
   m.maxHp = m.hp = Math.max(30, Math.round(main.maxHp * 0.7)); m.atk = Math.max(2, Math.round(main.atk * 1.1));
   m.isSplit = true; m.eggMonster = true;
   adds.push(m);
-  spawnDamageText(o.x, o.y - 20, '🥚💥 やばいのが出てきた！', '#ff4f6d', 0.012, true);
+  spawnDamageText(o.x, o.y - 20, pickFrom(['🥚💥 なんだ…このプレッシャーは！', '🥚💥 何かが…生まれ出る！', '🥚💥 卵の中から…敵影！', '🥚💥 来るぞ…ただ者ではない！']), '#ff4f6d', 0.012, true);
   shakeScreen(); playWarningSound();
 }
 // 近接攻撃（切り払い）で卵を叩く：1回で1段階ひびが入り、連打で割れる

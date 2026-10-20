@@ -53,7 +53,7 @@ function step() {
   }
   if (!e.isBoss && !e.spawnTimer && !game.skipChallenge && game.stage % 10 !== 0 && !filmMode) { // 雑魚はしばらく倒せないと逃げて、次の雑魚が出てくる
     e.liveFrames = (e.liveFrames || 0) + speedMult;
-    if (!e.escapeWarned && e.liveFrames >= ENEMY_PASS_FRAMES - ESCAPE_WARN_FRAMES) { e.escapeWarned = true; spawnDamageText(escTextX(e), e.y - e.radius - 18, '💦 にげそう…（逃げてもコイン30%）', '#cfe8ff', 0.008); }
+    if (!e.escapeWarned && e.liveFrames >= ENEMY_PASS_FRAMES - ESCAPE_WARN_FRAMES) { e.escapeWarned = true; spawnDamageText(escTextX(e), e.y - e.radius - 18, pickFrom(['💦 退路を探している…', '💦 こいつ…逃げる気か！', '💦 敵が背を向けかけている…', '💦 浮き足立っている…']) + '（逃げてもコイン30%）', '#cfe8ff', 0.008); }
     if (e.liveFrames >= ENEMY_PASS_FRAMES) startEnemyEscape(e);
   }
   let battleEnded = false;
@@ -488,7 +488,7 @@ statModal.addEventListener('click', event => { if (event.target === statModal) c
 const ENEMY_PASS_FRAMES = 60 * 15, ENEMY_ESCAPE_FRAMES = 36; // 雑魚がにげるまで約15秒・にげる演出の長さ
 function startEnemyEscape(e) {
   e.escaping = ENEMY_ESCAPE_FRAMES; e.vx = e.vy = 0;
-  spawnDamageText(escTextX(e), e.y - e.radius - 16, '💨 逃げた！', '#e8e8e8', 0.012, true);
+  spawnDamageText(escTextX(e), e.y - e.radius - 16, pickFrom(['💨 逃げられた…！', '💨 退いたか…賢明だな', '💨 追うな！ 深追いは死を招く', '💨 くっ、逃がしたか！']), '#e8e8e8', 0.012, true);
   playTone(700, 0.18, 'square', 0.03, 1400);
   // 逃げながらコインを落としていく（撃破の30%）。もらえたことが分かるように、敵の位置からコインを散らして音も鳴らす
   const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * ESCAPE_COIN_RATE)); game.coins += c;
