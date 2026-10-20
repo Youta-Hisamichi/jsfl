@@ -2456,7 +2456,8 @@ function drawNovaFx() {
 }
 compRushBtn.addEventListener('click', event => {
   const comps = balls.filter(ball => ball.isCompanion && ball.hp > 0);
-  if (game.shopOwned.skillCompRush && !comps.length && Date.now() - lastCompRushAt >= skillCd('skillCompRush', SKILL_COMPRUSH_COOLDOWN)) { showTapError('戦える仲間がいません', event.clientX, event.clientY); return; }
+  const coffins = balls.filter(ball => ball.isCompanion && ball.hp <= 0 && !ball.isClone); // 倒れている仲間は棺桶ごと投げつける
+  if (game.shopOwned.skillCompRush && !comps.length && !coffins.length && Date.now() - lastCompRushAt >= skillCd('skillCompRush', SKILL_COMPRUSH_COOLDOWN)) { showTapError('戦える仲間がいません', event.clientX, event.clientY); return; }
   const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton);
   if (!ctxs) return;
   const { player, enemy } = ctxs;
@@ -2466,7 +2467,8 @@ compRushBtn.addEventListener('click', event => {
     comp.compRushNextHit = Date.now() + 120 + i * 40;
     comp.compRushDmg = Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') / hits * 1.15));
   });
-  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `仲間特攻！ ×${comps.length}`, '#8fe3a0', 0.014, true);
+  coffins.forEach((cf, i) => throwCoffin(cf, enemy, player, i));
+  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, comps.length ? `仲間特攻！ ×${comps.length}` + (coffins.length ? `　⚰️×${coffins.length}` : '') : `⚰️ 棺桶アタック！ ×${coffins.length}`, '#8fe3a0', 0.014, true);
   onPlayerHitEnemy(enemy, 1);
   shakeScreenLight();
   [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.1), i * 50));
@@ -3061,8 +3063,40 @@ function getCoffinSprite() { // 斜め上から見た（クォータービュー
   c.strokeStyle = '#f5c84a'; c.lineWidth = 2.2; cross(0, -0.62, 0, 0.45); cross(-0.26, -0.28, 0.26, -0.28);
   return (coffinSprite = cv);
 }
+// 仲間特攻で棺桶を投げつける：弧を描いて回りながら敵へ飛び、当たったら列へ戻る
+const COFFIN_THROW_MS = 1100, COFFIN_HIT_AT = 0.45;
+function throwCoffin(cf, enemy, player, i) {
+  const start = Date.now() + i * 140, comp = COMPANIONS[cf.companionId];
+  const dmg = Math.max(1, Math.round((cf.atk || (player && player.atk) || 1) * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') * 1.15));
+  cf.coffinThrow = { start, sx: cf.x, sy: cf.y, target: enemy, spin: (Math.random() < 0.5 ? -1 : 1) * (5 + Math.random() * 3) };
+  setTimeout(() => { // 当たった瞬間
+    const e = cf.coffinThrow && cf.coffinThrow.target; if (!e || e.isDying || !(e.hp > 0) || !balls.includes(e)) return;
+    const { dmg: d, crit } = rollCrit(dmg, e); e.hp -= d; trackDamage(d);
+    spawnAttackDamageText(e, d, crit, '#ffd9a0');
+    for (let k = 0; k < 14; k++) { const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4; particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.8, color: k % 3 ? '#d9a331' : '#6b3d1a' }); }
+    thump(90, 40, 0.35, 0.35); playTone(220, 0.08, 'square', 0.08, 120); shakeScreenLight();
+    updateHPUI(); if (e.hp <= 0 && !e.isDying) triggerEnemyDefeat(e, e.x, e.y);
+  }, i * 140 + COFFIN_THROW_MS * COFFIN_HIT_AT);
+}
+function coffinThrowPos(ball) { // 投げられている棺桶の今の位置と回転（投げていなければ null）
+  const t = ball.coffinThrow; if (!t) return null;
+  const k = (Date.now() - t.start) / COFFIN_THROW_MS; if (k < 0) return null;
+  if (k >= 1) { ball.coffinThrow = null; return null; }
+  const e = t.target && balls.includes(t.target) ? t.target : null, tx = e ? e.x : t.sx, ty = e ? e.y : t.sy;
+  let x, y, h;
+  if (k < COFFIN_HIT_AT) { const u = k / COFFIN_HIT_AT; x = t.sx + (tx - t.sx) * u; y = t.sy + (ty - t.sy) * u; h = Math.sin(u * Math.PI) * 70; t.hx = tx; t.hy = ty; }
+  else { const u = (k - COFFIN_HIT_AT) / (1 - COFFIN_HIT_AT), hx = t.hx ?? tx, hy = t.hy ?? ty; x = hx + (ball.x - hx) * u; y = hy + (ball.y - hy) * u; h = Math.sin(u * Math.PI) * 40; }
+  return { x, y: y - h, gy: y, rot: k * t.spin * Math.PI };
+}
 function drawCoffin(ball, appear) {
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const fly = coffinThrowPos(ball);
+  if (fly) { // 飛んでいる棺桶（ロープは切って、回転させて描く）
+    const img = getCoffinSprite(), w = pl.radius * (img === coffinImg ? 2.2 : 2.7), h = w * img.height / img.width;
+    ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(fly.x, fly.gy + h * 0.3, w * 0.35, h * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.translate(fly.x, fly.y); ctx.rotate(fly.rot); ctx.imageSmoothingEnabled = true; ctx.drawImage(img, -w / 2, -h / 2, w, h); ctx.restore();
+    return;
+  }
   const lead = coffinLeader(ball, pl);
   if (lead) { // ロープ
     ctx.save(); ctx.strokeStyle = 'rgba(120,90,50,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]);
