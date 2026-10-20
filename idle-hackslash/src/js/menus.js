@@ -703,7 +703,7 @@ function updateClaimAllBtn() {
   const btn = document.getElementById('rgClaimAll'); if (!btn) return;
   const { total, count } = getAllRecordGoalRewards();
   btn.style.display = count ? '' : 'none';
-  if (count) btn.innerHTML = `<span class="rg-ca-num"><b>${formatCoinNumber(total)}</b><small>（${count}件）</small></span>`; // 「全部受け取る」とジェムは絵の中、数だけ重ねる
+  if (count) btn.innerHTML = `<span class="rg-ca-num"><b>${formatCoinNumber(total)}</b><small>(${count}件)</small></span>`; // 「全部受け取る」とジェムは絵の中、数だけ重ねる
   btn.setAttribute('aria-label', `全部受け取る ジェム${total}（${count}件）`);
 }
 document.getElementById('rgClaimAll').addEventListener('click', event => {
