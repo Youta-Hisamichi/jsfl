@@ -4067,3 +4067,10 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .dbg-now-stage { background: rgba(90,170,255,0.12) !important; border-color: rgba(90,170,255,0.45) !important; line-height: 1.5; }
 #shopList .sr-ico.su-i_party, .su-i_party { background: url(assets/img/ui/shop/i_party.webp) center / contain no-repeat !important; } /* パーティ枠+1 の新しいアイコン */
 #shopList .sr-ico.su-i_book, .su-i_book { background: url(assets/img/ui/shop/i_skillslot.webp) center / contain no-repeat !important; } /* スキル枠+1 の新しいアイコン */
+/* 敵図鑑のカード：ほかのUIと同じ金枠＋紺の下地 */
+.bst-card { border: 2px solid #c9a24a !important; border-image: none !important; border-radius: 8px !important; padding: 6px 2px 6px !important; background: radial-gradient(ellipse at 50% 30%, rgba(60,90,170,0.35), transparent 70%), linear-gradient(180deg, #152044, #0a1128) !important; box-shadow: inset 0 0 0 1px rgba(255,226,140,0.25), inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.5) !important; color: #fff; --text: #fff; --text-dim: #c9d2ea; filter: none !important; }
+.bst-card .bst-name { color: #ffe08a !important; text-shadow: 0 1px 2px #000; }
+.bst-card .bst-info { color: #d6def2 !important; }
+.bst-card.boss { border-color: #c98aff !important; box-shadow: inset 0 0 0 1px rgba(220,170,255,0.35), 0 0 8px rgba(186,108,255,0.6), 0 2px 4px rgba(0,0,0,0.5) !important; }
+.bst-card.unknown { border-color: #6b7280 !important; background: linear-gradient(180deg, #1a1d26, #0d0f15) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 2px 4px rgba(0,0,0,0.5) !important; opacity: 0.9 !important; }
+.bst-card.unknown .bst-name, .bst-card.unknown .bst-info { color: #aab0bf !important; }
