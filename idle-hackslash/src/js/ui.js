@@ -3363,3 +3363,10 @@ function stopHolyPad() {
 })();
 // 「しくみ」ヘルプの文は、一文ごとに改行して読みやすく
 document.querySelectorAll('.cp-help p, .cp-help-body p').forEach(p => { p.innerHTML = p.innerHTML.replace(/。(?=[^<\s）)])/g, '。<br>'); });
+// デバッグの一番上に、今と直前のステージ名（イベント名とキー）を出す
+setInterval(() => {
+  const el = document.getElementById('dbgNowStage'), panel = document.getElementById('debugPanel');
+  if (!el || !panel || panel.style.display === 'none' || typeof dbgStageNow === 'undefined') return;
+  const fmt = s => s ? `${s.name}（${s.key}・ステージ${s.stage}〜）` : '—';
+  el.innerHTML = `🗺️ 今：${fmt(dbgStageNow)}<br>⏮ 直前：${fmt(dbgStagePrev)}`;
+}, 500);

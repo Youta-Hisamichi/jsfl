@@ -171,6 +171,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
+      <div class="dbg-now-enemy dbg-now-stage" id="dbgNowStage">🗺️ ステージ：—</div>
       <div class="dbg-now-enemy" id="dbgNowEnemy">👾 現在の敵：—</div>
       <button id="dbgPrevEnemyBtn">⏮ 1個前の敵を出す</button>
       <div class="debug-cat">🎥 録画（音声付き動画を保存）</div>
@@ -722,7 +723,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 <script src="js/imgpack6.js"></script>
 <script src="js/imgpack7.js"></script>
 <script src="js/imgpack8.js"></script>
-<script src="js/imgpack9.js"></script>
 <script>(function(){var M=window.__IMG||{};var RE=/(?:https?:\/\/[^"'()\s]*?\/)?(?:\.\/)?(assets\/img\/[A-Za-z0-9_\/.-]+\.(?:webp|png|jpg|gif))/g;
 function one(u){if(typeof u!=='string'||u.indexOf('assets/img/')<0)return u;var i=u.indexOf('assets/img/');var k=u.slice(i).split(/[?#]/)[0];return M[k]||u;}
 function sub(s){return typeof s==='string'&&s.indexOf('assets/img/')>=0?s.replace(RE,function(m,k){return M[k]||m;}):s;}

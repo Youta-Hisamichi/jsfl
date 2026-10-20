@@ -2177,7 +2177,7 @@ function drawTapBonus() {
 }
 const FLOOR_TILES = { // 床タイル
   st_village: 'assets/img/floors/st_village.webp', st_town: 'assets/img/floors/st_town.webp', st_ruins: 'assets/img/floors/st_ruins.webp', // 村・町・遺跡・墓地・祠・教会のステージイベント用
-  st_graveyard: 'assets/img/floors/st_graveyard.webp', st_shrine: 'assets/img/floors/st_shrine.webp', st_church: 'assets/img/floors/st_church.webp',
+  st_graveyard: 'assets/img/floors/st_graveyard.webp', st_church: 'assets/img/floors/st_church.webp',
   lawn: 'assets/img/floors/lawn.webp',
   dirt: 'assets/img/floors/dirt.webp',
   desert: 'assets/img/floors/desert.webp',
@@ -2228,7 +2228,7 @@ const OUTER_TILES = {
 };
 const OUTER_FOR_FLOOR = { lawn: 'meadow', dirt: 'forest', desert: 'badlands', mossStone: 'ruins', town: 'stone', snow: 'snowfield', market: 'meadow', woodFloor: 'sky', ruins: 'ruins', tower: 'throne',
   redCarpet: 'throne', dryCrack: 'lava', panel: 'hall', blueTile: 'crystal', wasteland: 'badlands', brick: 'hall', sea: 'sky', dungeon2: 'crystal', other: 'hall', mystic: 'sky', dungeon: 'lava',
-  st_village: 'meadow', st_town: 'stone', st_ruins: 'ruins', st_graveyard: 'forest', st_shrine: 'forest', st_church: 'hall' };
+  st_village: 'meadow', st_town: 'stone', st_ruins: 'ruins', st_graveyard: 'forest', st_church: 'hall' };
 const outerImgs = {}; // 背景も先読みしておき、読み込み済みになってから切り替える
 for (const k in OUTER_TILES) { const img = new Image(); img.fetchPriority = 'high'; img.src = OUTER_TILES[k].src; outerImgs[k] = warmImg(img); }
 let lastReadyFloorKey = '', warmedForStage = 0;
