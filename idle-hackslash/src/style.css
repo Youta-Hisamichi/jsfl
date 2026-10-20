@@ -4077,3 +4077,13 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 { width: 60px !important; height: 60px !important; background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; } .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 img { width: 60px !important; height: 60px !important; margin: 0 !important; border-radius: 0 !important; } /* 文字入りの新しい戦績アイコン */
 .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 { margin-left: -8px !important; } /* アイコンを少し左へ */
 .tab-page[data-tab="records"] .record-panel { border-image-source: url(assets/img/ui/rec/panel_frame.webp) !important; } /* 枠だけの絵（行の区切り飾りが左右の縁に伸びて残らないように） */
+/* 戦績の「全部受け取る」ボタン：素材の絵に、ジェムの数と件数だけ重ねる（見本どおり） */
+.tab-page[data-tab="records"] .rg-claim-all { position: relative; display: block !important; width: 100% !important; aspect-ratio: 2000 / 629; min-height: 0 !important; margin: 6px 0 4px !important; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/rec/claim_all.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; container-type: inline-size; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num { position: absolute; left: 68.4%; right: 12.5%; top: 50%; transform: translateY(-50%); display: flex; align-items: baseline; justify-content: flex-start; gap: 1.5cqw; white-space: nowrap; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num b { color: #0d4fa8 !important; font-size: 9cqw; font-weight: 900; line-height: 1; letter-spacing: -0.02em; text-shadow: 0 0 2px #fff, 0 1px 0 #fff6c8; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { color: #2a1600 !important; font-size: 4.2cqw; font-weight: 900; }
+.tab-page[data-tab="records"] .rg-claim-all:active { transform: scale(0.97); }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num { left: 67.6% !important; align-items: center !important; gap: 0.8cqw !important; overflow: hidden; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num b { font-family: "Arial Black", "Hiragino Sans", sans-serif; font-size: 7.6cqw !important; color: #0b3f93 !important; text-shadow: -1px -1px 0 #fff8d8, 1px -1px 0 #fff8d8, -1px 1px 0 #fff8d8, 1px 1px 0 #fff8d8, 0 2px 2px rgba(0,0,0,0.35) !important; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { font-size: 3.3cqw !important; color: #2a1600 !important; }
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num { right: 9% !important; overflow: visible !important; } .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { letter-spacing: -0.04em; }
