@@ -1105,3 +1105,4 @@ ENEMY_SAY.idle.push('これはこれは、勇者様ではないか。ククク',
 ENEMY_SAY.idle.push('ヤダアアアァーッ！！');
 CHUUNI.idle.push('失望させるなよ');
 ENEMY_SAY.idle.push('いい声で鳴けよオォーッ！');
+ENEMY_SAY.idle.push('泣き叫べ！命乞いをしろ！');
