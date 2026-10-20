@@ -963,3 +963,30 @@ const WIND_ENEMY = {
 for (const k in WIND_HERO) if (CHUUNI[k]) CHUUNI[k].push(...WIND_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...WIND_COMP[k].filter(() => Math.random() < 0.4));
 for (const k in WIND_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...WIND_ENEMY[k]);
+ENEMY_SAY.idle.push('オニイ・・チャン', 'シテ・・コロシテ');
+
+// ===== 等価交換・錬成・兄弟の絆を語る、錬金術ファンタジー風のセリフ（どれもオリジナルの文） =====
+const ALCH_HERO = {
+  idle: ['得るなら払う。それが、この世界の決まりだ', '何かを手に入れた分だけ、何かを置いてきた', '取り戻すんだ…失くした分、全部', '理屈で割り切れないものが、一番重いんだよな',
+    '天才なんかじゃない。ただ、諦めが悪いだけだ', '真理ってやつは、いつも代償を連れてくる'],
+  kill: ['分解完了…お前の形は、もう覚えた', '構成を見切れば、崩すのは一瞬だ', 'この拳に、理屈はいらねえ！'],
+  charge: ['両手を合わせりゃ、地面だって武器になる！', '錬成ッ！ 大地よ、刃になれ！', '組み替えろ…この場の全部を！'],
+  boss: ['人の命を材料にした奴は、俺が絶対に許さない', 'お前は…何を代償にここまで来た？', '神様気取りか…そのツラ、一発ぶん殴ってやる！'],
+  bossKill: ['これで…払った分は、取り返したか', '代償の重さを…忘れるなよ'],
+  pinch: ['まだ…立てる。足がある限り、立てるんだ！', '腕一本くらい、くれてやる…でも命までは渡さねえ！'],
+  down: ['悪い…約束、守れそうにない…'],
+};
+const ALCH_COMP = {
+  i: ['兄さんはいつも無茶ばっかりするんだから', '材料が足りないなら、知恵で補えばいいのよ', 'この鎧の中は空っぽでも、心はちゃんとあるんだ', '研究ノートは暗号にしておくのが基本よ',
+    '一は全、全は一…なんて、師匠がよく言ってたっけ'],
+  k: ['構築式、完璧！', '等価交換、いただきました！'],
+};
+const ALCH_ENEMY = {
+  idle: ['人間は…材料に過ぎない', 'その魂、いい石になりそうだ', '扉の向こうを見た者は、もう戻れない', 'ククク…欲しいか？ 賢者の石が'],
+  boss: ['不完全な命が、完全な我に挑むか', 'お前たちの言う等価交換など、まやかしだ', '我は真理に最も近い者…ひれ伏せ'],
+  bossHalf: ['再生が…追いつかないだと？'],
+  bossLow: ['石が…砕ける…我の、命が…', '完全な存在に…なれなかったか…'],
+};
+for (const k in ALCH_HERO) if (CHUUNI[k]) CHUUNI[k].push(...ALCH_HERO[k]);
+for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...ALCH_COMP[k].filter(() => Math.random() < 0.4));
+for (const k in ALCH_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...ALCH_ENEMY[k]);
