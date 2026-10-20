@@ -4093,3 +4093,5 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num b { line-height: 1 !important; transform: translateY(-0.04em); }
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { letter-spacing: 0 !important; transform: translateY(0.02em); }
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { margin-left: -0.6cqw; } /* 件数を少し左へ */
+/* 仲間と勇者の絵は描き込んだイラストになったので、ドット絵用のカクカク拡大をやめてなめらかに表示 */
+.comp-sprite, body.floor-bg .comp-sprite, .gr-ico .comp-sprite, .ft-rows .comp-sprite, .rv-ico .comp-sprite, .lb7-face .comp-sprite, #blHero, .stage-mark { image-rendering: auto !important; }
