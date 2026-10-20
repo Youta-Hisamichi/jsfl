@@ -1868,7 +1868,7 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, sz * 0.75, 0, Math.PI * 2); ctx.fill();
     cx += (Math.random() - 0.5) * 3; cy += (Math.random() - 0.5) * 2;
   }
-  ctx.imageSmoothingEnabled = ball.isBoss || ball.isPlayer || sz * dpr < (img.naturalWidth || img.width || 64); // ボスは大きく描くので、拡大してもガタガタにならないよう常になめらかに
+  ctx.imageSmoothingEnabled = ball.isBoss || ball.isPlayer || String(key).startsWith('n2:') || sz * dpr < (img.naturalWidth || img.width || 64); // ボスは大きく描くので、拡大してもガタガタにならないよう常になめらかに
   ctx.imageSmoothingQuality = 'high';
   if (squishy) { // 足元を支点に、横に広がる⇔縦に伸びるを繰り返してプヨプヨ（動くと大きく弾む）
     if (ball.squishSeed === undefined) ball.squishSeed = Math.random() * 10;
