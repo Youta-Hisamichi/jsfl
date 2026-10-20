@@ -195,7 +195,8 @@ function heroChuuni(kind, force) {
   chuuniLast = t; chuuniAt = now;
   companionSay(hero, t, 1800 + t.length * 70);
 }
-function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語は1文字ずつ、句読点・「…」の直後で切りやすく）
+function wrapSpeech(text, maxW) { // 長いセリフは折り返す（日本語は1文字ずつ、句読点・「…」の直後で切りやすく）。\n は必ず改行
+  if (String(text).includes('\n')) return String(text).split('\n').flatMap(t => wrapSpeech(t, maxW));
   const lines = []; let cur = '';
   for (const ch of text) {
     if (ctx.measureText(cur + ch).width > maxW && cur) {
@@ -295,7 +296,7 @@ setInterval(() => {
   const e = foes[Math.floor(Math.random() * foes.length)];
   enemySay(e, e.hp < e.maxHp * 0.5 && Math.random() < 0.5 ? 'hit' : (typeof isSlimeSprite === 'function' && isSlimeSprite(e.sprite || '') ? 'slime' : 'idle'));
 }, 1500);
-{ const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawSpeech(); drawBossBuffIcon(); } catch (e) {} }; }
+{ const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawBossBuffIcon(); } catch (e) {} }; }
 
 // ===== 絆レベル（一緒に戦うほど上がる。Lvごとに攻撃力・HP +3%） =====
 const BOND_MAX = 10, BOND_BONUS = 0.03;
@@ -970,7 +971,7 @@ const TOMINO_ENEMY = {
 for (const k in TOMINO_HERO) if (CHUUNI[k]) CHUUNI[k].push(...TOMINO_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...TOMINO_COMP[k].filter(() => Math.random() < 0.4)); // 仲間ごとに4割ずつ
 for (const k in TOMINO_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...TOMINO_ENEMY[k]);
-ENEMY_SAY.idle.push('オイラ悪いモンスターじゃないよ', 'た、助けてくれ！体が勝手に‥！');
+ENEMY_SAY.idle.push('た、助けてくれ！体が勝手に‥！');
 
 // ===== 風と森と生き物への想いを語る、終末ファンタジー風のセリフ（どれもオリジナルの文） =====
 const WIND_HERO = {
@@ -1048,3 +1049,55 @@ const GALAXY_ENEMY = {
 for (const k in GALAXY_HERO) if (CHUUNI[k]) CHUUNI[k].push(...GALAXY_HERO[k]);
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...GALAXY_COMP[k].filter(() => Math.random() < 0.4));
 for (const k in GALAXY_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...GALAXY_ENEMY[k]);
+
+// ===== ユーザー指定のセリフ（\n は改行） =====
+ENEMY_SAY.idle.push('ヒャア！我慢できねぇ！', '卑劣な真似をしおって\nもうがまんならん！', '兄さん・・？兄さんじゃないか！\n僕だよ、思い出して！', 'ニンゲン　カエレ‥', 'ニンゲン　クウ\nチカラ　テニイレル',
+  'かゆ‥うま‥', '大地が持たん時が来ているのだ‥\nなぜそれがわからん？', '別に、アレをやってしまっても構わないのだろう？', '今日はニンゲンの厄日だねェ', 'この動き‥まさか！？',
+  '殿下がアレを復活させるまで、持ちこたえろ！', '俺達も早く逃げねェと、村ごと消し炭だぞ‥！', 'まだ生き残りがいたか！');
+CHUUNI.idle.push('許してもらう必要はない', 'これも‥運命（さだめ）か‥');
+
+// ===== 潜入任務・無線・コードネームで語る、ステルス諜報風のセリフ（どれもオリジナルの文） =====
+const SNEAK_HERO = {
+  idle: ['こちら勇者。目標エリアに到達した、指示を', '…気配が消えた。どこかで見ている', '…遅くなった。いや、誰も待ってなかったか', '任務に感情は持ち込まない。そう教わったはずだ',
+    '箱があれば、隠れられたんだがな'],
+  kill: ['眠っていろ', '…排除完了。次のエリアへ移動する', '悪く思うな。これも任務だ'],
+  boss: ['お前が…この計画の首謀者か', '兵士として生き、兵士として死ぬ。それがお前の望みか'],
+  bossKill: ['任務完了。…帰投する'],
+  pinch: ['くっ…まだ任務は終わっていない…！'],
+};
+const SNEAK_ENEMY = {
+  idle: ['ん？ 今の音は…？', '気のせいか…', 'なんだ、ネズミか…', 'こちら哨戒班、異常なし', '交代はまだか…腹が減った'],
+  hit: ['侵入者だ！ 応援を呼べ！', 'どこから撃ってきた！？'],
+  boss: ['伝説の勇者…貴様と戦える日を待っていた', 'お前と俺は同じだ。戦場でしか生きられない'],
+  bossLow: ['いい…戦いだった…'],
+};
+// ===== 悪魔・契約・混沌と秩序を語る、悪魔召喚ダークファンタジー風のセリフ（どれもオリジナルの文） =====
+const DEMON_HERO = {
+  idle: ['秩序か、混沌か…どちらにも、まだ答えは出せない', 'この街の神は、とっくに沈黙している', '悪魔と契約しても、魂までは売らない', '東京の空は、今日も赤い…'],
+  kill: ['跡形もなく、消えろ', 'お前の力、もらっていくぞ'],
+  boss: ['神だろうと悪魔だろうと、立ちはだかるなら斬るだけだ'],
+};
+const DEMON_ENEMY = {
+  idle: ['ヘッヘッ！ オイラと契約しないか？', 'オマエ…ウマソウナ魂ダナ', 'マッカを置いていけば、見逃してやるよ', '契約の印は、もう刻まれてるぜ', 'ニンゲンの欲望は、いつも甘い味がする'],
+  hit: ['ギャッ！ 話が違うじゃないか！'],
+  boss: ['我は混沌の王…人の子よ、何を望む', '秩序の名のもとに、汝を裁く'],
+  bossLow: ['我を倒しても…世界は変わらぬ…'],
+};
+// ===== 英霊・聖杯・誓いの剣を語る、聖杯戦争風のセリフ（どれもオリジナルの文） =====
+const GRAIL_HERO = {
+  idle: ['自分に問う。この剣を振るう理由は、まだ胸にあるか', '過去は変えられない。だから、今を斬る', '誰かを救いたいという願いが、間違いのはずがない', '理想のために傷つくなら、それも本望だ'],
+  charge: ['この一撃に、誓いのすべてを込める――！', '我が剣よ、星の光を纏え！'],
+  boss: ['貴様のマスターは誰だ…答えろ', '英霊の名にかけて、ここは退かぬ'],
+  bossKill: ['…勝ったのは、俺の理想か、それとも――'],
+};
+const GRAIL_COMP = { i: ['マスター、指示を。私はあなたの剣です', '令呪がなくても、あなたについていきます', 'この戦いの果てに、願いは叶うのでしょうか'], k: ['マスター、敵を排除しました'] };
+const GRAIL_ENEMY = {
+  idle: ['下郎が…我の前に立つか', 'よかろう、少しは遊んでやる'],
+  boss: ['聖杯は我のものだ。誰にも渡さぬ', 'その願い、我が宝具で踏みにじってやろう'],
+  bossLow: ['見事だ…その輝き、認めてやる…'],
+};
+for (const [H, C, E] of [[SNEAK_HERO, null, SNEAK_ENEMY], [DEMON_HERO, null, DEMON_ENEMY], [GRAIL_HERO, GRAIL_COMP, GRAIL_ENEMY]]) {
+  for (const k in H) if (CHUUNI[k]) CHUUNI[k].push(...H[k]);
+  if (C) for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...C[k].filter(() => Math.random() < 0.4));
+  for (const k in E) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...E[k]);
+}

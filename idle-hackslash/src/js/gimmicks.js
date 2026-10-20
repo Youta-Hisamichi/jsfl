@@ -25,7 +25,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'night', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 2; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
@@ -39,6 +39,7 @@ function gimmickForStage(stage) {
   const rate = stage <= 60 ? 0.85 : stage <= 300 ? 0.6 : 0.45; // 序盤ほどよく起きる
   if (r() >= rate) return null;
   let k = GIMMICK_KEYS[Math.floor(r() * GIMMICK_KEYS.length)];
+  if (k === 'night' && (stage < 300 || r() < 0.75)) k = GIMMICK_KEYS[(GIMMICK_KEYS.indexOf(k) + 7) % GIMMICK_KEYS.length]; // 月夜の草原（ホタル）は後半にまれに
   if (w > 0) { const prev = stageRand((w - 1) * 31 + reb * 977 + 7); prev(); prev(); prev(); if (GIMMICK_KEYS[Math.floor(prev() * GIMMICK_KEYS.length)] === k) k = GIMMICK_KEYS[(GIMMICK_KEYS.indexOf(k) + 5) % GIMMICK_KEYS.length]; } // 2組続けて同じにしない
   return k;
 }
@@ -778,4 +779,17 @@ const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: d
 }; }
 // 月夜の草原（ホタル）は、草原・森・河原の床で（雪原などエリアの床にしない）
 const NIGHT_FLOORS = ['mossStone', 'dirt', 'lawn', 'st_village']; // 1周目（3組目）は草原
-{ const orig = getFloorKey; getFloorKey = function (stage) { if (typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'night') return NIGHT_FLOORS[gimmickWindow(stage) % NIGHT_FLOORS.length]; return orig.apply(this, arguments); }; }
+{ const orig = getFloorKey; getFloorKey = function (stage) { if (typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'night') return NIGHT_FLOORS[((gimmickWindow(stage) % NIGHT_FLOORS.length) + NIGHT_FLOORS.length) % NIGHT_FLOORS.length]; return orig.apply(this, arguments); }; }
+
+// 吹き出しは、イベントの暗闇や色かぶせよりも上に描く（暗いステージでも読めるように）
+{ const orig = draw; draw = function () { orig.apply(this, arguments); try { drawSpeech(); } catch (e) {} }; }
+// デバッグ：ステージギミック（イベント）を選んで固定する
+{ const host = document.getElementById('dbgNowStage');
+  if (host) {
+    host.insertAdjacentHTML('afterend', `<label class="dbg-gm-sel">🎪 ステージギミック <select id="dbgGimmickSel"><option value="">（固定しない）</option>${GIMMICK_KEYS.map(k => `<option value="${k}">${GIMMICKS[k].icon} ${GIMMICKS[k].name}</option>`).join('')}</select></label>`);
+    document.getElementById('dbgGimmickSel').addEventListener('change', ev => {
+      dbgGimmick = ev.target.value || null; gm.id = ''; setupGimmick(gimmickForStage(game.stage));
+      showNotice(dbgGimmick ? `DEBUG: イベント「${GIMMICKS[dbgGimmick].name}」` : 'DEBUG: イベント固定を解除');
+    });
+  }
+}

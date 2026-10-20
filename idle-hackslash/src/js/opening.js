@@ -63,7 +63,7 @@ function playOpening(onEnd) {
 setTimeout(() => {
   if (game.openingSeen) return;
   if ((game.bestStage || 1) > 1 || (game.reincarnations || 0) > 0) { game.openingSeen = true; return; } // 既存のセーブには出さない
-  playOpening(() => setTimeout(() => openCharEdit(true, () => setTimeout(() => openFinalGoal(true), 400)), 400)); // オープニングのあとにキャラエディット、そのあと最終目標を見せる
+  playOpening(() => setTimeout(() => openFinalGoal(true), 400)); // オープニングのあと最終目標を見せる（キャラエディットは廃止）
 }, 900);
 // 設定画面のスタッフロールの下に「オープニングを見る」
 { const cb = document.getElementById('creditsBtn');
@@ -242,7 +242,7 @@ function openCharEdit(first, onDone) {
 }
 // 設定画面に「キャラエディット」
 { const ob = document.getElementById('openingBtn');
-  if (ob) { ob.insertAdjacentHTML('beforebegin', '<button class="modal-shop-btn" id="charEditBtn"><span class="msb-name">🎨 キャラエディット（名前・見た目）</span></button>');
+  if (ob) { ob.insertAdjacentHTML('beforebegin', '<button class="modal-shop-btn" id="charEditBtn" style="display:none !important"><span class="msb-name">🎨 キャラエディット（名前・見た目）</span></button>');
     document.getElementById('charEditBtn').addEventListener('click', () => { const sm = document.getElementById('settingsModal'); if (sm && typeof closeSettingsModal === 'function') closeSettingsModal(); openCharEdit(false); }); } }
 // ===== 設定画面のデザイン（紺の金縁パネル・金のスライダー・羊皮紙の項目ボタン） =====
 function decorateSettingsPage() {
