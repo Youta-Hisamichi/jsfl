@@ -718,6 +718,10 @@ const SHOP_ITEMS = {
   fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 2倍', cost: 10 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
 };
+// 何度でも買える倍率アイテム：1回目で2倍、そのあと1回ごとに+1倍（3倍・4倍…）。値段は買うたびに2倍（8→16→32…）
+const SHOP_MULTI_ITEMS = { sword: '攻撃力', shield: '最大HP', meteor: 'メテオダメージ', fairy: 'コイン獲得' };
+function shopBuyCount(id) { const v = game.shopOwned && game.shopOwned[id]; return v === true ? 1 : (+v || 0); } // 昔のセーブは true＝1回
+function shopMultiRate(id) { return 1 + shopBuyCount(id); } // 0回なら1倍
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
@@ -760,12 +764,13 @@ function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
   if (item.slot) return item.slot.cur() >= item.slot.max(); // 枠増やしは最大まで買えば売り切れ
   if (item.action) return false;
+  if (SHOP_MULTI_ITEMS[id]) return false; // 倍率アイテムは何度でも買える
   if (item.consumableKey) return false; // 消費アイテムは何個でも買える
   if (item.stackKey) return (game[item.stackKey] || 0) >= item.maxStack; // 重ねがけ系は上限まで買えば「所持済み」
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
 function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
-function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
+function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) return item.cost * Math.pow(2, shopBuyCount(id)); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
 };
@@ -1262,9 +1267,7 @@ function computeBonuses() {
   b.hpMult += game.rebirthBonus.hp;
   { const rm = rebirthPowerMult(); b.atkMult *= rm; b.hpMult *= rm; } // 転生回数＋1倍（100階ごとに強くなる敵の壁を、転生で越えられるように）
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
-  if (game.shopOwned.sword) b.atkMult *= 2; // ショップ：流星剣・月の盾・コイン妖精は2倍（掛け算）
-  if (game.shopOwned.shield) b.hpMult *= 2;
-  if (game.shopOwned.fairy) b.coinMult *= 2;
+  b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コイン妖精（買った回数＋1倍・掛け算）
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
   { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
   b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
@@ -1347,12 +1350,12 @@ function renderShopList() {
     const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && item.requires && !game[item.requires];
     const gcost = item.action ? 0 : getShopItemGemCost(id);
-    const note = item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
+    const note = SHOP_MULTI_ITEMS[id] ? '' : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
     const costTxt = owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
-    const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
+    const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
-    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}</span><span class="shop-desc">${locked ? '🔒 先にタックル開放が必要' : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${price}</span></button>`;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}</span><span class="shop-desc">${locked ? '🔒 先にタックル開放が必要' : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${price}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;

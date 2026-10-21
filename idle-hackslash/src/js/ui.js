@@ -1173,6 +1173,7 @@ shopList.addEventListener('click', event => {
   if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
   else if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); line = `+${item.bundle || 1}個 → 所持 ${game[item.consumableKey]}個`; }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
+  else if (SHOP_MULTI_ITEMS[id]) { game.shopOwned[id] = shopBuyCount(id) + 1; line = `${SHOP_MULTI_ITEMS[id]}が ${shopMultiRate(id)}倍 になった！`; }
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（${game.ownedArtifacts.forbiddenWatch}個・ボス戦 +${Math.min(30, game.ownedArtifacts.forbiddenWatch)}秒）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（${game.ownedArtifacts.forbiddenKnife}本・雑魚HP -${Math.min(50, game.ownedArtifacts.forbiddenKnife)}%）`; renderArtifactList(); }
@@ -2207,7 +2208,7 @@ specialBtn.addEventListener('click', event => {
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
   const b = computeBonuses();
-  const multiplier = (game.shopOwned.meteor ? 2 : 1) * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
+  const multiplier = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
   const damage = Math.round(enemy.maxHp * 0.35 * multiplier);
   lastSpecialAt = Date.now();
   meteors.push({
