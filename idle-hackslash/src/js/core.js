@@ -712,10 +712,10 @@ function nextUpgradeLeap(level) {
 function newUpgradeLevels() { const o = {}; for (const id in UPGRADES) o[id] = 0; return o; }
 function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
 const SHOP_ITEMS = {
-  sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 +25%', cost: 8 },
-  shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
+  sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 2倍', cost: 8 },
+  shield: { icon: '🛡️', name: '月の盾', desc: '最大HP 2倍', cost: 8 },
   meteor: { icon: '<span class="ico-flipv">☄️</span>', name: '流星術', desc: 'メテオダメージ 2倍', cost: 12 }, // 絵文字のほうき星は上向きなので上下反転して落ちてくる向きに
-  fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
+  fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 2倍', cost: 10 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
 };
 const TACKLE_PIERCE_MS_PER_LV = 100;
@@ -1224,9 +1224,6 @@ function computeBonuses() {
   b.companionAtkMult *= (1 + (up.cAtk || 0) * 0.15) * upgradeLeapMult(up.cAtk || 0);
   b.companionHpMult *= (1 + (up.cHp || 0) * 0.20) * upgradeLeapMult(up.cHp || 0);
   b.companionSpeedMult = (1 + (up.cSpd || 0) * 0.05) * upgradeLeapMult(up.cSpd || 0);
-  if (game.shopOwned.sword) b.atkMult += 0.25;
-  if (game.shopOwned.shield) b.hpMult += 0.25;
-  if (game.shopOwned.fairy) b.coinMult += 0.30;
 
   const evoBoost = getEvoBoost(); // 遺物「進化の羽」：進化の効果アップ
   for (const id in GACHA_POOL) {
@@ -1265,6 +1262,9 @@ function computeBonuses() {
   b.hpMult += game.rebirthBonus.hp;
   { const rm = rebirthPowerMult(); b.atkMult *= rm; b.hpMult *= rm; } // 転生回数＋1倍（100階ごとに強くなる敵の壁を、転生で越えられるように）
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
+  if (game.shopOwned.sword) b.atkMult *= 2; // ショップ：流星剣・月の盾・コイン妖精は2倍（掛け算）
+  if (game.shopOwned.shield) b.hpMult *= 2;
+  if (game.shopOwned.fairy) b.coinMult *= 2;
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
   { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
   b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
