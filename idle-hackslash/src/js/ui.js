@@ -796,7 +796,8 @@ debugRow.addEventListener('click', event => {
   }
   if (action === 'pause') { setUserPaused(!userPaused); return; }
   if (action.startsWith('chest:')) { const k = action.slice(6), hc = getHeldChests(); hc[k] = (hc[k] || 0) + 5; renderChestTray(k); saveGame(); showNotice(`DEBUG: ${RARITY_INFO[k].label.replace('コモン', 'ノーマル')}の宝箱 +5（${hc[k]}個）`); return; }
-  if (action === 'bossCont' || action === 'bossContFinal') { // ボス戦にしてから敗北画面を出す
+  if (action === 'bossCont' || action === 'bossContReborn' || action === 'bossContFinal') { // ボス戦にしてから敗北画面を出す
+    dbgContReborn = action === 'bossContReborn' ? true : action === 'bossCont' ? false : null; // 転生ボタンのあり／なしを決めて見る
     switchTab('game');
     if (!isBossFight()) { if (game.stage % 10 !== 0) game.stage = Math.ceil(game.stage / 10) * 10; balls = spawnBattleBalls(); adds = []; }
     const boss = balls.find(b => !b.isPlayer && b.isBoss); if (!boss) return;

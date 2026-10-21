@@ -4148,3 +4148,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #bossContModal .go3-giveup .msb-name { color: #f4f4f4; font-weight: 900; font-size: 5cqw; text-shadow: -1px -1px 0 #1c2230, 1px -1px 0 #1c2230, -1px 1px 0 #1c2230, 1px 1px 0 #1c2230, 0 2px 3px rgba(0,0,0,0.7); }
 #bossContModal .go3-reborn { left: 23.9%; top: calc(100% + 1cqw); width: 52.3%; aspect-ratio: 400 / 113; background: url(assets/img/ui/go2/btn_purple.webp) center / 100% 100% no-repeat; color: #fff; font-size: 4.6cqw; font-weight: 900; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
 #bossContModal .go3-reborn img { width: 1.2em; height: 1.2em; vertical-align: -0.2em; }
+#bossContModal .go3:has(.go3-reborn:not([style*="none"])) { margin-bottom: 15cqw; } /* 転生ボタンを出すときは、全体が真ん中に来るよう上に寄せる */
