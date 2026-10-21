@@ -4165,3 +4165,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #shopList .sr-ico.su-i_pct, .su-i_pct { background: url(assets/img/ui/shop/i_pct.webp) center / contain no-repeat !important; } /* 10%LvUPボタンの新しいアイコン */
 #shopList .sr-ico.su-i_upmax, .su-i_upmax { background: url(assets/img/ui/shop/i_max.webp) center / contain no-repeat !important; } /* MAXLvUPボタンの新しいアイコン */
 #shopList .sr-ico.su-i_sword, .su-i_sword { background: url(assets/img/ui/shop/i_sword.webp) center / contain no-repeat !important; } /* 流星剣の新しいアイコン */
+#shopList .sr-ico.su-i_shield, .su-i_shield { background: url(assets/img/ui/shop/i_shield.webp) center / contain no-repeat !important; } /* 月の盾の新しいアイコン */
