@@ -2174,6 +2174,7 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
+new MutationObserver(() => refreshBgm()).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // 転生の確認画面を開け閉めしたら曲を切りかえる
 rebornBtn.addEventListener('click', event => {
   if (bossContModal.classList.contains('show') && canShowReborn()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
   if (phase === 'battle' && canShowReborn()) openRebornConfirm(null);

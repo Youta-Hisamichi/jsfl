@@ -508,6 +508,18 @@ const BGM_SONGS = {
     ],
     drums: 'k - s s k - s s | k - s s k - s s | k - s s k - s s | s s s s s s s s | k - h k s - h k | k - h k s - h k | k - h k s - h k | k s s s s s s s | k - h k s - h k | k - h k s - h k | k - h k s - h k | k s s s s s s s | k - h k s - h k | k - h k s - h k | k s k s s s s s | ks - s s ks - - -',
   },
+  rebornconfirm: { // 転生の確認画面 魂の大聖堂：パイプオルガンのような分散和音と重いペダルの低音に、静かに祈るような旋律が高い天井に響く（ニ短調・フリギアの響きをまぜる）
+    bpm: 84,
+    echo: { time: 0.34, feedback: 0.4, wet: 0.3 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.026, notes: 'A5 = = = = = G5 F5 | F5 = = = D5 = = = | G5 = = = A#5 = A5 G5 | A5 = = = = = = = | D6 = = = C6 = A5 = | A#5 = = = G5 = = = | A5 = = = F5 = E5 D5 | E5 = = = C#5 = = = | D5 = F5 = A#5 = = = | C6 = = = A5 = F5 = | G5 = A#5 = D6 = C6 A#5 | A5 = = = = = G5 = | F5 = = = A5 = D6 = | D#6 = = = D6 = A#5 = | C#6 = = = A#5 = G5 = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.016, notes: 'D4 A4 D5 F5 A5 F5 D5 A4 | A#3 F4 A#4 D5 F5 D5 A#4 F4 | G3 D4 G4 A#4 D5 A#4 G4 D4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | D4 A4 D5 F5 A5 F5 D5 A4 | D#4 A#4 D#5 G5 A#5 G5 D#5 A#4 | D4 A4 D5 F5 A5 F5 D5 A4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | A#3 F4 A#4 D5 F5 D5 A#4 F4 | F3 C4 F4 A4 C5 A4 F4 C4 | G3 D4 G4 A#4 D5 A#4 G4 D4 | A3 E4 A4 C#5 E5 C#5 A4 E4 | D4 A4 D5 F5 A5 F5 D5 A4 | D#4 A#4 D#5 G5 A#5 G5 D#5 A#4 | C#4 G4 A#4 C#5 E5 C#5 A#4 G4 | D4 A4 D5 F5 A5 F5 D5 A4' },
+      { type: 'vrc6saw', gain: 0.05, notes: 'D2 = = = = = = = | A#1 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D2 = = = = = = = | D#2 = = = = = = = | D2 = = = = = = = | A1 = = = = = = = | A#1 = = = = = = = | F1 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D2 = = = = = = = | D#2 = = = = = = = | C#2 = = = = = = = | D2 = = = = = = =' },
+      { type: 'triangle', gain: 0.06, notes: 'D1 = = = = = = = | A#1 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D1 = = = = = = = | D#1 = = = = = = = | D1 = = = = = = = | A1 = = = = = = = | A#1 = = = = = = = | F1 = = = = = = = | G1 = = = = = = = | A1 = = = = = = = | D1 = = = = = = = | D#1 = = = = = = = | C#1 = = = = = = = | D1 = = = = = = =' },
+    ],
+    drums: 'k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - k - k - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - k - k - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - k - k - | k - - - - - - - | k - - - - - - - | k - - - - - - - | k - - - k - k -',
+    kickBoost: 1.8, // 遠くで鳴る大太鼓のように重く
+  },
   settings: { // 設定画面：格闘ゲーム風RPGのキャラ設定画面のような、重低音のベースリフが響くクールな曲（ホ短調）
     bpm: 118,
     tracks: [
@@ -771,6 +783,7 @@ const BGM_INFO = [
   { key: 'news', name: 'ページ お知らせ 栄光のゲート', desc: '競馬場のように、ラッパのファンファーレで幕を開け、跳ねるギャロップのベースと裏打ちの和音に乗って明るい旋律が駆け抜ける。VRC6風チップチューン。イ長調・BPM152' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
+  { key: 'rebornconfirm', name: '転生 魂の大聖堂', desc: '転生の確認画面で流れる、パイプオルガンのような分散和音と重いペダルの低音に、静かに祈るような旋律が響く大聖堂の曲。VRC6風チップチューン。ニ短調・BPM84' },
   { key: 'rebirth', name: '転生 リバース・パラドックス', desc: '転生の演出中に流れる。4つ打ちのキックと転がるオクターブベースに、鋭いシンセのリフと16分の分散和音が畳みかけるハードコアテクノ。後半は1オクターブ上で叫ぶように盛り上がる。VRC6風チップチューン。イ短調（音楽ゲームの超高難度ボス曲系の作風）・BPM180' },
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
@@ -820,7 +833,8 @@ function updateSkipBtnVisibility() {
 function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
-  if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
+  if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
+  else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
   else if (document.getElementById('newsModal')?.classList.contains('show')) type = 'news'; // お知らせ画面
