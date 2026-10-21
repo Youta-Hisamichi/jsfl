@@ -726,6 +726,12 @@ function go3AdviceHtml(html) {
   }).join('');
 }
 let dbgContReborn = null; // デバッグ：コンテニュー画面の転生ボタンを強制で出す(true)／出さない(false)
+function fitGo3Advice() { // アドバイスが枠に入りきらないときは文字を少しずつ小さくし、それでも入らなければ枠の中だけスクロール
+  const el = document.getElementById('bossContText'); if (!el) return;
+  el.style.fontSize = ''; el.style.gap = ''; el.classList.remove('scroll');
+  for (let fs = 3.3; el.scrollHeight > el.clientHeight + 1 && fs > 2.45; fs -= 0.1) { el.style.fontSize = fs.toFixed(2) + 'cqw'; el.style.gap = (fs * 0.25).toFixed(2) + 'cqw'; }
+  if (el.scrollHeight > el.clientHeight + 1) el.classList.add('scroll');
+}
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
@@ -735,7 +741,7 @@ function showBossContModal(reason) {
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
   document.getElementById('bossContRebornBtn').style.display = (dbgContReborn ?? (game.stage >= GAMEOVER_REBORN_STAGE && isRebornUnlocked())) ? '' : 'none'; dbgContReborn = null; // ステージ100以上なら転生も選べる
-  bossContModal.classList.add('show'); refreshBgm();
+  bossContModal.classList.add('show'); refreshBgm(); requestAnimationFrame(fitGo3Advice);
   startBossContCountdown();
 }
 // 2回目の敗北（コンテニュー済み）：同じ画面で「◯階に戻って鍛え直します」と数秒見せてから自動で戻す
