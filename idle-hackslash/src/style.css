@@ -3064,7 +3064,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 /* 下のタブ：絵と文字が一体になった画像（上段がオフ・下段がオン） */
 .tab-bar { gap: 2px !important; }
 .tab-btn { padding: 0 !important; aspect-ratio: 160 / 186; background: none !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; min-width: 0; }
-.tab-btn .tab-icon { position: absolute; inset: 0; font-size: 0; background: url(assets/img/ui/rb/tabs.webp) var(--tx, 0%) 0% / 700% 200% no-repeat; transform: none !important; filter: none; transition: none; }
+.tab-btn .tab-icon { position: absolute; inset: 0; font-size: 0; background: url(assets/img/ui/rb/tabs2.webp) var(--tx, 0%) 0% / 700% 200% no-repeat; transform: none !important; filter: none; transition: none; }
 .tab-btn .tab-icon > * { display: none !important; }
 .tab-btn .tab-label { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
 .tab-btn.active .tab-icon { background-position-y: 100%; transform: none !important; filter: none !important; }
@@ -4153,6 +4153,3 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #bossContModal .go3-advice { overflow: hidden; }
 #bossContModal .go3-advice.scroll { justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,215,107,0.6) transparent; }
 #bossContModal .go3-row { flex: none; }
-/* 下のタブ「仲間」：専用の絵（オフ／オン） */
-.tab-btn[data-tab="companion"] .tab-icon { background: url(assets/img/ui/rb/tab_comp_off.webp) center / 100% 100% no-repeat; }
-.tab-btn[data-tab="companion"].active .tab-icon { background-image: url(assets/img/ui/rb/tab_comp_on.webp); }
