@@ -139,10 +139,10 @@ function layoutDamageTexts() {
   const list = damageTexts;
   for (const d of list) {
     if (d.w === undefined) {
-      ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
+      ctx.font = `bold ${d.fs || (d.big ? 18 : 13)}px "Hiragino Sans", sans-serif`; // fs：文字ごとの大きさ（指定があるとき）
       const lines = d.text.split('\n');
       d.w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 4;
-      d.h = lines.length * (d.big ? 20 : 15);
+      d.h = lines.length * (d.fs ? d.fs + 2 : d.big ? 20 : 15);
       d.ox = d.ox || 0; d.oy = d.oy || 0;
     }
   }
@@ -167,16 +167,16 @@ function drawDamageTexts() {
   ctx.textAlign = 'center';
   for (const d of damageTexts) {
     const dx0 = d.x, dy0 = d.y; d.x += d.ox || 0; d.y += d.oy || 0;
-    ctx.font = d.big ? 'bold 18px "Hiragino Sans", sans-serif' : 'bold 13px "Hiragino Sans", sans-serif';
+    ctx.font = `bold ${d.fs || (d.big ? 18 : 13)}px "Hiragino Sans", sans-serif`; // fs：文字ごとの大きさ（指定があるとき）
     ctx.globalAlpha = Math.max(0, Math.min(1, d.life / 0.3)); // 最後の3割になるまではくっきり表示し、そこから消える
     ctx.fillStyle = d.color;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
     ctx.lineWidth = 2.5;
     const lines = d.text.split('\n');
-    const lineHeight = d.big ? 20 : 15;
+    const lineHeight = d.fs ? d.fs + 2 : d.big ? 20 : 15;
     lines.forEach((line, i) => {
       const ly = d.y - (lines.length - 1 - i) * lineHeight;
-      if (line.includes('🟡') && COIN_IMG.complete && COIN_IMG.naturalWidth) { drawTextWithCoin(line, d.x, ly, d.big ? 18 : 14); return; }
+      if (line.includes('🟡') && COIN_IMG.complete && COIN_IMG.naturalWidth) { drawTextWithCoin(line, d.x, ly, d.fs || (d.big ? 18 : 14)); return; }
       if (d.img && i === 0 && d.img.complete && d.img.naturalWidth) { // 文字の左に絵（宝箱など）
         const sz = d.big ? 26 : 20, tw = ctx.measureText(line).width, x0 = d.x - (tw + sz + 3) / 2;
         ctx.drawImage(d.img, x0, ly - sz * 0.8, sz, sz);

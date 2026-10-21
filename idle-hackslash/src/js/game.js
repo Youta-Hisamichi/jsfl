@@ -495,7 +495,7 @@ function startEnemyEscape(e) {
   spawnCoinDrop(e.x, e.y, c, 4);
   for (let i = 0; i < 4; i++) setTimeout(() => playCoinChime(i), 250 + i * 60);
   const tx = escTextX(e);
-  setTimeout(() => spawnDamageText(tx, e.y - e.radius - 2, `🟡${formatCoinNumber(c)}落としていった`, '#ffd76b', 0.009, true), 200);
+  setTimeout(() => { spawnDamageText(tx, e.y - e.radius - 2, `🟡${formatCoinNumber(c)}落としていった`, '#ffd76b', 0.009, true); damageTexts[damageTexts.length - 1].fs = 15; }, 200); // 少し小さめ
   setTimeout(() => spawnDamageText(tx, e.y + 14, `（撃破の${Math.round(ESCAPE_COIN_RATE * 100)}%）`, '#ffe9a8', 0.011), 350);
   updateStatsUI();
 }
