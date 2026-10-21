@@ -285,8 +285,11 @@ function drawGimmickLabel(key, A, now) { // 左下にイベント名、開始時
   ctx.save();
   ctx.font = 'bold 11px sans-serif'; ctx.textBaseline = 'middle';
   const label = `${G.icon} ${G.name}${G.coin > 1 ? ' コイン×' + G.coin : ''}${GM_FILL[key] ? `　×${gm.broke || 0}` : ''}`, w = ctx.measureText(label).width + 14;
-  ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(A.l + 6, A.b - 26, w, 20, 10) : ctx.rect(A.l + 6, A.b - 26, w, 20); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, A.l + 13, A.b - 16);
+  let ly = A.b - 26; // 左下のミッション枠が出ているときは、その上に出して重ねない
+  const mis = document.getElementById('obMission');
+  if (mis && mis.style.display !== 'none' && mis.offsetHeight) ly = Math.min(ly, mis.getBoundingClientRect().top - canvas.getBoundingClientRect().top - 24);
+  ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(A.l + 6, ly, w, 20, 10) : ctx.rect(A.l + 6, ly, w, 20); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, A.l + 13, ly + 10);
   const t = (now - gm.bannerAt) / 2600;
   if (gm.bannerAt && t < 1) {
     const inT = Math.min(1, t * 6), outA = t > 0.8 ? (1 - t) / 0.2 : 1, y = arena.y + A.h * 0.22; // 中央の「ステージN」や上の解放告知と重ならない位置
