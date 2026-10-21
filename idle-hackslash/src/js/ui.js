@@ -1394,7 +1394,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   runGachaCountdown(rarity, () => {
     const info = RARITY_INFO[rarity];
-    playPachinkoWin(rarity);
+    playPachinkoWin(rarity); startSkGachaBgm();
     skGachaResult.className = 'gacha-result skr rarity-' + rarity; // スキル・サブウェポンの結果は紫の魔法陣パネル
     skGachaResult.style.background = '';
     skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
@@ -1717,6 +1717,21 @@ function playPachinkoBuildUp(ms, rarity) {
   for (let k = 0; k < kyuin; k++) setTimeout(() => { if (tok !== pachinkoTok) return; playTone(500, 0.16, 'sawtooth', 0.07, 2600); playTone(1000, 0.16, 'square', 0.03, 3200); }, ms * 0.3 + k * 160);
   if (rarity === 'legendary' || rarity === 'mythic') thump(55, 140, ms / 1000 * 0.8, 0.25, 'sawtooth');
 }
+// スキルガチャの結果：ラッパのファンファーレ（タタタ・ターン！）のあと、お祝いの曲を流す
+function playSkillFanfare() {
+  const N = [[392, 0, 0.1], [392, 0.12, 0.1], [392, 0.24, 0.1], [523.25, 0.38, 0.55], [466.16, 0.98, 0.16], [523.25, 1.16, 0.16], [659.25, 1.34, 0.16], [783.99, 1.52, 0.75]];
+  N.forEach(([f, t, d]) => setTimeout(() => { playTone(f * 2, d, 'square', 0.06); playTone(f, d, 'sawtooth', 0.035); }, t * 1000));
+  setTimeout(() => [523.25, 659.25, 783.99].forEach(f => playTone(f, 0.55, 'triangle', 0.07)), 380); // ターン！の和音
+  setTimeout(() => [1046.5, 1318.5, 1568].forEach(f => playTone(f, 0.8, 'triangle', 0.06)), 1520); // 最後の和音
+}
+let skGachaBgmTimer = 0;
+function startSkGachaBgm() { // 結果が出たら今の曲を止めてファンファーレ、終わったらお祝いの曲
+  clearTimeout(skGachaBgmTimer); skGachaBgmOn = false; if (typeof stopBgm === 'function') stopBgm();
+  setTimeout(playSkillFanfare, 650);
+  skGachaBgmTimer = setTimeout(() => { if (skGachaModal.classList.contains('show')) { skGachaBgmOn = true; refreshBgm(); } }, 2900);
+}
+function stopSkGachaBgm() { clearTimeout(skGachaBgmTimer); if (skGachaBgmOn) { skGachaBgmOn = false; refreshBgm(); } }
+new MutationObserver(() => { if (!skGachaModal.classList.contains('show')) stopSkGachaBgm(); }).observe(skGachaModal, { attributes: true, attributeFilter: ['class'] });
 function playPachinkoWin(rarity) {
   const lv = { rare: 1, epic: 2, legendary: 3, mythic: 4 }[rarity] || 1;
   pachinkoTok++;
@@ -3387,7 +3402,7 @@ function stopHolyPad() {
   const boxes = ['compGachaResult', 'gachaResult'].map(id => document.getElementById(id)).filter(Boolean);
   let startTimer = 0;
   const showing = () => boxes.some(b => b.style.display !== 'none' && !b.classList.contains('gacha-summoning') && b.innerHTML.trim())
-    || (skGachaModal.classList.contains('show') && !skGachaResult.classList.contains('gacha-summoning') && skGachaResult.innerHTML.trim());
+;
   const check = () => {
     if (showing()) { if (!holyPad && !startTimer) startTimer = setTimeout(() => { startTimer = 0; if (showing()) startHolyPad(); }, 900); } // ファンファーレのあとで
     else { clearTimeout(startTimer); startTimer = 0; stopHolyPad(); }

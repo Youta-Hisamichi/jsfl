@@ -519,6 +519,16 @@ const BGM_SONGS = {
     drums: 'k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k s s s s s s | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k - h k k - h | k k s s s s s s',
     kickBoost: 1.5, // 鼓動のように重く
   },
+  skillget: { // スキルガチャの結果 新たな力：弾むオクターブベースと裏打ちの和音に乗って、手に入れた力を祝う明るく誇らしい旋律（ハ長調）
+    bpm: 140,
+    echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'E5 = G5 = C6 = = = | B5 = A5 G5 D5 = = = | C6 = B5 A5 E5 = A5 = | F5 = G5 A5 G5 = = = | E5 = G5 = C6 = E6 = | F6 = E6 D6 C6 = A5 = | B5 = D6 = G6 = F6 = | E6 = = = C6 = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: '- E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - D4+G4+B4 - D4+G4+B4 - D4+G4+B4 - D4+G4+B4 | - E4+A4+C5 - E4+A4+C5 - E4+A4+C5 - E4+A4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - D4+G4+B4 - D4+G4+B4 - D4+G4+B4 - D4+G4+B4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5' },
+      { type: 'vrc6saw', gain: 0.045, notes: 'C2 C3 C2 C3 C2 C3 C2 C3 | G2 G3 G2 G3 G2 G3 G2 G3 | A2 A3 A2 A3 A2 A3 A2 A3 | F2 F3 F2 F3 F2 F3 F2 F3 | C2 C3 C2 C3 C2 C3 C2 C3 | F2 F3 F2 F3 F2 F3 F2 F3 | G2 G3 G2 G3 G2 G3 G2 G3 | C2 C3 C2 C3 C2 C3 C2 C3' },
+    ],
+    drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k s s s ks - - -',
+  },
   settings: { // 設定画面：格闘ゲーム風RPGのキャラ設定画面のような、重低音のベースリフが響くクールな曲（ホ短調）
     bpm: 118,
     tracks: [
@@ -782,6 +792,7 @@ const BGM_INFO = [
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
+  { key: 'skillget', name: 'スキルガチャ 新たな力', desc: 'スキルガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、手に入れた力を祝う明るく誇らしい曲。VRC6風チップチューン。ハ長調・BPM140' },
   { key: 'rebornconfirm', name: '転生 運命の分かれ道', desc: '転生の確認画面で流れる、時を刻むような分散和音と心臓の鼓動のようなベースに乗って、問いかけるような旋律が少しずつ高まり決断を迫る曲。VRC6風チップチューン。ハ短調・BPM120' },
   { key: 'rebirth', name: '転生 リバース・パラドックス', desc: '転生の演出中に流れる。4つ打ちのキックと転がるオクターブベースに、鋭いシンセのリフと16分の分散和音が畳みかけるハードコアテクノ。後半は1オクターブ上で叫ぶように盛り上がる。VRC6風チップチューン。イ短調（音楽ゲームの超高難度ボス曲系の作風）・BPM180' },
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
@@ -819,6 +830,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   refreshBgm();
   renderBgmBook();
 });
+let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
 function updateSkipBtnVisibility() {
@@ -833,6 +845,7 @@ function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
+  else if (skGachaBgmOn) type = 'skillget'; // スキルガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
