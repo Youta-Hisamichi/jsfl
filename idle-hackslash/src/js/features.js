@@ -102,6 +102,7 @@ const COMP_TALK = {
   archangel: { i: ['地上の花は美しいですね', 'あなたたちに祝福を', '天界からも、見守っています', '愛と裁きは表裏一体', '翼が…少し疲れました'], k: ['裁きは下されました', '光に還りなさい', '赦しを'] },
   bahamut:   { i: ['…退屈だ', '我が咆哮で大地が震える', '強き者よ、我の前に立て', '人の子よ、なかなかやる', '千年の眠りから覚めた甲斐があった'], k: ['塵となれ', '…脆い', '竜王の前に立つからだ'] },
 };
+const COMP_TALK_BASE = JSON.parse(JSON.stringify(COMP_TALK)); // 共通ゼリフを混ぜる前（デバッグのセリフ一覧用）
 const COMP_TALK_LOW = { // p: やられそう / d: やられた
   villager: { p: ['ひぃぃ、もう無理だべ〜！', '母ちゃん、助けてけろ…'], d: ['畑に…帰りてぇ…', 'おら…ここまでだべ…'] },
   merchant: { p: ['こ、これは大赤字…！', '命あっての商売ですぞ…！'], d: ['店じまい…ですな…', '投資…失敗…'] },
@@ -1111,3 +1112,64 @@ ENEMY_SAY.idle.push('この戦いが終わったら、故郷の幼なじみに�
   '勇者なんて、オレ一人で十分だ！ お前らは先に行け', '…やったか！？', 'なんだ、ただの風の音か',
   'こんな所にいられるか！ オレは部屋に戻らせてもらう！', 'この任務が最後だ。明日には引退するんだよ', 'オレの心配はいらねえ、すぐに追いつく',
   '見ろよ、このお守り。母ちゃんがくれたんだ', 'ここはオレに任せて先に行け！', '勝ったな…風呂入ってくる');
+
+// ===== デバッグ：今のゲームに入っている全セリフの一覧（検索・ダウンロードつき） =====
+function buildSerifList() {
+  const out = [], sec = (t, lv = 2) => out.push({ h: t, lv }), add = (arr, tag) => (arr || []).forEach(t => out.push({ t: (tag ? `【${tag}】` : '') + (typeof t === 'function' ? '（数字が入る）' + t.toString().replace(/^\(\) => `|`$/g, '').replace(/\$\{[^}]*\}/g, '○') : t) }));
+  const sub = t => out.push({ s: t });
+  const cname = id => (COMPANIONS[id] ? COMPANIONS[id].name : id === 'hero' ? '勇者' : id);
+  sec('オープニング'); add(OPENING_SCENES.map(s => s.text).filter(Boolean));
+  sec('勇者（自キャラを変えていないとき）');
+  const CHN = { idle: 'ひとりごと', kill: '敵を倒したとき', charge: 'タメ攻撃', boss: 'ボス戦開始', bossKill: 'ボス撃破', pinch: 'ピンチ', pinch2: 'ピンチ2', escape: '敵が逃げそうなとき', event: 'イベント', down: '倒れたとき', timeout: '時間切れ' };
+  for (const k in CHUUNI) { sub(CHN[k] || k); add(CHUUNI[k]); }
+  sub('基本ゼリフ'); add(HERO_SAY); sub('メタ発言（ひとりごとの約15%）'); add(META_HERO);
+  sec('自キャラの「ざわ…ざわ…」系（約12%）');
+  for (const k in KAIJI_SAY) { sub({ idle: 'ひとりごと', kill: '撃破', boss: 'ボス戦', pinch: 'ピンチ' }[k] || k); add(KAIJI_SAY[k]); }
+  sec('仲間');
+  const ids = [...new Set([...Object.keys(COMP_PROFILE), ...Object.keys(COMP_TALK_BASE), ...Object.keys(COMP_TALK_LOW), ...Object.keys(GREET_SAY)])];
+  for (const id of ids) {
+    sec(`${cname(id)}（${id}）`, 3);
+    const P = COMP_PROFILE[id]; if (P) { sub('紹介：' + P.p + '／好きなもの：' + P.like); P.say.forEach((t, i) => add([t], ['登場・招集', 'ボス戦開始', 'ボス撃破', '倒れたとき'][i])); }
+    const T = COMP_TALK_BASE[id]; if (T) { if (T.i) { sub('ひとりごと'); add(T.i); } if (T.k) { sub('撃破'); add(T.k); } }
+    const L = COMP_TALK_LOW[id]; if (L) { sub('やられそう'); add(L.p); sub('やられた'); add(L.d); }
+    const G = GREET_SAY[id]; if (G) { sub('おかえり（帰還ボーナス）'); add([].concat(G[0])); sub('ログインボーナス'); add([].concat(G[1])); }
+  }
+  sec('仲間のメタ発言・共通ゼリフ', 3); sub('メタ発言（ひとりごとの約15%）'); add(META_COMP);
+  for (const [n, C] of [['群像劇', EPIC_COMP], ['ロボットアニメ風', TOMINO_COMP], ['風と森', WIND_COMP], ['錬金術', ALCH_COMP], ['宇宙艦隊', GALAXY_COMP], ['聖杯', GRAIL_COMP]]) { sub(`共通・${n}（仲間ごとに4〜5割が混ざる。動物などは除く）`); add(C.i, 'ひとりごと'); add(C.k, '撃破'); }
+  sec('敵（ザコ・共通）');
+  const EN = { idle: 'ひとりごと', slime: 'スライム', hit: '攻撃を受けたとき', boss: 'ボス登場（専用ゼリフのないボス）', bossHalf: 'ボスHP半分', bossLow: 'ボス瀕死', bossWin: 'ボスが勝ったとき' };
+  for (const k in ENEMY_SAY) { sub(EN[k] || k); add(ENEMY_SAY[k]); }
+  sec('ボス専用ゼリフ');
+  for (const e in BOSS_SAY) { sub(`${e} ${(typeof BOSS_ENEMY_NAMES !== 'undefined' && BOSS_ENEMY_NAMES[e]) || ''}`); BOSS_SAY[e].forEach((t, i) => add([t], ['登場', 'HP半分', '瀕死', '勝ったとき'][i])); }
+  sec('お店・メニューの案内役');
+  for (const k in SHOPKEEPERS) { sub(SHOPKEEPERS[k].name); add(SHOPKEEPERS[k].lines); }
+  return out;
+}
+function serifListMarkdown(list) {
+  const n = list.filter(x => x.t).length;
+  return `# 無限反射 セリフ全集\n\nセリフ数: ${n} 本（改行は「／」で表示）\n` + list.map(x => x.h ? `\n${'#'.repeat(x.lv)} ${x.h}\n` : x.s ? `\n**${x.s}**` : '- ' + x.t.replace(/\n/g, ' ／ ')).join('\n') + '\n';
+}
+function openSerifList() {
+  const list = buildSerifList(), esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const ov = document.createElement('div'); ov.className = 'serif-ov';
+  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>💬 セリフ ${list.filter(x => x.t).length}本</b><button class="serif-dl">⬇ ダウンロード</button><button class="serif-x">✕</button></div><input class="serif-q" type="search" placeholder="検索（キャラ名・言葉）"><div class="serif-body"></div></div>`;
+  document.body.appendChild(ov);
+  const body = ov.querySelector('.serif-body');
+  const render = q => {
+    let html = '', h2 = '', h3 = '', sb = '', lastShown = '';
+    for (const x of list) {
+      if (x.h) { if (x.lv === 2) { h2 = x.h; h3 = ''; } else h3 = x.h; sb = ''; continue; }
+      if (x.s) { sb = x.s; continue; }
+      if (q && !(x.t + h2 + h3 + sb).includes(q)) continue;
+      const key = h2 + '|' + h3 + '|' + sb;
+      if (key !== lastShown) { if (!lastShown.startsWith(h2 + '|' + h3 + '|') || !lastShown) { html += `<div class="serif-h2">${esc(h2)}</div>`; if (h3) html += `<div class="serif-h3">${esc(h3)}</div>`; } if (sb) html += `<div class="serif-sub">${esc(sb)}</div>`; lastShown = key; }
+      html += `<div class="serif-line">${esc(x.t).replace(/\n/g, '<br>')}</div>`;
+    }
+    body.innerHTML = html || '<div class="serif-sub">見つかりませんでした</div>';
+  };
+  render('');
+  ov.querySelector('.serif-q').addEventListener('input', ev => render(ev.target.value.trim()));
+  ov.querySelector('.serif-dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([serifListMarkdown(list)], { type: 'text/markdown' })); a.download = 'セリフ一覧.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
+}
+document.getElementById('dbgSerifBtn')?.addEventListener('click', openSerifList);

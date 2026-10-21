@@ -292,6 +292,7 @@ document.getElementById('tabBar')?.addEventListener('click', () => { const m = d
     const nOpen = !!news()?.classList.contains('show'), open = nOpen || set.classList.contains('show');
     if (nOpen && newsPaused === null && phase === 'battle') { newsPaused = 'battle'; phase = 'paused'; }
     if (!nOpen && newsPaused) { if (phase === 'paused' && !set.classList.contains('show')) phase = newsPaused; newsPaused = null; }
+    if (nOpen !== sync.nOpen) { sync.nOpen = nOpen; if (typeof refreshBgm === 'function') refreshBgm(); } // お知らせを開いたら専用の曲に
     if (open !== wasOpen) { wasOpen = open; document.documentElement.classList.toggle('panel-open', open); if (open) { window.scrollTo(0, 0); window.dispatchEvent(new Event('resize')); } }
   };
   new MutationObserver(sync).observe(set, { attributes: true, attributeFilter: ['class'] });

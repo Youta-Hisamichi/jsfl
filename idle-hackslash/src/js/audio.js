@@ -498,6 +498,18 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
+  news: { // お知らせ画面 王国の布告：ティンパニとスネアの行進に乗って、付点のブラスが高らかに鳴り響く中世の英雄譚の幕開けのような曲（ニ短調→最後にニ長調で締める）
+    bpm: 116,
+    echo: { time: 0.26, feedback: 0.26, wet: 0.2 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 = = A4 D5 = F5 = | F5 = = E5 D5 = C5 = | E5 = = = C5 = G4 = | A4 = = = = = - - | D5 = = A4 D5 = F5 = | G5 = = F5 G5 = A#5 = | A5 = = G5 F5 = E5 = | E5 = = = C#5 = = - | F5 = = = A#5 = = = | A5 = = G5 F5 = C5 = | D5 = = E5 F5 = G5 = | E5 = = = C5 = = = | D5 = F5 = A#5 = = = | C6 = = A#5 A5 = G5 = | A5 = = = E5 = C#6 = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'D4+F4+A4 = = D4+F4+A4 = = D4+F4+A4 = | A#3+D4+F4 = = A#3+D4+F4 = = A#3+D4+F4 = | C4+E4+G4 = = C4+E4+G4 = = C4+E4+G4 = | A3+D4+F4 = = A3+D4+F4 = = A3+D4+F4 = | D4+F4+A4 = = D4+F4+A4 = = D4+F4+A4 = | A#3+D4+G4 = = A#3+D4+G4 = = A#3+D4+G4 = | A3+C#4+E4 = = A3+C#4+E4 = = A3+C#4+E4 = | A3+C#4+E4 = = A3+C#4+E4 = = A3+C#4+E4 = | A#3+D4+F4 = = A#3+D4+F4 = = A#3+D4+F4 = | A3+C4+F4 = = A3+C4+F4 = = A3+C4+F4 = | A#3+D4+G4 = = A#3+D4+G4 = = A#3+D4+G4 = | C4+E4+G4 = = C4+E4+G4 = = C4+E4+G4 = | A#3+D4+F4 = = A#3+D4+F4 = = A#3+D4+F4 = | C4+E4+G4 = = C4+E4+G4 = = C4+E4+G4 = | A3+C#4+E4 = = A3+C#4+E4 = = A3+C#4+E4 = | D4+F#4+A4 = = D4+F#4+A4 = = D4+F#4+A4 =' },
+      { type: 'vrc6saw', gain: 0.045, notes: 'D2 = D2 - A2 - D2 D3 | A#1 = A#1 - F2 - A#1 A#2 | C2 = C2 - G2 - C2 C3 | A1 = A1 - E2 - A1 A2 | D2 = D2 - A2 - D2 D3 | G2 = G2 - D2 - G2 G3 | A1 = A1 - E2 - A1 A2 | A1 = A1 - E2 - A1 A2 | A#1 = A#1 - F2 - A#1 A#2 | F2 = F2 - C2 - F2 F3 | G2 = G2 - D2 - G2 G3 | C2 = C2 - G2 - C2 C3 | A#1 = A#1 - F2 - A#1 A#2 | C2 = C2 - G2 - C2 C3 | A1 = A1 - E2 - A1 A2 | D2 = D2 - A2 - D2 D3' },
+      { type: 'triangle', gain: 0.07, notes: 'D2 = = = D2 = = = | A#1 = = = A#1 = = = | C2 = = = C2 = = = | A1 = = = A1 = = = | D2 = = = D2 = = = | G2 = = = G2 = = = | A1 = = = A1 = = = | A1 = = = A1 = = = | A#1 = = = A#1 = = = | F2 = = = F2 = = = | G2 = = = G2 = = = | C2 = = = C2 = = = | A#1 = = = A#1 = = = | C2 = = = C2 = = = | A1 = = = A1 = = = | D2 = = = D2 = = =' },
+    ],
+    drums: 'k - s s k - s - | k - s s k - s - | k - s s k - s - | k s s s s s s s | k - s s k - s - | k - s s k - s - | k - s s k - s - | k s s s s s s s | k - s s k - s - | k - s s k - s - | k - s s k - s - | k s s s s s s s | k - s s k - s - | k - s s k - s - | k s k s k s s s | ks - s s ks - - -',
+    kickBoost: 1.5, // ティンパニのように重く
+  },
   settings: { // 設定画面：格闘ゲーム風RPGのキャラ設定画面のような、重低音のベースリフが響くクールな曲（ホ短調）
     bpm: 118,
     tracks: [
@@ -758,6 +770,7 @@ const BGM_INFO = [
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
+  { key: 'news', name: 'ページ お知らせ 王国の布告', desc: 'ティンパニとスネアの行進に乗って、付点のブラスが高らかに鳴り響く、中世の英雄譚の幕開けのような荘厳な曲。VRC6風チップチューン。ニ短調・BPM116' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
   { key: 'rebirth', name: '転生 リバース・パラドックス', desc: '転生の演出中に流れる。4つ打ちのキックと転がるオクターブベースに、鋭いシンセのリフと16分の分散和音が畳みかけるハードコアテクノ。後半は1オクターブ上で叫ぶように盛り上がる。VRC6風チップチューン。イ短調（音楽ゲームの超高難度ボス曲系の作風）・BPM180' },
@@ -812,6 +825,7 @@ function refreshBgm() {
   if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
+  else if (document.getElementById('newsModal')?.classList.contains('show')) type = 'news'; // お知らせ画面
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
