@@ -57,7 +57,7 @@ const BEGINNER_MISSIONS = [
   { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1, hint: '仲間ページの自キャラ強化' },
   { text: '溜めMAX（×3）で攻撃する', get: () => game.obFlags && game.obFlags.chargeMax ? 1 : 0, goal: 1, gems: 1, hint: '攻撃せずに待つほど次の一撃が強くなる' },
   { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 2, hint: '仲間ページの招集ガチャ（初回無料）' },
-  { text: '「こうかばつぐん！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
+  { text: '「属性ダメージ良好！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
   { text: 'スキルガチャを引く', get: () => game.skillGachaPulls || 0, goal: 1, gems: 2 },
   { text: '宝箱を開ける', get: () => game.obFlags && game.obFlags.chest ? 1 : 0, goal: 1, gems: 1, hint: '木箱や柱を壊すと出ることも' },
   { text: 'ステージ10のボスを倒す', get: () => game.bestStage || 1, goal: 11, gems: 3 },
@@ -183,7 +183,7 @@ function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重�
   const el2 = getEnemyElement(e), hero = getHeroElement();
   const weak = el2 ? Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el2) : null;
   const m = elementMult(hero, el2);
-  const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">こうかばつぐん×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
+  const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">属性ダメージ良好×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
   el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</small></div>`
     + `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');

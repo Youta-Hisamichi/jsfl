@@ -1053,12 +1053,12 @@ const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water:
 const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
 const ELEMENT_ADV = 2, ELEMENT_DIS = 0.5;
 let lastElementHitAt = 0;
-function noteElementHit(attEl, target) { // 有利な属性で当てたら「こうかばつぐん！」（出しすぎないよう少し間をあける）
+function noteElementHit(attEl, target) { // 有利な属性で当てたら「属性ダメージ良好！」（出しすぎないよう少し間をあける）
   if (!target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
   const now = Date.now(); if (now - lastElementHitAt < 900) return;
   lastElementHitAt = now;
   if (typeof obFlag === 'function') obFlag('superEff');
-  spawnDamageText(target.x, target.y - (target.radius || 12) - 46, 'こうかばつぐん！', '#ffe14f', 0.018, true);
+  spawnDamageText(target.x, target.y - (target.radius || 12) - 46, '属性ダメージ良好！', '#ffe14f', 0.018, true);
 }
 const COMPANION_ELEMENT = {};
 [['fire', 'merchant warrior monk mage musketeer alchemist bunny lancer heavy samurai dragon dragoon bahamut'],
