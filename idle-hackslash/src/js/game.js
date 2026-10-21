@@ -636,6 +636,7 @@ function endDeathFx() {
 }
 // ---- ボス戦のルール：30秒以内に倒せないか倒れたら負け → ボスの1つ前の階をループ。「ボス再戦」で再挑戦 ----
 const BOSS_TIME_LIMIT_MS = 30000;
+const BOSS_CONT_BONUS_MS = 10000; // コンテニューしたときに足すおまけの時間
 function bossTimeLimitMs() { return BOSS_TIME_LIMIT_MS + 1000 * Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, (game.ownedArtifacts && game.ownedArtifacts.forbiddenWatch) || 0); } // 禁断の懐中時計で1個につき+1秒
 let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引く）
 const AUTO_BOSS_RETRY_LOOPS = 4; // ループを4周したら自動でボスに再挑戦（OFFにもできる）
@@ -778,9 +779,10 @@ function bossContinue() {
   const boss = bossTimerFor || balls.find(b => !b.isPlayer && b.isBoss);
   if (boss) boss.continued = true;
   const p = balls.find(isMainPlayerBall); if (p) { p.hp = p.maxHp; p.safeHp = null; }
-  bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = Date.now(); lastBossTickSec = 0;
+  bossTimeLeftMs = bossTimeLimitMs() + BOSS_CONT_BONUS_MS; bossTimerLastAt = Date.now(); lastBossTickSec = 0; // コンテニューは制限時間を少しおまけ
   phase = 'battle'; bossContReason = null;
   if (p) { spawnDamageText(p.x, p.y - p.radius - 20, '✨ コンテニュー！', '#7fe8ff', 0.012, true); spawnHitParticles(p.x, p.y, '#7fe8ff'); }
+  setTimeout(() => spawnDamageText(arena.x, arena.y - arena.radius + 84, `⏱ 時間 +${BOSS_CONT_BONUS_MS / 1000}秒 おまけ！`, '#ffe066', 0.012, true), 300);
   playHealSound(); updateHPUI();
 }
 document.getElementById('bossContAdBtn').addEventListener('click', () => {
