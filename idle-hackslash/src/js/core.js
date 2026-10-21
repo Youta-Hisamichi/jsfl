@@ -601,8 +601,8 @@ const ARTIFACT_ALL = [
   { id: 'starCrown', icon: '👑', name: '星々の王冠', desc: '攻撃力・最大HP +800%・クリティカル率 +15%', rarity: 'mythic' },
   { id: 'forbiddenSword', icon: '🗡️', name: '禁断の剣', desc: 'ボス戦の開始時に、ボスのHPを1個につき1%削る（最大50個）', rarity: 'mythic' },
   { id: 'forbiddenKnife', icon: '🔪', name: '禁断のナイフ', desc: '雑魚が現れたとき、そのHPを1個につき1%削る（最大50個）', rarity: 'legendary' },
-  { id: 'forbiddenWatch', icon: '⏱️', name: '禁断の懐中時計', desc: 'ボス戦の制限時間が1個につき1秒のびる（最大30個）', rarity: 'mythic' },
-  { id: 'rareRing', icon: '💍', name: 'レアリング', desc: '禁断シリーズなどレア遺物のドロップ率が1個につき +50%（最大2個）', rarity: 'legendary' },
+  { id: 'forbiddenWatch', icon: '⏱️', name: '禁断の懐中時計', desc: 'ボス戦の制限時間が1個につき1秒のびる（最大30個）', rarity: 'legendary' },
+  { id: 'rareRing', icon: '💍', name: 'レアリング', desc: '禁断シリーズなどレア遺物のドロップ率が1個につき +50%（最大2個）', rarity: 'mythic' },
 ];
 const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
 const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
@@ -755,10 +755,10 @@ SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒
 SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
 SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
-SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: '雑魚が現れたとき、そのHPを1%削る。ショップで買えるのは1本だけ（ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 30, unlockKey: 'forbiddenKnifeBought' };
-SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★5遺物）', desc: 'ボス戦の制限時間が1秒のびる。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大30個まで集まり1個ごとに+1秒）', cost: 60, unlockKey: 'forbiddenWatchBought' };
-SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_ring.webp', name: 'レアリング（★4遺物）', desc: '禁断シリーズなどレア遺物のドロップ率が +50%。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大2個・2個で +100%）', cost: 500, unlockKey: 'rareRingBought' };
+SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
+SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間が1秒のびる。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大30個まで集まり1個ごとに+1秒）', cost: 60, unlockKey: 'forbiddenWatchBought' };
+SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_ring.webp', name: 'レアリング（★5遺物）', desc: '禁断シリーズなどレア遺物のドロップ率が +50%。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大2個・2個で +100%）', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
