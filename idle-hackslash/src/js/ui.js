@@ -2164,14 +2164,17 @@ function openRebornConfirm(ctx) {
   document.getElementById('rebornFeatherAmt').textContent = getRebirthFeatherGain();
   document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁' : '<img class="rab-ico" src="assets/img/ui/reb/ico_clap.webp" alt="">'}<span class="rab-txt">${isAdFree() ? '紋章特典で報酬3倍' : '動画を見て報酬3倍'}</span><b><img class="rab-gem" src="assets/img/ui/lb7/gem.webp" alt="">${g * 3}</b>`;
   rebornConfirmModal.classList.add('show');
+  if (!rebornCtx && phase === 'battle') { phase = 'paused'; rebornPaused = true; } // 転生パネルを開いている間はゲームを止める
 }
+let rebornPaused = false;
+function resumeFromRebornPanel() { if (!rebornPaused) return; rebornPaused = false; if (phase === 'paused') phase = 'battle'; }
 function closeRebornConfirm() { // キャンセル：コンテニュー画面に戻る／コンテニュー後の敗北ならいつもどおり前の階へ
-  rebornConfirmModal.classList.remove('show');
+  rebornConfirmModal.classList.remove('show'); resumeFromRebornPanel();
   const ctx = rebornCtx; rebornCtx = null;
   if (ctx && ctx.from === 'final') { knockoutFx = null; document.getElementById('bossFinalPanel').classList.remove('show'); phase = 'battle'; bossFail(ctx.reason, true); }
 }
 function doSelfRebirth(mult) {
-  rebornConfirmModal.classList.remove('show');
+  rebornConfirmModal.classList.remove('show'); resumeFromRebornPanel();
   const ctx = rebornCtx; rebornCtx = null;
   if (ctx) { // ゲームオーバー画面から：画面を閉じてそのまま転生
     clearInterval(bossContTimer); knockoutFx = null; bossContReason = null; bossTimerFor = null;
@@ -2189,6 +2192,7 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
+new MutationObserver(() => { if (!rebornConfirmModal.classList.contains('show')) resumeFromRebornPanel(); }).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // ほかの理由で閉じたときも再開
 new MutationObserver(() => refreshBgm()).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // 転生の確認画面を開け閉めしたら曲を切りかえる
 rebornBtn.addEventListener('click', event => {
   if (bossContModal.classList.contains('show') && canShowReborn()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
