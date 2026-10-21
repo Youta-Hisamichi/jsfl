@@ -715,7 +715,7 @@ const SHOP_ITEMS = {
   sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 2倍', cost: 8 },
   shield: { icon: '🛡️', name: '月の盾', desc: '最大HP 2倍', cost: 8 },
   meteor: { icon: '<span class="ico-flipv">☄️</span>', name: '流星術', desc: 'メテオダメージ 2倍', cost: 12 }, // 絵文字のほうき星は上向きなので上下反転して落ちてくる向きに
-  fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 2倍', cost: 10 },
+  fairy: { icon: '🧚', name: 'コインの妖精', desc: 'コイン獲得 2倍', cost: 10 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
 };
 // 何度でも買える倍率アイテム：1回目で2倍、そのあと1回ごとに+1倍（3倍・4倍…）。値段は買うたびに2倍（8→16→32…）
@@ -1267,7 +1267,7 @@ function computeBonuses() {
   b.hpMult += game.rebirthBonus.hp;
   { const rm = rebirthPowerMult(); b.atkMult *= rm; b.hpMult *= rm; } // 転生回数＋1倍（100階ごとに強くなる敵の壁を、転生で越えられるように）
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
-  b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コイン妖精（買った回数＋1倍・掛け算）
+  b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コインの妖精（買った回数＋1倍・掛け算）
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
   { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
   b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
