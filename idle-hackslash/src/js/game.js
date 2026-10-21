@@ -712,11 +712,23 @@ function resumeGameOverForTab() { // ゲーム画面に戻ったとき
   if (d.kind === 'cont') showBossContModal(d.reason);
   else openRebornConfirm({ from: 'final', reason: d.reason });
 }
+// ゲームオーバー画面のアドバイス：先頭の絵文字を、見本の絵のアイコンに置きかえて左に並べる
+function go3AdviceHtml(html) {
+  const box = document.createElement('div'); box.innerHTML = html;
+  return [...box.querySelectorAll('.boss-advice > div')].map(d => {
+    let t = d.innerHTML, ico = '';
+    if (t.includes('ボスのHP')) ico = '<img src="assets/img/ui/go3/ico_boss.webp" alt="">';
+    else if (t.startsWith('💡')) { ico = '<img src="assets/img/ui/go3/ico_atk.webp" alt="">'; t = t.slice(2).trim(); }
+    else if (t.startsWith('🐾')) { ico = '<img src="assets/img/ui/go3/ico_comp.webp" alt="">'; t = t.slice(2).trim(); }
+    else { const m = t.match(/^(\p{Extended_Pictographic}\uFE0F?)\s*/u); if (m) { ico = `<span>${m[1]}</span>`; t = t.slice(m[0].length); } }
+    return `<div class="go3-row"><i class="go3-ico">${ico}</i><span>${t}</span></div>`;
+  }).join('');
+}
 function showBossContModal(reason) {
   if (phase !== 'paused' || bossContReason !== reason) { knockoutFx = null; return; }
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
-  document.getElementById('bossContTitle').innerHTML = reason === 'time' ? '<img class="go2-ti" src="assets/img/ui/go2/clock.webp" alt="">時間切れ…' : '<img class="go2-ti" src="assets/img/ui/go2/skull.webp" alt="">ボスに敗北…';
-  document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? bossAdviceHtml(reason) : '';
+  document.getElementById('bossContTitle').innerHTML = reason === 'time' ? '<img class="go3-ti" src="assets/img/ui/go3/clock.webp" alt="">時間切れ…' : '<img class="go3-ti" src="assets/img/ui/go2/skull.webp" alt="">ボスに敗北…';
+  document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? go3AdviceHtml(bossAdviceHtml(reason)) : '';
   document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
   document.getElementById('bossContAdBtn').style.display = '';
   document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';

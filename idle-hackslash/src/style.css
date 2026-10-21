@@ -4126,3 +4126,25 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .serif-h3 { margin: 10px 0 2px; font-weight: 900; color: #7a4a00; border-bottom: 1px solid #d8c79a; }
 .serif-sub { margin: 6px 0 2px; font-size: 0.78rem; font-weight: 700; color: #6b6250; }
 .serif-line { padding: 2px 0 2px 10px; border-left: 3px solid #e4d3a3; margin: 1px 0; }
+/* ===== GAME OVER（ui/go3：見本の絵を下地にして文字とボタンを重ねる） ===== */
+#bossContModal .go3 { position: relative; container-type: inline-size; width: min(380px, 94vw, calc((100dvh - 30px) / 1.621)); aspect-ratio: 985 / 1597; animation: fbgPop 0.45s cubic-bezier(.2,.9,.3,1.3) both; }
+#bossContModal .go3-bg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.6)); user-select: none; -webkit-user-drag: none; pointer-events: none; }
+#bossContModal .go3-title { position: absolute; left: 18.8%; top: 46.6%; width: 62.4%; height: 5.95%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 3cqw; font-size: 7cqw; font-weight: 900; color: #2b1a0c; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgba(255,240,210,0.7); }
+#bossContModal .go3-ti { height: 82%; width: auto; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4)); }
+#bossContModal .go3-count { position: absolute; left: 30%; top: 53.1%; width: 40%; height: 7.4%; display: flex; justify-content: center; }
+#bossContModal .go3 .boss-cont-count { display: flex; height: 100%; margin: 0; gap: 0.5cqw; background: none; text-shadow: none; }
+#bossContModal .go3 .go2-num { display: block; height: 100%; aspect-ratio: 116 / 120; background: url(assets/img/ui/go2/nums.webp) 0 0 / 1000% 100% no-repeat; filter: drop-shadow(0 0 8px rgba(255,90,60,0.7)) drop-shadow(0 3px 3px rgba(0,0,0,0.8)); }
+#bossContModal .go3-advice { position: absolute; left: 19.5%; top: 61.7%; width: 63.6%; height: 13%; display: flex; flex-direction: column; justify-content: center; gap: 1.2cqw; color: #f2eee4; font-size: 3.3cqw; line-height: 1.35; text-align: left; }
+#bossContModal .go3-row { display: flex; align-items: center; gap: 2cqw; }
+#bossContModal .go3-ico { flex: none; width: 6.4cqw; height: 6.4cqw; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 4.4cqw; }
+#bossContModal .go3-ico img { width: 100%; height: 100%; object-fit: contain; }
+#bossContModal .go3-advice b { color: #ffd76b; font-size: 1.25em; }
+#bossContModal .go3-ad, #bossContModal .go3-giveup, #bossContModal .go3-reborn { position: absolute; padding: 0; margin: 0; border: 0; background: transparent; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: transform 0.08s, filter 0.08s; }
+#bossContModal .go3-ad:active, #bossContModal .go3-giveup:active, #bossContModal .go3-reborn:active { transform: scale(0.97); filter: brightness(1.15); }
+#bossContModal .go3-ad { left: 13.7%; top: 77.5%; width: 72.6%; height: 9.5%; }
+#bossContModal .go3-ad .go-ad-text { position: absolute; left: 25.9%; width: 59.4%; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 3.9cqw; line-height: 1.25; white-space: nowrap; text-shadow: -1px -1px 0 #06204e, 1px -1px 0 #06204e, -1px 1px 0 #06204e, 1px 1px 0 #06204e, 0 2px 3px rgba(0,0,0,0.7); }
+#bossContModal .go3-ad .go-ad-text small { font-size: 2.7cqw; font-weight: 700; }
+#bossContModal .go3-giveup { left: 23.9%; top: 87.7%; width: 52.3%; height: 6.8%; }
+#bossContModal .go3-giveup .msb-name { color: #f4f4f4; font-weight: 900; font-size: 5cqw; text-shadow: -1px -1px 0 #1c2230, 1px -1px 0 #1c2230, -1px 1px 0 #1c2230, 1px 1px 0 #1c2230, 0 2px 3px rgba(0,0,0,0.7); }
+#bossContModal .go3-reborn { left: 23.9%; top: calc(100% + 1cqw); width: 52.3%; aspect-ratio: 400 / 113; background: url(assets/img/ui/go2/btn_purple.webp) center / 100% 100% no-repeat; color: #fff; font-size: 4.6cqw; font-weight: 900; text-shadow: 0 2px 3px rgba(0,0,0,0.8); }
+#bossContModal .go3-reborn img { width: 1.2em; height: 1.2em; vertical-align: -0.2em; }

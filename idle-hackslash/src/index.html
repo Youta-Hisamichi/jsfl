@@ -549,19 +549,14 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 </div>
 <div class="modal-overlay" id="skGachaModal" style="z-index:68;"><div class="modal-panel sk-gacha-panel"><div class="gacha-result" id="skGachaResult"></div></div></div>
 <div class="modal-overlay" id="bossContModal" style="z-index:67;">
-  <div class="modal-panel go-panel go2" style="text-align:center;">
-    <img class="go2-orn top" src="assets/img/ui/go2/divider.webp" alt="">
-    <img class="go-logo" src="assets/img/ui/go2/logo.webp" alt="GAME OVER">
-    <div class="go2-grave"><img src="assets/img/ui/go2/grave.webp" alt=""></div>
-    <h2 id="bossContTitle">ボスに敗北…</h2>
-    <div class="go2-count"><img class="go2-dv l" src="assets/img/ui/go2/divider2.webp" alt=""><div class="boss-cont-count" id="bossContCount"></div><img class="go2-dv r" src="assets/img/ui/go2/divider2.webp" alt=""></div>
-    <div class="modal-sub go2-advice" id="bossContText" style="white-space:pre-line;"></div>
-    <div class="go-btns">
-      <button class="go-ad-btn" id="bossContAdBtn"></button>
-      <button class="go-giveup-btn" id="bossContGiveUpBtn"><span class="msb-name">あきらめる</span></button>
-      <button class="go-reborn-btn" id="bossContRebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
-    </div>
-    <img class="go2-orn bottom" src="assets/img/ui/go2/divider.webp" alt="">
+  <div class="go3"><!-- 見本の絵を下地にして、タイトル・カウント・アドバイス・ボタンの文字だけ重ねる -->
+    <img class="go3-bg" src="assets/img/ui/go3/base.webp" alt="GAME OVER">
+    <h2 class="go3-title" id="bossContTitle">ボスに敗北…</h2>
+    <div class="go3-count"><div class="boss-cont-count" id="bossContCount"></div></div>
+    <div class="go3-advice" id="bossContText"></div>
+    <button class="go3-ad" id="bossContAdBtn"></button>
+    <button class="go3-giveup" id="bossContGiveUpBtn"><span class="msb-name">あきらめる</span></button>
+    <button class="go3-reborn" id="bossContRebornBtn" style="display:none;"><span data-xi="x_reborn">🌌</span> 転生する</button>
   </div>
 </div>
 <div class="modal-overlay" id="rebornConfirmModal" style="z-index:70;">
