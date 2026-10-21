@@ -1342,7 +1342,7 @@ const DEBUG_OBSTACLES = [
   ['bumper', 'orb_rainbow', 'バンパー（オーブ）'], ['spike', 'saw', 'ノコギリ'], ['spike', 'gear', '歯車'], ['spike', 'spikeBall', 'トゲ玉'], ['spike', 'spikeLog', 'トゲ丸太'], ['spike', 'spikePillar', 'トゲ柱'],
   ['tree', 't_oak', '木'], ['tree', 't_sakura', '桜'], ['tree', 't_snowpine', '雪の木'], ['tree', 't_cactus', 'サボテン'], ['pillar', 'p_pillar', '石柱'], ['pillar', 'p_statue', '石像'], ['pillar', 'p_lantern', '石灯籠'],
   ['bush', 'b_bush', '草むら'], ['pot', 'b_pot', '壺'], ['hay', 'b_hay', '干し草'], ['stump', 'b_stump', '切り株'], ['ruin', 'b_ruin', '崩れた柱'],
-  ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'ハテナボックス'],
+  ['dash', 'dash', 'ダッシュパネル'], ['portal', 'portal', 'ワープゲート（2つ）'], ['egg', null, '卵'], ['qbox', null, 'パンドラの箱'],
 ];
 function debugSpawnObstacle(kind, sprite) {
   const half = arena.radius, r = half * 0.1;
@@ -1481,7 +1481,7 @@ function obstacleBounce(ball) {
         if (isMainPlayerBall(ball) && holdRush && holdRush.shot) holdRush.speed = Math.max(3, Math.min(PULL_SPEED_MAX, holdRush.speed * info.speed));
       }
     }
-    if (o.kind === 'qbox' && !o.used && (isMainPlayerBall(ball) || (o.gm && ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)))) { openQBox(o); continue; } // ハテナボックス：自キャラが当たると中身が飛び出す
+    if (o.kind === 'qbox' && !o.used && (isMainPlayerBall(ball) || (o.gm && ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)))) { openQBox(o); continue; } // パンドラの箱：自キャラが当たると中身が飛び出す
     if (dot < -0.6 && isMainPlayerBall(ball)) game.totalBounces = (game.totalBounces || 0) + 1; // 障害物での反射も数える
     if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));
@@ -1550,7 +1550,7 @@ function obstacleBounce(ball) {
   for (const o of obstacles) if (o.kind === 'bomb' && o.fuseAt && !o.broken && now - o.fuseAt > 700) explodeBomb(o);
   if (obstacles.some(o => o.broken)) obstacles = obstacles.filter(o => !o.broken);
 }
-// ハテナボックス：1回当たると中身が出て、空箱（ただの硬いブロック）になる
+// パンドラの箱：1回当たると中身が出て、空箱（ただの硬いブロック）になる
 function openQBox(o) {
   o.used = true; o.popAt = Date.now();
   playTone(988, 0.07, 'square', 0.08); setTimeout(() => playTone(1319, 0.2, 'square', 0.08), 70); // ピコーン
@@ -1668,7 +1668,7 @@ function drawObstacles() {
       else if (o.kind === 'slime' || o.kind === 'bumper') { ctx.translate(o.x, o.y + o.r); ctx.rotate(k * 0.07); ctx.scale(1 + k * 0.16, 1 - k * 0.16); ctx.translate(-o.x, -(o.y + o.r)); } // やわらかい物はプルプル
       else { const g = o.wobAmp * Math.exp(-wt / 90) * Math.sin(wt / 14); ctx.translate(g * 3, Math.abs(g) * -1); ctx.translate(o.x, o.y + o.r); ctx.rotate(g * 0.04); ctx.translate(-o.x, -(o.y + o.r)); } // 硬い物は小刻みにガタガタ
     }
-    if (o.kind === 'qbox') { // ハテナボックス（叩くと少し跳ねる。使ったら茶色の空箱）
+    if (o.kind === 'qbox') { // パンドラの箱（叩くと少し跳ねる。使ったら茶色の空箱）
       if (o.tansu) { // タンス（開けると引き出しが出る。全部開けたら薄くなって消える）
         const pop = Date.now() - (o.popAt || 0) < 200 ? -Math.sin((Date.now() - o.popAt) / 200 * Math.PI) * 5 : 0;
         ctx.globalAlpha = o.used ? Math.max(0, 1 - (Date.now() - (o.usedAt || 0)) / 3000) * 0.8 : 1;

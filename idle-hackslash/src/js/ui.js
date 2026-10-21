@@ -284,7 +284,7 @@ let expGems = [], lastKillPos = null;
 // 経験値とレベルアップ3択は一旦お休み（true に戻すと経験値ダイヤ・Lvバー・3択パワーアップが復活）
 const EXP_ENABLED = false;
 function spawnExpGems(x, y, total) {
-  if (!EXP_ENABLED) { // 経験値の代わりに少しのコインにする（ハテナボックス・氷・水晶などの中身）
+  if (!EXP_ENABLED) { // 経験値の代わりに少しのコインにする（パンドラの箱・氷・水晶などの中身）
     const c = Math.max(1, Math.round(total * stageCoinRaw() * 0.1 * computeBonuses().coinMult));
     if (total <= 4) return; // 雑魚を倒したときの経験値ぶんは無し
     game.coins += c; spawnCoinBurst(x, y, c, 5); updateStatsUI(); return;

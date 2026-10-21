@@ -14,7 +14,7 @@ const GIMMICKS = {
   slime:     { name: 'ぷるぷる床', icon: '🟢', desc: '跳ね返りが強くなる。コイン×1.2', coin: 1.2 },
   pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
-  blocks:    { name: 'ハテナボックス叩きまくり', icon: '❓', desc: 'ハテナボックスを何度も叩いてコイン', coin: 1 },
+  blocks:    { name: 'パンドラの箱叩きまくり', icon: '❓', desc: 'パンドラの箱を何度も叩いてコイン', coin: 1 },
   tansu:     { name: 'タンス開けまくり', icon: '🗄️', desc: 'タンスを調べまくってお宝さがし！', coin: 1 },
   castle:    { name: '王城の決戦', icon: '🏰', desc: 'シャンデリアが落ちて敵に大ダメージ。コイン×1.3', coin: 1.3, tint: 'rgba(40,10,6,0.12)' },
   village:   { name: 'のどかな村', icon: '🏡', desc: '逃げまわるニワトリにさわるとコイン', coin: 1.1 },
@@ -381,13 +381,13 @@ let gmRegrowT = 0;
   if (gm.broke % 25 === 0) { spawnDamageText(arena.x, arena.y - 40, `${o.gm === 'mow' ? '🌿 芝刈り' : '🏺 壺割り'} ${gm.broke}コンボ！ ボーナス`, '#ffe36b', 0.012, true); const b = c * 10; game.coins += b; spawnCoinBurst(arena.x, arena.y - 20, b, 8); }
   updateStatsUI();
 }; }
-// ハテナブロック：何度も叩ける（叩くたびにコイン、最後の1回は豪華）
+// パンドラの箱：何度も叩ける（叩くたびにコイン、最後の1回は豪華）
 { const orig = openQBox; openQBox = function (o) {
   if (o.tansu) return openTansu(o);
   if (!o.gm || !(o.multi > 0)) return orig.apply(this, arguments);
   if (Date.now() - (o.popAt || 0) < 220) return; // 連続ヒットしすぎないように
   o.multi--; o.popAt = Date.now(); gm.broke = (gm.broke || 0) + 1;
-  if (o.multi <= 0) { o.used = true; return orig.apply(this, arguments); } // 最後は通常のハテナボックスの中身
+  if (o.multi <= 0) { o.used = true; return orig.apply(this, arguments); } // 最後は通常のパンドラの箱の中身
   const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * 0.35));
   game.coins += c; spawnCoinDrop(o.x, o.y - o.r, c, 2);
   spawnDamageText(o.x, o.y - o.r - 10, `🟡 +${formatCoinNumber(c)}（あと${o.multi}）`, '#ffd76b', 0.022);
