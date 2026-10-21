@@ -498,15 +498,15 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
-  news: { // お知らせ画面 栄光のゲート：競馬場のように、ラッパのファンファーレで幕を開け、跳ねるギャロップのベースと裏打ちの和音に乗って明るい旋律が駆け抜ける（イ長調）
-    bpm: 152,
-    echo: { time: 0.18, feedback: 0.16, wet: 0.12 },
+  news: { // お知らせ画面 王宮の謁見：王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット（ヘ長調）
+    bpm: 112,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
     tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'A4 = C#5 E5 A5 = = = | E5 = C#5 E5 A5 = C#6 = | B5 = A5 G#5 F#5 = E5 = | E5 = = = - - E5 E5 | A5 = E5 = C#5 E5 A5 = | B5 = G#5 = E5 G#5 B5 = | C#6 = B5 A5 F#5 = A5 = | E5 = = = - E5 F#5 G#5 | A5 = E5 = C#5 E5 A5 = | D6 = C#6 B5 A5 = F#5 = | E5 = A5 = G#5 = B5 = | A5 = = = - E5 G#5 B5 | C#6 = B5 = A5 = F#5 = | D6 = C#6 = B5 = G#5 = | E6 = D6 C#6 B5 = G#5 B5 | A5 = E5 = A5 = = -' },
-      { type: 'vrc6pulse12', gain: 0.013, notes: 'A3+C#4+E4 = = = A3+C#4+E4 = = = | A3+C#4+E4 = = = A3+C#4+E4 = = = | G#3+B3+E4 = = = G#3+B3+E4 = = = | G#3+B3+E4 = = = G#3+B3+E4 = = = | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 | - A3+C#4+F#4 - A3+C#4+F#4 - A3+C#4+F#4 - A3+C#4+F#4 | - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - A3+D4+F#4 - A3+D4+F#4 - A3+D4+F#4 - A3+D4+F#4 | - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 | - A3+C#4+F#4 - A3+C#4+F#4 - A3+C#4+F#4 - A3+C#4+F#4 | - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 | - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 - G#3+B3+E4 | - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4 - A3+C#4+E4' },
-      { type: 'vrc6saw', gain: 0.046, notes: 'A1 = = = E2 = = = | A1 = = = E2 = = = | E2 = = = B2 = = = | E2 = = = B2 = = = | A1 - A1 E2 A1 - A1 E2 | E2 - E2 B2 E2 - E2 B2 | F#2 - F#2 C#3 F#2 - F#2 C#3 | E2 - E2 B2 E2 - E2 B2 | A1 - A1 E2 A1 - A1 E2 | D2 - D2 A2 D2 - D2 A2 | E2 - E2 B2 E2 - E2 B2 | A1 - A1 E2 A1 - A1 E2 | F#2 - F#2 C#3 F#2 - F#2 C#3 | E2 - E2 B2 E2 - E2 B2 | E2 - E2 B2 E2 - E2 B2 | A1 - A1 E2 A1 - A1 E2' },
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'C5 = = A4 F5 = | E5 = D5 = C5 = | D5 = = F5 A5 = | G5 = F5 = D5 = | A5 = = C6 A5 = | G5 = A#5 = D5 = | E5 = F5 = G5 = | C5 = = = = = | F5 = = G5 A5 = | A5 = G5 = F5 = | D6 = = C6 A#5 = | A5 = = = F5 = | G5 = A#5 = D6 = | C6 = A#5 = G5 = | E5 = F5 = G5 E5 | F5 = = = = =' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: '- - A3+C4+F4 - A3+C4+F4 - | - - G3+C4+E4 - G3+C4+E4 - | - - A3+D4+F4 - A3+D4+F4 - | - - A#3+D4+F4 - A#3+D4+F4 - | - - A3+C4+F4 - A3+C4+F4 - | - - A#3+D4+G4 - A#3+D4+G4 - | - - G3+C4+E4 - G3+C4+E4 - | - - G3+C4+E4 - G3+C4+E4 - | - - A3+C4+F4 - A3+C4+F4 - | - - A3+D4+F4 - A3+D4+F4 - | - - A#3+D4+F4 - A#3+D4+F4 - | - - A3+C4+F4 - A3+C4+F4 - | - - A#3+D4+G4 - A#3+D4+G4 - | - - G3+C4+E4 - G3+C4+E4 - | - - G3+C4+E4 - G3+C4+E4 - | - - A3+C4+F4 - A3+C4+F4 -' },
+      { type: 'vrc6saw', gain: 0.045, notes: 'F2 = - - C3 - | C2 = - - G2 - | D2 = - - A2 - | A#1 = - - F2 - | F2 = - - C3 - | G1 = - - D2 - | C2 = - - G2 - | C2 = - - G2 - | F2 = - - C3 - | D2 = - - A2 - | A#1 = - - F2 - | F2 = - - C3 - | G1 = - - D2 - | C2 = - - G2 - | C2 = - - G2 - | F2 = - - C3 -' },
     ],
-    drums: 'k - s s k - s s | k - s s k - s s | k - s s k - s s | s s s s s s s s | k - h k s - h k | k - h k s - h k | k - h k s - h k | k s s s s s s s | k - h k s - h k | k - h k s - h k | k - h k s - h k | k s s s s s s s | k - h k s - h k | k - h k s - h k | k s k s s s s s | ks - s s ks - - -',
+    drums: 'k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - s - s s | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - h - h - | k - s - s s',
   },
   rebornconfirm: { // 転生の確認画面 魂の大聖堂：パイプオルガンのような分散和音と重いペダルの低音に、静かに祈るような旋律が高い天井に響く（ニ短調・フリギアの響きをまぜる）
     bpm: 84,
@@ -780,7 +780,7 @@ const BGM_INFO = [
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
-  { key: 'news', name: 'ページ お知らせ 栄光のゲート', desc: '競馬場のように、ラッパのファンファーレで幕を開け、跳ねるギャロップのベースと裏打ちの和音に乗って明るい旋律が駆け抜ける。VRC6風チップチューン。イ長調・BPM152' },
+  { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
   { key: 'rebornconfirm', name: '転生 魂の大聖堂', desc: '転生の確認画面で流れる、パイプオルガンのような分散和音と重いペダルの低音に、静かに祈るような旋律が響く大聖堂の曲。VRC6風チップチューン。ニ短調・BPM84' },
