@@ -447,7 +447,7 @@ function updateEnemyTraits(a, e, speedMult) {
             e.hp = Math.min(e.maxHp, e.hp + heal);
             spawnDamageText(e.x, e.y - e.radius - 30, '+' + heal, '#7ee787', 0.014, true);
             spawnHitParticles(e.x, e.y, '#7ee787');
-            playHealSound();
+            playEnemyHealSound();
             updateHPUI();
           } else if (trait === 'deathMagic') {
             playTone(110, 0.6, 'sawtooth', 0.16, 55);
