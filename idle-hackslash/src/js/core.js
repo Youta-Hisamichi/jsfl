@@ -758,7 +758,7 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: '雑魚が現れたとき、そのHPを1%削る。ショップで買えるのは1本だけ（ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 30, unlockKey: 'forbiddenKnifeBought' };
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間が1秒のびる。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大30個まで集まり1個ごとに+1秒）', cost: 60, unlockKey: 'forbiddenWatchBought' };
-SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_ring.webp', name: 'レアリング（★5遺物）', desc: '禁断シリーズなどレア遺物のドロップ率が +50%。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大2個・2個で +100%）', cost: 500, unlockKey: 'rareRingBought' };
+SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '禁断シリーズなどレア遺物のドロップ率が +50%。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大2個・2個で +100%）', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
@@ -830,7 +830,7 @@ function coinPrice(cost) { const s = getActiveSub(); return s ? Math.max(1, Math
 function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult < 1 ? Math.max(1, Math.ceil(cost * s.gemPriceMult)) : cost; }
 ICON_IMAGES.x_feather = ICON_IMAGES.art_evoFeather = 'assets/img/icons/bag_feather.webp'; // 進化の羽は所持品と同じアイコン
 ARTIFACT_ALL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
-ARTIFACT_BY_ID.rareRing.img = ICON_IMAGES.art_ring; // レアリングは指輪の絵を使い回す
+ARTIFACT_BY_ID.rareRing.img = 'assets/img/icons/art_rareRing.webp'; // レアリング専用の絵
 Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
 // 強化の仲間系3つのアイコン：仲間タブの絵＋それぞれの強化の絵（ファイル数を増やさないよう埋め込み）
