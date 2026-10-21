@@ -290,7 +290,7 @@ function renderCompanionList() {
   companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + '<div id="myCharSlot"></div>' + (mine.length ? mineHtml : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
   const slot = document.getElementById('myCharSlot');
-  if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オート強化は自キャラ枠の上
+  if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }
 
 const COMP_GACHA_BASE_COST = 20, COMP_GACHA_COST_GROWTH = 1.1;

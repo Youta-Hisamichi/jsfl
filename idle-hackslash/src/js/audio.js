@@ -1071,7 +1071,7 @@ function playTowerStepsSound() {
   }
 }
 // 飛躍の専用効果音：tier 1＝飛躍（キラッと上がる和音）、2＝超飛躍（さらに高く鳴り響くファンファーレ）
-function playLeapSound(tier = 1, vol = 1) { // vol：オート強化をほかのページで聞くときは小さく
+function playLeapSound(tier = 1, vol = 1) { // vol：オートLvUPをほかのページで聞くときは小さく
   if (!audioCtx) return;
   const notes = tier >= 2 ? [523.3, 659.3, 784, 1046.5, 1318.5, 1568, 2093] : [659.3, 784, 987.8, 1318.5];
   notes.forEach((f, i) => setTimeout(() => playTone(f, tier >= 2 ? 0.22 : 0.16, 'square', 0.07 * vol, f * 1.01), i * (tier >= 2 ? 70 : 60)));
@@ -1234,7 +1234,7 @@ function playPuzzleChain(n) {
   if (n >= 5) note(f * 1.26, 0.055, 0.16, 'triangle', 0.05); // 長3度を重ねて和音に
   if (n >= 10) [2.5, 3, 4].forEach((m, k) => note(f * m, 0.11 + k * 0.035, 0.12, 'sine', 0.03)); // キラキラ
 }
-// オート強化の1レベルアップ音：短い「ピロリン↑」のパワーアップ音（毎回同じ高さ）
+// オートLvUPの1レベルアップ音：短い「ピロリン↑」のパワーアップ音（毎回同じ高さ）
 function playPowerUpBlip() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
@@ -1473,7 +1473,7 @@ function playUpgradeSound() {
   [1046.5, 1318.51, 1567.98, 2093.0].forEach((f, i) => upgradeBell(f, c + i * 0.012, 0.7, 0.07, v)); // シャラーン（和音）
   for (let i = 0; i < 6; i++) upgradeBell(2637 + i * 220, c + 0.04 + i * 0.045, 0.18, 0.025, v); // 残りのきらめき
 }
-function playUpgradeSoundClassic() { // 元のレベルアップ音（10%まとめ強化で使う）
+function playUpgradeSoundClassic() { // 元のレベルアップ音（10%LvUPボタンで使う）
   playTone(660, 0.08, 'triangle', 0.12, 880);
   setTimeout(() => playTone(990, 0.12, 'triangle', 0.14), 70);
 }

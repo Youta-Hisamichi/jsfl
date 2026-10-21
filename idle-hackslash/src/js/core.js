@@ -712,7 +712,7 @@ function nextUpgradeLeap(level) {
 function newUpgradeLevels() { const o = {}; for (const id in UPGRADES) o[id] = 0; return o; }
 function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
 const SHOP_ITEMS = {
-  sword: { icon: '🗡️', name: '星砕きの剣', desc: '攻撃力 +25%', cost: 8 },
+  sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 +25%', cost: 8 },
   shield: { icon: '🛡️', name: '月光の盾', desc: '最大HP +25%', cost: 8 },
   meteor: { icon: '<span class="ico-flipv">☄️</span>', name: '流星術', desc: 'メテオダメージ 2倍', cost: 12 }, // 絵文字のほうき星は上向きなので上下反転して落ちてくる向きに
   fairy: { icon: '🧚', name: 'コイン妖精', desc: 'コイン獲得 +30%', cost: 10 },
@@ -720,9 +720,9 @@ const SHOP_ITEMS = {
 };
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
-SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オート強化', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
-SHOP_ITEMS.upPct = { icon: '📈', name: '10%まとめ強化', desc: '手持ちコインの10%ぶん一気にLvアップする「10%」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 10, unlockKey: 'upPctUnlocked' };
-SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXまとめ強化', desc: '買えるだけ一気にLvアップする「MAX」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 15, unlockKey: 'upMaxUnlocked' };
+SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
+SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '手持ちコインの10%ぶん一気にLvアップする「10%」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 10, unlockKey: 'upPctUnlocked' };
+SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '買えるだけ一気にLvアップする「MAX」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 15, unlockKey: 'upMaxUnlocked' };
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
 function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
 function bulkUpLockedBtn(isPct) { return `${isPct ? '10%' : 'MAX'}<span>🔒</span>`; }
