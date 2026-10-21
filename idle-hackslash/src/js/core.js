@@ -965,7 +965,7 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
     trait: '【商売上手】12秒ごとにコインをまとめて稼いでくる' },
   hobbit: { icon: '🍀', name: 'ホビット', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'sprite', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【小さな幸運】クリティカル率+30%／当てると自機が1.5秒加速' },
-  dog: { icon: '🐕', name: '犬兵ポチ', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
+  dog: { icon: '🐕', name: '名犬ポチ', stat: 'speed', desc: '移動速度上昇（全体で最大+60%）', rarity: 'common', kind: 'monk', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【かみつき】当たると、追加でもう1回かみつく（50%ダメージ）' },
   penguin: { icon: '🐧', name: 'ペンギン兵', stat: 'hp', desc: '最大HP上昇', rarity: 'common', kind: 'gunner', weight: 30, recruitCost: 60, baseBonus: 0.06, perLevel: 0.02, levelCostBase: 2,
     trait: '【氷つぶて】5秒ごとに攻撃力2.5倍の高速弾を撃つ' },
