@@ -411,7 +411,7 @@ function openTansu(o) {
   else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '🌿 やくそうを見つけた！ HP回復'; col = '#7ee787'; }
   else if (r < 0.65) { game.gems += 1; txt = '💎 ジェムを見つけた！'; col = '#64e8ff'; playCoinChime(10); }
   else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
-  else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキル全快ポーションを見つけた！'; col = '#ff8ad8'; }
+  else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキルポーションを見つけた！'; col = '#ff8ad8'; }
   else { txt = TANSU_JUNK[Math.floor(Math.random() * TANSU_JUNK.length)]; col = '#c8c8d0'; }
   spawnDamageText(x, y, txt, col, 0.016, r < 0.74);
   spawnHitParticles(x, o.y - o.r * 0.4, '#e8c080');
@@ -520,7 +520,7 @@ function seedRefundFeathers() { return (seedUsed('atk') + seedUsed('hp')) * SEED
 function bagRows() {
   const rows = [], hc = getHeldChests();
   rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
-  rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキル全快ポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
+  rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキルポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
   for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label.replace('コモン', 'ノーマル')}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }

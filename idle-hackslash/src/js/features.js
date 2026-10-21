@@ -368,7 +368,7 @@ const LOGIN7 = [
   { label: '💎5', give: () => { game.gems += 5; return '💎5'; } },
   { label: `${xi('x_feather', 'fea-ico')}×20`, give: () => { game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 20; return '進化の羽×20'; } },
   { label: '💎8', give: () => { game.gems += 8; return '💎8'; } },
-  { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキル全快ポーション×2'; } },
+  { label: '<i class="ico-redpot"></i>×2', give: () => { game.redPotions = (game.redPotions || 0) + 2; return 'スキルポーション×2'; } },
   { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic'); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
 ];
 function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }

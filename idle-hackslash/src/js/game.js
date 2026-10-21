@@ -1558,7 +1558,7 @@ document.addEventListener('pointerdown', event => {
 new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
 stageSkipModal.addEventListener('click', event => { if (event.target === stageSkipModal) stageSkipModal.classList.remove('show'); });
 
-// スキルの待ち時間はジェムではリセットしない。ショップの「スキル全快ポーション」で全部まとめてリセットする
+// スキルの待ち時間はジェムではリセットしない。ショップの「スキルポーション」で全部まとめてリセットする
 function isSkillResetPending() { return false; }
 function cooldownLabel(key, label, remaining) {
   const s = Math.ceil(remaining / 1000), m = Math.floor(s / 60);

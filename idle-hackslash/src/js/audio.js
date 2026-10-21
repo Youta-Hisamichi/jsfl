@@ -1517,7 +1517,7 @@ function playEnemyHealSound() {
   [1318.5, 1661.2, 1975.5, 2637, 1975.5, 2637, 3322.4].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.045), 60 + i * 65)); // こぼれるキラキラ
   setTimeout(() => playTone(2637, 0.6, 'sine', 0.03, 2660), 520); // 余韻の「リーン」
 }
-// 大回復：キラキラと駆け上がる分散和音のあとに、明るい和音がふわっと広がって満ちる（スキル全快ポーション）
+// 大回復：キラキラと駆け上がる分散和音のあとに、明るい和音がふわっと広がって満ちる（スキルポーション）
 function playFullRestoreSound() {
   [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98, 2093].forEach((f, i) => setTimeout(() => { playTone(f, 0.22, 'sine', 0.11); playTone(f * 2, 0.08, 'triangle', 0.03); }, i * 55));
   setTimeout(() => {

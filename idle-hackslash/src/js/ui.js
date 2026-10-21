@@ -1304,12 +1304,12 @@ function updateRedPotionButton() { // スキル列の左端の赤ポーション
   redPotionBtn.classList.toggle('is-disabled', n <= 0);
 }
 redPotionBtn.addEventListener('click', event => {
-  if ((game.redPotions || 0) <= 0) { promptGemShortage(0, { title: 'スキル全快ポーションがありません', text: 'ショップで「スキル全快ポーション」を買いますか？', silent: true, iconHtml: '<i class="ico-redpot" style="width:1em;height:1em;vertical-align:-0.1em"></i>' }); return; }
+  if ((game.redPotions || 0) <= 0) { promptGemShortage(0, { title: 'スキルポーションがありません', text: 'ショップで「スキルポーション」を買いますか？', silent: true, iconHtml: '<i class="ico-redpot" style="width:1em;height:1em;vertical-align:-0.1em"></i>' }); return; }
   if (!anySkillCoolingDown()) { showTapError('待ち時間中のスキルがありません', event.clientX, event.clientY); return; }
   game.redPotions--;
   resetAllSkillCooldowns();
   playFullRestoreSound();
-  showNotice('🧪 スキル全快ポーションで全スキルの待ち時間をリセット！');
+  showNotice('🧪 スキルポーションで全スキルの待ち時間をリセット！');
   updateRedPotionButton();
   saveGame();
 });
