@@ -4179,3 +4179,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #shopList .sr-coin-price { width: auto; min-width: 84px; gap: 4px; padding: 0 12px 0 8px; border-radius: 999px; border: 2px solid #c99a3a; background: linear-gradient(180deg, #2a3a6a, #121c3a); box-shadow: inset 0 1px 0 rgba(255,255,255,0.2); } #shopList .sr-coin-price img { width: 20px; height: 20px; } /* 転生の値段はコイン */
 .bag-empty-msg { padding: 24px 0; text-align: center; color: #fff; font-weight: 800; text-shadow: 0 1px 2px #000; }
 #shopList .sr-ico.su-i_reborn, .su-i_reborn { background: url(assets/img/ui/shop/i_reborn.webp) center / contain no-repeat !important; } /* 転生のアイコン */
+.boss-warning { background: linear-gradient(180deg, rgba(60,0,8,0) 0%, rgba(60,0,8,0.4) 18%, rgba(60,0,8,0.4) 82%, rgba(60,0,8,0) 100%) !important; } .boss-warning .bw-band { opacity: 0.6; } /* WARNINGの帯は半透明に */

@@ -402,17 +402,28 @@ document.getElementById('compGachaBtn').addEventListener('click', event => { if 
   new MutationObserver(() => ov.classList.toggle('show', box.style.display !== 'none')).observe(box, { attributes: true, attributeFilter: ['style'] });
 });
 
+// パーティの仲間の強さ（攻撃力・HPの合計）の一部を自キャラに上乗せする
+const COMP_SHARE_RATE = 0.10;
+let compShareGuard = false;
+function compShare(kind) { // kind: 'atk' | 'hp'。仲間の値は自キャラの値をもとに計算されるので、その計算中は上乗せしない（ぐるぐる回らないように）
+  if (compShareGuard || !game.companions) return 0;
+  compShareGuard = true;
+  let sum = 0;
+  try { for (const id of Object.keys(COMPANIONS)) { const n = getCompanionCount(id); if (n > 0) sum += n * (kind === 'atk' ? getCompanionAtk(id) : getCompanionMaxHP(id)); } }
+  finally { compShareGuard = false; }
+  return sum * COMP_SHARE_RATE;
+}
 function getPlayerAtk() {
   const b = computeBonuses();
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル（取得したら転生まで常時発動）
-  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1))));
+  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) + compShare('atk')))); // 仲間の攻撃力の10%も上乗せ
 }
 function getPlayerMaxHP() {
   const b = computeBonuses();
   const base = 100;
-  return safeNum(Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult())));
+  return safeNum(Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult() + compShare('hp')))); // 仲間のHPの10%も上乗せ
 }
 const EARLY_PLAYER_HP_MIN_RATE = 0.4;
 function getEarlyPlayerHpRate(stage) {
