@@ -281,7 +281,7 @@ let enemySayAt = 0;
 function enemySay(b, kind, force) {
   if (!b || b.isDying || b.isPlayer) return;
   const now = Date.now(); if (!force && now - enemySayAt < 3500) return;
-  const pool = ENEMY_SAY[kind] || ENEMY_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  const pool = enemyLinePool(b, kind), t = pool[Math.floor(Math.random() * pool.length)]; // 敵の傾向（高貴／モンスター）に合うセリフだけ
   enemySayAt = now; companionSay(b, t, 1800 + t.length * 80);
 }
 setInterval(() => {
@@ -1139,7 +1139,8 @@ function buildSerifList() {
   for (const [n, C] of [['群像劇', EPIC_COMP], ['ロボットアニメ風', TOMINO_COMP], ['風と森', WIND_COMP], ['錬金術', ALCH_COMP], ['宇宙艦隊', GALAXY_COMP], ['聖杯', GRAIL_COMP]]) { sub(`共通・${n}（仲間ごとに4〜5割が混ざる。動物などは除く）`); add(C.i, 'ひとりごと'); add(C.k, '撃破'); }
   sec('敵（ザコ・共通）');
   const EN = { idle: 'ひとりごと', slime: 'スライム', hit: '攻撃を受けたとき', boss: 'ボス登場（専用ゼリフのないボス）', bossHalf: 'ボスHP半分', bossLow: 'ボス瀕死', bossWin: 'ボスが勝ったとき' };
-  for (const k in ENEMY_SAY) { sub(EN[k] || k); add(ENEMY_SAY[k]); }
+  const TN = { noble: '高貴', monster: 'モンスター', any: '未分類' };
+  for (const k in ENEMY_SAY) { sub(EN[k] || k); for (const tn of ['noble', 'monster', 'any']) add(ENEMY_SAY[k].filter(t => enemyLineTone(t) === tn), TN[tn]); }
   sec('ボス専用ゼリフ');
   for (const e in BOSS_SAY) { sub(`${e} ${(typeof BOSS_ENEMY_NAMES !== 'undefined' && BOSS_ENEMY_NAMES[e]) || ''}`); BOSS_SAY[e].forEach((t, i) => add([t], ['登場', 'HP半分', '瀕死', '勝ったとき'][i])); }
   sec('お店・メニューの案内役');
@@ -1174,3 +1175,32 @@ function openSerifList() {
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
 }
 document.getElementById('dbgSerifBtn')?.addEventListener('click', openSerifList);
+
+// ===== 敵のセリフの傾向：「高貴」なキャラは高貴なセリフ、「モンスター」はモンスターのセリフだけ。どちらでもないものは「未分類」で、どの敵もしゃべる =====
+// （ボス専用ゼリフ BOSS_SAY はそのボスだけのものなので対象外）
+const ENEMY_LINE_TONE = {
+  noble: ['ここから先は、我が軍の領土だ', '退け、命が惜しければな', '王の首を差し出せば、民は見逃してやる', '解放軍だと？ 笑わせる', '我が軍団の前に、障害など存在せぬ', '凡庸な指揮官に率いられた兵は、哀れなものだ', '旧き秩序は、今日ここで終わる', '下郎が…我の前に立つか', 'よかろう、少しは遊んでやる', 'これはこれは、勇者様ではないか。ククク',
+    'よくぞ来た…だがここまでだ！', '我が前にひれ伏せ！', 'このステージは通さぬ', '退屈しのぎにはなりそうだ', '理想だけで国は守れんのだよ', '貴様らの正義と、我が正義…どちらが残るか試してみよ', 'よくぞ辿り着いた。だが歴史を作るのは勝者だけだ', 'この城が落ちる時は、世界も道連れだ', 'ふん…若さとは、ときに罪なものだな', 'この私を本気にさせるとは、たいしたものだ', '駒の動かし方も知らん者が、盤上に立つか', '噂の勇者…その腕前、確かめさせてもらう', 'お前たちの言う等価交換など、まやかしだ', '我は真理に最も近い者…ひれ伏せ', '宇宙を手に入れる…それが私の望みだ', '貴様を倒し、この銀河に新しい時代を開く', '戦う相手としては、申し分ない', '伝説の勇者…貴様と戦える日を待っていた', '我は混沌の王…人の子よ、何を望む', '秩序の名のもとに、汝を裁く', '聖杯は我のものだ。誰にも渡さぬ', 'その願い、我が宝具で踏みにじってやろう',
+    '…惜しいな。貴様のような者が我が配下にいれば', '本気で来い。でなければ、ここで終わるぞ', 'この手応え…貴様、何者だ？', '私が押されているだと…？', '面白い…私の想定を超えてくるとはな', 'これほどの用兵…一度、酒を酌み交わしたかった',
+    '見事だ…だが、まだ幕は下りぬ…！', 'これが…時代の流れというものか…', '我が野望…ここで潰えるか…', 'ここで退くのは…恥ではない…次があるならな…', '若い力に…押し切られるとはな…', '私の負けか…いや、時代が私を見捨てたのだ…', '私は…少し、急ぎすぎたのかもしれん…', '夢の続きは…貴様に預けよう…', '我を倒しても…世界は変わらぬ…', '見事だ…その輝き、認めてやる…',
+    '理想に殉じたか…愚かな', '覚えておけ。力なき正義は無力だ', '勝利とは、こういうものだ', '卿もなかなかやるが、歴史を動かすのは私だ', 'その程度か勇者よ'],
+  monster: ['グルル…', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', 'オレ、強い', 'いたいのはイヤ…', 'ここは我らの森だ…出ていけ', 'ヒトの匂い…また焼きに来たのか', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ', 'オニイ・・チャン', 'シテ‥コロシテ‥', 'ニンゲン　カエレ‥', 'ニンゲン　クウ\nチカラ　テニイレル', 'かゆ‥うま‥', '今日はニンゲンの厄日だねェ',
+    'ヘッヘッ！ オイラと契約しないか？', 'オマエ…ウマソウナ魂ダナ', 'マッカを置いていけば、見逃してやるよ', '契約の印は、もう刻まれてるぜ', 'ニンゲンの欲望は、いつも甘い味がする', 'ヤダアアアァーッ！！', 'いい声で鳴けよオォーッ！',
+    'ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜', 'ふん、虫ケラが', '群れを傷つけたのは、お前たちか', 'この怒りは、千年の森の怒りだ', '不完全な命が、完全な我に挑むか', '再生が…追いつかないだと？', 'ぐおおお…！', '怒りが…静まっていく…', '石が…砕ける…我の、命が…', '完全な存在に…なれなかったか…', 'フハハハ！弱すぎる！'],
+};
+const ENEMY_LINE_TONE_OF = new Map(); for (const t in ENEMY_LINE_TONE) for (const s of ENEMY_LINE_TONE[t]) ENEMY_LINE_TONE_OF.set(s, t);
+function enemyLineTone(text) { return ENEMY_LINE_TONE_OF.get(text) || 'any'; } // any＝未分類
+// 敵キャラの傾向（図鑑の名前で分ける）。高貴でも未分類でもないものはモンスター
+const ENEMY_NOBLE_NAMES = new Set(['闇の魔導士', '漆黒の騎士', 'デーモンロード', '死霊王リッチ', '蒼き竜帝', '針鎧の王', '血塗れの覇王', '熾天の守護者', '骸骨王', '海の魔女セイレーン', '闇の魔女王', '冥府の黒騎士', '雪女', '氷の女王', '嵐の龍神', '天秤の聖騎士', '小悪魔の姫', '深きものの王', '桜祭りの剣姫', '砂漠の蛇女王', '黄金竜', '竜騎の二人', '食花のドリアード', '四元の魔女王', '聖剣の戦乙女', '紅蓮の女騎士', '黒馬のヴァルキリー', '太陽の巫女', '海神の人魚姫', '黒翼の竜女帝', '時の魔女', '戦女神アテナ', '黄金竜翼の熾天使', '紫焔の魔剣姫', 'ショコラ魔王女', '迎春の姫騎士', '終焉の聖女', '聖十字の天使騎士', '玉座の女騎士団長', '蒼炎の剣姫', '炎翼のハーピー女王', '百鬼夜行の主', '黒翼の血剣女帝']);
+const ENEMY_ANY_NAMES = new Set(['配信勇者', '新入生番長', '柴犬ルーン戦士', '暴走ジョッキー騎士', '死神', '冥府の刈り手', '双子の魔導人形', '機械仕掛けの魔神', '呪いのぬいぐるみ', 'あんさつしゃ', 'じゃきょう徒', 'ペストいしゃ', 'くろまどうし', 'みならい魔女', 'ゆみへい', 'ほうへい', 'からくり兵', 'てっかめん', 'あかよろい', 'おのよろい', 'やりよろい', '鉄騎士', '狼剣士', '魚人', 'カニ娘', 'クラゲの歌姫', 'ペンギン魔導士', 'フランケン', 'キュウリ兵', 'まねきネコ兵', 'タルねこ', 'まどうしょ']);
+function enemyTone(b) {
+  const e = (b && b.megaOwner) || b, book = e && typeof getEnemyBookKey === 'function' && ENEMY_BOOK_BY_KEY[getEnemyBookKey(e)];
+  const name = book ? book.name : '';
+  return ENEMY_NOBLE_NAMES.has(name) ? 'noble' : ENEMY_ANY_NAMES.has(name) || !name ? 'any' : 'monster';
+}
+function enemyLinePool(b, kind) { // その敵に合うセリフだけ（未分類のセリフはだれでも）。合うものが無ければ全部から
+  const all = ENEMY_SAY[kind] || ENEMY_SAY.idle, tone = enemyTone(b);
+  if (tone === 'any') return all;
+  const pool = all.filter(t => { const lt = enemyLineTone(t); return lt === 'any' || lt === tone; });
+  return pool.length ? pool : all;
+}
