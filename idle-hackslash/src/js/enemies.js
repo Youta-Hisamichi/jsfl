@@ -1002,12 +1002,16 @@ function spawnCoinFountain(x, y, value, count = 48) {
   shakeScreenLight();
   for (let i = 0; i < 16; i++) setTimeout(() => playCoinChime(i), i * 40);
 }
-function getCoinTargetInArena() {
+let coinTargetCache = null, coinTargetAt = 0;
+function getCoinTargetInArena() { // ヘッダーのコイン欄の位置。測ると画面の配置計算が走って重いので、0.25秒に1回だけ測り直す
+  const now = performance.now();
+  if (coinTargetAt && now - coinTargetAt < 250) return coinTargetCache;
+  coinTargetAt = now;
   const rect = canvas.getBoundingClientRect();
   const el = headerCoinsEl.parentElement.getBoundingClientRect();
-  if (rect.width < 10 || !size) return null;
+  if (rect.width < 10 || !size) return (coinTargetCache = null);
   const k = rect.width / size;
-  return { x: (el.left + 10 - rect.left) / k, y: (el.top + el.height / 2 - rect.top) / k };
+  return (coinTargetCache = { x: (el.left + 10 - rect.left) / k, y: (el.top + el.height / 2 - rect.top) / k });
 }
 function releaseCoin(c) {
   coinDisplayHold = Math.max(0, coinDisplayHold - c.value);

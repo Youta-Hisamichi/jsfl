@@ -382,9 +382,11 @@ function processAdds(a) {
     if (hpFocusEnemy && hpFocusEnemy.hp <= 0) updateHPUI(); // 表示中の敵を倒したら次の敵に切り替え
   }
 }
+const MAX_PARTICLES = 350;
 function updateBattleFx() {
   for (const p of particles) { p.x += p.vx; p.y += p.vy; p.vy += p.g || 0; p.life -= (p.decay || 0.04); }
   particles = particles.filter(p => p.life > 0);
+  if (particles.length > MAX_PARTICLES) particles = particles.slice(-MAX_PARTICLES); // 粒が多すぎるときは古いものから消す（見た目はほぼ同じで軽くなる）
   for (const d of damageTexts) { d.y += d.vy; d.life -= (d.decay || 0.018); }
   damageTexts = damageTexts.filter(d => d.life > 0);
 }

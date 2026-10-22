@@ -244,8 +244,9 @@ function drawSpeech() {
   for (const s of speech) {
     const b = s.ball, a = Math.min(1, (s.until - now) / 300);
     ctx.save(); ctx.globalAlpha = a; ctx.font = '800 12px sans-serif';
-    const maxW = Math.min(160, size * 0.48), lines = wrapSpeech(s.text, maxW), lh = 14;
-    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * lh + 8;
+    const maxW = Math.min(160, size * 0.48), lh = 14;
+    if (!s.wrap || s.wrap.maxW !== maxW || s.wrap.text !== s.text) { const ls = wrapSpeech(s.text, maxW); s.wrap = { maxW, text: s.text, lines: ls, w: Math.max(...ls.map(l => ctx.measureText(l).width)) }; } // 折り返しと幅はセリフごとに1回だけ計算して覚えておく（毎フレーム測り直すと重い）
+    const lines = s.wrap.lines, w = s.wrap.w + 16, h = lines.length * lh + 8;
     const r = b.radius || 14, up = b.y - r * 2.3 - h >= 30;
     let tx = Math.max(4, Math.min(size - w - 4, b.x - w / 2)), ty = up ? b.y - r * 2.3 - h : b.y + r * 1.5 + 6; // 上に入りきらなければ下に出す
     // ふつうはキャラについていく。速く動いているときは、読めるようにその場に止めておく
