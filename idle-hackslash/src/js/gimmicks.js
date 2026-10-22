@@ -530,7 +530,8 @@ function bagRows() {
 }
 function renderBagList() {
   const el = document.getElementById('bagList'); if (!el) return;
-  el.innerHTML = bagRows().map(r => `<div class="bag-row ${r.n ? '' : 'empty'}"><span class="bag-ico">${r.icon}</span><div class="bag-info"><b>${r.name}</b><span>${r.desc}</span></div><div class="bag-side"><span class="bag-n">×${formatCoinNumber(r.n)}</span>${r.btn || ''}</div></div>`).join('');
+  const rows = bagRows().filter(r => r.n > 0); // 0個のものは出さない
+  el.innerHTML = (rows.length ? '' : '<div class="bag-empty-msg">所持品はありません</div>') + rows.map(r => `<div class="bag-row ${r.n ? '' : 'empty'}"><span class="bag-ico">${r.icon}</span><div class="bag-info"><b>${r.name}</b><span>${r.desc}</span></div><div class="bag-side"><span class="bag-n">×${formatCoinNumber(r.n)}</span>${r.btn || ''}</div></div>`).join('');
 }
 { const orig = showShopTab; showShopTab = function (key) { orig.apply(this, arguments); if (key === 'bag') renderBagList(); }; }
 document.getElementById('bagList').addEventListener('click', ev => {
