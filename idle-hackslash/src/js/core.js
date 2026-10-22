@@ -727,7 +727,8 @@ function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE
 SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '手持ちコインの10%ぶん一気にLvアップする「10%」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 10, unlockKey: 'upPctUnlocked' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '買えるだけ一気にLvアップする「MAX」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 15, unlockKey: 'upMaxUnlocked' };
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
-SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（確認画面のあと、転生したときに💎1）', cost: 1, rebirth: true }; // 転生はショップから（ゲーム画面の転生ボタンはなし）
+SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（転生したときにコインを払う）', rebirth: true }; // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
+function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
 function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
 function bulkUpLockedBtn(isPct) { return `${isPct ? '10%' : 'MAX'}<span>🔒</span>`; }
@@ -1347,6 +1348,7 @@ function renderShopList() {
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
   if (!shopSortOrder) shopSortOrder = [...ids].sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ（ショップを開いたときに並べ替える）
   ids.sort((x, y) => shopSortOrder.indexOf(x) - shopSortOrder.indexOf(y));
+  { const ri = ids.indexOf('reborn'); if (ri > 0) ids.unshift(ids.splice(ri, 1)[0]); } // 転生はいつも一番上
   shopList.innerHTML = ids.map(id => {
     const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && ((item.requires && !game[item.requires]) || (item.rebirth && !isRebornUnlocked()));
@@ -1356,7 +1358,9 @@ function renderShopList() {
     const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
-    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (!item.action && game.gems < gcost) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${price}</span></button>`;
+    const ccost = item.rebirth ? rebornCoinCost() : 0;
+    const priceHtml = item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b></span>` : price;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;
