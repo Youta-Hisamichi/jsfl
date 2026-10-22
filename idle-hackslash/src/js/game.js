@@ -891,6 +891,7 @@ function updateBossRetryBtn() {
   const btn = document.getElementById('bossRetryBtn'); if (!btn) return;
   const show = game.bossLoop && !gameOverBgm && !rebirthFlow;
   btn.style.display = show ? '' : 'none';
+  btn.closest('.exp-wrap')?.classList.toggle('retry-on', !!show); // ボス再戦ボタンはステージ進捗バーの右端（ゴールのボスの絵の上）
   const auto = document.getElementById('autoBossBtn');
   if (auto) { auto.style.display = show ? '' : 'none'; auto.innerHTML = game.autoBossRetry !== false ? `<span>自動再戦<b class="ab-on">ON</b></span><small>（あと${Math.max(0, AUTO_BOSS_RETRY_LOOPS - (game.bossLoopClears || 0))}周）</small>` : '自動再戦 OFF'; auto.classList.toggle('off', game.autoBossRetry === false); }
 }
