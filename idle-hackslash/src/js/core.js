@@ -728,7 +728,7 @@ SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '手持ちコ
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '買えるだけ一気にLvアップする「MAX」ボタンが使えるように（自キャラ・仲間。転生しても残る）', cost: 15, unlockKey: 'upMaxUnlocked' };
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（転生したときにコインを払う）', rebirth: true }; // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
-function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）
+function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
 function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
 function bulkUpLockedBtn(isPct) { return `${isPct ? '10%' : 'MAX'}<span>🔒</span>`; }
@@ -759,7 +759,7 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: '雑魚が現れたとき、そのHPを1%削る。ショップで買えるのは1本だけ（ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 30, unlockKey: 'forbiddenKnifeBought' };
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
-SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間が1秒のびる。ショップで買えるのは1個だけ（ジェムで挑む試練の塔ボスからまれに出て、最大30個まで集まり1個ごとに+1秒）', cost: 60, unlockKey: 'forbiddenWatchBought' };
+SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 60, stackKey: 'forbiddenWatchBuys', maxStack: 10, costGrowth: 2 }; // ショップで10個まで。値段は買うたびに2倍（60→120→240…）
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
@@ -772,7 +772,7 @@ function isShopItemOwned(id) {
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
 function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
-function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) return item.cost * Math.pow(2, shopBuyCount(id)); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
+function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) return item.cost * Math.pow(2, shopBuyCount(id)); if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
 };
@@ -1353,7 +1353,7 @@ function renderShopList() {
     const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && ((item.requires && !game[item.requires]) || (item.rebirth && !isRebornUnlocked()));
     const gcost = item.action ? 0 : getShopItemGemCost(id);
-    const note = SHOP_MULTI_ITEMS[id] ? '' : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
+    const note = SHOP_MULTI_ITEMS[id] ? '' : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.costGrowth ? `（購入 ${game[item.stackKey] || 0}/${item.maxStack}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
     const costTxt = owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
     const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
