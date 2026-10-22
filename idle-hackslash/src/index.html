@@ -72,6 +72,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   <!-- ===== ゲーム画面タブ ===== -->
   <div class="tab-page active" data-tab="game">
 
+    <div class="stage-bar-row">
     <div class="exp-wrap">
       <div class="exp-label" style="justify-content:center; gap:6px;"><span class="stage-floor"><small>ステージ</small><span><b id="stageNum">1</b></span></span><span class="stage-boss-txt"><span id="stageToBoss">ボスまで</span> <span id="stageProgressText">1 / 10</span></span></div>
       <div class="stage-gauge-row">
@@ -81,8 +82,12 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
         <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
       </div>
       </div>
-      <button class="boss-retry-bar" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
       <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
+    </div>
+    <div class="stage-side-slot"><!-- ステージ進捗バーの右：ボス再戦・リタイヤ -->
+      <button class="boss-retry-bar" id="bossRetryBtn" style="display:none;" aria-label="ボス再戦"><img src="assets/img/ui/bossRetry.webp" alt="👑 ボス再戦"></button>
+      <button class="boss-retire-bar" id="bossRetireBtn" style="display:none;" aria-label="リタイヤ"><img src="assets/img/ui/bar/btn_retire.webp" alt="リタイヤ"></button>
+    </div>
     </div>
 
     <div class="arena-wrap">
@@ -155,7 +160,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
     <div class="cmd-bar">
     <div class="bottom-btn-row">
       <button class="mini-btn mini-tower img-btn" id="stageSkipBtn"><img src="assets/img/ui/bar/btn_tower.webp" alt="試練の塔"></button>
-      <button class="mini-btn mini-retire img-btn" id="bossRetireBtn" style="display:none;"><img src="assets/img/ui/bar/btn_retire.webp" alt="リタイヤ"></button>
       <button class="mini-btn mini-reborn img-btn" id="rebornBtn" style="display:none;"><img src="assets/img/ui/bar/btn_reborn.webp" alt="転生"></button>
     </div>
     <button class="debug-toggle dbg-mini" id="debugToggleBtn"><img class="bb-gear" src="assets/img/ui/bar/dbg_gear.webp" alt="">デバッグ</button>

@@ -4182,11 +4182,14 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .boss-warning { background: linear-gradient(180deg, rgba(60,0,8,0) 0%, rgba(60,0,8,0.4) 18%, rgba(60,0,8,0.4) 82%, rgba(60,0,8,0) 100%) !important; } .boss-warning .bw-band { opacity: 0.6; } /* WARNINGの帯は半透明に */
 #bossContModal { bottom: var(--tabbar-h, 64px) !important; } /* ゲームオーバー中も下のタブを押せるように（仲間ページで強化してから戻れる） */
 .tab-page[data-tab="records"] .record-panel .record.rec-v2[data-goal-row="totalSpent"], .record[data-goal-row="totalSpent"] { display: none !important; } /* 戦績の「消費コイン」は表示しない（数は裏で保存） */
-/* ボス再戦ボタン：ステージ進捗バーの右端に置く */
-.exp-wrap { position: relative; }
-.exp-wrap #bossRetryBtn.boss-retry-bar { position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 6; width: 60px; height: 60px; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 6px rgba(255,60,160,0.6)); animation: brPulse 1.2s ease-in-out infinite alternate; -webkit-tap-highlight-color: transparent; }
-.exp-wrap #bossRetryBtn.boss-retry-bar[style*="none"] { display: none !important; }
-.exp-wrap #bossRetryBtn.boss-retry-bar img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.exp-wrap #bossRetryBtn.boss-retry-bar:active { transform: translateY(-50%) scale(0.92); }
-.exp-wrap.retry-on .stage-mark-boss { visibility: hidden; }
+/* ステージ進捗バーの右にボス再戦・リタイヤの置き場（バーはそのぶん短く） */
+.stage-bar-row { display: flex; align-items: center; gap: 4px; }
+.stage-bar-row > .exp-wrap { flex: 1 1 auto; min-width: 0; }
+.stage-side-slot { flex: 0 0 64px; height: 60px; display: flex; align-items: center; justify-content: center; }
+.stage-side-slot > button { padding: 0; margin: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.stage-side-slot > button[style*="none"] { display: none !important; }
+.stage-side-slot img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.stage-side-slot #bossRetryBtn { width: 60px; height: 60px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 6px rgba(255,60,160,0.6)); animation: brPulse 1.2s ease-in-out infinite alternate; }
+.stage-side-slot #bossRetireBtn { width: 64px; height: auto; aspect-ratio: 357 / 151; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+.stage-side-slot > button:active { transform: scale(0.92); }
 @keyframes brPulse { from { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 4px rgba(255,60,160,0.4)); } to { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(255,60,160,0.9)); } }
