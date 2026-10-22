@@ -2351,16 +2351,27 @@ zeniBtn.addEventListener('click', event => {
   const { player, enemy } = ctxs;
   const thrown = Math.floor(game.coins / 2);
   spendCoins(thrown);
-  const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN + player.atk)), enemy);
-  enemy.hp -= dmg;
-  trackDamage(dmg);
-  for (let i = 0; i < 16; i++) particles.push({ x: player.x, y: player.y, vx: (enemy.x - player.x) / 20 + (Math.random() - 0.5) * 3, vy: (enemy.y - player.y) / 20 + (Math.random() - 0.5) * 3, life: 1, color: '#ffd76b', decay: 0.03, isCoin: true });
-  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
-  spawnAttackDamageText(enemy, dmg, crit, '#ffe9a8');
-  onPlayerHitEnemy(enemy, dmg);
-  playNoiseBurst(0.2, 0.2);
-  [1318, 1568, 1976].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.08), i * 60));
-  if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
+  // コインは拡散させず、敵めがけて一直線に連なって飛ぶ。当たったように見えてからダメージを出して吹っ飛ばす
+  const dx = enemy.x - player.x, dy = enemy.y - player.y, dist = Math.max(1, Math.hypot(dx, dy)), ux = dx / dist, uy = dy / dist;
+  const ZENI_FLY_FRAMES = 18, sp = dist / ZENI_FLY_FRAMES;
+  for (let i = 0; i < 16; i++) { const back = i * 5; particles.push({ x: player.x - ux * back, y: player.y - uy * back, vx: ux * sp, vy: uy * sp, life: 1, color: '#ffd76b', decay: 1 / ((dist + back) / sp), isCoin: true }); }
+  spawnDamageText(player.x, player.y - player.radius - 22, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
+  playTone(1046, 0.06, 'square', 0.05, 1568); // シュッ
+  setTimeout(() => {
+    if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return; // 当たる前に敵がいなくなった
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN + player.atk)), enemy);
+    enemy.hp -= dmg;
+    trackDamage(dmg);
+    spawnAttackDamageText(enemy, dmg, crit, '#ffe9a8');
+    onPlayerHitEnemy(enemy, dmg);
+    for (let i = 0; i < 10; i++) { const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 2.5; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * v + ux * 2, vy: Math.sin(a) * v + uy * 2, life: 1, color: '#ffd76b', decay: 0.04, isCoin: true }); } // 当たって弾けるコイン
+    const kb = enemy.isBoss ? 7 : 16; enemy.vx = ux * kb; enemy.vy = uy * kb; // 吹っ飛ばす（ボスは少しだけ）
+    if (typeof shakeScreenLight === 'function') shakeScreenLight();
+    playNoiseBurst(0.2, 0.2);
+    [1318, 1568, 1976].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.08), i * 60));
+    if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
+    updateHPUI();
+  }, ZENI_FLY_FRAMES / 60 * 1000);
   updateZeniButton();
   updateStatsUI();
   updateHPUI();
