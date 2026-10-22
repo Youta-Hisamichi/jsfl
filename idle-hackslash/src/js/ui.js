@@ -1170,7 +1170,7 @@ shopList.addEventListener('click', event => {
     if (game.stage < 3 && !game.dbgRebornAlways) { showTapError('ステージ3から転生できます', event.clientX, event.clientY); return; }
     if (game.gems < getShopItemGemCost(id)) { promptGemShortage(getShopItemGemCost(id)); return; }
     if (typeof deferredGameOver !== 'undefined' && deferredGameOver) { showTapError('ゲーム画面に戻ってから転生してください', event.clientX, event.clientY); return; }
-    rebornShopCost = getShopItemGemCost(id); switchTab('game'); openRebornConfirm(null); return;
+    rebornShopCost = getShopItemGemCost(id); rebornFromShop = true; switchTab('game'); openRebornConfirm(null); return;
   }
   if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
   const gcost = getShopItemGemCost(id);
@@ -2163,7 +2163,7 @@ shareModal.addEventListener('click', event => { if (event.target === shareModal)
 const rebornConfirmModal = document.getElementById('rebornConfirmModal');
 let rebornCtx = null; // ゲームオーバーから転生を選んだとき：{ from: 'cont'（コンテニュー画面）| 'final'（コンテニュー後の敗北）, reason }
 function openRebornConfirm(ctx) {
-  rebornCtx = ctx || null; if (ctx) rebornShopCost = 0; // ゲームオーバーから開いたときはショップの代金なし
+  rebornCtx = ctx || null; if (ctx) { rebornShopCost = 0; rebornFromShop = false; } // ゲームオーバーから開いたときはショップの代金なし
   const g = getRebirthGemGain();
   document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `ステージ${formatStageNumber(game.stage)}で力尽きた…転生しますか？` : '本当に転生しますか？';
   { const t = document.getElementById('rebornConfirmTitle'); t.classList.toggle('long', t.textContent.length > 12); } // 長い見出しは小さめの2行に
@@ -2176,9 +2176,11 @@ function openRebornConfirm(ctx) {
 }
 let rebornPaused = false;
 function resumeFromRebornPanel() { if (!rebornPaused) return; rebornPaused = false; if (phase === 'paused') phase = 'battle'; }
+let rebornFromShop = false; // ショップの「転生」から開いたとき（キャンセルしたらショップに戻す）
 let rebornShopCost = 0; // ショップから開いた転生の確認画面なら、転生したときに払うジェム
 function closeRebornConfirm() { // キャンセル：コンテニュー画面に戻る／コンテニュー後の敗北ならいつもどおり前の階へ
   rebornConfirmModal.classList.remove('show'); resumeFromRebornPanel(); rebornShopCost = 0;
+  if (rebornFromShop) { rebornFromShop = false; switchTab('gemshop'); } // ショップから開いたならショップに戻る
   const ctx = rebornCtx; rebornCtx = null;
   if (ctx && ctx.from === 'final') { knockoutFx = null; document.getElementById('bossFinalPanel').classList.remove('show'); phase = 'battle'; bossFail(ctx.reason, true); }
 }
@@ -2191,6 +2193,7 @@ function doSelfRebirth(mult) {
     phase = 'battle';
   }
   if (phase !== 'battle' || (game.stage < 3 && !game.dbgRebornAlways)) { rebornShopCost = 0; return; }
+  rebornFromShop = false;
   if (rebornShopCost) { game.gems = Math.max(0, game.gems - rebornShopCost); rebornShopCost = 0; updateStatsUI(); } // ショップの「転生」は💎を払う
   rebirthGemMult = mult;
   onPlayerDeath(true);
