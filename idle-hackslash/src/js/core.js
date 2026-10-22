@@ -758,7 +758,7 @@ SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備で
 SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコ敵のHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
-SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボス戦の開始時に、ボスのHPを1%削る。ショップで買えるのは1本だけ（ジェムで挑む試練の塔ボスからまれに出て、最大50本まで集まり1本ごとに1%）', cost: 50, unlockKey: 'forbiddenSwordBought' };
+SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
