@@ -4180,3 +4180,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .bag-empty-msg { padding: 24px 0; text-align: center; color: #fff; font-weight: 800; text-shadow: 0 1px 2px #000; }
 #shopList .sr-ico.su-i_reborn, .su-i_reborn { background: url(assets/img/ui/shop/i_reborn.webp) center / contain no-repeat !important; } /* 転生のアイコン */
 .boss-warning { background: linear-gradient(180deg, rgba(60,0,8,0) 0%, rgba(60,0,8,0.4) 18%, rgba(60,0,8,0.4) 82%, rgba(60,0,8,0) 100%) !important; } .boss-warning .bw-band { opacity: 0.6; } /* WARNINGの帯は半透明に */
+#bossContModal { bottom: var(--tabbar-h, 64px) !important; } /* ゲームオーバー中も下のタブを押せるように（仲間ページで強化してから戻れる） */

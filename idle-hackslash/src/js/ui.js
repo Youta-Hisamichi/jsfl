@@ -1040,10 +1040,11 @@ debugRow.addEventListener('click', event => {
   showNotice(DEBUG_ACTION_LABELS[action] || 'DEBUG: 更新しました');
 });
 
+function canUpgradeNow() { return phase === 'battle' || (phase === 'paused' && !!(bossContReason || (typeof deferredGameOver !== 'undefined' && deferredGameOver))); } // ゲームオーバー中（コンテニュー待ち）も強化できる
 upgradeList.addEventListener('click', event => {
   const maxButton = event.target.closest('[data-upgrade-max], [data-upgrade-pct]');
   if (maxButton) {
-    if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
+    if (!canUpgradeNow()) { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
     const isPct = maxButton.dataset.upgradePct !== undefined;
     if (bulkUpLocked(isPct)) { openBulkUpShop(isPct); return; } // ショップで買うまで使えない
     const id = isPct ? maxButton.dataset.upgradePct : maxButton.dataset.upgradeMax;
@@ -1066,7 +1067,7 @@ upgradeList.addEventListener('click', event => {
   const button = event.target.closest('[data-upgrade]');
   if (button && consumeHoldClick()) return; // 長押しで連続強化した直後のクリックは無視
   if (!button) return; // 項目のカード部分は押しても何もしない
-  if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
+  if (!canUpgradeNow()) { showTapError('戦闘中のみ強化できます', event.clientX, event.clientY); return; }
   levelUpUpgrade(button.dataset.upgrade, event.clientX, event.clientY);
 });
 function showLevelUpPop(x, y, text) {
@@ -1143,7 +1144,7 @@ function showLeapBanner(text, tier) {
   el.addEventListener('animationend', () => el.remove());
 }
 function levelUpUpgrade(id, x, y) {
-  if (phase !== 'battle') { showTapError('戦闘中のみ強化できます', x, y); return false; }
+  if (!canUpgradeNow()) { showTapError('戦闘中のみ強化できます', x, y); return false; }
   if (game.upgrades[id] >= getUpgradeLevelCap(id)) { showTapError('これ以上強化できません', x, y); return false; }
   const cost = getUpgradeCost(id);
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
