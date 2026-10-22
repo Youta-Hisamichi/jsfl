@@ -2122,6 +2122,7 @@ function showTapError(text, clientX, clientY) {
   battleNotice.style.left = clientX + 'px';
   battleNotice.style.top = (clientY - 14) + 'px';
   battleNotice.classList.add('error', 'at-tap', 'show');
+  { const w = battleNotice.offsetWidth, vw = window.innerWidth; if (w) battleNotice.style.left = Math.max(w / 2 + 8, Math.min(vw - w / 2 - 8, clientX)) + 'px'; } // 画面の端でタップしても縦長につぶれないよう、はみ出さない位置に寄せる
   playErrorSound();
   clearTimeout(noticeTimer);
   noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
