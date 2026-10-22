@@ -1183,7 +1183,7 @@ shopList.addEventListener('click', event => {
   else if (SHOP_MULTI_ITEMS[id]) { game.shopOwned[id] = shopBuyCount(id) + 1; line = `${SHOP_MULTI_ITEMS[id]}が ${shopMultiRate(id)}倍 になった！`; }
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
-  if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（${game.ownedArtifacts.forbiddenKnife}本・雑魚HP -${Math.min(50, game.ownedArtifacts.forbiddenKnife)}%）`; renderArtifactList(); }
+  if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オートLvUPが使えるようになった！（強化ページでON/OFF）'; }
@@ -2950,7 +2950,7 @@ if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
-if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
+if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
