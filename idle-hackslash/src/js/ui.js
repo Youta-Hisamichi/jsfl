@@ -1177,7 +1177,7 @@ shopList.addEventListener('click', event => {
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（${game.ownedArtifacts.forbiddenWatch}個・ボス戦 +${Math.min(30, game.ownedArtifacts.forbiddenWatch)}秒）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（${game.ownedArtifacts.forbiddenKnife}本・雑魚HP -${Math.min(50, game.ownedArtifacts.forbiddenKnife)}%）`; renderArtifactList(); }
-  if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（${game.ownedArtifacts.rareRing}個・レア遺物のドロップ率 +${Math.min(2, game.ownedArtifacts.rareRing) * 50}%）`; renderArtifactList(); }
+  if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オートLvUPが使えるようになった！（強化ページでON/OFF）'; }
   showShopPurchaseFx(ico(item), item.name, line);

@@ -1303,7 +1303,7 @@ const FORBIDDEN_DROPS = [
   { id: 'forbiddenWatch', normal: 0, tower: 0, gemTower: 0.03 },
   { id: 'rareRing', normal: 0, tower: 0, gemTower: 0.008 }, // レアリング：ジェムで挑む試練の塔でだけ、まれに
 ];
-function rareRingMult() { return 1 + 0.5 * Math.min(ARTIFACT_STACK_LIMIT.rareRing, (game.ownedArtifacts && game.ownedArtifacts.rareRing) || 0); } // レアリング1個につきレア遺物のドロップ率 +50%
+function rareRingMult() { return (game.ownedArtifacts && game.ownedArtifacts.rareRing) ? 2 : 1; } // レアリングを持っていると★4以上のレアドロップ（禁断シリーズ・レアリング）の率が2倍
 const FORBIDDEN_HP_CUT = ['forbiddenKnife', 'forbiddenSword']; // 敵のHPを最初から削る遺物
 function forbiddenDropDecay(owned) { return 1 / (1 + owned * 0.2); } // 0個:100%・5個:50%・10個:33%・20個:20%・45個:10%
 function rollForbiddenDrop() {
