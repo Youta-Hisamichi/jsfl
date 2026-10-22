@@ -1165,6 +1165,13 @@ shopList.addEventListener('click', event => {
   const item = SHOP_ITEMS[id];
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
+  if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
+    if (!isRebornUnlocked()) { showTapError(`🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
+    if (game.stage < 3 && !game.dbgRebornAlways) { showTapError('ステージ3から転生できます', event.clientX, event.clientY); return; }
+    if (game.gems < getShopItemGemCost(id)) { promptGemShortage(getShopItemGemCost(id)); return; }
+    if (typeof deferredGameOver !== 'undefined' && deferredGameOver) { showTapError('ゲーム画面に戻ってから転生してください', event.clientX, event.clientY); return; }
+    rebornShopCost = getShopItemGemCost(id); switchTab('game'); openRebornConfirm(null); return;
+  }
   if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
   const gcost = getShopItemGemCost(id);
   if (game.gems < gcost) { promptGemShortage(gcost); return; }
@@ -2156,7 +2163,7 @@ shareModal.addEventListener('click', event => { if (event.target === shareModal)
 const rebornConfirmModal = document.getElementById('rebornConfirmModal');
 let rebornCtx = null; // ゲームオーバーから転生を選んだとき：{ from: 'cont'（コンテニュー画面）| 'final'（コンテニュー後の敗北）, reason }
 function openRebornConfirm(ctx) {
-  rebornCtx = ctx || null;
+  rebornCtx = ctx || null; if (ctx) rebornShopCost = 0; // ゲームオーバーから開いたときはショップの代金なし
   const g = getRebirthGemGain();
   document.getElementById('rebornConfirmTitle').textContent = rebornCtx && rebornCtx.from === 'final' ? `ステージ${formatStageNumber(game.stage)}で力尽きた…転生しますか？` : '本当に転生しますか？';
   { const t = document.getElementById('rebornConfirmTitle'); t.classList.toggle('long', t.textContent.length > 12); } // 長い見出しは小さめの2行に
@@ -2169,8 +2176,9 @@ function openRebornConfirm(ctx) {
 }
 let rebornPaused = false;
 function resumeFromRebornPanel() { if (!rebornPaused) return; rebornPaused = false; if (phase === 'paused') phase = 'battle'; }
+let rebornShopCost = 0; // ショップから開いた転生の確認画面なら、転生したときに払うジェム
 function closeRebornConfirm() { // キャンセル：コンテニュー画面に戻る／コンテニュー後の敗北ならいつもどおり前の階へ
-  rebornConfirmModal.classList.remove('show'); resumeFromRebornPanel();
+  rebornConfirmModal.classList.remove('show'); resumeFromRebornPanel(); rebornShopCost = 0;
   const ctx = rebornCtx; rebornCtx = null;
   if (ctx && ctx.from === 'final') { knockoutFx = null; document.getElementById('bossFinalPanel').classList.remove('show'); phase = 'battle'; bossFail(ctx.reason, true); }
 }
@@ -2182,7 +2190,8 @@ function doSelfRebirth(mult) {
     bossContModal.classList.remove('show'); document.getElementById('bossFinalPanel').classList.remove('show');
     phase = 'battle';
   }
-  if (phase !== 'battle' || (game.stage < 3 && !game.dbgRebornAlways)) return;
+  if (phase !== 'battle' || (game.stage < 3 && !game.dbgRebornAlways)) { rebornShopCost = 0; return; }
+  if (rebornShopCost) { game.gems = Math.max(0, game.gems - rebornShopCost); rebornShopCost = 0; updateStatsUI(); } // ショップの「転生」は💎を払う
   rebirthGemMult = mult;
   onPlayerDeath(true);
 }
@@ -2193,7 +2202,7 @@ document.getElementById('rebornAdBtn').addEventListener('click', () => {
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });
-new MutationObserver(() => { if (!rebornConfirmModal.classList.contains('show')) resumeFromRebornPanel(); }).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // ほかの理由で閉じたときも再開
+new MutationObserver(() => { if (!rebornConfirmModal.classList.contains('show')) { resumeFromRebornPanel(); rebornShopCost = 0; } }).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // ほかの理由で閉じたときも再開
 new MutationObserver(() => refreshBgm()).observe(rebornConfirmModal, { attributes: true, attributeFilter: ['class'] }); // 転生の確認画面を開け閉めしたら曲を切りかえる
 rebornBtn.addEventListener('click', event => {
   if (bossContModal.classList.contains('show') && canShowReborn()) { openRebornConfirm({ from: 'cont', reason: bossContReason || 'death' }); return; } // ゲームオーバー中でも転生できる
