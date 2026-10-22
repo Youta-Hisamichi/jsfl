@@ -669,7 +669,7 @@ const RECORD_GOALS = {
   totalBounces: { get: () => game.totalBounces || 0, goal: listThen([100, 500, 1000, 5000, 10000], 3), unit: '回' },
   maxBounceChain: { get: () => game.maxBounceChain || 0, goal: listThen([3, 5, 8, 10, 15], 1.5), unit: '連鎖' },
   reincarnations: { get: () => game.reincarnations || 0, goal: listThen([1, 3, 5, 10, 20, 30, 50], 1.5), unit: '回' },
-  totalSpent: { get: () => game.totalCoinsSpent || 0, goal: geo(1000, 10), unit: '枚' },
+  // 消費コインは戦績に出さない（game.totalCoinsSpent は裏で数えて保存しておく）
   maxDamage: { get: () => game.maxDamage || 0, goal: geo(100, 10), unit: 'DMG' },
   maxDps: { get: () => game.maxDps || 0, goal: geo(100, 10), unit: 'DPS' },
   maxCombo: { get: () => game.maxCombo || 0, goal: listThen([5, 10, 20, 30, 50, 75, 100], 1.5), unit: '回' },
