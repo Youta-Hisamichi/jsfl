@@ -1256,10 +1256,10 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   const html = ids.map(id => {
     const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
     const st = off ? '<em>採用前</em>' : '採用中', guar = !off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : '';
-    const btn = off && !isHireUnlocked(id) ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
+    const btn = off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
       : off ? `<span class="cl-btn notyet cl-gacha-only"><span class="cl-act">🎰 ガチャで採用</span><span class="cl-lock">採用ガチャから出ます</span></span>` // 採用はガチャだけ
       : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
-    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
+    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
@@ -1282,16 +1282,30 @@ function showHireGachaInfo(id, anchor) { // 候補アイコンをタップした
   clearTimeout(showHireGachaInfo.t); showHireGachaInfo.t = setTimeout(close, 4000);
 }
 // ===== 採用ガチャ：解放ずみの仲間から1人をランダムに（★が高いほど出にくい）。採用前なら採用、採用中のキャラがダブったら少し強化 =====
-const HIRE_GACHA_GEMS = 30;
-const HIRE_GACHA_WEIGHT = { common: 100, rare: 40, epic: 15, legendary: 6, mythic: 2 }; // 1人あたりの出やすさ（★が低いほど出やすい）
+const HIRE_GACHA_GEMS = 5;
+// レア度ごとの排出率（%）。★3以上は条件で解放された人数が増えるほど base → max へ上がる（同じレア度の中は均等）
+const HIRE_GACHA_RATE = { common: { base: 66 }, rare: { base: 20 }, epic: { base: 6, max: 8 }, legendary: { base: 1, max: 3.5 }, mythic: { base: 0.1, max: 1 } };
+const HIRE_FREE_LEGEND = RARE_HIRE_ORDER.find(id => COMPANIONS[id].rarity === 'legendary'); // ★4の最初の1体は条件なしでガチャから出る
+function hireGachaRates(pool) { // { rarity: % }（候補がいないレア度は除く。★1が残りを受け持って合計100%）
+  const raw = {};
+  for (const r of RARITY_ORDER) {
+    const n = pool.filter(id => COMPANIONS[id].rarity === r).length, cfg = HIRE_GACHA_RATE[r]; if (!n || !cfg) continue;
+    const all = COMPANION_IDS.filter(id => COMPANIONS[id].rarity === r).length;
+    raw[r] = cfg.max == null || all <= 1 ? cfg.base : cfg.base + (cfg.max - cfg.base) * Math.min(1, (n - 1) / (all - 1));
+  }
+  if (raw.common != null) { raw.common = 0; raw.common = Math.max(0, 100 - Object.values(raw).reduce((a, b) => a + b, 0)); return raw; } // ★2以上は指定どおり、★1は残り全部
+  const sum = Object.values(raw).reduce((a, b) => a + b, 0) || 1;
+  for (const r in raw) raw[r] = raw[r] / sum * 100;
+  return raw;
+}
 const HIRE_DUP_LV = 2; // ダブったときの強化（攻撃・HPの強化Lv）
-function hireGachaPool() { return COMPANION_IDS.filter(id => isHireUnlocked(id)); }
+function hireGachaPool() { return COMPANION_IDS.filter(id => isHireUnlocked(id) || id === HIRE_FREE_LEGEND); }
 let hireGachaRolling = false;
 function renderHireGacha() {
   if (getActiveTab() !== 'gemshop' && document.getElementById('hireGachaBox').dataset.html) return; // 見ていないときは描かない
   const box = document.getElementById('hireGachaBox'); if (!box || hireGachaRolling) return;
-  const pool = hireGachaPool(), total = pool.reduce((s, id) => s + (HIRE_GACHA_WEIGHT[COMPANIONS[id].rarity] || 1), 0);
-  const odds = RARITY_ORDER.map(r => { const w = pool.filter(id => COMPANIONS[id].rarity === r).length * (HIRE_GACHA_WEIGHT[r] || 1); return w ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${(w / total * 100).toFixed(1)}%</span>` : ''; }).join('');
+  const pool = hireGachaPool(), rates = hireGachaRates(pool);
+  const odds = RARITY_ORDER.map(r => rates[r] ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${rates[r] < 1 ? rates[r].toFixed(2) : rates[r].toFixed(1)}%</span>` : '').join('');
   const html = `<div class="hg-head">🎰 採用ガチャ<small>候補 ${pool.length}人</small></div>
     <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
     <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}</div>
@@ -1307,8 +1321,9 @@ document.getElementById('hireGachaBox').addEventListener('click', ev => {
   if (!pool.length) { showTapError('いま採用できる仲間はいません（転生や到達ステージで増えます）', ev.clientX, ev.clientY); return; }
   if (game.gems < HIRE_GACHA_GEMS) { promptGemShortage(HIRE_GACHA_GEMS); return; }
   game.gems -= HIRE_GACHA_GEMS;
-  let r = Math.random() * pool.reduce((s, id) => s + (HIRE_GACHA_WEIGHT[COMPANIONS[id].rarity] || 1), 0), id = pool[pool.length - 1];
-  for (const x of pool) { r -= HIRE_GACHA_WEIGHT[COMPANIONS[x].rarity] || 1; if (r <= 0) { id = x; break; } }
+  const rates = hireGachaRates(pool); let pick = Math.random() * 100, rar = Object.keys(rates).pop();
+  for (const k of Object.keys(rates)) { pick -= rates[k]; if (pick <= 0) { rar = k; break; } }
+  const same = pool.filter(x => COMPANIONS[x].rarity === rar), id = same[Math.floor(Math.random() * same.length)]; // 同じレア度の中は均等
   const dup = !isCompLocked(id);
   if (dup) { // ダブり：少し強化
     setCompUpLv(id, 'atk', compUpLv(id, 'atk') + HIRE_DUP_LV); setCompUpLv(id, 'hp', compUpLv(id, 'hp') + HIRE_DUP_LV);
