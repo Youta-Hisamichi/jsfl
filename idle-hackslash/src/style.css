@@ -4232,3 +4232,7 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .tab-page[data-tab="records"] .record-panel .rec-goal .rg-text b { color: #ffe08a !important; }
 .tab-page[data-tab="records"] .record-panel .rec-goal .rg-reward { color: #8fc8ff !important; }
 .tab-page[data-tab="records"] .record-panel .record strong::after { color: #c8d0e6 !important; }
+/* 設定のタイトル：ぼやけないよう、グラデーション文字＋影フィルターをやめて白字にくっきりした黒縁 */
+#settingsModal .st2 .sgh-title { background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #fff !important; filter: none !important; text-shadow: -1px -1px 0 #0a1440, 1px -1px 0 #0a1440, -1px 1px 0 #0a1440, 1px 1px 0 #0a1440, 0 2px 0 #0a1440 !important; }
+#settingsModal .st2 .sgh-ver { text-shadow: 0 1px 1px #000; }
+#settingsModal .st2 .settings-game-head { margin: 0 0 6px !important; }
