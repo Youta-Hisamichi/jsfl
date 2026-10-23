@@ -4317,3 +4317,16 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hgm-line { font-size: 1rem; }
 #hireGachaModal .hgm-btns { width: min(360px, 100%); margin-top: 18px; }
 #hireGachaModal .hgm-btns button { padding: 14px 0; font-size: 1.05rem; }
+/* 採用ガチャ：画面は全体を切り替えたまま、ルーレットと結果は画面の縦半分くらいの正方形のダイアログに */
+#hireGachaModal { align-items: center !important; justify-content: center !important; }
+#hireGachaModal .hgm-panel { --sq: min(50dvh, 94vw); width: var(--sq) !important; height: var(--sq) !important; padding: calc(var(--sq) * 0.04) !important; border: 3px solid #d9a93f !important; border-radius: 16px !important; background: radial-gradient(ellipse at 50% 35%, rgba(140,110,255,0.35), transparent 70%), linear-gradient(180deg, #1c2a60, #0a1230) !important; box-shadow: inset 0 0 0 1px #4a3208, 0 0 0 1px #4a3208, 0 8px 30px rgba(0,0,0,0.75) !important; justify-content: space-between; gap: 0; overflow: hidden; }
+#hireGachaModal .hgm-title { font-size: calc(var(--sq) * 0.065); margin: 0; }
+#hireGachaModal .hgm-stage { flex: 1 1 auto; height: auto; min-height: 0; }
+#hireGachaModal .hgm-rays { width: calc(var(--sq) * 1.4); height: calc(var(--sq) * 1.4); margin: calc(var(--sq) * -0.7) 0 0 calc(var(--sq) * -0.7); }
+#hireGachaModal .hgm-roll { width: calc(var(--sq) * 0.42); height: calc(var(--sq) * 0.42); border-width: 4px; border-radius: 18px; }
+#hireGachaModal .hgm-res { min-height: 0; margin: 0; }
+#hireGachaModal .hgm-stars { font-size: calc(var(--sq) * 0.05); line-height: 1.2; }
+#hireGachaModal .hgm-name { font-size: calc(var(--sq) * 0.075); line-height: 1.2; }
+#hireGachaModal .hgm-line { font-size: calc(var(--sq) * 0.042); margin-top: 2px; line-height: 1.3; }
+#hireGachaModal .hgm-btns { width: 100%; margin-top: calc(var(--sq) * 0.03); }
+#hireGachaModal .hgm-btns button { padding: calc(var(--sq) * 0.025) 0; font-size: calc(var(--sq) * 0.045); }

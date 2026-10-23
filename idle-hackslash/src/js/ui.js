@@ -1366,7 +1366,7 @@ function openHireGachaDialog({ id, dup, pool }) { // 大きめのダイアログ
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
     ov.querySelector('.hgm-stars').textContent = rarityStars(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
-    ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b> 次の招集ガチャで必ず出ます`;
+    ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
     playSummonFanfare(c.rarity);
     setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 500);
     const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
