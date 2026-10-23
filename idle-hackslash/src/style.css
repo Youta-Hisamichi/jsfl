@@ -4278,3 +4278,28 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .shop-tabs [data-shop-tab="bag"] { flex-grow: 449 !important; aspect-ratio: 449 / 174 !important; }
 /* 採用ガチャ：まだ出ていない（採用前の）候補はシルエット */
 .hire-gacha .hg-face.new img, .hire-gacha .hg-face.new .comp-sprite { filter: brightness(0) drop-shadow(0 0 1px rgba(160,190,255,0.6)) !important; opacity: 0.85; }
+/* 採用ガチャのダイアログ（ルーレット→結果） */
+.hgm-panel { --rc: #d9a93f; position: relative; width: min(340px, 90vw); max-width: none !important; padding: 14px 14px 16px !important; border: 3px solid #d9a93f !important; border-radius: 14px !important; background: radial-gradient(ellipse at 50% 30%, rgba(140,110,255,0.35), transparent 70%), linear-gradient(180deg, #1c2a60, #0a1230) !important; box-shadow: inset 0 0 0 1px #4a3208, 0 6px 20px rgba(0,0,0,0.7) !important; text-align: center; color: #fff; overflow: hidden; }
+.hgm-title { font-size: 1.25rem; font-weight: 900; color: #ffe08a; text-shadow: 0 2px 0 #3a2200, 0 0 6px rgba(255,200,80,0.5); margin-bottom: 8px; }
+.hgm-stage { position: relative; height: 180px; display: flex; align-items: center; justify-content: center; }
+.hgm-rays { position: absolute; left: 50%; top: 50%; width: 320px; height: 320px; margin: -160px 0 0 -160px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,230,150,0.16) 0 10deg, transparent 10deg 20deg); animation: hgmSpin 6s linear infinite; opacity: 0.6; }
+.hgm-panel.hit .hgm-rays { background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc) 45%, transparent) 0 10deg, transparent 10deg 20deg); opacity: 1; animation-duration: 3s; }
+@keyframes hgmSpin { to { transform: rotate(360deg); } }
+.hgm-roll { position: relative; width: 140px; height: 140px; border: 4px solid var(--rc, #d9a93f); border-radius: 18px; background: radial-gradient(circle, rgba(255,255,255,0.12), rgba(0,0,0,0.45)); box-shadow: 0 0 14px var(--rc, #d9a93f); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hgm-roll img { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.hgm-roll.flip { animation: hgmFlip 0.12s ease-out; }
+@keyframes hgmFlip { from { transform: scale(0.88); } }
+.hgm-panel.hit .hgm-roll { animation: hgmHit 0.5s cubic-bezier(.2,.9,.3,1.4); box-shadow: 0 0 26px var(--rc), 0 0 60px var(--rc); }
+@keyframes hgmHit { 0% { transform: scale(0.8); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.hgm-res { min-height: 86px; margin-top: 6px; }
+.hgm-stars { color: var(--rc); font-size: 1.1rem; text-shadow: 0 1px 2px #000; }
+.hgm-name { font-size: 1.35rem; font-weight: 900; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 3px #000; }
+.hgm-panel.hit .hgm-name { animation: hgmHit 0.5s ease-out; }
+.hgm-line { margin-top: 4px; font-size: 0.85rem; color: #9ff0ff; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.hgm-line b { color: #ffe08a; }
+.hgm-line small { color: #c8d0e6; font-weight: 700; }
+.hgm-btns { display: flex; gap: 8px; margin-top: 10px; }
+.hgm-btns button { flex: 1; padding: 10px 0; border-radius: 999px; font-size: 0.95rem; font-weight: 900; cursor: pointer; }
+.hgm-again { border: 2px solid #ffe08a; background: linear-gradient(180deg, #ffcf4a, #e8901a); color: #3a1c00; box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 3px 0 #8a4a08; }
+.hgm-close { border: 2px solid #8a9cc0; background: linear-gradient(180deg, #2c3e72, #15214a); color: #fff; box-shadow: 0 3px 0 #0a1230; }
+.hgm-btns button:active { transform: translateY(2px); }

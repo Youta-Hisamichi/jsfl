@@ -1321,9 +1321,12 @@ document.getElementById('hireGachaBox').addEventListener('click', ev => {
   const info = ev.target.closest('[data-hg-info]');
   if (info && !hireGachaRolling) { showHireGachaInfo(info.dataset.hgInfo, info); return; }
   if (!ev.target.closest('#hireGachaBtn') || hireGachaRolling) return;
+  const r = hireGachaDraw(ev); if (r) openHireGachaDialog(r);
+});
+function hireGachaDraw(ev) { // ジェムを払って1人決める（結果はすぐ保存。演出はダイアログで）
   const pool = hireGachaPool();
-  if (!pool.length) { showTapError('いま採用できる仲間はいません（転生や到達ステージで増えます）', ev.clientX, ev.clientY); return; }
-  if (game.gems < HIRE_GACHA_GEMS) { promptGemShortage(HIRE_GACHA_GEMS); return; }
+  if (!pool.length) { showTapError('いま採用できる仲間はいません（転生や到達ステージで増えます）', ev.clientX, ev.clientY); return null; }
+  if (game.gems < HIRE_GACHA_GEMS) { promptGemShortage(HIRE_GACHA_GEMS); return null; }
   game.gems -= HIRE_GACHA_GEMS;
   const rates = hireGachaRates(pool); let pick = Math.random() * 100, rar = Object.keys(rates).pop();
   for (const k of Object.keys(rates)) { pick -= rates[k]; if (pick <= 0) { rar = k; break; } }
@@ -1339,27 +1342,39 @@ document.getElementById('hireGachaBox').addEventListener('click', ev => {
     game.summonGuarantee = game.summonGuarantee.filter(x => x !== id); game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
   }
   saveGame(); updateStatsUI();
-  // 演出：候補の顔がくるくる入れ替わって止まる
+  return { id, dup, pool };
+}
+function openHireGachaDialog({ id, dup, pool }) { // 大きめのダイアログで候補の顔がルーレットのように回って止まり、結果もそのまま出す
   hireGachaRolling = true;
-  const box = document.getElementById('hireGachaBox'), faces = box.querySelector('.hg-faces'), btn = box.querySelector('#hireGachaBtn');
-  btn.classList.add('is-disabled'); faces.innerHTML = '<span class="hg-roll"></span>';
-  const roll = faces.querySelector('.hg-roll'); let n = 0;
+  let ov = document.getElementById('hireGachaModal');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
+  ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-title">🎰 採用ガチャ</div>
+    <div class="hgm-stage"><div class="hgm-rays"></div><div class="hgm-roll"></div></div>
+    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">　</div></div>
+    <div class="hgm-btns"><button class="hgm-again">もう1回 <b>💎${HIRE_GACHA_GEMS}</b></button><button class="hgm-close">閉じる</button></div></div>`;
+  ov.classList.add('show');
+  const panel = ov.querySelector('.hgm-panel'), roll = ov.querySelector('.hgm-roll'), btns = ov.querySelector('.hgm-btns');
+  btns.style.visibility = 'hidden';
+  let n = 0;
   const tick = () => {
-    const last = n >= 14, cur = last ? id : pool[Math.floor(Math.random() * pool.length)];
+    const last = n >= 22, cur = last ? id : pool[Math.floor(Math.random() * pool.length)];
     roll.innerHTML = companionIconHtml(cur); roll.style.setProperty('--rc', RARITY_INFO[COMPANIONS[cur].rarity].color);
-    playTone(660 + (n % 4) * 110, 0.04, 'square', 0.03);
-    if (!last) { n++; setTimeout(tick, 50 + n * 9); return; }
-    roll.classList.add('hit');
-    setTimeout(() => {
-      hireGachaRolling = false;
-      const c = COMPANIONS[id];
-      showShopPurchaseFx(companionIconHtml(id), c.name, dup ? `ダブり！ 攻撃・HPの強化Lv +${HIRE_DUP_LV}（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）` : '採用！ 次の招集ガチャで必ず出ます', `採用ガチャ！ ${rarityStars(c.rarity)}`);
-      playSummonFanfare(c.rarity);
-      box.dataset.html = ''; renderCompLockList(); renderCompanionList();
-    }, 450);
+    roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
+    playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
+    if (!last) { n++; setTimeout(tick, 45 + n * n * 0.6); return; }
+    const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
+    panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
+    ov.querySelector('.hgm-stars').textContent = rarityStars(c.rarity);
+    ov.querySelector('.hgm-name').textContent = c.name;
+    ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b> 次の招集ガチャで必ず出ます`;
+    playSummonFanfare(c.rarity);
+    setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 500);
+    const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
   };
+  ov.querySelector('.hgm-close').onclick = () => { if (!hireGachaRolling) ov.classList.remove('show'); };
+  ov.querySelector('.hgm-again').onclick = e => { if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
   tick();
-});
+}
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
 // ショップのタブ：アイテム／キャラ（解雇・採用）／課金（リアルマネー）
 function showShopTab(key) {
