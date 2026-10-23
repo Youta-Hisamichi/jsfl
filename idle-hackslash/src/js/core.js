@@ -443,7 +443,7 @@ const I18N = {
   ja: {
     tabGame: 'ゲーム', tabUpgrade: '強化', tabCompanion: '仲間', tabShop: 'スキル', tabArtifact: '遺物', tabGem: 'ショップ', tabGacha: '進化', tabRecords: '戦績', tabRanking: 'ランキング',
     settingsTitle: '設定', settingsSub: '音量やヘルプの設定です',
-    bgmLabel: '🎵 BGM音量　', sfxLabel: '🔊 効果音音量　', vibrationLabel: '📳 振動（対応スマホのみ）',
+    bgmLabel: 'BGM', sfxLabel: '効果音', vibrationLabel: '📳 振動（対応スマホのみ）',
     howToPlayBtn: '📖 遊び方', contactBtn: '✉️ お問い合わせ', termsBtn: '📜 利用規約', privacyBtn: '🔒 プライバシーポリシー',
     langLabel: '🌐 言語 / Language', devLabel: '👤 開発者', closeBtn: '閉じる',
     contactRow: 'お問い合わせ: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
@@ -452,7 +452,7 @@ const I18N = {
   en: {
     tabGame: 'Game', tabUpgrade: 'Upgrade', tabCompanion: 'Allies', tabShop: 'Skills', tabArtifact: 'Relics', tabGem: 'Shop', tabGacha: 'Evolve', tabRecords: 'Records', tabRanking: 'Ranking',
     settingsTitle: 'Settings', settingsSub: 'Volume and help settings',
-    bgmLabel: '🎵 BGM Volume　', sfxLabel: '🔊 SFX Volume　', vibrationLabel: '📳 Vibration (supported phones only)',
+    bgmLabel: 'BGM', sfxLabel: 'SFX', vibrationLabel: '📳 Vibration (supported phones only)',
     howToPlayBtn: '📖 How to Play', contactBtn: '✉️ Contact', termsBtn: '📜 Terms of Service', privacyBtn: '🔒 Privacy Policy',
     langLabel: '🌐 言語 / Language', devLabel: '👤 Developer', closeBtn: 'Close',
     contactRow: 'Contact: <a href="mailto:hisashi.app@gmail.com" style="color:#7ed0ff;">hisashi.app@gmail.com</a>',
