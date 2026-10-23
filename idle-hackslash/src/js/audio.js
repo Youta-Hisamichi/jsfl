@@ -498,6 +498,16 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
+  bgmbook: { // BGM図鑑 音楽家のソナチネ：アルベルティ・バスの分散和音に乗って、軽やかな音階とトリル風の飾りで歌う、古典派（モーツァルト風）のオリジナル曲（ト長調）
+    bpm: 264, // 1ステップ＝16分音符（四分音符＝132）
+    echo: { time: 0.17, feedback: 0.18, wet: 0.14 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'G5 = = = B5 = D6 = G6 = = = = = F#6 G6 | F#6 = E6 = D6 = C6 = B5 = A5 = G5 = F#5 = | G5 = = A5 B5 = G5 = D5 = = = B5 = = = | A5 = = = = = = = B5 A5 G#5 A5 C6 = = = | E6 = = = C6 = A5 = G5 = E5 = C6 = = = | D6 = = = B5 = G5 = D6 = B5 = G6 = = = | F#6 = A6 = F#6 = D6 = C6 = A5 = F#5 = A5 = | G5 = = = D5 = B4 = G4 = = = - - - - | B5 = C6 = B5 = A#5 = B5 = = = E6 = = = | C#6 = D6 = E6 = G6 = E6 = = = C#6 = = = | D6 = F#6 = A6 = F#6 = D6 = A5 = F#5 = D5 = | C6 = = = A5 = F#5 = D5 = = = - - - - | B5 = D6 = G6 = = = F#6 = E6 = D6 = = = | E6 = G6 = E6 = C6 = A5 = = = C6 = = = | B5 = D6 = C6 = A5 = F#5 = = = A5 = = = | A5 = = = = = = = - - - - D5 = = = | G5 = = = B5 = D6 = G6 = = = = = F#6 G6 | F#6 = E6 = D6 = C6 = B5 = A5 = G5 = F#5 = | G5 = = A5 B5 = G5 = D5 = = = B5 = = = | A5 = = = = = = = B5 A5 G#5 A5 C6 = = = | E6 = = = C6 = A5 = G5 = E5 = C6 = = = | D6 = = = B5 = G5 = D6 = B5 = G6 = = = | A5 = C6 = B5 = A5 = G5 = F#5 = E5 = F#5 = | G5 = = = B5 = D6 = G6 = = = - - - -' },
+      { type: 'vrc6pulse12', gain: 0.012, notes: 'G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 | E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | E3 B3 G3 B3 E3 B3 G3 B3 E3 B3 G3 B3 E3 B3 G3 B3 | E3 C#4 G3 C#4 E3 C#4 G3 C#4 E3 C#4 G3 C#4 E3 C#4 G3 C#4 | F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 F#3 D4 A3 D4 | E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 E3 C4 G3 C4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 | F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 F#3 D4 C4 D4 | G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4 G3 D4 B3 D4' },
+      { type: 'vrc6saw', gain: 0.04, notes: 'G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | C2 = = = = = - - C2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | E2 = = = = = - - E2 = = = = = - - | A2 = = = = = - - A2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | C2 = = = = = - - C2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | C2 = = = = = - - C2 = = = = = - - | G2 = = = = = - - G2 = = = = = - - | D2 = = = = = - - D2 = = = = = - - | G2 = = = = = - - G2 = = = = = - -' },
+    ],
+    drums: '- - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - - | - - - - - - - - - - - - - - - -',
+  },
   news: { // お知らせ画面 王宮の謁見：王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット（ヘ長調）
     bpm: 112,
     echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
@@ -789,6 +799,7 @@ const BGM_INFO = [
   { key: 'gacha', name: 'ページ 進化 覚醒の儀式', desc: 'サガ系の作風。ロ短調の高揚する儀式ループ・BPM144' },
   { key: 'records', name: 'ページ 戦績 英雄の軌跡', desc: '重く刻むベースとティンパニ風のキック、ブラスのように伸びる旋律の荘厳な行進曲。VRC6風チップチューン。ハ短調・BPM132' },
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
+  { key: 'bgmbook', name: 'ページ BGM図鑑 音楽家のソナチネ', desc: 'アルベルティ・バスの分散和音に乗って、軽やかな音階とトリル風の飾りで歌う、古典派のピアノソナチネのような曲。VRC6風チップチューン。ト長調（モーツァルト風の作風）・BPM132' },
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
@@ -855,6 +866,7 @@ function refreshBgm() {
   else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
   else if (rebirthRewardBgm) type = 'rebirth'; // 転生の演出中は荘厳な曲
   else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
+  else if (getActiveTab() === 'records' && document.querySelector('[data-rec-sec="bgm"]')?.hidden === false) type = 'bgmbook'; // BGM図鑑を開いているときの曲
   else {
     const tab = getActiveTab();
     if (tab !== 'game' && (BGM_SONGS[tab] || BGM_PATTERNS[tab])) type = tab; // 各ページ専用の曲

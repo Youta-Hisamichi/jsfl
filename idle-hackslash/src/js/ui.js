@@ -3307,6 +3307,7 @@ setInterval(() => {
     secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
     if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
     try { localStorage.setItem('recTab', key); } catch (e) {}
+    if (typeof refreshBgm === 'function') refreshBgm(); // BGM図鑑だけ専用の曲
   };
   tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.recTab)));
   let first = 'stats'; try { first = localStorage.getItem('recTab') || 'stats'; } catch (e) {}
