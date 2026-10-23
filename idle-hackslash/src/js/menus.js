@@ -453,7 +453,14 @@ function stageCoinRaw(stage = game.stage) { return Math.pow(enemyLevel(stage), C
 // 敵の強さの伸び
 // 100ステージごとに敵が一段強くなる（掛け算で積み重なる）。強化の飛躍で自キャラが際限なく敵を追い越さないように、エリアの壁を作る
 const ENEMY_ZONE_SPAN = 100, ENEMY_ZONE_HP = 2, ENEMY_ZONE_ATK = 1.8;
-function enemyZoneMult(stage) { const n = Math.floor((Math.max(1, stage) - 1) / ENEMY_ZONE_SPAN); return { hp: Math.pow(ENEMY_ZONE_HP, n), atk: Math.pow(ENEMY_ZONE_ATK, n) }; }
+// ステージ1000（10段目）までは今までどおり倍々で強くなり、その先はゆるやかな伸び（段数のべき乗）に切り替える。ステージ100万でも数値が上限に近づかないように
+const ENEMY_ZONE_SOFT_FROM = 9, ENEMY_ZONE_SOFT_POW_HP = 2.7, ENEMY_ZONE_SOFT_POW_ATK = 2.4;
+function enemyZoneMult(stage) {
+  const n = Math.floor((Math.max(1, stage) - 1) / ENEMY_ZONE_SPAN);
+  if (n <= ENEMY_ZONE_SOFT_FROM) return { hp: Math.pow(ENEMY_ZONE_HP, n), atk: Math.pow(ENEMY_ZONE_ATK, n) };
+  const r = (n + 1) / (ENEMY_ZONE_SOFT_FROM + 1);
+  return { hp: Math.pow(ENEMY_ZONE_HP, ENEMY_ZONE_SOFT_FROM) * Math.pow(r, ENEMY_ZONE_SOFT_POW_HP), atk: Math.pow(ENEMY_ZONE_ATK, ENEMY_ZONE_SOFT_FROM) * Math.pow(r, ENEMY_ZONE_SOFT_POW_ATK) };
+}
 function enemyInflation(stage) { return Math.pow(enemyLevel(stage), ENEMY_HP_POW) * stageDigits(stage); }
 function getEnemyStats(stage) {
   const isBoss = stage % 10 === 0;
