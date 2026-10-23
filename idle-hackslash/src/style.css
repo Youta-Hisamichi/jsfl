@@ -4269,3 +4269,10 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .hg-pop .hgp-head small { color: var(--rc); }
 .hg-pop .hgp-desc { margin: 5px 0 3px; color: #e0e6f6; line-height: 1.4; }
 .hg-pop .hgp-st { color: #9ff0ff; font-weight: 800; }
+/* ショップのタブ：絵の左右の透明な余白を削ったので、隙間なく大きく並べる（幅は絵の横幅の比で分ける） */
+.shop-tabs { gap: 0 !important; margin-left: -4px !important; margin-right: -4px !important; }
+.shop-tabs .sub-tab-btn { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; margin: 0 !important; }
+.shop-tabs [data-shop-tab="item"] { flex-grow: 514 !important; aspect-ratio: 514 / 174 !important; }
+.shop-tabs [data-shop-tab="chara"] { flex-grow: 456 !important; aspect-ratio: 456 / 174 !important; }
+.shop-tabs [data-shop-tab="charge"] { flex-grow: 454 !important; aspect-ratio: 454 / 174 !important; }
+.shop-tabs [data-shop-tab="bag"] { flex-grow: 449 !important; aspect-ratio: 449 / 174 !important; }
