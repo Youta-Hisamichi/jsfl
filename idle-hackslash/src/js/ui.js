@@ -1209,6 +1209,9 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
 const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
 function compLockDefault(id) { return id !== 'villager'; } // 村人以外は最初「採用前」（★1も採用ガチャで出るまで採用しない）
+function compFiredCount() { return COMPANION_IDS.filter(id => game.compLocked && game.compLocked[id] === true).length; } // 解雇中（採用したあと解雇した）人数
+function compHiredTotal() { return COMPANION_IDS.filter(id => !isCompLocked(id)).length + compFiredCount(); } // これまでに採用した人数（解雇中も含む）
+function compFireMax() { return Math.floor(compHiredTotal() / 2); } // 解雇できるのは採用した人数の半分まで
 function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
 // ★3以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★3→★4→★5の順）
 const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
@@ -1226,6 +1229,7 @@ function onCompLockClick(ev) {
   if (!locking && !isHireUnlocked(id) && typeof useHireTicket === 'function' && RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary') && useHireTicket(id)) return; // ★4・★5はピックアップ採用券で解放できる
   if (!locking && !isHireUnlocked(id)) { showTapError(`🔒 ${hireNeedText(id)}で採用できます`, ev.clientX, ev.clientY); return; }
   if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
+  if (locking && compFiredCount() + 1 > compFireMax()) { showTapError(`解雇できるのは採用した人数の半分（${compFireMax()}人）までです`, ev.clientX, ev.clientY); return; }
   const cost = compLockCost(id);
   if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
   game.gems -= cost;
@@ -1258,7 +1262,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
     const st = off ? '<em>採用前</em>' : '採用中', guar = !off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : '';
     const btn = off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
       : off ? `<span class="cl-btn notyet cl-gacha-only"><span class="cl-act">🎰 ガチャで採用</span><span class="cl-lock">採用ガチャから出ます</span></span>` // 採用はガチャだけ
-      : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
+      : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) || !off && compFiredCount() >= compFireMax() ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
     return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
@@ -1307,8 +1311,8 @@ function renderHireGacha() {
   const pool = hireGachaPool(), rates = hireGachaRates(pool);
   const odds = RARITY_ORDER.map(r => rates[r] ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${rates[r] < 1 ? rates[r].toFixed(2) : rates[r].toFixed(1)}%</span>` : '').join('');
   const html = `<div class="hg-head">🎰 採用ガチャ<small>候補 ${pool.length}人</small></div>
-    <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
-    <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}</div>
+    <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) && !(game.compLocked && game.compLocked[id] === true) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
+    <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}<br>解雇中 <b>${compFiredCount()} / ${compFireMax()}人</b>（解雇できるのは採用した人数の半分まで）</div>
     ${pool.length ? `<div class="hg-odds">${odds}</div>` : ''}
     <button class="hg-btn ${!pool.length || game.gems < HIRE_GACHA_GEMS ? 'is-disabled' : ''}" id="hireGachaBtn">採用ガチャを引く <b>💎${HIRE_GACHA_GEMS}</b></button>`;
   if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
