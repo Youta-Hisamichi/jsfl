@@ -1778,6 +1778,7 @@ const NOVA_DMG_MULT = 4; // 敵1体あたり攻撃力の何倍か
 let lastNovaAt = Date.now() - SKILL_NOVA_COOLDOWN;
 let novaFx = null; // 全体攻撃の衝撃波 { start }
 const SKILL_BLAST_COOLDOWN = SKILL_MIN_CD;
+const BLAST_KNOCK = 30, BLAST_KNOCK_BOSS = 14; // 大爆発で敵が吹っ飛ぶ初速（倒しきれなくても飛ぶ）
 const BLAST_DMG_MULT = 15; // 大爆発：敵1体あたり攻撃力の15倍（ボスは2割増しの手応え演出のみ）
 let lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
 const SKILL_HALVE_COOLDOWN = SKILL_MIN_CD;

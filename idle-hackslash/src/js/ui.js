@@ -2415,7 +2415,7 @@ novaBtn.addEventListener('click', event => {
       }
     } else {
       onPlayerHitEnemy(en, dmg);
-      if (en.hp <= 0) triggerEnemyDefeat(en, player.x, player.y);
+      if (en.hp <= 0) triggerEnemyDefeat(en, arena.x, arena.y);
     }
   }
   adds = adds.filter(ad => ad.hp > 0);
@@ -2459,7 +2459,12 @@ blastBtn.addEventListener('click', event => {
     en.hp -= dmg; trackDamage(dmg); hitCount++;
     spawnAttackDamageText(en, dmg, crit, '#ff6b3d', en.isAdd ? 6 : undefined);
     for (let k = 0; k < 3; k++) spawnHitParticles(en.x + (Math.random() - 0.5) * en.radius, en.y + (Math.random() - 0.5) * en.radius, k % 2 ? '#ffd76b' : '#ff6b3d');
-    applyHitKnockback(en, player, 12);
+    { // 爆心（画面の中心）から外へ吹っ飛ばす（ボスは重いので控えめ）
+      let dx = en.x - arena.x, dy = en.y - arena.y, d = Math.hypot(dx, dy);
+      if (d < 1) { const ang = Math.random() * Math.PI * 2; dx = Math.cos(ang); dy = Math.sin(ang); d = 1; }
+      const sp = en.isBoss ? BLAST_KNOCK_BOSS : BLAST_KNOCK;
+      en.vx = dx / d * sp; en.vy = dy / d * sp;
+    }
     if (en.isAdd) {
       if (en.hp <= 0) { recordBestiaryKill(en); const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3))); game.coins += coinGain; spawnDamageText(en.x, en.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b'); }
     } else {
