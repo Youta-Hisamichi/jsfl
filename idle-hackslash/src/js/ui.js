@@ -1208,7 +1208,7 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
 // 値段はレア度が高いほどかなり高い。★2以上は最初「解雇中」（採用すると召喚に出る）
 const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
 function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
-function compLockDefault(id) { return RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('rare'); } // ★2以上は最初「採用前」
+function compLockDefault(id) { return id !== 'villager'; } // 村人以外は最初「採用前」（★1も採用ガチャで出るまで採用しない）
 function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
 // ★3以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★3→★4→★5の順）
 const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
@@ -1268,9 +1268,22 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
   }
   renderHireGacha();
 }
+function showHireGachaInfo(id, anchor) { // 候補アイコンをタップしたら、その仲間の概要を吹き出しで
+  document.querySelectorAll('.hg-pop').forEach(el => el.remove());
+  const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity], r = anchor.getBoundingClientRect();
+  const el = document.createElement('div'); el.className = 'hg-pop'; el.style.setProperty('--rc', rar.color);
+  el.innerHTML = `<div class="hgp-head">${companionIconHtml(id)}<div><b>${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])}</small></div></div><div class="hgp-desc">${c.desc || ''}</div><div class="hgp-st">${isCompLocked(id) ? '📜 採用前（出たら採用）' : `✅ 採用中（ダブると強化Lv +${HIRE_DUP_LV}）`}</div>`;
+  document.body.appendChild(el);
+  const w = el.offsetWidth, h = el.offsetHeight;
+  el.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+  el.style.top = (r.top - h - 6 > 8 ? r.top - h - 6 : r.bottom + 6) + 'px';
+  const close = e => { if (e && el.contains(e.target)) return; el.remove(); document.removeEventListener('pointerdown', close, true); };
+  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
+  clearTimeout(showHireGachaInfo.t); showHireGachaInfo.t = setTimeout(close, 4000);
+}
 // ===== 採用ガチャ：解放ずみの仲間から1人をランダムに（★が高いほど出にくい）。採用前なら採用、採用中のキャラがダブったら少し強化 =====
 const HIRE_GACHA_GEMS = 30;
-const HIRE_GACHA_WEIGHT = { common: 60, rare: 60, epic: 25, legendary: 10, mythic: 3 };
+const HIRE_GACHA_WEIGHT = { common: 100, rare: 40, epic: 15, legendary: 6, mythic: 2 }; // 1人あたりの出やすさ（★が低いほど出やすい）
 const HIRE_DUP_LV = 2; // ダブったときの強化（攻撃・HPの強化Lv）
 function hireGachaPool() { return COMPANION_IDS.filter(id => isHireUnlocked(id)); }
 let hireGachaRolling = false;
@@ -1280,13 +1293,15 @@ function renderHireGacha() {
   const pool = hireGachaPool(), total = pool.reduce((s, id) => s + (HIRE_GACHA_WEIGHT[COMPANIONS[id].rarity] || 1), 0);
   const odds = RARITY_ORDER.map(r => { const w = pool.filter(id => COMPANIONS[id].rarity === r).length * (HIRE_GACHA_WEIGHT[r] || 1); return w ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${(w / total * 100).toFixed(1)}%</span>` : ''; }).join('');
   const html = `<div class="hg-head">🎰 採用ガチャ<small>候補 ${pool.length}人</small></div>
-    <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
+    <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
     <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}</div>
     ${pool.length ? `<div class="hg-odds">${odds}</div>` : ''}
     <button class="hg-btn ${!pool.length || game.gems < HIRE_GACHA_GEMS ? 'is-disabled' : ''}" id="hireGachaBtn">採用ガチャを引く <b>💎${HIRE_GACHA_GEMS}</b></button>`;
   if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
 }
 document.getElementById('hireGachaBox').addEventListener('click', ev => {
+  const info = ev.target.closest('[data-hg-info]');
+  if (info && !hireGachaRolling) { showHireGachaInfo(info.dataset.hgInfo, info); return; }
   if (!ev.target.closest('#hireGachaBtn') || hireGachaRolling) return;
   const pool = hireGachaPool();
   if (!pool.length) { showTapError('いま採用できる仲間はいません（転生や到達ステージで増えます）', ev.clientX, ev.clientY); return; }

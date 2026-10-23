@@ -4258,3 +4258,14 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .hire-gacha .hg-face.new::after { content: 'NEW'; position: absolute; top: -1px; right: -1px; padding: 0 2px; border-radius: 3px; background: #ff4d6d; color: #fff; font-size: 0.45rem; font-weight: 900; line-height: 1.3; }
 .hire-gacha .hg-star { color: var(--rc); font-size: 0.62rem; letter-spacing: -0.12em; line-height: 1; white-space: nowrap; text-shadow: 0 1px 1px #000, 0 0 2px #000; }
 .hire-gacha .hg-note { font-size: 0.66rem; color: #c8d0e6; margin: 0 0 6px; }
+.hire-gacha .hg-cell { width: 48px; cursor: pointer; }
+.hire-gacha .hg-face { width: 46px; height: 46px; }
+.hire-gacha .hg-star { font-size: 0.66rem; }
+.hg-pop { position: fixed; z-index: 120; width: min(260px, 80vw); padding: 8px 10px; border: 2px solid var(--rc); border-radius: 10px; background: linear-gradient(180deg, #1c2a60, #0b1434); box-shadow: 0 4px 12px rgba(0,0,0,0.6); color: #fff; font-size: 0.74rem; animation: hgPop 0.15s ease-out; }
+@keyframes hgPop { from { transform: scale(0.9); opacity: 0; } }
+.hg-pop .hgp-head { display: flex; align-items: center; gap: 8px; }
+.hg-pop .hgp-head img { width: 40px; height: 40px; object-fit: contain; flex: none; }
+.hg-pop .hgp-head b { display: block; font-size: 0.92rem; color: #ffe08a; }
+.hg-pop .hgp-head small { color: var(--rc); }
+.hg-pop .hgp-desc { margin: 5px 0 3px; color: #e0e6f6; line-height: 1.4; }
+.hg-pop .hgp-st { color: #9ff0ff; font-weight: 800; }
