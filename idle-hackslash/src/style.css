@@ -2498,9 +2498,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .fb-row.beat em { color: #7ee787; }
 .fb-empty { font-size: 0.7rem; color: #aab4d0; }
 /* カレンダーイベント */
-.event-chip { position: absolute; right: 6px; top: 6px; z-index: 6; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(255,180,90,0.8); background: rgba(40,16,40,0.7); color: #ffe9a8; font-size: 0.66rem; font-weight: 800; cursor: pointer; }
-.event-chip b { color: #fff; }
-.event-chip.hot { border-color: rgba(255,255,255,0.8); background: linear-gradient(90deg, rgba(255,92,122,0.5), rgba(255,159,67,0.5)); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); animation: obmPulse 0.7s ease-in-out infinite alternate; }
 .evd-panel { max-width: 360px; text-align: left; }
 .evd-title { text-align: center; font-weight: 900; font-size: 1.05rem; color: #ffd76b; margin-bottom: 8px; }
 .evd-box { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.07); border: 1px solid var(--ec, rgba(255,255,255,0.18)); font-size: 0.74rem; }

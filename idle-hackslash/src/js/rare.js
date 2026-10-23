@@ -3,7 +3,7 @@
 const RARE_ENEMIES = [
   { id: 'goldKing', base: '👾', name: '黄金のメタルキング', cond: '最高ステージ300以上', chance: 0.004, ok: () => (game.bestStage || 1) >= 300, hp: 4, reward: { gems: 15, coin: 30 } },
   { id: 'kiriban', base: 'm_ghostKnight', name: 'キリ番の守護騎士', cond: 'ステージ111・222・333…のキリ番だけ', chance: 0.35, ok: () => game.stage >= 111 && game.stage % 111 === 0, hp: 5, reward: { gems: 10, chest: 'epic' } },
-  { id: 'sunCat', base: 'm_luckyCat', name: '日曜の福招きネコ', cond: '日曜日だけ', chance: 0.02, ok: () => (typeof weekdayEvent === 'function' && weekdayEvent() === WEEKDAY_EVENTS[0]) || new Date().getDay() === 0, hp: 2, reward: { gems: 5, coin: 50 } },
+  { id: 'sunCat', base: 'm_luckyCat', name: '日曜の福招きネコ', cond: '日曜日だけ', chance: 0.02, ok: () => new Date().getDay() === 0, hp: 2, reward: { gems: 5, coin: 50 } },
   { id: 'veteran', base: 'm_ghostLantern', name: '古参の灯火', cond: '7日以上遊んだ人の前にだけ', chance: 0.01, ok: () => Object.keys(game.playDays || {}).length >= 7, hp: 3, reward: { gems: 5, chest: 'legendary' } },
   { id: 'allStar', base: 'm_thunderRabbit', name: '絆の守り神ラビ', cond: '仲間を全員そろえた（図鑑コンプ）あと', chance: 0.03, ok: () => COMPANION_IDS.every(id => game.companionBook && game.companionBook[id]), hp: 6, reward: { gems: 30, chest: 'mythic' } },
   { id: 'midnight', base: 'm_shade', name: '真夜中の影法師', cond: '夜中の0時〜4時だけ', chance: 0.02, ok: () => new Date().getHours() < 4, hp: 3, reward: { gems: 8, coin: 20 } },
@@ -24,7 +24,7 @@ function pickRare() {
   e.maxHp = e.hp = Math.round(e.maxHp * r.hp); e.radius = Math.round(e.radius * 1.25);
   e.liveFrames = -60 * 30; // 逃げるまで長め
   setTimeout(() => {
-    if (typeof eventBanner === 'function') eventBanner(`✨ レア敵出現！ ${r.name}`, `条件：${r.cond}`); else showNotice(`✨ レア敵出現！ ${r.name}`);
+    if (typeof showRunBanner === 'function') showRunBanner(`✨ レア敵出現！ ${r.name}`, `条件：${r.cond}`); else showNotice(`✨ レア敵出現！ ${r.name}`);
     playTone(1568, 0.1, 'square', 0.06, 2093); setTimeout(() => playTone(2093, 0.25, 'triangle', 0.06), 120);
   }, 300);
   return e;
@@ -60,7 +60,7 @@ function pickRare() {
   if (w.coin) { const c = Math.round(stageCoinRaw() * computeBonuses().coinMult * w.coin); game.coins += c; spawnCoinBurst(pos.x, pos.y, c, 12); parts.push(`🟡${formatCoinNumber(c)}`); }
   if (w.chest) { setTimeout(() => dropTreasureChest(w.chest), 800); parts.push(`${RARITY_INFO[w.chest].label.replace('コモン', 'ノーマル')}の宝箱`); }
   setTimeout(() => {
-    if (typeof eventBanner === 'function') eventBanner(`🏆 レア敵「${r.name}」撃破！${first ? '（初撃破ボーナス）' : ''}`, parts.join('・'));
+    if (typeof showRunBanner === 'function') showRunBanner(`🏆 レア敵「${r.name}」撃破！${first ? '（初撃破ボーナス）' : ''}`, parts.join('・'));
     playGachaSound && playGachaSound('legendary');
     if (typeof offerShareMoment === 'function') offerShareMoment(`✨ レア敵「${r.name}」を撃破！`, `出現条件：${r.cond}`);
   }, 900);

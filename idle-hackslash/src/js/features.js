@@ -826,7 +826,6 @@ const NEWS = [ // 新しいものを上に。id は増やしていく
   { id: 4, date: '2026/10/16', tag: '改善', title: 'ガチャの結果がもっと豪華に', body: '招集ガチャの結果にファンファーレが鳴り、結果を閉じるまで神聖な音が流れるようになりました。' },
   { id: 3, date: '2026/10/15', tag: '新アイテム', title: 'レアリングがショップに登場', body: 'レア遺物（禁断シリーズ）のドロップ率が1個につき+50%（最大2個）。\nショップで1つ購入でき、ジェムで挑む試練の塔でもまれにドロップします。' },
   { id: 2, date: '2026/10/15', tag: '新機能', title: 'ドーピングの種', body: '力の種・命の木の実を使うと攻撃力・HPが上がります（転生でリセット）。\nタンス・壺・宝箱から手に入ります。' },
-  { id: 1, date: '2026/10/01', tag: 'イベント', title: 'ハロウィン・パーティー開催中', body: '雑魚を倒すと🎃カボチャが出ます。\n集めた数に応じてジェムや宝箱のごほうび！（10月末まで）' },
 ];
 function newsUnread() { return NEWS.length && NEWS[0].id > (game.newsSeen || 0); }
 function updateNewsDot() { const b = document.getElementById('newsBtn'); if (b) b.classList.toggle('unread', !!newsUnread()); }

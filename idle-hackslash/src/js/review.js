@@ -68,31 +68,17 @@ function openArtifactDebug() {
   ov.querySelectorAll('[data-dbga]').forEach(b => b.onclick = () => { const id = b.dataset.dbga; game.ownedArtifacts[id] = Math.max(0, (game.ownedArtifacts[id] || 0) + +b.dataset.d); ov.remove(); openArtifactDebug(); renderArtifactList(); updateStatsUI(); });
 }
 
-// ===== デバッグ：イベント確認 =====
+// ===== デバッグ：その他の確認（レビュー要請・占い。レア敵は rare.js で足す） =====
 function openEventDebug() {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 90;
-  const days = ['日', '月', '火', '水', '木', '金', '土'];
-  ov.innerHTML = `<div class="modal-panel dbga-panel"><div class="evd-title">🎪 イベント確認（デバッグ）</div>
-    <div class="dbge-h">⚡ ゲリライベント</div><div class="dbge-g">${GUERRILLAS.map(g => `<button data-ge="${g.key}">${g.icon}${g.name}</button>`).join('')}<button data-ge="stop">⏹ 終了</button></div>
-    <div class="dbge-h">📅 曜日イベント（今日を差し替え）</div><div class="dbge-g">${WEEKDAY_EVENTS.map((e, i) => `<button data-wd="${i}">${days[i]} ${e.icon}</button>`).join('')}<button data-wd="off">戻す</button></div>
-    <div class="dbge-h">🗓️ 季節イベント（月を差し替え）</div><div class="dbge-g">${MONTH_EVENTS.map((e, i) => `<button data-mo="${i}">${i + 1}月 ${e.icon}</button>`).join('')}<button data-mo="off">戻す</button></div>
-    <div class="dbge-g"><button data-mi="10">季節アイテム +10</button><button data-mi="reset">季節リセット</button></div>
-    <div class="dbge-h">その他</div><div class="dbge-g"><button data-x="banner">今日のお知らせ</button><button data-x="list">イベント一覧</button><button data-x="review">⭐ レビュー要請</button><button data-x="fortune">🔮 占い</button></div>
+  ov.innerHTML = `<div class="modal-panel dbga-panel"><div class="evd-title">🎪 その他の確認（デバッグ）</div>
+    <div class="dbge-g"><button data-x="review">⭐ レビュー要請</button><button data-x="fortune">🔮 占い</button></div>
     <button class="modal-close-btn dbga-close">閉じる</button></div>`;
   document.body.appendChild(ov);
   ov.querySelector('.dbga-close').onclick = () => ov.remove();
   ov.onclick = e => {
     const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
-    if (d.ge) { if (d.ge === 'stop') game.guerrilla = null; else startGuerrilla(d.ge); renderEventChip(); }
-    if (d.wd) { dbgWeekday = d.wd === 'off' ? null : +d.wd; showNotice(`DEBUG: 曜日 ${d.wd === 'off' ? '元に戻す' : WEEKDAY_EVENTS[+d.wd].name}`); renderEventChip(); }
-    if (d.mo) { dbgMonth = d.mo === 'off' ? null : +d.mo; game.monthEv = null; showNotice(`DEBUG: 季節 ${d.mo === 'off' ? '元に戻す' : MONTH_EVENTS[+d.mo].name}`); renderEventChip(); }
-    if (d.mi) { if (d.mi === 'reset') game.monthEv = null; else { monthState().n += 10; giveMonthRewards(); } renderEventChip(); }
-    if (d.x === 'banner') { game.eventNoticeDate = null; const w = weekdayEvent(), ev = monthEvent(); eventBanner(`${w.icon} 今日は「${w.name}」`, `${w.desc}／${ev.icon} ${ev.name}開催中`); }
-    if (d.x === 'list') { ov.remove(); openEventDialog(); }
     if (d.x === 'review') { ov.remove(); openReviewAsk(true); }
     if (d.x === 'fortune') { ov.remove(); openFortune(); }
   };
 }
-let dbgWeekday = null, dbgMonth = null;
-{ const ow = weekdayEvent; weekdayEvent = function () { return dbgWeekday != null ? WEEKDAY_EVENTS[dbgWeekday] : ow(); }; }
-{ const om = monthEvent; monthEvent = function () { return dbgMonth != null ? MONTH_EVENTS[dbgMonth] : om(); }; }

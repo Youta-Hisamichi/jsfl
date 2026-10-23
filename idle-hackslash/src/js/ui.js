@@ -1025,7 +1025,6 @@ debugRow.addEventListener('click', event => {
   if (action === 'opening') { playOpening(); return; }
   if (action === 'eventDbg') { openEventDebug(); return; }
   if (action === 'artifactDbg') { openArtifactDebug(); return; }
-  if (action === 'guerrilla') { if (typeof startGuerrilla === 'function') startGuerrilla(); return; }
   if (action === 'runStart') { if (typeof openRunStartDialog === 'function') openRunStartDialog(); return; }
   if (action === 'gimmick') { if (typeof dbgNextGimmick === 'function') dbgNextGimmick(); return; }
   if (action === 'login7') { // 7日ログインボーナス：次の日として受け取り（7日目の次は1日目）
