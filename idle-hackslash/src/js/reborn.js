@@ -172,14 +172,9 @@ function renderRunRuleChip() {
 }
 renderRunRuleChip();
 
-// ===== 戦績ページ：周回記録と縛りの実績 =====
+// ===== 戦績ページ：縛りの実績（周回記録の表示は削除。記録自体は裏で続ける） =====
 { const orig = renderQuests; renderQuests = function () {
   orig(); const host = document.getElementById('questBox'); if (!host) return;
-  const rec = runRec(), feats = game.runFeats || {}, got = RUN_FEATS.filter(f => feats[f.id]).length;
-  const fastRows = RUN_RECORD_STAGES.filter(th => rec.fast[th]).map(th => `<div class="rr-row"><span>⏱️ ステージ${th}まで最速</span><b>${fmtTime(rec.fast[th])}</b></div>`).join('');
-  host.insertAdjacentHTML('beforeend', `<div class="qb-sec rr-box"><div class="qb-head">🏆 周回記録</div>
-    <div class="rr-row"><span>🌌 転生回数</span><b>${game.reincarnations || 0}回</b></div>
-    <div class="rr-row"><span>🏔️ 1周の最高ステージ</span><b>${Math.max(rec.best || 0, rec.curBest || 0)}</b></div>
-    <div class="rr-row"><span>⏳ 今の周回のプレイ時間</span><b>${fmtTime(game.runPlayMs || 0)}</b></div>${fastRows || '<div class="rr-row"><span>⏱️ 最速記録はステージ100到達から</span></div>'}</div>
-    <div class="qb-sec rr-box"><div class="qb-head">🏅 縛りの実績 ${got}/${RUN_FEATS.length}</div><div class="rf-list">${RUN_FEATS.map(f => `<div class="rf-row ${feats[f.id] ? 'got' : ''}"><span class="rf-ico">${feats[f.id] ? f.icon : '🔒'}</span><span class="rf-main"><b>${f.name}</b><small>${f.desc}</small></span><span class="rf-gem">${feats[f.id] ? '✓' : '💎' + f.gems}</span></div>`).join('')}</div></div>`);
+  const feats = game.runFeats || {}, got = RUN_FEATS.filter(f => feats[f.id]).length;
+  host.insertAdjacentHTML('beforeend', `<div class="qb-sec rr-box"><div class="qb-head">🏅 縛りの実績 ${got}/${RUN_FEATS.length}</div><div class="rf-list">${RUN_FEATS.map(f => `<div class="rf-row ${feats[f.id] ? 'got' : ''}"><span class="rf-ico">${feats[f.id] ? f.icon : '🔒'}</span><span class="rf-main"><b>${f.name}</b><small>${f.desc}</small></span><span class="rf-gem">${feats[f.id] ? '✓' : '💎' + f.gems}</span></div>`).join('')}</div></div>`);
 }; }
