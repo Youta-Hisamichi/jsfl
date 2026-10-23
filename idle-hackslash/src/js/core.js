@@ -629,6 +629,8 @@ function rarityBackground(rarity) {
   return `linear-gradient(160deg, ${c}${a1}, ${c}${a2})`;
 }
 function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(5 - RARITY_INFO[rarity].stars); }
+const STAR_ON_IMG = 'assets/img/ui/chest/star_on.webp', STAR_OFF_IMG = 'assets/img/ui/chest/star_off.webp';
+function rarityStarsImg(rarity) { const n = RARITY_INFO[rarity].stars; return `<span class="rstars">${[0, 1, 2, 3, 4].map(i => `<img src="${i < n ? STAR_ON_IMG : STAR_OFF_IMG}" alt="">`).join('')}</span>`; } // ガチャ結果の★は金の星の絵で統一
 const GACHA_POOL = {
   power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
   vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },

@@ -2036,7 +2036,7 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   chestPausedPhase = phase; phase = 'paused';
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
-  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStars(rarity)} ${info.label.replace('コモン', 'ノーマル')}の宝箱</span>`;
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStarsImg(rarity)} ${info.label.replace('コモン', 'ノーマル')}の宝箱</span>`;
   document.getElementById('chestModalText').textContent = `残り ${n + (getHeldChests()[rarity] || 0)} 個`; setChestStars(rarity, n + (getHeldChests()[rarity] || 0)); // ボタンの数字と同じ（ふつうの宝箱＋転生ガチャの宝箱）
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="rbOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
@@ -2089,7 +2089,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     const beforeN = game.ownedArtifacts[pick.id] || 0;
     for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStars(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` };
+    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` };
     if (!quiet) renderArtifactList();
   }
   // ★3以上の宝箱は、たまに回復ポーションも入っている（3個以上持っているときは入らない）

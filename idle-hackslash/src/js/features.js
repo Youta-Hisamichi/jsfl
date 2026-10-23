@@ -336,7 +336,7 @@ function applyComboBonuses(b) { activeCombos().forEach(c => c.apply(b)); }
 function rareCutIn(id) {
   const c = COMPANIONS[id]; if (!c) return;
   const ov = document.createElement('div'); ov.className = 'rare-cutin r-' + c.rarity;
-  ov.innerHTML = `<div class="rc-band"><div class="rc-img">${companionIconHtml(id)}</div><div class="rc-text"><div class="rc-stars">${rarityStars(c.rarity)} ${RARITY_INFO[c.rarity].label}</div><div class="rc-name">${c.name}</div><div class="rc-line">「${(COMP_PROFILE[id] && COMP_PROFILE[id].say[0]) || ''}」</div></div></div>`;
+  ov.innerHTML = `<div class="rc-band"><div class="rc-img">${companionIconHtml(id)}</div><div class="rc-text"><div class="rc-stars">${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}</div><div class="rc-name">${c.name}</div><div class="rc-line">「${(COMP_PROFILE[id] && COMP_PROFILE[id].say[0]) || ''}」</div></div></div>`;
   document.body.appendChild(ov);
   playBossFanfare(0); shakeScreenLight && shakeScreenLight();
   ov.addEventListener('click', () => ov.remove());

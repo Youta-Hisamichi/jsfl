@@ -1364,7 +1364,7 @@ function openHireGachaDialog({ id, dup, pool }) { // 大きめのダイアログ
     if (!last) { n++; setTimeout(tick, 45 + n * n * 0.6); return; }
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
-    ov.querySelector('.hgm-stars').textContent = rarityStars(c.rarity);
+    ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
     ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
     playSummonFanfare(c.rarity);
@@ -1515,7 +1515,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
     playPachinkoWin(rarity); startSkGachaBgm();
     skGachaResult.className = 'gacha-result skr rarity-' + rarity; // スキル・サブウェポンの結果は紫の魔法陣パネル
     skGachaResult.style.background = '';
-    skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
+    skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-stars-row gr-pop">${rarityStarsImg(rarity)}</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
     { const row = skGachaResult.querySelector('.gr-btn-row'); if (row) { row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } } // 演出スキップの連打で誤って押さないよう少しだけ待つ
     document.getElementById('skGachaCloseBtn').addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
     if (reroll) document.getElementById('skGachaRerollBtn').addEventListener('click', ev => {
@@ -1921,7 +1921,7 @@ gachaBtn.addEventListener('click', event => {
     playGachaSound(result.rarity);
     gachaResult.className = 'gacha-result rarity-' + result.rarity;
     gachaResult.style.background = rarityBackground(result.rarity);
-    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${ico(result)}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStars(result.rarity)} ${result.name}</div><div class="gr-sub">Lv.${game.evolutions[id]} に進化！（${result.desc}）</div><button id="gachaResultCloseBtn">閉じる</button>`;
+    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${ico(result)}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStarsImg(result.rarity)} ${result.name}</div><div class="gr-sub">Lv.${game.evolutions[id]} に進化！（${result.desc}）</div><button id="gachaResultCloseBtn">閉じる</button>`;
     document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
     gachaBtn.disabled = false; gacha10Btn.disabled = false;
     updateStatsUI();
@@ -1944,7 +1944,7 @@ function autoOpenGachaResults(results, onAllDone) {
     el.classList.add('gm-open', 'rarity-' + r.rarity);
     el.style.border = `1px solid ${rarity.color}`;
     el.style.background = rarityBackground(r.rarity);
-    el.innerHTML = `<div class="gm-face">${ico(r)}</div><span class="gm-name">${rarityStars(r.rarity)}<br>${r.name.replace('の欠片', '')}</span>`;
+    el.innerHTML = `<div class="gm-face">${ico(r)}</div><span class="gm-name">${rarityStarsImg(r.rarity)}<br>${r.name.replace('の欠片', '')}</span>`;
     if (withSound) playGachaSound(r.rarity);
   };
   const finish = () => {
@@ -2017,7 +2017,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `${rarityStars(tier.rarity)}<br>×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${xi('x_feather', 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${xi('x_feather', 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
     `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
