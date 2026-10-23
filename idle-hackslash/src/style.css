@@ -4341,3 +4341,9 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .gr-title .rstars { font-size: 0.85em; }
 .skr .gr-stars-row { font-size: 1.25rem; margin: -4px 0 0; position: relative; z-index: 2; }
 #skGachaModal #skGachaResult.skr .gr-stars-row { position: absolute !important; left: 0; right: 0; top: 9%; margin: 0 !important; font-size: clamp(1.1rem, 5.5vw, 1.5rem) !important; }
+/* 採用ガチャ：放射の光は四隅まで届く大きさで、文字・ボタンの下に敷く（押せるように） */
+#hireGachaModal .hgm-panel { position: relative; }
+#hireGachaModal .hgm-rays { position: absolute !important; left: 50% !important; top: 42% !important; width: calc(var(--sq) * 2.3) !important; height: calc(var(--sq) * 2.3) !important; margin: calc(var(--sq) * -1.15) 0 0 calc(var(--sq) * -1.15) !important; z-index: 0; pointer-events: none; }
+#hireGachaModal .hgm-title, #hireGachaModal .hgm-stage, #hireGachaModal .hgm-res, #hireGachaModal .hgm-btns { position: relative; z-index: 1; }
+#hireGachaModal .hgm-res { width: 100%; text-align: center; }
+#hireGachaModal .hgm-line { text-align: center; }

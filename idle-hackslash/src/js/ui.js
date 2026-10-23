@@ -1344,35 +1344,45 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
   saveGame(); updateStatsUI();
   return { id, dup, pool };
 }
-function openHireGachaDialog({ id, dup, pool }) { // 大きめのダイアログで候補の顔がルーレットのように回って止まり、結果もそのまま出す
+function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
   hireGachaRolling = true;
+  if (hireGachaBgmOn) { hireGachaBgmOn = false; refreshBgm(); }
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
-  ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-title">🎰 採用ガチャ</div>
-    <div class="hgm-stage"><div class="hgm-rays"></div><div class="hgm-roll"></div></div>
-    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">　</div></div>
+  ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-rays"></div><div class="hgm-title">🎰 採用ガチャ</div>
+    <div class="hgm-stage"><div class="hgm-roll"></div></div>
+    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">タップでスキップ</div></div>
     <div class="hgm-btns"><button class="hgm-again">もう1回 <b>💎${HIRE_GACHA_GEMS}</b></button><button class="hgm-close">閉じる</button></div></div>`;
   ov.classList.add('show');
   const panel = ov.querySelector('.hgm-panel'), roll = ov.querySelector('.hgm-roll'), btns = ov.querySelector('.hgm-btns');
   btns.style.visibility = 'hidden';
-  let n = 0;
-  const tick = () => {
-    const last = n >= 22, cur = last ? id : pool[Math.floor(Math.random() * pool.length)];
-    roll.innerHTML = companionIconHtml(cur); roll.style.setProperty('--rc', RARITY_INFO[COMPANIONS[cur].rarity].color);
-    roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
-    playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
-    if (!last) { n++; setTimeout(tick, 45 + n * n * 0.6); return; }
+  let n = 0, timer = null, done = false;
+  const finish = () => {
+    if (done) return; done = true; clearTimeout(timer);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
+    roll.innerHTML = companionIconHtml(id); roll.style.setProperty('--rc', rar.color);
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
     ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
     ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
     playSummonFanfare(c.rarity);
-    setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 500);
+    setTimeout(() => { if (ov.classList.contains('show')) { hireGachaBgmOn = true; refreshBgm(); } }, 1600); // ファンファーレのあとにお祝いの曲
+    setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 400);
     const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
   };
-  ov.querySelector('.hgm-close').onclick = () => { if (!hireGachaRolling) ov.classList.remove('show'); };
-  ov.querySelector('.hgm-again').onclick = e => { if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
+  const tick = () => {
+    if (done) return;
+    if (n >= 22) { finish(); return; }
+    const cur = pool[Math.floor(Math.random() * pool.length)];
+    roll.innerHTML = companionIconHtml(cur); roll.style.setProperty('--rc', RARITY_INFO[COMPANIONS[cur].rarity].color);
+    roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
+    playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
+    n++; timer = setTimeout(tick, 45 + n * n * 0.6);
+  };
+  ov.onclick = e => { if (!done && !e.target.closest('.hgm-btns')) finish(); }; // 回っている間はどこをタップしても結果へ
+  const close = () => { ov.classList.remove('show'); if (hireGachaBgmOn) { hireGachaBgmOn = false; refreshBgm(); } };
+  ov.querySelector('.hgm-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
+  ov.querySelector('.hgm-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
   tick();
 }
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);

@@ -521,6 +521,16 @@ const BGM_SONGS = {
     drums: 'k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks',
     kickBoost: 1.3, // ティンパニのように太く
   },
+  hireget: { // 採用ガチャの結果 やったね！新しい仲間：弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う（ヘ長調）
+    bpm: 150,
+    echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'F5 A5 C6 F6 = E6 F6 = | D6 = C6 A#5 = A5 G5 = | E5 G5 C6 E6 = D6 E6 = | F6 = C6 = A5 = - - | D6 C6 A5 D6 = F6 = E6 | D6 = A#5 = G5 A#5 D6 = | E6 = G6 = A#6 = G6 E6 | F6 = = = C6 A5 F5 -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: '- F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+A#4+D5 - F4+A#4+D5 - F4+A#4+D5 - F4+A#4+D5 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+A4+D5 - F4+A4+D5 - F4+A4+D5 - F4+A4+D5 | - F4+A#4+D5 - F4+A#4+D5 - F4+A#4+D5 - F4+A#4+D5 | - E4+A#4+C5 - E4+A#4+C5 - E4+A#4+C5 - E4+A#4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5' },
+      { type: 'vrc6saw', gain: 0.045, notes: 'F2 F3 F2 F3 F2 F3 F2 F3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | F2 F3 F2 F3 F2 F3 F2 F3 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | F2 F3 F2 F3 F2 F3 F2 F3' },
+    ],
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h s s ks s',
+  },
   news: { // お知らせ画面 王宮の謁見：王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット（ヘ長調）
     bpm: 112,
     echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
@@ -814,6 +824,7 @@ const BGM_INFO = [
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'bgmbook', name: 'ページ BGM図鑑 音楽家のソナチネ', desc: 'アルベルティ・バスの分散和音に乗って、軽やかな音階とトリル風の飾りで歌う、古典派のピアノソナチネのような曲。VRC6風チップチューン。ト長調（モーツァルト風の作風）・BPM132' },
   { key: 'charge', name: 'ページ ショップ 課金 王家の宝物庫', desc: '弾むオクターブベースと行進曲のスネア、ハープのような分散和音に乗って、ファンファーレ風の旋律が華やかに駆け上がる、王宮の祝宴のような高揚感のある曲。VRC6風チップチューン。ニ長調・BPM132' },
+  { key: 'hireget', name: '採用ガチャ やったね！新しい仲間', desc: '採用ガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う曲。VRC6風チップチューン。ヘ長調・BPM150' },
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
@@ -856,6 +867,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   refreshBgm();
   renderBgmBook();
 });
+let hireGachaBgmOn = false; // 採用ガチャの結果を出している間
 let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
@@ -872,6 +884,7 @@ function refreshBgm() {
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
   else if (skGachaBgmOn) type = 'skillget'; // スキルガチャの結果
+  else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
