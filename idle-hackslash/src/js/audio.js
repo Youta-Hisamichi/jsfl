@@ -868,6 +868,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   renderBgmBook();
 });
 let hireGachaBgmOn = false; // 採用ガチャの結果を出している間
+let hireGachaHush = false;  // 採用ガチャのルーレット中（曲を止めてドキドキの効果音だけ）
 let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
@@ -884,6 +885,7 @@ function refreshBgm() {
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
   else if (skGachaBgmOn) type = 'skillget'; // スキルガチャの結果
+  else if (hireGachaHush) type = 'silent'; // 採用ガチャのルーレット中
   else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）

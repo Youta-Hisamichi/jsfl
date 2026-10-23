@@ -1346,7 +1346,11 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
 }
 function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
   hireGachaRolling = true;
-  if (hireGachaBgmOn) { hireGachaBgmOn = false; refreshBgm(); }
+  hireGachaBgmOn = false; hireGachaHush = true; refreshBgm(); // 曲を止めて、ドキドキの心臓の音とドラムロール
+  let beat = 0; const heart = setInterval(() => { // ドクン…ドクン…とだんだん速く・高く
+    const v = 0.5 + Math.min(0.4, beat * 0.03); thump(85 + beat * 3, 38, 0.16, v); thump(70 + beat * 3, 34, 0.14, v * 0.7, 'sine', 0.13);
+    noiseSweep(0.45, 2500, 5200 + beat * 200, 'bandpass', 2, 0.05 + beat * 0.006); beat++;
+  }, 520);
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
   ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-rays"></div><div class="hgm-title">🎰 採用ガチャ</div>
@@ -1358,15 +1362,15 @@ function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正
   btns.style.visibility = 'hidden';
   let n = 0, timer = null, done = false;
   const finish = () => {
-    if (done) return; done = true; clearTimeout(timer);
+    if (done) return; done = true; clearTimeout(timer); clearInterval(heart);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
     roll.innerHTML = companionIconHtml(id); roll.style.setProperty('--rc', rar.color);
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
     ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
     ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
-    playSummonFanfare(c.rarity);
-    setTimeout(() => { if (ov.classList.contains('show')) { hireGachaBgmOn = true; refreshBgm(); } }, 1600); // ファンファーレのあとにお祝いの曲
+    thump(120, 45, 0.35, 0.7); playTone(1047, 0.12, 'square', 0.06, 1568); // 決定の「ジャン！」
+    hireGachaHush = false; hireGachaBgmOn = true; refreshBgm(); // 決まった瞬間にお祝いの曲へ
     setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 400);
     const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
   };
@@ -1380,7 +1384,7 @@ function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正
     n++; timer = setTimeout(tick, 45 + n * n * 0.6);
   };
   ov.onclick = e => { if (!done && !e.target.closest('.hgm-btns')) finish(); }; // 回っている間はどこをタップしても結果へ
-  const close = () => { ov.classList.remove('show'); if (hireGachaBgmOn) { hireGachaBgmOn = false; refreshBgm(); } };
+  const close = () => { ov.classList.remove('show'); clearInterval(heart); hireGachaHush = false; hireGachaBgmOn = false; refreshBgm(); };
   ov.querySelector('.hgm-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
   ov.querySelector('.hgm-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
   tick();
