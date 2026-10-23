@@ -4276,3 +4276,5 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .shop-tabs [data-shop-tab="chara"] { flex-grow: 456 !important; aspect-ratio: 456 / 174 !important; }
 .shop-tabs [data-shop-tab="charge"] { flex-grow: 454 !important; aspect-ratio: 454 / 174 !important; }
 .shop-tabs [data-shop-tab="bag"] { flex-grow: 449 !important; aspect-ratio: 449 / 174 !important; }
+/* 採用ガチャ：まだ出ていない（採用前の）候補はシルエット */
+.hire-gacha .hg-face.new img, .hire-gacha .hg-face.new .comp-sprite { filter: brightness(0) drop-shadow(0 0 1px rgba(160,190,255,0.6)) !important; opacity: 0.85; }
