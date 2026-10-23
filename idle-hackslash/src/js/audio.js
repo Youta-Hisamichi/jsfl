@@ -511,10 +511,12 @@ const BGM_SONGS = {
   charge: { // ショップの課金ページ 王家の宝物庫：弾むオクターブベースと行進曲のスネア、ハープのような分散和音に乗って、ファンファーレ風の旋律が華やかに駆け上がる、王宮の祝宴のような高揚感のある曲（ニ長調）
     bpm: 264, // 1ステップ＝16分音符（四分音符＝132）
     echo: { time: 0.23, feedback: 0.24, wet: 0.18 },
+    lowEcho: { time: 0.34, feedback: 0.42, wet: 0.45, tone: 380 }, // ベースとキックはこもった長めの残響で、ホールのようにドーンと響かせる
     tracks: [
       { type: 'vrc6pulse25', gain: 0.03, notes: 'A5 = A5 A5 D6 = = = F#6 = = = D6 = = = | E6 = = = = = D6 C#6 A5 = = = = = = = | B5 = B5 B5 D6 = = = F#6 = = = D6 = = = | G6 = = = = = = = F#6 = E6 = D6 = B5 = | E6 = E6 E6 G6 = = = E6 = = = B5 = = = | C#6 = C#6 C#6 E6 = = = A6 = = = = = = = | F#6 = = = E6 = D6 = C#6 = D6 = E6 = = = | A5 = = = = = = = G5 = A5 = B5 = C#6 = | D6 = = = = = B5 = G5 = = = D6 = = = | E6 = = = = = C#6 = A5 = = = E6 = = = | F#6 = = = = = E6 = C#6 = = = A5 = = = | B5 = C#6 = D6 = E6 = F#6 = = = = = = = | G6 = = = F#6 = G6 = A6 = = = G6 = = = | E6 = = = D6 = E6 = G6 = = = B5 = = = | A5 = C#6 = E6 = G6 = A6 = G6 = E6 = C#6 = | D6 = = = A6 = = = = = = = - - - -' },
       { type: 'vrc6pulse12', gain: 0.012, notes: 'D4 F#4 A4 D5 F#5 D5 A4 F#4 D4 F#4 A4 D5 F#5 D5 A4 F#4 | A3 C#4 E4 A4 C#5 A4 E4 C#4 A3 C#4 E4 A4 C#5 A4 E4 C#4 | B3 D4 F#4 B4 D5 B4 F#4 D4 B3 D4 F#4 B4 D5 B4 F#4 D4 | G3 B3 D4 G4 B4 G4 D4 B3 G3 B3 D4 G4 B4 G4 D4 B3 | E4 G4 B4 E5 G5 E5 B4 G4 E4 G4 B4 E5 G5 E5 B4 G4 | A3 C#4 E4 A4 C#5 A4 E4 C#4 A3 C#4 E4 A4 C#5 A4 E4 C#4 | D4 F#4 A4 D5 F#5 D5 A4 F#4 D4 F#4 A4 D5 F#5 D5 A4 F#4 | A3 C#4 E4 G4 A4 G4 E4 C#4 A3 C#4 E4 G4 A4 G4 E4 C#4 | G3 B3 D4 G4 B4 G4 D4 B3 G3 B3 D4 G4 B4 G4 D4 B3 | A3 C#4 E4 A4 C#5 A4 E4 C#4 A3 C#4 E4 A4 C#5 A4 E4 C#4 | F#3 A3 C#4 F#4 A4 F#4 C#4 A3 F#3 A3 C#4 F#4 A4 F#4 C#4 A3 | B3 D4 F#4 B4 D5 B4 F#4 D4 B3 D4 F#4 B4 D5 B4 F#4 D4 | G3 B3 D4 G4 B4 G4 D4 B3 G3 B3 D4 G4 B4 G4 D4 B3 | E4 G4 B4 E5 G5 E5 B4 G4 E4 G4 B4 E5 G5 E5 B4 G4 | A3 C#4 E4 G4 A4 G4 E4 C#4 A3 C#4 E4 G4 A4 G4 E4 C#4 | D4 F#4 A4 D5 F#5 D5 A4 F#4 D4 F#4 A4 D5 F#5 D5 A4 F#4' },
-      { type: 'vrc6saw', gain: 0.05, notes: 'D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | B1 = B2 = B1 = B2 = B1 = B2 = B1 = B2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | E2 = E3 = E2 = E3 = E2 = E3 = E2 = E3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | F#1 = F#2 = F#1 = F#2 = F#1 = F#2 = F#1 = F#2 = | B1 = B2 = B1 = B2 = B1 = B2 = B1 = B2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | E2 = E3 = E2 = E3 = E2 = E3 = E2 = E3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 =' },
+      { type: 'vrc6saw', gain: 0.05, lowEcho: true, notes: 'D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | B1 = B2 = B1 = B2 = B1 = B2 = B1 = B2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | E2 = E3 = E2 = E3 = E2 = E3 = E2 = E3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | F#1 = F#2 = F#1 = F#2 = F#1 = F#2 = F#1 = F#2 = | B1 = B2 = B1 = B2 = B1 = B2 = B1 = B2 = | G1 = G2 = G1 = G2 = G1 = G2 = G1 = G2 = | E2 = E3 = E2 = E3 = E2 = E3 = E2 = E3 = | A1 = A2 = A1 = A2 = A1 = A2 = A1 = A2 = | D2 = D3 = D2 = D3 = D2 = D3 = D2 = D3 =' },
+      { type: 'triangle', gain: 0.08, lowEcho: true, notes: 'D1 = = = = = = = = = = = - - - - | A1 = = = = = = = = = = = - - - - | B1 = = = = = = = = = = = - - - - | G1 = = = = = = = = = = = - - - - | E1 = = = = = = = = = = = - - - - | A1 = = = = = = = = = = = - - - - | D1 = = = = = = = = = = = - - - - | A1 = = = = = = = = = = = - - - - | G1 = = = = = = = = = = = - - - - | A1 = = = = = = = = = = = - - - - | F#1 = = = = = = = = = = = - - - - | B1 = = = = = = = = = = = - - - - | G1 = = = = = = = = = = = - - - - | E1 = = = = = = = = = = = - - - - | A1 = = = = = = = = = = = - - - - | D1 = = = = = = = = = = = - - - -' }, // 重低音（響く残響へ）
     ],
     drums: 'k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks',
     kickBoost: 1.3, // ティンパニのように太く
@@ -578,7 +580,7 @@ function prepareSong(song) {
   song.drumSteps = song.drums.split(/\s+/).filter(t => t && t !== '|');
   song.length = Math.max(song.drumSteps.length, ...song.parsed.map(t => t.length));
   song.byStep = Array.from({ length: song.length }, () => []);
-  song.parsed.forEach(t => t.events.forEach(ev => song.byStep[ev.step].push({ ...ev, type: t.type, gain: t.gain })));
+  song.parsed.forEach(t => t.events.forEach(ev => song.byStep[ev.step].push({ ...ev, type: t.type, gain: t.gain, low: !!t.lowEcho })));
   return song;
 }
 function bgmVol() { return game.bgmVolume ?? 0.7; }
@@ -643,7 +645,7 @@ function playSongNote(time, freq, dur, type, gain, dest) {
 function makeSongEchoBus(echo) {
   const input = audioCtx.createGain(), delay = audioCtx.createDelay(2), fb = audioCtx.createGain(), wet = audioCtx.createGain(), tone = audioCtx.createBiquadFilter();
   delay.delayTime.value = echo.time; fb.gain.value = echo.feedback; wet.gain.value = echo.wet;
-  tone.type = 'lowpass'; tone.frequency.value = 2600; // 跳ね返りはこもらせて奥行きを出す
+  tone.type = 'lowpass'; tone.frequency.value = echo.tone || 2600; // 跳ね返りはこもらせて奥行きを出す
   input.connect(audioCtx.destination);
   input.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay); tone.connect(wet); wet.connect(audioCtx.destination);
   input.echoNodes = [input, delay, fb, wet, tone]; // 曲を止めたら切り離す（つないだままだとフィードバックのループが残り続け、長時間でどんどん重くなる）
@@ -654,7 +656,7 @@ function releaseSongEchoBus(bus) {
   const nodes = bus.echoNodes; bus.echoNodes = null;
   setTimeout(() => nodes.forEach(n => { try { n.disconnect(); } catch (e) {} }), 1500); // 残響が消えるまで少し待ってから
 }
-function playSongDrum(time, kind, boost = 1) {
+function playSongDrum(time, kind, boost = 1, kickDest) {
   const v = bgmVol();
   if (v <= 0) return;
   if (kind === 'k') { // キック：低い音が急に下がる「ドン」（boost で太く長く）
@@ -663,7 +665,7 @@ function playSongDrum(time, kind, boost = 1) {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(140, time); osc.frequency.exponentialRampToValueAtTime(boost > 1 ? 34 : 42, time + 0.12 * boost);
     g.gain.setValueAtTime(Math.min(0.5, 0.28 * boost) * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + len);
-    osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time + len + 0.01);
+    osc.connect(g); g.connect(kickDest || audioCtx.destination); osc.start(time); osc.stop(time + len + 0.01);
     return;
   }
   const dur = kind === 's' ? 0.12 : 0.035;
@@ -681,7 +683,7 @@ let songTimer = null, songState = null;
 function startSong(type, startStep = 0) {
   const song = prepareSong(BGM_SONGS[type]);
   stopSong();
-  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, baseStepDur: 60 / song.bpm / 2, stepDur: 60 / song.bpm / 2, tempo: 1, bus: song.echo ? makeSongEchoBus(song.echo) : null };
+  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, baseStepDur: 60 / song.bpm / 2, stepDur: 60 / song.bpm / 2, tempo: 1, bus: song.echo ? makeSongEchoBus(song.echo) : null, lowBus: song.lowEcho ? makeSongEchoBus(song.lowEcho) : null }; // lowEcho：重低音だけ長く響かせる残響
   const tick = () => {
     const s = songState;
     if (!s) return;
@@ -690,9 +692,9 @@ function startSong(type, startStep = 0) {
     s.stepDur = s.baseStepDur / s.tempo;
     if (s.next < audioCtx.currentTime + 0.01) s.next = audioCtx.currentTime + 0.03; // 処理が詰まって遅れたときは、過去の時刻に鳴らさず少し先から続ける（ブツッという音を防ぐ）
     while (s.next < audioCtx.currentTime + 0.3) {
-      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, s.bus));
+      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, ev.low && s.lowBus ? s.lowBus : s.bus));
       const dr = s.song.drumSteps[s.step];
-      if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost);
+      if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost, s.lowBus);
       s.next += s.stepDur;
       s.step = (s.step + 1) % s.song.length;
     }
@@ -711,7 +713,7 @@ function getBossPinchTempo() {
   if (bossTimerFor) for (const [lim, m] of PINCH_TEMPO_TIME) if (bossTimeLeftMs <= lim) { t = Math.max(t, m); break; }
   return t;
 }
-function stopSong() { clearInterval(songTimer); songTimer = null; if (songState) releaseSongEchoBus(songState.bus); songState = null; }
+function stopSong() { clearInterval(songTimer); songTimer = null; if (songState) { releaseSongEchoBus(songState.bus); releaseSongEchoBus(songState.lowBus); } songState = null; }
 let bgmTimer = null;
 let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
