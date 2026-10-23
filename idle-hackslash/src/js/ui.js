@@ -1347,6 +1347,7 @@ function showShopTab(key) {
   document.querySelectorAll('[data-shop-tab]').forEach(t => t.classList.toggle('active', t.dataset.shopTab === key));
   document.querySelectorAll('[data-shop-sec]').forEach(sec => { sec.hidden = sec.dataset.shopSec !== key; });
   if (key === 'chara') renderCompLockList();
+  if (typeof refreshBgm === 'function') refreshBgm(); // 課金ページだけ専用の曲
   try { localStorage.setItem('shopTab', key); } catch (e) {}
 }
 document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
