@@ -1344,13 +1344,21 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
   saveGame(); updateStatsUI();
   return { id, dup, pool };
 }
+function playDrumRollHit(v) { // ドラムロールの1打（スネアの短いノイズ＋胴鳴り）
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime, vol = game.sfxVolume ?? 0.7, len = 0.07, buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * len), audioCtx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const src = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+  src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 2200 + Math.random() * 600; f.Q.value = 0.8;
+  g.gain.setValueAtTime(0.32 * v * vol * (0.85 + Math.random() * 0.3), t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(t);
+  const o = audioCtx.createOscillator(), og = audioCtx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.05);
+  og.gain.setValueAtTime(0.12 * v * vol, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06); o.connect(og); og.connect(audioCtx.destination); o.start(t); o.stop(t + 0.07);
+}
 function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
   hireGachaRolling = true;
-  hireGachaBgmOn = false; hireGachaHush = true; refreshBgm(); // 曲を止めて、ドキドキの心臓の音とドラムロール
-  let beat = 0; const heart = setInterval(() => { // ドクン…ドクン…とだんだん速く・高く
-    const v = 0.5 + Math.min(0.4, beat * 0.03); thump(85 + beat * 3, 38, 0.16, v); thump(70 + beat * 3, 34, 0.14, v * 0.7, 'sine', 0.13);
-    noiseSweep(0.45, 2500, 5200 + beat * 200, 'bandpass', 2, 0.05 + beat * 0.006); beat++;
-  }, 520);
+  hireGachaBgmOn = false; hireGachaHush = true; refreshBgm(); // 曲を止めて、ドラムロール
+  let beat = 0; const heart = setInterval(() => { beat++; playDrumRollHit(Math.min(1, 0.25 + beat * 0.012)); }, 55); // ダララララ…とだんだん大きく
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
   ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-rays"></div><div class="hgm-title">🎰 採用ガチャ</div>
@@ -1369,7 +1377,7 @@ function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正
     ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
     ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
-    thump(120, 45, 0.35, 0.7); playTone(1047, 0.12, 'square', 0.06, 1568); // 決定の「ジャン！」
+    thump(110, 42, 0.4, 0.8); noiseSweep(1.2, 9000, 3000, 'highpass', 0.7, 0.35); playTone(1047, 0.12, 'square', 0.06, 1568); // ドラムロールの締めの「ドン！シャーン！」
     hireGachaHush = false; hireGachaBgmOn = true; refreshBgm(); // 決まった瞬間にお祝いの曲へ
     setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 400);
     const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
