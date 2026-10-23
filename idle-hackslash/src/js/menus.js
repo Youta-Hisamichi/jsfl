@@ -394,7 +394,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateStatsUI();
   updateHPUI();
 }
-document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, getCompSummonCost(1), event); });
+document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすか、転生でリセットするとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, getCompSummonCost(1), event); });
 ['compGachaResult', 'gachaResult'].forEach(boxId => { // 招集ガチャ・進化ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
   const box = document.getElementById(boxId), ov = document.createElement('div'); if (!box) return;
   ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);

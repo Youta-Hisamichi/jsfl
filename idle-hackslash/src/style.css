@@ -4236,3 +4236,20 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #settingsModal .st2 .sgh-title { background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #fff !important; filter: none !important; text-shadow: -1px -1px 0 #0a1440, 1px -1px 0 #0a1440, -1px 1px 0 #0a1440, 1px 1px 0 #0a1440, 0 2px 0 #0a1440 !important; }
 #settingsModal .st2 .sgh-ver { text-shadow: 0 1px 1px #000; }
 #settingsModal .st2 .settings-game-head { margin: 0 0 6px !important; }
+/* 採用ガチャ（ショップの仲間タブ） */
+.hire-gacha { margin: 4px 0 10px; padding: 10px 12px; border: 2px solid #d9a93f; border-radius: 10px; background: radial-gradient(ellipse at 50% 0%, rgba(140,110,255,0.3), transparent 70%), linear-gradient(180deg, #1c2a60, #0b1434); box-shadow: inset 0 0 0 1px #4a3208, 0 3px 8px rgba(0,0,0,0.5); text-align: center; color: #fff; }
+.hire-gacha .hg-head { font-size: 1.05rem; font-weight: 900; color: #ffe08a; text-shadow: 0 1px 2px #000; }
+.hire-gacha .hg-head small { margin-left: 8px; font-size: 0.72rem; color: #c8d0e6; font-weight: 700; }
+.hire-gacha .hg-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 52px; margin: 6px 0; align-items: center; }
+.hire-gacha .hg-face { width: 38px; height: 38px; border: 2px solid var(--rc); border-radius: 8px; background: rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.hire-gacha .hg-face img, .hire-gacha .hg-roll img { width: 100%; height: 100%; object-fit: contain; }
+.hire-gacha .hg-more, .hire-gacha .hg-empty { font-size: 0.72rem; color: #c8d0e6; }
+.hire-gacha .hg-roll { width: 72px; height: 72px; border: 3px solid var(--rc, #d9a93f); border-radius: 12px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hire-gacha .hg-roll.hit { animation: hgHit 0.45s ease-out; box-shadow: 0 0 16px var(--rc); }
+@keyframes hgHit { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1.15); } }
+.hire-gacha .hg-odds { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; font-size: 0.68rem; margin-bottom: 6px; }
+.hire-gacha .hg-odds span { color: var(--rc); font-weight: 800; text-shadow: 0 1px 1px #000; }
+.hire-gacha .hg-btn { display: block; width: 100%; padding: 10px 0; border: 2px solid #ffe08a; border-radius: 999px; background: linear-gradient(180deg, #ffcf4a, #e8901a); color: #3a1c00; font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 3px 0 #8a4a08; }
+.hire-gacha .hg-btn b { margin-left: 6px; color: #2a1000; }
+.hire-gacha .hg-btn.is-disabled { filter: grayscale(0.7) brightness(0.8); }
+.hire-gacha .hg-btn:active { transform: translateY(2px); }
