@@ -1332,6 +1332,8 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
   for (const k of Object.keys(rates)) { pick -= rates[k]; if (pick <= 0) { rar = k; break; } }
   const same = pool.filter(x => COMPANIONS[x].rarity === rar), id = same[Math.floor(Math.random() * same.length)]; // 同じレア度の中は均等
   const dup = !isCompLocked(id);
+  if (!game.companionBook) game.companionBook = {};
+  const bookNew = !game.companionBook[id]; game.companionBook[id] = true; // 採用ガチャで出た仲間は仲間図鑑に登録
   if (dup) { // ダブり：少し強化
     setCompUpLv(id, 'atk', compUpLv(id, 'atk') + HIRE_DUP_LV); setCompUpLv(id, 'hp', compUpLv(id, 'hp') + HIRE_DUP_LV);
     if (typeof refreshPlayerBallStats === 'function') refreshPlayerBallStats(false);
@@ -1342,7 +1344,7 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
     game.summonGuarantee = game.summonGuarantee.filter(x => x !== id); game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
   }
   saveGame(); updateStatsUI();
-  return { id, dup, pool };
+  return { id, dup, pool, bookNew };
 }
 function playDrumRollHit(v) { // ドラムロールの1打（スネアの短いノイズ＋胴鳴り）
   if (!audioCtx) return;
@@ -1355,15 +1357,15 @@ function playDrumRollHit(v) { // ドラムロールの1打（スネアの短い�
   const o = audioCtx.createOscillator(), og = audioCtx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.05);
   og.gain.setValueAtTime(0.12 * v * vol, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06); o.connect(og); og.connect(audioCtx.destination); o.start(t); o.stop(t + 0.07);
 }
-function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
+function openHireGachaDialog({ id, dup, pool, bookNew }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
   hireGachaRolling = true;
-  hireGachaBgmOn = false; hireGachaHush = true; refreshBgm(); // 曲を止めて、ドラムロール
+  hireGachaBgmOn = false; hireGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止めて（残響も）、ドラムロール
   let beat = 0; const heart = setInterval(() => { beat++; playDrumRollHit(Math.min(1, 0.25 + beat * 0.012)); }, 55); // ダララララ…とだんだん大きく
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
   ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-rays"></div><div class="hgm-title">🎰 採用ガチャ</div>
     <div class="hgm-stage"><div class="hgm-roll"></div></div>
-    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">タップでスキップ</div></div>
+    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">タップでスキップ</div><div class="hgm-book"></div></div>
     <div class="hgm-btns"><button class="hgm-again">もう1回 <b>💎${HIRE_GACHA_GEMS}</b></button><button class="hgm-close">閉じる</button></div></div>`;
   ov.classList.add('show');
   const panel = ov.querySelector('.hgm-panel'), roll = ov.querySelector('.hgm-roll'), btns = ov.querySelector('.hgm-btns');
@@ -1377,6 +1379,8 @@ function openHireGachaDialog({ id, dup, pool }) { // 画面を切り替えて正
     ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hgm-name').textContent = c.name;
     ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
+    { const ids = Object.keys(COMPANIONS), got = ids.filter(x => game.companionBook && game.companionBook[x]).length, pct = (Math.floor(got / ids.length * 1000) / 10).toFixed(1);
+      ov.querySelector('.hgm-book').innerHTML = `📖 仲間図鑑 <b>${got} / ${ids.length}</b>（${pct}%）${bookNew ? '<em>NEW +1</em>' : ''}<i style="--p:${pct}%"></i>`; }
     thump(110, 42, 0.4, 0.8); noiseSweep(1.2, 9000, 3000, 'highpass', 0.7, 0.35); playTone(1047, 0.12, 'square', 0.06, 1568); // ドラムロールの締めの「ドン！シャーン！」
     hireGachaHush = false; hireGachaBgmOn = true; refreshBgm(); // 決まった瞬間にお祝いの曲へ
     setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 400);

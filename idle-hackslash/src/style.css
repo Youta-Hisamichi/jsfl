@@ -4347,3 +4347,12 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hgm-title, #hireGachaModal .hgm-stage, #hireGachaModal .hgm-res, #hireGachaModal .hgm-btns { position: relative; z-index: 1; }
 #hireGachaModal .hgm-res { width: 100%; text-align: center; }
 #hireGachaModal .hgm-line { text-align: center; }
+/* 採用ガチャ：結果に仲間図鑑の進み具合（ダイアログは少し縦長に） */
+#hireGachaModal .hgm-panel { height: calc(var(--sq) * 1.14) !important; }
+#hireGachaModal .hgm-book { position: relative; margin: calc(var(--sq) * 0.025) auto 0; width: 86%; padding: 3px 8px 7px; border: 1px solid rgba(217,169,63,0.7); border-radius: 8px; background: rgba(0,0,0,0.35); font-size: calc(var(--sq) * 0.04); color: #d6def2; text-shadow: 0 1px 2px #000; overflow: hidden; }
+#hireGachaModal .hgm-book:empty { display: none; }
+#hireGachaModal .hgm-book b { color: #fff; }
+#hireGachaModal .hgm-book em { margin-left: 6px; padding: 0 5px; border-radius: 4px; background: #ff4d6d; color: #fff; font-style: normal; font-weight: 900; font-size: 0.85em; }
+#hireGachaModal .hgm-book i { position: absolute; left: 0; bottom: 0; height: 4px; width: var(--p); background: linear-gradient(90deg, #ffd76b, #ff9a3c); }
+#hireGachaModal .hgm-book { white-space: nowrap; font-size: calc(var(--sq) * 0.037); }
+#hireGachaModal .hgm-book em { white-space: nowrap; margin-left: 4px; }

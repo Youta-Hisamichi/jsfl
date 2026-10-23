@@ -652,12 +652,12 @@ function playSongNote(time, freq, dur, type, gain, dest) {
   osc.start(time); osc.stop(time + dur);
 }
 // 曲ごとのエコー（残響）：song.echo = { time: 秒, feedback: 0〜1, wet: 0〜1 }
-function makeSongEchoBus(echo) {
+function makeSongEchoBus(echo, out = audioCtx.destination) {
   const input = audioCtx.createGain(), delay = audioCtx.createDelay(2), fb = audioCtx.createGain(), wet = audioCtx.createGain(), tone = audioCtx.createBiquadFilter();
   delay.delayTime.value = echo.time; fb.gain.value = echo.feedback; wet.gain.value = echo.wet;
   tone.type = 'lowpass'; tone.frequency.value = echo.tone || 2600; // 跳ね返りはこもらせて奥行きを出す
-  input.connect(audioCtx.destination);
-  input.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay); tone.connect(wet); wet.connect(audioCtx.destination);
+  input.connect(out);
+  input.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay); tone.connect(wet); wet.connect(out);
   input.echoNodes = [input, delay, fb, wet, tone]; // 曲を止めたら切り離す（つないだままだとフィードバックのループが残り続け、長時間でどんどん重くなる）
   return input;
 }
@@ -666,7 +666,7 @@ function releaseSongEchoBus(bus) {
   const nodes = bus.echoNodes; bus.echoNodes = null;
   setTimeout(() => nodes.forEach(n => { try { n.disconnect(); } catch (e) {} }), 1500); // 残響が消えるまで少し待ってから
 }
-function playSongDrum(time, kind, boost = 1, kickDest) {
+function playSongDrum(time, kind, boost = 1, kickDest, out = audioCtx.destination) {
   const v = bgmVol();
   if (v <= 0) return;
   if (kind === 'k') { // キック：低い音が急に下がる「ドン」（boost で太く長く）
@@ -675,7 +675,7 @@ function playSongDrum(time, kind, boost = 1, kickDest) {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(140, time); osc.frequency.exponentialRampToValueAtTime(boost > 1 ? 34 : 42, time + 0.12 * boost);
     g.gain.setValueAtTime(Math.min(0.5, 0.28 * boost) * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + len);
-    osc.connect(g); g.connect(kickDest || audioCtx.destination); osc.start(time); osc.stop(time + len + 0.01);
+    osc.connect(g); g.connect(kickDest || out); osc.start(time); osc.stop(time + len + 0.01);
     return;
   }
   const dur = kind === 's' ? 0.12 : 0.035;
@@ -687,13 +687,14 @@ function playSongDrum(time, kind, boost = 1, kickDest) {
   const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = kind === 's' ? 1400 : 7000;
   const g = audioCtx.createGain();
   g.gain.setValueAtTime((kind === 's' ? 0.13 : 0.045) * v, time); g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
-  src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(time);
+  src.connect(f); f.connect(g); g.connect(out); src.start(time);
 }
 let songTimer = null, songState = null;
 function startSong(type, startStep = 0) {
   const song = prepareSong(BGM_SONGS[type]);
   stopSong();
-  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, baseStepDur: 60 / song.bpm / 2, stepDur: 60 / song.bpm / 2, tempo: 1, bus: song.echo ? makeSongEchoBus(song.echo) : null, lowBus: song.lowEcho ? makeSongEchoBus(song.lowEcho) : null }; // lowEcho：重低音だけ長く響かせる残響
+  songState = { song, step: startStep % song.length, next: audioCtx.currentTime + 0.05, baseStepDur: 60 / song.bpm / 2, stepDur: 60 / song.bpm / 2, tempo: 1, out: null, bus: null, lowBus: null };
+  { const s = songState; s.out = audioCtx.createGain(); s.out.connect(audioCtx.destination); s.bus = song.echo ? makeSongEchoBus(song.echo, s.out) : null; s.lowBus = song.lowEcho ? makeSongEchoBus(song.lowEcho, s.out) : null; } // 曲の出口（すぐ止めたいときはここを絞る） // lowEcho：重低音だけ長く響かせる残響
   const tick = () => {
     const s = songState;
     if (!s) return;
@@ -702,9 +703,9 @@ function startSong(type, startStep = 0) {
     s.stepDur = s.baseStepDur / s.tempo;
     if (s.next < audioCtx.currentTime + 0.01) s.next = audioCtx.currentTime + 0.03; // 処理が詰まって遅れたときは、過去の時刻に鳴らさず少し先から続ける（ブツッという音を防ぐ）
     while (s.next < audioCtx.currentTime + 0.3) {
-      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, ev.low && s.lowBus ? s.lowBus : s.bus));
+      for (const ev of s.song.byStep[s.step]) ev.freqs.forEach(fq => playSongNote(s.next, fq, ev.len * s.stepDur, ev.type, ev.gain, ev.low && s.lowBus ? s.lowBus : (s.bus || s.out)));
       const dr = s.song.drumSteps[s.step];
-      if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost, s.lowBus);
+      if (dr && dr !== '-') for (const ch of dr) playSongDrum(s.next, ch, s.song.kickBoost, s.lowBus, s.out);
       s.next += s.stepDur;
       s.step = (s.step + 1) % s.song.length;
     }
@@ -723,7 +724,16 @@ function getBossPinchTempo() {
   if (bossTimerFor) for (const [lim, m] of PINCH_TEMPO_TIME) if (bossTimeLeftMs <= lim) { t = Math.max(t, m); break; }
   return t;
 }
-function stopSong() { clearInterval(songTimer); songTimer = null; if (songState) { releaseSongEchoBus(songState.bus); releaseSongEchoBus(songState.lowBus); } songState = null; }
+function stopSong(hard) {
+  clearInterval(songTimer); songTimer = null;
+  if (songState) {
+    const out = songState.out;
+    if (hard && out) { const t = audioCtx.currentTime; out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + 0.04); setTimeout(() => { try { out.disconnect(); } catch (e) {} }, 200); } // 先に予約した音や残響もすぐ消す
+    else if (out) setTimeout(() => { try { out.disconnect(); } catch (e) {} }, 1600);
+    releaseSongEchoBus(songState.bus); releaseSongEchoBus(songState.lowBus);
+  }
+  songState = null;
+}
 let bgmTimer = null;
 let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
@@ -961,11 +971,11 @@ document.getElementById('dbgNowBgm').addEventListener('click', () => { // 押す
   d.style.display = d.style.display === 'none' ? '' : 'none';
   updateDebugNowBgm();
 });
-function stopBgm() {
+function stopBgm(hard) {
   bgmToken++;
   currentBgmType = null;
   clearTimeout(bgmTimer);
-  stopSong();
+  stopSong(hard);
   updateDebugNowBgm();
 }
 function playUiTapSound() { playTone(880, 0.045, 'triangle', 0.08, 1320); }
