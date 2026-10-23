@@ -3307,6 +3307,7 @@ setInterval(() => {
     secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
     if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
     try { localStorage.setItem('recTab', key); } catch (e) {}
+    if (key !== 'bgm' && typeof bgmBookPreview !== 'undefined' && bgmBookPreview) { bgmBookPreview = null; renderBgmBook(); } // 図鑑の試聴は、上のタブを切り替えたら止めて戦績の曲に戻す
     if (typeof refreshBgm === 'function') refreshBgm(); // BGM図鑑だけ専用の曲
   };
   tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.recTab)));

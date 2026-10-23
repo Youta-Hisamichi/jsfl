@@ -825,7 +825,8 @@ function renderBgmBook() {
   const list = document.getElementById('bgmBookList');
   if (!list) return;
   const book = game.bgmBook || {};
-  document.getElementById('bgmBookCount').textContent = `${BGM_INFO.filter(b => book[b.key]).length} / ${BGM_INFO.length}`;
+  const got = BGM_INFO.filter(b => book[b.key]).length;
+  document.getElementById('bgmBookCount').textContent = `${got} / ${BGM_INFO.length}（${(Math.floor(got / BGM_INFO.length * 1000) / 10).toFixed(1)}%）`; // 敵図鑑と同じく％も出す
   list.innerHTML = BGM_INFO.map(b => {
     const got = book[b.key];
     if (!got) return `<div class="bgm-book-row locked"><div class="bb-info"><div class="bb-name">？？？</div><div class="bb-desc">${BATTLE_BGM_KEYS[b.key] ? 'この曲が流れるステージをクリアすると登録' : 'このページを開いて聴くと登録'}</div></div></div>`;
