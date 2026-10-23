@@ -4303,3 +4303,17 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .hgm-again { border: 2px solid #ffe08a; background: linear-gradient(180deg, #ffcf4a, #e8901a); color: #3a1c00; box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 3px 0 #8a4a08; }
 .hgm-close { border: 2px solid #8a9cc0; background: linear-gradient(180deg, #2c3e72, #15214a); color: #fff; box-shadow: 0 3px 0 #0a1230; }
 .hgm-btns button:active { transform: translateY(2px); }
+/* 採用ガチャ：画面全体を切り替えてルーレットだけを見せる（ヘッダー・下のタブも隠す） */
+#hireGachaModal { position: fixed !important; inset: 0 !important; z-index: 300 !important; padding: 0 !important; display: none; align-items: stretch !important; justify-content: stretch !important; background: radial-gradient(ellipse at 50% 40%, #2a2f7a, #0a0f2e 70%, #05081a) !important; backdrop-filter: none !important; }
+#hireGachaModal.show { display: flex !important; }
+#hireGachaModal .hgm-panel { width: 100% !important; height: 100% !important; max-height: none !important; margin: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px calc(24px + env(safe-area-inset-bottom)) !important; box-sizing: border-box; }
+#hireGachaModal .hgm-title { font-size: 1.8rem; margin-bottom: 18px; }
+#hireGachaModal .hgm-stage { height: 300px; width: 100%; }
+#hireGachaModal .hgm-rays { width: 560px; height: 560px; margin: -280px 0 0 -280px; }
+#hireGachaModal .hgm-roll { width: 210px; height: 210px; border-width: 5px; border-radius: 24px; }
+#hireGachaModal .hgm-res { min-height: 120px; margin-top: 14px; }
+#hireGachaModal .hgm-stars { font-size: 1.5rem; }
+#hireGachaModal .hgm-name { font-size: 2rem; }
+#hireGachaModal .hgm-line { font-size: 1rem; }
+#hireGachaModal .hgm-btns { width: min(360px, 100%); margin-top: 18px; }
+#hireGachaModal .hgm-btns button { padding: 14px 0; font-size: 1.05rem; }
