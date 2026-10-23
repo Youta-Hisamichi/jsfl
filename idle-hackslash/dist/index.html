@@ -79,7 +79,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 
     <div class="stage-bar-row">
     <div class="exp-wrap">
-      <div class="exp-label" style="justify-content:center; gap:6px;"><span class="stage-floor"><small>ステージ</small><span><b id="stageNum">1</b></span></span><span class="stage-boss-txt"><span id="stageToBoss">ボスまで</span> <span id="stageProgressText">1 / 10</span></span></div>
+      <div class="exp-label" style="justify-content:center; gap:6px;"><span class="stage-floor"><small>ステージ</small><span><b id="stageNum">1</b></span></span><span class="stage-boss-txt"><span id="stageToBoss">ボスまで</span> <span id="stageProgressText">1 / 10</span><button class="auto-toggle-btn" id="autoBossBtn" style="display:none;">🔁 自動再戦 ON</button></span></div>
       <div class="stage-gauge-row">
       <div class="stage-track-wrap">
         <div class="exp-track"><div class="exp-fill" id="stageProgressFill" style="background:linear-gradient(90deg,#ffb14f,#ff8a4f);"></div></div>
@@ -157,9 +157,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
     </div>
 
     <div class="battle-cmd-row">
-    <div class="boss-retry-row">
-      <button class="auto-toggle-btn" id="autoBossBtn" style="display:none;">🔁 自動再戦 ON</button>
-    </div>
     </div>
     <button class="skill-set-btn" id="skillSetBtn" style="display:none;">🎒 スキル入れ替え</button>
     <div class="cmd-bar">

@@ -4193,3 +4193,12 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .stage-side-slot #bossRetireBtn { width: 64px; height: auto; aspect-ratio: 357 / 151; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
 .stage-side-slot > button:active { transform: scale(0.92); }
 @keyframes brPulse { from { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 4px rgba(255,60,160,0.4)); } to { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(255,60,160,0.9)); } }
+/* 自動再戦：ステージ進捗バーの「ボスまで」の位置に小さく置く（ボス再戦まちの文字の代わり） */
+.exp-wrap .stage-boss-txt #autoBossBtn { display: inline-flex; align-items: center; gap: 0.3em; vertical-align: middle; margin: -0.35em 0 -0.3em 0; padding: 0.15em 0.8em 0.15em 0.55em; border: 1px solid #8a9cc0; border-radius: 999px; background: linear-gradient(180deg, #1b2c52, #0a1226); box-shadow: 0 1px 3px rgba(0,0,0,0.6); color: #fff; font: inherit; font-size: 1em; font-weight: 900; line-height: 1.15; text-shadow: 0 1px 2px #000; white-space: nowrap; cursor: pointer; pointer-events: auto; }
+.exp-wrap .stage-boss-txt #autoBossBtn::before { content: ''; width: 1.25em; height: 1.2em; background: var(--ui2-autoicon) center / contain no-repeat; }
+.exp-wrap .stage-boss-txt #autoBossBtn[style*="none"] { display: none !important; }
+.exp-wrap .stage-boss-txt #autoBossBtn .ab-on { color: #ffd23c; }
+.exp-wrap .stage-boss-txt #autoBossBtn .ab-off { color: #c8ccd8; }
+.exp-wrap .stage-boss-txt #autoBossBtn small { font-size: 0.85em; font-weight: 800; color: #e6ecfa; margin-left: 0.2em; }
+.exp-wrap .stage-boss-txt #autoBossBtn.off { opacity: 0.85; }
+.exp-wrap .stage-boss-txt #autoBossBtn.off::before { filter: grayscale(1) brightness(0.8); }
