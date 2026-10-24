@@ -4403,3 +4403,22 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 /* 採用ガチャ：図鑑の欄を新しい枠に合わせて、文字とバーが重ならないように */
 #hireGachaModal .hg2-book { left: 9.5%; width: 81.2%; top: 77.7%; height: 7.9%; padding-bottom: 1.6cqw; box-sizing: border-box; }
 #hireGachaModal .hg2-book i { left: 4%; bottom: 20%; height: 0.8cqw; width: calc(var(--p) * 0.92); max-width: 92%; }
+/* 採用ガチャ結果：レア度で背景の色を変える（パネルの中のキャラの背景・後光も同じ色に） */
+#hireGachaModal { transition: background 0.4s; }
+#hireGachaModal[data-rar="common"] { background: radial-gradient(ellipse at 50% 40%, #4a5470, #1a2033 65%, #0b0e18) !important; }
+#hireGachaModal[data-rar="rare"] { background: radial-gradient(ellipse at 50% 40%, #1f7fd0, #0b3570 60%, #051634) !important; }
+#hireGachaModal[data-rar="epic"] { background: radial-gradient(ellipse at 50% 40%, #9a4de0, #45157a 60%, #1a0636) !important; }
+#hireGachaModal[data-rar="legendary"] { background: radial-gradient(ellipse at 50% 40%, #e8a52a, #7a4208 60%, #2e1502) !important; }
+#hireGachaModal[data-rar="mythic"] { background: radial-gradient(ellipse at 50% 40%, #ff4d6d, #8a1040 45%, #2a0630 75%, #0c0214) !important; }
+#hireGachaModal[data-rar] .hg2-panel.hit .hg2-bg { background: radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--rc) 70%, #fff), color-mix(in srgb, var(--rc) 55%, #0b1a50) 55%, color-mix(in srgb, var(--rc) 25%, #050a24)); }
+#hireGachaModal[data-rar] .hg2-panel.hit .hg2-glow { filter: drop-shadow(0 0 0 transparent) hue-rotate(var(--hgh, 0deg)) saturate(1.2); }
+#hireGachaModal[data-rar="common"] .hg2-panel.hit .hg2-glow { filter: grayscale(1) brightness(1.1); }
+#hireGachaModal[data-rar="epic"] .hg2-panel.hit .hg2-glow { --hgh: 60deg; }
+#hireGachaModal[data-rar="legendary"] .hg2-panel.hit .hg2-glow { --hgh: 180deg; }
+#hireGachaModal[data-rar="mythic"] .hg2-panel.hit .hg2-glow { --hgh: 120deg; }
+/* パネルの紺の部分だけをレア度の色に染める（金の縁やボタンはそのまま） */
+#hireGachaModal .hg2-tint { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s; -webkit-mask: url(assets/img/ui/hire/tintmask.webp) center / 100% 100% no-repeat; mask: url(assets/img/ui/hire/tintmask.webp) center / 100% 100% no-repeat; mix-blend-mode: color; }
+#hireGachaModal[data-rar="common"] .hg2-tint { opacity: 0.85; background: #8a90a0; }
+#hireGachaModal[data-rar="epic"] .hg2-tint { opacity: 0.9; background: #9b3ff0; }
+#hireGachaModal[data-rar="legendary"] .hg2-tint { opacity: 0.9; background: #e09a10; }
+#hireGachaModal[data-rar="mythic"] .hg2-tint { opacity: 0.9; background: linear-gradient(160deg, #ff3d7a, #c43dff 50%, #ff8a2a); }

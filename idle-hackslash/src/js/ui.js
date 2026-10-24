@@ -1366,9 +1366,10 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
   // 見本の絵（下地）に、キャラ・★・名前・文字だけを重ねる
-  ov.innerHTML = `<div class="hg2-panel"><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
+  ov.innerHTML = `<div class="hg2-panel"><div class="hg2-tint"></div><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
     <div class="hg2-stars"></div><div class="hg2-name">抽選中…</div><div class="hg2-line">タップでスキップ</div><div class="hg2-book"></div>
     <button class="hg2-btn hg2-again" aria-label="もう1回"></button><button class="hg2-btn hg2-close" aria-label="閉じる"></button><div class="hg2-btncover"></div></div>`;
+  ov.dataset.rar = '';
   ov.classList.add('show');
   const panel = ov.querySelector('.hg2-panel'), roll = ov.querySelector('.hg2-char'), btns = ov.querySelector('.hg2-btncover');
   let n = 0, timer = null, done = false;
@@ -1376,7 +1377,7 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
     if (done) return; done = true; clearTimeout(timer); clearInterval(heart);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
     roll.innerHTML = companionIconHtml(id);
-    panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
+    panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity); ov.dataset.rar = c.rarity; // 背景の色をレア度で変える
     ov.querySelector('.hg2-stars').innerHTML = rarityStarsImg(c.rarity);
     ov.querySelector('.hg2-name').textContent = c.name;
     ov.querySelector('.hg2-line').innerHTML = dup ? `<span class="hg2-dup">強化${hireNth}体目！</span> 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<span class="hg2-new">採用！</span>`;
