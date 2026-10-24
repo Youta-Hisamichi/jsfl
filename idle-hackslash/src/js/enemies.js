@@ -1404,7 +1404,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     if (r < 0.6) { const c = coinsFor(0.9); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🛢️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
     else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'ice') { // 氷：経験値（たまにHP回復）
-    spawnExpGems(o.x, o.y, 10); spawnDamageText(x, y, '🧊 パリーン！', '#bfeaff', 0.018, true);
+    spawnExpGems(o.x, o.y, 10);
     if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
     spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
