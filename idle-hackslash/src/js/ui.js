@@ -1366,7 +1366,7 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
   // 見本の絵（下地）に、キャラ・★・名前・文字だけを重ねる
-  ov.innerHTML = `<div class="hg2-panel"><div class="hg2-tint"></div><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
+  ov.innerHTML = `<div class="hg2-panel"><div class="hg2-tint"></div><div class="hg2-bigglow"><i></i></div><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
     <div class="hg2-stars"></div><div class="hg2-name">抽選中…</div><div class="hg2-line">タップでスキップ</div><div class="hg2-book"></div>
     <button class="hg2-btn hg2-again" aria-label="もう1回"></button><button class="hg2-btn hg2-close" aria-label="閉じる"></button><div class="hg2-btncover"></div></div>`;
   ov.dataset.rar = '';
