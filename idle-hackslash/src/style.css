@@ -4476,3 +4476,5 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.9; }
 #hireGachaModal .hg2-bigglow { opacity: 0.22 !important; }
 #hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.42 !important; }
+/* 結果が決まったら後光の回転を速く */
+#hireGachaModal .hg2-panel.hit .hg2-bigglow i { animation-duration: 5s !important; }
