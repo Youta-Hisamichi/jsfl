@@ -1624,7 +1624,7 @@ function checkLoginBonus(awayMs) {
     orb.className = 'lb-orb burst';
     panel.classList.add('revealed');
     panel.classList.remove('r-common', 'r-rare', 'r-epic', 'r-legendary'); panel.classList.add('r-' + r);
-    rarityEl.innerHTML = (withUp ? '<span class="up">⬆ 昇格！！</span>' : '') + `${rarityStars(r)} ${LOGIN_RARITY_TITLES[r]}`;
+    rarityEl.innerHTML = (withUp ? '<span class="up">⬆ 昇格！！</span>' : '') + `${rarityStarsImg(r)} ${LOGIN_RARITY_TITLES[r]}`;
     rarityEl.className = 'lb-rarity'; void rarityEl.offsetWidth; rarityEl.className = 'lb-rarity pop';
     playGachaSound(r);
   };
