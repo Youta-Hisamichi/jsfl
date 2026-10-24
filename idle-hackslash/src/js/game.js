@@ -1460,6 +1460,7 @@ function giveUpSkipChallenge() {
 document.getElementById('bossRetryBtn').addEventListener('click', () => retryBoss());
 document.getElementById('autoBossBtn').addEventListener('click', () => { game.autoBossRetry = game.autoBossRetry === false; updateBossRetryBtn(); saveGame(); });
 stageSkipBtn.addEventListener('click', event => {
+  if (!isTowerUnlocked()) { showTapError(`🔒 ステージ${TOWER_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
   if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
   if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今は塔に挑めません', event.clientX, event.clientY); return; }
   playTowerGateSound();
