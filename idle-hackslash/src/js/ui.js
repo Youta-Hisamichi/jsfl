@@ -1393,7 +1393,7 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
     if (done) return;
     if (n >= 22) { finish(); return; }
     const cur = pool[Math.floor(Math.random() * pool.length)];
-    roll.innerHTML = companionIconHtml(cur);
+    roll.innerHTML = companionIconHtml(cur); ov.querySelector('.hg2-stars').innerHTML = rarityStarsImg(COMPANIONS[cur].rarity); // シャッフル中も今の顔のレア度の★
     roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
     playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
     n++; timer = setTimeout(tick, 45 + n * n * 0.6);
