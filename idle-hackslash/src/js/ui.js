@@ -1375,7 +1375,7 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
   const panel = ov.querySelector('.hg2-panel'), roll = ov.querySelector('.hg2-char'), btns = ov.querySelector('.hg2-btncover');
   let n = 0, timer = null, done = false;
   const starsEl = ov.querySelector('.hg2-stars'); let lastStar = -1;
-  const starTimer = setInterval(() => { let r; do r = Math.floor(Math.random() * 5); while (r === lastStar); lastStar = r; starsEl.innerHTML = rarityStarsImg(RARITY_ORDER[r]); }, 70); // シャッフル中の★はキャラと関係なくランダムに変わり続ける
+  const starTimer = setInterval(() => { lastStar = (lastStar + 1) % 5; starsEl.innerHTML = rarityStarsImg(RARITY_ORDER[lastStar]); }, 70); // シャッフル中の★はキャラと関係なく 1→2→3→4→5→1… と順番に
   const finish = () => {
     if (done) return; done = true; clearTimeout(timer); clearInterval(heart); clearInterval(starTimer);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
