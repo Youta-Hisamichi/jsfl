@@ -1048,6 +1048,7 @@ function completeReincarnation() {
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
+  game.skillSlots = 1; game.weaponSlots = 1; game.companionSlots = 1; // スキル・サブウェポン・パーティの枠も転生でリセット
   if (!document.getElementById('powerUpModal').classList.contains('show')) powerUpPending = false;
   renderLvGauge(); // ゲージの長さもすぐ0に戻す
   coinFx = []; coinDisplayHold = 0; // 飛んでいる途中のコインも転生で消える

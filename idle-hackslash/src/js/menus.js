@@ -313,7 +313,7 @@ function pickCompanionId() {
 }
 const COMPANION_PARTY_MAX = 8; // パーティ枠の最大（ジェムで拡張できる上限）
 function getPartyLimit() { return Math.max(1, Math.min(COMPANION_PARTY_MAX, game.companionSlots || 1)); }
-function getPartySlotCost() { return gemPrice(10 * Math.pow(2, getPartyLimit() - 1)); } // 10→20→40→80→160→320→640
+function getPartySlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
 function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
 function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
 function grantCompanion(id) {
@@ -1193,7 +1193,7 @@ function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
 // サブウェポンの装備枠（最初は1つ。ジェムで増やせて転生後も継続）
 const WEAPON_SLOT_MAX = 4;
 function getWeaponSlots() { return Math.max(1, Math.min(WEAPON_SLOT_MAX, game.weaponSlots || 1)); }
-function getWeaponSlotCost() { return gemPrice(20 * Math.pow(2, getWeaponSlots() - 1)); } // 20→40→80
+function getWeaponSlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
 function getEquippedWeapons() {
   if (!Array.isArray(game.equippedWeapons)) game.equippedWeapons = Object.keys(WEAPONS).filter(getWeaponLv).slice(0, getWeaponSlots()); // 旧セーブは持っている物から枠の数だけ
   game.equippedWeapons = game.equippedWeapons.filter(id => WEAPONS[id] && getWeaponLv(id));

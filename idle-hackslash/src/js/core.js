@@ -755,9 +755,9 @@ function simpleChoice(o) { // 軽い2択ダイアログ
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキルポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 // ピックアップ採用券はショップから外した（持っている券は今までどおり使える）
-SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生しても残る）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
-SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
-SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生でリセット）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
+SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える（転生でリセット）', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える（転生でリセット）', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
@@ -1138,14 +1138,14 @@ const game = {
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
   totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
-  skillSlots: 1, equippedSkills: [], weaponSlots: 1, // サブウェポン枠（ジェムで最大4・転生しても残る）
-  // スキル枠（ジェムで最大7）と装備中のスキル（転生しても残る）
+  skillSlots: 1, equippedSkills: [], weaponSlots: 1, // サブウェポン枠（ジェム1個ずつ最大4・転生でリセット）
+  // スキル枠（ジェム1個ずつ最大7・転生でリセット）と装備中のスキル
   skillLevels: {}, skillGachaPulls: 0, weaponGachaPulls: 0, skillGachaOffer: null, // スキルガチャ（Lv・今周回の回数・選択待ちの候補）
   bestiary: {}, // 敵図鑑 { key: { kills, firstStage } }（転生しても残る）
   bgmBook: {}, // BGM図鑑 { 曲キー: 登録したステージ }（転生しても残る）
   tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
   tacklePierceLv: 0, // ジェムショップ「貫きの蹄鉄」の購入数（タックルのヒット後持続 +0.1秒ずつ）
-  companionSlots: 1, // 仲間のパーティ枠（ジェムで最大8まで。転生しても残る）
+  companionSlots: 1, // 仲間のパーティ枠（ジェム1個ずつ最大8まで。転生でリセット）
   subscriptions: {}, // サブスク（紋章）の有効期限 { hero: 時刻, veteran: 時刻 }
   rebirthOfferSlots: 3, // 転生ショップの商品枠（ジェムで最大10まで増やせる。転生しても残る）
   rebirthSeenItems: {}, rebirthShopNew: [], rebirthRerolls: 0, // 転生ショップ：一度並んだ商品 / 今回のNEW / 今回の引き直し回数
@@ -1367,7 +1367,7 @@ function renderShopList() {
 }
 const SKILL_SLOT_MAX = 7;
 function getSkillSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
-function getSkillSlotCost() { return gemPrice(20 * Math.pow(2, getSkillSlots() - 1)); } // 20→40→80→160→320→640
+function getSkillSlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
 function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equippedSkills = []; if (game.equippedSkills.some(id => !SKILL_GACHA_SKILLS[id])) game.equippedSkills = game.equippedSkills.filter(id => SKILL_GACHA_SKILLS[id]); return game.equippedSkills; }
 function isSkillEquipped(id) { return getEquippedSkills().includes(id); }
 const SKILL_ORDER = Object.keys(SKILL_GACHA_SKILLS);
