@@ -4470,3 +4470,7 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hg2-bigglow::after { content: ''; position: absolute; left: 50%; top: 36%; width: 80%; aspect-ratio: 1; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(220,240,255,0.55), rgba(120,180,255,0.18) 45%, transparent 70%); }
 /* 後光の筋を太く（前の版のように、ほぼ半分が光の帯） */
 #hireGachaModal .hg2-bigglow i { width: 190% !important; background: repeating-conic-gradient(from 0deg, rgba(150,205,255,0.06) 0deg, rgba(170,215,255,0.5) 2.5deg, rgba(225,242,255,0.7) 5deg, rgba(170,215,255,0.5) 7.5deg, rgba(150,205,255,0.06) 10deg, rgba(150,205,255,0.06) 18deg) !important; -webkit-mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.55) 55%, transparent 72%) !important; mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.55) 55%, transparent 72%) !important; }
+/* 後光：いただいた光の画像に差し替え（加算合成・キャラや文字より後ろ） */
+#hireGachaModal .hg2-bigglow i { width: 150% !important; top: 36% !important; border-radius: 0 !important; background: url(assets/img/ui/hire/burst.webp) center / contain no-repeat !important; -webkit-mask: none !important; mask: none !important; }
+#hireGachaModal .hg2-bigglow::after { display: none; }
+#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.9; }
