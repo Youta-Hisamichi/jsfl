@@ -1344,7 +1344,9 @@ function hireGachaDraw(ev) { // ジェムを払って1人決める（結果は�
     game.summonGuarantee = game.summonGuarantee.filter(x => x !== id); game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
   }
   saveGame(); updateStatsUI();
-  return { id, dup, pool, bookNew };
+  if (!game.hireCounts) game.hireCounts = {};
+  const hireNth = game.hireCounts[id] = (game.hireCounts[id] || (dup ? 1 : 0)) + 1; // この仲間が出たのは何体目か（ダブりの表示用）
+  return { id, dup, pool, bookNew, hireNth };
 }
 function playDrumRollHit(v) { // ドラムロールの1打（スネアの短いノイズ＋胴鳴り）
   if (!audioCtx) return;
@@ -1357,48 +1359,47 @@ function playDrumRollHit(v) { // ドラムロールの1打（スネアの短い�
   const o = audioCtx.createOscillator(), og = audioCtx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.05);
   og.gain.setValueAtTime(0.12 * v * vol, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06); o.connect(og); og.connect(audioCtx.destination); o.start(t); o.stop(t + 0.07);
 }
-function openHireGachaDialog({ id, dup, pool, bookNew }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
+function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
   hireGachaRolling = true;
   hireGachaBgmOn = false; hireGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止めて（残響も）、ドラムロール
   let beat = 0; const heart = setInterval(() => { beat++; playDrumRollHit(Math.min(1, 0.25 + beat * 0.012)); }, 55); // ダララララ…とだんだん大きく
   let ov = document.getElementById('hireGachaModal');
   if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
-  ov.innerHTML = `<div class="modal-panel hgm-panel"><div class="hgm-rays"></div><div class="hgm-title">🎰 採用ガチャ</div>
-    <div class="hgm-stage"><div class="hgm-roll"></div></div>
-    <div class="hgm-res"><div class="hgm-stars">　</div><div class="hgm-name">抽選中…</div><div class="hgm-line">タップでスキップ</div><div class="hgm-book"></div></div>
-    <div class="hgm-btns"><button class="hgm-again">もう1回 <b>💎${HIRE_GACHA_GEMS}</b></button><button class="hgm-close">閉じる</button></div></div>`;
+  // 見本の絵（下地）に、キャラ・★・名前・文字だけを重ねる
+  ov.innerHTML = `<div class="hg2-panel"><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
+    <div class="hg2-stars"></div><div class="hg2-name">抽選中…</div><div class="hg2-line">タップでスキップ</div><div class="hg2-book"></div>
+    <button class="hg2-btn hg2-again" aria-label="もう1回"></button><button class="hg2-btn hg2-close" aria-label="閉じる"></button><div class="hg2-btncover"></div></div>`;
   ov.classList.add('show');
-  const panel = ov.querySelector('.hgm-panel'), roll = ov.querySelector('.hgm-roll'), btns = ov.querySelector('.hgm-btns');
-  btns.style.visibility = 'hidden';
+  const panel = ov.querySelector('.hg2-panel'), roll = ov.querySelector('.hg2-char'), btns = ov.querySelector('.hg2-btncover');
   let n = 0, timer = null, done = false;
   const finish = () => {
     if (done) return; done = true; clearTimeout(timer); clearInterval(heart);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
-    roll.innerHTML = companionIconHtml(id); roll.style.setProperty('--rc', rar.color);
+    roll.innerHTML = companionIconHtml(id);
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity);
-    ov.querySelector('.hgm-stars').innerHTML = rarityStarsImg(c.rarity);
-    ov.querySelector('.hgm-name').textContent = c.name;
-    ov.querySelector('.hgm-line').innerHTML = dup ? `ダブり！ 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><br><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<b>採用！</b>`;
+    ov.querySelector('.hg2-stars').innerHTML = rarityStarsImg(c.rarity);
+    ov.querySelector('.hg2-name').textContent = c.name;
+    ov.querySelector('.hg2-line').innerHTML = dup ? `<span class="hg2-dup">強化${hireNth}体目！</span> 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<span class="hg2-new">採用！</span>`;
     { const ids = Object.keys(COMPANIONS), got = ids.filter(x => game.companionBook && game.companionBook[x]).length, pct = (Math.floor(got / ids.length * 1000) / 10).toFixed(1);
-      ov.querySelector('.hgm-book').innerHTML = `📖 仲間図鑑 <b>${got} / ${ids.length}</b>（${pct}%）${bookNew ? '<em>NEW +1</em>' : ''}<i style="--p:${pct}%"></i>`; }
+      ov.querySelector('.hg2-book').innerHTML = `<span>📖 仲間図鑑 <b>${got} / ${ids.length}</b>（${pct}%）${bookNew ? '<em>NEW +1</em>' : ''}</span><i style="--p:${pct}%"></i>`; }
     thump(110, 42, 0.4, 0.8); noiseSweep(1.2, 9000, 3000, 'highpass', 0.7, 0.35); playTone(1047, 0.12, 'square', 0.06, 1568); // ドラムロールの締めの「ドン！シャーン！」
     hireGachaHush = false; hireGachaBgmOn = true; refreshBgm(); // 決まった瞬間にお祝いの曲へ
-    setTimeout(() => { btns.style.visibility = ''; hireGachaRolling = false; }, 400);
+    setTimeout(() => { btns.style.display = 'none'; hireGachaRolling = false; }, 400);
     const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
   };
   const tick = () => {
     if (done) return;
     if (n >= 22) { finish(); return; }
     const cur = pool[Math.floor(Math.random() * pool.length)];
-    roll.innerHTML = companionIconHtml(cur); roll.style.setProperty('--rc', RARITY_INFO[COMPANIONS[cur].rarity].color);
+    roll.innerHTML = companionIconHtml(cur);
     roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
     playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
     n++; timer = setTimeout(tick, 45 + n * n * 0.6);
   };
-  ov.onclick = e => { if (!done && !e.target.closest('.hgm-btns')) finish(); }; // 回っている間はどこをタップしても結果へ
+  ov.onclick = e => { if (!done) finish(); }; // 回っている間はどこをタップしても結果へ
   const close = () => { ov.classList.remove('show'); clearInterval(heart); hireGachaHush = false; hireGachaBgmOn = false; refreshBgm(); };
-  ov.querySelector('.hgm-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
-  ov.querySelector('.hgm-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
+  ov.querySelector('.hg2-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
+  ov.querySelector('.hg2-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
   tick();
 }
 document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);

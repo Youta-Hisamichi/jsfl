@@ -4367,3 +4367,34 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 /* 帰還ボーナス：上の段階（10分〜1日）の並びは出さない */
 #lbDays { display: none !important; }
 #lbPanel .lb-chip { text-align: center !important; }
+/* 採用ガチャの結果画面（見本の絵を下地に、キャラ・★・名前・文字だけ重ねる） */
+#hireGachaModal .hg2-panel { --rc: #6fd0ff; position: relative; container-type: inline-size; width: min(94vw, 430px, calc(92dvh * 1164 / 1327)); aspect-ratio: 1164 / 1327; background: url(assets/img/ui/hire/panel.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7)); color: #fff; text-align: center; user-select: none; }
+#hireGachaModal .hg2-portrait { position: absolute; left: 27.5%; top: 17%; width: 45.5%; height: 34.8%; }
+#hireGachaModal .hg2-bg { position: absolute; inset: 3%; border-radius: 6cqw; background: radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--rc) 35%, #2a6ee8), #0b2a7a 60%, #071a52); overflow: hidden; }
+#hireGachaModal .hg2-glow { position: absolute; left: 50%; top: 46%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/hire/glow.webp) center / contain no-repeat; opacity: 0.55; animation: hg2Spin 14s linear infinite; pointer-events: none; }
+#hireGachaModal .hg2-panel.hit .hg2-glow { opacity: 1; animation-duration: 8s; }
+@keyframes hg2Spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+#hireGachaModal .hg2-char { position: absolute; inset: 6% 6% 3%; display: flex; align-items: center; justify-content: center; }
+#hireGachaModal .hg2-char img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1.2cqw 1.2cqw rgba(0,0,0,0.45)); }
+#hireGachaModal .hg2-char.flip { animation: hgmFlip 0.12s ease-out; }
+#hireGachaModal .hg2-panel.hit .hg2-char { animation: hgmHit 0.5s cubic-bezier(.2,.9,.3,1.4); }
+#hireGachaModal .hg2-frame { position: absolute; inset: 0; border: 4.6cqw solid transparent; border-image: url(assets/img/ui/hire/frame.webp) 62 / 4.6cqw stretch; pointer-events: none; }
+#hireGachaModal .hg2-stars { position: absolute; left: 27.5%; width: 45.5%; top: 48.3%; height: 7.8%; display: flex; align-items: center; justify-content: center; font-size: 8.4cqw; }
+#hireGachaModal .hg2-stars .rstars { gap: 0.02em; }
+#hireGachaModal .hg2-stars .rstars img { height: 1.08em; filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,0.6)); }
+#hireGachaModal .hg2-panel.hit .hg2-stars { animation: hgmHit 0.5s ease-out; }
+#hireGachaModal .hg2-name { position: absolute; left: 19%; width: 62%; top: 56.8%; height: 8%; display: flex; align-items: center; justify-content: center; font-size: 7.6cqw; font-weight: 900; letter-spacing: 0.02em; color: #f2f8ff; white-space: nowrap; text-shadow: -0.35cqw -0.35cqw 0 #0a1440, 0.35cqw -0.35cqw 0 #0a1440, -0.35cqw 0.35cqw 0 #0a1440, 0.35cqw 0.35cqw 0 #0a1440, 0 0.8cqw 0 #0a1440, 0 0 2cqw rgba(140,200,255,0.6); }
+#hireGachaModal .hg2-line { position: absolute; left: 5%; width: 90%; top: 67.3%; height: 10.8%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; align-content: center; column-gap: 1.5cqw; font-size: 4.6cqw; font-weight: 900; color: #fff; line-height: 1.2; text-shadow: -0.3cqw -0.3cqw 0 #0a1440, 0.3cqw -0.3cqw 0 #0a1440, -0.3cqw 0.3cqw 0 #0a1440, 0.3cqw 0.3cqw 0 #0a1440, 0 0.6cqw 0 #0a1440; }
+#hireGachaModal .hg2-line .hg2-dup { color: #7ff0ff; font-size: 1.12em; }
+#hireGachaModal .hg2-line b { color: #ffd23c; font-size: 1.3em; }
+#hireGachaModal .hg2-line small { flex-basis: 100%; font-size: 0.66em; font-weight: 800; color: #e8eefc; }
+#hireGachaModal .hg2-line .hg2-new { color: #ffd23c; font-size: 1.5em; }
+#hireGachaModal .hg2-book { position: absolute; left: 10.7%; width: 78.7%; top: 78.8%; height: 5.4%; display: flex; align-items: center; justify-content: center; font-size: 3.5cqw; font-weight: 800; color: #d6def2; text-shadow: 0 0.3cqw 0.4cqw #000; white-space: nowrap; }
+#hireGachaModal .hg2-book b { color: #fff; }
+#hireGachaModal .hg2-book em { margin-left: 2cqw; padding: 0 1.2cqw; border-radius: 1cqw; background: linear-gradient(180deg, #ff5577, #d0193f); color: #fff; font-style: normal; font-weight: 900; box-shadow: 0 0 0 0.3cqw rgba(255,255,255,0.35); }
+#hireGachaModal .hg2-book i { position: absolute; left: 2.5%; bottom: 8%; height: 0.9cqw; width: calc(var(--p) * 0.95); max-width: 95%; border-radius: 1cqw; background: linear-gradient(90deg, #ffd76b, #ff9a3c); }
+#hireGachaModal .hg2-btn { position: absolute; top: 87%; height: 10.2%; width: 47.3%; padding: 0; border: none; background: none; cursor: pointer; border-radius: 6cqw; }
+#hireGachaModal .hg2-again { left: 4.3%; }
+#hireGachaModal .hg2-close { left: 53.3%; }
+#hireGachaModal .hg2-btn:active { background: rgba(255,255,255,0.15); }
+#hireGachaModal .hg2-btncover { position: absolute; left: 3%; width: 94%; top: 86.5%; height: 11%; border-radius: 6cqw; background: rgba(5,12,40,0.6); }
