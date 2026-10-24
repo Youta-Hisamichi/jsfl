@@ -4474,3 +4474,5 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hg2-bigglow i { width: 150% !important; top: 36% !important; border-radius: 0 !important; background: url(assets/img/ui/hire/burst.webp) center / contain no-repeat !important; -webkit-mask: none !important; mask: none !important; }
 #hireGachaModal .hg2-bigglow::after { display: none; }
 #hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.9; }
+#hireGachaModal .hg2-bigglow { opacity: 0.22 !important; }
+#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.42 !important; }
