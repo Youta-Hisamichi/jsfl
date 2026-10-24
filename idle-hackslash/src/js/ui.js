@@ -1374,8 +1374,10 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
   ov.classList.add('show');
   const panel = ov.querySelector('.hg2-panel'), roll = ov.querySelector('.hg2-char'), btns = ov.querySelector('.hg2-btncover');
   let n = 0, timer = null, done = false;
+  const starsEl = ov.querySelector('.hg2-stars'); let lastStar = -1;
+  const starTimer = setInterval(() => { let r; do r = Math.floor(Math.random() * 5); while (r === lastStar); lastStar = r; starsEl.innerHTML = rarityStarsImg(RARITY_ORDER[r]); }, 70); // シャッフル中の★はキャラと関係なくランダムに変わり続ける
   const finish = () => {
-    if (done) return; done = true; clearTimeout(timer); clearInterval(heart);
+    if (done) return; done = true; clearTimeout(timer); clearInterval(heart); clearInterval(starTimer);
     const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
     roll.innerHTML = companionIconHtml(id);
     panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity); ov.dataset.rar = c.rarity; // 背景の色をレア度で変える
@@ -1393,13 +1395,13 @@ function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を
     if (done) return;
     if (n >= 22) { finish(); return; }
     const cur = pool[Math.floor(Math.random() * pool.length)];
-    roll.innerHTML = companionIconHtml(cur); ov.querySelector('.hg2-stars').innerHTML = rarityStarsImg(COMPANIONS[cur].rarity); // シャッフル中も今の顔のレア度の★
+    roll.innerHTML = companionIconHtml(cur);
     roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
     playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
     n++; timer = setTimeout(tick, 45 + n * n * 0.6);
   };
   ov.onclick = e => { if (!done) finish(); }; // 回っている間はどこをタップしても結果へ
-  const close = () => { ov.classList.remove('show'); clearInterval(heart); hireGachaHush = false; hireGachaBgmOn = false; refreshBgm(); };
+  const close = () => { ov.classList.remove('show'); clearInterval(heart); clearInterval(starTimer); hireGachaHush = false; hireGachaBgmOn = false; refreshBgm(); };
   ov.querySelector('.hg2-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
   ov.querySelector('.hg2-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
   tick();
