@@ -1310,11 +1310,12 @@ function renderHireGacha() {
   const box = document.getElementById('hireGachaBox'); if (!box || hireGachaRolling) return;
   const pool = hireGachaPool(), rates = hireGachaRates(pool);
   const odds = RARITY_ORDER.map(r => rates[r] ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${rates[r] < 1 ? rates[r].toFixed(2) : rates[r].toFixed(1)}%</span>` : '').join('');
-  const html = `<div class="hg-head">🎰 採用ガチャ<small>候補 ${pool.length}人</small></div>
-    <div class="hg-faces">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) && !(game.compLocked && game.compLocked[id] === true) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
+  const cols = pool.length <= 27 ? 9 : pool.length <= 33 ? 11 : 13; // 3段に収まるよう列を増やす
+  const html = `<div class="hg-cnt">${pool.length}</div>
+    <div class="hg-faces" style="--cols:${cols}">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) && !(game.compLocked && game.compLocked[id] === true) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
     <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}<br>解雇中 <b>${compFiredCount()} / ${compFireMax()}人</b>（解雇できるのは採用した人数の半分まで）</div>
-    ${pool.length ? `<div class="hg-odds">${odds}</div>` : ''}
-    <button class="hg-btn ${!pool.length || game.gems < HIRE_GACHA_GEMS ? 'is-disabled' : ''}" id="hireGachaBtn">採用ガチャを引く <b>💎${HIRE_GACHA_GEMS}</b></button>`;
+    <div class="hg-odds">${odds}</div>
+    <button class="hg-btn ${!pool.length || game.gems < HIRE_GACHA_GEMS ? 'is-disabled' : ''}" id="hireGachaBtn" aria-label="採用ガチャを引く 💎${HIRE_GACHA_GEMS}"></button>`; // ボタンの文字・コストは下地の絵に入っている
   if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
 }
 document.getElementById('hireGachaBox').addEventListener('click', ev => {

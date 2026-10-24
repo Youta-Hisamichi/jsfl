@@ -4435,3 +4435,28 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hg2-bigglow { mix-blend-mode: screen; mix-blend-mode: plus-lighter; }
 #hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.75; }
 #hireGachaModal .hg2-glow { display: none !important; }
+/* 採用ガチャ（引く画面）：見本の絵を下地に、候補の人数・アイコン・説明・確率を重ねる */
+.hire-gacha { position: relative; container-type: inline-size; aspect-ratio: 1489 / 1027; margin: 4px -6px 10px !important; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/hire/box.webp) center / 100% 100% no-repeat !important; }
+.hire-gacha .hg-cnt { position: absolute; left: 65.2%; width: 4%; top: 7.6%; height: 3.6%; display: flex; align-items: center; justify-content: center; font-size: 3.4cqw; font-weight: 900; color: #fff; text-shadow: 0 0.3cqw 0.4cqw #000; }
+.hire-gacha .hg-faces { position: absolute; left: 4.8%; width: 90.4%; top: 18.4%; height: 45.6%; margin: 0 !important; min-height: 0 !important; display: grid !important; grid-template-columns: repeat(var(--cols, 9), 1fr); align-content: center; justify-content: center; gap: 0.8cqw 1cqw; }
+.hire-gacha .hg-faces:has(.hg-empty) { display: flex !important; }
+.hire-gacha .hg-cell { width: auto !important; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.2cqw; cursor: pointer; }
+.hire-gacha .hg-face { width: 100% !important; height: auto !important; aspect-ratio: 1; border: 0.45cqw solid var(--rc) !important; border-radius: 1.4cqw !important; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 30%, #24346e), #0d1636) !important; box-shadow: 0 0 1cqw color-mix(in srgb, var(--rc) 70%, transparent), inset 0 0 0 0.25cqw rgba(0,0,0,0.5); }
+.hire-gacha .hg-face.new::after { top: -0.2cqw !important; right: -0.2cqw !important; padding: 0 0.6cqw !important; border-radius: 0.6cqw !important; font-size: 1.6cqw !important; }
+.hire-gacha .hg-star { font-size: 2.1cqw !important; letter-spacing: -0.15em; }
+.hire-gacha .hg-empty { margin: auto; font-size: 2.6cqw !important; }
+.hire-gacha .hg-note { position: absolute; left: 6%; width: 88%; top: 65.6%; height: 9%; margin: 0 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.35cqw !important; line-height: 1.45; color: #eef2fc !important; text-shadow: 0 0.2cqw 0.3cqw #000; }
+.hire-gacha .hg-note b { color: #fff; }
+.hire-gacha .hg-odds { position: absolute; left: 6%; width: 88%; top: 75%; height: 5.4%; margin: 0 !important; display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-evenly; gap: 1cqw !important; font-size: 2.5cqw !important; white-space: nowrap; }
+.hire-gacha .hg-btn { position: absolute; left: 18.3%; width: 63.6%; top: 81.3%; height: 11.4%; margin: 0; padding: 0; border: none !important; border-radius: 6cqw !important; background: none !important; box-shadow: none !important; font-size: 0 !important; cursor: pointer; }
+.hire-gacha .hg-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.15) !important; }
+.hire-gacha .hg-btn.is-disabled { filter: none !important; background: rgba(10,16,40,0.55) !important; }
+.hire-gacha .hg-faces { grid-template-columns: repeat(var(--cols, 9), minmax(0, 7.3cqw)); gap: 0.5cqw 1.6cqw; align-content: center; }
+.hire-gacha .hg-star { line-height: 1; }
+.hire-gacha .hg-note { display: block !important; text-align: center; padding-top: 1.6cqw; box-sizing: border-box; }
+.hire-gacha .hg-odds span { text-shadow: 0 0.2cqw 0.3cqw #000; }
+.hire-gacha .hg-note { top: 65.8%; height: 8.6%; padding-top: 0.9cqw; font-size: 2.15cqw !important; line-height: 1.38; }
+.hire-gacha .hg-odds { top: 75.3%; height: 5%; font-size: 2.3cqw !important; }
+.hire-gacha .hg-faces { grid-template-columns: repeat(var(--cols, 9), minmax(0, 7.8cqw)); }
+.hire-gacha .hg-faces { display: flex !important; flex-wrap: wrap; justify-content: center; align-content: center; padding: 0 calc((90.4cqw - var(--cols, 9) * 9.4cqw) / 2); box-sizing: border-box; }
+.hire-gacha .hg-cell { flex: 0 0 7.8cqw; }
