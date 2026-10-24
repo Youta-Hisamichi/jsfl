@@ -1651,7 +1651,7 @@ function checkLoginBonus(awayMs) {
   };
   later(spin, t + 350);
   const chips = [];
-  { const capped = awayMs >= IDLE_REWARD_MAX_MS, hrs = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 3600000; chips.push({ special: capped, html: `⏳ 放置報酬 ${hrs.toFixed(1)}時間ぶん${capped ? '・上限！こまめに戻ろう' : `／最大${IDLE_REWARD_MAX_MS / 3600000}時間`}` }); }
+  // 放置報酬（何時間ぶん）の行は出さない
   chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！` }); // コインの額は上の大きな数字に出ているので書かない
   if (idleChests > 0) chips.push({ special: true, html: `${(typeof xi === 'function' && xi(CHEST_ICON[[...CHEST_RARITIES].reverse().find(k => idleChestRarities[k])] || 'x_chest1')) || '🎁'} 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label.replace('コモン', 'ノーマル') + idleChestRarities[k]).join('・')}）` });
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label.replace('コモン', 'ノーマル')}の宝箱 ×1</span>` });
@@ -1671,7 +1671,7 @@ function checkLoginBonus(awayMs) {
     showChips();
     loginBonusCloseBtn.disabled = false;
     loginBonusCloseBtn.textContent = '受け取る';
-    loginBonusAdBtn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画を見て'}コイン${LOGIN_AD_MULT}倍 <b>＋💎${LOGIN_AD_GEMS}</b>`;
+    loginBonusAdBtn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画で'}コイン${LOGIN_AD_MULT}倍 <b>＋💎${LOGIN_AD_GEMS}</b>`;
     loginBonusAdBtn.style.display = '';
     updateStatsUI(); updatePotionButton(); renderArtifactList();
   };

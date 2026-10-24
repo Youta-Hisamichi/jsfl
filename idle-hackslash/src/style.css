@@ -4366,3 +4366,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .stage-side-slot, .stage-side-slot.stage-side-left { flex: 0 0 46px !important; width: 46px !important; min-width: 46px !important; max-width: 46px !important; }
 /* 帰還ボーナス：上の段階（10分〜1日）の並びは出さない */
 #lbDays { display: none !important; }
+#lbPanel .lb-chip { text-align: center !important; }
