@@ -1570,7 +1570,7 @@ function checkLoginBonus(awayMs) {
   const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE);
   const hcIdle = getHeldChests();
   let idleChests = 0; const idleChestRarities = {};
-  for (let i = Math.floor(idleMin / IDLE_CHEST_EVERY_MIN); i > 0; i--) { const k = rollChestRarity(); if ((hcIdle[k] || 0) >= CHEST_STOCK_MAX) continue; idleChestRarities[k] = (idleChestRarities[k] || 0) + 1; hcIdle[k] = (hcIdle[k] || 0) + 1; idleChests++; } // レア度ごとに最大100個
+  // 放置中の宝箱は出さない（帰還ボーナスの宝箱とまぎらわしいため）
   game.coins += idleCoins;
   game.totalKills += idleKills;
   if (idleChests) renderChestTray();
@@ -1652,13 +1652,12 @@ function checkLoginBonus(awayMs) {
   later(spin, t + 350);
   const chips = [];
   // 放置報酬（何時間ぶん）の行は出さない
-  chips.push({ special: true, html: `⚔️ 放置中に ${idleKills.toLocaleString('ja-JP')}体撃破！` }); // コインの額は上の大きな数字に出ているので書かない
-  if (idleChests > 0) chips.push({ special: true, html: `${(typeof xi === 'function' && xi(CHEST_ICON[[...CHEST_RARITIES].reverse().find(k => idleChestRarities[k])] || 'x_chest1')) || '🎁'} 放置中に宝箱 ×${idleChests}（${CHEST_RARITIES.filter(k => idleChestRarities[k]).map(k => RARITY_INFO[k].label.replace('コモン', 'ノーマル') + idleChestRarities[k]).join('・')}）` });
+  chips.push({ special: true, big: true, html: `⚔️ 放置中に <b>${idleKills.toLocaleString('ja-JP')}</b>体撃破！` }); // コインの額は上の大きな数字に出ているので書かない
   if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label.replace('コモン', 'ノーマル')}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
   if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label.replace('コモン', 'ノーマル')}の宝箱 ×1</span>` });
   const showChips = () => {
-    loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
+    loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''} ${c.big ? 'lb-big' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
   };
   const finish = () => {
     if (done) return;

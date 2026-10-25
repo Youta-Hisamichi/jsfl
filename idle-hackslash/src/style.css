@@ -4480,3 +4480,14 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #hireGachaModal .hg2-panel.hit .hg2-bigglow i { animation-duration: 5s !important; }
 /* ステージ数：左の塔を消したので、左の区画（左端〜ゲージの手前）のまん中に */
 .exp-wrap .stage-floor { left: 3.2cqw !important; width: 19cqw !important; }
+#lbPanel .lb-chip.lb-big { font-size: 0.95rem !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+#lbPanel .lb-chip.lb-big b { font-size: 1.25em; color: #ffd76b; }
+/* 敵・味方をタップしたときの情報：下地を半透明に（後ろの進捗バーがうっすら見える） */
+.enemy-info-pop { background: rgba(14,12,34,0.72) !important; border-color: rgba(120,112,170,0.7) !important; backdrop-filter: blur(1.5px); text-shadow: 0 1px 2px #000; }
+/* 「ボスまで ○/10」は進捗バーの右外の空きに（分数の前で改行）。ボス再戦・リタイヤのボタンが出ているときは隠す */
+.stage-side-txt { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; white-space: nowrap; font-weight: 900; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 1px 2px #000; }
+.stage-side-txt #stageToBoss { font-size: 0.62rem; color: #fff !important; }
+.stage-side-txt #stageToBoss.is-boss { font-size: 0.85rem; color: #ff6b6b !important; }
+.stage-side-txt #stageProgressText { font-size: 0.82rem; }
+.stage-side-txt #stageProgressText:empty { display: none; }
+.stage-side-slot:has(> button:not([style*="none"])) .stage-side-txt { display: none; }
