@@ -531,6 +531,86 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h s s ks s',
   },
+  battle35: { // 戦闘35 帝都花舞う行進：弾むブラスの合いの手と2拍目4拍目のスネアに乗って、華やかで少し懐かしい旋律が胸を張って行進する、大正浪漫の歌劇団風の曲
+    bpm: 152,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'F5 = = A#5 C6 = F5 = | F5 = D6 A5 F5 = = = | F5 E5 C5 G5 A#5 = F6 = | E6 = = F6 E6 = = = | A5 = = D6 F6 = D6 = | A#5 = F6 C6 A#5 = = = | G5 F5 C5 G5 G5 = D6 = | E6 = = F6 E6 = = = | F6 = = C6 A5 = C6 = | G5 = F5 E5 E5 = = = | D5 C5 C5 C5 D5 = F5 = | F5 = = F5 F5 = = = | D5 = = G5 A#5 = F5 = | E5 = C6 G5 E5 = = = | C5 C5 C5 D5 F5 = F5 = | F6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: '- F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 | - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - A4+C#5+E5 - A4+C#5+E5 - A4+C#5+E5 - A4+C#5+E5 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 - A#4+D5+F5 | - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 - C4+E4+G4 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 | - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'F1 = C2 = F1 = C2 = | F1 = C2 = F1 = C2 = | A#1 = F2 = A#1 = F2 = | C2 = G2 = C2 = G2 = | D2 = A2 = D2 = A2 = | A#1 = F2 = A#1 = F2 = | G1 = D2 = G1 = D2 = | C2 = G2 = C2 = G2 = | F1 = C2 = F1 = C2 = | A1 = E2 = A1 = E2 = | D2 = A2 = D2 = A2 = | D2 = A2 = D2 = A2 = | A#1 = F2 = A#1 = F2 = | C2 = G2 = C2 = G2 = | F1 = C2 = F1 = C2 = | F1 = C2 = F1 = C2 =' },
+    ],
+    drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks',
+  },
+  boss25: { // ボス24 乙女たちの決戦：刻むオクターブベースと鋭いブラスの連打に乗って、劇的な短調の旋律が舞台の大詰めのように燃え上がる、大正浪漫の歌劇団風の決戦曲
+    bpm: 168,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'F5 E5 D6 = A5 A#5 F5 = | A5 = = G5 A4 = A4 = | A#4 = A#4 = A4 A4 D5 = | E5 = = = E5 = G5 = | A#5 A5 D6 = A5 A#5 G5 = | D6 = = C#6 F5 = D5 = | D5 = D5 = A#4 A4 D5 = | E5 = = = E5 = G5 = | D6 D6 D6 = C#6 A#5 F5 = | F5 = = A4 F5 = F5 = | A#5 = D6 = D6 D6 D6 = | C#6 = = = G5 = E5 = | F5 E5 D6 = A5 A#5 F5 = | A#5 = = A5 D5 = A#4 = | A4 = A4 = A4 A4 A4 = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | E4+G#4+B4 - - E4+G#4+B4 - E4+G#4+B4 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | F4+A4+C5 - - F4+A4+C5 - F4+A4+C5 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - -' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'D2 D2 D3 D2 A2 D2 D3 D2 | D2 D2 D3 D2 A2 D2 D3 D2 | A#2 A#2 A#3 A#2 F3 A#2 A#3 A#2 | A2 A2 A3 A2 E3 A2 A3 A2 | G2 G2 G3 G2 D3 G2 G3 G2 | D2 D2 D3 D2 A2 D2 D3 D2 | E2 E2 E3 E2 B2 E2 E3 E2 | A2 A2 A3 A2 E3 A2 A3 A2 | D2 D2 D3 D2 A2 D2 D3 D2 | F2 F2 F3 F2 C3 F2 F3 F2 | G2 G2 G3 G2 D3 G2 G3 G2 | A2 A2 A3 A2 E3 A2 A3 A2 | A#2 A#2 A#3 A#2 F3 A#2 A#3 A#2 | G2 G2 G3 G2 D3 G2 G3 G2 | A2 A2 A3 A2 E3 A2 A3 A2 | D2 D2 D3 D2 A2 D2 D3 D2' },
+    ],
+    drums: 'k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks s ks ks | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks s ks ks',
+  },
+  battle36: { // 戦闘36 発動する無限の力：うなる分散和音のオスティナートと重い太鼓に乗って、ブラスのように伸びる不穏で壮大な旋律が宇宙の果てから迫ってくる、80年代宇宙SFロボットアニメ風の曲
+    bpm: 132,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'G5 = = = E5 = B5 = | G5 = B5 = B5 = = = | C6 = = A5 E6 = E6 = | D6 = = = = = D6 = | B5 = = = G5 = E6 = | E6 = E6 = E6 = = = | E6 = = C6 E6 = E6 = | B5 = = = = = B5 = | G5 = = = G5 = G5 = | D6 = G5 = D6 = = = | C6 = = D6 E6 = C6 = | D6 = = = = = D6 = | C6 = = = A5 = E6 = | B5 = B5 = B5 = = = | B5 = = C6 G5 = G5 = | E6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'E4 G4 B4 G4 E4 G4 B4 G4 | E4 G4 B4 G4 E4 G4 B4 G4 | C4 E4 G4 E4 C4 E4 G4 E4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | E4 G4 B4 G4 E4 G4 B4 G4 | E4 G4 B4 G4 E4 G4 B4 G4 | A4 C#5 E5 C#5 A4 C#5 E5 C#5 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4 | E4 G4 B4 G4 E4 G4 B4 G4 | G4 B4 D5 B4 G4 B4 D5 B4 | C4 E4 G4 E4 C4 E4 G4 E4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | A4 C5 E5 C5 A4 C5 E5 C5 | B3 D#4 F#4 D#4 B3 D#4 F#4 D#4 | E4 G4 B4 G4 E4 G4 B4 G4 | E4 G4 B4 G4 E4 G4 B4 G4' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'E1 = = E1 - B1 E1 - | E1 = = E1 - B1 E1 - | C2 = = C2 - G2 C2 - | D2 = = D2 - A2 D2 - | E1 = = E1 - B1 E1 - | E1 = = E1 - B1 E1 - | A1 = = A1 - E2 A1 - | B1 = = B1 - F#2 B1 - | E1 = = E1 - B1 E1 - | G1 = = G1 - D2 G1 - | C2 = = C2 - G2 C2 - | D2 = = D2 - A2 D2 - | A1 = = A1 - E2 A1 - | B1 = = B1 - F#2 B1 - | E1 = = E1 - B1 E1 - | E1 = = E1 - B1 E1 -' },
+    ],
+    drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k k s k s s ks ks | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k - s - k k s - | k k s k s s ks ks',
+  },
+  boss26: { // ボス25 星を滅ぼす巨神：地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲
+    bpm: 118,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D#5 = = = = = D#5 = | D#5 = = = D#5 = = = | C5 = G#4 = G#4 = C5 = | G4 = = = = = = = | G#4 = = = = = G#4 = | C5 = = = C5 = = = | G#4 = G#4 = G#4 = C5 = | G4 = = = = = = = | D#5 = = = = = D#5 = | D#5 = = = C6 = = = | G5 = D#5 = D#5 = D#5 = | F5 = = = = = = = | G#5 = = = = = G#5 = | B5 = = = B5 = = = | G5 = D#5 = C5 = C5 = | C6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'C4+D#4+G4 = = = C4+D#4+G4 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - - | G#3+C4+D#4 = = = G#3+C4+D#4 = - - | G3+B3+D4 = = = G3+B3+D4 = - - | F4+G#4+C5 = = = F4+G#4+C5 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - - | G#3+C4+D#4 = = = G#3+C4+D#4 = - - | G3+B3+D4 = = = G3+B3+D4 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - - | D#4+G4+A#4 = = = D#4+G4+A#4 = - - | A#3+D4+F4 = = = A#3+D4+F4 = - - | F4+G#4+C5 = = = F4+G#4+C5 = - - | G3+B3+D4 = = = G3+B3+D4 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - - | C4+D#4+G4 = = = C4+D#4+G4 = - -' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'C1 = C1 = C1 = C2 C1 | C1 = C1 = C1 = C2 C1 | G#1 = G#1 = G#1 = G#2 G#1 | G1 = G1 = G1 = G2 G1 | F1 = F1 = F1 = F2 F1 | C1 = C1 = C1 = C2 C1 | G#1 = G#1 = G#1 = G#2 G#1 | G1 = G1 = G1 = G2 G1 | C1 = C1 = C1 = C2 C1 | C1 = C1 = C1 = C2 C1 | D#1 = D#1 = D#1 = D#2 D#1 | A#1 = A#1 = A#1 = A#2 A#1 | F1 = F1 = F1 = F2 F1 | G1 = G1 = G1 = G2 G1 | C1 = C1 = C1 = C2 C1 | C1 = C1 = C1 = C2 C1' },
+    ],
+    drums: 'k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k k k k s s s s | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k k k k s s s s',
+  },
+  battle37: { // 戦闘37 竜と翔ける空の戦記：流れる分散和音と穏やかに刻むリズムに乗って、竜とともに大空を駆けるような叙情的で雄大な旋律が歌う、空と竜の戦記RPG風の曲
+    bpm: 144,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 = = B5 F#5 = A5 = | E5 = = = A5 = A5 = | F#5 = A5 B5 B5 = D6 = | D6 = = = = = B5 = | D6 = = D6 A5 = D6 = | B5 = = = D6 = D6 = | B5 = D6 D6 B5 = B5 = | A5 = = = = = E5 = | D5 = = A4 B4 = B4 = | E5 = = = A5 = C#6 = | C#6 = B5 D6 A5 = A5 = | B5 = = = = = B5 = | D6 = = D6 G5 = D6 = | A5 = = = C#6 = C#6 = | A5 = E5 G5 D6 = D6 = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4 A4 F#4 A4 D4 A4 F#4 A4 | A3 E4 C#4 E4 A3 E4 C#4 E4 | B3 F#4 D4 F#4 B3 F#4 D4 F#4 | G4 D5 B4 D5 G4 D5 B4 D5 | D4 A4 F#4 A4 D4 A4 F#4 A4 | G4 D5 B4 D5 G4 D5 B4 D5 | E4 B4 G4 B4 E4 B4 G4 B4 | A3 E4 C#4 E4 A3 E4 C#4 E4 | G4 D5 B4 D5 G4 D5 B4 D5 | A3 E4 C#4 E4 A3 E4 C#4 E4 | F#4 C#5 A4 C#5 F#4 C#5 A4 C#5 | B3 F#4 D4 F#4 B3 F#4 D4 F#4 | G4 D5 B4 D5 G4 D5 B4 D5 | A3 E4 C#4 E4 A3 E4 C#4 E4 | D4 A4 F#4 A4 D4 A4 F#4 A4 | D4 A4 F#4 A4 D4 A4 F#4 A4' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'D2 = = = A2 = = = | A2 = = = E3 = = = | B2 = = = F#3 = = = | G2 = = = D3 = = = | D2 = = = A2 = = = | G2 = = = D3 = = = | E2 = = = B2 = = = | A2 = = = E3 = = = | G2 = = = D3 = = = | A2 = = = E3 = = = | F#2 = = = C#3 = = = | B2 = = = F#3 = = = | G2 = = = D3 = = = | A2 = = = E3 = = = | D2 = = = A2 = = = | D2 = = = A2 = = =' },
+    ],
+    drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - s - s s s s | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - s - s s s s',
+  },
+  boss27: { // ボス26 神竜の咆哮：疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲
+    bpm: 156,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'D5 D5 D5 D#5 G5 = G5 = | G5 = = F#5 A#5 = = = | A#5 = G5 = D5 D5 G5 = | C6 = = = D6 = = = | G5 G5 G5 A5 C6 = C6 = | A#5 = = A5 D6 = = = | A5 = A5 = D#5 D5 A5 = | D6 = = = D6 = = = | D6 F#6 C6 A5 D6 = A#5 = | A#5 = = C6 D6 = = = | G6 = G6 = G6 D#6 D#6 = | C6 = = = A5 = = = | D#5 D#5 D#5 F#5 G5 = G5 = | F#5 = = D#5 A5 = = = | D6 = D6 = C6 F#6 D6 = | G6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'G4 A#4 D5 A#4 G4 A#4 D5 A#4 | G4 A#4 D5 A#4 G4 A#4 D5 A#4 | D#4 G4 A#4 G4 D#4 G4 A#4 G4 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | C5 D#5 G5 D#5 C5 D#5 G5 D#5 | G4 A#4 D5 A#4 G4 A#4 D5 A#4 | A4 C#5 E5 C#5 A4 C#5 E5 C#5 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | G4 A#4 D5 A#4 G4 A#4 D5 A#4 | A#4 D5 F5 D5 A#4 D5 F5 D5 | D#4 G4 A#4 G4 D#4 G4 A#4 G4 | F4 A4 C5 A4 F4 A4 C5 A4 | C5 D#5 G5 D#5 C5 D#5 G5 D#5 | D4 F#4 A4 F#4 D4 F#4 A4 F#4 | G4 A#4 D5 A#4 G4 A#4 D5 A#4 | G4 A#4 D5 A#4 G4 A#4 D5 A#4' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'G1 G2 G1 G2 G1 G2 G1 G2 | G1 G2 G1 G2 G1 G2 G1 G2 | D#2 D#3 D#2 D#3 D#2 D#3 D#2 D#3 | D2 D3 D2 D3 D2 D3 D2 D3 | C2 C3 C2 C3 C2 C3 C2 C3 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | D#2 D#3 D#2 D#3 D#2 D#3 D#2 D#3 | F2 F3 F2 F3 F2 F3 F2 F3 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | G1 G2 G1 G2 G1 G2 G1 G2' },
+    ],
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s ks ks ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s ks ks ks ks',
+  },
+  battle38: { // 戦闘38 小隊、前へ：小太鼓の刻む行進のリズムに乗って、少年少女の決意を歌うような凛とした旋律が一歩ずつ前へ進んでいく、学徒兵の青春戦記風の曲
+    bpm: 128,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'E6 = F6 A6 A6 = A6 = | A6 = = G6 A6 = A6 = | A6 A6 A6 = A6 = = = | G6 = = = G6 = G6 = | A6 = A6 A6 A6 = A6 = | A6 = = G6 A6 = F6 = | E6 A6 E6 = E6 = = = | B5 = = = B5 = B5 = | C6 = E6 D6 A6 = F6 = | G6 = = E6 D6 = G5 = | E5 E5 E5 = E5 = = = | E5 = = = E5 = A5 = | D6 = E6 A6 A6 = A6 = | E6 = = D6 E6 = D6 = | E6 F6 C6 = C6 = = = | A6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - | A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - | F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - | G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - | A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - | D5+F5+A5 - D5+F5+A5 - D5+F5+A5 - D5+F5+A5 - | E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - | E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - | F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - F4+A4+C5 - | G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - G4+B4+D5 - | C5+E5+G5 - C5+E5+G5 - C5+E5+G5 - C5+E5+G5 - | A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - | D5+F5+A5 - D5+F5+A5 - D5+F5+A5 - D5+F5+A5 - | E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - E4+G#4+B4 - | A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - | A4+C5+E5 - A4+C5+E5 - A4+C5+E5 - A4+C5+E5 -' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'A1 - E2 - A1 - E2 - | A1 - E2 - A1 - E2 - | F2 - C3 - F2 - C3 - | G2 - D3 - G2 - D3 - | A1 - E2 - A1 - E2 - | D2 - A2 - D2 - A2 - | E2 - B2 - E2 - B2 - | E2 - B2 - E2 - B2 - | F2 - C3 - F2 - C3 - | G2 - D3 - G2 - D3 - | C2 - G2 - C2 - G2 - | A1 - E2 - A1 - E2 - | D2 - A2 - D2 - A2 - | E2 - B2 - E2 - B2 - | A1 - E2 - A1 - E2 - | A1 - E2 - A1 - E2 -' },
+    ],
+    drums: 'k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | s s s s s s ks ks | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | k - s s k - s s | s s s s s s ks ks',
+  },
+  boss28: { // ボス27 絶望を越える行進：打ち鳴らされる小太鼓の連打と刻むベースに乗って、絶望の中で歯を食いしばるような悲壮で力強い旋律が高まっていく、学徒兵の青春戦記風の決戦曲
+    bpm: 150,
+    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
+    tracks: [
+      { type: 'vrc6pulse25', gain: 0.03, notes: 'B5 = G5 = E5 = B4 = | C5 = = B4 E5 = G5 = | A5 A5 G5 A5 F#5 = = = | B4 = = = = = F#5 = | G5 = E5 = B4 = B4 = | C5 = = B4 E5 = G5 = | A5 A5 G5 A5 A5 = = = | D#5 = = = = = A5 = | C6 = C6 = E6 = G5 = | F#5 = = G5 A5 = A5 = | G5 D#5 B4 E5 B4 = = = | G5 = = = = = E5 = | A5 = E5 = C5 = C5 = | D#5 = = C5 F#5 = A5 = | E5 F#5 F#5 E5 G5 = = = | E6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.013, notes: 'E4+G4+B4 E4+G4+B4 - E4+G4+B4 - E4+G4+B4 E4+G4+B4 - | C4+E4+G4 C4+E4+G4 - C4+E4+G4 - C4+E4+G4 C4+E4+G4 - | D4+F#4+A4 D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 D4+F#4+A4 - | B3+D#4+F#4 B3+D#4+F#4 - B3+D#4+F#4 - B3+D#4+F#4 B3+D#4+F#4 - | E4+G4+B4 E4+G4+B4 - E4+G4+B4 - E4+G4+B4 E4+G4+B4 - | C4+E4+G4 C4+E4+G4 - C4+E4+G4 - C4+E4+G4 C4+E4+G4 - | A4+C5+E5 A4+C5+E5 - A4+C5+E5 - A4+C5+E5 A4+C5+E5 - | B3+D#4+F#4 B3+D#4+F#4 - B3+D#4+F#4 - B3+D#4+F#4 B3+D#4+F#4 - | C4+E4+G4 C4+E4+G4 - C4+E4+G4 - C4+E4+G4 C4+E4+G4 - | D4+F#4+A4 D4+F#4+A4 - D4+F#4+A4 - D4+F#4+A4 D4+F#4+A4 - | G4+B4+D5 G4+B4+D5 - G4+B4+D5 - G4+B4+D5 G4+B4+D5 - | E4+G4+B4 E4+G4+B4 - E4+G4+B4 - E4+G4+B4 E4+G4+B4 - | A4+C5+E5 A4+C5+E5 - A4+C5+E5 - A4+C5+E5 A4+C5+E5 - | B3+D#4+F#4 B3+D#4+F#4 - B3+D#4+F#4 - B3+D#4+F#4 B3+D#4+F#4 - | E4+G4+B4 E4+G4+B4 - E4+G4+B4 - E4+G4+B4 E4+G4+B4 - | E4+G4+B4 E4+G4+B4 - E4+G4+B4 - E4+G4+B4 E4+G4+B4 -' },
+      { type: 'vrc6saw', gain: 0.047, notes: 'E1 E1 B1 E1 E2 E1 B1 E1 | C2 C2 G2 C2 C3 C2 G2 C2 | D2 D2 A2 D2 D3 D2 A2 D2 | B1 B1 F#2 B1 B2 B1 F#2 B1 | E1 E1 B1 E1 E2 E1 B1 E1 | C2 C2 G2 C2 C3 C2 G2 C2 | A1 A1 E2 A1 A2 A1 E2 A1 | B1 B1 F#2 B1 B2 B1 F#2 B1 | C2 C2 G2 C2 C3 C2 G2 C2 | D2 D2 A2 D2 D3 D2 A2 D2 | G1 G1 D2 G1 G2 G1 D2 G1 | E1 E1 B1 E1 E2 E1 B1 E1 | A1 A1 E2 A1 A2 A1 E2 A1 | B1 B1 F#2 B1 B2 B1 F#2 B1 | E1 E1 B1 E1 E2 E1 B1 E1 | E1 E1 B1 E1 E2 E1 B1 E1' },
+    ],
+    drums: 'k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | s s s s s s s s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | k s k s k s ks s | s s s s s s s s',
+  },
   news: { // お知らせ画面 王宮の謁見：王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット（ヘ長調）
     bpm: 112,
     echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
@@ -739,7 +819,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle35', 'battle36', 'battle37', 'battle38'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -761,7 +841,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24', 'boss25', 'boss26', 'boss27', 'boss28'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -835,6 +915,14 @@ const BGM_INFO = [
   { key: 'bgmbook', name: 'ページ BGM図鑑 音楽家のソナチネ', desc: 'アルベルティ・バスの分散和音に乗って、軽やかな音階とトリル風の飾りで歌う、古典派のピアノソナチネのような曲。VRC6風チップチューン。ト長調（モーツァルト風の作風）・BPM132' },
   { key: 'charge', name: 'ページ ショップ 課金 王家の宝物庫', desc: '弾むオクターブベースと行進曲のスネア、ハープのような分散和音に乗って、ファンファーレ風の旋律が華やかに駆け上がる、王宮の祝宴のような高揚感のある曲。VRC6風チップチューン。ニ長調・BPM132' },
   { key: 'hireget', name: '採用ガチャ やったね！新しい仲間', desc: '採用ガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う曲。VRC6風チップチューン。ヘ長調・BPM150' },
+  { key: 'battle35', name: '戦闘35 帝都花舞う行進', desc: '弾むブラスの合いの手と2拍目4拍目のスネアに乗って、華やかで少し懐かしい旋律が胸を張って行進する、大正浪漫の歌劇団風の曲。VRC6風チップチューン。ヘ長調（大正浪漫の歌劇アクションの作風）・BPM152' },
+  { key: 'boss25', name: 'ボス24 乙女たちの決戦', desc: '刻むオクターブベースと鋭いブラスの連打に乗って、劇的な短調の旋律が舞台の大詰めのように燃え上がる、大正浪漫の歌劇団風の決戦曲。VRC6風チップチューン。ニ短調（大正浪漫の歌劇アクションの作風）・BPM168' },
+  { key: 'battle36', name: '戦闘36 発動する無限の力', desc: 'うなる分散和音のオスティナートと重い太鼓に乗って、ブラスのように伸びる不穏で壮大な旋律が宇宙の果てから迫ってくる、80年代宇宙SFロボットアニメ風の曲。VRC6風チップチューン。ホ短調（伝説の巨神ロボットアニメの作風）・BPM132' },
+  { key: 'boss26', name: 'ボス25 星を滅ぼす巨神', desc: '地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲。VRC6風チップチューン。ハ短調（伝説の巨神ロボットアニメの作風）・BPM118' },
+  { key: 'battle37', name: '戦闘37 竜と翔ける空の戦記', desc: '流れる分散和音と穏やかに刻むリズムに乗って、竜とともに大空を駆けるような叙情的で雄大な旋律が歌う、空と竜の戦記RPG風の曲。VRC6風チップチューン。ニ長調（竜と空の戦記シミュレーションRPGの作風）・BPM144' },
+  { key: 'boss27', name: 'ボス26 神竜の咆哮', desc: '疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲。VRC6風チップチューン。ト短調（竜と空の戦記シミュレーションRPGの作風）・BPM156' },
+  { key: 'battle38', name: '戦闘38 小隊、前へ', desc: '小太鼓の刻む行進のリズムに乗って、少年少女の決意を歌うような凛とした旋律が一歩ずつ前へ進んでいく、学徒兵の青春戦記風の曲。VRC6風チップチューン。イ短調（学園と戦場の青春シミュレーションの作風）・BPM128' },
+  { key: 'boss28', name: 'ボス27 絶望を越える行進', desc: '打ち鳴らされる小太鼓の連打と刻むベースに乗って、絶望の中で歯を食いしばるような悲壮で力強い旋律が高まっていく、学徒兵の青春戦記風の決戦曲。VRC6風チップチューン。ホ短調（学園と戦場の青春シミュレーションの作風）・BPM150' },
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
