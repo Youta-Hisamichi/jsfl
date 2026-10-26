@@ -382,37 +382,36 @@ function checkDailyLogin() {
   saveGame(); updateStatsUI();
   setTimeout(() => showLogin7(day, got), 1200);
 }
-// 7日ログインの画面（ui/lb7 の絵：盤面の上に報酬を重ねる。位置は盤面の絵 1274×1083 の座標）
-const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb7/gem.webp" alt="">', pot: '<i class="lb7-ico su-i_bluepot"></i>', red: '<i class="lb7-ico ico-redpot"></i>', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
+// 7日ログインの画面（ui/lb8 の絵：見本の絵を下地に、日にち・報酬アイコン・数・あいさつだけ重ねる。位置は下地 1111×1415 の座標）
+const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb8/gem.webp" alt="">', pot: '<img class="lb7-ico" src="assets/img/ui/lb8/pot.webp" alt="">', red: '<img class="lb7-ico" src="assets/img/ui/lb8/red.webp" alt="">', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
 const LOGIN7_SHOW = [['gem', '×3'], ['pot', '×2'], ['gem', '×3'], ['gem', '×4'], ['red', '×3'], ['gem', '×4']];
 function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.x_feather}" alt="">` : LB7_ICON[k]; }
 function showLogin7(day, got) {
-  const P = (x, y) => `left:${(x / 1274 * 100).toFixed(2)}%;top:${(y / 1083 * 100).toFixed(2)}%`;
-  const CX = [240, 637, 1034], CY = [182, 457];
-  const cells = LOGIN7_SHOW.map(([k, n], i) => { const d = i + 1, st = d < day ? 'got' : d === day ? 'today' : '';
-    return `<div class="lb7-cell ${st}" style="${P(CX[i % 3], CY[Math.floor(i / 3)])}"><span class="lb7-tab">${d}日目</span><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
-  const ti = day <= 6 ? day - 1 : -1;
-  const glow = ti >= 0 ? `<img class="lb7-glow" src="assets/img/ui/lb7/glow.webp" alt="" style="${P(CX[ti % 3], CY[Math.floor(ti / 3)] - 18)}">` : '';
+  const P = (x, y) => `left:${(x / 1111 * 100).toFixed(2)}%;top:${(y / 1415 * 100).toFixed(2)}%`;
+  const BOX = [[69, 553, 391, 763], [407, 553, 707, 763], [724, 553, 1045, 763], [69, 785, 391, 997], [407, 785, 707, 997], [724, 785, 1045, 997]];
+  const cells = LOGIN7_SHOW.map(([k, n], i) => { const d = i + 1, st = d < day ? 'got' : d === day ? 'today' : '', [x0, y0, x1, y1] = BOX[i];
+    return `<div class="lb7-cell ${st}" style="left:${(x0 / 1111 * 100).toFixed(2)}%;top:${(y0 / 1415 * 100).toFixed(2)}%;width:${((x1 - x0) / 1111 * 100).toFixed(2)}%;height:${((y1 - y0) / 1415 * 100).toFixed(2)}%"><b class="lb7-dn">${d}</b><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
   const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
   const face = gid === 'hero' ? '<img class="lb7-portrait" src="assets/img/ui/lb7/portrait.webp" alt="">' : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
-  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<b>${String(got).replace('（', '<br><small>（')}${String(got).includes('（') ? '</small>' : ''}</b>`;
+  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<img class="lb7-ico" src="assets/img/ui/lb8/chest.webp" alt="">${LB7_ICON.gem}<b>10</b>`;
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
-  ov.innerHTML = `<div class="modal-panel l7-panel lb7">
-    <div class="lb7-title"><span>📅 ログインボーナス ${day}日目</span></div>
-    <div class="lb7-greet">${face}<div class="lb7-speech"><b>${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b><span>${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</span></div></div>
-    <div class="lb7-board">${glow}${cells}
-      <div class="lb7-day7 ${day === 7 ? 'today' : ''}"><span class="lb7-tab7" style="${P(637, 634)}">7日目</span><div class="lb7-sure" style="${P(637, 737)}"><img class="lb7-ico lb7-chest" src="${ICON_IMAGES.x_chest7}" alt=""><span class="lb7-gem10">${LB7_ICON.gem}<b>10</b></span><b>確定</b></div></div>
-      <div class="lb7-got" style="${P(637, 872)}">${todayIco}</div>
-      <button class="lb7-ok" style="${P(637, 977)}">受け取る</button>
-    </div>
-    <div class="lb7-note">毎日ログインで報酬アップ！ 7日目は<b>★5宝箱＋💎10確定</b></div></div>`;
+  ov.innerHTML = `<div class="modal-panel l7-panel lb8">
+    <div class="lb8-base">
+      <b class="lb8-day" style="${P(912, 150)}">${day}</b>
+      <div class="lb8-face" style="${P(116, 380)}">${face}</div>
+      <b class="lb8-name" style="${P(420, 311)}">${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b>
+      <div class="lb8-say" style="${P(655, 392)}">${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</div>
+      ${cells}
+      <div class="lb7-day7 lb8-d7 ${day === 7 ? 'today' : ''}" style="left:6.2%;top:72.2%;width:87.8%;height:11%"></div>
+      <button class="lb7-ok lb8-ok" style="left:5.5%;top:85.2%;width:89%;height:10.1%" aria-label="受け取る"></button>
+    </div></div>`;
   document.body.appendChild(ov);
-  ov.querySelectorAll('.lb7-face img').forEach(fitSpriteToFace);
+  ov.querySelectorAll('.lb8-face .lb7-face img').forEach(fitSpriteToFace);
   playLoginBonusSound && playLoginBonusSound();
   ov.querySelector('.lb7-ok').addEventListener('click', ev => claimLogin7(ov, day, todayIco), { once: true });
 }
 function claimLogin7(ov, day, icoHtml) { // 受け取った演出：今日のマスに✔スタンプ → 中央に報酬が飛び出して「GET!」 → 少し見せてから閉じる
-  const btn = ov.querySelector('.lb7-ok'); btn.disabled = true; btn.textContent = '受け取りました！';
+  const btn = ov.querySelector('.lb7-ok'); btn.disabled = true;
   const cell = ov.querySelectorAll('.lb7-cell')[day - 1];
   if (cell && !cell.querySelector('.lb7-chk')) { cell.classList.add('got', 'just-got'); cell.insertAdjacentHTML('beforeend', '<span class="lb7-chk lb7-stamp">✔</span>'); }
   if (day === 7) ov.querySelector('.lb7-day7')?.classList.add('just-got');

@@ -4491,3 +4491,27 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .stage-side-txt #stageProgressText { font-size: 0.82rem; }
 .stage-side-txt #stageProgressText:empty { display: none; }
 .stage-side-slot:has(> button:not([style*="none"])) .stage-side-txt { display: none; }
+/* ===== 7日ログインボーナス（見本の絵を下地に、日にち・アイコン・数・あいさつを重ねる） ===== */
+.l7-panel.lb8 { width: min(380px, 94vw, calc(90dvh * 1111 / 1415)); max-width: none; padding: 0 !important; background: none !important; border: none !important; border-image: none !important; box-shadow: none !important; }
+.lb8-base { position: relative; container-type: inline-size; width: 100%; aspect-ratio: 1111 / 1415; background: url(assets/img/ui/lb8/base.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6)); color: #fff; }
+.lb8-base > b, .lb8-base > div:not(.lb7-cell):not(.lb7-day7), .lb8-face { position: absolute; transform: translate(-50%, -50%); }
+.lb8-day { font-size: 8.4cqw; font-weight: 900; color: #fff; text-shadow: -0.4cqw -0.4cqw 0 #0a1440, 0.4cqw -0.4cqw 0 #0a1440, -0.4cqw 0.4cqw 0 #0a1440, 0.4cqw 0.4cqw 0 #0a1440, 0 0.8cqw 0 #0a1440; line-height: 1; }
+.lb8-face { width: 15.6cqw; height: 15.6cqw; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.lb8-face .lb7-portrait, .lb8-face .lb7-face img, .lb8-face img { width: 100%; height: 100%; object-fit: cover; }
+.lb8-face .lb7-face { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.lb8-name { font-size: 3.6cqw; font-weight: 900; color: #fff; white-space: nowrap; text-shadow: 0 0.3cqw 0.4cqw #000; }
+.lb8-say { width: 72cqw; font-size: 3.5cqw; font-weight: 800; color: #3a2610; line-height: 1.35; text-align: left; }
+.lb8-base .lb7-cell { position: absolute; transform: none; border-radius: 3cqw; }
+.lb8-base .lb7-dn { position: absolute; left: 39%; top: 16.5%; transform: translate(-50%, -50%); font-size: 4.4cqw; font-weight: 900; color: #fff; text-shadow: 0 0.3cqw 0.4cqw #000; line-height: 1; }
+.lb8-base .lb7-rw { position: absolute; left: 0; right: 0; top: 34%; bottom: 8%; display: flex; align-items: center; justify-content: center; gap: 2.4cqw; }
+.lb8-base .lb7-rw .lb7-ico { height: 9.5cqw; width: auto; object-fit: contain; filter: drop-shadow(0 0.5cqw 0.6cqw rgba(0,0,0,0.5)); }
+.lb8-base .lb7-rw b { font-size: 8cqw; font-weight: 900; color: #fff; line-height: 1; text-shadow: -0.35cqw -0.35cqw 0 #0a1440, 0.35cqw -0.35cqw 0 #0a1440, -0.35cqw 0.35cqw 0 #0a1440, 0.35cqw 0.35cqw 0 #0a1440, 0 0.7cqw 0 #0a1440; }
+.lb8-base .lb7-cell.today { box-shadow: 0 0 0 0.6cqw #ffd76b, 0 0 3cqw 1cqw rgba(255,215,107,0.8); animation: lb8Today 1s ease-in-out infinite alternate; }
+@keyframes lb8Today { to { box-shadow: 0 0 0 0.6cqw #fff2b0, 0 0 4.5cqw 1.6cqw rgba(255,225,130,0.95); } }
+.lb8-base .lb7-cell.got::after { content: ''; position: absolute; inset: 0; border-radius: 3cqw; background: rgba(0,0,0,0.45); }
+.lb8-base .lb7-cell .lb7-chk { position: absolute; right: 6%; top: 50%; transform: translateY(-50%) rotate(-8deg); z-index: 1; width: 11cqw; height: 11cqw; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #7ef08a, #1e9a3a); border: 0.6cqw solid #fff; color: #fff; font-size: 6cqw; font-weight: 900; box-shadow: 0 0.6cqw 1.2cqw rgba(0,0,0,0.5); }
+.lb8-base .lb7-day7 { position: absolute; transform: none; border-radius: 3cqw; pointer-events: none; }
+.lb8-base .lb7-day7.today { box-shadow: 0 0 0 0.6cqw #ffd76b, 0 0 3cqw 1cqw rgba(255,180,220,0.85); animation: lb8Today 1s ease-in-out infinite alternate; }
+.lb8-base .lb8-ok { position: absolute; transform: none; padding: 0; border: none; background: none; border-radius: 5cqw; cursor: pointer; }
+.lb8-base .lb8-ok:active { background: rgba(255,255,255,0.15); }
+.lb8-base .lb8-ok:disabled { background: rgba(0,0,0,0.35); }
