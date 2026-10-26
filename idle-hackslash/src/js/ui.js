@@ -2043,7 +2043,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   game.gems -= gems; if (feathers) game.ownedArtifacts.evoFeather = owned - feathers;
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
   if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
-  const stake = evoStake(gems, feathers), total = tier.mult * stake;
+  const total = evoTotal(tier.mult, gems, feathers);
   const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * total);
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
