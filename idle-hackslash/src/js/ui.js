@@ -1879,7 +1879,7 @@ function startSkGachaBgm() { // 結果が出たら今の曲を止めてファン
   setTimeout(playSkillFanfare, 650);
   skGachaBgmTimer = setTimeout(() => { if (skGachaModal.classList.contains('show')) { skGachaBgmOn = true; refreshBgm(); } }, 2900);
 }
-function stopSkGachaBgm() { clearTimeout(skGachaBgmTimer); if (skGachaBgmOn) { skGachaBgmOn = false; refreshBgm(); } }
+function stopSkGachaBgm() { clearTimeout(skGachaBgmTimer); skGachaBgmOn = false; if (typeof stopBgm === 'function') stopBgm(); refreshBgm(); } // 閉じたら必ず元のページの曲に戻す（お祝いの曲が始まる前に閉じても無音にならない）
 new MutationObserver(() => { if (!skGachaModal.classList.contains('show')) stopSkGachaBgm(); }).observe(skGachaModal, { attributes: true, attributeFilter: ['class'] });
 function playPachinkoWin(rarity) {
   const lv = { rare: 1, epic: 2, legendary: 3, mythic: 4 }[rarity] || 1;

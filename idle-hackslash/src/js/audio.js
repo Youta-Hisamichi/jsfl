@@ -971,7 +971,7 @@ function refreshBgm() {
   if (!audioCtx) return;
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
-  else if (skGachaBgmOn) type = 'skillget'; // スキルガチャの結果
+  else if (skGachaBgmOn) type = 'hireget'; // スキル・サブウェポン・進化ガチャの結果も、採用ガチャと同じお祝いの曲
   else if (hireGachaHush) type = 'silent'; // 採用ガチャのルーレット中
   else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
