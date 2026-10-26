@@ -1525,7 +1525,7 @@ function getDailyClearsForDate(key) {
 }
 
 const LOGIN_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
-const LOGIN_RARITY_TITLES = { common: 'コモン', rare: 'レア！', epic: 'エピック！！', legendary: 'レジェンド！！！' }; // レア度の呼び名はほかの画面と同じ
+const LOGIN_RARITY_TITLES = { common: 'N', rare: 'R！', epic: 'SR！！', legendary: 'SSR！！！' }; // レア度の呼び名はほかの画面と同じ
 let loginGachaSkip = null; // 演出中にタップしたら最後まで早送り
 function renderLoginDays(pos) {
   const cycle = LOGIN_BONUS_TABLE.length;
@@ -1653,9 +1653,9 @@ function checkLoginBonus(awayMs) {
   const chips = [];
   // 放置報酬（何時間ぶん）の行は出さない
   chips.push({ special: true, big: true, html: `⚔️ 放置中に <b>${idleKills.toLocaleString('ja-JP')}</b>体撃破！` }); // コインの額は上の大きな数字に出ているので書かない
-  if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label.replace('コモン', 'ノーマル')}の宝箱 ×1</span>` });
+  if (chestArtifact) chips.push({ special: true, html: `🎁 サプライズ宝箱！ <span style="color:${RARITY_INFO[chestArtifact.rarity].color}">${rarityStars(chestArtifact.rarity)} ${RARITY_INFO[chestArtifact.rarity].label}の宝箱 ×1</span>` });
   if (bonusPotion) chips.push(`🧪 回復ポーション +${bonusPotion}`);
-  if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label.replace('コモン', 'ノーマル')}の宝箱 ×1</span>` });
+  if (bonusArtifact) chips.push({ special: true, html: `🎁 <span style="color:${RARITY_INFO[bonusArtifact.rarity].color}">${rarityStars(bonusArtifact.rarity)} ${RARITY_INFO[bonusArtifact.rarity].label}の宝箱 ×1</span>` });
   const showChips = () => {
     loginBonusReward.innerHTML = chips.map((c, i) => `<span class="lb-chip ${c.special ? 'special' : ''} ${c.big ? 'lb-big' : ''}" style="animation-delay:${i * 0.18}s">${c.html || c}</span>`).join('');
   };
@@ -1875,10 +1875,10 @@ function getHeldChests() { // 古いセーブ（個数だけ）はノーマル�
 function dropTreasureChest(rarity) {
   if (!rarity) rarity = rollChestRarity();
   const hc = getHeldChests();
-  if ((hc[rarity] || 0) >= CHEST_STOCK_MAX) { const info = RARITY_INFO[rarity]; spawnDamageText(arena.x, arena.y + 30, `${info.label.replace('コモン', 'ノーマル')}の宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } return; } // レア度ごとに最大100個。文字の左にその宝箱の絵
+  if ((hc[rarity] || 0) >= CHEST_STOCK_MAX) { const info = RARITY_INFO[rarity]; spawnDamageText(arena.x, arena.y + 30, `${info.label}の宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } return; } // レア度ごとに最大100個。文字の左にその宝箱の絵
   hc[rarity] = (hc[rarity] || 0) + 1;
   const info = RARITY_INFO[rarity];
-  spawnDamageText(arena.x, arena.y + 30, `${info.label.replace('コモン', 'ノーマル')}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
+  spawnDamageText(arena.x, arena.y + 30, `${info.label}の宝箱ゲット！`, info.color, TREASURE_TEXT_DECAY);
   { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } // 文字の左にその宝箱の絵
   playLoginBonusSound();
   renderChestTray(rarity);
@@ -1887,7 +1887,7 @@ function dropTreasureChest(rarity) {
 function renderChestTray(newRarity) {
   const el = document.getElementById('chestTray'); if (!el) return;
   const hc = getHeldChests(), cnt = k => (hc[k] || 0) + rebirthChestCount(k); // 転生ガチャの宝箱も同じレア度のボタンに加算
-  el.innerHTML = CHEST_RARITIES.filter(k => cnt(k) > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label.replace('コモン', 'ノーマル')}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${cnt(k)}</b></button>`).join('');
+  el.innerHTML = CHEST_RARITIES.filter(k => cnt(k) > 0).map(k => `<button data-open-chest="${k}" class="${k === newRarity ? 'tray-new' : ''}" style="border-color:${RARITY_INFO[k].color}" title="${RARITY_INFO[k].label}の宝箱（タップで開封）">${xi(CHEST_ICON[k]) || '🎁'}<b style="border-color:${RARITY_INFO[k].color}">×${cnt(k)}</b></button>`).join('');
 }
 document.getElementById('chestTray').addEventListener('click', ev => {
   const b = ev.target.closest('[data-open-chest]'); if (!b) return;
@@ -1928,7 +1928,7 @@ function openChestDialog(rarity) {
   const info = RARITY_INFO[rarity];
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
-  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label.replace('コモン', 'ノーマル')}の宝箱</span>`;
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱</span>`;
   document.getElementById('chestModalText').textContent = `残り ${(getHeldChests()[rarity] || 0) + rebirthChestCount(rarity)} 個`; setChestStars(rarity, (getHeldChests()[rarity] || 0) + rebirthChestCount(rarity));
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
@@ -1949,7 +1949,7 @@ function openChestBatchDialog(rarity) {
   chestPausedPhase = phase; phase = 'paused';
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
-  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label.replace('コモン', 'ノーマル')}の宝箱 ×${total}</span>`;
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱 ×${total}</span>`;
   document.getElementById('chestModalText').textContent = nRebirth ? `（うち遺物確定の宝箱 ${nRebirth}個）` : ''; setChestStars(rarity, total);
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">${total > 1 ? `${total}個 まとめて開ける` : '開ける'}</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
@@ -1993,7 +1993,7 @@ function openChestBatchDialog(rarity) {
     { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? g.art.rarity : 'coin')); } // カードが並ぶのに合わせてポンポン
     document.getElementById('chestModalIcon').className = 'chest-big';
     document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁'; // 開けた宝箱（そのレア度の宝箱の絵）
-    document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label.replace('コモン', 'ノーマル')}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
+    document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
     document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
     countUpLootStacks(document.getElementById('chestModalText'));
     document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
@@ -2038,7 +2038,7 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   chestPausedPhase = phase; phase = 'paused';
   document.getElementById('chestModalIcon').innerHTML = xi(CHEST_ICON[rarity]) || '🎁';
   document.getElementById('chestModalIcon').className = 'chest-big shake';
-  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStarsImg(rarity)} ${info.label.replace('コモン', 'ノーマル')}の宝箱</span>`;
+  document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">🔮 転生ガチャ ${rarityStarsImg(rarity)} ${info.label}の宝箱</span>`;
   document.getElementById('chestModalText').textContent = `残り ${n + (getHeldChests()[rarity] || 0)} 個`; setChestStars(rarity, n + (getHeldChests()[rarity] || 0)); // ボタンの数字と同じ（ふつうの宝箱＋転生ガチャの宝箱）
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="rbAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="rbOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;

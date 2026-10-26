@@ -410,7 +410,7 @@ function openTansu(o) {
   if (r < 0.45) { const c = Math.round(unit * (0.3 + Math.random() * 0.5)); game.coins += c; spawnCoinDrop(x, o.y, c, 3); txt = `💰 ${formatCoinNumber(c)}コインを見つけた！`; playCoinChime(gm.broke % 13); }
   else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '🌿 やくそうを見つけた！ HP回復'; col = '#7ee787'; }
   else if (r < 0.65) { game.gems += 1; txt = '💎 ジェムを見つけた！'; col = '#64e8ff'; playCoinChime(10); }
-  else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label.replace('コモン', 'ノーマル')}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
+  else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `🎁 ${RARITY_INFO[rar].label}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; }
   else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキルポーションを見つけた！'; col = '#ff8ad8'; }
   else { txt = TANSU_JUNK[Math.floor(Math.random() * TANSU_JUNK.length)]; col = '#c8c8d0'; }
   spawnDamageText(x, y, txt, col, 0.016, r < 0.74);
@@ -523,7 +523,7 @@ function bagRows() {
   rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキルポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
   for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
-    rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label.replace('コモン', 'ノーマル')}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
+    rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
   rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_feather.webp" alt="">', name: '進化の羽', n: (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, desc: '進化ガチャで1枚ごとに倍率+0.1倍（1枚で×1.1）', btn: `<button data-bag-go="gacha">進化へ</button>` });
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;

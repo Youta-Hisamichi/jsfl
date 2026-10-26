@@ -616,11 +616,11 @@ const isArtifactShown = id => ARTIFACT_SHOWN.includes(id);
 const ARTIFACT_POOL = ARTIFACT_ALL.filter(a => isArtifactShown(a.id));
 
 const RARITY_INFO = {
-  common:    { label: 'コモン',     stars: 1, color: '#9aa0b4', needMult: 3 },
-  rare:      { label: 'レア',       stars: 2, color: '#64e8ff', needMult: 2 },
-  epic:      { label: 'エピック',   stars: 3, color: '#c792ea', needMult: 2 },
-  legendary: { label: 'レジェンド', stars: 4, color: '#ffd76b', needMult: 1 },
-  mythic:    { label: 'ミシック',   stars: 5, color: '#ff5cd6', needMult: 1 },
+  common:    { label: 'N',     stars: 1, color: '#9aa0b4', needMult: 3 },
+  rare:      { label: 'R',       stars: 2, color: '#64e8ff', needMult: 2 },
+  epic:      { label: 'SR',   stars: 3, color: '#c792ea', needMult: 2 },
+  legendary: { label: 'SSR', stars: 4, color: '#ffd76b', needMult: 1 },
+  mythic:    { label: 'UR',   stars: 5, color: '#ff5cd6', needMult: 1 },
 };
 const RARITY_BG_ALPHA = { common: ['30', '10'], rare: ['44', '14'], epic: ['55', '18'], legendary: ['70', '22'], mythic: ['80', '2a'] };
 function rarityBackground(rarity) {
@@ -1035,15 +1035,15 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
   dragon: { icon: '🐉', name: 'ドラゴン', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'mage', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【火炎の息】6秒ごとに攻撃力3倍の火球を吐く' },
   dragoon: { icon: '🐲', name: '竜騎士', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
-    trait: '【竜槍ジャンプ】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 レジェンド）' },
+    trait: '【竜槍ジャンプ】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 SSR）' },
   pegasus: { icon: '🦄', name: 'ペガサスナイト', stat: 'atk', desc: '攻撃力上昇', rarity: 'legendary', kind: 'dragoon', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
-    trait: '【天翔ける槍】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 レジェンド）' },
+    trait: '【天翔ける槍】9秒ごとに敵へ急降下し攻撃力5倍の一撃（★4 SSR）' },
   king: { icon: '👑', name: '王様', stat: 'coin', desc: 'コイン獲得上昇', rarity: 'legendary', kind: 'paladin', weight: 2, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
-    trait: '【王の号令】仲間全員の攻撃力 +30%／10秒ごとに自機と仲間全員のHPを8%回復（★4 レジェンド）' },
+    trait: '【王の号令】仲間全員の攻撃力 +30%／10秒ごとに自機と仲間全員のHPを8%回復（★4 SSR）' },
   archangel: { icon: '👼', name: '大天使ミカエルン', stat: 'hp', desc: '最大HP上昇', rarity: 'mythic', kind: 'angel', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
-    trait: '【祝福】10秒ごとに自機と仲間全員のHPを15%回復し、倒れた仲間を全員復活（★5 ミシック）' },
+    trait: '【祝福】10秒ごとに自機と仲間全員のHPを15%回復し、倒れた仲間を全員復活（★5 UR）' },
   bahamut: { icon: '🐉', name: '覇龍バハムート', stat: 'atk', desc: '攻撃力上昇', rarity: 'mythic', kind: 'dragon', weight: 1, recruitCost: 300, baseBonus: 0.15, perLevel: 0.05, levelCostBase: 5,
-    trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（★5 ミシック）' },
+    trait: '【覇者の力】仲間全員の攻撃力を合わせた攻撃力で攻撃する（★5 UR）' },
 };
 function compKind(id) { return (COMPANIONS[id] && COMPANIONS[id].kind) || id; } // 能力の種類（同じ能力を別の職業でも使い回す）
 const COMPANION_SPRITES = {};
