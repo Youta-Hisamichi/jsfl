@@ -1539,9 +1539,9 @@ const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = do
 let skGachaBusy = false;
 function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
 const SK_GACHA_FX_MS = { common: 800, rare: 900, epic: 1200, legendary: 1600, mythic: 2000 }; // スキル・サブウェポンガチャの演出は短め
-function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
+function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll, opts) {
   skGachaBusy = true; skGachaModal.classList.add('show');
-  runGachaCountdown(rarity, () => {
+  const reveal = () => {
     const info = RARITY_INFO[rarity];
     playPachinkoWin(rarity); startSkGachaBgm();
     skGachaResult.className = 'gacha-result skr rarity-' + rarity; // スキル・サブウェポンの結果は紫の魔法陣パネル
@@ -1556,7 +1556,31 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll) {
       reroll(ev); // 直前の結果を取り消して、もう一度（コインはかからない）
     });
     after();
-  }, skGachaResult, { dur: SK_GACHA_FX_MS[rarity] || 900, skippable: true, pachinko: true });
+  };
+  runGachaCountdown(rarity, opts && opts.starRoulette ? () => runStarRoulette(rarity, skGachaResult, reveal) : reveal, skGachaResult, { dur: SK_GACHA_FX_MS[rarity] || 900, skippable: true, pachinko: true });
+}
+// 進化ガチャ：レア星ルーレット（約2秒）。光る★の数がぐるぐる回り、だんだん遅くなって止まった数が結果のレア度。タップで飛ばせる
+const STAR_ROULETTE_MS = 2000, STAR_ROULETTE_GRADE = ['N', 'R', 'SR', 'SSR', 'UR'];
+function runStarRoulette(rarity, el, done) {
+  const n = RARITY_INFO[rarity].stars, K = 22, hold = 420;
+  el.className = 'gacha-result star-roulette'; el.style.background = '';
+  el.innerHTML = `<div class="sr-title">レア星ルーレット</div><div class="sr-stars">${[0, 1, 2, 3, 4].map(() => `<img src="${STAR_OFF_IMG}" alt="">`).join('')}</div><div class="sr-grade">?</div>`;
+  const imgs = [...el.querySelectorAll('.sr-stars img')], grade = el.querySelector('.sr-grade');
+  const show = k => { imgs.forEach((im, j) => { im.src = j < k ? STAR_ON_IMG : STAR_OFF_IMG; im.classList.toggle('on', j < k); }); grade.textContent = STAR_ROULETTE_GRADE[k - 1]; grade.style.color = RARITY_INFO[FEA_RARITIES[k - 1]].color; };
+  const start = ((n - K) % 5 + 5) % 5; // K歩目でちょうど n 個になるように始める
+  const w = Array.from({ length: K }, (_, i) => 1 + 9 * Math.pow(i / (K - 1), 2.4)), wsum = w.reduce((a, b) => a + b, 0); // だんだん遅く
+  const delays = w.map(x => x / wsum * (STAR_ROULETTE_MS - hold));
+  let i = 0, timer = 0, ended = false; const t0 = Date.now();
+  const finish = () => {
+    if (ended) return; ended = true; clearTimeout(timer); skGachaModal.removeEventListener('click', skip, true);
+    show(n); el.classList.add('sr-hit'); el.style.setProperty('--rc', RARITY_INFO[rarity].color);
+    if (typeof playGachaSound === 'function' && rarity !== 'common') playGachaSound(rarity); else playSlotTickSound();
+    timer = setTimeout(done, hold);
+  };
+  const skip = ev => { if (Date.now() - t0 < 250) return; ev.stopPropagation(); clearTimeout(timer); if (!ended) finish(); else { clearTimeout(timer); done(); } };
+  const step = () => { if (ended) return; i++; show((start + i - 1) % 5 + 1); playSlotTickSound(); if (i >= K) { finish(); return; } timer = setTimeout(step, delays[i]); };
+  skGachaModal.addEventListener('click', skip, true);
+  timer = setTimeout(step, delays[0]);
 }
 // 枠がいっぱいのときは、装備中のもの（と枠を使わない常時スキル）だけが出る＝使えないものは出ない
 function skillGachaPool() {
@@ -2053,7 +2077,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
     `${EVO_KIND_NAME[kind]}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
-    }, null);
+    }, null, { starRoulette: true }); // 結果の前にレア星ルーレット
 });
 let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
