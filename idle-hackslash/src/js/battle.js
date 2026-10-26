@@ -1438,6 +1438,7 @@ const RETURN_MIN_MS = 10 * 60 * 1000;
 const IDLE_REWARD_MAX_MS = 8 * 60 * 60 * 1000; // 放置中の戦果は最大8時間ぶん
 const IDLE_KILLS_PER_MIN = 3;                   // 放置中は1分に3体倒している扱い
 const IDLE_COIN_RATE = 0.5;                     // 放置中のコインは実際に戦うときの半分
+const RETURN_BONUS_SCALE = 0.5;                 // 帰還ボーナスのコイン（ボーナス分・放置中の戦果とも）は半分に
 const IDLE_CHEST_EVERY_MIN = 30;                // 30分ごとに宝箱1個
 const LOGIN_BONUS_TABLE = [
   { min: 10, label: '10分', coins: 60, gems: 0, chest: 0.05 },
@@ -1558,7 +1559,7 @@ function checkLoginBonus(awayMs) {
   const rarity = pickLoginRarity(tier);
   const rarityInfo = RARITY_INFO[rarity];
   const b = computeBonuses();
-  const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity]);
+  const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity] * RETURN_BONUS_SCALE);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
   const chestArtifact = null; // サプライズ宝箱は廃止（ふつうに拾った宝箱とまぎらわしいため）
   const bonusPotion = rIdx >= 2 ? 1 : 0;
@@ -1567,7 +1568,7 @@ function checkLoginBonus(awayMs) {
   // 放置中の戦果：離れている間も自キャラは戦い続けていた（最大8時間ぶん）
   const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
   const idleKills = Math.floor(idleMin * IDLE_KILLS_PER_MIN);
-  const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE);
+  const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE * RETURN_BONUS_SCALE);
   const hcIdle = getHeldChests();
   let idleChests = 0; const idleChestRarities = {};
   // 放置中の宝箱は出さない（帰還ボーナスの宝箱とまぎらわしいため）
