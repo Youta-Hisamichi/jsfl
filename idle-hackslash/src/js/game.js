@@ -149,6 +149,7 @@ function step() {
         spawnReceivedDamageText(a, dmg, crit, e);
         playPlayerHitSound();
         applyHitKnockback(a, e, 3.2);
+        tryBossParalyze(e, a);
         if (a.hp > 0 && Math.random() < computeBonuses().counter) {
           const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
           e.hp -= counter.dmg;
@@ -184,6 +185,7 @@ function step() {
           spawnReceivedDamageText(a, dmg, crit, e);
           playPlayerHitSound();
           applyHitKnockback(a, e, 3.2);
+          tryBossParalyze(e, a);
           if (a.hp > 0 && Math.random() < computeBonuses().counter) {
             const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
             e.hp -= counter.dmg;

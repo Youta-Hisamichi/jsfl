@@ -2043,13 +2043,13 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   game.gems -= gems; if (feathers) addFea(feathers, -1);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
-  if (!game.evoRate) game.evoRate = { atk: 1, hp: 1, acc: 1 };
+  if (!game.evoRate) game.evoRate = { atk: 1, hp: 1, acc: 1, para: 1 };
   const total = evoTotal(tier.mult, gems, feathers);
   const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * total);
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯' }[kind]}</span>`, `×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`, `×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
     `${EVO_KIND_NAME[kind]}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
@@ -2059,7 +2059,7 @@ let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
 function renderEvoResultCard(tier, gems, feathers, kind, total, before, after) {
   const n = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 }[tier.rarity] || 1, E = 'assets/img/ui/evo/';
-  const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${kind === 'acc' ? '🎯' : '❤️'}</span>`;
+  const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${{ hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`;
   skGachaResult.className = 'gacha-result evr evr-' + n; skGachaResult.style.background = '';
   skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">×${fmtEvoRate(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);

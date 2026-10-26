@@ -248,6 +248,7 @@ function damagePlayerByTrait(a, e, dmg, color) {
   a.hp -= d;
   spawnReceivedDamageText(a, d, crit, e);
   spawnHitParticles(a.x, a.y, color || '#ff6b6b');
+  tryBossParalyze(e, a); // ボスの技でもマヒすることがある
   playPlayerHitSound();
   updateHPUI();
   return a.hp <= 0;
@@ -1045,7 +1046,8 @@ function drawParalyzeEffects() {
     lightningFx = null;
   }
   for (const ball of balls) {
-    if (ball.isPlayer || !isParalyzed(ball) || ball.isDying) continue;
+    const heroPara = isMainPlayerBall(ball) && isHeroParalyzed(ball); // ボスのマヒ攻撃でしびれている自キャラ
+    if (!heroPara && (ball.isPlayer || !isParalyzed(ball) || ball.isDying)) continue;
     ctx.save();
     ctx.shadowColor = '#ffe14f';
     ctx.shadowBlur = 8;
@@ -1059,7 +1061,7 @@ function drawParalyzeEffects() {
     ctx.fillStyle = '#ffe14f';
     ctx.strokeStyle = 'rgba(0,0,0,0.7)';
     ctx.lineWidth = 3;
-    const label = '⚡' + Math.ceil((ball.paralyzedUntil - now) / 1000) + 's';
+    const label = heroPara ? '⚡マヒ' : '⚡' + Math.ceil((ball.paralyzedUntil - now) / 1000) + 's';
     ctx.strokeText(label, ball.x, ball.y - ball.radius - 18);
     ctx.fillText(label, ball.x, ball.y - ball.radius - 18);
     ctx.restore();

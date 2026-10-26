@@ -879,6 +879,22 @@ const TACKLE_EVA_RATE = 0.6; // タックル（体当たり）は近接攻撃よ
 const BOSS_MIN_HIT_CHANCE = 0.05; // ボスには最低5%は当たる（回避率95%）
 function getBossEvaPower(stage = game.stage) { return stage <= BOSS_EVA_START_STAGE ? 1 : Math.min(EVO_RATE_CAP, Math.pow(stage / BOSS_EVA_START_STAGE, BOSS_EVA_POWER_EXP)); }
 function getBossEvaExtra(stage = game.stage) { const q = getBossEvaPower(stage) / getEvoRate('acc'); return q > 1 ? Math.min(BOSS_EVA_EXTRA_MAX, BOSS_EVA_PER_DOUBLE * Math.log2(q)) : 0; }
+// ボスのマヒ攻撃：ステージ200を超えると、ボスの攻撃が当たったとき自キャラがマヒして動けなくなることがある。マヒ耐性進化で打ち消すイタチごっこ
+const BOSS_PARA_START_STAGE = 200, BOSS_PARA_POWER_EXP = 1.5;
+const BOSS_PARA_PER_DOUBLE = 0.06, BOSS_PARA_MAX = 0.5; // マヒ力がマヒ耐性の2倍上回るごとにマヒ率 +6%（最大50%）
+const HERO_PARA_MS = 1500, HERO_PARA_IMMUNE_MS = 2500; // マヒは1.5秒。解けてから2.5秒はマヒしない（動けないままにならないように）
+let heroParaImmuneUntil = 0;
+function getBossParaPower(stage = game.stage) { return stage <= BOSS_PARA_START_STAGE ? 0 : Math.min(EVO_RATE_CAP, Math.pow(stage / BOSS_PARA_START_STAGE, BOSS_PARA_POWER_EXP)); }
+function getBossParaChance(stage = game.stage) { const p = getBossParaPower(stage); if (!p) return 0; const q = p / getEvoRate('para'); return q > 1 ? Math.min(BOSS_PARA_MAX, BOSS_PARA_PER_DOUBLE * Math.log2(q)) : 0; }
+function isHeroParalyzed(ball) { return !!ball && ball.heroParaUntil > Date.now(); }
+function tryBossParalyze(attacker, hero) { // ボスの攻撃が当たったときに呼ぶ
+  if (!attacker || !attacker.isBoss || !hero || hero.hp <= 0 || !isMainPlayerBall(hero)) return;
+  const now = Date.now(); if (now < heroParaImmuneUntil || Math.random() >= getBossParaChance()) return;
+  hero.heroParaUntil = now + HERO_PARA_MS; heroParaImmuneUntil = now + HERO_PARA_MS + HERO_PARA_IMMUNE_MS;
+  lightningFx = { x: hero.x, y: hero.y, until: now + 350 };
+  spawnDamageText(hero.x, hero.y - hero.radius - 30, currentLang === 'en' ? 'PARALYZED!' : 'マヒ！', '#ffe14f', 0.016, true);
+  if (typeof playParalyzeSound === 'function') playParalyzeSound();
+}
 function getEnemyEvasion(enemy) { return enemy.isBoss ? Math.min(BOSS_EVASION_CAP, BOSS_EVASION + getBossEvaExtra() + getEnemyStageBonus()) : ENEMY_EVASION + getEnemyStageBonus(); }
 function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
 function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
@@ -1918,6 +1934,10 @@ function movePlayerSideBalls(list, speedMult, b) {
       continue;
     }
     if (ball.isCompanion && moveCompanionCustom(ball, speedMult, moveCtxPlayer, moveCtxEnemy)) {
+      if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
+      continue;
+    }
+    if (isMainPlayerBall(ball) && isHeroParalyzed(ball)) { // ボスのマヒ攻撃でしびれている間は動けない
       if (ball.hitCooldown > 0) ball.hitCooldown -= speedMult;
       continue;
     }
