@@ -1150,7 +1150,7 @@ const game = {
   coinCloneSlots: 0,
   shopOwned: {},
   gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
-  evoRate: { atk: 1, hp: 1 }, // 進化率（攻撃力・HPに掛け算）
+  evoRate: { atk: 1, hp: 1, acc: 1 }, // 進化率（攻撃力・HPに掛け算。命中はボスの回避力を打ち消す）
   evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },

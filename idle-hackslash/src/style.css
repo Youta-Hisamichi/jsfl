@@ -4560,3 +4560,13 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .evo-fea.evo-fea-off b { font-size: 0.6rem; }
 .evo-fea.use::after { content: '使う'; }
 .evo-fea.evo-fea-off.use::after { content: '選択'; }
+/* 進化の種類を3つに（攻撃力・HP・命中）。命中の箱には、ボスの回避力（ステージ100から上がる）を小さく添える */
+.tab-page[data-tab="gacha"] .evo-rates { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; } .tab-page[data-tab="gacha"] .evo-rate { min-width: 0; overflow: hidden; }
+.tab-page[data-tab="gacha"] .evo-rate span { font-size: 0.72rem; white-space: nowrap; }
+.tab-page[data-tab="gacha"] .evo-rate b { font-size: clamp(1rem, 5vw, 1.35rem); line-height: 1.1; }
+.tab-page[data-tab="gacha"] .evo-rate small { font-size: 0.56rem; font-weight: 800; color: #bfe6ff; text-shadow: 0 0 2px #000, 0 1px 1px #000; white-space: nowrap; }
+.tab-page[data-tab="gacha"] .evo-rate small.behind { color: #ff9a8a; }
+.tab-page[data-tab="gacha"] .evo-boss-eva { margin: 2px auto 0; padding: 3px 10px; width: fit-content; max-width: 100%; border-radius: 999px; background: rgba(6,10,24,0.72); border: 1px solid rgba(127,214,255,0.55); color: #e8f4ff; font-size: 0.7rem; font-weight: 800; text-align: center; text-shadow: 0 1px 1px #000; }
+.tab-page[data-tab="gacha"] .evo-boss-eva b { color: #9fe0ff; }
+.tab-page[data-tab="gacha"] .evo-boss-eva.behind { border-color: rgba(255,130,110,0.7); }
+.tab-page[data-tab="gacha"] .evo-boss-eva.behind b:last-child { color: #ff9a8a; }

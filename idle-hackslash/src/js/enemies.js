@@ -872,7 +872,12 @@ const ENEMY_HIT_EVA_PER_STAGE = 0.002; // ステージごとに敵の命中率�
 const ENEMY_HIT_EVA_STAGE_CAP = 0.25;  // ステージによる上昇は最大 +25%（ステージ126で到達）
 function getEnemyStageBonus() { return Math.min(ENEMY_HIT_EVA_STAGE_CAP, (game.stage - 1) * ENEMY_HIT_EVA_PER_STAGE); }
 function getEnemyAccuracy(enemy) { return (enemy.isBoss ? BOSS_ACCURACY : ENEMY_ACCURACY) + getEnemyStageBonus(); }
-function getEnemyEvasion(enemy) { return (enemy.isBoss ? BOSS_EVASION : ENEMY_EVASION) + getEnemyStageBonus(); }
+// ボスの回避力：ステージ100を超えると少しずつ上がる（100階で×1、1000階で×約32、1万階で×1000）。命中進化で追いつけば打ち消せるイタチごっこ
+const BOSS_EVA_START_STAGE = 100, BOSS_EVA_POWER_EXP = 1.5;
+const BOSS_EVA_PER_DOUBLE = 0.05, BOSS_EVA_EXTRA_MAX = 0.4; // 回避力が命中進化の2倍上回るごとに回避率 +5%（最大 +40%）
+function getBossEvaPower(stage = game.stage) { return stage <= BOSS_EVA_START_STAGE ? 1 : Math.min(EVO_RATE_CAP, Math.pow(stage / BOSS_EVA_START_STAGE, BOSS_EVA_POWER_EXP)); }
+function getBossEvaExtra(stage = game.stage) { const q = getBossEvaPower(stage) / getEvoRate('acc'); return q > 1 ? Math.min(BOSS_EVA_EXTRA_MAX, BOSS_EVA_PER_DOUBLE * Math.log2(q)) : 0; }
+function getEnemyEvasion(enemy) { return (enemy.isBoss ? BOSS_EVASION + getBossEvaExtra() : ENEMY_EVASION) + getEnemyStageBonus(); }
 function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
 function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
 function hitChance(accuracy, evasion) { return Math.min(1, Math.max(MIN_HIT_CHANCE, accuracy - evasion)); }
