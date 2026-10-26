@@ -932,6 +932,7 @@ function artifactTextFor(id, count) { // 指定した所持数のときの効果
 }
 function artifactTransitionHtml(id, beforeCount) { // 宝箱開封時の「前 → 後」の効果の推移
   const after = game.ownedArtifacts[id] || 0, b = artifactTextFor(id, beforeCount), a = artifactTextFor(id, after);
+  if (id === 'evoFeather') return `<div class="cl-trans">${beforeCount}枚 → <b>${after}枚</b></div>`; // 進化の羽は枚数だけ短く
   if (!a) return '';
   if (b === a) return `<div class="cl-trans">${a}（上限）</div>`;
   return `<div class="cl-trans">${b ? `<s>${b}</s> → ` : ''}<b>${a}</b></div>`;

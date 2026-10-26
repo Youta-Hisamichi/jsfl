@@ -1984,7 +1984,7 @@ function openChestBatchDialog(rarity) {
       const t0 = Math.min(i, 20) * 0.06;
       if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(COIN_ICO, g.count, t0)}<div class="cl-name">コイン</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       const c = RARITY_INFO[g.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(ico(g.art), g.n, t0)}<div class="cl-name">${g.art.name}</div><div class="cl-desc">${g.n > 1 ? '合計 ' : ''}${sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(ico(g.art), g.n, t0)}<div class="cl-name">${g.art.name}</div><div class="cl-desc">${g.art.id === 'evoFeather' ? '進化を加速させる素材' : (g.n > 1 ? '合計 ' : '') + sumDesc(g.art.desc, g.n)}</div>${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? g.art.rarity : 'coin')); } // カードが並ぶのに合わせてポンポン
@@ -2088,7 +2088,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     const beforeN = game.ownedArtifacts[pick.id] || 0;
     for (let i = 0; i < mult; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` };
+    loot = { art: pick, icon: ico(pick), main: `${pick.name}${mult > 1 ? ` ×${mult}` : ''}`, color: info.color, sub: pick.id === 'evoFeather' ? `進化を加速させる素材<br>${beforeN}枚 → ${game.ownedArtifacts[pick.id]}枚` : `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` }; // 進化の羽は短く
     if (!quiet) renderArtifactList();
   }
   // ★3以上の宝箱は、たまに回復ポーションも入っている（3個以上持っているときは入らない）
