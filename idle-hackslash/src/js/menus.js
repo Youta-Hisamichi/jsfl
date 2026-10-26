@@ -684,7 +684,8 @@ const RECORD_GOALS = {
   playTime: { get: () => (game.playTimeMs || 0) / 3600000, goal: listThen([1, 3, 5, 10, 24, 50, 100], 2), unit: '時間' },
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
-function getRecordGoalReward(lv) { return 1; } // どの段階も💎1つ
+function getRecordGoalReward(lv) { return 1; } // どの段階も進化の羽1枚
+function giveRecordFeathers(n) { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + n; if (typeof renderEvolutionList === 'function' && getActiveTab() === 'gacha') renderEvolutionList(); } // 戦績のリワードは進化の羽
 function isRecordGoalReady(key) { const g = RECORD_GOALS[key]; return g.get() >= g.goal(getRecordGoalLevel(key)); }
 let recordGoalsSig = '';
 function renderRecordGoals(force) {
@@ -705,7 +706,7 @@ function renderRecordGoals(force) {
     if (!el) return;
     const g = RECORD_GOALS[key], reward = getRecordGoalReward(lv);
     el.innerHTML = `<div class="rg-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div><span class="rg-text">次の目標 <b>${formatCoinNumber(target)}</b>${g.unit}</span>`
-      + (done ? `<button class="rg-claim" data-goal-claim="${key}"><b>${reward}</b> 受け取る</button>` : `<span class="rg-reward">報酬 💎${reward}</span>`);
+      + (done ? `<button class="rg-claim" data-goal-claim="${key}"><b>${reward}</b> 受け取る</button>` : `<span class="rg-reward">報酬 ${xi('x_feather', 'rg-fea') || '🪶'}${reward}</span>`);
     el.parentElement.classList.toggle('goal-ready', done);
   });
 }
@@ -722,16 +723,16 @@ function updateClaimAllBtn() {
   const { total, count } = getAllRecordGoalRewards();
   btn.style.display = count ? '' : 'none';
   if (count) btn.innerHTML = `<span class="rg-ca-num"><b>${formatCoinNumber(total)}</b></span>`; // 「全部受け取る」とジェムは絵の中、数だけ重ねる
-  btn.setAttribute('aria-label', `全部受け取る ジェム${total}（${count}件）`);
+  btn.setAttribute('aria-label', `全部受け取る 進化の羽${total}（${count}件）`);
 }
 document.getElementById('rgClaimAll').addEventListener('click', event => {
   const { total, count } = getAllRecordGoalRewards();
   if (!count) return;
   if (!game.recordGoals) game.recordGoals = {};
   for (const key in RECORD_GOALS) { const g = RECORD_GOALS[key], v = g.get(); let n = 0; while (n++ < 200 && v >= g.goal(getRecordGoalLevel(key))) game.recordGoals[key] = getRecordGoalLevel(key) + 1; }
-  game.gems += total;
+  giveRecordFeathers(total);
   playRegisterSound();
-  showTapError(`💎+${formatCoinNumber(total)} まとめてゲット！`, event.clientX, event.clientY);
+  showTapError(`進化の羽+${formatCoinNumber(total)} まとめてゲット！`, event.clientX, event.clientY);
   updateStatsUI(); renderRecordGoals(true); saveGame();
 });
 function claimRecordGoal(key, x, y) {
@@ -739,9 +740,9 @@ function claimRecordGoal(key, x, y) {
   const reward = getRecordGoalReward(getRecordGoalLevel(key));
   if (!game.recordGoals) game.recordGoals = {};
   game.recordGoals[key] = getRecordGoalLevel(key) + 1;
-  game.gems += reward;
+  giveRecordFeathers(reward);
   playRegisterSound();
-  showTapError(`💎+${reward} ゲット！`, x, y);
+  showTapError(`進化の羽+${reward} ゲット！`, x, y);
   updateStatsUI();
   renderRecordGoals(true);
   saveGame();

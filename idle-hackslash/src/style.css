@@ -1504,7 +1504,7 @@ body.in-boss #skillSetBtn { opacity: 0.45; filter: grayscale(0.6); } /* ボス�
 /* 明るいテーマでは線を暗くして見えるように */
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .upgrade-panel::before, :root:not([data-theme="dark"]) .tab-page:not([data-tab="records"]):not([data-tab="game"]) > .artifact-panel::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
 /* 戦績の「受け取る」ボタン（素材画像：宝石つきの茶色いボタン＋右の矢印） */
-.tab-page[data-tab="records"] .rec-goal .rg-claim { flex: 0 0 auto; width: 112px; aspect-ratio: 480 / 164; margin-right: 16px; padding: 0 0 0 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/claim_btn.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 0.72rem; text-shadow: 0 0 2px #000, 0 1px 2px rgba(0,0,0,0.8); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); animation: none; white-space: nowrap; }
+.tab-page[data-tab="records"] .rec-goal .rg-claim { flex: 0 0 auto; width: 112px; aspect-ratio: 480 / 164; margin-right: 16px; padding: 0 0 0 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/claim_btn_fea.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 0.72rem; text-shadow: 0 0 2px #000, 0 1px 2px rgba(0,0,0,0.8); filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); animation: none; white-space: nowrap; }
 .tab-page[data-tab="records"] .rec-goal .rg-claim b { margin-left: 24px; margin-right: 3px; font-size: 1.1em; }
 .tab-page[data-tab="records"] .rec-goal .rg-claim::after { content: ''; position: absolute; right: -15px; top: 50%; width: 12px; height: 18px; transform: translateY(-50%); border: none; background: url(assets/img/ui/claim_arrow.webp) center / contain no-repeat; animation: claimArrow 0.9s ease-in-out infinite; }
 @keyframes claimArrow { 50% { transform: translate(3px, -50%); } }
@@ -4073,7 +4073,7 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .tab-page[data-tab="records"] .record.rec-v2 .rec-ico.rec-ico2 { margin-left: -8px !important; } /* アイコンを少し左へ */
 .tab-page[data-tab="records"] .record-panel { border-image-source: url(assets/img/ui/rec/panel_frame.webp) !important; } /* 枠だけの絵（行の区切り飾りが左右の縁に伸びて残らないように） */
 /* 戦績の「全部受け取る」ボタン：素材の絵に、ジェムの数と件数だけ重ねる（見本どおり） */
-.tab-page[data-tab="records"] .rg-claim-all { position: relative; display: block !important; width: 100% !important; aspect-ratio: 2000 / 629; min-height: 0 !important; margin: 6px 0 4px !important; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/rec/claim_all.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; container-type: inline-size; }
+.tab-page[data-tab="records"] .rg-claim-all { position: relative; display: block !important; width: 100% !important; aspect-ratio: 2000 / 629; min-height: 0 !important; margin: 6px 0 4px !important; padding: 0 !important; border: none !important; border-image: none !important; background: url(assets/img/ui/rec/claim_all_fea.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; container-type: inline-size; }
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num { position: absolute; left: 68.4%; right: 12.5%; top: 50%; transform: translateY(-50%); display: flex; align-items: baseline; justify-content: flex-start; gap: 1.5cqw; white-space: nowrap; }
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num b { color: #0d4fa8 !important; font-size: 9cqw; font-weight: 900; line-height: 1; letter-spacing: -0.02em; text-shadow: 0 0 2px #fff, 0 1px 0 #fff6c8; }
 .tab-page[data-tab="records"] .rg-claim-all .rg-ca-num small { color: #2a1600 !important; font-size: 4.2cqw; font-weight: 900; }
@@ -4531,3 +4531,6 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 /* 進化ガチャの倍率：桁が増えても枠からはみ出さず、1行に収める（文字の長さで大きさを変える） */
 .tab-page[data-tab="gacha"] .evo-odd { container-type: inline-size; overflow: hidden; }
 .tab-page[data-tab="gacha"] .evo-odd b { white-space: nowrap; max-width: 92%; font-size: var(--efs, 20cqw) !important; line-height: 1.1; letter-spacing: -0.03em; }
+
+/* 戦績のリワードは進化の羽 */
+.rec-goal .rg-reward .rg-fea { width: 1.4em; height: 1.4em; object-fit: contain; vertical-align: -0.35em; margin: 0 1px; }

@@ -2,7 +2,7 @@
 // ---- ページの段階的な解放 ----
 const TAB_UNLOCK_STAGE = { companion: 2, coinshop: 8, gacha: 11, records: 14, gemshop: 17, ranking: 20 }; // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
 const TAB_UNLOCK_INFO = {
-  records: '目標を達成するとジェムがもらえます',
+  records: '目標を達成すると進化の羽がもらえます',
   companion: '自キャラの攻撃力・HPを強化！ 仲間の招集もここで（初回無料）',
   ranking: 'ほかのプレイヤーと記録を競おう',
   coinshop: 'スキルを覚えて戦いを有利に進めよう',
