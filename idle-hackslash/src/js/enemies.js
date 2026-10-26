@@ -887,10 +887,10 @@ function spawnMissText(target) {
   spawnDamageText(target.x, target.y - target.radius - 8, 'MISS', '#9aa0b4');
   playMissSound();
 }
-function playEvadeSound() { // 剣で弾く「カキーン！」：金属の響き（倍音がずれた高い音）と打ち合う瞬間のカチッ
+function playEvadeSound() { // 攻撃を弾く・かわす音：金属の「カーン」ではなく、風を切るダッシュ音「シュッ」
   if (!audioCtx || isBattleSfxMuted()) return;
-  filteredNoise(0, 0.03, 0.35, 5000, 0.8, 'highpass');
-  [[1950, 0.16], [2870, 0.11], [4130, 0.08], [5480, 0.05]].forEach(([f, a], k) => thump(f, f * 0.985, 0.55 - k * 0.08, a, 'sine'));
+  noiseSweep(0.16, 900, 4200, 'bandpass', 1.6, 0.42); // 低いところから一気に駆け上がる風切り
+  noiseSweep(0.1, 6000, 2500, 'highpass', 0.7, 0.14, 0.06); // 抜けていく余韻
 }
 function spawnEvadeText(target) {
   spawnDamageText(target.x, target.y - target.radius - 8, currentLang === 'en' ? 'EVADE!' : '回避！', '#7ee7ff');
