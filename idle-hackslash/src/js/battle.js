@@ -2049,10 +2049,12 @@ function openRebirthChestDialog(rarity) { // 転生ガチャの宝箱：開け�
   };
   chestModal.classList.add('show');
 }
-var pendingChestCoins = 0;
+var pendingChestCoins = 0, pendingChestCoinPts = 0;
+const CHEST_COIN_FX_PTS = { common: 1, rare: 2, epic: 4, legendary: 7, mythic: 10 }; // 散らばるコインの多さ：レア度が高いほど・開けた数が多いほど増える
 function burstChestCoins() { // 宝箱を閉じたら、出たコインが宝箱の位置から散らばってヘッダーへ回収される
   const v = pendingChestCoins; pendingChestCoins = 0; if (v <= 0) return;
-  const n = Math.max(10, Math.min(40, Math.round(8 + Math.log2(v + 1) * 3))), x = arena.x, y = arena.y;
+  const pts = pendingChestCoinPts || 1; pendingChestCoinPts = 0;
+  const n = Math.max(3, Math.min(40, Math.round(1 + pts * 2.2))), x = arena.x, y = arena.y; // Nの宝箱1個なら3枚ほど
   for (let i = 0; i < n; i++) {
     const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, sp = 3.5 + Math.random() * 5;
     coinFx.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, ground: y + 30 + Math.random() * 70, bounces: 0, phase: 'fly', wait: 35 + i * 3, t: 0, value: v / n, spin: Math.random() * 6 });
@@ -2084,7 +2086,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (isCoin) {
     const bonus = Math.round(stageCoinRaw() * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
-    pendingChestCoins += bonus; coinDisplayHold += bonus; // コインの演出は宝箱を閉じたときに（表示の数字も回収されるまで増やさない）
+    pendingChestCoins += bonus; coinDisplayHold += bonus; pendingChestCoinPts += (CHEST_COIN_FX_PTS[rarity] || 1) * Math.sqrt(mult); // コインの演出は宝箱を閉じたときに（表示の数字も回収されるまで増やさない）
     loot = { icon: xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${COIN_ICO} ${formatCoinNumber(bonus)} コイン`, color: '#d18b00' };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物

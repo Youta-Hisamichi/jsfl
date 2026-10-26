@@ -571,16 +571,6 @@ const BGM_SONGS = {
     ],
     drums: 'k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k k k k s s s s | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k - - - s - k - | k k k k s s s s',
   },
-  battle37: { // 戦闘37 竜と翔ける空の戦記：流れる分散和音と穏やかに刻むリズムに乗って、竜とともに大空を駆けるような叙情的で雄大な旋律が歌う、空と竜の戦記RPG風の曲
-    bpm: 144,
-    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'F#5 = = B5 F#5 = A5 = | E5 = = = A5 = A5 = | F#5 = A5 B5 B5 = D6 = | D6 = = = = = B5 = | D6 = = D6 A5 = D6 = | B5 = = = D6 = D6 = | B5 = D6 D6 B5 = B5 = | A5 = = = = = E5 = | D5 = = A4 B4 = B4 = | E5 = = = A5 = C#6 = | C#6 = B5 D6 A5 = A5 = | B5 = = = = = B5 = | D6 = = D6 G5 = D6 = | A5 = = = C#6 = C#6 = | A5 = E5 G5 D6 = D6 = | D6 = = = = = - -' },
-      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4 A4 F#4 A4 D4 A4 F#4 A4 | A3 E4 C#4 E4 A3 E4 C#4 E4 | B3 F#4 D4 F#4 B3 F#4 D4 F#4 | G4 D5 B4 D5 G4 D5 B4 D5 | D4 A4 F#4 A4 D4 A4 F#4 A4 | G4 D5 B4 D5 G4 D5 B4 D5 | E4 B4 G4 B4 E4 B4 G4 B4 | A3 E4 C#4 E4 A3 E4 C#4 E4 | G4 D5 B4 D5 G4 D5 B4 D5 | A3 E4 C#4 E4 A3 E4 C#4 E4 | F#4 C#5 A4 C#5 F#4 C#5 A4 C#5 | B3 F#4 D4 F#4 B3 F#4 D4 F#4 | G4 D5 B4 D5 G4 D5 B4 D5 | A3 E4 C#4 E4 A3 E4 C#4 E4 | D4 A4 F#4 A4 D4 A4 F#4 A4 | D4 A4 F#4 A4 D4 A4 F#4 A4' },
-      { type: 'vrc6saw', gain: 0.047, notes: 'D2 = = = A2 = = = | A2 = = = E3 = = = | B2 = = = F#3 = = = | G2 = = = D3 = = = | D2 = = = A2 = = = | G2 = = = D3 = = = | E2 = = = B2 = = = | A2 = = = E3 = = = | G2 = = = D3 = = = | A2 = = = E3 = = = | F#2 = = = C#3 = = = | B2 = = = F#3 = = = | G2 = = = D3 = = = | A2 = = = E3 = = = | D2 = = = A2 = = = | D2 = = = A2 = = =' },
-    ],
-    drums: 'k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - s - s s s s | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - h - s - h - | k - s - s s s s',
-  },
   boss27: { // ボス26 神竜の咆哮：疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲
     bpm: 156,
     echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
@@ -819,7 +809,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle35', 'battle36', 'battle37', 'battle38'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle35', 'battle36', 'battle38'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -919,7 +909,6 @@ const BGM_INFO = [
   { key: 'boss25', name: 'ボス24 乙女たちの決戦', desc: '刻むオクターブベースと鋭いブラスの連打に乗って、劇的な短調の旋律が舞台の大詰めのように燃え上がる、大正浪漫の歌劇団風の決戦曲。VRC6風チップチューン。ニ短調（大正浪漫の歌劇アクションの作風）・BPM168' },
   { key: 'battle36', name: '戦闘36 発動する無限の力', desc: 'うなる分散和音のオスティナートと重い太鼓に乗って、ブラスのように伸びる不穏で壮大な旋律が宇宙の果てから迫ってくる、80年代宇宙SFロボットアニメ風の曲。VRC6風チップチューン。ホ短調（伝説の巨神ロボットアニメの作風）・BPM132' },
   { key: 'boss26', name: 'ボス25 星を滅ぼす巨神', desc: '地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲。VRC6風チップチューン。ハ短調（伝説の巨神ロボットアニメの作風）・BPM118' },
-  { key: 'battle37', name: '戦闘37 竜と翔ける空の戦記', desc: '流れる分散和音と穏やかに刻むリズムに乗って、竜とともに大空を駆けるような叙情的で雄大な旋律が歌う、空と竜の戦記RPG風の曲。VRC6風チップチューン。ニ長調（竜と空の戦記シミュレーションRPGの作風）・BPM144' },
   { key: 'boss27', name: 'ボス26 神竜の咆哮', desc: '疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲。VRC6風チップチューン。ト短調（竜と空の戦記シミュレーションRPGの作風）・BPM156' },
   { key: 'battle38', name: '戦闘38 小隊、前へ', desc: '小太鼓の刻む行進のリズムに乗って、少年少女の決意を歌うような凛とした旋律が一歩ずつ前へ進んでいく、学徒兵の青春戦記風の曲。VRC6風チップチューン。イ短調（学園と戦場の青春シミュレーションの作風）・BPM128' },
   { key: 'boss28', name: 'ボス27 絶望を越える行進', desc: '打ち鳴らされる小太鼓の連打と刻むベースに乗って、絶望の中で歯を食いしばるような悲壮で力強い旋律が高まっていく、学徒兵の青春戦記風の決戦曲。VRC6風チップチューン。ホ短調（学園と戦場の青春シミュレーションの作風）・BPM150' },
