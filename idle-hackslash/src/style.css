@@ -4528,3 +4528,6 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .lb8-base .lb7-cell .lb7-chk { width: 13cqw; height: 13cqw; border: none; border-radius: 0; background: url(assets/img/ui/lb8/check.webp) center / contain no-repeat; box-shadow: none; font-size: 0; color: transparent; filter: drop-shadow(0 0.6cqw 0.8cqw rgba(0,0,0,0.55)); }
 .lb8-face .lb7-face { border: none !important; box-shadow: none !important; background: none !important; border-radius: 0 !important; margin: 0 !important; }
 .lb8-face { width: 16.8cqw !important; height: 16.8cqw !important; }
+/* 進化ガチャの倍率：桁が増えても枠からはみ出さず、1行に収める（文字の長さで大きさを変える） */
+.tab-page[data-tab="gacha"] .evo-odd { container-type: inline-size; overflow: hidden; }
+.tab-page[data-tab="gacha"] .evo-odd b { white-space: nowrap; max-width: 92%; font-size: var(--efs, 20cqw) !important; line-height: 1.1; letter-spacing: -0.03em; }
