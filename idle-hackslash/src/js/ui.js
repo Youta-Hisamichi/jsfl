@@ -2033,11 +2033,13 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn) { evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
+  const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
+  if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
   if (evoBusy || skGachaBusy) return;
-  const gems = evoGems, feathers = nextEvoFea(), kind = evoKind; // 羽は持っていれば必ず1枚使う（いちばんレア度の高いもの）
+  const gems = evoGems, feathers = nextEvoFea(), kind = evoKind; // 選んだ羽を1枚使う
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   game.gems -= gems; if (feathers) addFea(feathers, -1);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）

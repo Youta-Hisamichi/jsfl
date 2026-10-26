@@ -666,7 +666,7 @@ const EVO_MIN_GEMS = 1, EVO_MAX_GEMS = 10, EVO_RATE_CAP = 1e150; // ジェム1�
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
 function evoLuck(gems, feathers) { return 0; } // 確率は固定（捧げた数は倍率に掛かる）
-// 進化の羽：N・R・SR・SSR・URの5種類（同じレア度の宝箱から出る）。進化1回につき1枚、持っていればいちばんレア度の高い羽を必ず使う
+// 進化の羽：N・R・SR・SSR・URの5種類（同じレア度の宝箱から出る）。進化1回につき1枚、使う羽（または使わない）を選べる
 const FEA_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 const FEA_MULT = { common: 2, rare: 3, epic: 4, legendary: 5, mythic: 10 }; // N羽×2 R羽×3 SR羽×4 SSR羽×5 UR羽×10
 const FEA_ICON = { common: 'assets/img/icons/bag_feather.webp', rare: 'assets/img/icons/feather_r2.webp', epic: 'assets/img/icons/feather_r3.webp', legendary: 'assets/img/icons/feather_r4.webp', mythic: 'assets/img/icons/feather_r5.webp' };
@@ -675,7 +675,10 @@ function feaCount(r) { return Math.max(0, Math.floor(Number(feaStock()[r]) || 0)
 function feaTotal() { return FEA_RARITIES.reduce((t, r) => t + feaCount(r), 0); }
 function syncFeaTotal() { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = feaTotal(); } // 遺物コレクションの所持数は全種類の合計
 function addFea(r, n = 1) { feaStock()[r] = feaCount(r) + n; syncFeaTotal(); }
-function nextEvoFea() { for (let i = FEA_RARITIES.length - 1; i >= 0; i--) if (feaCount(FEA_RARITIES[i]) > 0) return FEA_RARITIES[i]; return null; } // 次の進化で使う羽
+function nextEvoFea() { // 次の進化で使う羽（選んだ羽。「なし」なら使わない。選んだ羽が尽きたら使わない）
+  const p = game.evoFeaPick; if (p === undefined) { for (let i = FEA_RARITIES.length - 1; i >= 0; i--) if (feaCount(FEA_RARITIES[i]) > 0) return FEA_RARITIES[i]; return null; } // 未選択のときはいちばんレア度の高い羽
+  return p && feaCount(p) > 0 ? p : null;
+}
 function feaName(r) { return `${RARITY_INFO[r].label}羽`; }
 function feaIco(r, cls = 'ico-img') { return `<img class="${cls}" src="${FEA_ICON[r] || FEA_ICON.common}" alt="">`; }
 function evoFeatherMult(fea) { return (fea && FEA_MULT[fea]) || 1; } // 使う羽のレア度で倍率が決まる（羽なしは×1）

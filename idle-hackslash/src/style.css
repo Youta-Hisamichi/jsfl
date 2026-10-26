@@ -2989,7 +2989,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] #rankingTitle, .tab-page[data-tab="ranking"] #rankDateNav { background: rgba(10,8,20,0.5) !important; }
 .tab-page[data-tab="ranking"] .friend-box { border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: rgba(10,10,30,0.5) padding-box !important; }
 /* 進化ページの背景：浮かぶ大水晶の祭壇（ページ全体に敷き、暗くするのは控えめに） */
-.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(20,8,34,0.15), rgba(20,8,34,0.3)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(14,6,26,0.38), rgba(14,6,26,0.52)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
 /* スキルページの背景：緑の錬金術の塔 */
 .tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.3) 360px, rgba(4,18,10,0.75) 520px, #06140c 600px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
 /* スキルページのカード：仲間ページのタイル（紺地＋金の飾り枠）に合わせる */
@@ -4553,3 +4553,10 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .evo-fea.none { opacity: 0.42; }
 .evo-fea.use { border-color: #ffe27a; box-shadow: 0 0 6px 1px rgba(255,226,122,0.75); background: rgba(60,48,10,0.6); }
 .evo-fea.use::after { content: '使用'; position: absolute; top: -7px; left: 50%; transform: translateX(-50%); padding: 0 4px; border-radius: 6px; background: #ffcf3a; color: #3a2400; font-size: 0.5rem; font-weight: 900; white-space: nowrap; }
+/* 進化の羽：タップで使う羽を選ぶ（「なし」で使わない） */
+.tab-page[data-tab="gacha"] .evo-row button.evo-fea, button.evo-fea { font: inherit; color: inherit; cursor: pointer; margin: 0; min-width: 0 !important; padding: 2px 1px 1px !important; border-radius: 7px !important; border: 1.5px solid color-mix(in srgb, var(--rc) 70%, transparent) !important; background: rgba(10,14,28,0.55) !important; }
+.tab-page[data-tab="gacha"] .evo-row button.evo-fea.use, button.evo-fea.use { border-color: #ffe27a !important; background: rgba(60,48,10,0.6) !important; }
+.evo-fea.evo-fea-off { justify-content: center; }
+.evo-fea.evo-fea-off b { font-size: 0.6rem; }
+.evo-fea.use::after { content: '使う'; }
+.evo-fea.evo-fea-off.use::after { content: '選択'; }
