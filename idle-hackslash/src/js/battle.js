@@ -1864,7 +1864,7 @@ const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数（レア度ごとに）
 const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6', mythic: 'x_chest7' };
 const CHEST_COIN_MULT = { common: 3, rare: 8, epic: 25, legendary: 77, mythic: 255 }; // 宝箱のコイン：開けたステージのザコ1体ぶん×この数
-const CHEST_FEATHERS = { common: 1, rare: 3, epic: 10, legendary: 25, mythic: 255 }; // 宝箱から出る進化の羽の枚数（レア度別）
+const CHEST_FEATHERS = { common: 1, rare: 3, epic: 10, legendary: 25, mythic: 100 }; // 宝箱から出る進化の羽の枚数（レア度別）
 const CHEST_ARTIFACT_CHANCE = { common: 0.35, rare: 0.45, epic: 0.6, legendary: 0.9, mythic: 1 };
 function getHeldChests() { // 古いセーブ（個数だけ）はノーマルとして扱う
   if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
