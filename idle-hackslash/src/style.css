@@ -4534,3 +4534,6 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 
 /* 戦績のリワードは進化の羽 */
 .rec-goal .rg-reward .rg-fea { width: 1.4em; height: 1.4em; object-fit: contain; vertical-align: -0.35em; margin: 0 1px; }
+/* 全部受け取る：数字を羽の右へ／受け取るボタン：文字を羽に合わせて少し右へ */
+.tab-page[data-tab="records"] .rg-claim-all .rg-ca-num { left: 70.6% !important; }
+.tab-page[data-tab="records"] .record.rec-v2 .rec-goal .rg-claim b { margin-left: 24px !important; }
