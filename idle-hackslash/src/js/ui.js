@@ -573,7 +573,7 @@ function fullReset() {
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-  game.ownedArtifacts = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+  game.ownedArtifacts = {}; game.evoFea = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
   lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -758,7 +758,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'gems1000') game.gems += 1000;
   if (action === 'coins1000') game.coins += 1000;
   if (action === 'supergems') game.superGems += 10000;
-  if (action === 'feathers') { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + 10; renderEvolutionList(); }
+  if (action === 'feathers') { FEA_RARITIES.forEach(r => addFea(r, 2)); renderEvolutionList(); }
   if (action === 'die') {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (phase !== 'battle' || !player) { showNotice('DEBUG: 戦闘中のみ使えます', true); return; }
@@ -2030,17 +2030,16 @@ gacha10Btn.addEventListener('click', event => {
 // 新しい進化：攻撃力かHPを選び、ジェムと羽の数を決めて進化
 const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic: 'UR' }; // 進化ガチャのレア度表記
 document.getElementById('evoPanel').addEventListener('click', event => {
-  const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]'), fb = event.target.closest('[data-evo-fea]');
-  const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0, maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
+  const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
+  const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn) { evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
-  if (fb) { const d = fb.dataset.evoFea; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(owned * Math.abs(parseFloat(d)) / 100)) : Number(d); evoFeathers = d === 'max' ? owned : d === 'zero' ? 0 : Math.max(0, Math.min(owned, evoFeathers + step)); game.evoLastFeathers = evoFeathers; renderEvolutionList(); return; }
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
   if (evoBusy || skGachaBusy) return;
-  const gems = evoGems, feathers = Math.min(evoFeathers, owned), kind = evoKind;
+  const gems = evoGems, feathers = nextEvoFea(), kind = evoKind; // 羽は持っていれば必ず1枚使う（いちばんレア度の高いもの）
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
-  game.gems -= gems; if (feathers) game.ownedArtifacts.evoFeather = owned - feathers;
+  game.gems -= gems; if (feathers) addFea(feathers, -1);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
   if (!game.evoRate) game.evoRate = { atk: 1, hp: 1 };
   const total = evoTotal(tier.mult, gems, feathers);
@@ -2048,7 +2047,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${xi('x_feather', 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${kind === 'atk' ? '⚔️' : '❤️'}</span>`, `×${fmtEvoRate(total)}<small class="evo-res-calc">×${tier.mult} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
     `${kind === 'atk' ? '攻撃力' : 'HP'}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
@@ -3106,6 +3105,7 @@ if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig3
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
+if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.floor((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0)); game.feaMig5 = true; syncFeaTotal(); } // 進化の羽を5種類にしたとき、持っていた羽はN羽に
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
 if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す

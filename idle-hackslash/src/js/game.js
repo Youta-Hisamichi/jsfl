@@ -1043,8 +1043,7 @@ function completeReincarnation() {
   const lvGain = getRebirthLvGain(game.stage);
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
   const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×10枚）
-  if (!game.ownedArtifacts) game.ownedArtifacts = {};
-  game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + featherGain;
+  addFea('common', featherGain); // 転生でもらえるのはN羽
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
@@ -1075,7 +1074,7 @@ function completeReincarnation() {
   toast.style.removeProperty('--chest-glow');
   toastBig.textContent = '輪廻転生……';
   toastBig.className = 'big reborn';
-  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n💪 転生ボーナス：攻撃力・最大HP ×${rebirthPowerMult()}\n<span class="chest-rarity" style="color:#7fd6ff">${xi('x_feather', 'fea-ico')} 進化の羽 ×${featherGain}</span>を手に入れた！`;
+  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n💪 転生ボーナス：攻撃力・最大HP ×${rebirthPowerMult()}\n<span class="chest-rarity" style="color:#7fd6ff">${feaIco('common', 'fea-ico')} 進化のN羽 ×${featherGain}</span>を手に入れた！`;
   toast.classList.add('show');
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;

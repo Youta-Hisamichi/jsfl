@@ -95,17 +95,16 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
-let evoKind = 'atk', evoGems = 1, evoFeathers = 0;
+let evoKind = 'atk', evoGems = 1, evoFeathers = null; // evoFeathers：次の進化で使う羽のレア度（なしは null）
 function renderEvolutionList() {
   const el = document.getElementById('evoPanel'); if (!el) return;
-  const owned = (game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0;
-  evoGems = Math.max(EVO_MIN_GEMS, Math.min(game.evoLastGems || 1, EVO_MAX_GEMS, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = Math.max(0, Math.min(game.evoLastFeathers || 0, owned)); // 前回の設定（所持数を超えたら所持数まで）
+  evoGems = Math.max(EVO_MIN_GEMS, Math.min(game.evoLastGems || 1, EVO_MAX_GEMS, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = nextEvoFea(); // 羽は持っていれば、いちばんレア度の高いものを1枚使う
   const odds = evoOdds(evoGems, evoFeathers), fmtRate = v => '×' + (v < 1000 ? +v.toFixed(2) : formatCoinNumber(v));
   el.innerHTML = `<div class="evo-rates"><div class="evo-rate ${evoKind === 'atk' ? 'on' : ''}" data-evo-kind="atk"><span>⚔️ 攻撃力進化</span><b>${fmtRate(getEvoRate('atk'))}</b></div><div class="evo-rate ${evoKind === 'hp' ? 'on' : ''}" data-evo-kind="hp"><span>❤️ HP進化</span><b>${fmtRate(getEvoRate('hp'))}</b></div></div>
     <div class="evo-row"><span class="evo-lbl">${xi('x_gem', 'evo-lbl-ico') || '💎'} ジェム</span><button data-evo-gems="min" class="evo-min">MIN</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="max">MAX</button></div>
-    <div class="evo-row"><span class="evo-lbl">${xi('x_feather', 'evo-lbl-ico')} 進化の羽</span><button data-evo-fea="zero" class="evo-min">MIN</button><button data-evo-fea="-10%">-10%</button><button data-evo-fea="-1">-</button><b class="evo-val">${evoFeathers}<small> / ${owned}</small></b><button data-evo-fea="1">+</button><button data-evo-fea="10%">+10%</button><button data-evo-fea="max">MAX</button></div>
+    <div class="evo-row evo-fea-row"><span class="evo-lbl">${xi('x_feather', 'evo-lbl-ico')} 進化の羽<small>${evoFeathers ? `${feaName(evoFeathers)}を1枚使用` : '持っていない'}</small></span><div class="evo-fea-list">${FEA_RARITIES.map(r => `<span class="evo-fea${r === evoFeathers ? ' use' : ''}${feaCount(r) ? '' : ' none'}" style="--rc:${RARITY_INFO[r].color}">${feaIco(r, 'evo-fea-ico')}<b>${RARITY_INFO[r].label}</b><i>×${FEA_MULT[r]}</i><em>${formatCoinNumber(feaCount(r))}</em></span>`).join('')}</div></div>
     <div class="evo-odds">${EVO_TIERS.map((t, i) => `<div class="evo-odd" style="--rc:${RARITY_INFO[t.rarity].color}"><span>${rarityStars(t.rarity)}</span>${(m => `<b style="--efs:${[30, 30, 30, 26, 22, 19, 16.5, 14.5][Math.min(7, m.length)]}cqw">×${m}</b>`)(fmtEvoRate(evoTotal(t.mult, evoGems, evoFeathers)))}<i>${(odds[i] * 100).toFixed(odds[i] < 0.01 ? 2 : 1)}%</i></div>`).join('')}</div>
-    <button class="gacha-art-btn ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn" aria-label="進化ガチャ">${gachaArtHtml(3, `💎 ${evoGems}${evoFeathers ? ` × ${xi('x_feather', 'fea-ico')}${evoFeathers}枚` : ''}`, `${evoKind === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}を進化する`)}</button>`;
+    <button class="gacha-art-btn ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn" aria-label="進化ガチャ">${gachaArtHtml(3, `💎 ${evoGems}${evoFeathers ? ` ＋ ${feaIco(evoFeathers, 'fea-ico')}${feaName(evoFeathers)}` : ''}`, `${evoKind === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}を進化する`)}</button>`;
   updateCompSummonVisibility();
 }
 function gachaArtHtml(i, cost, sub) { return `<span class="gacha-art ga-${i}"></span><span class="gab-cost">${cost}</span>${sub ? `<small class="gab-sub">${sub}</small>` : ''}`; } // ガチャのボタン（絵＋下にコスト）
@@ -521,6 +520,7 @@ function dropSkipArtifact(skipped) { // 中身は見せずに宝箱へ封入（�
 }
 
 function gainArtifact(id) {
+  if (id === 'evoFeather') { addFea('common'); return; } // 転生ガチャの宝箱などに入っていた進化の羽はN羽
   game.ownedArtifacts[id] = (game.ownedArtifacts[id] || 0) + 1;
 }
 let artifactFilter = 'all';
@@ -685,7 +685,7 @@ const RECORD_GOALS = {
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
 function getRecordGoalReward(lv) { return 1; } // どの段階も進化の羽1枚
-function giveRecordFeathers(n) { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = (game.ownedArtifacts.evoFeather || 0) + n; if (typeof renderEvolutionList === 'function' && getActiveTab() === 'gacha') renderEvolutionList(); } // 戦績のリワードは進化の羽
+function giveRecordFeathers(n) { addFea('common', n); if (typeof renderEvolutionList === 'function' && getActiveTab() === 'gacha') renderEvolutionList(); } // 戦績のリワードは進化の羽
 function isRecordGoalReady(key) { const g = RECORD_GOALS[key]; return g.get() >= g.goal(getRecordGoalLevel(key)); }
 let recordGoalsSig = '';
 function renderRecordGoals(force) {
