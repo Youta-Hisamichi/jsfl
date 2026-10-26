@@ -662,7 +662,7 @@ const EVO_TIERS = [
   { rarity: 'common', mult: 1.01, base: 71.2 }, { rarity: 'rare', mult: 1.1, base: 20 }, { rarity: 'epic', mult: 2, base: 6.5 },
   { rarity: 'legendary', mult: 10, base: 2 }, { rarity: 'mythic', mult: 100, base: 0.3 },
 ];
-const EVO_MIN_GEMS = 1, EVO_RATE_CAP = 1e150; // ジェム1個から引ける
+const EVO_MIN_GEMS = 1, EVO_MAX_GEMS = 10, EVO_RATE_CAP = 1e150; // ジェム1個から引ける。一度に使えるのは10個まで
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
 function evoLuck(gems, feathers) { return 0; } // 確率は固定（捧げた数は倍率に掛かる）
