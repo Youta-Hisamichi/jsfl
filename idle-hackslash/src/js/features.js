@@ -392,7 +392,7 @@ function showLogin7(day, got) {
   const cells = LOGIN7_SHOW.map(([k, n], i) => { const d = i + 1, st = d < day ? 'got' : d === day ? 'today' : '', [x0, y0, x1, y1] = BOX[i];
     return `<div class="lb7-cell ${st}" style="left:${(x0 / 1111 * 100).toFixed(2)}%;top:${(y0 / 1415 * 100).toFixed(2)}%;width:${((x1 - x0) / 1111 * 100).toFixed(2)}%;height:${((y1 - y0) / 1415 * 100).toFixed(2)}%"><b class="lb7-dn">${d}</b><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
   const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
-  const face = gid === 'hero' ? '<img class="lb7-portrait" src="assets/img/ui/lb7/portrait.webp" alt="">' : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
+  const face = gid === 'hero' ? `<span class="lb7-face lb8-hero">${typeof getHeroChar === 'function' && getHeroChar() ? companionIconHtml(getHeroChar()) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`}</span>` : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
   const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<img class="lb7-ico" src="assets/img/ui/lb8/chest.webp" alt="">${LB7_ICON.gem}<b>10</b>`;
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb8">
