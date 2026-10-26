@@ -397,8 +397,8 @@ function showLogin7(day, got) {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb8">
     <div class="lb8-base">
-      <b class="lb8-day" style="${P(912, 150)}">${day}</b>
-      <div class="lb8-face" style="${P(116, 380)}">${face}</div>
+      <b class="lb8-day" style="${P(921, 151)}">${day}</b>
+      <div class="lb8-face" style="${P(123, 379)}">${face}</div>
       <b class="lb8-name" style="${P(420, 311)}">${gid === 'hero' ? (typeof heroName === 'function' ? heroName() : '勇者') : COMPANIONS[gid].name}</b>
       <div class="lb8-say" style="${P(655, 392)}">${gid === 'hero' && typeof heroSay === 'function' ? heroSay(say) : say}</div>
       ${cells}
