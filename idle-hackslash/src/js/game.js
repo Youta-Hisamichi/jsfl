@@ -125,7 +125,7 @@ function step() {
     // お試し：ぶつかったら敵味方が同時に攻撃する（麻痺・眠り中の敵は反撃できない）
     if (!MUTUAL_HIT) {
       const enemyIsHit = isDisabled(e) || Math.random() < 0.5;
-      if (enemyIsHit && !playerAttackHits(e)) {
+      if (enemyIsHit && !playerAttackHits(e, rushingNow)) { // 助走をつけた体当たり（タックル）は接近戦より当たりやすい
         spawnMissText(e);
       } else if (enemyIsHit) {
         const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
@@ -161,7 +161,7 @@ function step() {
         }
       }
     } else {
-      if (!playerAttackHits(e)) spawnMissText(e);
+      if (!playerAttackHits(e, rushingNow)) spawnMissText(e); // 体当たり（タックル）は接近戦より当たりやすい
       else {
         const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
         e.hp -= dmg;

@@ -874,17 +874,23 @@ function getEnemyStageBonus() { return Math.min(ENEMY_HIT_EVA_STAGE_CAP, (game.s
 function getEnemyAccuracy(enemy) { return (enemy.isBoss ? BOSS_ACCURACY : ENEMY_ACCURACY) + getEnemyStageBonus(); }
 // ボスの回避力：ステージ100を超えると少しずつ上がる（100階で×1、1000階で×約32、1万階で×1000）。命中進化で追いつけば打ち消せるイタチごっこ
 const BOSS_EVA_START_STAGE = 100, BOSS_EVA_POWER_EXP = 1.5;
-const BOSS_EVA_PER_DOUBLE = 0.05, BOSS_EVA_EXTRA_MAX = 0.4; // 回避力が命中進化の2倍上回るごとに回避率 +5%（最大 +40%）
+const BOSS_EVA_PER_DOUBLE = 0.05, BOSS_EVA_EXTRA_MAX = 0.6, BOSS_EVASION_CAP = 0.95; // 回避力が命中進化の2倍上回るごとに回避率 +5%。ボスの回避率は最大95%
+const TACKLE_EVA_RATE = 0.6; // タックル（体当たり）は近接攻撃より当たりやすい：相手の回避率を6割として判定
+const BOSS_MIN_HIT_CHANCE = 0.05; // ボスには最低5%は当たる（回避率95%）
 function getBossEvaPower(stage = game.stage) { return stage <= BOSS_EVA_START_STAGE ? 1 : Math.min(EVO_RATE_CAP, Math.pow(stage / BOSS_EVA_START_STAGE, BOSS_EVA_POWER_EXP)); }
 function getBossEvaExtra(stage = game.stage) { const q = getBossEvaPower(stage) / getEvoRate('acc'); return q > 1 ? Math.min(BOSS_EVA_EXTRA_MAX, BOSS_EVA_PER_DOUBLE * Math.log2(q)) : 0; }
-function getEnemyEvasion(enemy) { return (enemy.isBoss ? BOSS_EVASION + getBossEvaExtra() : ENEMY_EVASION) + getEnemyStageBonus(); }
+function getEnemyEvasion(enemy) { return enemy.isBoss ? Math.min(BOSS_EVASION_CAP, BOSS_EVASION + getBossEvaExtra() + getEnemyStageBonus()) : ENEMY_EVASION + getEnemyStageBonus(); }
 function getPlayerAccuracy() { return PLAYER_BASE_ACCURACY + computeBonuses().accuracy; }
 function getPlayerEvasion() { return PLAYER_BASE_EVASION + computeBonuses().evasion; }
 function hitChance(accuracy, evasion) { return Math.min(1, Math.max(MIN_HIT_CHANCE, accuracy - evasion)); }
 const NO_MISS_UNTIL_STAGE = 30; // 序盤（30階まで）はこちらの攻撃が外れない
-function playerAttackHits(target) {
+function playerHitChance(target, tackle = false) { // tackle：体当たり（近接攻撃より当たりやすい）
+  const eva = getEnemyEvasion(target) * (tackle ? TACKLE_EVA_RATE : 1);
+  return Math.min(1, Math.max(target.isBoss ? BOSS_MIN_HIT_CHANCE : MIN_HIT_CHANCE, getPlayerAccuracy() - eva));
+}
+function playerAttackHits(target, tackle = false) {
   if (game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge) return true;
-  return Math.random() < hitChance(getPlayerAccuracy(), getEnemyEvasion(target));
+  return Math.random() < playerHitChance(target, tackle);
 }
 function enemyAttackHits(attacker) {
   return Math.random() < hitChance(getEnemyAccuracy(attacker), getPlayerEvasion());
