@@ -1369,7 +1369,7 @@ function renderShopList() {
 }
 const SKILL_SLOT_MAX = 7;
 function getSkillSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
-function getSkillSlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
+function getSkillSlotCost() { return getSkillSlots(); } // 枠増やしは1回目💎1、増やすたび1個ずつ値上げ（転生でリセット）
 function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equippedSkills = []; if (game.equippedSkills.some(id => !SKILL_GACHA_SKILLS[id])) game.equippedSkills = game.equippedSkills.filter(id => SKILL_GACHA_SKILLS[id]); return game.equippedSkills; }
 function isSkillEquipped(id) { return getEquippedSkills().includes(id); }
 const SKILL_ORDER = Object.keys(SKILL_GACHA_SKILLS);
