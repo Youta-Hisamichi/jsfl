@@ -2057,7 +2057,7 @@ function drawBall(ball) {
     }
   }
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
-    const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
+    const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9) * (hc && COMPANION_DRAW_SCALE[hc] || 1); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
     drawFacingSprite(playerSpriteImg, ball, hc || 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
   }
 
@@ -2066,7 +2066,7 @@ function drawBall(ball) {
     const img = swapped ? braveImg : companionSpriteImgs[ball.companionId];
     ctx.save();
     if (img && img.complete && img.naturalWidth) {
-      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.3); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
+      const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.3 * (COMPANION_DRAW_SCALE[ball.companionId] || 1)); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く
       drawFacingSprite(img, ball, swapped ? 'hero' : ball.companionId, ball.x, ball.y - ball.radius * 0.15, sz);
       const cnt = 1; // 同じ仲間は1人ずつ別の体で出るので、人数バッジは出さない
       if (cnt >= 2) { // 人数バッジ

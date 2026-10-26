@@ -740,6 +740,7 @@ function moveCompanionCustom(ball, speedMult, player, enemy) {
   return true;
 }
 const COMPANION_RADIUS = { heavy: 16, golem: 16, dragon: 16, bahamut: 17, dragoon: 16, cavalry: 15, pegasus: 15, tamer: 15 };
+const COMPANION_DRAW_SCALE = { cat: 0.82 }; // 仲間の絵の表示の大きさ（大きく見える絵だけ小さめに。当たり判定は変えない）
 const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下限（自機と同じ）
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
