@@ -2662,6 +2662,7 @@ halveBtn.addEventListener('click', event => { // 半減魔法：敵のHPを半�
   setTimeout(() => { // 取り憑いたところで効果
     if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return;
     for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; particles.push({ x: enemy.x + Math.cos(a) * enemy.radius * 1.6, y: enemy.y + Math.sin(a) * enemy.radius * 1.6, vx: -Math.cos(a) * 1.6, vy: -Math.sin(a) * 1.6, life: 1, color: i % 2 ? '#2a0f3a' : '#7a3cc0', decay: 0.035 }); } // 黒いもやが吸い込まれる
+    thump(80, 28, 0.9, 1, 'sine'); thump(160, 40, 0.5, 0.45, 'triangle'); noiseSweep(0.6, 300, 60, 'lowpass', 1, 0.45); // ドゥン…と重低音
     playThunderStrike(); playTone(110, 0.4, 'sawtooth', 0.12, 55); noiseSweep(0.35, 7000, 2500, 'highpass', 0.8, 0.3); setTimeout(() => playTone(880, 0.12, 'square', 0.06, 1760), 40); // バチバチッと電撃
     const y = enemy.y - enemy.radius - 30;
     if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
