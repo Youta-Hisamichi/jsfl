@@ -182,7 +182,7 @@ const SHOPKEEPERS = {
   companion: { npc: 'guild',     name: 'ギルドマスター', lines: ['頼れる仲間を紹介しよう。', '仲間が揃えば、どんな敵も怖くないぞ。', '同じ仲間を呼べば、パーティが厚くなる。', 'レアな仲間はショップで開放できるぞ。'] },
   coinshop:  { npc: 'sage',      name: '魔導書の賢者ソフィア', lines: ['スキルのことなら、この魔導書におまかせを。', '好きなスキルを選んで鍛えましょう！', '修行の代金はコインでけっこうですよ。', '戦闘中しか使えない技もあるので気をつけて。', 'サブウェポンも、ここで鍛えられます。'] },
   artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
-  gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '転生でリセットと書かれている商品以外は、転生しても効果が消えませんわ。'] },
+  gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
   gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの力を進化させてあげる。', '水晶玉が…光っているわ…！', '貯めたジェムと羽、すべて賭ける覚悟はある？', 'ジェムの数と羽の数…掛け算で運命が跳ね上がるわ。'] },
   records:   { npc: 'elder',     name: '記録係の長老', lines: ['ほっほっ、よく戦っておるのう。', 'おぬしの戦いの記録、しっかり残しておるぞ。', '図鑑を埋めるのも冒険の楽しみじゃ。', '最高記録を更新する日が楽しみじゃわい。'] },
   ranking:   { npc: 'king',      name: 'アルス王', lines: ['よくぞ参った、勇者よ！', 'ランキングの頂点を目指すのだ！', '今日の戦果、期待しておるぞ。', '上位の者には、わしから称賛を贈ろう。'] },
@@ -779,9 +779,9 @@ function simpleChoice(o) { // 軽い2択ダイアログ
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキルポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
 // ピックアップ採用券はショップから外した（持っている券は今までどおり使える）
-SHOP_ITEMS.partySlot = { icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生でリセット）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
-SHOP_ITEMS.skillSlot = { icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える（転生でリセット）', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
-SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える（転生でリセット）', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.partySlot = { hideInShop: true, icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生でリセット）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
+SHOP_ITEMS.skillSlot = { hideInShop: true, icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える（転生でリセット）', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
+SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える（転生でリセット）', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
@@ -1397,7 +1397,7 @@ function renderUpgradeList() { // 自キャラの強化（仲間カードの強�
 var shopSortOrder = null;
 const SHOP_ITEM_ART = { reborn: 'reborn', upPct: 'pct', upMax: 'upmax', sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'auto', potion: 'bluepot', redPotion: 'redpot', partySlot: 'party', skillSlot: 'book', weaponSlot: 'axe', summoner: 'emblem' }; // ショップの絵のアイコン
 function renderShopList() {
-  const ids = Object.keys(SHOP_ITEMS).filter(id => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id));
+  const ids = Object.keys(SHOP_ITEMS).filter(id => (CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)) && !SHOP_ITEMS[id].hideInShop); // 枠を増やす品は各ページのボタンから（転生でリセットされるのでショップには並べない）
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
   if (!shopSortOrder) shopSortOrder = [...ids].sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ（ショップを開いたときに並べ替える）
   ids.sort((x, y) => shopSortOrder.indexOf(x) - shopSortOrder.indexOf(y));

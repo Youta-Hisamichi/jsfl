@@ -4656,3 +4656,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .sbf-card .sbf-rays { width: 620px !important; height: 620px !important; margin: -310px 0 0 -310px !important; background: repeating-conic-gradient(rgba(255,215,107,0.26) 0 9deg, transparent 9deg 22deg) !important;
   -webkit-mask: radial-gradient(circle, #000 0, #000 30%, transparent 70%); mask: radial-gradient(circle, #000 0, #000 30%, transparent 70%); }
 .sbf-card .sbf-icon .sr-ico { display: inline-block; width: 92px; height: 92px; }
+.slot-reset { display: block; font-size: 0.5rem; font-weight: 700; line-height: 1.1; opacity: 0.9; white-space: nowrap; } /* 枠を増やすボタンの「（転生でリセット）」 */

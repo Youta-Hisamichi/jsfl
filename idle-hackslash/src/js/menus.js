@@ -15,7 +15,7 @@ function renderSkillGacha() {
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
   // サブウェポンと同じシンプルな見出し：装備数／枠数と「＋枠を増やす」だけ（スロット一覧は出さない）
-  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1">＋枠を増やす<br>💎${getSkillSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1">＋枠を増やす<br>💎${getSkillSlotCost()}<small class="slot-reset">（転生でリセット）</small></button>` : '<span class="ws-max">枠MAX</span>');
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
@@ -36,7 +36,7 @@ function renderSkillGacha() {
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
   const weq = getEquippedWeapons(), wslots = getWeaponSlots();
   const wHead = document.getElementById('weaponSlotHead');
-  const wHeadHtml = `<span>装備枠 <b>${weq.length} / ${wslots}</b></span>` + (wslots < WEAPON_SLOT_MAX ? `<button class="${game.gems < getWeaponSlotCost() ? 'is-disabled' : ''}" data-weapon-slot="1">＋枠を増やす<br>💎${getWeaponSlotCost()}</button>` : '<span class="ws-max">枠MAX</span>');
+  const wHeadHtml = `<span>装備枠 <b>${weq.length} / ${wslots}</b></span>` + (wslots < WEAPON_SLOT_MAX ? `<button class="${game.gems < getWeaponSlotCost() ? 'is-disabled' : ''}" data-weapon-slot="1">＋枠を増やす<br>💎${getWeaponSlotCost()}<small class="slot-reset">（転生でリセット）</small></button>` : '<span class="ws-max">枠MAX</span>');
   if (wHead && wHead.dataset.html !== wHeadHtml) { wHead.innerHTML = wHeadHtml; wHead.dataset.html = wHeadHtml; }
   const wHtml = (Object.entries(WEAPONS).filter(([id]) => getWeaponLv(id)).map(([id, W]) => {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
@@ -278,7 +278,7 @@ function renderCompanionList() {
     const lim = getPartyLimit();
     psb.innerHTML = `<span>パーティ枠 <b>${getCompanionTotal()} / ${lim}</b></span>` + (lim >= COMPANION_PARTY_MAX // スキルの「＋枠を増やす」と同じ見た目
       ? '<span class="ws-max">枠MAX</span>'
-      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠を増やす<span class="ps-cost">💎${getPartySlotCost()}</span></button>`);
+      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠を増やす<span class="ps-cost">💎${getPartySlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;

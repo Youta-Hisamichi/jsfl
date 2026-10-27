@@ -1130,19 +1130,15 @@ setInterval(() => {
     renderUpgradeList();
     playAutoUpStep();
   }
-}, 700);
+}, 1100); // 1.1秒ごとに1レベル
 let autoUpStep = 0;
 function playAutoUpStep() {
   const step = autoUpStep; autoUpStep = (autoUpStep + 1) % 7; // ドレミソラ・ド・レの7段で1周
   const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
   const freq = 523.25 * Math.pow(2, semis / 12);
-  // レベルアップのファンファーレ風「タタタッ・ターン！」（矩形波。最初の音は1段ずつ上がる）
-  const notes = [[1, 0, 0.07], [1.26, 70, 0.07], [1.5, 140, 0.07], [2, 210, 0.32]];
-  notes.forEach(([m, t, d]) => setTimeout(() => playTone(freq * m, d, 'square', 0.06), t));
-  setTimeout(() => { playTone(freq * 1.26 * 2, 0.32, 'square', 0.035); playTone(freq, 0.32, 'triangle', 0.08); }, 210); // 最後は和音で「ターン！」
-} // 0.7秒ごとに1レベル
-// レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
-function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+3%' : '×' + l.mult}` : ''; }
+  // レベルアップ風の短い「タタッ・ティン」（小さめの音。最初の音は1段ずつ上がる）
+  [[1, 0, 0.04], [1.26, 40, 0.04], [1.5, 80, 0.04], [2, 120, 0.1]].forEach(([m, t, d]) => setTimeout(() => playTone(freq * m, d, 'square', 0.025), t));
+}
 // 強化の飛躍（10/100/1000Lv到達）を演出
 function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
