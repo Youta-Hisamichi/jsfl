@@ -1193,6 +1193,7 @@ shopList.addEventListener('click', event => {
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
+  if (id.startsWith('evoKind_')) { line = `進化で「${EVO_KIND_NAME[id.slice(8)]}」も上がるようになった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'evoPick') { line = '進化する項目を自分で選べるようになった！（進化ページで選ぶ）'; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
@@ -2067,6 +2068,7 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
+  if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { showTapError(`「${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」はまだ進化できない\n（ショップの「進化項目：${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」で追加できる）`, event.clientX, event.clientY, 3200); return; }
   if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化の指定書」で選べるようになる）', event.clientX, event.clientY, 3200); return; } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
@@ -2074,7 +2076,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
   if (evoBusy || skGachaBusy) return;
-  const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() ? evoKind : EVO_KINDS[Math.floor(Math.random() * EVO_KINDS.length)]; // 項目は指定書がなければランダム
+  const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
