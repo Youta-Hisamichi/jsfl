@@ -2252,7 +2252,7 @@ function buyRebirthItemMax(id, x, y) {
 function buyRebirthItem(id, x, y, fromHold) {
   const item = REBIRTH_SHOP_ITEMS[id];
   if (!item) return false;
-  if (isRebirthItemMaxed(item)) { showTapError(item.companionId || item.unlockKey ? 'すでに開放しています' : '所持上限に達しています', x, y); return false; }
+  if (isRebirthItemMaxed(item)) { showTapError(item.companionId || item.unlockKey ? 'すでに所持しています' : '所持上限に達しています', x, y); return false; }
   if (isRebirthItemLocked(item)) { showTapError('先にタックルを開放してください', x, y); return false; }
   const lockLeft = getRebirthShopLockLeft(id);
   if (lockLeft) { showTapError(`あと${lockLeft}回の転生で開放`, x, y); return false; }
