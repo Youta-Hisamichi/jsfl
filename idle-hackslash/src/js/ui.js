@@ -1133,7 +1133,7 @@ setInterval(() => {
 }, 700);
 let autoUpStep = 0;
 function playAutoUpStep() {
-  const step = autoUpStep; autoUpStep = (autoUpStep + 1) % (CHAIN_SCALE.length * 3); // ドレミソラ×3オクターブで15段
+  const step = autoUpStep; autoUpStep = (autoUpStep + 1) % 7; // ドレミソラ・ド・レの7段で1周
   const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
   const freq = 523.25 * Math.pow(2, semis / 12);
   // レベルアップのファンファーレ風「タタタッ・ターン！」（矩形波。最初の音は1段ずつ上がる）
