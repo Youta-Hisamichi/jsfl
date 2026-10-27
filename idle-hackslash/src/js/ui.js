@@ -573,7 +573,7 @@ function fullReset() {
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-  game.ownedArtifacts = {}; game.evoFea = {}; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+  game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
   lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -1184,6 +1184,7 @@ shopList.addEventListener('click', event => {
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
+  if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オートLvUPが使えるようになった！（強化ページでON/OFF）'; }
@@ -2065,27 +2066,28 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (evoBusy || skGachaBusy) return;
   const gems = evoGems, feathers = nextEvoFea(), kind = evoKind; // 選んだ羽を1枚使う
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
-  game.gems -= gems; if (feathers) addFea(feathers, -1);
+  const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
+  game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
   if (!game.evoRate) game.evoRate = { atk: 1, hp: 1, acc: 1, para: 1 };
-  const total = evoTotal(tier.mult, gems, feathers);
+  const total = evoTotal(tier.mult, gems, feathers, feaN);
   const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * total);
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`, `${fmtEvoPct(total)}<small class="evo-res-calc">${fmtEvoPct(tier.mult)} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`, `${fmtEvoPct(total)}<small class="evo-res-calc">${fmtEvoPct(tier.mult)} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers, feaN))}` : ''}</small>`,
     `${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
-      renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
+      renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN);
     }, null, { starRoulette: true }); // 結果の前にレア星ルーレット
 });
 let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
-function renderEvoResultCard(tier, gems, feathers, kind, total, before, after) {
+function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN) {
   const n = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 }[tier.rarity] || 1, E = 'assets/img/ui/evo/';
   const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${{ hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`;
   skGachaResult.className = 'gacha-result evr evr-' + n; skGachaResult.style.background = '';
-  skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
+  skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers, feaN))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
   ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
 }

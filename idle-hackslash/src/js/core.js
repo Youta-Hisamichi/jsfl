@@ -681,9 +681,12 @@ function nextEvoFea() { // 次の進化で使う羽（選んだ羽。「なし�
 }
 function feaName(r) { return `${RARITY_INFO[r].label}羽`; }
 function feaIco(r, cls = 'ico-img') { return `<img class="${cls}" src="${FEA_ICON[r] || FEA_ICON.common}" alt="">`; }
-function evoFeatherMult(fea) { return (fea && FEA_MULT[fea]) || 1; } // 使う羽のレア度で倍率が決まる（羽なしは×1）
+const FEA_USE_SHOP_MAX = 9; // ショップの「羽の束ね紐」：1回に使える羽の枚数 +1（9個まで＝最大10枚）
+function getFeaUseMax() { return 1 + Math.min(FEA_USE_SHOP_MAX, Math.max(0, Math.floor(game.feaUseBuys || 0))); }
+function evoFeaUseCount(fea) { return fea ? Math.min(getFeaUseMax(), feaCount(fea)) : 0; } // 次の進化で使う枚数（持っている分まで）
+function evoFeatherMult(fea, n = evoFeaUseCount(fea)) { return fea && n > 0 ? (FEA_MULT[fea] || 1) * n : 1; } // 羽の倍率×使う枚数（N羽×2を3枚なら×6。羽なしは×1）
 function evoStake(gems, feathers) { return Math.max(1, gems) * evoFeatherMult(feathers); } // 捧げた量（ジェム数×羽の倍率）
-function evoTotal(mult, gems, feathers) { return 1 + (mult - 1) * Math.max(1, gems) * evoFeatherMult(feathers); } // 1回の倍率：上がる割合（+1%など）にジェム数と羽の倍率を掛ける（N +1% はジェム2で +2%、N羽ならさらに2倍で +4%）
+function evoTotal(mult, gems, feathers, feaN) { return 1 + (mult - 1) * Math.max(1, gems) * evoFeatherMult(feathers, feaN); } // 1回の倍率：上がる割合（+1%など）にジェム数と羽の倍率を掛ける（N +1% はジェム2で +2%、N羽ならさらに2倍で +4%）
 function evoOdds(gems, feathers) {
   const L = evoLuck(gems, feathers), w = EVO_TIERS.map((t, i) => t.base * Math.pow(1 + L, i * 1.2)), sum = w.reduce((a, b) => a + b, 0);
   return w.map(x => x / sum);
@@ -778,6 +781,7 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
+SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
