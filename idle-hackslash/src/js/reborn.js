@@ -82,7 +82,7 @@ const RUN_FEATS = [
   { id: 'noSkill50', icon: '🚫', name: '素手の勇者', desc: 'スキルを1つも装備せずにステージ50に到達', gems: 5, check: st => st >= 50 && getEquippedSkills().length === 0 },
   { id: 'fast100', icon: '⏱️', name: '韋駄天', desc: '周回開始から10分以内にステージ100に到達', gems: 10, check: st => st >= 100 && (game.runPlayMs || 0) <= 600000 },
   { id: 'fast500', icon: '🚀', name: '流星', desc: '周回開始から30分以内にステージ500に到達', gems: 20, check: st => st >= 500 && (game.runPlayMs || 0) <= 1800000 },
-  ...RUN_RULE_KEYS.map(k => ({ id: 'rule_' + k, icon: RUN_RULES[k].icon, name: RUN_RULES[k].name + 'の覇者', desc: `「${RUN_RULES[k].name}」の周回でステージ100に到達`, gems: 5, check: st => st >= 100 && runRule() === k })),
+  // 掟の覇者の実績は、掟の3択を廃止したので外した
   { id: 'reb10', icon: '🌌', name: '輪廻の旅人', desc: '転生10回', gems: 10, check: () => (game.reincarnations || 0) >= 10 },
   { id: 'reb30', icon: '🌠', name: '輪廻の達人', desc: '転生30回', gems: 20, check: () => (game.reincarnations || 0) >= 30 },
   { id: 'reb100', icon: '♾️', name: '輪廻の覇王', desc: '転生100回', gems: 50, check: () => (game.reincarnations || 0) >= 100 },
@@ -124,7 +124,7 @@ function showRunBanner(title, text) {
 { const orig = startNextRun; startNextRun = function () {
   orig.apply(this, arguments);
   game.runStartAt = Date.now(); game.runPlayMs = 0; game.runReached = {};
-  if ((game.reincarnations || 0) > 0) setTimeout(openRunStartDialog, 400);
+  if ((game.reincarnations || 0) > 0) setTimeout(startRunAuto, 400); // 掟と転生ボーナスの3択は廃止（ピンとこないため）。ダッシュスタートだけ自動で
 }; }
 
 // ===== 周回の始まりのダイアログ（掟 → 転生ボーナス → ダッシュスタート） =====
@@ -161,6 +161,18 @@ function openRunStartDialog() {
   playTone(523, 0.12, 'triangle', 0.08, 784);
 }
 
+// 周回の始まり：掟・転生ボーナスは選ばず、ダッシュスタートだけ自動でかける
+function startRunAuto() {
+  game.runRule = null; game.runBonus = null;
+  const dash = dashStartStage(null);
+  if (dash > 1 && game.stage < dash) {
+    game.stage = dash; game.coins += Math.round(stageCoinRaw(dash) * computeBonuses().coinMult * 15); // 強化の元手も少し
+    spawnNextEnemy(); refreshPlayerBallStats(true);
+    stageAnnounceText = 'ステージ' + formatStageNumber(dash); stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
+    showRunBanner('🏃 ダッシュスタート！', `ステージ${dash}から始めます（最高ステージの${Math.round(DASH_RATE * 100)}%）`);
+  }
+  renderRunRuleChip(); updateStatsUI(); updateHPUI(); saveGame();
+}
 // ===== 今の掟をゲーム画面の左上に小さく出す =====
 function renderRunRuleChip() {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
