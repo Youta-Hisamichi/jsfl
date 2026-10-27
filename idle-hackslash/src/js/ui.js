@@ -1172,7 +1172,7 @@ shopList.addEventListener('click', event => {
   if (!button) return;
   const id = button.dataset.shop;
   const item = SHOP_ITEMS[id];
-  if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに開放しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
+  if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
   if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
     if (!isRebornUnlocked()) { showTapError(`🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
