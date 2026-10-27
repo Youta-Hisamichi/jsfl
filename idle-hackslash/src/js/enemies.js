@@ -344,9 +344,9 @@ const ENEMY_BOOK_BY_KEY = {};
 function isEnemyRemoved(key) { return DELETED_ENEMIES.includes(key) || !!(game.removedEnemies && game.removedEnemies[key]); }
 function pickFrom(list) { return list[Math.floor(Math.random() * list.length)]; }
 let dbgMonKey = null;
-function renderDebugMonsters() {
+function renderDebugMonsters() { // 絵はゲームで右を向くときと同じ向きで並べる（向きが逆の敵がすぐわかる）
   const grid = document.getElementById('dbgMonGrid'); if (!grid) return;
-  grid.innerHTML = ENEMY_BOOK.map(en => `<button class="${en.key === dbgMonKey ? 'sel' : ''} ${isEnemyRemoved(en.key) ? 'gone' : ''}" data-mon="${en.key}" title="${en.name}">${en.sprite && ENEMY_SPRITES[en.sprite] ? `<img src="${ENEMY_SPRITES[en.sprite]}" alt="">` : `<i style="background:${en.color || '#888'}"></i>`}</button>`).join('');
+  grid.innerHTML = ENEMY_BOOK.map(en => `<button class="${en.key === dbgMonKey ? 'sel' : ''} ${isEnemyRemoved(en.key) ? 'gone' : ''}" data-mon="${en.key}" title="${en.name}">${en.sprite && ENEMY_SPRITES[en.sprite] ? `<img src="${ENEMY_SPRITES[en.sprite]}" alt=""${typeof SPRITE_FACING !== 'undefined' && SPRITE_FACING[en.sprite] === -1 ? ' style="transform:scaleX(-1)"' : ''}>` : `<i style="background:${en.color || '#888'}"></i>`}</button>`).join('');
   const en = ENEMY_BOOK_BY_KEY[dbgMonKey];
   document.getElementById('dbgMonSel').textContent = en ? `${en.kind === 'boss' ? '👑' : ''}${en.name}${isEnemyRemoved(en.key) ? '（削除中）' : ''}` : '画像をタップして選択';
 }
