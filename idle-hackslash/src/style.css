@@ -4704,3 +4704,4 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .evr2-1 .evr2-crown, .evr2-2 .evr2-crown { width: 52%; } .evr2-3 .evr2-crown { width: 58%; } /* 星の少ない冠は小さめ（アイコンに被らないように） */
 .evr2 .evr2-icon[src$='icon_atk.webp'] { top: 19%; height: 37%; }
 .bgm-book-head { margin: 10px 0 4px; padding: 4px 10px; border-radius: 8px; background: rgba(20,24,48,0.75); color: #ffe08a; font-weight: 900; font-size: 0.85rem; text-shadow: 0 1px 2px #000; }
+.evo-rate span .evo-k-ico { width: 1.9em; height: 1.9em; object-fit: contain; vertical-align: middle; margin: -0.4em 2px -0.3em 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 進化項目のアイコン（結果画面と同じ絵） */
