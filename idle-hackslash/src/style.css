@@ -4623,3 +4623,8 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .fd-panel .fd-body h4 { background: rgba(80,110,190,0.6); }
 .tab-page[data-tab="records"] .rg-claim-all.is-off, .rg-claim-all.is-off { display: none !important; animation: none !important; } /* 受け取るものが無いときは出さない */
 .battle-notice.at-tap.multi { white-space: pre; text-align: center; }
+/* 進化で指定している項目：中を青くする */
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate { position: relative; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate > * { position: relative; z-index: 1; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.on::before { content: ''; position: absolute; inset: 9% 5%; border-radius: 6px; background: linear-gradient(180deg, rgba(60,150,255,0.85), rgba(20,80,220,0.85)); box-shadow: inset 0 0 8px rgba(190,230,255,0.9); z-index: 0; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.on span, .tab-page[data-tab="gacha"] .evo-rates .evo-rate.on b { color: #fff !important; text-shadow: 0 0 2px #001a55, 0 1px 2px #001a55; }
