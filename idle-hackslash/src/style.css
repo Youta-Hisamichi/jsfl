@@ -2989,7 +2989,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] #rankingTitle, .tab-page[data-tab="ranking"] #rankDateNav { background: rgba(10,8,20,0.5) !important; }
 .tab-page[data-tab="ranking"] .friend-box { border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: rgba(10,10,30,0.5) padding-box !important; }
 /* 進化ページの背景：浮かぶ大水晶の祭壇（ページ全体に敷き、暗くするのは控えめに） */
-.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(14,6,26,0.38), rgba(14,6,26,0.52)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,4,20,0.62), rgba(10,4,20,0.74)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
 /* スキルページの背景：緑の錬金術の塔 */
 .tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,20,12,0.1) 0px, rgba(4,20,12,0.3) 360px, rgba(4,18,10,0.75) 520px, #06140c 600px, #06140c 100%), url(assets/img/ui/rb/skill_bg.webp) 50% 0 / 100% auto no-repeat, #06140c !important; border-color: #3a7a4a !important; }
 /* スキルページのカード：仲間ページのタイル（紺地＋金の飾り枠）に合わせる */
@@ -3580,7 +3580,7 @@ body #settingsModal .st2 .gen-hero { margin: -6px -10px 6px; }
 #settingsModal .st2 .settings-row:has(#langJaBtn) > label, #settingsModal .st2 .settings-row:has(.dev-id) > label { justify-content: flex-start !important; padding: 0 10% !important; font-size: 0.86rem; } #settingsModal .st2 .sgh-title { font-size: clamp(0.9rem, 4.6vw, 1.15rem); } #settingsModal .st2 .sgh-ver { font-size: 0.66rem; } #settingsModal .st2 .modal-sub[data-i18n="contactRow"] { font-size: clamp(0.6rem, 2.9vw, 0.72rem); padding: 0 10% !important; }
 #settingsModal .st2 .modal-sub[data-i18n="contactRow"], #settingsModal .st2 .modal-sub[data-i18n="contactRow"] * { font-size: 0.64rem !important; letter-spacing: -0.01em; } #settingsModal .st2 .modal-sub[data-i18n="contactRow"] { padding: 0 9% 0 8% !important; gap: 4px; }
 /* ===== 進化ページ：専用素材 ===== */
-.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,6,30,0.1), rgba(10,6,30,0.35)), url(assets/img/ui/evo/bg.webp) 50% 0 / 100% auto no-repeat, #140c2a !important; }
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,4,22,0.55), rgba(8,4,22,0.7)), url(assets/img/ui/evo/bg.webp) 50% 0 / 100% auto no-repeat, #140c2a !important; }
 body .tab-page[data-tab="gacha"] .gen-hero { height: auto; aspect-ratio: 910 / 249; margin: 0 0 4px; background: url(assets/img/ui/evo/title.webp) center / contain no-repeat; }
 body .tab-page[data-tab="gacha"] .gen-hero > * { visibility: hidden; }
 body .tab-page[data-tab="gacha"] .gen-hero-panel.gen-hero-panel > .shopkeeper > .sk-bubble { background: url(assets/img/ui/evo/speech.webp) center / 100% 100% no-repeat !important; min-height: 0; aspect-ratio: 900 / 91; padding: 0 5% !important; display: flex !important; flex-direction: column; justify-content: center; }
@@ -3595,7 +3595,7 @@ body .tab-page[data-tab="gacha"] .gen-hero-panel.gen-hero-panel > .shopkeeper > 
 .tab-page[data-tab="gacha"] .evo-odd b { font-size: clamp(0.95rem, 5vw, 1.3rem); }
 .tab-page[data-tab="gacha"] .evo-odd i { font-size: 0.74rem; }
 .tab-page[data-tab="gacha"] #evoGoBtn .gab-cost { min-width: 0; width: 82%; aspect-ratio: 700 / 81; display: flex; align-items: center; justify-content: center; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/evo/cost.webp) center / 100% 100% no-repeat !important; font-size: 0.95rem; }
-.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,6,30,0.1), rgba(10,6,30,0.35)), url(assets/img/ui/evo/bg.webp) 50% 0 / cover no-repeat, #140c2a !important; } .tab-page[data-tab="gacha"] .evo-odd span { font-size: 0.62rem; }
+.tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(8,4,22,0.55), rgba(8,4,22,0.7)), url(assets/img/ui/evo/bg.webp) 50% 0 / cover no-repeat, #140c2a !important; } .tab-page[data-tab="gacha"] .evo-odd span { font-size: 0.62rem; }
 /* ===== 進化ガチャの結果：レア度別の1枚絵 ===== */
 #skGachaModal .sk-gacha-panel:has(.evr) { background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 400px); max-width: none; }
 #skGachaModal .gacha-result.evr { position: relative; width: 100%; aspect-ratio: 480 / 600; padding: 0; margin: 0; border: none; border-radius: 0; background: none !important; box-shadow: none; overflow: visible; }

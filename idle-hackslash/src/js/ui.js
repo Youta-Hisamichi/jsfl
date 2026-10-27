@@ -2533,6 +2533,7 @@ zeniBtn.addEventListener('click', event => {
   // コイン30枚を猛烈な勢いで連射する（1枚ずつ敵めがけて飛び、当たるたびにチャリン）。最後の1枚が当たったところでまとめてダメージ
   const ZENI_COINS = 30, ZENI_GAP_MS = 22, ZENI_SPEED = 15;
   spawnDamageText(player.x, player.y - player.radius - 22, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
+  thump(150, 45, 0.3, 0.8, 'sine'); noiseSweep(0.35, 600, 4000, 'bandpass', 1.2, 0.5); // 投げ始めのドウッ
   let ux = 1, uy = 0;
   for (let i = 0; i < ZENI_COINS; i++) {
     setTimeout(() => {
@@ -2542,11 +2543,11 @@ zeniBtn.addEventListener('click', event => {
       ux = dx / dist; uy = dy / dist;
       const ox = (Math.random() - 0.5) * 10, oy = (Math.random() - 0.5) * 10;
       particles.push({ x: player.x + ox, y: player.y + oy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: '#ffd76b', decay: sp / dist, zeni: true, spin: Math.random() * 6 });
-      if (i % 3 === 0) playTone(1300 + Math.random() * 500, 0.03, 'square', 0.035); // シュシュシュ
+      if (i % 2 === 0) { thump(260, 90, 0.07, 0.4, 'square'); playNoiseBurst(0.05, 0.28); playTone(1500 + Math.random() * 400, 0.04, 'square', 0.08, 900); } // ドドドッと撃ち出す
       setTimeout(() => { // 当たったところでキラッ
         if (enemy.isDying) return;
         for (let k = 0; k < 2; k++) { const b = Math.random() * Math.PI * 2, v = 1 + Math.random() * 2; particles.push({ x: enemy.x + (Math.random() - 0.5) * enemy.radius, y: enemy.y + (Math.random() - 0.5) * enemy.radius, vx: Math.cos(b) * v, vy: Math.sin(b) * v, life: 1, color: '#fff2a8', decay: 0.08 }); }
-        if (i % 2 === 0) playTone(1976 + Math.random() * 300, 0.025, 'triangle', 0.03); // チャリン
+        if (i % 2 === 1) { playTone(2600 + Math.random() * 400, 0.07, 'square', 0.09, 3400); thump(320, 110, 0.06, 0.35, 'triangle'); } // ガキン！と直撃
       }, dist / sp / 60 * 1000);
     }, i * ZENI_GAP_MS);
   }
@@ -2561,8 +2562,8 @@ zeniBtn.addEventListener('click', event => {
     for (let i = 0; i < 14; i++) { const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 3; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * v + ux * 2, vy: Math.sin(a) * v + uy * 2, life: 1, color: '#ffd76b', decay: 0.04, isCoin: true }); }
     const kb = enemy.isBoss ? 7 : 16; enemy.vx = ux * kb; enemy.vy = uy * kb; // 吹っ飛ばす（ボスは少しだけ）
     if (typeof shakeScreenLight === 'function') shakeScreenLight();
-    playNoiseBurst(0.2, 0.2);
-    [1318, 1568, 1976].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.08), i * 60));
+    thump(90, 30, 0.55, 1, 'sine'); playNoiseBurst(0.4, 0.55); hitStopFrames = Math.max(hitStopFrames, 4); // ズドン！
+    [1318, 1568, 1976, 2637].forEach((f, i) => setTimeout(() => playTone(f, 0.1, 'square', 0.12), i * 55));
     if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
     updateHPUI();
   }, (ZENI_COINS - 1) * ZENI_GAP_MS + flyMs + 30);
@@ -2657,11 +2658,11 @@ halveBtn.addEventListener('click', event => { // 半減魔法：敵のHPを半�
   if (!ctxs) return;
   const { player, enemy } = ctxs;
   soulFx.push({ enemy, x0: player.x, y0: player.y - 6, start: Date.now(), trail: [] });
-  playTone(220, 0.45, 'sawtooth', 0.06, 110); noiseSweep(0.5, 300, 1400, 'bandpass', 2, 0.18); // ヒュウゥ…と飛んでいく
+  thump(95, 32, 1.0, 0.95, 'sine'); thump(190, 55, 0.6, 0.35, 'triangle', 0.02); noiseSweep(0.9, 400, 90, 'lowpass', 1, 0.35); // 「ボウン…」という重低音
   setTimeout(() => { // 取り憑いたところで効果
     if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return;
     for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; particles.push({ x: enemy.x + Math.cos(a) * enemy.radius * 1.6, y: enemy.y + Math.sin(a) * enemy.radius * 1.6, vx: -Math.cos(a) * 1.6, vy: -Math.sin(a) * 1.6, life: 1, color: i % 2 ? '#2a0f3a' : '#7a3cc0', decay: 0.035 }); } // 黒いもやが吸い込まれる
-    playTone(330, 0.4, 'sine', 0.1, 120); setTimeout(() => playTone(165, 0.5, 'triangle', 0.08, 82), 120);
+    playThunderStrike(); playTone(110, 0.4, 'sawtooth', 0.12, 55); noiseSweep(0.35, 7000, 2500, 'highpass', 0.8, 0.3); setTimeout(() => playTone(880, 0.12, 'square', 0.06, 1760), 40); // バチバチッと電撃
     const y = enemy.y - enemy.radius - 30;
     if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
     else if (enemy.isBoss && Math.random() >= HALVE_CHANCE_BOSS) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
