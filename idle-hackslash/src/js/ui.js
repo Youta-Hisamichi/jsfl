@@ -2074,7 +2074,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
   showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`, `${fmtEvoPct(total)}<small class="evo-res-calc">${fmtEvoPct(tier.mult)} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers))}` : ''}</small>`,
-    `${EVO_KIND_NAME[kind]}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
+    `${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after);
     }, null, { starRoulette: true }); // 結果の前にレア星ルーレット
@@ -2085,7 +2085,7 @@ function renderEvoResultCard(tier, gems, feathers, kind, total, before, after) {
   const n = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 }[tier.rarity] || 1, E = 'assets/img/ui/evo/';
   const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${{ hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`;
   skGachaResult.className = 'gacha-result evr evr-' + n; skGachaResult.style.background = '';
-  skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ×${fmtEvoRate(before)} → <b>×${fmtEvoRate(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
+  skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
   ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
 }
