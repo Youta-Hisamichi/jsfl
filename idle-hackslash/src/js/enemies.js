@@ -1839,6 +1839,10 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
   lastKillPos = { x: enemy.x, y: enemy.y };
   recordBestiaryKill(enemy);
   enemy.hp = 0;
+  if (enemy.isBoss && adds.length) { // ボスを倒したら、一緒に出てきたザコもその場でまとめて倒れる
+    adds.forEach((add, i) => { if (!(add.hp > 0)) return; add.hp = 0; recordBestiaryKill(add); spawnExpGems(add.x, add.y, 2); spawnHitParticles(add.x, add.y, '#ffe9a8'); const x = add.x, y = add.y; setTimeout(() => spawnDamageText(x, y - 10, '撃破！', '#ffd76b', 0.02), i * 60); });
+    adds = adds.filter(add => add.hp > 0);
+  }
   enemy.isDying = true;
   const dx = enemy.x - sourceX, dy = enemy.y - sourceY;
   const dist = Math.hypot(dx, dy) || 1;
