@@ -4682,3 +4682,24 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .rbd-list > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 10px; background: rgba(10,14,34,0.6); border: 1px solid rgba(255,233,160,0.4); color: #eef2ff; font-weight: 800; font-size: 0.85rem; }
 .rbd-list b { color: #ffe08a; }
 .rbd-ok { min-width: 140px; }
+/* 進化の結果（見本の絵の部品を重ねる） */
+#skGachaModal .sk-gacha-panel:has(.evr2) { overflow: visible !important; background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; width: min(92vw, 380px); }
+#skGachaModal .gacha-result.evr2 { position: relative; width: 100%; aspect-ratio: 1215 / 1450; padding: 0; margin: 0; border: none; border-radius: 0; background: none !important; overflow: visible; }
+.evr2 > * { position: absolute; left: 50%; transform: translateX(-50%); }
+.evr2 .evr2-glow { top: 4%; width: 86%; aspect-ratio: 1; object-fit: cover; z-index: 0; opacity: 0.95; animation: evr2Glow 2.4s ease-in-out infinite; }
+.evr2 .evr2-crown { top: 0; width: 62%; z-index: 3; animation: evr2Drop 0.45s cubic-bezier(.2,1.5,.4,1) both; }
+.evr2 .evr2-icon { top: 23%; height: 31%; max-width: 46%; width: auto; object-fit: contain; z-index: 2; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); animation: evr2Pop 0.5s 0.1s cubic-bezier(.2,1.6,.4,1) both; }
+.evr2 .evr2-title { top: 56%; width: 74%; z-index: 4; animation: evr2Pop 0.45s 0.2s cubic-bezier(.2,1.6,.4,1) both; }
+.evr2 .evr2-plate { top: 72.5%; width: 64%; z-index: 4; animation: evr2Pop 0.45s 0.3s cubic-bezier(.2,1.6,.4,1) both; }
+.evr2 .evr2-plate > img { display: block; width: 100%; }
+.evr2 .evr2-num { position: absolute; inset: 14% 6% 8%; display: flex; align-items: center; justify-content: center; gap: 0; }
+.evr2 .evr2-num img { height: 100%; width: auto; margin: 0 -1.5%; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); min-width: 0; }
+.evr2 .evr2-num i { font-style: normal; font-weight: 900; color: #ffd76b; font-size: clamp(1.1rem, 6vw, 1.6rem); text-shadow: -2px -2px 0 #6a1010, 2px -2px 0 #6a1010, -2px 2px 0 #6a1010, 2px 2px 0 #6a1010; align-self: flex-end; margin-bottom: 4%; }
+.evr2 .evr2-ok { top: 86%; width: 44%; z-index: 4; padding: 0; border: none; background: none; cursor: pointer; animation: evr2Pop 0.45s 0.4s cubic-bezier(.2,1.6,.4,1) both; }
+.evr2 .evr2-ok img { display: block; width: 100%; }
+.evr2 .evr2-ok:active img { transform: scale(0.95); }
+@keyframes evr2Pop { 0% { opacity: 0; transform: translateX(-50%) scale(0.4); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
+@keyframes evr2Drop { 0% { opacity: 0; transform: translateX(-50%) translateY(-30px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes evr2Glow { 0%, 100% { transform: translateX(-50%) scale(1) rotate(0deg); } 50% { transform: translateX(-50%) scale(1.06) rotate(8deg); } }
+.evr2-1 .evr2-crown, .evr2-2 .evr2-crown { width: 52%; } .evr2-3 .evr2-crown { width: 58%; } /* 星の少ない冠は小さめ（アイコンに被らないように） */
+.evr2 .evr2-icon[src$='icon_atk.webp'] { top: 19%; height: 37%; }
