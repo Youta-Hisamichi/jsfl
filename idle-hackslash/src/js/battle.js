@@ -2080,6 +2080,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.3, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
+const CHEST_FEA_TIE_CHANCE = 0.25; // ★5の宝箱に羽の束ね紐が入っている確率
 const CHEST_GEM_CHANCE = 0.35, CHEST_GEM_MAX_HELD = 3; // 宝箱のおまけのジェム（手持ちが少ないときだけ）
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (typeof obFlag === 'function') obFlag('chest'); // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
@@ -2104,6 +2105,13 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     loot = { art: pick, n: mult * per, icon: chestArtIco(pick, rarity), main: `${pick.name}${mult * per > 1 ? ` ×${mult * per}` : ''}`, color: info.color, sub: pick.id === 'evoFeather' ? `進化を加速させる素材<br>${beforeN}枚 → ${game.ownedArtifacts[pick.id]}枚` : `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` }; // 進化の羽は短く
     }
     if (!quiet) renderArtifactList();
+  }
+  // ★5の宝箱は、たまに「羽の束ね紐」も入っている（ショップと同じ。9個持っていたら入らない）
+  if (rarity === 'mythic' && (game.feaUseBuys || 0) < FEA_USE_SHOP_MAX && Math.random() < CHEST_FEA_TIE_CHANCE) {
+    game.feaUseBuys = (game.feaUseBuys || 0) + 1;
+    loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:#ffd76b">🪶 羽の束ね紐も入っていた！ 進化1回で使える羽が ${getFeaUseMax()}枚に</b>`;
+    showNotice(`🪶 宝箱から羽の束ね紐を手に入れた！（進化1回で使える羽 ${getFeaUseMax()}枚）`);
+    if (typeof renderEvolutionList === 'function') renderEvolutionList();
   }
   // ★3以上の宝箱は、たまに回復ポーションも入っている（3個以上持っているときは入らない）
   if (CHEST_POTION_RARITIES.includes(rarity) && (game.potions || 0) < CHEST_POTION_MAX_HELD && Math.random() < CHEST_POTION_CHANCE) {
