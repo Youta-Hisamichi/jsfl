@@ -540,7 +540,10 @@ function onStageClear(passed) {
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
-  if (isBossStage && defeated && (defeated.hitsTaken || 0) <= 1 && defeated.bestHit > 0) setTimeout(() => hintTowerStage(defeated.bestHit), 2600); // ボスを一撃で倒せたら、試練の塔でどこまで行けそうかをそっと伝える
+  if (isBossStage && defeated && defeated.bestHit > 0) { // ボスを一撃か3秒以内で倒せたら、試練の塔でどこまで行けそうかをそっと伝える
+    const secs = Math.max(0.3, (Date.now() - (defeated.firstHitAt || Date.now())) / 1000), oneHit = (defeated.hitsTaken || 0) <= 1;
+    if (oneHit || secs <= TOWER_HINT_FAST_SEC) setTimeout(() => hintTowerStage(Math.max(oneHit ? defeated.bestHit : 0, (defeated.maxHp || 0) / secs)), 2600); // 3秒以内なら「1秒あたりに削れる量」を一撃ぶんとして見る
+  }
   if (isBossStage && defeated) markBossBeaten(defeated.emoji); if (isBossStage && defeated) rollForbiddenDrop(); // 禁断シリーズのドロップ // 倒したボスを記録（塔のボスも通常ボスとして出るように）
   game.totalKills++;
   if (typeof featureOnKill === 'function') featureOnKill(isBossStage);
@@ -2317,8 +2320,8 @@ for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕', 'n2:emoji:🌑', 'n2:emoji:�
 // 一覧で確かめて向きが逆だった敵（メタルスライムは正面向きなので向きを変えない・闇の魔導士とクワガタナイトは右向きのまま）（雪だるまスライム・フレイムウィスプ・ぷちミミック・マンドラゴラ・からくり鳥・ゴブリン・スケルトン・コブラ・メタルスライム・サラマンダー・ワイバーン・スライムキング・フランケン・ゴブリンスライム・闇の魔導士・クワガタナイト・ペストいしゃ・死霊王リッチ・暗黒竜・蒼き竜帝・針鎧の王・死神・海の魔女セイレーン・雪女・不死鳥・嵐の龍神・桜祭りの剣姫・キングミミック）
 Object.assign(SPRITE_FACING, { 'n2s:snowman': 1, 'n2:shape:diamond': 1, 'n2:emoji:m_petitMimic': 1, 'n2:emoji:m_mandragora': 1, 'n2:emoji:m_clockBird': 1, 'n2:emoji:👺': 1, 'n2:emoji:💀': 1, 'n2:emoji:🦂': 1, 'n2:emoji:👾': 0, 'n2:emoji:🦖': 1, 'n2:emoji:🐲': -1, 'n2:emoji:👑': 1, 'n2:emoji:⚡': 1, 'n2:emoji:🥬': 1, 'n2:emoji:🌑': 1, 'stagKnight': 1, 'n2:emoji:m_plagueDoc': 1, 'n2:boss:💀': 1, 'n2:boss:🦖': 1, 'n2:boss:🐲': 1, 'n2:boss:🦔': 1, 'n2:boss:⚰️': 1, 'b_siren': -1, 'b_yukiOnna': 1, 'b_phoenix': 1, 'b_stormDragon': 1, 'b_festBlade': 1, 'b_kingMimic': 1 });
 
-// ボスを一撃で倒せたとき：その一撃の強さから、試練の塔で勝てそうなステージをやんわり伝える（ボスを10発くらいで倒せる階を目安に）
-const TOWER_HINT_HITS = 10, TOWER_HINT_GAP_MS = 3 * 60 * 1000;
+// ボスを一撃か3秒以内で倒せたとき：その強さから、試練の塔で勝てそうなステージをやんわり伝える（ボスを10発・10秒くらいで倒せる階を目安に）
+const TOWER_HINT_HITS = 10, TOWER_HINT_GAP_MS = 3 * 60 * 1000, TOWER_HINT_FAST_SEC = 3;
 let towerHintAt = 0;
 function estimateTowerStage(dmg) {
   const budget = dmg * TOWER_HINT_HITS, ok = s => getEnemyStats(s).hp <= budget;
@@ -2334,6 +2337,6 @@ function hintTowerStage(dmg) {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
   document.querySelectorAll('.tower-hint').forEach(e => e.remove());
   const el = document.createElement('div'); el.className = 'tower-hint';
-  el.innerHTML = `<small>💡 この一撃なら…</small><b>ステージ${formatStageNumber(Math.floor(s / 10) * 10)}</b>くらいまで行けそう<small>試練の塔で挑んでみる？</small>`;
+  el.innerHTML = `<small>💡 この強さなら…</small><b>ステージ${formatStageNumber(Math.floor(s / 10) * 10)}</b>くらいまで行けそう<small>試練の塔で挑んでみる？</small>`;
   wrap.appendChild(el); setTimeout(() => el.remove(), 6200);
 }

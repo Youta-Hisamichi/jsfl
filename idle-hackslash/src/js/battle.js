@@ -1122,6 +1122,7 @@ function drawBossWeakPoints() {
   }
 }
 function onPlayerHitEnemy(enemy, dmg) {
+  if (!enemy.hitsTaken) enemy.firstHitAt = Date.now(); // 戦い始め（最初に攻撃が当たったとき）
   enemy.hitsTaken = (enemy.hitsTaken || 0) + 1; enemy.bestHit = Math.max(enemy.bestHit || 0, dmg || 0); // ボスを一撃で倒したかを見る（試練の塔のヒント）
   focusHpEnemy(enemy);
   spawnBlood(enemy.x, enemy.y);
