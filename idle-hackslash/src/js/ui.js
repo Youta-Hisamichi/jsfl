@@ -1126,11 +1126,19 @@ setInterval(() => {
     spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オートLvUP +${autoUpgradeTextCount}`, '#7fe8a0', 0.03);
     autoUpgradeTextAt = performance.now(); autoUpgradeTextCount = 0;
   }
-  if (getActiveTab() === 'companion') { // 強化のある仲間ページでは1レベルごとにパワーアップ音
+  if (getActiveTab() === 'companion') { // 強化のある仲間ページでは1レベルごとに、連鎖音のように音階が上がっていく音（いちばん上まで行ったら最初に戻る）
     renderUpgradeList();
-    playPowerUpBlip();
+    playAutoUpStep();
   }
-}, 700); // 0.7秒ごとに1レベル
+}, 700);
+let autoUpStep = 0;
+function playAutoUpStep() {
+  const step = autoUpStep; autoUpStep = (autoUpStep + 1) % (CHAIN_SCALE.length * 3); // ドレミソラ×3オクターブで15段
+  const semis = Math.floor(step / CHAIN_SCALE.length) * 12 + CHAIN_SCALE[step % CHAIN_SCALE.length];
+  const freq = 523.25 * Math.pow(2, semis / 12);
+  playTone(freq, 0.1, 'triangle', 0.12, freq * 1.05);
+  playTone(freq * 2, 0.05, 'square', 0.025);
+} // 0.7秒ごとに1レベル
 // レベルアップ文字の2行目に出す飛躍の文字（飛躍していなければ空）
 function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+3%' : '×' + l.mult}` : ''; }
 // 強化の飛躍（10/100/1000Lv到達）を演出
