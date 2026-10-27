@@ -2134,7 +2134,8 @@ function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, f
   const DIG = { '+': 'plus', '%': 'pct' }, num = [...fmtEvoPct(total)].map(c => /[0-9]/.test(c) || DIG[c] ? `<img src="${E}d_${DIG[c] || c}.webp" alt="${c}">` : `<i>${c}</i>`).join(''); // 数字は絵の数字を並べる（「.」「万」などは文字）
   skGachaResult.innerHTML = `<img class="evr2-glow" src="${E}glow${n}.webp" alt=""><img class="evr2-crown" src="${E}crown${n}.webp" alt=""><img class="evr2-icon" src="${E}icon_${kind}.webp" alt="">`
     + `<img class="evr2-title" src="${E}title_${kind}.webp" alt="${EVO_KIND_NAME[kind]}進化！"><div class="evr2-plate"><img src="${E}plate.webp" alt=""><div class="evr2-num">${num}</div></div>`
-    + `<button class="evr2-ok" id="skGachaCloseBtn" aria-label="OK"><img src="${E}okbtn.webp" alt="OK"></button>`;
+    + `<button class="evr2-ok" id="skGachaCloseBtn" aria-label="OK"><img src="${E}okbtn.webp" alt="OK"></button>`
+    + `<div class="evr2-ba">${EVO_KIND_NAME[kind]}進化　${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div>`; // OKの下に進化の前後
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
   ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; if (evoAccNoticePending) { evoAccNoticePending = false; setTimeout(showEvoAccUnlocked, 250); } });
 }
