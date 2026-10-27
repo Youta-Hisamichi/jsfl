@@ -2137,7 +2137,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (!quiet) { updateStatsUI(); saveGame(); }
   return loot;
 }
-function showTapError(text, clientX, clientY) {
+function showTapError(text, clientX, clientY, ms = 1500) { // ms：表示しておく時間
   battleNotice.textContent = text;
   battleNotice.style.position = 'fixed';
   battleNotice.style.left = clientX + 'px';
@@ -2146,7 +2146,7 @@ function showTapError(text, clientX, clientY) {
   { const w = battleNotice.offsetWidth, vw = window.innerWidth; if (w) battleNotice.style.left = Math.max(w / 2 + 8, Math.min(vw - w / 2 - 8, clientX)) + 'px'; } // 画面の端でタップしても縦長につぶれないよう、はみ出さない位置に寄せる
   playErrorSound();
   clearTimeout(noticeTimer);
-  noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), 1500);
+  noticeTimer = setTimeout(() => battleNotice.classList.remove('show'), ms);
 }
 
 function showTapOk(text, clientX, clientY) { // 成功のお知らせ（エラー音ではなく軽い「ピコン」）
