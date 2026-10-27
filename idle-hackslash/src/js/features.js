@@ -239,7 +239,7 @@ function drawSpeech() {
   if (Date.now() - speechUIAt > 700) { speechUIAt = Date.now(); try { refreshSpeechUIRects(); } catch (e) {} }
   if (!speech.length) return;
   const now = Date.now();
-  speech = speech.filter(s => s.until > now && (balls.includes(s.ball) || adds.includes(s.ball)));
+  speech = speech.filter(s => s.until > now && (s.fixed || balls.includes(s.ball) || adds.includes(s.ball))); // fixed：やられた敵のその場に残す吹き出し
   const placed = [];
   for (const s of speech) {
     const b = s.ball, a = Math.min(1, (s.until - now) / 300);
@@ -276,6 +276,7 @@ const ENEMY_SAY = {
   bossHalf: ['…少しはやるようだな', 'ほう、本気を出すか', 'おのれ…！', 'まだ終わらんぞ！'],
   bossLow: ['ば、ばかな…！', 'このままでは…！', '覚えておれ…！', 'ぐおおお…！'],
   bossWin: ['フハハハ！弱すぎる！', '出直してこい', 'その程度か勇者よ'],
+  die: ['ぬわーーっっ！！', 'ぐふっ！', 'ぐはぁっ！', 'む、無念…'],
 };
 let enemySayAt = 0;
 function enemySay(b, kind, force) {
@@ -1131,7 +1132,7 @@ function buildSerifList() {
   sec('仲間のメタ発言・共通ゼリフ', 3); sub('メタ発言（ひとりごとの約15%）'); add(META_COMP);
   for (const [n, C] of [['群像劇', EPIC_COMP], ['ロボットアニメ風', TOMINO_COMP], ['風と森', WIND_COMP], ['錬金術', ALCH_COMP], ['宇宙艦隊', GALAXY_COMP], ['聖杯', GRAIL_COMP]]) { sub(`共通・${n}（仲間ごとに4〜5割が混ざる。動物などは除く）`); add(C.i, 'ひとりごと'); add(C.k, '撃破'); }
   sec('敵（ザコ・共通）');
-  const EN = { idle: 'ひとりごと', slime: 'スライム', hit: '攻撃を受けたとき', boss: 'ボス登場（専用ゼリフのないボス）', bossHalf: 'ボスHP半分', bossLow: 'ボス瀕死', bossWin: 'ボスが勝ったとき' };
+  const EN = { idle: 'ひとりごと', slime: 'スライム', hit: '攻撃を受けたとき', boss: 'ボス登場（専用ゼリフのないボス）', bossHalf: 'ボスHP半分', bossLow: 'ボス瀕死', bossWin: 'ボスが勝ったとき', die: 'やられたとき' };
   const TN = { noble: '高貴', monster: 'モンスター', any: '未分類' };
   for (const k in ENEMY_SAY) { sub(EN[k] || k); for (const tn of ['noble', 'monster', 'any']) add(ENEMY_SAY[k].filter(t => enemyLineTone(t) === tn), TN[tn]); }
   sec('ボス専用ゼリフ');
@@ -1181,6 +1182,40 @@ const ENEMY_LINE_TONE = {
     'ヘッヘッ！ オイラと契約しないか？', 'オマエ…ウマソウナ魂ダナ', 'マッカを置いていけば、見逃してやるよ', '契約の印は、もう刻まれてるぜ', 'ニンゲンの欲望は、いつも甘い味がする', 'ヤダアアアァーッ！！', 'いい声で鳴けよオォーッ！',
     'ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜', 'ふん、虫ケラが', '群れを傷つけたのは、お前たちか', 'この怒りは、千年の森の怒りだ', '不完全な命が、完全な我に挑むか', '再生が…追いつかないだと？', 'ぐおおお…！', '怒りが…静まっていく…', '石が…砕ける…我の、命が…', '完全な存在に…なれなかったか…', 'フハハハ！弱すぎる！'],
 };
+// ===== 追加ゼリフ（世紀末の拳法もの・近未来の超能力ものの雰囲気。北斗・AKIRA風の言い回しはオリジナルの文） =====
+CHUUNI.kill.push('・・心配するな、みねうちだ', 'お前の命の灯は、あと三つ数えるうちに消える', '経絡を断った。もう動けまい', '拳に宿るは、哀しみの重さだ');
+CHUUNI.bossKill.push('・・心配するな、みねうちだ', '天に還るがいい。せめて星となれ');
+CHUUNI.boss.push('どうやら死にたいらしいな', 'あの世で俺にわび続けろ！', 'いまのアンタが、一番醜いぜ‥！', '貴様に名乗る名はない。拳で語れ', 'この街ごと消し飛ばす気か…止めてやる！');
+CHUUNI.pinch.push('なん‥だと？', '頭の中で…何かが膨れ上がる…！');
+CHUUNI.idle.push('荒野に咲く花も、拳ひとつで守れるなら', '力が…勝手にあふれ出してくる…');
+ENEMY_SAY.idle.push('俺は悪くねぇっ! ', '上から来るぞ!気をつけろぉ!', 'ゆうべは　おたのしみでしたね。', 'ゆるるさーん！',
+  'ヒャッハー！ 水と食い物を置いていきな！', 'この拳の傷が目に入らねぇのか！', 'ここらの荒野はオレたちの縄張りだぜ！', '種もみなんか食っちまえ！',
+  'オレのバイクに追いつけるもんならな！', '頭が…割れる…！ 声が聞こえる…！', 'この街はもうすぐ吹き飛ぶぜ、ヘヘッ',
+  '闇の炎に抱かれて消えろっ!', '褒美に死をやろう!', 'よかろう、ならば戦争だ！', '我が拳は天をも握る。ひれ伏せ', '覇道に情けは無用！');
+ENEMY_SAY.die.push('あべばっ！', 'うわらばっ！', 'ぷげらっ！', 'ひでぼっ！', 'たわぶっ！', 'ちにゃっ！', '体が…ふくれ…る…！', 'オレの…バイク…');
+ENEMY_SAY.boss.push('我が拳は天をも握る。ひれ伏せ', '褒美に死をやろう!');
+ENEMY_LINE_TONE.noble.push('闇の炎に抱かれて消えろっ!', '褒美に死をやろう!', 'よかろう、ならば戦争だ！', '我が拳は天をも握る。ひれ伏せ', '覇道に情けは無用！', 'む、無念…');
+ENEMY_LINE_TONE.monster.push('ゆるるさーん！', '俺は悪くねぇっ! ', '上から来るぞ!気をつけろぉ!', 'ゆうべは　おたのしみでしたね。', 'ヒャッハー！ 水と食い物を置いていきな！', 'この拳の傷が目に入らねぇのか！', 'ここらの荒野はオレたちの縄張りだぜ！', '種もみなんか食っちまえ！',
+  'ぐふっ！', 'あべばっ！', 'うわらばっ！', 'ぷげらっ！', 'ひでぼっ！', 'たわぶっ！', 'ちにゃっ！');
+{ const T = (id, k, ...t) => { if (COMP_TALK[id] && COMP_TALK[id][k]) COMP_TALK[id][k].push(...t); };
+  for (const id of ['sage', 'priest', 'fortune', 'musketeer', 'paladin']) T(id, 'i', '穏やかじゃないですね');
+  for (const id of ['merchant', 'bunny', 'thief', 'bard', 'villager']) T(id, 'i', 'ゆうべは　おたのしみでしたね。');
+  T('monk', 'k', '経絡を突いた。三歩も歩けまい', '拳は哀しみを背負って振るうものだ'); T('monk', 'i', '北の星が…ひとつ多く見える…');
+  T('warrior', 'i', 'ヒャッハーな連中は、オレに任せとけ！'); T('pirate', 'i', 'ヒャッハー！ お宝の匂いがするぜ！');
+  T('mage', 'i', '頭の中で…魔力が勝手に膨れ上がってく…！'); T('summoner', 'i', '…声が聞こえる。あの子たちが、目を覚ましたがってる');
+  T('cavalry', 'k', '赤い愛馬で、もう一度ぶっちぎる！'); T('thief', 'k', 'バイク…じゃなかった、足の速さなら負けねぇ！');
+  for (const id of ['warrior', 'king', 'villager', 'merchant', 'heavy', 'pirate']) if (COMP_TALK_LOW[id]) COMP_TALK_LOW[id].d.push('ぬわーーっっ！！');
+  if (COMP_TALK_LOW.monk) COMP_TALK_LOW.monk.p.push('なん…だと…？'); }
+// 敵のやられゼリフ：倒れたその場にひとこと（ザコはときどき、ボスはわりと言う）
+{ const orig = triggerEnemyDefeat; triggerEnemyDefeat = function (enemy) {
+  const r = orig.apply(this, arguments);
+  if (enemy && enemy.isDying && !enemy.saidDie && !enemy.isPlayer && phase === 'battle' && Math.random() < (enemy.isBoss ? 0.3 : 0.12)) {
+    enemy.saidDie = true;
+    const pool = enemyLinePool(enemy, 'die'), t = pool[Math.floor(Math.random() * pool.length)];
+    speech.push({ ball: { x: enemy.x, y: enemy.y, radius: enemy.radius || 14 }, text: t, until: Date.now() + 2200, fixed: true });
+  }
+  return r;
+}; }
 const ENEMY_LINE_TONE_OF = new Map(); for (const t in ENEMY_LINE_TONE) for (const s of ENEMY_LINE_TONE[t]) ENEMY_LINE_TONE_OF.set(s, t);
 function enemyLineTone(text) { return ENEMY_LINE_TONE_OF.get(text) || 'any'; } // any＝未分類
 // 敵キャラの傾向（図鑑の名前で分ける）。高貴でも未分類でもないものはモンスター
