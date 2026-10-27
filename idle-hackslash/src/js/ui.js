@@ -2059,7 +2059,7 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
-  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム（ショップの「進化の指定書」で選べるように）', event.clientX, event.clientY); return; } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
+  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化の指定書」で選べるようになる）', event.clientX, event.clientY); return; } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
