@@ -1844,7 +1844,7 @@ const SPRITE_FACING = {
   villager: -1, merchant: 1, hobbit: -1, dog: 1, penguin: 1, priest: -1, dancer: -1, tamer: 1, heavy: -1, cavalry: 1, princess: -1, king: -1, pegasus: 1, // 新しい職業の仲間
   hero: 1, heroine: -1, mage: -1, ranger: -1, warrior: 1, cat: 1, knight: -1, archer: 1, witch: -1, sprite: 1, golem: 1, monk: -1, bard: -1, ninja: 1, priest: -1, dragon: 1, thief: 1, lancer: 1, samurai: 1, sage: -1, angel: 1,
   paladin: 1, dragoon: 1, summoner: 1, alchemist: 1, gunner: 1, pirate: 1, darkKnight: -1, b_fireDragon: -1, b_iceDragon: -1, b_golem: 0, b_bloodLord: 0, b_seraph: 0, b_beholder: 0, b_kraken: 0, b_skullKing: 0, b_cerberus: 0, b_treant: 0,  b_ogreKing: 0, b_darkWitch: 0, b_voidKnight: -1, b_mimic: -1, b_yukiOnna: 0, b_mossGiant: 0, b_phoenix: 0, b_iceQueen: 0, b_stormDragon: 0, b_voidEater: 0, b_cursedBear: 0, b_libraKnight: 0, b_magmaGolem: 0, b_crystalGolem: 0, b_demonPrincess: 0, b_skyWhale: -1, b_reaper2: 0, b_deepOne: 0, b_festBlade: 0, b_sandQueen: 0, b_goldDragon: -1, b_dragonRider: -1, b_castleGolem: 0, b_flowerDryad: 0, b_elemQueen: 0, b_holyKnight: 0, b_redKnight: 0, b_valkyrie: -1, b_sunPriestess: 0, b_seaQueen: 0, b_dragonQueen: 0, b_timeQueen: 0, b_streamer: 0, b_athena: -1, b_schoolBoss: -1, b_shibaWarrior: 1, b_goldSeraph: 0, b_darkSwordGirl: 0, b_chocoDemon: 0, b_jockeyKnight: -1, b_bloodEmpress: 0, b_newYearKnight: 0, b_endSaint: 0, b_crossAngel: 0, b_throneKnight: 0, b_dragonBear: 1, b_zombieDragon: -1, b_blueFlameGirl: 0, b_flameHarpy: -1, b_lamia: 1, b_slimeBoss: 0,
-  slime: 0, metalSlime: 0, goblin: 1, skeleton: 1, zombie: -1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
+  slime: 0, metalSlime: 0, goblin: 1, skeleton: 1, zombie: 1, livingArmor: 1, pumpkin: 0, ghost: 0, bat: 0, demon: 0,
   worm: 1, cobra: 1, salamander: 1, flameWisp: 0, lich: 1, 
   blueDragon: 1, blackDragon: 1, wyvern: 1, 
   vampire: 0, werewolf: 0, franken: 0, slimeGirl: 0, reaper: 0, demonKing: 0,
@@ -2312,4 +2312,4 @@ function drawPinchAura() {
 for (const id of ['hero', ...Object.keys(COMPANIONS)]) SPRITE_FACING[id] = 1;
 // 新しい敵の絵は正面か左向きが多い（勇者が右にいるときは反転して向き合う）。右向きに描かれた絵だけ 1
 for (const k in ENEMY_SPRITES) if (/^n2s?:/.test(k)) SPRITE_FACING[k] = -1;
-for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕', 'n2:emoji:🌑', 'n2:emoji:👾', 'n2:emoji:🐉']) SPRITE_FACING[k] = 1; // ワイバーン・チビドラゴン・闇の魔導士・メタルスライム・ドラゴン
+for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕', 'n2:emoji:🌑', 'n2:emoji:👾', 'n2:emoji:🐉', 'n2:emoji:🧟']) SPRITE_FACING[k] = 1; // ワイバーン・チビドラゴン・闇の魔導士・メタルスライム・ドラゴン・ゾンビ

@@ -799,7 +799,7 @@ const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: ICON_IMAGES[icon], name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
 });
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
-SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
+SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 100, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
