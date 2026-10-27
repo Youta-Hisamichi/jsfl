@@ -808,6 +808,7 @@ const PINCH_TEMPO_HP = [[0.15, 1.2], [0.3, 1.1]];        // [HPの割合以下, 
 const PINCH_TEMPO_TIME = [[5000, 1.25], [10000, 1.12]];  // [残りミリ秒以下, テンポ倍率]
 function getBossPinchTempo() {
   if (typeof phase === 'undefined' || phase !== 'battle' || !isBossFight()) return 1;
+  if (!BOSS_BATTLE_SONGS.includes(currentBgmType) && !NORMAL_BATTLE_SONGS.includes(currentBgmType)) return 1; // 戦闘の曲を流しているときだけ（ほかのページや画面の曲は速くしない）
   let t = 1;
   const p = balls.find(isMainPlayerBall);
   if (p && p.maxHp > 0) { const r = p.hp / p.maxHp; for (const [lim, m] of PINCH_TEMPO_HP) if (r <= lim) { t = Math.max(t, m); break; } }
