@@ -749,7 +749,7 @@ function getAllRecordGoalRewards() { // 今受け取れる報酬の合計（1つ
 function updateClaimAllBtn() {
   const btn = document.getElementById('rgClaimAll'); if (!btn) return;
   const { total, count } = getAllRecordGoalRewards();
-  btn.style.display = count ? '' : 'none';
+  btn.style.display = count ? '' : 'none'; btn.classList.toggle('is-off', !count); // 受け取るものが無いときは隠す（CSSの display:block !important より強く）
   if (count) btn.innerHTML = `<span class="rg-ca-num"><b>${formatCoinNumber(total)}</b></span>`; // 「全部受け取る」とジェムは絵の中、数だけ重ねる
   btn.setAttribute('aria-label', `全部受け取る 進化の羽${total}（${count}件）`);
 }
