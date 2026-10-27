@@ -151,7 +151,7 @@ function step() {
         applyHitKnockback(a, e, 3.2);
         tryBossParalyze(e, a);
         if (a.hp > 0 && Math.random() < computeBonuses().counter) {
-          const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
+          const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT * getEvoRate('counter'))), e);
           e.hp -= counter.dmg;
           trackDamage(counter.dmg);
           spawnDamageText(e.x, e.y - e.radius - 30, 'COUNTER!', '#64e8ff', 0.014, true);
@@ -187,7 +187,7 @@ function step() {
           applyHitKnockback(a, e, 3.2);
           tryBossParalyze(e, a);
           if (a.hp > 0 && Math.random() < computeBonuses().counter) {
-            const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT)), e);
+            const counter = rollCrit(Math.max(1, Math.round(a.atk * COUNTER_DMG_MULT * getEvoRate('counter'))), e);
             e.hp -= counter.dmg;
             trackDamage(counter.dmg);
             spawnDamageText(e.x, e.y - e.radius - 30, 'COUNTER!', '#64e8ff', 0.014, true);

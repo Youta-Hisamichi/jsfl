@@ -662,6 +662,7 @@ const EVO_TIERS = [ // 1回の進化で上がる割合：N +1%・R +3%・SR +8%�
   { rarity: 'common', mult: 1.01, base: 71 }, { rarity: 'rare', mult: 1.03, base: 20 }, { rarity: 'epic', mult: 1.08, base: 6.5 },
   { rarity: 'legendary', mult: 1.25, base: 2 }, { rarity: 'mythic', mult: 3.55, base: 0.5 },
 ];
+const EVO_COUNTER_BASE = 0.1; // 進化項目「カウンター」の反撃率
 const EVO_MIN_GEMS = 1, EVO_MAX_GEMS = 10, EVO_RATE_CAP = 1e150; // ジェム1個から引ける。一度に使えるのは10個まで
 function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
@@ -787,8 +788,8 @@ SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbidden
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
 SHOP_ITEMS.evoPick = { icon: '📜', img: ICON_IMAGES.x_book, name: '進化の指定書', desc: '進化する項目（攻撃力・HP・ボス特攻など）を自分で選べるようになる。買うまではランダム（転生しても残る）', cost: 500, unlockKey: 'evoPickUnlocked' };
-// 進化の項目を増やす（はじめは攻撃力とHPだけ）。ボス特攻がいちばん高い
-[['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30, 'art_lens'], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50, 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80, 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80, 'up_cHp'], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150, 'art_crest']].forEach(([k, icon, name, eff, cost, img]) => {
+// 進化の項目を増やす（はじめは攻撃力とHPだけ）。カウンターがいちばん高い
+[['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30, 'art_lens'], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50, 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80, 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80, 'up_cHp'], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150, 'art_crest'], ['counter', '🥊', 'カウンター', '10%で反撃するようになる', 250, 'g_counter']].forEach(([k, icon, name, eff, cost, img]) => {
   SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: `進化で「${name}」も上がるようになる（${eff}）。転生しても残る`, cost, unlockKey: 'evoKindOpen_' + k };
 });
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
@@ -1318,6 +1319,7 @@ function computeBonuses() {
   snap('転生回数の倍率');
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
   b.companionAtkMult *= getEvoRate('compAtk'); b.companionHpMult *= getEvoRate('compHp'); // 仲間攻撃力・仲間HP進化
+  if (game.evoKindOpen_counter) b.counter += EVO_COUNTER_BASE; // 進化項目「カウンター」を買うと反撃するようになる（ダメージは進化で上がる）
   snap('進化');
   b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コインの妖精（買った回数＋1倍・掛け算）
   snap('ショップ（流星剣・月の盾）');

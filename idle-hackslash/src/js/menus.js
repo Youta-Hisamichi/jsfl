@@ -95,9 +95,9 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
-const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
-const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚' };
-const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP' };
+const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
+const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊' };
+const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター' };
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
 function isEvoPickUnlocked() { return !!game.evoPickUnlocked; }
 const EVO_KIND_DEFAULT = ['atk', 'hp']; // はじめから進化できるのは攻撃力とHPだけ。ほかはショップで項目を買って増やす
