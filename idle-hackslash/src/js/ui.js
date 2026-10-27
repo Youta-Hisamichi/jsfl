@@ -1173,6 +1173,7 @@ function levelUpUpgrade(id, x, y) {
   return true;
 }
 
+let shopBuyConfirmed = false; // 確認ダイアログで「購入する」を押したあとの1回だけ true
 shopList.addEventListener('click', event => {
   const button = event.target.closest('[data-shop]');
   if (!button) return;
@@ -1192,6 +1193,13 @@ shopList.addEventListener('click', event => {
   if (item.requires && !game[item.requires]) { showTapError('先にタックルを開放してください', event.clientX, event.clientY); return; }
   const gcost = getShopItemGemCost(id);
   if (game.gems < gcost) { promptGemShortage(gcost); return; }
+  if (!shopBuyConfirmed) { // 買う前に確認（押し間違いで買わないように）
+    const art = SHOP_ITEM_ART[id], iconHtml = art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:64px;height:64px"></span>` : ico(item);
+    const verb = item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? 'OFFにしますか？' : 'ONにしますか？') : '購入しますか？';
+    simpleChoice({ icon: iconHtml, title: item.name, text: `<b>💎${gcost}</b> で${verb}`, sub: item.desc, yes: item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? 'OFFにする' : 'ONにする') : '購入する', no: 'やめる',
+      onYes: () => { shopBuyConfirmed = true; try { button.click(); } finally { shopBuyConfirmed = false; } } });
+    return;
+  }
   game.gems -= gcost;
   let line = item.desc;
   if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
@@ -1220,6 +1228,7 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
   document.querySelectorAll('.shop-buy-fx').forEach(el => el.remove());
   const el = document.createElement('div');
   el.className = 'shop-buy-fx';
+  el.addEventListener('click', ev => { ev.stopPropagation(); ev.preventDefault(); el.remove(); }); // タップで消す（下の商品を押してしまわないように画面全体で受け止める）
   el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">${kicker}</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
   document.body.appendChild(el);
   { const card = el.querySelector('.sbf-card'), ic = el.querySelector('.sbf-icon'), rays = el.querySelector('.sbf-rays'); // 後光の中心をアイコンに合わせる
@@ -2090,7 +2099,9 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (evoBusy || skGachaBusy) return;
   const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() && evoKind !== 'random' ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 指定書があっても「ランダム」を選べば開放済みの項目からランダム // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
+  const accWasOpen = isEvoAccOpen();
   game.evoCount = (game.evoCount || 0) + 1; // 進化した回数（3回目で命中が開放）
+  if (!accWasOpen && isEvoAccOpen()) evoAccNoticePending = true; // 結果を閉じたら「命中が開放」を知らせる
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
@@ -2116,7 +2127,16 @@ function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, f
     rays.style.setProperty('--rc', RARITY_INFO[tier.rarity].color); rays.classList.remove('show'); void rays.offsetWidth; rays.classList.add('show'); }
   skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers, feaN))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
-  ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
+  ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; if (evoAccNoticePending) { evoAccNoticePending = false; setTimeout(showEvoAccUnlocked, 250); } });
+}
+let evoAccNoticePending = false;
+function showEvoAccUnlocked() { // 進化3回目：命中が進化の項目に加わったことをダイアログで知らせる
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 82;
+  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon"><img class="ico-img" src="${ICON_IMAGES.art_lens}" alt="" style="width:72px;height:72px;object-fit:contain"></div><div class="sc-title">🎯 進化項目「命中」が解放！</div><div class="sc-text">これから進化のランダムに<b>命中</b>も入ります。<br>命中を上げると、ステージ100から上がっていく<b>ボスの回避</b>を打ち消せます。</div><div class="sc-btns"><button class="modal-close-btn sc-yes">OK</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('.sc-yes').addEventListener('click', () => ov.remove());
+  playTone(784, 0.12, 'square', 0.06, 1175); setTimeout(() => playTone(1568, 0.25, 'square', 0.05, 2093), 140);
+  renderEvolutionList();
 }
 function fmtEvoRate(v) { return v < 1000 ? String(+v.toFixed(2)) : formatCoinNumber(v); } // ×1.1 などの小数も見えるように
 function fmtEvoPct(total) { const p = (total - 1) * 100; return '+' + (p < 1000 ? String(+p.toFixed(p < 10 ? 2 : 1)) : formatCoinNumber(Math.round(p))) + '%'; } // 1回の進化で上がる割合（+1% など）

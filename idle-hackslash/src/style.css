@@ -4661,3 +4661,4 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .evo-tg { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 8px; font-style: normal; font-size: 0.7em; font-weight: 900; line-height: 1.5; vertical-align: middle; background: #555b6a; color: #dfe3ec; }
 .evo-tg.on { background: #2fbf5a; color: #fff; box-shadow: 0 0 6px rgba(80,230,120,0.7); }
 body { height: auto; min-height: 100%; } /* 長いページ（ショップなど）でも上のジェム数のバーが最後まで画面上に残るように（body の高さを中身に合わせる） */
+.shop-buy-fx { pointer-events: auto !important; cursor: pointer; } /* 購入結果はタップで閉じる */
