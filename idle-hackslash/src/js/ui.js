@@ -2086,7 +2086,7 @@ gacha10Btn.addEventListener('click', event => {
 
 // 新しい進化：攻撃力かHPを選び、ジェムと羽の数を決めて進化
 const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic: 'UR' }; // 進化ガチャのレア度表記
-document.getElementById('evoPanel').addEventListener('click', event => {
+const onEvoPanelClick = event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { const k = kindBtn.dataset.evoKind; showTapError(k === 'acc' ? `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）` : `「${EVO_KIND_NAME[k]}」はOFF\n（ショップの「進化項目：${EVO_KIND_NAME[k]}」でONにできる）`, event.clientX, event.clientY, 3200); return; }
@@ -2116,7 +2116,9 @@ document.getElementById('evoPanel').addEventListener('click', event => {
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN);
     }, null, { starRoulette: true }); // 結果の前にレア星ルーレット
-});
+};
+document.getElementById('evoPanel').addEventListener('click', onEvoPanelClick);
+document.getElementById('evoKindsPanel').addEventListener('click', onEvoPanelClick); // 進化項目の一覧（動画ボタンの下）
 let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
 function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN) {

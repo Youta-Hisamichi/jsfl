@@ -4667,3 +4667,4 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .tower-hint b { font-size: 1.25rem; color: #ffd76b; letter-spacing: 0.02em; }
 .tower-hint small { font-size: 0.68rem; color: #cfe0ff; font-weight: 700; }
 @keyframes towerHint { 0% { opacity: 0; transform: translate(-50%, 14px) scale(0.96); } 10% { opacity: 1; transform: translate(-50%, 0) scale(1); } 82% { opacity: 1; transform: translate(-50%, -6px); } 100% { opacity: 0; transform: translate(-50%, -18px); } }
+#evoKindsPanel { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; } /* 進化項目の一覧（動画ボタンの下） */
