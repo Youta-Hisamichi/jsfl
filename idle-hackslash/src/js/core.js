@@ -791,7 +791,10 @@ SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbidd
 const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
- ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn']].forEach(([k, icon, name, eff, img, fixed]) => {
+ ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn'],
+ ['skill', '✨', 'スキル', 'スキルのダメージが上がる', 'sk_skillSpecial'], ['weapon', '🪃', 'サブウェポン', 'サブウェポンのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
+ ['tackle', '🐗', 'タックル', '助走をつけた体当たりのダメージが上がる', 'up_rush'], ['combo', '🔗', 'コンボ', 'コンボで上がるダメージの割合が増える', 'g_chain'], ['crit', '💥', 'クリティカル', 'クリティカルのダメージが上がる', 'g_critical'],
+ ['tower', '🏰', '試練の塔', '試練の塔のボスへのダメージが上がる', 'x_tower'], ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };
 });
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
@@ -847,7 +850,7 @@ function skillCd(id, base) { return Math.max(SKILL_MIN_CD, Math.round(base * (1 
 function skillPower(id) {
   const lv = game.shopOwned && game.shopOwned[id] ? getSkillLevel(id) : 1;
   const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100;
-  return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100);
+  return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); // スキル進化も掛かる
 }
 function getSkillGachaCost() { return coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0))); }
 const WEAPON_GACHA_BASE_COST = 40, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
@@ -1269,8 +1272,8 @@ function computeBonuses() {
   const up = game.upgrades;
   b.tackleMult += (up.tackle || 0) * 0.08;
   b.companionAtkMult += (up.compAtk || 0) * 0.08;
-  b.meleeMult = (1 + (up.melee || 0) * 0.10) * upgradeLeapMult(up.melee || 0); // 接近戦：ふつうの衝突ダメージ
-  b.rushDmgUp = (1 + (up.rush || 0) * 0.12) * upgradeLeapMult(up.rush || 0); // 体当たり：引っぱり攻撃のダメージ
+  b.meleeMult = (1 + (up.melee || 0) * 0.10) * upgradeLeapMult(up.melee || 0) * getEvoRate('melee'); // 接近戦：ふつうの衝突ダメージ（近接攻撃進化も掛かる）
+  b.rushDmgUp = (1 + (up.rush || 0) * 0.12) * upgradeLeapMult(up.rush || 0) * getEvoRate('tackle'); // 体当たり：引っぱり攻撃のダメージ（タックル進化も掛かる）
   // 強化の飛躍：10Lvごとにプチ飛躍・100Lvごとに大飛躍・1000Lvごとに超大飛躍（倍率で掛かる）
   b.atkMult *= upgradeLvMult(up.atk || 0);
   b.hpMult *= upgradeLvMult(up.hp || 0);

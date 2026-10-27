@@ -95,9 +95,9 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
-const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter', 'rebirth']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
-const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊', rebirth: '🌀' };
-const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率' };
+const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter', 'rebirth', 'skill', 'weapon', 'melee', 'tackle', 'combo', 'crit', 'tower', 'pinch', 'zako']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
+const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊', rebirth: '🌀', skill: '✨', weapon: '🪃', melee: '🗡️', tackle: '🐗', combo: '🔗', crit: '💥', tower: '🏰', pinch: '😤', zako: '👊' };
+const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率', skill: 'スキル', weapon: 'サブウェポン', melee: '近接攻撃', tackle: 'タックル', combo: 'コンボ', crit: 'クリティカル', tower: '試練の塔', pinch: 'ピンチ補正', zako: 'ザコ特攻' };
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
 function isEvoPickUnlocked() { return false; } // 進化の項目はいつもランダム（「進化の指定書」は廃止）
 const EVO_ACC_OPEN_AT = 3; // 命中は進化3回目で開放（以後ずっとON）
@@ -1235,7 +1235,7 @@ function getEquippedWeapons() {
 function equippedWeaponLv(id) { return getEquippedWeapons().includes(id) ? getWeaponLv(id) : 0; }
 function autoEquipWeapon(id) { const eq = getEquippedWeapons(); if (!eq.includes(id) && eq.length < getWeaponSlots()) eq.push(id); } // 空き枠があれば自動で装備
 function weaponCount(lv) { return 1 + Math.floor((Math.min(lv, WEAPON_SHAPE_LV) - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3（それ以上は増えない）
-function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100); } // 10Lvごとに飛躍・100Lvごとに超飛躍
+function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('weapon'); } // サブウェポン進化も掛かる // 10Lvごとに飛躍・100Lvごとに超飛躍
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
 // ボスを倒した・リタイヤしたときに、まだ持っていないサブウェポンが1つ手に入る（Lvは上げない。強化はスキル画面で）
 function grantRandomWeapon(reason) {

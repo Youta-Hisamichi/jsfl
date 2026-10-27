@@ -1757,7 +1757,7 @@ function showComboBadge(count) {
 }
 function getComboMultiplier(comboGrowthBonus) {
   const stacks = Math.min(comboCount - 1, COMBO_MAX_STACKS);
-  return 1 + stacks * (COMBO_STEP + comboGrowthBonus);
+  return 1 + stacks * (COMBO_STEP + comboGrowthBonus) * getEvoRate('combo'); // コンボ進化で上がり幅が増える
 }
 function resetCombo() { comboCount = 0; clearTimeout(comboBadgeTimer); comboBadge.classList.remove('show'); }
 
