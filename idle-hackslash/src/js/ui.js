@@ -1215,7 +1215,7 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
   el.className = 'shop-buy-fx';
   el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">${kicker}</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2300);
+  setTimeout(() => el.remove(), 3800); // 少し長めに見せる（CSSの sbfPop と同じ長さ）
 }
 // 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）
 // 値段はレア度が高いほどかなり高い。★2以上は最初「解雇中」（採用すると召喚に出る）
