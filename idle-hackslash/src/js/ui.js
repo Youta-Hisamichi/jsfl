@@ -2069,7 +2069,7 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
-  if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { showTapError(`「${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」はまだ進化できない\n（ショップの「進化項目：${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」で追加できる）`, event.clientX, event.clientY, 3200); return; }
+  if (kindBtn && kindBtn.dataset.evoKind !== 'random' && !isEvoKindOpen(kindBtn.dataset.evoKind)) { showTapError(`「${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」はまだ進化できない\n（ショップの「進化項目：${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」で追加できる）`, event.clientX, event.clientY, 3200); return; }
   if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化の指定書」で選べるようになる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
@@ -2077,7 +2077,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
   if (evoBusy || skGachaBusy) return;
-  const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 項目は指定書がなければランダム
+  const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() && evoKind !== 'random' ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 指定書があっても「ランダム」を選べば開放済みの項目からランダム // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
