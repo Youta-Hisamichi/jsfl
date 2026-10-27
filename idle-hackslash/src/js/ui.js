@@ -1200,7 +1200,7 @@ shopList.addEventListener('click', event => {
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
   if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オートLvUPが使えるようになった！（強化ページでON/OFF）'; }
-  showShopPurchaseFx(ico(item), item.name, line);
+  showShopPurchaseFx(SHOP_ITEM_ART[id] ? `<span class="sr-ico su-i_${SHOP_ITEM_ART[id]}"></span>` : ico(item), item.name, line); // ショップの一覧と同じ絵
   renderShopList();
   refreshPlayerBallStats(false);
   playRegisterSound();
@@ -1215,6 +1215,8 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
   el.className = 'shop-buy-fx';
   el.innerHTML = `<div class="sbf-card"><div class="sbf-rays"></div><div class="sbf-icon item-icon">${iconHtml}</div><div class="sbf-kicker">${kicker}</div><div class="sbf-name">${name}</div><div class="sbf-line">${line}</div></div>`;
   document.body.appendChild(el);
+  { const card = el.querySelector('.sbf-card'), ic = el.querySelector('.sbf-icon'), rays = el.querySelector('.sbf-rays'); // 後光の中心をアイコンに合わせる
+    rays.style.top = (ic.offsetTop + ic.offsetHeight / 2) + 'px'; }
   setTimeout(() => el.remove(), 3800); // 少し長めに見せる（CSSの sbfPop と同じ長さ）
 }
 // 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）

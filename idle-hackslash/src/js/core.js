@@ -786,10 +786,10 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
-SHOP_ITEMS.evoPick = { icon: '📜', name: '進化の指定書', desc: '進化する項目（攻撃力・HP・ボス特攻など）を自分で選べるようになる。買うまではランダム（転生しても残る）', cost: 500, unlockKey: 'evoPickUnlocked' };
+SHOP_ITEMS.evoPick = { icon: '📜', img: ICON_IMAGES.x_book, name: '進化の指定書', desc: '進化する項目（攻撃力・HP・ボス特攻など）を自分で選べるようになる。買うまではランダム（転生しても残る）', cost: 500, unlockKey: 'evoPickUnlocked' };
 // 進化の項目を増やす（はじめは攻撃力とHPだけ）。ボス特攻がいちばん高い
-[['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150]].forEach(([k, icon, name, eff, cost]) => {
-  SHOP_ITEMS['evoKind_' + k] = { icon, name: `進化項目：${name}`, desc: `進化で「${name}」も上がるようになる（${eff}）。転生しても残る`, cost, unlockKey: 'evoKindOpen_' + k };
+[['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30, 'art_lens'], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50, 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80, 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80, 'up_cHp'], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150, 'art_crest']].forEach(([k, icon, name, eff, cost, img]) => {
+  SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: `進化で「${name}」も上がるようになる（${eff}）。転生しても残る`, cost, unlockKey: 'evoKindOpen_' + k };
 });
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
