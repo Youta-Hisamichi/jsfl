@@ -103,7 +103,7 @@ function isEvoPickUnlocked() { return false; } // 進化の項目はいつもラ
 const EVO_ACC_OPEN_AT = 3; // 命中は進化3回目で開放（以後ずっとON）
 function isEvoAccOpen() { return (game.evoCount || 0) >= EVO_ACC_OPEN_AT || !!game.evoKindOpen_acc || getEvoRate('acc') > 1; }
 const EVO_KIND_DEFAULT = ['atk', 'hp']; // はじめから進化できるのは攻撃力とHPだけ。ほかはショップで項目を買って増やす
-function isEvoKindOpen(k) { return EVO_KIND_DEFAULT.includes(k) || (k === 'acc' ? isEvoAccOpen() : !!game['evoKindOpen_' + k]); } // ショップの「進化項目：○○」でON/OFF
+function isEvoKindOpen(k) { return EVO_KIND_DEFAULT.includes(k) ? game['evoKindOpen_' + k] !== false : (k === 'acc' ? isEvoAccOpen() : !!game['evoKindOpen_' + k]); } // ショップの「進化項目：○○」でON/OFF
 function openEvoKinds() { return EVO_KINDS.filter(isEvoKindOpen); }
 let evoKind = 'atk', evoGems = 1, evoFeathers = null; // evoFeathers：次の進化で使う羽のレア度（なしは null）
 function renderEvolutionList() {

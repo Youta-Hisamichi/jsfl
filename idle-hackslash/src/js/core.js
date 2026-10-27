@@ -787,9 +787,9 @@ SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェ�
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
-// 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎5、OFFは💎10。攻撃力・HPはいつもON、命中は進化3回目で自動でON（どちらもOFFにできない）
+// 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎5、OFFは💎10。攻撃力・HPははじめからON（OFFにもできる）、命中は進化3回目で自動でON（OFFにできない）
 const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
-[['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk', true], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp', true],
+[['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
  ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };

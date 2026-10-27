@@ -1179,6 +1179,7 @@ shopList.addEventListener('click', event => {
   const id = button.dataset.shop;
   const item = SHOP_ITEMS[id];
   if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
+  if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= 1) { showTapError('ONの項目がなくなるのでOFFにできません', event.clientX, event.clientY); return; }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
   if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
@@ -2080,7 +2081,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { const k = kindBtn.dataset.evoKind; showTapError(k === 'acc' ? `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）` : `「${EVO_KIND_NAME[k]}」はOFF\n（ショップの「進化項目：${EVO_KIND_NAME[k]}」でONにできる）`, event.clientX, event.clientY, 3200); return; }
-  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はいつもランダム\n（ショップの「進化項目」でON/OFFできる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
+  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化項目」でON/OFFできる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
