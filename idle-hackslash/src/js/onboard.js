@@ -57,14 +57,14 @@ const BEGINNER_MISSIONS = [
   { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1, hint: '仲間ページの自キャラ強化' },
   { text: '溜めMAX（×3）で攻撃する', get: () => game.obFlags && game.obFlags.chargeMax ? 1 : 0, goal: 1, gems: 1, hint: '攻撃せずに待つほど次の一撃が強くなる' },
   { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 2, hint: '仲間ページの招集ガチャ（初回無料）' },
-  { text: '「属性ダメージ良好！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
+  { elem: true, text: '「属性ダメージ良好！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
   { text: 'スキルガチャを引く', get: () => game.skillGachaPulls || 0, goal: 1, gems: 2 },
   { text: '宝箱を開ける', get: () => game.obFlags && game.obFlags.chest ? 1 : 0, goal: 1, gems: 1, hint: '木箱や柱を壊すと出ることも' },
   { text: 'ステージ10のボスを倒す', get: () => game.bestStage || 1, goal: 11, gems: 3 },
   { text: '最大HPをLv5まで強化する', get: () => upLv('hp'), goal: 5, gems: 1 },
   { text: 'ステージ20に到達する', get: () => game.bestStage || 1, goal: 20, gems: 3 },
   { text: 'ステージ30に到達する', get: () => game.bestStage || 1, goal: 30, gems: 5 },
-];
+].filter(m => ELEMENTS_ON || !m.elem); // 属性を止めている間は属性のミッションを出さない
 let missionSig = '';
 const MISSION_GAP_MS = 20000; let missionHoldUntil = Date.now() + 8000; // 始めてすぐには出さない
 function updateMission() {
@@ -185,7 +185,7 @@ function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重�
   const m = elementMult(hero, el2);
   const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">属性ダメージ良好×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
   el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</small></div>`
-    + `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>`;
+    + (ELEMENTS_ON ? `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
@@ -245,9 +245,9 @@ function showAllyInfo(b) {
   const role = isMain ? '自キャラ' : '仲間';
   const lv = !isMain && cid && game.companions.level ? `Lv.${(game.companions.level[cid] || 0) + 1}　` : '';
   const info = isMain && typeof heroTypeInfo === 'function' ? heroTypeInfo(hero) : null;
-  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : '⚖️ バランス（属性の不利なし）') : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
+  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : (ELEMENTS_ON ? '⚖️ バランス（属性の不利なし）' : '⚖️ バランス')) : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
   el.innerHTML = `<div class="eip-name eip-ally">${isMain ? '⭐ ' : '🐾 '}${name}<small>${role}　${lv}HP ${formatCoinNumber(Math.ceil(Math.max(0, b.hp)))}/${formatCoinNumber(Math.ceil(b.maxHp || b.hp))}　攻撃 ${formatCoinNumber(Math.round(b.atk || 0))}</small></div>`
-    + `<div class="eip-row">属性 ${elem ? elemBadge(elem) : '<span class="el-badge el-none">なし</span>'}${elem ? `　有利 ${elemBadge(ELEMENT_BEATS[elem])}　苦手 ${elemBadge(weakTo)}` : ''}</div>`
+    + (ELEMENTS_ON ? `<div class="eip-row">属性 ${elem ? elemBadge(elem) : '<span class="el-badge el-none">なし</span>'}${elem ? `　有利 ${elemBadge(ELEMENT_BEATS[elem])}　苦手 ${elemBadge(weakTo)}` : ''}</div>` : '')
     + (typeTxt ? `<div class="eip-row eip-sub">${typeTxt}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);

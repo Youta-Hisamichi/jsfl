@@ -30,7 +30,7 @@ function mktMyUse() {
   return sum > 0 ? Object.fromEntries(MKT_ELEMS.map(e => [e, r[e] / sum])) : null;
 }
 function mktShareWithMe() { const c = mktCrowdShare(0), m = mktMyUse(); return m ? Object.fromEntries(MKT_ELEMS.map(e => [e, c[e] * 0.9 + m[e] * 0.1])) : c; } // 自分の偏りも1割だけ混ざる
-function marketMult(e) { if (!e || !MKT_ELEMS.includes(e)) return 1; const s = mktShareWithMe()[e]; return Math.max(0.75, Math.min(1.45, Math.pow((1 / 3) / s, 0.7))); } // 人気ほど効きにくい
+function marketMult(e) { if (!ELEMENTS_ON || !e || !MKT_ELEMS.includes(e)) return 1; const s = mktShareWithMe()[e]; return Math.max(0.75, Math.min(1.45, Math.pow((1 / 3) / s, 0.7))); } // 人気ほど効きにくい
 // 戦闘中、自キャラと仲間の属性を数えておく（10秒ごと）
 setInterval(() => {
   if (phase !== 'battle') return;
@@ -113,7 +113,7 @@ function openMarket(settled) {
 }
 // ランキングページに入口（フレンドの挑戦状の上）と、日付が変わったら精算のお知らせ
 { const fb = document.getElementById('friendBox');
-  if (fb) { const b = document.createElement('button'); b.className = 'mkt-entry'; b.id = 'mktEntry'; fb.parentNode.insertBefore(b, fb); b.onclick = () => openMarket(); }
+  if (fb && ELEMENTS_ON) { const b = document.createElement('button'); b.className = 'mkt-entry'; b.id = 'mktEntry'; fb.parentNode.insertBefore(b, fb); b.onclick = () => openMarket(); }
   const renderEntry = () => { const el = document.getElementById('mktEntry'); if (!el) return; const best = MKT_ELEMS.slice().sort((a, b) => marketMult(b) - marketMult(a))[0]; el.innerHTML = `📈 属性相場 <small>今日の狙い目 ${ELEMENTS[best].icon}${ELEMENTS[best].name} ×${marketMult(best).toFixed(2)}</small>`; };
   renderEntry(); setInterval(renderEntry, 30000);
   setTimeout(() => { const st = mktSettle(); if (st) showNotice(`📈 属性相場：昨日の株を精算して 💎${st.back}（${st.back - st.put >= 0 ? '+' : ''}${st.back - st.put}）`, false, 4000); }, 6000);

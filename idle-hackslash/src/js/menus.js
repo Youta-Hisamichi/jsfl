@@ -192,11 +192,11 @@ function renderMyCharCard() {
   el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : '<span class="el-badge el-none">属性なし</span>'}</span>${heroTypeHtml(id)}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
+  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : ELEMENTS_ON ? '<span class="el-badge el-none">属性なし</span>' : ''}</span>${heroTypeHtml(id)}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
 function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
   const info = heroTypeInfo(id);
-  if (!info) return '<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ 属性の不利を受けない</i><i class="dn">▼ 補正なし</i></span>';
+  if (!info) return `<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ ${ELEMENTS_ON ? '属性の不利を受けない' : '長所なし'}</i><i class="dn">▼ ${ELEMENTS_ON ? '補正なし' : '短所なし'}</i></span>`;
   return `<span class="mc-ud"><i class="ht">${info.t.icon} ${info.t.name}</i><i class="up">▲ ${info.up}</i><i class="dn">▼ ${info.down}</i></span>`;
 }
 function zoneElementAdvice() { // いまのエリアの雑魚と次のボスの属性から、有利な属性をすすめる
@@ -220,7 +220,7 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + (ELEMENTS_ON ? '自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。' : '') + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
@@ -234,9 +234,9 @@ function openMyCharPicker() {
   const cur = getHeroChar() || '';
   const ids = COMPANION_IDS.filter(isCharSummoned).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
   const adv = zoneElementAdvice();
-  const row = (id, name, img, badge, rcol) => { const el = id && COMPANION_ELEMENT[id], rec = el && (el === adv.rec || el === adv.bossRec); return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
-  ov.querySelector('.mc-advice-box').innerHTML = adv.html;
-  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '属性なし', '#9aa0b4')
+  const row = (id, name, img, badge, rcol) => { const el = id && COMPANION_ELEMENT[id], rec = ELEMENTS_ON && el && (el === adv.rec || el === adv.bossRec); return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
+  ov.querySelector('.mc-advice-box').innerHTML = ELEMENTS_ON ? adv.html : '';
+  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ELEMENTS_ON ? '属性なし' : '', '#9aa0b4')
     + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)} ${elemBadge(COMPANION_ELEMENT[id])}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
   ov.classList.add('show');
 }

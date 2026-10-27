@@ -791,6 +791,10 @@ SHOP_ITEMS.evoPick = { icon: '📜', name: '進化の指定書', desc: '進化�
 [['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150]].forEach(([k, icon, name, eff, cost]) => {
   SHOP_ITEMS['evoKind_' + k] = { icon, name: `進化項目：${name}`, desc: `進化で「${name}」も上がるようになる（${eff}）。転生しても残る`, cost, unlockKey: 'evoKindOpen_' + k };
 });
+// 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
+[['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
+  SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: ICON_IMAGES[icon], name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
+});
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
@@ -909,8 +913,11 @@ function rollChestRarity(luck = 1, min = 'common') { // luck 倍だけ高レア�
   const order = ['common', 'rare', 'epic', 'legendary', 'mythic'];
   let r = Math.random(), got = 'common';
   for (const k of ['mythic', 'legendary', 'epic', 'rare']) { const p = Math.min(0.9, CHEST_RARITY_ODDS[k] * luck); if (r < p) { got = k; break; } r -= p; if (r < 0) break; }
-  return order.indexOf(got) < order.indexOf(min) ? min : got;
+  if (order.indexOf(got) < order.indexOf(min)) got = min;
+  while (!isChestRarityOpen(got)) got = order[order.indexOf(got) - 1]; // SR以上はショップの「宝箱の予感」を買うまで出ない（1つ下のレア度になる）
+  return got;
 }
+function isChestRarityOpen(r) { return r === 'common' || r === 'rare' || !!game['chestOmen_' + r]; } // ふつうに拾える宝箱のレア度（確定の報酬の宝箱は別）
 function pickWeightedArtifact(pool, weights) {
   pool = pool.filter(a => !BOSS_DROP_ONLY.includes(a.id)); // 禁断シリーズはボスのドロップだけ
   pool = pool.filter(a => !ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]); // 上限まで持っている遺物は出さない
@@ -1092,9 +1099,10 @@ const COMPANION_IDS = Object.keys(COMPANIONS);
 const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water: { icon: '💧', name: '水', color: '#3aa8ff' }, grass: { icon: '🌿', name: '草', color: '#3cbf5f' } };
 const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
 const ELEMENT_ADV = 2, ELEMENT_DIS = 0.5;
+const ELEMENTS_ON = false; // 属性はいったん停止中（相性の補正・表示・属性相場を出さない）。true で元に戻る
 let lastElementHitAt = 0;
 function noteElementHit(attEl, target) { // 有利な属性で当てたら「属性ダメージ良好！」（出しすぎないよう少し間をあける）
-  if (!target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
+  if (!ELEMENTS_ON || !target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
   const now = Date.now(); if (now - lastElementHitAt < 900) return;
   lastElementHitAt = now;
   if (typeof obFlag === 'function') obFlag('superEff');
@@ -1104,8 +1112,8 @@ const COMPANION_ELEMENT = {};
 [['fire', 'merchant warrior monk mage musketeer alchemist bunny lancer heavy samurai dragon dragoon bahamut'],
  ['water', 'penguin priest dancer bard princess fortune sage ninja pirate paladin pegasus archangel'],
  ['grass', 'villager hobbit dog cat hamster archer thief golem tamer summoner cavalry king']].forEach(([el, ids]) => ids.split(' ').forEach(id => { COMPANION_ELEMENT[id] = el; }));
-function elementMult(att, def) { return !att || !def ? 1 : ELEMENT_BEATS[att] === def ? ELEMENT_ADV : ELEMENT_BEATS[def] === att ? ELEMENT_DIS : 1; }
-function elemBadge(el, cls = '') { return el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
+function elementMult(att, def) { return !ELEMENTS_ON || !att || !def ? 1 : ELEMENT_BEATS[att] === def ? ELEMENT_ADV : ELEMENT_BEATS[def] === att ? ELEMENT_DIS : 1; }
+function elemBadge(el, cls = '') { return ELEMENTS_ON && el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
 // 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
 function isCharSummoned(id) { return !!(game.companionBook && game.companionBook[id]) && isCharObtained(id); } // 一度でも招集して仲間にしたことがある
 function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharSummoned(game.heroChar) ? game.heroChar : null; }

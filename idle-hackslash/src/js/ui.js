@@ -1194,6 +1194,7 @@ shopList.addEventListener('click', event => {
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
   if (id.startsWith('evoKind_')) { line = `進化で「${EVO_KIND_NAME[id.slice(8)]}」も上がるようになった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
+  if (id.startsWith('chestOmen_')) line = `${SHOP_ITEMS[id].name.replace('の予感', '')}がドロップするようになった！`;
   if (id === 'evoPick') { line = '進化する項目を自分で選べるようになった！（進化ページで選ぶ）'; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
