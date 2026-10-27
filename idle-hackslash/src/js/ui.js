@@ -53,6 +53,7 @@ function draw() {
   drawHomingMissiles();
   drawPoisonEffects();
   drawParalyzeEffects();
+  drawSoulFx();
   drawSleepEffects();
   drawAtkUpEffects();
   drawRegenEffects();
@@ -74,6 +75,13 @@ function draw() {
   for (const p of particles) {
     ctx.globalAlpha = Math.max(0, p.life);
     if (p.blood) { ctx.fillStyle = p.color; ctx.fillRect(Math.round(p.x), Math.round(p.y), p.blood, p.blood); continue; }
+    if (p.zeni) { // ゼニ投げのコイン：くるくる回る大きめの金貨（飛んでいる間は薄くならない）
+      ctx.globalAlpha = 1; const w = 6.5 * Math.abs(Math.cos((p.spin = (p.spin || 0) + 0.45))) + 1.5;
+      ctx.fillStyle = '#e8a91c'; ctx.beginPath(); ctx.ellipse(p.x, p.y, w, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe27a'; ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(0.5, w - 2), 4.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#8a5a00'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(p.x, p.y, w, 6.5, 0, 0, Math.PI * 2); ctx.stroke();
+      continue;
+    }
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.isCoin ? 4.5 : 2.5, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
@@ -2522,12 +2530,27 @@ zeniBtn.addEventListener('click', event => {
   const { player, enemy } = ctxs;
   const thrown = Math.floor(game.coins / 2);
   spendCoins(thrown);
-  // コインは拡散させず、敵めがけて一直線に連なって飛ぶ。当たったように見えてからダメージを出して吹っ飛ばす
-  const dx = enemy.x - player.x, dy = enemy.y - player.y, dist = Math.max(1, Math.hypot(dx, dy)), ux = dx / dist, uy = dy / dist;
-  const ZENI_FLY_FRAMES = 18, sp = dist / ZENI_FLY_FRAMES;
-  for (let i = 0; i < 16; i++) { const back = i * 5; particles.push({ x: player.x - ux * back, y: player.y - uy * back, vx: ux * sp, vy: uy * sp, life: 1, color: '#ffd76b', decay: 1 / ((dist + back) / sp), isCoin: true }); }
+  // コイン30枚を猛烈な勢いで連射する（1枚ずつ敵めがけて飛び、当たるたびにチャリン）。最後の1枚が当たったところでまとめてダメージ
+  const ZENI_COINS = 30, ZENI_GAP_MS = 22, ZENI_SPEED = 15;
   spawnDamageText(player.x, player.y - player.radius - 22, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
-  playTone(1046, 0.06, 'square', 0.05, 1568); // シュッ
+  let ux = 1, uy = 0;
+  for (let i = 0; i < ZENI_COINS; i++) {
+    setTimeout(() => {
+      if (phase !== 'battle' || enemy.isDying) return;
+      const dx = enemy.x - player.x, dy = enemy.y - player.y, dist = Math.max(1, Math.hypot(dx, dy));
+      const a = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.28, sp = ZENI_SPEED * (0.9 + Math.random() * 0.25); // 少しばらけて飛ぶ
+      ux = dx / dist; uy = dy / dist;
+      const ox = (Math.random() - 0.5) * 10, oy = (Math.random() - 0.5) * 10;
+      particles.push({ x: player.x + ox, y: player.y + oy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: '#ffd76b', decay: sp / dist, zeni: true, spin: Math.random() * 6 });
+      if (i % 3 === 0) playTone(1300 + Math.random() * 500, 0.03, 'square', 0.035); // シュシュシュ
+      setTimeout(() => { // 当たったところでキラッ
+        if (enemy.isDying) return;
+        for (let k = 0; k < 2; k++) { const b = Math.random() * Math.PI * 2, v = 1 + Math.random() * 2; particles.push({ x: enemy.x + (Math.random() - 0.5) * enemy.radius, y: enemy.y + (Math.random() - 0.5) * enemy.radius, vx: Math.cos(b) * v, vy: Math.sin(b) * v, life: 1, color: '#fff2a8', decay: 0.08 }); }
+        if (i % 2 === 0) playTone(1976 + Math.random() * 300, 0.025, 'triangle', 0.03); // チャリン
+      }, dist / sp / 60 * 1000);
+    }, i * ZENI_GAP_MS);
+  }
+  const flyMs = Math.max(1, Math.hypot(enemy.x - player.x, enemy.y - player.y)) / ZENI_SPEED / 60 * 1000;
   setTimeout(() => {
     if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return; // 当たる前に敵がいなくなった
     const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN + player.atk)), enemy);
@@ -2535,14 +2558,14 @@ zeniBtn.addEventListener('click', event => {
     trackDamage(dmg);
     spawnAttackDamageText(enemy, dmg, crit, '#ffe9a8');
     onPlayerHitEnemy(enemy, dmg);
-    for (let i = 0; i < 10; i++) { const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 2.5; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * v + ux * 2, vy: Math.sin(a) * v + uy * 2, life: 1, color: '#ffd76b', decay: 0.04, isCoin: true }); } // 当たって弾けるコイン
+    for (let i = 0; i < 14; i++) { const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 3; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * v + ux * 2, vy: Math.sin(a) * v + uy * 2, life: 1, color: '#ffd76b', decay: 0.04, isCoin: true }); }
     const kb = enemy.isBoss ? 7 : 16; enemy.vx = ux * kb; enemy.vy = uy * kb; // 吹っ飛ばす（ボスは少しだけ）
     if (typeof shakeScreenLight === 'function') shakeScreenLight();
     playNoiseBurst(0.2, 0.2);
     [1318, 1568, 1976].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.08), i * 60));
     if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y);
     updateHPUI();
-  }, ZENI_FLY_FRAMES / 60 * 1000);
+  }, (ZENI_COINS - 1) * ZENI_GAP_MS + flyMs + 30);
   updateZeniButton();
   updateStatsUI();
   updateHPUI();
@@ -2595,23 +2618,63 @@ novaBtn.addEventListener('click', event => {
   updateHPUI();
 });
 // 大爆発：画面全体を白く飛ばす閃光と、炎の火球が広がる
+// 半減魔法の演出：黒い魂がゆらゆら飛んでいって敵に取り憑く
+const SOUL_FLY_MS = 620, SOUL_HOLD_MS = 900;
+let soulFx = [];
+function drawSoulFx() {
+  if (!soulFx.length) return;
+  const now = Date.now();
+  soulFx = soulFx.filter(f => now < f.start + SOUL_FLY_MS + SOUL_HOLD_MS);
+  for (const f of soulFx) {
+    const en = f.enemy, t = (now - f.start) / SOUL_FLY_MS;
+    ctx.save();
+    if (t < 1) { // 飛んでいく：ゆらゆら波打ちながら、だんだん速く
+      const k = t * t * (3 - 2 * t), dx = en.x - f.x0, dy = en.y - f.y0, d = Math.max(1, Math.hypot(dx, dy)), nx = -dy / d, ny = dx / d;
+      const wob = Math.sin(t * Math.PI * 3) * 22 * (1 - t);
+      const x = f.x0 + dx * k + nx * wob, y = f.y0 + dy * k + ny * wob;
+      f.trail.push([x, y]); if (f.trail.length > 10) f.trail.shift();
+      f.trail.forEach(([tx, ty], i) => { const a = (i + 1) / f.trail.length; ctx.globalAlpha = a * 0.45; ctx.fillStyle = '#2a0f3a'; ctx.beginPath(); ctx.arc(tx, ty, 4 + a * 8, 0, Math.PI * 2); ctx.fill(); }); // 黒い尾
+      ctx.globalAlpha = 1;
+      const g = ctx.createRadialGradient(x, y, 1, x, y, 16); g.addColorStop(0, '#000'); g.addColorStop(0.55, 'rgba(20,0,30,0.95)'); g.addColorStop(1, 'rgba(150,60,220,0)');
+      ctx.shadowColor = '#a046ff'; ctx.shadowBlur = 14; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = '#ff3b5c'; ctx.beginPath(); ctx.arc(x - 3.5, y - 2, 1.8, 0, Math.PI * 2); ctx.arc(x + 3.5, y - 2, 1.8, 0, Math.PI * 2); ctx.fill(); // 赤い目
+      if (Math.random() < 0.5) particles.push({ x: x + (Math.random() - 0.5) * 10, y: y + (Math.random() - 0.5) * 10, vx: (Math.random() - 0.5) * 0.6, vy: -0.4 - Math.random() * 0.5, life: 0.8, color: '#3a1650', decay: 0.04 });
+    } else { // 取り憑く：黒いもやが敵の周りを渦巻いて、しみこんでいく
+      const p = (now - f.start - SOUL_FLY_MS) / SOUL_HOLD_MS, r = (en.radius || 20);
+      ctx.globalAlpha = 0.5 * (1 - p); ctx.fillStyle = '#12001c'; ctx.beginPath(); ctx.arc(en.x, en.y, r * 1.05, 0, Math.PI * 2); ctx.fill();
+      for (let i = 0; i < 4; i++) {
+        const a = now / 140 + i * Math.PI / 2, rr = r * (1.5 - 0.6 * p);
+        const wx = en.x + Math.cos(a) * rr, wy = en.y + Math.sin(a) * rr * 0.8;
+        ctx.globalAlpha = 0.8 * (1 - p); ctx.shadowColor = '#a046ff'; ctx.shadowBlur = 10; ctx.fillStyle = '#1a0526';
+        ctx.beginPath(); ctx.arc(wx, wy, 7 * (1 - p * 0.5), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+}
 halveBtn.addEventListener('click', event => { // 半減魔法：敵のHPを半分に（ボスにはまれに・1体1回だけ）
   const ctxs = beginSkill(event, 'skillHalve', 'halve', SKILL_HALVE_COOLDOWN, lastHalveAt, v => { lastHalveAt = v; }, updateHalveButton);
   if (!ctxs) return;
-  const { enemy } = ctxs;
-  for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * 2.2, vy: Math.sin(a) * 2.2, life: 1, color: i % 2 ? '#9b8cff' : '#ffe36b', decay: 0.03 }); }
-  playTone(660, 0.35, 'triangle', 0.1, 330); setTimeout(() => playTone(330, 0.4, 'sine', 0.1, 165), 160);
-  const y = enemy.y - enemy.radius - 30;
-  if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
-  else if (enemy.isBoss && Math.random() >= HALVE_CHANCE_BOSS) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
-  else {
-    const cut = Math.floor(enemy.hp / 2);
-    if (cut > 0) { enemy.hp -= cut; trackDamage(cut); }
-    if (enemy.isBoss) enemy.halved = true;
-    spawnDamageText(enemy.x, y, enemy.isBoss ? '🌗 ボスのHPが半分に！！' : '🌗 HP半減！', '#ffe36b', 0.012, true);
-    if (enemy.isBoss) shakeScreen(); else shakeScreenLight();
-    if (typeof onPlayerHitEnemy === 'function' && cut > 0) onPlayerHitEnemy(enemy, cut);
-  }
+  const { player, enemy } = ctxs;
+  soulFx.push({ enemy, x0: player.x, y0: player.y - 6, start: Date.now(), trail: [] });
+  playTone(220, 0.45, 'sawtooth', 0.06, 110); noiseSweep(0.5, 300, 1400, 'bandpass', 2, 0.18); // ヒュウゥ…と飛んでいく
+  setTimeout(() => { // 取り憑いたところで効果
+    if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return;
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; particles.push({ x: enemy.x + Math.cos(a) * enemy.radius * 1.6, y: enemy.y + Math.sin(a) * enemy.radius * 1.6, vx: -Math.cos(a) * 1.6, vy: -Math.sin(a) * 1.6, life: 1, color: i % 2 ? '#2a0f3a' : '#7a3cc0', decay: 0.035 }); } // 黒いもやが吸い込まれる
+    playTone(330, 0.4, 'sine', 0.1, 120); setTimeout(() => playTone(165, 0.5, 'triangle', 0.08, 82), 120);
+    const y = enemy.y - enemy.radius - 30;
+    if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
+    else if (enemy.isBoss && Math.random() >= HALVE_CHANCE_BOSS) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
+    else {
+      const cut = Math.floor(enemy.hp / 2);
+      if (cut > 0) { enemy.hp -= cut; trackDamage(cut); }
+      if (enemy.isBoss) enemy.halved = true;
+      spawnDamageText(enemy.x, y, enemy.isBoss ? '🌗 ボスのHPが半分に！！' : '🌗 HP半減！', '#c89bff', 0.012, true);
+      if (enemy.isBoss) shakeScreen(); else shakeScreenLight();
+      if (typeof onPlayerHitEnemy === 'function' && cut > 0) onPlayerHitEnemy(enemy, cut);
+    }
+    updateHPUI();
+  }, SOUL_FLY_MS);
   updateHalveButton(); updateHPUI();
 });
 blastBtn.addEventListener('click', event => {
