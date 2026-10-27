@@ -1254,6 +1254,21 @@ ENEMY_LINE_TONE.noble.push('髑髏の旗を掲げる愚か者よ。ここで沈�
   T('mage', 'i', '詠唱を噛んだ…！ だが噛んだことで、逆に気合いが入ったっ！');
   T('pirate', 'i', '海賊旗は、自由の証さ。誰にも降ろさせねぇ', '酒を酌み交わす友がいる。それで十分だ'); T('pirate', 'k', '海の藻屑と消えな');
   T('samurai', 'i', '…己の信じた道を行く。それだけだ'); T('cavalry', 'i', '友のためなら、この命、惜しくはない'); }
+// ===== ドリルで天を目指す、無理を通す熱いセリフ（グレンラガン風の言い回し。どれもオリジナルの文） =====
+CHUUNI.idle.push('壁があるなら、ぶち抜いて進むだけだ！', '一歩踏み出せば、それはもう昨日の自分じゃねぇ！', '地の底から見上げた空は、今も俺の目標だ！');
+CHUUNI.kill.push('俺のドリルは、明日へ続く穴を掘るためにある！', '回転が足りねぇ？ なら、もっと回すまでだ！');
+CHUUNI.boss.push('相手がデカい？ 上等だ！ その分、ぶち抜きがいがあるってもんよ！', '道理が邪魔するなら、気合いでこじ開ける！');
+CHUUNI.bossKill.push('見たか！ 俺たちの螺旋は、天だって貫くんだよ！', '昨日の俺を超えた！ 明日の俺は、もっと上だ！');
+CHUUNI.pinch.push('倒れたら立ち上がる！ それが俺の回転だぁっ！');
+CHUUNI.charge.push('全身全霊、限界の向こう側まで――突き抜けろォォッ！！');
+ENEMY_SAY.boss.push('螺旋の力など、宇宙の秩序を乱すだけだ', '進化の果てに待つのは、破滅だけだと知れ');
+ENEMY_SAY.bossLow.push('なぜだ…なぜ、その回転は止まらぬ…！');
+ENEMY_LINE_TONE.noble.push('螺旋の力など、宇宙の秩序を乱すだけだ', '進化の果てに待つのは、破滅だけだと知れ', 'なぜだ…なぜ、その回転は止まらぬ…！');
+{ const T = (id, k, ...t) => { if (COMP_TALK[id] && COMP_TALK[id][k]) COMP_TALK[id][k].push(...t); };
+  T('warrior', 'i', 'アニキ分を信じろ！ 信じた分だけ、お前は強くなる！'); T('warrior', 'k', '見たかよ！ これが俺たちの合体技だ！');
+  T('villager', 'i', 'おら、穴掘りなら村一番だべ！');
+  T('princess', 'i', '信じてるわ。あなたなら、どんな壁も越えられるって');
+  T('dragon', 'k', 'ガオー！（ぶち抜いたー！）'); }
 const ENEMY_LINE_TONE_OF = new Map(); for (const t in ENEMY_LINE_TONE) for (const s of ENEMY_LINE_TONE[t]) ENEMY_LINE_TONE_OF.set(s, t);
 function enemyLineTone(text) { return ENEMY_LINE_TONE_OF.get(text) || 'any'; } // any＝未分類
 // 敵キャラの傾向（図鑑の名前で分ける）。高貴でも未分類でもないものはモンスター
