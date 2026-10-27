@@ -1177,8 +1177,9 @@ function levelUpUpgrade(id, x, y) {
 let shopBuyConfirmed = false; // 確認ダイアログで「購入する」を押したあとの1回だけ true
 shopList.addEventListener('click', event => {
   const button = event.target.closest('[data-shop]');
-  if (!button) return;
-  const id = button.dataset.shop;
+  if (button) buyShopItem(button.dataset.shop, event);
+});
+function buyShopItem(id, event) { // ショップの品を買う（進化ページの項目タップからも使う）
   const item = SHOP_ITEMS[id];
   if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
   if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= 1) { showTapError('ONの項目がなくなるのでOFFにできません', event.clientX, event.clientY); return; }
@@ -1198,7 +1199,7 @@ shopList.addEventListener('click', event => {
     const art = SHOP_ITEM_ART[id], iconHtml = art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:64px;height:64px"></span>` : ico(item);
     const verb = item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? 'OFFにしますか？' : 'ONにしますか？') : '購入しますか？';
     simpleChoice({ icon: iconHtml, title: item.name, text: `<b>💎${gcost}</b> で${verb}`, sub: item.desc, yes: item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? 'OFFにする' : 'ONにする') : '購入する', no: 'やめる',
-      onYes: () => { shopBuyConfirmed = true; try { button.click(); } finally { shopBuyConfirmed = false; } } });
+      onYes: () => { shopBuyConfirmed = true; try { buyShopItem(id, event); } finally { shopBuyConfirmed = false; } } });
     return;
   }
   game.gems -= gcost;
@@ -1223,7 +1224,7 @@ shopList.addEventListener('click', event => {
   updateStatsUI();
   updateHPUI();
   saveGame();
-});
+}
 // ショップで買ったとき：何を買ってどうなったかを画面中央にポップアップ
 function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました！') {
   document.querySelectorAll('.shop-buy-fx').forEach(el => el.remove());
@@ -2090,8 +2091,12 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 const onEvoPanelClick = event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
-  if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { const k = kindBtn.dataset.evoKind; showTapError(k === 'acc' ? `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）` : `「${EVO_KIND_NAME[k]}」はOFF\n（ショップの「進化項目：${EVO_KIND_NAME[k]}」でONにできる）`, event.clientX, event.clientY, 3200); return; }
-  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化項目」でON/OFFできる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
+  if (kindBtn) { // 項目をタップしたら、その場でON/OFFを買う（ショップの「進化項目」と同じ）
+    const k = kindBtn.dataset.evoKind;
+    if (k === 'acc') { showTapError(isEvoKindOpen('acc') ? '「命中」はいつもON（OFFにできません）' : `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）`, event.clientX, event.clientY, 3200); return; }
+    if (SHOP_ITEMS['evoKind_' + k]) buyShopItem('evoKind_' + k, event);
+    return;
+  }
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
