@@ -224,7 +224,7 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">招集したことのある仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + (ELEMENTS_ON ? '自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。' : '') + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">いま招集している仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + (ELEMENTS_ON ? '自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。' : '') + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
