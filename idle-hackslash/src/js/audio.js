@@ -332,6 +332,17 @@ const BGM_SONGS = {
     drums: 'k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k s k s ks s ks ks | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | ks ks ks ks s s s s',
   },
 
+  tboss5: { // 試練の塔ボス5 峠を駆ける閃光：4つ打ちのキックと跳ねるオクターブベースに乗って、きらびやかなシンセのリフが疾走するユーロビート風の決戦曲（VRC6風・オリジナル。ニ短調）
+    bpm: 158,
+    echo: { time: 0.19, feedback: 0.22, wet: 0.16 },
+    kickBoost: 1.15,
+    tracks: [
+      { type: 'vrc6saw', gain: 0.026, notes: 'D5 F5 A5 D6 = C6 A5 F5 | F5 = D5 F5 A#5 = A5 G5 | G5 = E5 G5 C6 = E6 D6 | C#6 = = A5 E5 = A5 C#6 | D6 = A5 D6 F6 = E6 D6 | D6 = A#5 = F5 = A#5 D6 | E6 = D6 C6 G5 = C6 E6 | D6 = = = A5 = D5 = | G5 A5 A#5 = D6 = A#5 A5 | A5 = C#6 = E6 = C#6 A5 | F5 G5 A5 = D6 = A5 F5 | A#5 = D6 = F6 = D6 A#5 | G5 A#5 D6 = G6 = F6 D6 | E6 = G6 = E6 = C6 G5 | A5 C#6 E6 A6 = E6 C#6 A5 | A5 = = = E6 = A6 =' },
+      { type: 'vrc6pulse25', gain: 0.012, notes: '- D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 | - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 | - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 - D4+F4+A4 | - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 - D4+F4+A#4 | - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 - D4+G4+A#4 | - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 - E4+G4+C5 | - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 | - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4 - C#4+E4+A4' },
+      { type: 'vrc6pulse12', gain: 0.045, notes: 'D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | A1 A2 A1 A2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | C2 C3 C2 C3 C2 C3 C2 C3 | D2 D3 D2 D3 D2 D3 D2 D3 | G1 G2 G1 G2 G1 G2 G1 G2 | A1 A2 A1 A2 A1 A2 A1 A2 | D2 D3 D2 D3 D2 D3 D2 D3 | A#1 A#2 A#1 A#2 A#1 A#2 A#1 A#2 | G1 G2 G1 G2 G1 G2 G1 G2 | C2 C3 C2 C3 C2 C3 C2 C3 | A1 A2 A1 A2 A1 A2 A1 A2 | A1 A2 A1 A2 A1 A2 A1 A2' },
+    ],
+    drums: 'k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | s s s s ks ks ks ks | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | k h ks h k h ks h | s s s s ks ks ks ks',
+  },
   tboss4: { // 試練の塔ボス4 悪夢の魔導王：せわしなく渦巻く分散和音と半音で忍び寄る不穏な和音、狂おしく駆け回る旋律（ほのぼのアクションのラスボス最終形態系）
     bpm: 182,
     echo: { time: 0.17, feedback: 0.2, wet: 0.13 },
@@ -859,7 +870,7 @@ function nextBossBgm() {
   const prev = bossBgmOrder[bossBgmIndex];
   if (++bossBgmIndex >= bossBgmOrder.length) shuffleBossBgm(prev);
 }
-const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'boss9', 'boss18']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
+const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'tboss5', 'boss9', 'boss18']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
 function resolveBgmType(type) {
   if (type === 'boss' && game.skipChallenge) return TOWER_BOSS_SONGS[(game.skipChallenge.bgm || 0) % TOWER_BOSS_SONGS.length];
   if ((type === 'normal' || type === 'boss') && dbgBgmOverride) return dbgBgmOverride;
@@ -903,6 +914,7 @@ const BGM_INFO = [
   { key: 'tboss1', name: '試練の塔ボス1 闇の大魔王', desc: '駆け下りるバロック風の分散和音と打ち鳴らすティンパニ、悲壮で勇壮な旋律。VRC6風チップチューン。ニ短調（大魔王との最終決戦系の作風）・BPM168' },
   { key: 'tboss3', name: '試練の塔ボス3 混沌の決戦', desc: '休みなく刻むベースと渦巻くアルペジオ、畳みかける旋律の疾走感。VRC6風チップチューン。ホ短調（すべてを無に還す混沌との最終決戦系の作風）・BPM176' },
   { key: 'tboss4', name: '試練の塔ボス4 悪夢の魔導王', desc: 'せわしなく渦巻く分散和音と半音ずれで忍び寄る不穏な和音の上を、狂おしく駆け回る旋律。夢を食らう魔導王との最終決戦。VRC6風チップチューン。ホ短調（ほのぼのアクションゲームのラスボス最終形態の作風）・BPM182' },
+  { key: 'tboss5', name: '試練の塔ボス5 峠を駆ける閃光', desc: '4つ打ちのキックと跳ねるオクターブベースに乗って、きらびやかなシンセのリフが疾走するユーロビート風の決戦曲。オリジナル曲。VRC6風チップチューン。ニ短調。' },
   { key: 'boss9', name: '試練の塔ボス5 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss18', name: '試練の塔ボス6 緊急配備', desc: '跳ねるファンクのベースと鋭いブラスの連打に乗って、緊迫の旋律が事件現場へ急行する。全署に緊急配備が敷かれた大捜査。VRC6風チップチューン。ト短調（刑事ドラマのアクションテーマの作風）・BPM144' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
