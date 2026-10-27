@@ -1566,7 +1566,7 @@ function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll, opts) {
 const STAR_ROULETTE_MS = 2000, STAR_ROULETTE_GRADE = ['N', 'R', 'SR', 'SSR', 'UR'];
 function runStarRoulette(rarity, el, done) {
   const n = RARITY_INFO[rarity].stars, K = 22, hold = 420;
-  el.className = 'gacha-result star-roulette'; el.style.background = '';
+  el.className = 'gacha-result star-roulette'; el.style.background = ''; el.style.display = 'flex'; // 前の演出の display:block が残ると★が左に寄る
   el.innerHTML = `<div class="sr-title">レア星ルーレット</div><div class="sr-stars">${[0, 1, 2, 3, 4].map(() => `<img src="${STAR_OFF_IMG}" alt="">`).join('')}</div><div class="sr-grade">?</div>`;
   const imgs = [...el.querySelectorAll('.sr-stars img')], grade = el.querySelector('.sr-grade');
   const show = k => { imgs.forEach((im, j) => { im.src = j < k ? STAR_ON_IMG : STAR_OFF_IMG; im.classList.toggle('on', j < k); }); grade.textContent = STAR_ROULETTE_GRADE[k - 1]; grade.style.color = RARITY_INFO[FEA_RARITIES[k - 1]].color; };

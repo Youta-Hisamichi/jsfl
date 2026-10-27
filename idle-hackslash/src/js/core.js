@@ -675,9 +675,14 @@ function feaCount(r) { return Math.max(0, Math.floor(Number(feaStock()[r]) || 0)
 function feaTotal() { return FEA_RARITIES.reduce((t, r) => t + feaCount(r), 0); }
 function syncFeaTotal() { if (!game.ownedArtifacts) game.ownedArtifacts = {}; game.ownedArtifacts.evoFeather = feaTotal(); } // 遺物コレクションの所持数は全種類の合計
 function addFea(r, n = 1) { feaStock()[r] = feaCount(r) + n; syncFeaTotal(); }
-function nextEvoFea() { // 次の進化で使う羽（選んだ羽。「なし」なら使わない。選んだ羽が尽きたら使わない）
+function nextEvoFea() { // 次の進化で使う羽（選んだ羽。「なし」なら使わない。選んだ羽が尽きたら次のレア度の羽）
   const p = game.evoFeaPick; if (p === undefined) { for (let i = FEA_RARITIES.length - 1; i >= 0; i--) if (feaCount(FEA_RARITIES[i]) > 0) return FEA_RARITIES[i]; return null; } // 未選択のときはいちばんレア度の高い羽
-  return p && feaCount(p) > 0 ? p : null;
+  if (!p) return null; // 「なし」を選んでいる
+  if (feaCount(p) > 0) return p;
+  const i = FEA_RARITIES.indexOf(p); // 選んだ羽が尽きたら、1つ下のレア度から順に残っている羽を使う（下に無ければ上から）
+  for (let j = i - 1; j >= 0; j--) if (feaCount(FEA_RARITIES[j]) > 0) return (game.evoFeaPick = FEA_RARITIES[j]);
+  for (let j = i + 1; j < FEA_RARITIES.length; j++) if (feaCount(FEA_RARITIES[j]) > 0) return (game.evoFeaPick = FEA_RARITIES[j]);
+  return null;
 }
 function feaName(r) { return `${RARITY_INFO[r].label}羽`; }
 function feaIco(r, cls = 'ico-img') { return `<img class="${cls}" src="${FEA_ICON[r] || FEA_ICON.common}" alt="">`; }
