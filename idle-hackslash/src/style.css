@@ -4633,3 +4633,15 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 
 .tab-page[data-tab="gacha"] .evo-rates .evo-rate.on { background: url(assets/img/ui/evo/rate_on.webp) center / contain no-repeat !important; animation: evoOnGlow 1.4s ease-in-out infinite; }
 @keyframes evoOnGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(120,200,255,0.7)) drop-shadow(0 0 1px #ffd76b); } 50% { filter: drop-shadow(0 0 10px rgba(140,215,255,1)) drop-shadow(0 0 4px #ffe9a0) brightness(1.12); } }
+/* 進化の結果画面：背景いっぱいに回る後光（色はレア度） */
+.evr-rays { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity 0.4s; }
+.evr-rays.show { opacity: 1; }
+#skGachaModal > .modal-panel { position: relative; z-index: 1; }
+.evr-rays i { position: absolute; left: 50%; top: 45%; width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc) 55%, #fff6c8) 0deg 7deg, transparent 7deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.85) 12%, transparent 42%); mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.85) 12%, transparent 42%);
+  animation: evrSpin 14s linear infinite; opacity: 0.55; }
+.evr-rays i:nth-child(2) { animation-duration: 22s; animation-direction: reverse; opacity: 0.35; background: repeating-conic-gradient(from 9deg, #fff8dc 0deg 3deg, transparent 3deg 24deg); }
+.evr-rays b { position: absolute; left: 50%; top: 45%; width: 90vmin; height: 90vmin; margin: -45vmin 0 0 -45vmin; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--rc) 60%, #fff) 0%, color-mix(in srgb, var(--rc) 35%, transparent) 35%, transparent 70%); animation: evrPulse 2s ease-in-out infinite; }
+@keyframes evrSpin { to { transform: rotate(360deg); } }
+@keyframes evrPulse { 0%, 100% { opacity: 0.55; transform: scale(0.92); } 50% { opacity: 0.9; transform: scale(1.06); } }

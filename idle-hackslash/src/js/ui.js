@@ -1916,7 +1916,8 @@ function startSkGachaBgm() { // 結果が出たら今の曲を止めてファン
   setTimeout(playSkillFanfare, 650);
   skGachaBgmTimer = setTimeout(() => { if (skGachaModal.classList.contains('show')) { skGachaBgmOn = true; refreshBgm(); } }, 2900);
 }
-function stopSkGachaBgm() { clearTimeout(skGachaBgmTimer); skGachaBgmOn = false; if (typeof stopBgm === 'function') stopBgm(); refreshBgm(); } // 閉じたら必ず元のページの曲に戻す（お祝いの曲が始まる前に閉じても無音にならない）
+function hideEvrRays() { const r = document.getElementById('evrRays'); if (r) r.classList.remove('show'); }
+function stopSkGachaBgm() { hideEvrRays(); clearTimeout(skGachaBgmTimer); skGachaBgmOn = false; if (typeof stopBgm === 'function') stopBgm(); refreshBgm(); } // 閉じたら必ず元のページの曲に戻す（お祝いの曲が始まる前に閉じても無音にならない）
 new MutationObserver(() => { if (!skGachaModal.classList.contains('show')) stopSkGachaBgm(); }).observe(skGachaModal, { attributes: true, attributeFilter: ['class'] });
 function playPachinkoWin(rarity) {
   const lv = { rare: 1, epic: 2, legendary: 3, mythic: 4 }[rarity] || 1;
@@ -2100,6 +2101,8 @@ function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, f
   const n = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 }[tier.rarity] || 1, E = 'assets/img/ui/evo/';
   const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${EVO_KIND_ICON[kind]}</span>`;
   skGachaResult.className = 'gacha-result evr evr-' + n; skGachaResult.style.background = '';
+  { let rays = document.getElementById('evrRays'); if (!rays) { rays = document.createElement('div'); rays.id = 'evrRays'; rays.className = 'evr-rays'; rays.innerHTML = '<i></i><i></i><b></b>'; skGachaModal.insertBefore(rays, skGachaModal.firstChild); } // 結果画面の背景いっぱいに回る後光（レア度の色）
+    rays.style.setProperty('--rc', RARITY_INFO[tier.rarity].color); rays.classList.remove('show'); void rays.offsetWidth; rays.classList.add('show'); }
   skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers, feaN))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
   ok.addEventListener('click', () => { skGachaModal.classList.remove('show'); skGachaBusy = false; });
