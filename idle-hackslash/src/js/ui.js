@@ -2093,7 +2093,7 @@ const onEvoPanelClick = event => {
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn) { // 項目をタップしたら、その場でON/OFFを買う（ショップの「進化項目」と同じ）
     const k = kindBtn.dataset.evoKind;
-    if (k === 'acc') { showTapError(isEvoKindOpen('acc') ? '「命中」はいつもON（OFFにできません）' : `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）`, event.clientX, event.clientY, 3200); return; }
+    if (k === 'acc' && !isEvoAccUnlocked()) { showTapError(`「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）`, event.clientX, event.clientY, 3200); return; }
     if (SHOP_ITEMS['evoKind_' + k]) buyShopItem('evoKind_' + k, event);
     return;
   }
@@ -2105,9 +2105,9 @@ const onEvoPanelClick = event => {
   if (evoBusy || skGachaBusy) return;
   const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() && evoKind !== 'random' ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 指定書があっても「ランダム」を選べば開放済みの項目からランダム // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
-  const accWasOpen = isEvoAccOpen();
+  const accWasOpen = isEvoAccUnlocked();
   game.evoCount = (game.evoCount || 0) + 1; // 進化した回数（3回目で命中が開放）
-  if (!accWasOpen && isEvoAccOpen()) evoAccNoticePending = true; // 結果を閉じたら「命中が開放」を知らせる
+  if (!accWasOpen && isEvoAccUnlocked() && game.evoKindOpen_acc === undefined) evoAccNoticePending = true; // 結果を閉じたら「命中が開放」を知らせる
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）

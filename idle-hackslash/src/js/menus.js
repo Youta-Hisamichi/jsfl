@@ -101,7 +101,8 @@ const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
 function isEvoPickUnlocked() { return false; } // 進化の項目はいつもランダム（「進化の指定書」は廃止）
 const EVO_ACC_OPEN_AT = 3; // 命中は進化3回目で開放（以後ずっとON）
-function isEvoAccOpen() { return (game.evoCount || 0) >= EVO_ACC_OPEN_AT || !!game.evoKindOpen_acc || getEvoRate('acc') > 1; }
+function isEvoAccUnlocked() { return (game.evoCount || 0) >= EVO_ACC_OPEN_AT || game.evoKindOpen_acc === true || getEvoRate('acc') > 1; } // 命中は進化3回目で開放
+function isEvoAccOpen() { return isEvoAccUnlocked() && game.evoKindOpen_acc !== false; } // 開放後はON（進化ページでOFFにもできる）
 const EVO_KIND_DEFAULT = ['atk', 'hp']; // はじめから進化できるのは攻撃力とHPだけ。ほかはショップで項目を買って増やす
 function isEvoKindOpen(k) { return EVO_KIND_DEFAULT.includes(k) ? game['evoKindOpen_' + k] !== false : (k === 'acc' ? isEvoAccOpen() : !!game['evoKindOpen_' + k]); } // ショップの「進化項目：○○」でON/OFF
 function openEvoKinds() { return EVO_KINDS.filter(isEvoKindOpen); }

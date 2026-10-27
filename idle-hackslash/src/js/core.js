@@ -797,6 +797,7 @@ const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
  ['tower', '🏰', '試練の塔', '試練の塔のボスへのダメージが上がる', 'x_tower'], ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };
 });
+SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: ICON_IMAGES.art_lens, name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎5・OFF 💎10）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // ショップには並べず、進化ページで切り替える（進化3回目で開放）
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: ICON_IMAGES[icon], name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
