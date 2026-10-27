@@ -2318,7 +2318,8 @@ for (const id of ['hero', ...Object.keys(COMPANIONS)]) SPRITE_FACING[id] = 1;
 for (const k in ENEMY_SPRITES) if (/^n2s?:/.test(k)) SPRITE_FACING[k] = -1;
 for (const k of ['n2:emoji:🐲', 'n2:emoji:🦕', 'n2:emoji:🌑', 'n2:emoji:👾', 'n2:emoji:🐉', 'n2:emoji:🧟']) SPRITE_FACING[k] = 1; // ワイバーン・チビドラゴン・闇の魔導士・メタルスライム・ドラゴン・ゾンビ
 // 一覧で確かめて向きが逆だった敵（メタルスライムは正面向きなので向きを変えない・闇の魔導士とクワガタナイトは右向きのまま）（雪だるまスライム・フレイムウィスプ・ぷちミミック・マンドラゴラ・からくり鳥・ゴブリン・スケルトン・コブラ・メタルスライム・サラマンダー・ワイバーン・スライムキング・フランケン・ゴブリンスライム・闇の魔導士・クワガタナイト・ペストいしゃ・死霊王リッチ・暗黒竜・蒼き竜帝・針鎧の王・死神・海の魔女セイレーン・雪女・不死鳥・嵐の龍神・桜祭りの剣姫・キングミミック）
-Object.assign(SPRITE_FACING, { 'n2s:snowman': 1, 'n2:shape:diamond': 1, 'n2:emoji:m_petitMimic': 1, 'n2:emoji:m_mandragora': 1, 'n2:emoji:m_clockBird': 1, 'n2:emoji:👺': 1, 'n2:emoji:💀': 1, 'n2:emoji:🦂': 1, 'n2:emoji:👾': 0, 'n2:emoji:🦖': 1, 'n2:emoji:🐲': -1, 'n2:emoji:👑': 1, 'n2:emoji:⚡': 1, 'n2:emoji:🥬': 1, 'n2:emoji:🌑': 1, 'stagKnight': 1, 'n2:emoji:m_plagueDoc': 1, 'n2:boss:💀': 1, 'n2:boss:🦖': 1, 'n2:boss:🐲': 1, 'n2:boss:🦔': 1, 'n2:boss:⚰️': 1, 'b_siren': -1, 'b_yukiOnna': 1, 'b_phoenix': 1, 'b_stormDragon': 1, 'b_festBlade': 1, 'b_kingMimic': 1 });
+Object.assign(SPRITE_FACING, { // ワイバーンは右向きのまま、クラゲの歌姫・タルねこも右向き
+  'n2s:snowman': 1, 'n2:shape:diamond': 1, 'n2:emoji:m_petitMimic': 1, 'n2:emoji:m_mandragora': 1, 'n2:emoji:m_clockBird': 1, 'n2:emoji:👺': 1, 'n2:emoji:💀': 1, 'n2:emoji:🦂': 1, 'n2:emoji:👾': 0, 'n2:emoji:🦖': 1, 'n2:emoji:🐲': 1, 'n2:emoji:👑': 1, 'n2:emoji:⚡': 1, 'n2:emoji:🥬': 1, 'n2:emoji:🌑': 1, 'stagKnight': 1, 'n2:emoji:m_plagueDoc': 1, 'n2:boss:💀': 1, 'n2:boss:🦖': 1, 'n2:boss:🐲': 1, 'n2:boss:🦔': 1, 'n2:boss:⚰️': 1, 'b_siren': -1, 'b_yukiOnna': 1, 'b_phoenix': 1, 'b_stormDragon': 1, 'b_festBlade': 1, 'b_kingMimic': 1 , 'n2:emoji:🪼': 1, 'n2:emoji:🛢️': 1 });
 
 // ボスを一撃か3秒以内で倒せたとき：その強さから、試練の塔で勝てそうなステージをやんわり伝える（ボスを10発・10秒くらいで倒せる階を目安に）
 const TOWER_HINT_HITS = 10, TOWER_HINT_GAP_MS = 3 * 60 * 1000, TOWER_HINT_FAST_SEC = 3;
