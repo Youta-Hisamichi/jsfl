@@ -1073,19 +1073,10 @@ function completeReincarnation() {
   updateStatsUI();
   saveGame();
   playRebirthSound();
-  toastIcon.style.display = 'block';
-  toastIcon.innerHTML = ico(ARTIFACT_BY_ID.evoFeather);
-  toastIcon.className = 'artifact-icon chest-shake';
-  toast.classList.add('rebirth-reward'); // 背景に魔法陣
-  toast.style.removeProperty('--chest-glow');
-  toastBig.textContent = '輪廻転生……';
-  toastBig.className = 'big reborn';
-  toastSub.innerHTML = `転生 ${game.reincarnations}回目！ +${rebirthGemGain} 💎\n💪 転生ボーナス：攻撃力・最大HP ×${rebirthPowerMult()}\n<span class="chest-rarity" style="color:#7fd6ff">${feaIco('common', 'fea-ico')} 進化のN羽 ×${featherGain}</span>を手に入れた！`;
-  toast.classList.add('show');
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  rebirthTimer = setTimeout(finishRebirth, 6000); // 転生情報はじっくり読めるように
+  showRebirthRewardDialog(rebirthGemGain, featherGain); // 転生ボーナスはダイアログで（OKを押すまで消えない）
   renderChestTray();
   if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
@@ -2340,4 +2331,16 @@ function hintTowerStage(dmg) {
   const el = document.createElement('div'); el.className = 'tower-hint';
   el.innerHTML = `<small>💡 この強さなら…</small><b>ステージ${formatStageNumber(Math.floor(s / 10) * 10)}</b>くらいまで行けそう<small>試練の塔で挑んでみる？</small>`;
   wrap.appendChild(el); setTimeout(() => el.remove(), 6200);
+}
+
+// 転生ボーナスのダイアログ：OKを押すまで出しておき、押したら次の周回へ
+function showRebirthRewardDialog(gems, feathers) {
+  document.querySelectorAll('.rbd-ov').forEach(e => e.remove());
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show rbd-ov'; ov.style.zIndex = 76;
+  ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
+    <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div><span>${feaIco('common', 'fea-ico')} 進化のN羽</span><b>×${formatCoinNumber(feathers)}</b></div><div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
+    <button class="modal-close-btn rbd-ok">OK</button></div>`;
+  document.body.appendChild(ov);
+  const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
+  ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }

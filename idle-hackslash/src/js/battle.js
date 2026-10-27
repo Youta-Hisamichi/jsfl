@@ -788,7 +788,7 @@ function tickEnemyAtkPhase(e, speedMult) {
   if (!e || e.isDying || e.spawnTimer > 0) return;
   if (isDisabled(e) || e.traitState === 'tgStun') { e.atkPh = 'calm'; e.atkT = 0; return; } // 麻痺・隙の間は攻撃しない
   const c = getEnemyAtkCycle(e);
-  if (!e.atkPh) { e.atkPh = 'calm'; e.atkT = Math.random() * c.calm * 0.5; }
+  if (!e.atkPh) { e.atkPh = 'calm'; e.atkT = Math.random() * c.calm * 0.5; if (isPreemptBoss(e)) preemptStrike(e); } // 先制攻撃のボスは出てきてすぐ攻撃してくる
   e.atkT += speedMult;
   if (e.atkPh === 'calm' && e.atkT >= c.calm) { e.atkPh = 'warn'; e.atkT = 0; }
   else if (e.atkPh === 'warn' && e.atkT >= c.warn) {
@@ -2237,3 +2237,22 @@ Object.assign(BGM_PATTERNS, {
   gameover: melody('A4 - G4 F4 E4 - D4 C4 B3 - C4 D4 A3 - - -', 0.55, 'sine', 0.07),
   rebirth: melody('C5 G5 E6 G5 A4 E5 C6 E5 F4 C5 A5 C5 G4 D5 B5 D5', 0.34, 'sine', 0.05),
 });
+
+// 先制攻撃のボス：戦闘が始まった瞬間、必ず先に一撃を入れてくる（この一撃では倒れない）
+const PREEMPT_BOSSES = ['🐺', '🌩️', '🐴', '🏁', '🦈', '🥀'], PREEMPT_DMG_MULT = 1.5;
+function isPreemptBoss(e) { return !!e && e.isBoss && !game.skipChallenge && PREEMPT_BOSSES.includes(e.emoji); }
+function preemptStrike(e) {
+  const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
+  spawnDamageText(e.x, e.y - e.radius - 26, '⚡ 先制攻撃！', '#ff5c6c', 0.012, true);
+  playTone(240, 0.12, 'sawtooth', 0.08, 120); if (typeof thump === 'function') thump(120, 40, 0.3, 0.6);
+  const an = Math.atan2(pl.y - e.y, pl.x - e.x); e.vx += Math.cos(an) * 6; e.vy += Math.sin(an) * 6; // 一気に踏み込む
+  setTimeout(() => {
+    if (e.isDying || e.hp <= 0 || pl.hp <= 0 || phase !== 'battle') return;
+    if (absorbWithBarrier(pl)) { updateHPUI(); return; }
+    const { dmg, crit } = rollEnemyCrit(e, Math.max(1, Math.round(e.atk * PREEMPT_DMG_MULT)));
+    pl.hp = Math.max(1, pl.hp - dmg);
+    spawnReceivedDamageText(pl, dmg, crit, e); spawnHitParticles(pl.x, pl.y, '#ff5c6c'); playPlayerHitSound();
+    if (typeof shakeScreenLight === 'function') shakeScreenLight();
+    updateHPUI();
+  }, 260);
+}

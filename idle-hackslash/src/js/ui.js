@@ -767,6 +767,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'coins1000') game.coins += 1000;
   if (action === 'supergems') game.superGems += 10000;
   if (action === 'formula') { showFormulaDebug(); return; }
+  if (action === 'rebirthRules') { showRebirthRulesDebug(); return; }
   if (action === 'feathers') { FEA_RARITIES.forEach(r => addFea(r, 2)); renderEvolutionList(); }
   if (action === 'die') {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -3784,6 +3785,30 @@ function showFormulaDebug() {
   document.querySelectorAll('.fd-ov').forEach(e => e.remove());
   const ov = document.createElement('div'); ov.className = 'modal-overlay show fd-ov'; ov.style.zIndex = 90;
   ov.innerHTML = `<div class="modal-panel fd-panel"><div class="fd-title">📐 攻撃力・HPの計算式 <button class="fd-x">✕</button></div><div class="fd-body">${rows.join('')}</div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('.fd-x').addEventListener('click', () => ov.remove());
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+}
+
+// デバッグ：転生の掟（いま転生したら何が残り、何が消え、何がもらえるか）
+function showRebirthRulesDebug() {
+  const F = v => formatCoinNumber(Math.round(v)), rows = [];
+  const sec = t => rows.push(`<h4>${t}</h4>`), line = (k, v, note) => rows.push(`<div class="fd-row"><span>${k}</span><b>${v}</b>${note ? `<small>${note}</small>` : ''}</div>`);
+  sec('転生できる条件');
+  line('解放', `ステージ${REBORN_UNLOCK_STAGE}到達で解放`, isRebornUnlocked() ? '解放済み' : '未解放');
+  line('最低ステージ', 'ステージ3から'); line('コイン', `ショップの転生は 🟡${F(rebornCoinCost())} が必要`);
+  sec(`いま転生すると（ステージ${formatStageNumber(game.stage)}）`);
+  line('💎 ジェム', `+${F(getRebirthGemGain())}`, `(2 + ステージ÷10 + 遺物「輪廻の宝珠」${computeBonuses().rebirthGems}) × 転生効率 ${fmtEvoPct(getEvoRate('rebirth'))}。動画で3倍`);
+  line('🪶 進化のN羽', `×${F(getRebirthFeatherGain())}`, 'ステージの桁数×桁数×10 × 転生効率');
+  line('📈 転生Lv', `+${F(getRebirthLvGain(game.stage))}`, '1 + (ステージ−1)÷10');
+  line('💪 転生ボーナス', `×${rebirthPowerMult()} → ×${rebirthPowerMult() + 1}`, '攻撃力・最大HPに掛け算（転生回数＋1倍）');
+  sec('リセットされるもの');
+  ['コイン', 'ステージの進行（ステージ1から）', 'Lv・経験値', '強化（攻撃力・HPなどのLv）', 'パーティの仲間・仲間の強化', 'スキル（覚えたスキル・Lv・装備）', 'サブウェポン（Lv・装備）', '枠（パーティ・スキル・サブウェポン）', 'スキル・サブウェポンガチャの値段', '3択パワーアップの追加枠・ラン中のバフ', '仲間の倒れた回数', '試練の塔の挑戦中の状態'].forEach(t => line('✖', t));
+  sec('リセットされないもの');
+  ['ジェム', 'ショップで買った品（流星剣・月の盾・オートLvUP・宝箱の予感・進化項目など）', '進化（進化率・羽・項目のON/OFF）', '遺物', '転生回数・転生ボーナス・転生Lv', '図鑑・戦績・ランキング', '宝箱（左下にためた分）'].forEach(t => line('○', t));
+  document.querySelectorAll('.fd-ov').forEach(e => e.remove());
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show fd-ov'; ov.style.zIndex = 90;
+  ov.innerHTML = `<div class="modal-panel fd-panel"><div class="fd-title">🌌 転生の掟 <button class="fd-x">✕</button></div><div class="fd-body">${rows.join('')}</div></div>`;
   document.body.appendChild(ov);
   ov.querySelector('.fd-x').addEventListener('click', () => ov.remove());
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });

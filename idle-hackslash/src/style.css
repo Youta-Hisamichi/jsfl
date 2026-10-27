@@ -4671,3 +4671,14 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 /* スキル・サブウェポンの「＋枠を増やす」も仲間ページと同じボタンの絵に（中の文字が窮屈にならない大きさ） */
 .tab-page[data-tab="coinshop"] .weapon-slot-head button, .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head button { width: 132px !important; height: auto !important; aspect-ratio: 248 / 92 !important; padding: 2px 10px !important; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; font-size: 0.74rem !important; line-height: 1.15 !important; }
 .tab-page[data-tab="coinshop"] .weapon-slot-head button br { display: none; }
+/* 転生ボーナスのダイアログ */
+.rbd-panel { position: relative; width: min(330px, 90vw); padding: 20px 16px 16px; text-align: center; overflow: hidden; border: 2px solid #ffe9a0; box-shadow: 0 0 26px rgba(255,233,160,0.6); }
+.rbd-glow { position: absolute; inset: -40%; background: repeating-conic-gradient(rgba(255,240,190,0.16) 0 8deg, transparent 8deg 20deg); animation: evrSpin 18s linear infinite; pointer-events: none; }
+.rbd-panel > *:not(.rbd-glow) { position: relative; }
+.rbd-title { font-size: 1.6rem; font-weight: 900; color: #fff3c4; letter-spacing: 0.2em; text-shadow: 0 0 10px rgba(255,220,120,0.9), 0 2px 0 #6a4a10; }
+.rbd-sub { margin: 4px 0 12px; color: #dfe8ff; font-weight: 800; }
+.rbd-sub b { color: #ffd76b; font-size: 1.2em; }
+.rbd-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.rbd-list > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 10px; background: rgba(10,14,34,0.6); border: 1px solid rgba(255,233,160,0.4); color: #eef2ff; font-weight: 800; font-size: 0.85rem; }
+.rbd-list b { color: #ffe08a; }
+.rbd-ok { min-width: 140px; }
