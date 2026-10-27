@@ -1182,7 +1182,7 @@ shopList.addEventListener('click', event => {
 function buyShopItem(id, event) { // ショップの品を買う（進化ページの項目タップからも使う）
   const item = SHOP_ITEMS[id];
   if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
-  if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= 1) { showTapError('ONの項目がなくなるのでOFFにできません', event.clientX, event.clientY); return; }
+  if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= EVO_MIN_ON) { showTapError(`ONの項目は${EVO_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
   if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
@@ -2093,7 +2093,6 @@ const onEvoPanelClick = event => {
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
   if (kindBtn) { // 項目をタップしたら、その場でON/OFFを買う（ショップの「進化項目」と同じ）
     const k = kindBtn.dataset.evoKind;
-    if (k === 'acc' && !isEvoAccUnlocked()) { showTapError(`「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）`, event.clientX, event.clientY, 3200); return; }
     if (SHOP_ITEMS['evoKind_' + k]) buyShopItem('evoKind_' + k, event);
     return;
   }
@@ -2107,7 +2106,7 @@ const onEvoPanelClick = event => {
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   const accWasOpen = isEvoAccUnlocked();
   game.evoCount = (game.evoCount || 0) + 1; // 進化した回数（3回目で命中が開放）
-  if (!accWasOpen && isEvoAccUnlocked() && game.evoKindOpen_acc === undefined) evoAccNoticePending = true; // 結果を閉じたら「命中が開放」を知らせる
+   // 結果を閉じたら「命中が開放」を知らせる
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
