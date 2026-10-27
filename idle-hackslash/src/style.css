@@ -4703,3 +4703,4 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 @keyframes evr2Glow { 0%, 100% { transform: translateX(-50%) scale(1) rotate(0deg); } 50% { transform: translateX(-50%) scale(1.06) rotate(8deg); } }
 .evr2-1 .evr2-crown, .evr2-2 .evr2-crown { width: 52%; } .evr2-3 .evr2-crown { width: 58%; } /* 星の少ない冠は小さめ（アイコンに被らないように） */
 .evr2 .evr2-icon[src$='icon_atk.webp'] { top: 19%; height: 37%; }
+.bgm-book-head { margin: 10px 0 4px; padding: 4px 10px; border-radius: 8px; background: rgba(20,24,48,0.75); color: #ffe08a; font-weight: 900; font-size: 0.85rem; text-shadow: 0 1px 2px #000; }
