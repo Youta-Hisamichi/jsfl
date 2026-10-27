@@ -4561,7 +4561,7 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .evo-fea.use::after { content: '使う'; }
 .evo-fea.evo-fea-off.use::after { content: '選択'; }
 /* 進化の種類を3つに（攻撃力・HP・命中）。命中の箱には、ボスの回避力（ステージ100から上がる）を小さく添える */
-.tab-page[data-tab="gacha"] .evo-rates { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; } .tab-page[data-tab="gacha"] .evo-rate { min-width: 0; overflow: hidden; }
+.tab-page[data-tab="gacha"] .evo-rates { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; } .tab-page[data-tab="gacha"] .evo-rate { min-width: 0; overflow: hidden; }
 .tab-page[data-tab="gacha"] .evo-rate span { font-size: 0.72rem; white-space: nowrap; }
 .tab-page[data-tab="gacha"] .evo-rate b { font-size: clamp(1rem, 5vw, 1.35rem); line-height: 1.1; }
 .tab-page[data-tab="gacha"] .evo-rate small { font-size: 0.56rem; font-weight: 800; color: #bfe6ff; text-shadow: 0 0 2px #000, 0 1px 1px #000; white-space: nowrap; }
@@ -4580,3 +4580,44 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .star-roulette.sr-hit .sr-stars img.on { animation: srHit 0.42s ease-out; filter: drop-shadow(0 0 10px var(--rc)); }
 .star-roulette.sr-hit .sr-grade { animation: srHit 0.42s ease-out; }
 @keyframes srHit { 0% { transform: scale(1.6); } 60% { transform: scale(0.95); } 100% { transform: scale(1.12); } }
+/* 進化の項目は7つ（3列）。指定書を買うまではランダムなので選べない見た目に */
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate span { font-size: 0.6rem; line-height: 1.1; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate b { font-size: clamp(0.85rem, 4.2vw, 1.1rem); line-height: 1.1; }
+.tab-page[data-tab="gacha"] .evo-rates.evo-random .evo-rate { cursor: default; }
+/* 戦績の羽ガチャの結果 */
+.fg-panel { width: min(340px, 92vw); padding: 16px 14px 14px; text-align: center; border: 2px solid var(--rc); box-shadow: 0 0 18px color-mix(in srgb, var(--rc) 60%, transparent); }
+.fg-title { font-weight: 900; font-size: 1.1rem; color: #ffe08a; text-shadow: 0 2px 0 #5a3206, 0 0 4px #000; margin-bottom: 10px; }
+.fg-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.fg-card { width: 92px; padding: 8px 4px 6px; border-radius: 12px; border: 2px solid var(--rc); background: rgba(10,14,28,0.7); display: flex; flex-direction: column; align-items: center; gap: 2px; animation: fgPop 0.4s ease-out both; }
+.fg-card.fg-rare { box-shadow: 0 0 12px var(--rc); }
+.fg-card .fg-ico { width: 44px; height: 44px; object-fit: contain; }
+.fg-card b { font-size: 0.72rem; color: #fff; text-shadow: 0 0 2px #000, 0 1px 1px #000; }
+.fg-card span { font-size: 1rem; font-weight: 900; color: var(--rc); text-shadow: 0 0 2px #000, 0 1px 1px #000; }
+.fg-card small { font-size: 0.6rem; color: var(--rc); }
+.fg-rates { margin: 10px 0 8px; font-size: 0.62rem; color: #c8d0e6; }
+.fg-ok { min-width: 120px; }
+@keyframes fgPop { 0% { transform: scale(0.3); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+/* デバッグ：計算式 */
+.fd-panel { width: min(560px, 96vw); max-height: 88vh; display: flex; flex-direction: column; padding: 10px; background: #f4f6fb !important; color: #1a2033 !important; text-align: left; }
+.fd-title { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 1rem; margin-bottom: 6px; }
+.fd-x { border: none; background: #2a3550; color: #fff; border-radius: 6px; padding: 2px 10px; font-weight: 900; }
+.fd-body { overflow-y: auto; font-size: 0.72rem; line-height: 1.45; }
+.fd-body h4 { margin: 10px 0 4px; padding: 2px 6px; background: #2a3550; color: #fff; border-radius: 4px; font-size: 0.76rem; }
+.fd-row { display: flex; flex-wrap: wrap; gap: 2px 8px; padding: 2px 4px; border-bottom: 1px solid #d8deea; }
+.fd-row span { flex: 0 0 auto; min-width: 7em; font-weight: 800; color: #3a4666; }
+.fd-row b { flex: 1 1 14em; font-weight: 700; word-break: break-all; }
+.fd-row small { flex: 1 1 100%; color: #6a7590; }
+.fd-tb { width: 100%; border-collapse: collapse; font-size: 0.66rem; }
+.fd-tb th, .fd-tb td { border: 1px solid #c8d0e2; padding: 2px 3px; text-align: right; }
+.fd-tb th:first-child, .fd-tb td:first-child { text-align: left; white-space: nowrap; }
+.fd-tb i { display: block; font-style: normal; color: #c0392b; font-size: 0.6rem; }
+/* 計算式パネルはいつもの暗い枠なので、文字は明るく */
+.fd-panel, .fd-panel .fd-body { color: #eef2ff !important; }
+.fd-panel .fd-row { border-bottom-color: rgba(255,255,255,0.15); }
+.fd-panel .fd-row span { color: #9fd0ff !important; }
+.fd-panel .fd-row b { color: #fff !important; }
+.fd-panel .fd-row small { color: #c2cbe0 !important; }
+.fd-panel .fd-tb th, .fd-panel .fd-tb td { border-color: rgba(255,255,255,0.22); color: #fff !important; }
+.fd-panel .fd-tb th { color: #ffe08a !important; }
+.fd-panel .fd-tb i { color: #ff9a8a !important; }
+.fd-panel .fd-body h4 { background: rgba(80,110,190,0.6); }

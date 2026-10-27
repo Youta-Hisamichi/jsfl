@@ -781,6 +781,7 @@ SHOP_ITEMS.weaponSlot = { icon: '⚔️', name: 'サブウェポン枠 +1', desc
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
+SHOP_ITEMS.evoPick = { icon: '📜', name: '進化の指定書', desc: '進化する項目（攻撃力・HP・ボス特攻など）を自分で選べるようになる。買うまではランダム（転生しても残る）', cost: 500, unlockKey: 'evoPickUnlocked' };
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 500, unlockKey: 'rareRingBought' };
 const POTION_HEAL_RATIO = 0.45;
@@ -1154,7 +1155,7 @@ const game = {
   coinCloneSlots: 0,
   shopOwned: {},
   gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
-  evoRate: { atk: 1, hp: 1, acc: 1, para: 1 }, // 進化率（攻撃力・HPに掛け算。命中はボスの回避力を打ち消す）
+  evoRate: {}, // 進化率（攻撃力・HPに掛け算。命中はボスの回避力を打ち消す）
   evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
@@ -1239,8 +1240,11 @@ function applyArtifactBonuses(b) {
   }
   return b;
 }
+let bonusTraceOn = false; // デバッグの計算式表示用：倍率がどこでどれだけ変わったかを記録する
 function computeBonuses() {
   const b = applyArtifactBonuses(baseBonuses());
+  const T = bonusTraceOn ? (b._trace = []) : null, snap = label => { if (T) T.push({ label, atk: b.atkMult, hp: b.hpMult, cAtk: b.companionAtkMult, cHp: b.companionHpMult }); };
+  snap('遺物（足し算）');
   const up = game.upgrades;
   b.tackleMult += (up.tackle || 0) * 0.08;
   b.companionAtkMult += (up.compAtk || 0) * 0.08;
@@ -1254,6 +1258,7 @@ function computeBonuses() {
   b.companionAtkMult *= (1 + (up.cAtk || 0) * 0.15) * upgradeLeapMult(up.cAtk || 0);
   b.companionHpMult *= (1 + (up.cHp || 0) * 0.20) * upgradeLeapMult(up.cHp || 0);
   b.companionSpeedMult = (1 + (up.cSpd || 0) * 0.05) * upgradeLeapMult(up.cSpd || 0);
+  snap('強化Lv（倍率・飛躍）');
 
   const evoBoost = getEvoBoost(); // 遺物「進化の羽」：進化の効果アップ
   for (const id in GACHA_POOL) {
@@ -1288,13 +1293,21 @@ function computeBonuses() {
     if (c.stat === 'speed') b.speedMult += bonus;
   }
 
+  snap('仲間の特技（足し算）');
   b.atkMult += game.rebirthBonus.atk;
   b.hpMult += game.rebirthBonus.hp;
+  snap('転生ボーナス（足し算）');
   { const rm = rebirthPowerMult(); b.atkMult *= rm; b.hpMult *= rm; } // 転生回数＋1倍（100階ごとに強くなる敵の壁を、転生で越えられるように）
+  snap('転生回数の倍率');
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
+  b.companionAtkMult *= getEvoRate('compAtk'); b.companionHpMult *= getEvoRate('compHp'); // 仲間攻撃力・仲間HP進化
+  snap('進化');
   b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コインの妖精（買った回数＋1倍・掛け算）
+  snap('ショップ（流星剣・月の盾）');
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
+  snap('仲間の組み合わせ');
   { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
+  snap('自キャラのタイプ補正');
   b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
   return b;
 }

@@ -758,6 +758,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'gems1000') game.gems += 1000;
   if (action === 'coins1000') game.coins += 1000;
   if (action === 'supergems') game.superGems += 10000;
+  if (action === 'formula') { showFormulaDebug(); return; }
   if (action === 'feathers') { FEA_RARITIES.forEach(r => addFea(r, 2)); renderEvolutionList(); }
   if (action === 'die') {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
@@ -1184,6 +1185,7 @@ shopList.addEventListener('click', event => {
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
+  if (id === 'evoPick') { line = '進化する項目を自分で選べるようになった！（進化ページで選ぶ）'; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
@@ -2057,25 +2059,25 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
-  if (kindBtn) { evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
+  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム（ショップの「進化の指定書」で選べるように）', event.clientX, event.clientY); return; } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; }
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
   if (!event.target.closest('#evoGoBtn')) return;
   if (game.gems < evoGems) { promptGemShortage(evoGems, { returnTo: () => switchTab('gacha') }); return; }
   if (evoBusy || skGachaBusy) return;
-  const gems = evoGems, feathers = nextEvoFea(), kind = evoKind; // 選んだ羽を1枚使う
+  const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() ? evoKind : EVO_KINDS[Math.floor(Math.random() * EVO_KINDS.length)]; // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
-  if (!game.evoRate) game.evoRate = { atk: 1, hp: 1, acc: 1, para: 1 };
+  if (!game.evoRate) game.evoRate = {};
   const total = evoTotal(tier.mult, gems, feathers, feaN);
   const before = getEvoRate(kind), after = Math.min(EVO_RATE_CAP, before * total);
   if (total > (game.evoBestMult || 0)) game.evoBestMult = total; // ランキング「MAX一撃進化」：1回で何倍になったかの最高
   updateStatsUI(); saveGame(); // ジェムはすぐ減らして見せる
   const rarity = RARITY_INFO[tier.rarity];
-  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${{ atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`, `${fmtEvoPct(total)}<small class="evo-res-calc">${fmtEvoPct(tier.mult)} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers, feaN))}` : ''}</small>`,
+  showSkGachaReveal(tier.rarity, `<span class="item-icon evo-res-ico">${EVO_KIND_ICON[kind]}</span>`, `${fmtEvoPct(total)}<small class="evo-res-calc">${fmtEvoPct(tier.mult)} × 💎${gems}${feathers ? ` × ${feaIco(feathers, 'fea-ico')}${fmtEvoRate(evoFeatherMult(feathers, feaN))}` : ''}</small>`,
     `${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b>`, () => { // 結果が出たところで反映（先に後ろの表示が変わらないように）
       game.evoRate[kind] = after; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderEvolutionList(); saveGame();
       renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN);
@@ -2085,7 +2087,7 @@ let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
 function renderEvoResultCard(tier, gems, feathers, kind, total, before, after, feaN) {
   const n = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 }[tier.rarity] || 1, E = 'assets/img/ui/evo/';
-  const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${{ hp: '❤️', acc: '🎯', para: '⚡' }[kind]}</span>`;
+  const icon = kind === 'atk' ? `<img class="evr-sword" src="${E}rsword${n}.webp" alt="">` : `<span class="evr-heart">${EVO_KIND_ICON[kind]}</span>`;
   skGachaResult.className = 'gacha-result evr evr-' + n; skGachaResult.style.background = '';
   skGachaResult.innerHTML = `<img class="evr-frame" src="${E}rframe${n}.webp" alt="">${icon}<div class="evr-plate"><img src="${E}rplate${n}.webp" alt=""><b class="evr-num">${fmtEvoPct(total)}</b><span class="evr-g">${gems}</span><span class="evr-f">${fmtEvoRate(evoFeatherMult(feathers, feaN))}</span><div class="evr-rate">${EVO_KIND_NAME[kind]}進化率 ${fmtEvoPct(before)} → <b>${fmtEvoPct(after)}</b></div><button class="evr-ok" id="skGachaCloseBtn" aria-label="OK"></button></div>`;
   const ok = document.getElementById('skGachaCloseBtn'); ok.style.pointerEvents = 'none'; setTimeout(() => { ok.style.pointerEvents = ''; }, 500);
@@ -3625,3 +3627,58 @@ setInterval(() => {
   const fmt = s => s ? `${s.name}（${s.key}・ステージ${s.stage}〜）` : '—';
   el.innerHTML = `🗺️ 今：${fmt(dbgStageNow)}<br>⏮ 直前：${fmt(dbgStagePrev)}`;
 }, 500);
+
+// ===== デバッグ：攻撃力・HPの計算式（自キャラ・仲間・スキル・サブウェポン、進化込み） =====
+function showFormulaDebug() {
+  const F = v => formatCoinNumber(Math.round(v)), M = v => '×' + (Math.abs(v) < 1000 ? +v.toFixed(3) : formatCoinNumber(v));
+  bonusTraceOn = true; let b; try { b = computeBonuses(); } finally { bonusTraceOn = false; }
+  const tr = b._trace || [], rows = [];
+  const sec = t => rows.push(`<h4>${t}</h4>`), line = (k, v, note) => rows.push(`<div class="fd-row"><span>${k}</span><b>${v}</b>${note ? `<small>${note}</small>` : ''}</div>`);
+  sec('倍率の内訳（computeBonuses の順番）');
+  rows.push(`<table class="fd-tb"><tr><th>段階</th><th>攻撃力倍率</th><th>HP倍率</th><th>仲間攻撃倍率</th><th>仲間HP倍率</th></tr>${tr.map((t, i) => { const p = tr[i - 1]; const c = (k) => M(t[k]) + (p && p[k] && t[k] !== p[k] ? `<i>(${t[k] / p[k] >= 1 ? '×' : '×'}${+(t[k] / p[k]).toFixed(3)})</i>` : ''); return `<tr><td>${t.label}</td><td>${c('atk')}</td><td>${c('hp')}</td><td>${c('cAtk')}</td><td>${c('cHp')}</td></tr>`; }).join('')}</table>`);
+  sec('進化率');
+  EVO_KINDS.forEach(k => line(EVO_KIND_LABEL[k], M(getEvoRate(k)), fmtEvoPct(getEvoRate(k))));
+  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1, atkUp = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1, sub = getSubStatMult(), ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1;
+  const csA = compShare('atk'), csH = compShare('hp'), early = getEarlyPlayerHpRate(game.stage);
+  sec('自キャラの攻撃力');
+  line('式', '10 × 攻撃力倍率 × 加速 × 攻撃力UP × 紋章 × 動画バフ ＋ 仲間の攻撃力の10%');
+  line('= 10', `${M(b.atkMult)} ${M(accel)} ${M(atkUp)} ${M(sub)} ${M(ad)} ＋ ${F(csA)}`);
+  line('攻撃力', F(getPlayerAtk()));
+  sec('自キャラの最大HP');
+  line('式', '100 × HP倍率 × 序盤補正 × 紋章 ＋ 仲間のHPの10%');
+  line('= 100', `${M(b.hpMult)} ${M(early)} ${M(sub)} ＋ ${F(csH)}`);
+  line('最大HP', F(getPlayerMaxHP()));
+  line('ボスへのダメージ', `(1 + ${+b.bossDmg.toFixed(3)}) × ボス特攻進化 ${M(getEvoRate('bossDmg'))} = ${M((1 + b.bossDmg) * getEvoRate('bossDmg'))}`);
+  sec('仲間（パーティ）');
+  line('攻撃力の式', '自キャラ攻撃力 × (0.3 + Lv×0.05) × 覚醒・絆 × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
+  line('HPの式', '自キャラ最大HP × (基本 + HPLv×成長) × 0.8 × 覚醒・絆 × ゴーレム × 仲間HP倍率（進化込み）');
+  const pa = getPlayerAtk(), ph = getPlayerMaxHP();
+  const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
+  for (const id of Object.keys(COMPANIONS)) {
+    const n = getCompanionCount(id); if (!n) continue;
+    const c = COMPANIONS[id], lv = game.companions.level[id] || 0, hlv = typeof compHpLv === 'function' ? compHpLv(id) : lv, pw = getCompanionPower(id);
+    line(`${c.name || id} ×${n}`, `攻 ${F(pa)} × ${+(0.3 + lv * 0.05).toFixed(2)} × ${+pw.toFixed(3)} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}${compKind(id) === 'dragon' ? `（竜は他の仲間の合計も足して ${F(getCompanionAtk(id))}）` : ''}`,
+      `HP ${F(ph)} × ${+(c.baseBonus + hlv * c.perLevel).toFixed(3)} × 0.8 × ${+pw.toFixed(3)} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
+  }
+  sec('スキル（威力 = 自キャラ攻撃力 × 倍率 × スキル威力）');
+  const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };
+  for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
+    if (!game.shopOwned[id]) continue;
+    const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);
+    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `敵の最大HP × 0.35 × メテオ倍率 ${M(m)}`, `スキル威力 ${M(pw)}`); continue; }
+    if (SK[id]) { const k = SK[id][1](); line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)} = ${F(pa * k * pw)}`); continue; }
+    line(`${name} Lv${lv}`, `スキル威力 ${M(pw)}`, 'ダメージ以外の効果');
+  }
+  sec('サブウェポン（1ヒット = 自キャラ攻撃力 × 基本 × Lv倍率）');
+  const WB = { boomerang: 0.7, cross: 0.9, axe: 1.3, holyWater: 0.25, knife: 0.55, shield: 0.4, thunder: 1.5, dove: 0.8 };
+  for (const id of getEquippedWeapons()) { const lv = Math.max(1, getWeaponLv(id)), k = WB[id] || 1, m = weaponDmg(1, lv); line(`${WEAPONS[id].name} Lv${lv}`, `${F(pa)} × ${k} × ${M(m)} = ${F(pa * k * m)}`, id === 'holyWater' ? '炎の1回あたり' : ''); }
+  if (!getEquippedWeapons().length) line('（装備なし）', '');
+  sec('会心・その他');
+  line('会心率', (b.critChance * 100).toFixed(1) + '%'); line('会心ダメージ', '+' + (b.critMultBonus * 100).toFixed(0) + '%'); line('命中', (getPlayerAccuracy() * 100).toFixed(1) + '%');
+  document.querySelectorAll('.fd-ov').forEach(e => e.remove());
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show fd-ov'; ov.style.zIndex = 90;
+  ov.innerHTML = `<div class="modal-panel fd-panel"><div class="fd-title">📐 攻撃力・HPの計算式 <button class="fd-x">✕</button></div><div class="fd-body">${rows.join('')}</div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('.fd-x').addEventListener('click', () => ov.remove());
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+}

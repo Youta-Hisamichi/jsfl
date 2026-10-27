@@ -95,17 +95,22 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
-const EVO_KIND_LABEL = { atk: '⚔️ 攻撃力', hp: '❤️ HP', acc: '🎯 命中', para: '⚡ マヒ耐性' }, EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性' };
+const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
+const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚' };
+const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP' };
+const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
+function isEvoPickUnlocked() { return !!game.evoPickUnlocked; }
 let evoKind = 'atk', evoGems = 1, evoFeathers = null; // evoFeathers：次の進化で使う羽のレア度（なしは null）
 function renderEvolutionList() {
   const el = document.getElementById('evoPanel'); if (!el) return;
   evoGems = Math.max(EVO_MIN_GEMS, Math.min(game.evoLastGems || 1, EVO_MAX_GEMS, Math.max(EVO_MIN_GEMS, Math.floor(game.gems)))); evoFeathers = nextEvoFea(); // 選んだ羽を1枚使う（「なし」なら使わない）
   const odds = evoOdds(evoGems, evoFeathers), fmtRate = fmtEvoPct;
-  el.innerHTML = `<div class="evo-rates"><div class="evo-rate ${evoKind === 'atk' ? 'on' : ''}" data-evo-kind="atk"><span>⚔️ 攻撃力進化</span><b>${fmtRate(getEvoRate('atk'))}</b></div><div class="evo-rate ${evoKind === 'hp' ? 'on' : ''}" data-evo-kind="hp"><span>❤️ HP進化</span><b>${fmtRate(getEvoRate('hp'))}</b></div><div class="evo-rate evo-rate-acc ${evoKind === 'acc' ? 'on' : ''}" data-evo-kind="acc"><span>🎯 命中進化</span><b>${fmtRate(getEvoRate('acc'))}</b></div><div class="evo-rate evo-rate-para ${evoKind === 'para' ? 'on' : ''}" data-evo-kind="para"><span>⚡ マヒ耐性進化</span><b>${fmtRate(getEvoRate('para'))}</b></div></div>${game.stage > BOSS_EVA_START_STAGE || getEvoRate('acc') > 1 ? `<div class="evo-boss-eva ${getBossEvaExtra() > 0 ? 'behind' : ''}">🎯 ボスの回避力 <b>${fmtRate(getBossEvaPower())}</b> ／ 命中進化 <b>${fmtRate(getEvoRate('acc'))}</b>　${getBossEvaExtra() > 0 ? `回避率 <b>+${(getBossEvaExtra() * 100).toFixed(1)}%</b>` : '回避を打ち消し中'}</div>` : ''}${game.stage > BOSS_PARA_START_STAGE || getEvoRate('para') > 1 ? `<div class="evo-boss-eva ${getBossParaChance() > 0 ? 'behind' : ''}">⚡ ボスのマヒ力 <b>${fmtRate(Math.max(1, getBossParaPower()))}</b> ／ マヒ耐性 <b>${fmtRate(getEvoRate('para'))}</b>　${getBossParaChance() > 0 ? `マヒ率 <b>${(getBossParaChance() * 100).toFixed(1)}%</b>` : 'マヒを防いでいる'}</div>` : ''}
+  const pick = isEvoPickUnlocked();
+  el.innerHTML = `<div class="evo-rates${pick ? '' : ' evo-random'}">${EVO_KINDS.map(k => `<div class="evo-rate ${pick && evoKind === k ? 'on' : ''}" data-evo-kind="${k}"><span>${EVO_KIND_LABEL[k]}</span><b>${fmtRate(getEvoRate(k))}</b></div>`).join('')}</div>${game.stage > BOSS_EVA_START_STAGE || getEvoRate('acc') > 1 ? `<div class="evo-boss-eva ${getBossEvaExtra() > 0 ? 'behind' : ''}">🎯 ボスの回避力 <b>${fmtRate(getBossEvaPower())}</b> ／ 命中進化 <b>${fmtRate(getEvoRate('acc'))}</b>　${getBossEvaExtra() > 0 ? `回避率 <b>+${(getBossEvaExtra() * 100).toFixed(1)}%</b>` : '回避を打ち消し中'}</div>` : ''}${game.stage > BOSS_PARA_START_STAGE || getEvoRate('para') > 1 ? `<div class="evo-boss-eva ${getBossParaChance() > 0 ? 'behind' : ''}">⚡ ボスのマヒ力 <b>${fmtRate(Math.max(1, getBossParaPower()))}</b> ／ マヒ耐性 <b>${fmtRate(getEvoRate('para'))}</b>　${getBossParaChance() > 0 ? `マヒ率 <b>${(getBossParaChance() * 100).toFixed(1)}%</b>` : 'マヒを防いでいる'}</div>` : ''}
     <div class="evo-row"><span class="evo-lbl">${xi('x_gem', 'evo-lbl-ico') || '💎'} ジェム</span><button data-evo-gems="min" class="evo-min">MIN</button><button data-evo-gems="-1">-</button><b class="evo-val">${evoGems}</b><button data-evo-gems="1">+</button><button data-evo-gems="max">MAX</button></div>
     <div class="evo-row evo-fea-row"><span class="evo-lbl">${xi('x_feather', 'evo-lbl-ico')} 進化の羽<small>${evoFeathers ? `${feaName(evoFeathers)}を${evoFeaUseCount(evoFeathers)}枚使う` : '使わない'}${getFeaUseMax() > 1 ? `（最大${getFeaUseMax()}枚）` : ''}</small></span><div class="evo-fea-list"><button class="evo-fea evo-fea-off${evoFeathers ? '' : ' use'}" data-evo-fea="off" style="--rc:#9aa3b8"><b>なし</b><i>×1</i></button>${FEA_RARITIES.map(r => `<button class="evo-fea${r === evoFeathers ? ' use' : ''}${feaCount(r) ? '' : ' none'}" data-evo-fea="${r}" style="--rc:${RARITY_INFO[r].color}">${feaIco(r, 'evo-fea-ico')}<b>${RARITY_INFO[r].label}</b><i>×${FEA_MULT[r]}</i><em>${formatCoinNumber(feaCount(r))}</em></button>`).join('')}</div></div>
     <div class="evo-odds">${EVO_TIERS.map((t, i) => `<div class="evo-odd" style="--rc:${RARITY_INFO[t.rarity].color}"><span>${rarityStars(t.rarity)}</span>${(m => `<b style="--efs:${[30, 30, 30, 26, 22, 19, 16.5, 14.5][Math.min(7, m.length)]}cqw">${m}</b>`)(fmtEvoPct(evoTotal(t.mult, evoGems, evoFeathers, evoFeaUseCount(evoFeathers))))}<i>${(odds[i] * 100).toFixed(odds[i] < 0.01 ? 2 : 1)}%</i></div>`).join('')}</div>
-    <button class="gacha-art-btn ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn" aria-label="進化ガチャ">${gachaArtHtml(3, `💎 ${evoGems}${evoFeathers ? ` ＋ ${feaIco(evoFeathers, 'fea-ico')}${feaName(evoFeathers)}${evoFeaUseCount(evoFeathers) > 1 ? `×${evoFeaUseCount(evoFeathers)}` : ''}` : ''}`, `${EVO_KIND_LABEL[evoKind]}を進化する`)}</button>`;
+    <button class="gacha-art-btn ${game.gems < evoGems ? 'is-disabled' : ''}" id="evoGoBtn" aria-label="進化ガチャ">${gachaArtHtml(3, `💎 ${evoGems}${evoFeathers ? ` ＋ ${feaIco(evoFeathers, 'fea-ico')}${feaName(evoFeathers)}${evoFeaUseCount(evoFeathers) > 1 ? `×${evoFeaUseCount(evoFeathers)}` : ''}` : ''}`, pick ? `${EVO_KIND_LABEL[evoKind]}を進化する` : '🎲 ランダムな項目を進化する')}</button>`;
   updateCompSummonVisibility();
 }
 function gachaArtHtml(i, cost, sub) { return `<span class="gacha-art ga-${i}"></span><span class="gab-cost">${cost}</span>${sub ? `<small class="gab-sub">${sub}</small>` : ''}`; } // ガチャのボタン（絵＋下にコスト）
@@ -686,7 +691,29 @@ const RECORD_GOALS = {
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
 function getRecordGoalReward(lv) { return 1; } // どの段階も進化の羽1枚
-function giveRecordFeathers(n) { addFea('common', n); if (typeof renderEvolutionList === 'function' && getActiveTab() === 'gacha') renderEvolutionList(); } // 戦績のリワードは進化の羽
+// 戦績のリワードは「羽ガチャ」：1枚ずつレア度を抽選（N 70%・R 20%・SR 7%・SSR 2.5%・UR 0.5%）
+const RECORD_FEA_RATES = { common: 70, rare: 20, epic: 7, legendary: 2.5, mythic: 0.5 };
+function rollRecordFeather() { let r = Math.random() * 100; for (const k of ['mythic', 'legendary', 'epic', 'rare']) { if ((r -= RECORD_FEA_RATES[k]) < 0) return k; } return 'common'; }
+function giveRecordFeathers(n) {
+  const got = {};
+  for (let i = 0; i < n; i++) { const r = rollRecordFeather(); got[r] = (got[r] || 0) + 1; }
+  for (const r in got) addFea(r, got[r]);
+  if (typeof renderEvolutionList === 'function' && getActiveTab() === 'gacha') renderEvolutionList();
+  showFeatherGacha(got, n);
+  return got;
+}
+function showFeatherGacha(got, n) { // 羽ガチャの結果
+  document.querySelectorAll('.fg-ov').forEach(e => e.remove());
+  const list = FEA_RARITIES.slice().reverse().filter(r => got[r]);
+  const best = list[0] || 'common';
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show fg-ov'; ov.style.zIndex = 85;
+  ov.innerHTML = `<div class="modal-panel fg-panel" style="--rc:${RARITY_INFO[best].color}"><div class="fg-title">🪶 羽ガチャ ${n}回</div><div class="fg-list">${list.map((r, i) => `<div class="fg-card${r === 'common' ? '' : ' fg-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.12}s">${feaIco(r, 'fg-ico')}<b>進化の${feaName(r)}</b><span>×${formatCoinNumber(got[r])}</span><small>${rarityStars(r)}</small></div>`).join('')}</div><div class="fg-rates">N 70%・R 20%・SR 7%・SSR 2.5%・UR 0.5%</div><button class="modal-close-btn fg-ok">OK</button></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.querySelector('.fg-ok').addEventListener('click', close);
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  if (best !== 'common' && typeof playGachaSound === 'function') playGachaSound(best);
+}
 function isRecordGoalReady(key) { const g = RECORD_GOALS[key]; return g.get() >= g.goal(getRecordGoalLevel(key)); }
 let recordGoalsSig = '';
 function renderRecordGoals(force) {
@@ -733,7 +760,6 @@ document.getElementById('rgClaimAll').addEventListener('click', event => {
   for (const key in RECORD_GOALS) { const g = RECORD_GOALS[key], v = g.get(); let n = 0; while (n++ < 200 && v >= g.goal(getRecordGoalLevel(key))) game.recordGoals[key] = getRecordGoalLevel(key) + 1; }
   giveRecordFeathers(total);
   playRegisterSound();
-  showTapError(`進化の羽+${formatCoinNumber(total)} まとめてゲット！`, event.clientX, event.clientY);
   updateStatsUI(); renderRecordGoals(true); saveGame();
 });
 function claimRecordGoal(key, x, y) {
@@ -743,7 +769,6 @@ function claimRecordGoal(key, x, y) {
   game.recordGoals[key] = getRecordGoalLevel(key) + 1;
   giveRecordFeathers(reward);
   playRegisterSound();
-  showTapError(`進化の羽+${reward} ゲット！`, x, y);
   updateStatsUI();
   renderRecordGoals(true);
   saveGame();
