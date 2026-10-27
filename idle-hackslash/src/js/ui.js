@@ -3790,25 +3790,37 @@ function showFormulaDebug() {
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
 }
 
-// デバッグ：転生の掟（いま転生したら何が残り、何が消え、何がもらえるか）
+// デバッグ：転生の掟（転生のたびに3つから1つ選ぶ周回ルール）の仕様と、いまの状態
+const RUN_RULE_DETAIL = { // 実際の効き方（reborn.js のつなぎ込みと同じ内容）
+  bossRich: 'ボス（10の倍数ステージ）のHP×2。倒したときのコイン報酬がもう1回ぶん入る（×2）。試練の塔では無効',
+  solo: '攻撃力×3。仲間は戦闘に出ない（パーティにいても出撃しない）',
+  eventful: 'ステージ3以降、ボス以外の毎ステージで何かのイベントが起きる。イベント中のコイン×1.5。試練の塔では無効',
+  gemCoin: 'コイン×0.5。雑魚を倒すたび5%でジェム+1（ボスは対象外）',
+  speed: 'コイン×1.5。戦闘中のゲームの速さ×1.25',
+  glass: '攻撃力×2・最大HP×0.5',
+};
 function showRebirthRulesDebug() {
-  const F = v => formatCoinNumber(Math.round(v)), rows = [];
+  const rows = [];
   const sec = t => rows.push(`<h4>${t}</h4>`), line = (k, v, note) => rows.push(`<div class="fd-row"><span>${k}</span><b>${v}</b>${note ? `<small>${note}</small>` : ''}</div>`);
-  sec('転生できる条件');
-  line('解放', `ステージ${REBORN_UNLOCK_STAGE}到達で解放`, isRebornUnlocked() ? '解放済み' : '未解放');
-  line('最低ステージ', 'ステージ3から'); line('コイン', `ショップの転生は 🟡${F(rebornCoinCost())} が必要`);
-  sec(`いま転生すると（ステージ${formatStageNumber(game.stage)}）`);
-  line('💎 ジェム', `+${F(getRebirthGemGain())}`, `(2 + ステージ÷10 + 遺物「輪廻の宝珠」${computeBonuses().rebirthGems}) × 転生効率 ${fmtEvoPct(getEvoRate('rebirth'))}。動画で3倍`);
-  line('🪶 進化のN羽', `×${F(getRebirthFeatherGain())}`, 'ステージの桁数×桁数×10 × 転生効率');
-  line('📈 転生Lv', `+${F(getRebirthLvGain(game.stage))}`, '1 + (ステージ−1)÷10');
-  line('💪 転生ボーナス', `×${rebirthPowerMult()} → ×${rebirthPowerMult() + 1}`, '攻撃力・最大HPに掛け算（転生回数＋1倍）');
-  sec('リセットされるもの');
-  ['コイン', 'ステージの進行（ステージ1から）', 'Lv・経験値', '強化（攻撃力・HPなどのLv）', 'パーティの仲間・仲間の強化', 'スキル（覚えたスキル・Lv・装備）', 'サブウェポン（Lv・装備）', '枠（パーティ・スキル・サブウェポン）', 'スキル・サブウェポンガチャの値段', '3択パワーアップの追加枠・ラン中のバフ', '仲間の倒れた回数', '試練の塔の挑戦中の状態'].forEach(t => line('✖', t));
-  sec('リセットされないもの');
-  ['ジェム', 'ショップで買った品（流星剣・月の盾・オートLvUP・宝箱の予感・進化項目など）', '進化（進化率・羽・項目のON/OFF）', '遺物', '転生回数・転生ボーナス・転生Lv', '図鑑・戦績・ランキング', '宝箱（左下にためた分）'].forEach(t => line('○', t));
+  sec('流れ（転生のあと、2周目から毎回）');
+  line('①', '掟を選ぶ', '全6種からランダムに3つ。「掟なしで始める」も選べる。選んだ掟はその周回のあいだだけ効く');
+  line('②', '転生ボーナスを選ぶ', '全6種からランダムに3つ（韋駄天は最高ステージ100以上のときだけ候補に入る）');
+  line('③', 'ダッシュスタート', `最高ステージ${DASH_MIN_BEST}以上なら、最高ステージの${Math.round(DASH_RATE * 100)}%（10の位で切り捨て＋1）から始まる。強化の元手として、そのステージのコイン×15もらえる`);
+  line('リセット', '次に転生すると、掟と転生ボーナスは外れる');
+  sec('いまの周回');
+  const r = runRule(), bo = runBonus();
+  line('掟', r ? `${RUN_RULES[r].icon} ${RUN_RULES[r].name}` : 'なし'); line('転生ボーナス', bo ? `${RUN_BONUSES[bo].icon} ${RUN_BONUSES[bo].name}` : 'なし');
+  line('ダッシュスタート', dashStartStage(null) > 1 ? `ステージ${dashStartStage(null)}から（韋駄天ならステージ${dashStartStage('dash2')}）` : `なし（最高ステージ${DASH_MIN_BEST}未満）`);
+  sec('掟の一覧（全6種）');
+  for (const k of RUN_RULE_KEYS) { const x = RUN_RULES[k], got = game.runFeats && game.runFeats['rule_' + k];
+    line(`${x.icon} ${x.name}`, `▲ ${x.good}　▼ ${x.bad}`, `${RUN_RULE_DETAIL[k] || ''}<br>実績「${x.name}の覇者」（この掟でステージ100到達・💎5）：${got ? '達成済み' : '未達成 → 選ぶ画面に「実績チャンス」と出る'}`); }
+  sec('転生ボーナスの一覧（全6種・この周回だけ）');
+  for (const k of RUN_BONUS_KEYS) { const x = RUN_BONUSES[k]; line(`${x.icon} ${x.name}`, x.desc); }
+  sec('縛りの実績');
+  RUN_FEATS.filter(f => !f.id.startsWith('rule_')).forEach(f => line(`${f.icon} ${f.name}`, `${f.desc}　💎${f.gems}`, game.runFeats && game.runFeats[f.id] ? '達成済み' : '未達成'));
   document.querySelectorAll('.fd-ov').forEach(e => e.remove());
   const ov = document.createElement('div'); ov.className = 'modal-overlay show fd-ov'; ov.style.zIndex = 90;
-  ov.innerHTML = `<div class="modal-panel fd-panel"><div class="fd-title">🌌 転生の掟 <button class="fd-x">✕</button></div><div class="fd-body">${rows.join('')}</div></div>`;
+  ov.innerHTML = `<div class="modal-panel fd-panel"><div class="fd-title">📜 転生の掟（周回の3択） <button class="fd-x">✕</button></div><div class="fd-body">${rows.join('')}</div></div>`;
   document.body.appendChild(ov);
   ov.querySelector('.fd-x').addEventListener('click', () => ov.remove());
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
