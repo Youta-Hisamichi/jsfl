@@ -1178,6 +1178,7 @@ shopList.addEventListener('click', event => {
   if (!button) return;
   const id = button.dataset.shop;
   const item = SHOP_ITEMS[id];
+  if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
   if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
@@ -1193,15 +1194,14 @@ shopList.addEventListener('click', event => {
   game.gems -= gcost;
   let line = item.desc;
   if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
+  else if (item.toggleKind) { const k = item.toggleKind, on = !isEvoKindOpen(k); game['evoKindOpen_' + k] = on; if (on && k === 'counter') game.evoKindBought_counter = true; line = on ? `「${EVO_KIND_NAME[k]}」が進化のランダムに入った！（ON）` : `「${EVO_KIND_NAME[k]}」を進化のランダムから外した（OFF）`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   else if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); line = `+${item.bundle || 1}個 → 所持 ${game[item.consumableKey]}個`; }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (SHOP_MULTI_ITEMS[id]) { game.shopOwned[id] = shopBuyCount(id) + 1; line = `${SHOP_MULTI_ITEMS[id]}が ${shopMultiRate(id)}倍 になった！`; }
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
   if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
-  if (id.startsWith('evoKind_')) { line = `進化で「${EVO_KIND_NAME[id.slice(8)]}」も上がるようになった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id.startsWith('chestOmen_')) line = `${SHOP_ITEMS[id].name.replace('の予感', '')}がドロップするようになった！`;
-  if (id === 'evoPick') { line = '進化する項目を自分で選べるようになった！（進化ページで選ぶ）'; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
@@ -2079,8 +2079,8 @@ const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic
 document.getElementById('evoPanel').addEventListener('click', event => {
   const kindBtn = event.target.closest('[data-evo-kind]'), gb = event.target.closest('[data-evo-gems]');
   const maxG = Math.max(EVO_MIN_GEMS, Math.min(EVO_MAX_GEMS, Math.floor(game.gems))); // 一度に使えるジェムは10個まで
-  if (kindBtn && kindBtn.dataset.evoKind !== 'random' && !isEvoKindOpen(kindBtn.dataset.evoKind)) { showTapError(`「${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」はまだ進化できない\n（ショップの「進化項目：${EVO_KIND_NAME[kindBtn.dataset.evoKind]}」で追加できる）`, event.clientX, event.clientY, 3200); return; }
-  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はランダム\n（ショップの「進化の指定書」で選べるようになる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
+  if (kindBtn && !isEvoKindOpen(kindBtn.dataset.evoKind)) { const k = kindBtn.dataset.evoKind; showTapError(k === 'acc' ? `「命中」は進化${EVO_ACC_OPEN_AT}回目で開放\n（あと${EVO_ACC_OPEN_AT - (game.evoCount || 0)}回）` : `「${EVO_KIND_NAME[k]}」はOFF\n（ショップの「進化項目：${EVO_KIND_NAME[k]}」でONにできる）`, event.clientX, event.clientY, 3200); return; }
+  if (kindBtn) { if (!isEvoPickUnlocked()) { showTapError('進化する項目はいつもランダム\n（ショップの「進化項目」でON/OFFできる）', event.clientX, event.clientY, 3200); return; } if (evoKind !== kindBtn.dataset.evoKind) { playTone(880, 0.06, 'square', 0.07, 1320); setTimeout(() => playTone(1760, 0.08, 'triangle', 0.06), 50); } evoKind = kindBtn.dataset.evoKind; renderEvolutionList(); return; } // 項目を切り替えたら「ピピッ」
   const fb = event.target.closest('[data-evo-fea]'); // 使う進化の羽を選ぶ（なし＝使わない）
   if (fb) { const r = fb.dataset.evoFea; if (r !== 'off' && !feaCount(r)) { showTapError(`${feaName(r)}を持っていません`, event.clientX, event.clientY); return; } game.evoFeaPick = r === 'off' ? null : r; renderEvolutionList(); saveGame(); return; }
   if (gb) { const d = gb.dataset.evoGems; const step = d.endsWith('%') ? Math.sign(parseFloat(d)) * Math.max(1, Math.round(maxG * Math.abs(parseFloat(d)) / 100)) : Number(d); evoGems = d === 'max' ? maxG : d === 'min' ? EVO_MIN_GEMS : Math.max(EVO_MIN_GEMS, Math.min(maxG, evoGems + step)); game.evoLastGems = evoGems; renderEvolutionList(); return; }
@@ -2089,6 +2089,7 @@ document.getElementById('evoPanel').addEventListener('click', event => {
   if (evoBusy || skGachaBusy) return;
   const gems = evoGems, feathers = nextEvoFea(), kind = isEvoPickUnlocked() && evoKind !== 'random' ? evoKind : (ks => ks[Math.floor(Math.random() * ks.length)])(openEvoKinds()); // 指定書があっても「ランダム」を選べば開放済みの項目からランダム // 項目は指定書がなければランダム
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
+  game.evoCount = (game.evoCount || 0) + 1; // 進化した回数（3回目で命中が開放）
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
   // 演出と音はスキルガチャと同じ（パチンコ風・ダイアログで結果）
@@ -3216,6 +3217,8 @@ if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig3
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
+if (game.evoPickUnlocked && !game.evoPickRefunded) { game.gems += 500; game.evoPickRefunded = true; game.evoPickUnlocked = false; setTimeout(() => showNotice('📜 「進化の指定書」は廃止しました。💎500をお返しします（進化の項目はいつもランダムになりました）', false, 5000), 4000); }
+if (game.evoKindOpen_counter && !game.evoKindBought_counter) game.evoKindBought_counter = true; // すでにカウンターを買っていた人は反撃が続く
 if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.floor((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0)); game.feaMig5 = true; syncFeaTotal(); } // 進化の羽を5種類にしたとき、持っていた羽はN羽に
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
 if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする

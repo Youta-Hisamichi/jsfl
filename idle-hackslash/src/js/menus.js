@@ -95,13 +95,15 @@ function renderSupergemShopList() {
     return `<button class="shop-btn gb-btn gb-t${tier} ${game.superGems < item.cost ? 'is-disabled' : ''}" data-supergem-shop="${id}">${badge}<span class="gb-icons">${xi('x_gb' + tier) || '💎'.repeat(tier)}</span><span class="gb-body"><span class="gb-name">${item.name}</span><span class="gb-amount">${item.desc}</span><span class="gb-price">${item.cost.toLocaleString('ja-JP')}<small>円</small></span></span></button>`;
   }).join('');
 }
-const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
-const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊' };
-const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター' };
+const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter', 'rebirth']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
+const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊', rebirth: '🌀' };
+const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率' };
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
-function isEvoPickUnlocked() { return !!game.evoPickUnlocked; }
+function isEvoPickUnlocked() { return false; } // 進化の項目はいつもランダム（「進化の指定書」は廃止）
+const EVO_ACC_OPEN_AT = 3; // 命中は進化3回目で開放（以後ずっとON）
+function isEvoAccOpen() { return (game.evoCount || 0) >= EVO_ACC_OPEN_AT || !!game.evoKindOpen_acc || getEvoRate('acc') > 1; }
 const EVO_KIND_DEFAULT = ['atk', 'hp']; // はじめから進化できるのは攻撃力とHPだけ。ほかはショップで項目を買って増やす
-function isEvoKindOpen(k) { return EVO_KIND_DEFAULT.includes(k) || !!game['evoKindOpen_' + k]; } // ショップの「進化項目：○○」で開放
+function isEvoKindOpen(k) { return EVO_KIND_DEFAULT.includes(k) || (k === 'acc' ? isEvoAccOpen() : !!game['evoKindOpen_' + k]); } // ショップの「進化項目：○○」でON/OFF
 function openEvoKinds() { return EVO_KINDS.filter(isEvoKindOpen); }
 let evoKind = 'atk', evoGems = 1, evoFeathers = null; // evoFeathers：次の進化で使う羽のレア度（なしは null）
 function renderEvolutionList() {

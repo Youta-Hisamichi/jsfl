@@ -787,10 +787,12 @@ SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェ�
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
-SHOP_ITEMS.evoPick = { icon: '📜', img: ICON_IMAGES.x_book, name: '進化の指定書', desc: '進化する項目（攻撃力・HP・ボス特攻など）を自分で選べるようになる。買うまではランダム（転生しても残る）', cost: 500, unlockKey: 'evoPickUnlocked' };
-// 進化の項目を増やす（はじめは攻撃力とHPだけ）。カウンターがいちばん高い
-[['acc', '🎯', '命中', 'ボスの回避を打ち消す', 30, 'art_lens'], ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 50, 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 80, 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 80, 'up_cHp'], ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 150, 'art_crest'], ['counter', '🥊', 'カウンター', '10%で反撃するようになる', 250, 'g_counter']].forEach(([k, icon, name, eff, cost, img]) => {
-  SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: `進化で「${name}」も上がるようになる（${eff}）。転生しても残る`, cost, unlockKey: 'evoKindOpen_' + k };
+// 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎5、OFFは💎10。攻撃力・HPはいつもON、命中は進化3回目で自動でON（どちらもOFFにできない）
+const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
+[['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk', true], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp', true],
+ ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
+ ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn']].forEach(([k, icon, name, eff, img, fixed]) => {
+  SHOP_ITEMS['evoKind_' + k] = { icon, img: ICON_IMAGES[img], name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };
 });
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
@@ -801,6 +803,7 @@ SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp',
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
+  if (item.toggleKind) return !!item.toggleFixed; // ON/OFFの品は何度でも切り替えられる（攻撃力・HPは固定）
   if (item.slot) return item.slot.cur() >= item.slot.max(); // 枠増やしは最大まで買えば売り切れ
   if (item.action || item.rebirth) return false;
   if (SHOP_MULTI_ITEMS[id]) return false; // 倍率アイテムは何度でも買える
@@ -808,7 +811,7 @@ function isShopItemOwned(id) {
   if (item.stackKey) return (game[item.stackKey] || 0) >= item.maxStack; // 重ねがけ系は上限まで買えば「所持済み」
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
-function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
+function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; if (item.toggleKind) return gemPrice(isEvoKindOpen(item.toggleKind) ? EVO_TOGGLE_OFF_COST : EVO_TOGGLE_ON_COST); return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
 function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) return item.cost * Math.pow(2, shopBuyCount(id)); if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
@@ -1319,7 +1322,7 @@ function computeBonuses() {
   snap('転生回数の倍率');
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
   b.companionAtkMult *= getEvoRate('compAtk'); b.companionHpMult *= getEvoRate('compHp'); // 仲間攻撃力・仲間HP進化
-  if (game.evoKindOpen_counter) b.counter += EVO_COUNTER_BASE; // 進化項目「カウンター」を買うと反撃するようになる（ダメージは進化で上がる）
+  if (game.evoKindBought_counter) b.counter += EVO_COUNTER_BASE; // 進化項目「カウンター」をはじめてONにすると反撃するようになる（ダメージは進化で上がる。OFFにしても残る）
   snap('進化');
   b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コインの妖精（買った回数＋1倍・掛け算）
   snap('ショップ（流星剣・月の盾）');
@@ -1409,13 +1412,13 @@ function renderShopList() {
     const locked = !owned && ((item.requires && !game[item.requires]) || (item.rebirth && !isRebornUnlocked()));
     const gcost = item.action ? 0 : getShopItemGemCost(id);
     const note = SHOP_MULTI_ITEMS[id] || item.noNote ? '' : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.shopCount ? `（購入 ${game[item.stackKey] || 0}/${item.maxStack}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
-    const costTxt = owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
-    const art = SHOP_ITEM_ART[id], left = owned || item.consumableKey || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
+    const costTxt = item.toggleFixed ? 'いつもON' : owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
+    const art = SHOP_ITEM_ART[id], left = owned || item.toggleKind || item.consumableKey || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;
     const priceHtml = item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b></span>` : price;
-    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;

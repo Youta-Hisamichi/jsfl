@@ -1030,8 +1030,8 @@ function showFirstBossGift() { // 初めてステージ10のボスを倒した�
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove(); });
   playRegisterSound(); updateStatsUI(); saveGame();
 }
-function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return d * d * 10; } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
-function getRebirthGemGain() { return 2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems; }
+function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return Math.round(d * d * 10 * getEvoRate('rebirth')); } // 転生報酬の進化の羽：ステージの桁数×桁数×10枚
+function getRebirthGemGain() { return Math.round((2 + Math.floor(game.stage / 10) + computeBonuses().rebirthGems) * getEvoRate('rebirth')); } // 転生効率の進化でジェムと羽が増える
 function completeReincarnation() {
   nextNormalBgm(); // 転生したら雑魚戦の曲を転生前とは別の曲に
   gameOverBgm = false; rebirthFlow = true; updateSkipBtnVisibility();

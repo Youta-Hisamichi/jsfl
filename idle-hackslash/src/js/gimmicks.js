@@ -526,6 +526,14 @@ function bagRows() {
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
   for (const r of FEA_RARITIES) { const n = feaCount(r); if (!n && r !== 'common') continue; // 進化の羽はレア度ごと（N羽は0枚でも表示）
     rows.push({ icon: feaIco(r), name: `<span style="color:${RARITY_INFO[r].color}">${rarityStars(r)}</span> 進化の${feaName(r)}`, n, desc: `進化1回で1枚使い、倍率×${FEA_MULT[r]}（レア度の高い羽から自動で使う）`, btn: `<button data-bag-go="gacha">進化へ</button>` }); }
+  // ショップで買った（ずっと効く）品：進化項目・宝箱の予感・羽の束ね紐・流星剣など
+  for (const [id, item] of Object.entries(SHOP_ITEMS)) {
+    if (item.hideInShop || item.consumableKey || item.rebirth || item.action || item.slot || item.toggleFixed) continue;
+    const n = item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? 1 : 0) : SHOP_MULTI_ITEMS[id] ? shopBuyCount(id) : item.stackKey ? (game[item.stackKey] || 0) : item.unlockKey ? (game[item.unlockKey] ? 1 : 0) : (game.shopOwned && game.shopOwned[id] ? 1 : 0);
+    if (!n) continue;
+    const art = SHOP_ITEM_ART[id];
+    rows.push({ icon: art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:100%;height:100%"></span>` : ico(item), name: item.name + (SHOP_MULTI_ITEMS[id] ? ` Lv${n}` : item.toggleKind ? '（ON）' : ''), n, desc: SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id)}倍` : item.desc, shop: true });
+  }
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
 }
