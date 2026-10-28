@@ -1034,12 +1034,12 @@ function rollMetalFeather() {
   const highHeld = FEA_RARITIES.slice(1).reduce((n, k) => n + feaCount(k), 0);
   return r !== 'common' && highHeld >= 3 ? 'common' : r;
 }
-// 自己ベストの桁が上がったとき（ステージ100・1000・1万・10万を初めてクリア）だけ、ジェムを少し
-const DIGIT_GEMS = [[100, 1], [1000, 2], [10000, 3], [100000, 5]];
+// 自己ベストの桁が上がったとき（ステージ100・1000・1万…を初めてクリア）だけ、ジェムを少し：桁数−1個（100→💎2、1000→💎3、1万→💎4…）
+function digitGemList(best) { const L = []; for (let th = 100; th < Math.max(best, 1e7); th *= 10) L.push([th, String(th).length - 1]); return L; }
 function checkDigitGems() {
   const best = game.bestStage || 1;
-  if (!game.digitGems) { game.digitGems = {}; for (const [th] of DIGIT_GEMS) if (best > th) game.digitGems[th] = true; return; } // 前からのセーブは、もう越えた桁はもらったことにする
-  for (const [th, g] of DIGIT_GEMS) {
+  if (!game.digitGems) { game.digitGems = {}; for (const [th] of digitGemList(best)) if (best > th) game.digitGems[th] = true; return; } // 前からのセーブは、もう越えた桁はもらったことにする
+  for (const [th, g] of digitGemList(best)) {
     if (best <= th || game.digitGems[th]) continue;
     game.digitGems[th] = true; game.gems += g; updateStatsUI();
     setTimeout(() => { if (typeof showRunBanner === 'function') showRunBanner(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！`, `自己ベストの桁が上がった！ +💎${g}`); else showNotice(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！ +💎${g}`); }, 1200);

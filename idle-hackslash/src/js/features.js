@@ -1175,7 +1175,7 @@ function buildGemSourceList() {
   const sum = a => a.reduce((n, x) => n + x, 0), pct = v => Math.round(v * 100) + '%';
   sec('⚔️ 戦闘（決まってもらえる）');
   row('はじめてのボス（ステージ10）', '💎1', '1回だけ');
-  DIGIT_GEMS.forEach(([th, g]) => row(`ステージ${th.toLocaleString('ja-JP')}を初めてクリア（自己ベストの桁が上がる）`, `💎${g}`, '1回だけ'));
+  digitGemList(1).forEach(([th, g]) => row(`ステージ${th.toLocaleString('ja-JP')}を初めてクリア（自己ベストの桁が上がる）`, `💎${g}`, '1回だけ（その先も桁数−1個）'));
   row('（ボス撃破・メタルスライムでは出ない）', '—', 'メタルスライムは進化の羽1枚（R以上の羽を3枚以上持っているとN羽）');
   sec('🎲 戦闘（確率）');
   row('ボスのお供（ザコ）を倒す', '💎1', '30%');
