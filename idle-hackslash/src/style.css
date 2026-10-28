@@ -4713,3 +4713,9 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 #myCharOverlay .mc-row.on { filter: drop-shadow(0 0 6px rgba(255,215,107,0.9)); }
 #myCharOverlay .mc-row b, #myCharOverlay .mc-row .cl-name { color: #fff !important; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
 #myCharOverlay .mc-row .mc-sel { color: #ffd76b !important; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+
+/* オープニング冒頭：魔法陣が途中でまばゆく光る */
+.op-circle-flash { position: absolute; width: 100%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(170,210,255,0.6) 30%, rgba(110,160,255,0) 68%); mix-blend-mode: screen; opacity: 0; animation: opCircleFlash 2.6s 1.5s ease-out both !important; }
+@keyframes opCircleFlash { 0% { opacity: 0; transform: scale(0.6); } 25% { opacity: 1; transform: scale(1.1); } 60% { opacity: 0.55; transform: scale(1); } 100% { opacity: 0.35; transform: scale(1); } }
+.op-stage.in .op-circle:not(.spin) { animation: opIn 1.2s ease-out both, opSpin 40s linear infinite, opCircleGlow 2.6s 1.5s ease-out both !important; }
+@keyframes opCircleGlow { 0% { filter: drop-shadow(0 0 18px #8fb4ff) brightness(1); } 25% { filter: drop-shadow(0 0 40px #fff) drop-shadow(0 0 24px #8fd0ff) brightness(1.8); } 100% { filter: drop-shadow(0 0 28px #b8d4ff) brightness(1.3); } }

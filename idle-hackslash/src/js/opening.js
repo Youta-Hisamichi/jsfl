@@ -4,15 +4,15 @@ const OPENING_SCENES = [
   { bg: 'red', text: 'だがある夜、魔王の封印が解け、\n無数の魔物があふれ出した。', art: 'bosses' },
   { bg: 'red', text: '草原も、森も、海も、塔も……\nすべてが魔物の群れに飲み込まれていく。', art: 'march' },
   { bg: 'dawn', text: 'その時、ひとりの少年が剣を取った。', art: 'hero' },
-  { bg: 'dawn', text: '「……右腕が、疼く」', art: 'heroTalk' },
-  { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――', art: 'party' },
+  { bg: 'dawn', text: '「俺の反射タックルは誰にも止められないぜ！」', art: 'heroTalk' },
+  { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n無限の進化を活かして生き残れ！', art: 'party' },
   { bg: 'title', text: '', art: 'title' },
 ];
 let openingOn = false;
 function openingArt(kind) {
   const hero = `<img class="op-hero" src="${PLAYER_SPRITE}" alt="">`;
   const en = k => ENEMY_SPRITES[k] ? `<img src="${ENEMY_SPRITES[k]}" alt="">` : '';
-  if (kind === 'circle') return `<img class="op-circle" src="assets/img/ui/magic_circle.webp" alt="">`;
+  if (kind === 'circle') return `<img class="op-circle" src="assets/img/ui/magic_circle.webp" alt=""><div class="op-circle-flash"></div>`; // 途中で魔法陣がまばゆく光る
   if (kind === 'bosses') return `<div class="op-bosses">${['b_starEater', 'b_darkWitch', 'b_fireDragon'].map((k, i) => ENEMY_SPRITES[k] ? `<img style="--i:${i}" src="${ENEMY_SPRITES[k]}" alt="">` : '').join('')}</div>`;
   if (kind === 'march') return `<div class="op-march">${['m_goblinSpear', 'm_skelSword', 'm_redBat', 'm_magmaSlime', 'm_ghostKnight', 'm_direWolf', 'm_mushSpear', 'm_icicleBat', 'm_orcKnight'].map((k, i) => `<span style="--i:${i}">${en(k)}</span>`).join('')}</div>`;
   if (kind === 'hero') return `<div class="op-light"></div>${hero}`;
@@ -50,9 +50,8 @@ function playOpening(onEnd) {
     textEl.textContent = ''; textEl.dataset.full = txt;
     let n = 0;
     if (txt) typing = setInterval(() => { n++; textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
-    if (sc.art === 'bosses') { thump(70, 30, 0.6, 0.5); }
-    if (sc.art === 'hero') { playTone(523, 0.3, 'triangle', 0.06, 1046); }
-    if (sc.art === 'title') { playLoginBonusSound && playLoginBonusSound(); shakeScreenLight && shakeScreenLight(); }
+    try { opSfx(sc.art); } catch (e) {} // 場面ごとの効果音
+    if (sc.art === 'title') { shakeScreenLight && shakeScreenLight(); }
   };
   ov.addEventListener('click', e => { if (e.target.closest('.op-skip')) { finish(); return; } next(); });
   next();
@@ -297,3 +296,74 @@ document.getElementById('tabBar')?.addEventListener('click', () => { const m = d
   };
   new MutationObserver(sync).observe(set, { attributes: true, attributeFilter: ['class'] });
   new MutationObserver(() => { const n = news(); if (n && !n._obs) { n._obs = true; new MutationObserver(sync).observe(n, { attributes: true, attributeFilter: ['class'] }); sync(); } }).observe(document.body, { childList: true }); }
+
+// ===== オープニングの効果音（場面ごと。どれもその場で合成） =====
+function opOut() { const g = audioCtx.createGain(); g.gain.value = Math.max(0.0001, game.sfxVolume == null ? 1 : game.sfxVolume); g.connect(audioCtx.destination); return g; }
+function opOsc(at, dur, type, f0, f1, vol, out, opt = {}) { // 音程つきの音（f1へ滑る）。opt.lp でこもらせる、opt.vib でビブラート
+  const t0 = audioCtx.currentTime + at, o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t0); if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + (opt.atk || 0.02)); g.gain.setValueAtTime(vol, t0 + dur * (opt.hold || 0.3)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  let node = o; if (opt.lp) { const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = opt.lp; f.Q.value = opt.q || 1; o.connect(f); node = f; }
+  if (opt.vib) { const l = audioCtx.createOscillator(), lg = audioCtx.createGain(); l.frequency.value = opt.vibHz || 6; lg.gain.value = opt.vib; l.connect(lg); lg.connect(o.frequency); l.start(t0); l.stop(t0 + dur + 0.05); }
+  node.connect(g); g.connect(out); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function opNoise(at, dur, vol, freq, out, opt = {}) { // ノイズ（風・足音・炎・歓声のもと）
+  const t0 = audioCtx.currentTime + at, n = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const f = audioCtx.createBiquadFilter(); f.type = opt.type || 'bandpass'; f.Q.value = opt.q || 1; f.frequency.setValueAtTime(freq, t0); if (opt.f1) f.frequency.exponentialRampToValueAtTime(opt.f1, t0 + dur);
+  const g = audioCtx.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + (opt.atk || 0.01)); g.gain.setValueAtTime(vol, t0 + dur * (opt.hold || 0.2)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(f); f.connect(g); g.connect(out); src.start(t0); src.stop(t0 + dur + 0.02);
+}
+function opVoice(at, dur, vowel, p0, p1, vol, out, vib = 5) { // 母音の声（声援・鳴き声・歌声）
+  const t0 = audioCtx.currentTime + at, o = audioCtx.createOscillator(), env = audioCtx.createGain(); o.type = 'sawtooth';
+  o.frequency.setValueAtTime(p0, t0); o.frequency.exponentialRampToValueAtTime(p1, t0 + dur);
+  const l = audioCtx.createOscillator(), lg = audioCtx.createGain(); l.frequency.value = 5.5; lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency);
+  env.gain.setValueAtTime(0.0001, t0); env.gain.exponentialRampToValueAtTime(vol, t0 + Math.min(0.08, dur / 3)); env.gain.setValueAtTime(vol, t0 + dur * 0.6); env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  VOWEL_F[vowel].forEach((fq, k) => { const f = audioCtx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = fq * (p0 > 600 ? 1.15 : 1); f.Q.value = 8 - k * 2; const g = audioCtx.createGain(); g.gain.value = [3, 1.5, 0.7][k]; o.connect(f); f.connect(g); g.connect(env); });
+  env.connect(out); o.start(t0); l.start(t0); o.stop(t0 + dur + 0.05); l.stop(t0 + dur + 0.05);
+}
+function opSfx(art) {
+  if (!audioCtx) return; const out = opOut();
+  if (art === 'circle') { // 魔法陣が光る：澄んだきらめきが駆け上がる（CSSの光と同じ1.6秒後）
+    opNoise(1.3, 1.2, 0.08, 1500, out, { f1: 7000, atk: 0.6, hold: 0.6 });
+    [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => opOsc(1.55 + i * 0.07, 1.4, 'sine', f, f, 0.07, out, { atk: 0.01, hold: 0.05 }));
+    opOsc(1.6, 2.2, 'triangle', 523, 523, 0.06, out, { atk: 0.2, hold: 0.4, vib: 3 });
+  }
+  if (art === 'bosses') { // ドラゴンの咆哮 → 女王の妖しい歌声
+    opOsc(0.15, 1.6, 'sawtooth', 150, 62, 0.35, out, { lp: 700, q: 4, vib: 18, vibHz: 23, atk: 0.12, hold: 0.45 });
+    opOsc(0.15, 1.6, 'square', 75, 40, 0.18, out, { lp: 300, vib: 10, vibHz: 31, atk: 0.12, hold: 0.45 });
+    opNoise(0.15, 1.6, 0.3, 520, out, { q: 2, f1: 260, atk: 0.12, hold: 0.45 });
+    opOsc(0.1, 0.9, 'sine', 70, 30, 0.45, out, { atk: 0.01, hold: 0.1 }); // 地響き
+    [[880, 0.55], [988, 0.4], [831, 0.55], [740, 1.1]].reduce((t, [f, d]) => { opVoice(t, d + 0.15, 'a', f, f * 0.995, 0.09, out, 9); return t + d; }, 1.9);
+  }
+  if (art === 'march') { // 魔物の鳴き声と、ザッザッという行進
+    for (let i = 0; i < 12; i++) { const t = 0.2 + i * 0.36; opNoise(t, 0.12, 0.35, 180, out, { type: 'lowpass', q: 0.7 }); opOsc(t, 0.1, 'sine', 90, 50, 0.25, out, { atk: 0.005, hold: 0.05 }); }
+    [[0.4, 'a', 520, 330], [0.9, 'i', 900, 600], [1.5, 'o', 260, 180], [2.1, 'e', 700, 1000], [2.8, 'a', 380, 220], [3.4, 'i', 1100, 700]].forEach(([t, v, p0, p1]) => opVoice(t, 0.35, v, p0, p1, 0.12, out, 25));
+  }
+  if (art === 'hero') { // パワーアップ：駆け上がる音とキラッ
+    [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => opOsc(0.1 + i * 0.06, 0.18, 'square', f, f, 0.05, out, { lp: 3000, atk: 0.005 }));
+    opOsc(0.1, 0.6, 'sawtooth', 200, 1600, 0.05, out, { lp: 2500, atk: 0.05, hold: 0.6 });
+    opNoise(0.55, 0.6, 0.06, 5000, out, { q: 3, f1: 9000 }); [1568, 2093].forEach((f, i) => opOsc(0.6 + i * 0.08, 0.7, 'sine', f, f, 0.06, out, { atk: 0.005, hold: 0.05 }));
+  }
+  if (art === 'heroTalk') { // 覚醒：重い衝撃 → オーラが渦を巻いて立ち上がる
+    opOsc(0.05, 1.2, 'sine', 90, 28, 0.5, out, { atk: 0.005, hold: 0.1 }); opNoise(0.05, 0.5, 0.25, 900, out, { type: 'lowpass', f1: 120 });
+    opNoise(0.3, 2.0, 0.16, 300, out, { q: 5, f1: 4000, atk: 0.6, hold: 0.7 });
+    opOsc(0.3, 2.0, 'sawtooth', 110, 440, 0.06, out, { lp: 1800, vib: 6, vibHz: 7, atk: 0.4, hold: 0.7 });
+    [220, 277, 330, 440].forEach(f => opOsc(1.2, 1.4, 'triangle', f, f, 0.05, out, { atk: 0.05, hold: 0.4, vib: 2 }));
+  }
+  if (art === 'party') { // 仲間の声援：わあっという歓声と「おーっ！」
+    opNoise(0.2, 2.2, 0.12, 1100, out, { q: 0.8, atk: 0.4, hold: 0.5 });
+    [[0.3, 'o', 220], [0.38, 'o', 330], [0.45, 'a', 440], [0.5, 'o', 520], [0.6, 'e', 280], [1.4, 'a', 360], [1.5, 'o', 600], [1.55, 'a', 250]].forEach(([t, v, p]) => opVoice(t, 0.6, v, p, p * 1.15, 0.08, out, 8));
+    for (let i = 0; i < 10; i++) opNoise(0.4 + i * 0.12 + Math.random() * 0.05, 0.05, 0.15, 2500, out, { q: 1.5 }); // 拍手
+  }
+  if (art === 'goal') { // 鼓動：ドクン、ドクン…
+    for (let i = 0; i < 5; i++) { const t = 0.2 + i * 0.85; opOsc(t, 0.22, 'sine', 70, 38, 0.55, out, { atk: 0.005, hold: 0.1 }); opOsc(t + 0.2, 0.25, 'sine', 60, 32, 0.4, out, { atk: 0.005, hold: 0.1 }); }
+  }
+  if (art === 'title') { // 炎が燃え上がる：ボッと着火して、ゴーッと燃え、パチパチはぜる
+    opNoise(0.05, 0.5, 0.35, 1500, out, { type: 'lowpass', f1: 300 }); opOsc(0.05, 0.5, 'sine', 120, 40, 0.3, out, { atk: 0.005, hold: 0.1 });
+    opNoise(0.1, 3.2, 0.22, 500, out, { type: 'lowpass', q: 1.5, atk: 0.3, hold: 0.6 });
+    opNoise(0.1, 3.2, 0.06, 1800, out, { q: 1, atk: 0.4, hold: 0.6 });
+    for (let i = 0; i < 26; i++) opNoise(0.2 + Math.random() * 2.8, 0.015 + Math.random() * 0.02, 0.15 + Math.random() * 0.2, 2500 + Math.random() * 3000, out, { q: 2, atk: 0.002, hold: 0.1 });
+  }
+}
