@@ -14,8 +14,8 @@ function renderSkillGacha() {
   const head = document.getElementById('skillSlotHead');
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
-  // サブウェポンと同じシンプルな見出し：装備数／枠数と「＋枠を増やす」だけ（スロット一覧は出さない）
-  const headHtml = `<span>装備枠 <b>${eq.length} / ${slots}</b></span>` + (slots < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1"><span>＋枠を増やす</span><br><span>💎${getSkillSlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>` : '<span class="ws-max">枠MAX</span>');
+  // 見出し：装備数（スキル＋自動スキル）／枠数と「＋枠を増やす」だけ
+  const headHtml = `<span>装備枠 <b>${eq.length + getEquippedWeapons().length} / ${getTotalSlots()}</b></span>` + (getTotalSlots() < SKILL_SLOT_MAX ? `<button class="${game.gems < getSkillSlotCost() ? 'is-disabled' : ''}" data-skill-slot-add="1"><span>＋枠を増やす</span><br><span>💎${getSkillSlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>` : '<span class="ws-max">枠MAX</span>');
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
@@ -31,7 +31,7 @@ function renderSkillGacha() {
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP);
     return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">⚔️ 威力 ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>目安 ≈ ${est}（攻撃力×威力）</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
-  }).join('')) || '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'; // 取得したスキルだけ並べる
+  }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
   const weq = getEquippedWeapons(), wslots = getWeaponSlots();
@@ -43,8 +43,8 @@ function renderSkillGacha() {
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = !lv ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const pwN = weaponDmg(1, lv + 1), atk = getPlayerAtk();
-    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}</div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
-  }).join('')) || '<div class="sk-empty">まだサブウェポンがありません。上のガチャで手に入れよう</div>'; // 取得したサブウェポンだけ並べる
+    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+  }).join('')) || ''; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, `${COIN_ICO} ${formatCoinNumber(cost)}`, label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
   gachaBtn(document.getElementById('skillGachaBtn'), 'ランダムで解放・Lvアップ', getSkillGachaCost());
@@ -53,8 +53,8 @@ function renderSkillGacha() {
   const sFull = eq.length >= slots, wFull = weq.length >= wslots;
   const sg = document.getElementById('skillGachaBtn'), wg = document.getElementById('weaponGachaBtn');
   // 回せないとき（枠がいっぱい・コイン不足・引けるものなし）は消さずにグレーにする
-  if (sg) { sg.hidden = false; sg.dataset.full = sFull || !skillGachaPool().length ? '1' : ''; if (sg.dataset.full) sg.classList.add('is-disabled'); }
-  if (wg) { wg.hidden = false; wg.dataset.full = wFull || !weaponGachaPool().length ? '1' : ''; if (wg.dataset.full) wg.classList.add('is-disabled'); }
+  if (sg) { sg.hidden = false; sg.dataset.full = !skillGachaPool().length && !weaponGachaPool().length ? '1' : ''; if (sg.dataset.full) sg.classList.add('is-disabled'); } // ガチャは1つ（スキルと自動スキルの両方から出る）
+  if (wg) { wg.hidden = true; wg.dataset.full = wFull || !weaponGachaPool().length ? '1' : ''; if (wg.dataset.full) wg.classList.add('is-disabled'); }
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）
@@ -1231,7 +1231,7 @@ let weaponProj = [], weaponFx = [], weaponCd = {}, shieldAngle = 0, coinThrowCd 
 function getWeaponLv(id) { return (game.weapons && game.weapons[id]) || 0; }
 // サブウェポンの装備枠（最初は1つ。ジェムで増やせて転生後も継続）
 const WEAPON_SLOT_MAX = 4;
-function getWeaponSlots() { return Math.max(1, Math.min(WEAPON_SLOT_MAX, game.weaponSlots || 1)); }
+function getWeaponSlots() { return getTotalSlots() - getEquippedSkills().length; } // 自動スキル（元サブウェポン）に使える枠＝全体の枠からスキルの分を引いた残り
 function getWeaponSlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
 function getEquippedWeapons() {
   if (!Array.isArray(game.equippedWeapons)) game.equippedWeapons = Object.keys(WEAPONS).filter(getWeaponLv).slice(0, getWeaponSlots()); // 旧セーブは持っている物から枠の数だけ

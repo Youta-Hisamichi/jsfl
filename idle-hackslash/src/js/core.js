@@ -1427,9 +1427,11 @@ function renderShopList() {
     return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost || game.gems < REBORN_SHOP_GEMS : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
-const SKILL_SLOT_MAX = 7;
-function getSkillSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
-function getSkillSlotCost() { return getSkillSlots(); } // 枠増やしは1回目💎1、増やすたび1個ずつ値上げ（転生でリセット）
+// スキルとサブウェポンは1つの装備枠を分け合う（サブウェポンは「自動スキル」としてスキルに統一）
+const SKILL_SLOT_MAX = 11;
+function getTotalSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
+function getSkillSlots() { return getTotalSlots() - getEquippedWeapons().length; } // スキルに使える枠（自動スキルが使っている分を引く）
+function getSkillSlotCost() { return Math.max(1, getTotalSlots() - 1); } // 枠増やしは1回目💎1、増やすたび1個ずつ値上げ（転生でリセット）
 function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equippedSkills = []; if (game.equippedSkills.some(id => !SKILL_GACHA_SKILLS[id])) game.equippedSkills = game.equippedSkills.filter(id => SKILL_GACHA_SKILLS[id]); return game.equippedSkills; }
 function isSkillEquipped(id) { return getEquippedSkills().includes(id); }
 const SKILL_ORDER = Object.keys(SKILL_GACHA_SKILLS);

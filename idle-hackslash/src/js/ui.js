@@ -578,7 +578,7 @@ function fullReset() {
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
-  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 1; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
+  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 2; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -903,7 +903,7 @@ debugRow.addEventListener('click', event => {
   }
   if (action === 'resetCompSlots' || action === 'resetSkillSlots' || action === 'resetWeaponSlots') { // 枠数を1に戻す（はみ出した装備は外す）
     if (action === 'resetCompSlots') { game.companionSlots = 1; showNotice('🐾 仲間のパーティ枠を1に戻しました'); renderCompanionList(); }
-    if (action === 'resetSkillSlots') { game.skillSlots = 1; game.equippedSkills = getEquippedSkills().slice(0, 1); showNotice('✨ スキルの装備枠を1に戻しました'); }
+    if (action === 'resetSkillSlots') { game.skillSlots = 2; game.equippedSkills = getEquippedSkills().slice(0, 1); game.equippedWeapons = getEquippedWeapons().slice(0, 1); showNotice('✨ スキルの装備枠を1に戻しました'); }
     if (action === 'resetWeaponSlots') { game.weaponSlots = 1; game.equippedWeapons = getEquippedWeapons().slice(0, 1); showNotice('🗡️ サブウェポンの装備枠を1に戻しました'); }
     renderCoinShopList(); updateSkillButtonVisibility(); saveGame();
     return;
@@ -1655,6 +1655,15 @@ function skillGachaPull(event, isReroll) {
   };
   showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
 }
+// ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
+function unifiedGachaPull(event) {
+  const sp = skillGachaPool().length, wp = weaponGachaPool().length;
+  if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
+  const cost = getSkillGachaCost();
+  if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+  spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+  if (Math.random() * (sp + wp) < sp) skillGachaPull(event, true); else weaponGachaPull(event, true);
+}
 function weaponGachaPull(event, isReroll) {
   const pool = weaponGachaPool();
   if (!pool.length) { showTapError('引けるサブウェポンがありません', event.clientX, event.clientY); return; }
@@ -1671,7 +1680,7 @@ function weaponGachaPull(event, isReroll) {
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; renderCoinShopList(); weaponGachaPull(ev, true); };
   showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
 }
-document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } skillGachaPull(event, false); });
+document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
 document.getElementById('skillLevelList').addEventListener('click', event => {
   const buy = event.target.closest('[data-skill-buy]');
@@ -1764,7 +1773,7 @@ document.getElementById('skillSetGrid').addEventListener('click', event => {
 });
 const skillSlotModal = document.getElementById('skillSlotModal');
 function openSkillSlotConfirm() {
-  const slots = getSkillSlots();
+  const slots = getTotalSlots();
   if (slots >= SKILL_SLOT_MAX) return;
   const cost = getSkillSlotCost();
   document.getElementById('skillSlotModalText').textContent = `💎${cost} 消費して、スキル枠を ${slots} → ${slots + 1} に増やしますか？\n（所持ジェム 💎${Math.floor(game.gems).toLocaleString('ja-JP')}）`;
@@ -1780,7 +1789,7 @@ document.getElementById('skillSlotHead').addEventListener('click', event => { //
   if (event.target.closest('[data-skill-slot-add]')) document.getElementById('skillSlotBtn').dispatchEvent(new MouseEvent('click', { clientX: event.clientX, clientY: event.clientY, bubbles: true }));
 });
 document.getElementById('skillSlotBtn').addEventListener('click', event => {
-  const slots = getSkillSlots();
+  const slots = getTotalSlots();
   if (slots >= SKILL_SLOT_MAX) { showTapError('スキル枠は最大です', event.clientX, event.clientY); return; }
   const cost = getSkillSlotCost();
   if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('coinshop') }); return; }
@@ -3267,6 +3276,7 @@ if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig3
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
+if (!game.slotUnified) { game.skillSlots = Math.min(SKILL_SLOT_MAX, (game.skillSlots || 1) + (game.weaponSlots || 1)); game.slotUnified = true; } // スキルとサブウェポンの枠を1つにまとめる（今までの枠の合計）
 if (game.evoPickUnlocked) game.evoPickUnlocked = false; // 「進化の指定書」は廃止（本番データではないので補填はしない）
 if (game.evoKindOpen_counter && !game.evoKindBought_counter) game.evoKindBought_counter = true; // すでにカウンターを買っていた人は反撃が続く
 if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.floor((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0)); game.feaMig5 = true; syncFeaTotal(); } // 進化の羽を5種類にしたとき、持っていた羽はN羽に

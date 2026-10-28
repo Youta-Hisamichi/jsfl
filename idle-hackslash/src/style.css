@@ -4863,3 +4863,7 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .pb-body .pb-base { font-size: 0.75rem; font-weight: 700; margin: 2px 2px 4px; color: #4a3a1a; } .pb-body .pb-base b { color: #0a6aa0; }
 .pb-body .pb-total { border-top: 2px solid rgba(0,0,0,0.25); } .pb-body .pb-total .gs-src { font-weight: 900; }
 .pb-body .pb-sub { margin: 6px 2px 2px; font-size: 0.74rem; font-weight: 900; color: #6a4a1a; }
+/* スキルとサブウェポンの統一：ガチャは1つ、自動スキルには「自動」の印 */
+#weaponGachaBtn { display: none !important; }
+.gacha-pair > #skillGachaBtn { max-width: 290px; }
+.sk-name .sk-auto { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: linear-gradient(180deg, #5fd0ff, #2a7ad0); color: #fff; font-size: 0.6rem; font-style: normal; font-weight: 900; vertical-align: middle; text-shadow: 0 1px 1px #0a3a70; }
