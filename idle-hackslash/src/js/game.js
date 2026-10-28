@@ -1067,7 +1067,7 @@ function completeReincarnation() {
   const lvGain = getRebirthLvGain(game.stage);
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
   const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×10枚）
-  addFea('common', featherGain); // 転生でもらえるのはN羽
+  const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
@@ -1094,7 +1094,7 @@ function completeReincarnation() {
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  showRebirthRewardDialog(rebirthGemGain, featherGain); // 転生ボーナスはダイアログで（OKを押すまで消えない）
+  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot); // 転生ボーナスはダイアログで（OKを押すまで消えない）
   renderChestTray();
   if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
@@ -2352,13 +2352,24 @@ function hintTowerStage(dmg) {
 }
 
 // 転生ボーナスのダイアログ：OKを押すまで出しておき、押したら次の周回へ
-function showRebirthRewardDialog(gems, feathers) {
+// 転生の羽ガチャ：枚数が多いので戦績の羽ガチャより控えめ（N 85%・R 11%・SR 3%・SSR 0.9%・UR 0.1%）
+const REBIRTH_FEA_RATES = { common: 85, rare: 11, epic: 3, legendary: 0.9, mythic: 0.1 };
+function rollRebirthFeathers(n) {
+  const got = {};
+  for (let i = 0; i < n; i++) { let x = Math.random() * 100, r = 'common'; for (const k of ['mythic', 'legendary', 'epic', 'rare']) { if ((x -= REBIRTH_FEA_RATES[k]) < 0) { r = k; break; } } got[r] = (got[r] || 0) + 1; }
+  for (const r in got) addFea(r, got[r]);
+  return got;
+}
+function showRebirthRewardDialog(gems, feathers, got) {
+  got = got || { common: feathers };
+  const list = FEA_RARITIES.slice().reverse().filter(r => got[r]), best = list[0] || 'common';
   document.querySelectorAll('.rbd-ov').forEach(e => e.remove());
   const ov = document.createElement('div'); ov.className = 'modal-overlay show rbd-ov'; ov.style.zIndex = 76;
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
-    <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div><span>${feaIco('common', 'fea-ico')} 進化のN羽</span><b>×${formatCoinNumber(feathers)}</b></div><div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
+    <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
+  if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }

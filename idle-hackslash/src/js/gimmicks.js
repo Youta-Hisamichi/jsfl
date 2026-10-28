@@ -524,8 +524,8 @@ function bagRows() {
   for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
-  for (const r of FEA_RARITIES) { const n = feaCount(r); if (!n && r !== 'common') continue; // 進化の羽はレア度ごと（N羽は0枚でも表示）
-    rows.push({ icon: feaIco(r), name: `<span style="color:${RARITY_INFO[r].color}">${rarityStars(r)}</span> 進化の${feaName(r)}`, n, desc: `進化1回で1枚使い、倍率×${FEA_MULT[r]}（レア度の高い羽から自動で使う）`, btn: `<button data-bag-go="gacha">進化へ</button>` }); }
+  for (const r of FEA_RARITIES) { const n = feaCount(r); // 進化の羽はレア度ごと（0枚でも5種とも表示）
+    rows.push({ fea: true, icon: feaIco(r), name: `<span style="color:${RARITY_INFO[r].color}">${rarityStars(r)}</span> 進化の${feaName(r)}`, n, desc: `進化1回で1枚使い、倍率×${FEA_MULT[r]}（レア度の高い羽から自動で使う）`, btn: `<button data-bag-go="gacha">進化へ</button>` }); }
   // ショップで買った（ずっと効く）品：進化項目・宝箱の予感・羽の束ね紐・流星剣など
   for (const [id, item] of Object.entries(SHOP_ITEMS)) {
     if (item.hideInShop || item.consumableKey || item.rebirth || item.action || item.slot || item.toggleFixed) continue;
@@ -539,7 +539,7 @@ function bagRows() {
 }
 function renderBagList() {
   const el = document.getElementById('bagList'); if (!el) return;
-  const rows = bagRows().filter(r => r.n > 0); // 0個のものは出さない
+  const rows = bagRows().filter(r => r.n > 0 || r.fea); // 0個のものは出さない（進化の羽は0枚でも出す）
   el.innerHTML = (rows.length ? '' : '<div class="bag-empty-msg">所持品はありません</div>') + rows.map(r => `<div class="bag-row ${r.n ? '' : 'empty'}"><span class="bag-ico">${r.icon}</span><div class="bag-info"><b>${r.name}</b><span>${r.desc}</span></div><div class="bag-side"><span class="bag-n">×${formatCoinNumber(r.n)}</span>${r.btn || ''}</div></div>`).join('');
 }
 { const orig = showShopTab; showShopTab = function (key) { orig.apply(this, arguments); if (key === 'bag') renderBagList(); }; }

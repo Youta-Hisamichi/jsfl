@@ -4752,3 +4752,16 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .comp-dbg .cd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; margin: 6px 0; }
 .comp-dbg .cd-grid label { display: flex; flex-direction: column; font-size: 0.72rem; font-weight: 700; }
 .comp-dbg .cd-grid input { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.85rem; padding: 4px; border: 1px solid #c9a14a; border-radius: 6px; min-width: 0; }
+
+/* 転生の羽ガチャ */
+.rbd-list .rbd-gacha-h { display: block; padding: 2px 0 0; background: none; text-align: left; font-weight: 900; color: #fff3c4; text-shadow: 0 1px 0 #000; }
+.rbd-list .rbd-fea { border: 1px solid var(--rc); animation: rbdFea 0.45s cubic-bezier(.2,1.5,.4,1) both; }
+.rbd-list .rbd-fea b { color: var(--rc); text-shadow: 0 1px 0 #000, 0 0 6px var(--rc); }
+.rbd-list .rbd-rare { box-shadow: 0 0 10px var(--rc), inset 0 0 10px color-mix(in srgb, var(--rc) 40%, transparent); }
+@keyframes rbdFea { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+
+.rb-est { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 0.74rem; }
+.rb-est th, .rb-est td { padding: 4px 3px; border-bottom: 1px solid rgba(0,0,0,0.1); text-align: right; white-space: nowrap; }
+.rb-est th { background: #3b2f1a; color: #ffe9b0; }
+.rb-est td:first-child, .rb-est th:first-child { text-align: left; }
+.rb-est tr.now td { background: #fff1c2; font-weight: 900; }

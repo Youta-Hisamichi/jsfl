@@ -96,3 +96,20 @@ function openCompDebug() {
   });
 }
 document.getElementById('dbgCompBtn')?.addEventListener('click', openCompDebug);
+
+// デバッグ：転生報酬（ジェム・羽）の目安。いまの永続ボーナスと転生効率の進化で計算
+function openRebirthEstimate() {
+  const bonus = computeBonuses().rebirthGems || 0, rate = getEvoRate('rebirth');
+  const gemsAt = s => Math.round((2 + Math.floor(s / 10) + bonus) * rate), feaAt = s => { const d = String(Math.max(1, Math.floor(s))).length; return Math.round(d * d * 10 * rate); };
+  const stages = [...new Set([game.stage || 1, 10, 30, 50, 100, 200, 300, 500, 1000, 3000, 10000, 100000, 1000000])].sort((a, b) => a - b);
+  const exp = n => FEA_RARITIES.map(r => { const v = n * REBIRTH_FEA_RATES[r] / 100; return v >= 1 ? Math.round(v) : v ? v.toFixed(1) : 0; });
+  const ov = document.createElement('div'); ov.className = 'serif-ov';
+  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>🔁 転生報酬の目安</b><button class="serif-x">✕</button></div><div class="serif-body gem-src">
+    <div class="serif-sub">💎 ＝ (2 ＋ ステージ÷10 ＋ 永続ボーナス${bonus}) × 転生効率${rate.toFixed(2)}倍<br>🪶 ＝ ステージの桁数² × 10 × 転生効率 → 1枚ずつ羽ガチャ（N${REBIRTH_FEA_RATES.common}%・R${REBIRTH_FEA_RATES.rare}%・SR${REBIRTH_FEA_RATES.epic}%・SSR${REBIRTH_FEA_RATES.legendary}%・UR${REBIRTH_FEA_RATES.mythic}%）</div>
+    <table class="rb-est"><tr><th>ステージ</th><th>💎</th><th>🪶</th><th>N</th><th>R</th><th>SR</th><th>SSR</th><th>UR</th></tr>
+    ${stages.map(s => `<tr class="${s === game.stage ? 'now' : ''}"><td>${formatStageNumber(s)}${s === game.stage ? '（いま）' : ''}</td><td>${formatCoinNumber(gemsAt(s))}</td><td>${formatCoinNumber(feaAt(s))}</td>${exp(feaAt(s)).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</table>
+    <div class="serif-sub">羽のレア度ごとの数は平均（実際は抽選でばらつく）</div></div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
+}
+document.getElementById('dbgRebirthBtn')?.addEventListener('click', openRebirthEstimate);
