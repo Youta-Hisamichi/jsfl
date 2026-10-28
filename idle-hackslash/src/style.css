@@ -4815,3 +4815,4 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 #lbPanel.lb2 #loginBonusCloseBtn { top: 87.6%; height: 6.6%; left: 16%; right: 16%; width: auto; border: none !important; background: none !important; box-shadow: none !important; font-size: 7.4cqw; font-weight: 900; color: #fff; text-shadow: -2px -2px 0 #0a1a5a, 2px -2px 0 #0a1a5a, -2px 2px 0 #0a1a5a, 2px 2px 0 #0a1a5a, 0 3px 3px #000; }
 #lbPanel.lb2 #loginBonusCloseBtn.lb-drawing { font-size: 4.4cqw; }
 #lbPanel.lb2 .lb-confetti { z-index: 5; }
+.run-banner.rb-rare { background: linear-gradient(180deg, rgba(40,30,80,0.55), rgba(20,16,44,0.55)); backdrop-filter: blur(1px); } /* レア敵出現のお知らせは半透明（後ろの戦闘が見えるように） */

@@ -25,7 +25,7 @@ function pickRare() {
   e.maxHp = e.hp = Math.round(e.maxHp * r.hp); e.radius = Math.round(e.radius * 1.25);
   e.liveFrames = -60 * 30; // 逃げるまで長め
   setTimeout(() => {
-    if (typeof showRunBanner === 'function') showRunBanner(`✨ レア敵出現！ ${r.name}`, `条件：${r.cond}`); else showNotice(`✨ レア敵出現！ ${r.name}`);
+    if (typeof showRunBanner === 'function') (showRunBanner(`✨ レア敵出現！ ${r.name}`, `条件：${r.cond}`), [...document.querySelectorAll('.run-banner')].pop()?.classList.add('rb-rare')); else showNotice(`✨ レア敵出現！ ${r.name}`);
     playTone(1568, 0.1, 'square', 0.06, 2093); setTimeout(() => playTone(2093, 0.25, 'triangle', 0.06), 120);
   }, 300);
   return e;
