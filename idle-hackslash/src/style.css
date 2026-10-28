@@ -2554,23 +2554,23 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .op-ov[data-bg="sky"] { background: linear-gradient(180deg, #3a7bd5 0%, #8fd3ff 70%, #fff4d0 100%); }
 .op-ov[data-bg="title"] { background: radial-gradient(circle at 50% 45%, #2c3a8a, #0a0d24 75%); }
 .op-stage { position: relative; width: min(360px, 92vw); height: 52vh; display: flex; align-items: center; justify-content: center; }
-.op-stage.in > * { animation: opIn 0.9s ease-out both; }
+.op-stage.in > * { animation: opIn 0.9s ease-out backwards; }
 @keyframes opIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } }
-.op-circle { position: absolute; width: 100%; opacity: 0.85; filter: drop-shadow(0 0 18px #8fb4ff); animation: opIn 1.2s ease-out both, opSpin 40s linear infinite !important; }
+.op-circle { position: absolute; width: 100%; opacity: 0.85; filter: drop-shadow(0 0 18px #8fb4ff); animation: opIn 1.2s ease-out backwards, opSpin 40s linear infinite !important; }
 @keyframes opSpin { to { transform: rotate(360deg); } }
 .op-bosses { position: relative; width: 100%; height: 100%; }
-.op-bosses img { position: absolute; width: 58%; left: calc(var(--i) * 21%); top: calc(10% + var(--i) * 12%); image-rendering: pixelated; filter: brightness(0.8) drop-shadow(0 0 14px #ff2a4a); animation: opIn 0.8s calc(var(--i) * 0.35s) both, opFloat 2.4s ease-in-out infinite alternate; }
+.op-bosses img { position: absolute; width: 58%; left: calc(var(--i) * 21%); top: calc(10% + var(--i) * 12%); image-rendering: pixelated; filter: brightness(0.8) drop-shadow(0 0 14px #ff2a4a); animation: opIn 0.8s calc(var(--i) * 0.35s) backwards, opFloat 2.4s ease-in-out infinite alternate; }
 @keyframes opFloat { to { transform: translateY(-8px); } }
 .op-march { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
 .op-march span { width: 30%; animation: opMarch 1.4s calc(var(--i) * 0.12s) ease-in-out infinite alternate; }
 .op-march img { width: 100%; image-rendering: pixelated; filter: drop-shadow(0 0 6px #ff4a4a); }
 @keyframes opMarch { from { transform: translateX(-6px); } to { transform: translateX(6px) translateY(-4px); } }
-.op-hero { position: relative; z-index: 2; width: 48%; image-rendering: pixelated; filter: drop-shadow(0 0 16px rgba(255,240,180,0.9)); animation: opIn 1s ease-out both, opFloat 1.6s ease-in-out infinite alternate !important; }
+.op-hero { position: relative; z-index: 2; width: 48%; image-rendering: pixelated; filter: drop-shadow(0 0 16px rgba(255,240,180,0.9)); animation: opIn 1s ease-out backwards, opFloat 1.6s ease-in-out infinite alternate !important; }
 .op-light { position: absolute; width: 90%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255,240,180,0.85), rgba(255,200,120,0) 65%); }
 .op-aura { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; border: 3px solid rgba(200,120,255,0.8); box-shadow: 0 0 30px #b06cff, inset 0 0 30px #b06cff; animation: opPulse 0.8s ease-in-out infinite alternate !important; }
 @keyframes opPulse { from { transform: scale(0.9); opacity: 0.5; } to { transform: scale(1.1); opacity: 1; } }
 .op-party { position: absolute; bottom: 4%; display: flex; gap: 2px; width: 100%; justify-content: center; }
-.op-party img { width: 15%; image-rendering: pixelated; animation: opIn 0.6s calc(0.3s + var(--i) * 0.15s) both; }
+.op-party img { width: 15%; image-rendering: pixelated; animation: opIn 0.6s calc(0.3s + var(--i) * 0.15s) backwards; }
 .op-title { position: absolute; top: 4%; z-index: 3; display: flex; flex-direction: column; align-items: center; text-shadow: 0 0 12px #6ca0ff, 0 3px 0 #000; }
 .op-title small { font-size: 1.1rem; font-weight: 900; color: #ffd76b; letter-spacing: 3px; }
 .op-title b { font-size: 3.4rem; font-weight: 900; letter-spacing: 6px; line-height: 1.1; background: linear-gradient(180deg, #fff, #ffd76b 55%, #ff9f43); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #3a1a00); }
@@ -4717,7 +4717,7 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 /* オープニング冒頭：魔法陣が途中でまばゆく光る */
 .op-circle-flash { position: absolute; width: 100%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(170,210,255,0.6) 30%, rgba(110,160,255,0) 68%); mix-blend-mode: screen; opacity: 0; animation: opCircleFlash 2.6s 1.5s ease-out both !important; }
 @keyframes opCircleFlash { 0% { opacity: 0; transform: scale(0.6); } 25% { opacity: 1; transform: scale(1.1); } 60% { opacity: 0.55; transform: scale(1); } 100% { opacity: 0.35; transform: scale(1); } }
-.op-stage.in .op-circle:not(.spin) { animation: opIn 1.2s ease-out both, opSpinR 30s linear infinite, opCircleGlow 2.6s 1.5s ease-out both !important; }
+.op-stage.in .op-circle:not(.spin) { animation: opIn 1.2s ease-out backwards, opSpinR 30s linear infinite, opCircleGlow 2.6s 1.5s ease-out both !important; }
 @keyframes opCircleGlow { 0% { filter: drop-shadow(0 0 18px #8fb4ff) brightness(1); } 25% { filter: drop-shadow(0 0 40px #fff) drop-shadow(0 0 24px #8fd0ff) brightness(1.8); } 100% { filter: drop-shadow(0 0 28px #b8d4ff) brightness(1.3); } }
 
 /* 勇者が画面中を反射して飛び回る（オープニング） */
@@ -4728,8 +4728,8 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 @keyframes opHit { from { transform: scale(0.3); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
 
 @keyframes opSpinR { to { rotate: 360deg; } } /* 回転は rotate で（transform は登場アニメと取り合って止まってしまう） */
-.op-stage.in .op-circle.spin { animation: opIn 1.2s ease-out both, opSpinR 40s linear infinite !important; }
-.op-stage.in .op-goal-boss { animation: opIn 0.9s ease-out both, opGoalBossS 3s ease-in-out infinite alternate !important; } /* 目標のボスはゆっくり拡大縮小（scale で、登場アニメと取り合わない） */
+.op-stage.in .op-circle.spin { animation: opIn 1.2s ease-out backwards, opSpinR 40s linear infinite !important; }
+.op-stage.in .op-goal-boss { animation: opIn 0.9s ease-out backwards, opGoalBossS 3s ease-in-out infinite alternate !important; } /* 目標のボスはゆっくり拡大縮小（scale で、登場アニメと取り合わない） */
 @keyframes opGoalBossS { from { scale: 0.9; translate: 0 0; } to { scale: 1.1; translate: 0 -8px; } }
 
 .rf-row.got .rf-ico { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: none; } /* レア敵図鑑：出会った敵の絵（金色のオーラつき） */
@@ -4765,3 +4765,11 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .rb-est th { background: #3b2f1a; color: #ffe9b0; }
 .rb-est td:first-child, .rb-est th:first-child { text-align: left; }
 .rb-est tr.now td { background: #fff1c2; font-weight: 900; }
+
+/* 雑魚敵の場面：魔物の大群が奥から手前へ押し寄せる */
+.op-horde { position: absolute; inset: -6% -14% 0; pointer-events: none; }
+.op-horde span { position: absolute; left: var(--x); top: 0; width: 26%; transform-origin: 50% 100%; animation: opHorde var(--d) linear var(--dl) infinite; }
+.op-horde img { width: 100%; image-rendering: pixelated; filter: drop-shadow(0 0 6px #ff4a4a); animation: opMarch 0.5s ease-in-out infinite alternate; }
+@keyframes opHorde { 0% { top: 0%; opacity: 0; scale: 0.25; } 12% { opacity: 1; } 100% { top: 92%; opacity: 1; scale: 1.35; } }
+.op-stage.in > .op-horde { animation: none; }
+.op-text { position: relative; z-index: 6; } /* 押し寄せる魔物より文字を手前に */

@@ -14,7 +14,10 @@ function openingArt(kind) {
   const en = k => ENEMY_SPRITES[k] ? `<img src="${ENEMY_SPRITES[k]}" alt="">` : '';
   if (kind === 'circle') return `<img class="op-circle" src="assets/img/ui/magic_circle.webp" alt=""><div class="op-circle-flash"></div>`; // 途中で魔法陣がまばゆく光る
   if (kind === 'bosses') return `<div class="op-bosses">${['b_starEater', 'b_darkWitch', 'b_fireDragon'].map((k, i) => ENEMY_SPRITES[k] ? `<img style="--i:${i}" src="${ENEMY_SPRITES[k]}" alt="">` : '').join('')}</div>`;
-  if (kind === 'march') return `<div class="op-march">${['m_goblinSpear', 'm_skelSword', 'm_redBat', 'm_magmaSlime', 'm_ghostKnight', 'm_direWolf', 'm_mushSpear', 'm_icicleBat', 'm_orcKnight'].map((k, i) => `<span style="--i:${i}">${en(k)}</span>`).join('')}</div>`;
+  if (kind === 'march') { // 魔物の大群が奥から次々に押し寄せる（ザコの絵からランダムに40体）
+    const keys = Object.keys(ENEMY_SPRITES).filter(k => !k.startsWith('b_')).sort(() => Math.random() - 0.5).slice(0, 40);
+    return `<div class="op-horde">${keys.map((k, i) => `<span style="--x:${(Math.random() * 78).toFixed(1)}%;--d:${(2.2 + Math.random() * 1.4).toFixed(2)}s;--dl:${(-Math.random() * 3.6).toFixed(2)}s;z-index:${i}"><img src="${ENEMY_SPRITES[k]}" alt=""></span>`).join('')}</div>`;
+  }
   if (kind === 'hero') return `<div class="op-light"></div>${hero}`;
   if (kind === 'heroTalk') return `<div class="op-light"></div>${hero}<div class="op-aura"></div>`;
   if (kind === 'party') return `<div class="op-party">${['cat', 'warrior', 'mage', 'priest', 'archer', 'dragon'].map((id, i) => `<img style="--i:${i}" src="${COMPANION_SPRITES[id]}" alt="">`).join('')}</div>${hero}`;
