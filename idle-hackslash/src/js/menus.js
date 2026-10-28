@@ -125,10 +125,10 @@ function updateCompSummonVisibility() {
   const cgb = document.getElementById('compGachaBtn');
   if (!cgb) return;
   const full = getCompanionTotal() >= getPartyLimit();
-  const cost1 = getCompSummonCost(1); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
-  cgb.classList.toggle('is-disabled', full || game.coins < cost1); // 満員・コイン不足のときは消さずにグレー
+  const pr = getCompSummonPrice(); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
+  cgb.classList.toggle('is-disabled', full || !canAffordSummon()); // 満員・コイン不足のときは消さずにグレー
   cgb.dataset.full = full ? '1' : '';
-  { const h = gachaArtHtml(0, cost1 ? `${COIN_ICO} ${formatCoinNumber(cost1)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
+  { const h = gachaArtHtml(0, pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
   cgb.parentElement.style.display = '';
 }
 function renderRebirthShopList() {
@@ -305,14 +305,16 @@ function renderCompanionList() {
   if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }
 
-const COMP_GACHA_BASE_COST = 20, COMP_GACHA_COST_GROWTH = 1.1;
-function getCompSummonCost(count) {
-  if (count === 1 && !game.firstFreeSummon) return 0; // はじめての招集は無料
-  const done = game.companionSummons || 0;
-  let total = 0;
-  for (let i = 0; i < count; i++) total += Math.round(COMP_GACHA_BASE_COST * Math.pow(COMP_GACHA_COST_GROWTH, done + i));
-  return coinPrice(total);
+// 招集ガチャの値段（周回ごと）：1人目はコイン300（はじめての1回は無料）、2人目から 1000→3000→9000 と3倍ずつ、5人目からはジェム1個
+const COMP_GACHA_FIRST_COST = 300, COMP_GACHA_2ND_COST = 1000, COMP_GACHA_GROWTH = 3, COMP_GACHA_GEM_FROM = 4;
+function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
+  const i = game.companionSummons || 0;
+  if (!game.firstFreeSummon) return { coins: 0, gems: 0 }; // はじめての招集は無料
+  if (i >= COMP_GACHA_GEM_FROM) return { coins: 0, gems: 1 };
+  return { coins: coinPrice(i === 0 ? COMP_GACHA_FIRST_COST : COMP_GACHA_2ND_COST * Math.pow(COMP_GACHA_GROWTH, i - 1)), gems: 0 };
 }
+function getCompSummonCost() { return getCompSummonPrice().coins; } // コインの分（ジェムの回は0）
+function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >= p.coins && game.gems >= p.gems; }
 const COMP_AWAKEN_MAX_REFUND = 2; // 覚醒MAXの仲間が出たときに返すコイン
 function pickCompanionId() {
   const q = Array.isArray(game.summonGuarantee) ? game.summonGuarantee : [];
@@ -360,9 +362,11 @@ let lastCompGacha = null; // 引き直し用：直前の召喚の前の状態
 function runCompanionGacha(count, cost, event, isReroll = false) {
   if (compSummoning) { if (compSummonReveal) compSummonReveal(); return; } // ロード中にもう一度押したら結果をすぐ表示
   if (!isReroll) {
-    if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-    spendCoins(cost);
-    if (count === 1 && cost === 0) game.firstFreeSummon = true;
+    const price = getCompSummonPrice();
+    if (game.coins < price.coins) { showTapError(`コインが ${formatCoinNumber(price.coins - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
+    if (game.gems < price.gems) { promptGemShortage(price.gems, { returnTo: () => switchTab('companion') }); return; }
+    spendCoins(price.coins); game.gems -= price.gems;
+    if (!game.firstFreeSummon) game.firstFreeSummon = true;
     game.companionSummons = (game.companionSummons || 0) + count;
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
@@ -406,7 +410,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateStatsUI();
   updateHPUI();
 }
-document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすか、転生でリセットするとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, getCompSummonCost(1), event); });
+document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすか、転生でリセットするとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, 0, event); });
 ['compGachaResult', 'gachaResult'].forEach(boxId => { // 招集ガチャ・進化ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
   const box = document.getElementById(boxId), ov = document.createElement('div'); if (!box) return;
   ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);
@@ -796,7 +800,7 @@ function updateTabBadges() {
   if (Date.now() - tabBadgeAt < 500) return;
   tabBadgeAt = Date.now();
   const canUp = Object.keys(UPGRADES).some(id => game.upgrades[id] < getUpgradeLevelCap(id) && game.coins >= getUpgradeCost(id));
-  const canComp = getCompanionTotal() < getPartyLimit() && game.coins >= getCompSummonCost(1);
+  const canComp = getCompanionTotal() < getPartyLimit() && canAffordSummon();
   const canShop = Object.entries(REBIRTH_SHOP_ITEMS).some(([id, item]) => !isRebirthItemMaxed(item) && !isRebirthItemLocked(item) && !getRebirthShopLockLeft(id) && game.gems >= getRebirthItemCost(id));
   const canEvo = game.gems >= 5;
   const set = { upgrade: canUp, companion: canComp, gemshop: canShop, gacha: canEvo };
