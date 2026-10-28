@@ -754,7 +754,8 @@ function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE
 SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upPctUnlocked' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
-SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（転生したときにコインを払う）', rebirth: true }; // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
+SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（転生したときにコインとジェム1個を払う）', rebirth: true };
+const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
 function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
 function bulkUpLocked(isPct) { return !game[isPct ? 'upPctUnlocked' : 'upMaxUnlocked']; }
@@ -1421,8 +1422,8 @@ function renderShopList() {
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;
-    const priceHtml = item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b></span>` : price;
-    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
+    const priceHtml = item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b><b class="sr-plus-gem">＋💎${REBORN_SHOP_GEMS}</b></span>` : price;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost || game.gems < REBORN_SHOP_GEMS : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
 const SKILL_SLOT_MAX = 7;

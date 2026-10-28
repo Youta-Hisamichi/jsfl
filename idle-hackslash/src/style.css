@@ -4780,3 +4780,4 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 @keyframes opTitleFlash { 0% { opacity: 0; scale: 0.3; } 12% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.25; } }
 .op-stage.in .op-title { animation: opIn 0.9s ease-out backwards, opTitleGlow 2.4s 1s ease-out both !important; }
 @keyframes opTitleGlow { 0% { filter: none; } 12% { filter: brightness(1.8) drop-shadow(0 0 18px #fff); } 100% { filter: none; } }
+#shopList .sr-coin-price .sr-plus-gem { color: #7fe8ff; font-size: 0.9em; white-space: nowrap; } /* 転生の値段：コイン＋ジェム1個 */

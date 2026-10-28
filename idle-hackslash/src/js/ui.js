@@ -1191,6 +1191,7 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
     if (!isRebornUnlocked()) { showTapError(`🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
     if (game.stage < 3 && !game.dbgRebornAlways) { showTapError('ステージ3から転生できます', event.clientX, event.clientY); return; }
     const cc = rebornCoinCost(); if (game.coins < cc) { showTapError(`🟡 コインが足りません（あと ${formatCoinNumber(Math.ceil(cc - game.coins))}）`, event.clientX, event.clientY); return; }
+    if (game.gems < REBORN_SHOP_GEMS) { promptGemShortage(REBORN_SHOP_GEMS, { returnTo: () => switchTab('gemshop') }); return; }
     if (typeof deferredGameOver !== 'undefined' && deferredGameOver) { showTapError('ゲーム画面に戻ってから転生してください', event.clientX, event.clientY); return; }
     rebornShopCost = cc; rebornFromShop = true; switchTab('game'); openRebornConfirm(null); return;
   }
@@ -2423,7 +2424,7 @@ function doSelfRebirth(mult) {
   }
   if (phase !== 'battle' || (game.stage < 3 && !game.dbgRebornAlways)) { rebornShopCost = 0; return; }
   rebornFromShop = false;
-  if (rebornShopCost) { game.coins = Math.max(0, game.coins - rebornShopCost); rebornShopCost = 0; updateStatsUI(); } // ショップの「転生」はコインを払う
+  if (rebornShopCost) { game.coins = Math.max(0, game.coins - rebornShopCost); game.gems = Math.max(0, game.gems - REBORN_SHOP_GEMS); rebornShopCost = 0; updateStatsUI(); } // ショップの「転生」はコインとジェム1個を払う
   rebirthGemMult = mult;
   onPlayerDeath(true);
 }
