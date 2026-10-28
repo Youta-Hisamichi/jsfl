@@ -3047,6 +3047,17 @@ function fitArenaHeight() {
   resizeCanvas();
 }
 { const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); } // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
+{ // ボス戦のあいだは、敵のHPの欄をゲーム画面の上部に重ねる（終わったら下の帯に戻す）
+  const card = document.querySelector('.hp-card.enemy'), aw = document.querySelector('.arena-wrap');
+  if (card && aw) {
+    const home = card.parentElement, ph = document.createElement('div'); ph.className = 'hp-card-ph'; ph.style.flex = '1';
+    setInterval(() => {
+      const boss = document.body.classList.contains('boss-hp') && getActiveTab() === 'game';
+      if (boss && card.parentElement !== aw) { home.insertBefore(ph, card); aw.appendChild(card); card.classList.add('in-arena'); }
+      else if (!boss && card.parentElement === aw) { home.insertBefore(card, ph); ph.remove(); card.classList.remove('in-arena'); }
+    }, 300);
+  }
+}
 setInterval(fitArenaHeight, 500); // スキルボタンやボス再戦ボタンの出し入れで下の高さが変わるので定期的に合わせる
 window.addEventListener('resize', () => requestAnimationFrame(fitArenaHeight));
 

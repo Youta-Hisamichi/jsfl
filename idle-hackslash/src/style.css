@@ -4843,3 +4843,10 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 /* 初心者ミッションは左上（宝箱の列の右）に出す（下はスキルボタンとかぶるため） */
 .arena-wrap .ob-mission { top: 6px; bottom: auto; left: 54px; border-radius: 10px; }
 body:not(.hp-safe) .arena-wrap .ob-mission { top: 44px; }
+/* ボス戦の敵HPはゲーム画面の上部に重ねる */
+.arena-wrap > .hp-card.enemy.in-arena { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); width: 66%; z-index: 7; margin: 0; pointer-events: none; }
+body:not(.hp-safe) .arena-wrap > .hp-card.enemy.in-arena { top: 40px; }
+body.boss-hp .arena-wrap .ob-mission { display: none; } /* ボス戦のあいだは、上部のミッションを隠してHPを見やすく */
+/* シェアボタン：隠れているときは画面の外にはみ出さないよう消しておく */
+.moment-share { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-8px) !important; transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s; }
+.moment-share.show { opacity: 1; visibility: visible; pointer-events: auto; transform: none !important; transition: opacity 0.3s, transform 0.3s; }
