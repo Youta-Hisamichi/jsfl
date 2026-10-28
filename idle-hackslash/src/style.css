@@ -4737,3 +4737,9 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 
 .op-stage.cont > .op-light { animation: none !important; } /* 勇者の場面から続けるときは出し直さない */
 .op-stage.cont > .op-hero { animation: opFloat 1.6s ease-in-out var(--fd, 0s) infinite alternate !important; }
+
+/* デバッグ：ジェムの入手先一覧 */
+.gem-src .gs-row { display: flex; align-items: center; gap: 8px; padding: 5px 2px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+.gem-src .gs-src { flex: 1; font-size: 0.82rem; font-weight: 700; }
+.gem-src .gs-src small { display: block; font-size: 0.68rem; font-weight: 500; color: #6a5a3a; }
+.gem-src .gs-amt { flex: none; font-size: 0.85rem; color: #0a6aa0; white-space: nowrap; }

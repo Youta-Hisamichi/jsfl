@@ -1169,6 +1169,60 @@ function openSerifList() {
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
 }
 document.getElementById('dbgSerifBtn')?.addEventListener('click', openSerifList);
+// ===== デバッグ：ジェムが手に入る場所と個数の一覧（いまの設定値から作る） =====
+function buildGemSourceList() {
+  const L = [], sec = t => L.push({ h: t }), row = (src, amt, note) => L.push({ src, amt, note: note || '' });
+  const sum = a => a.reduce((n, x) => n + x, 0), pct = v => Math.round(v * 100) + '%';
+  sec('⚔️ 戦闘（決まってもらえる）');
+  row('ボス撃破（10ステージごと）', '💎5', `巨大ボスは×${GIANT_BOSS_REWARD_MULT}（💎${5 * GIANT_BOSS_REWARD_MULT}）`);
+  row('ステージ100ごとの「主」', '💎20', 'ボス撃破💎5 × 報酬4倍');
+  row('ステージ1000ごとの「覇王」', '💎50', 'ボス撃破💎5 × 報酬10倍');
+  row('はじめてのボス（ステージ10）', '💎1', '1回だけ');
+  row('メタルスライム撃破', `💎${METAL_SLIME_GEM_MIN}〜${METAL_SLIME_GEM_MAX}`, '毎回');
+  sec('🎲 戦闘（確率）');
+  row('ボスのお供（ザコ）を倒す', '💎1', '30%');
+  row('招き猫を倒す', '💎1', '15%');
+  row('水晶を壊す', '💎1〜3', '15%');
+  row('タンスを調べる（ステージイベント）', '💎1', '1段ごとに7%');
+  row('謎魔法スキル「ジェムが降ってきた！」', '💎3', pct(MYSTERY_EFFECTS.find(e => e.name.includes('ジェム')).w / sum(MYSTERY_EFFECTS.map(e => e.w))));
+  row('宝箱（★3・★4・★5）のおまけ', '💎1・2・3', `手持ち💎${CHEST_GEM_MAX_HELD}以下のときだけ、${pct(CHEST_GEM_CHANCE)}`);
+  sec('📖 図鑑・発見');
+  row('ステージイベント図鑑（初めて出会う）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
+  RARE_ENEMIES.forEach(r => { if (r.reward.gems) row(`レア敵「${r.name}」`, `💎${r.reward.gems}`, `初撃破は2倍（💎${r.reward.gems * 2}）／${r.cond}`); });
+  sec('🔁 転生');
+  row('転生するたび', `💎${getRebirthGemGain()}（いま）`, '(2 ＋ ステージ÷10 ＋ 永続ボーナス) × 転生効率進化');
+  sec('📅 ログイン・ミッション');
+  LOGIN7.forEach((d, i) => { const m = d.label.match(/💎(\d+)/); if (m) row(`7日ログイン ${i + 1}日目`, `💎${m[1]}`, i === 6 ? '★5宝箱つき' : ''); });
+  row('帰還ボーナスの動画', `💎${LOGIN_AD_GEMS}`, `コイン${LOGIN_AD_MULT}倍といっしょに`);
+  QUESTS.daily.forEach(m => row(`デイリー：${m.text}`, `💎${m.gems}`, '毎日'));
+  QUESTS.weekly.forEach(m => row(`ウィークリー：${m.text}`, `💎${m.gems}`, '毎週'));
+  row('初心者ミッション（全部）', `💎${sum(BEGINNER_MISSIONS.map(m => m.gems || 0))}`, BEGINNER_MISSIONS.map(m => `${m.text}💎${m.gems}`).join('／'));
+  RUN_FEATS.forEach(f => row(`縛りの実績「${f.name}」`, `💎${f.gems}`, f.desc));
+  sec('🎬 動画・その他');
+  row('動画を見る（ショップなどの動画ボタン）', `💎${REWARD_AD_GEMS}`, '見たあと5分待つ。紋章加入中は動画なし');
+  row('シェアする', `💎${SHARE_REWARD_GEMS}`, '1日1回');
+  row('フレンド登録（はじめて）', `💎${FRIEND_FIRST_GEMS}`, '1回だけ');
+  row('フレンドのステージに勝つ', `💎${FRIEND_BEAT_GEMS}`, `フレンド1人につき1回（最大${FRIEND_MAX}人）`);
+  row('レビューで応援する', '💎10', '1回だけ');
+  row('株（値上がりで精算）', '買った💎×値動き', '翌日に精算');
+  row('最終目標ステージ100万に到達', '💎1000', '1回だけ');
+  sec('💳 課金ショップ');
+  for (const id in SUPERGEM_SHOP_ITEMS) { const it = SUPERGEM_SHOP_ITEMS[id]; row(it.name, it.desc.replace('ジェム +', '💎'), `${it.cost}円`); }
+  sec('🛠️ 補填・デバッグ（ふだんは手に入らない）');
+  row('「進化の指定書」廃止の補填', '💎500', '持っていた人に1回だけ');
+  row('遺物の枠追加の払い戻し', '💎50・150・400', '買っていた人に1回だけ');
+  row('デバッグ：ジェム追加', '💎10／💎1000', 'デバッグボタン');
+  row('（廃止）転生ボーナス「ジェム」・宝石の掟', '💎10／5%で💎1', '3択ダイアログを削除したので今は出ない');
+  return L;
+}
+function openGemSourceList() {
+  const list = buildGemSourceList(), esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const ov = document.createElement('div'); ov.className = 'serif-ov';
+  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>💎 ジェムの入手先 ${list.filter(x => x.src).length}件</b><button class="serif-x">✕</button></div><div class="serif-body gem-src">${list.map(x => x.h ? `<div class="serif-h2">${esc(x.h)}</div>` : `<div class="gs-row"><span class="gs-src">${esc(x.src)}${x.note ? `<small>${esc(x.note)}</small>` : ''}</span><b class="gs-amt">${esc(x.amt)}</b></div>`).join('')}</div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
+}
+document.getElementById('dbgGemBtn')?.addEventListener('click', openGemSourceList);
 
 // ===== 敵のセリフの傾向：「高貴」なキャラは高貴なセリフ、「モンスター」はモンスターのセリフだけ。どちらでもないものは「未分類」で、どの敵もしゃべる =====
 // （ボス専用ゼリフ BOSS_SAY はそのボスだけのものなので対象外）
