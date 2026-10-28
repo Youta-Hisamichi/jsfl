@@ -1188,7 +1188,7 @@ function buildGemSourceList() {
   row('ステージイベント図鑑（初めてクリア）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
   RARE_ENEMIES.forEach(r => { if (r.reward.gems) row(`レア敵「${r.name}」`, `💎${r.reward.gems}`, `初撃破は2倍（💎${r.reward.gems * 2}）／${r.cond}`); });
   sec('🔁 転生');
-  row('転生するたび', `💎${getRebirthGemGain()}（いま）`, '(2 ＋ ステージ÷10 ＋ 永続ボーナス) × 転生効率進化');
+  row('転生するたび', `💎${getRebirthGemGain()}（いま）`, '(ステージの桁数 ＋ 永続ボーナス) × 転生効率進化');
   sec('📅 ログイン・ミッション');
   LOGIN7.forEach((d, i) => { const m = d.label.match(/💎(\d+)/); if (m) row(`7日ログイン ${i + 1}日目`, `💎${m[1]}`, i === 6 ? '★5宝箱つき' : ''); });
   row('帰還ボーナスの動画', `💎${LOGIN_AD_GEMS}`, `コイン${LOGIN_AD_MULT}倍といっしょに`);
