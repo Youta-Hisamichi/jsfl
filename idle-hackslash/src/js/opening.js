@@ -4,7 +4,7 @@ const OPENING_SCENES = [
   { bg: 'red', text: 'だがある夜、魔王の封印が解け、\n無数の魔物があふれ出した。', art: 'bosses' },
   { bg: 'red', text: '草原も、森も、海も、塔も……\nすべてが魔物の群れに飲み込まれていく。', art: 'march' },
   { bg: 'dawn', text: 'その時、ひとりの少年が剣を取った。', art: 'hero' },
-  { bg: 'dawn', text: '「俺の反射タックルは誰にも止められないぜ！」', art: 'heroTalk' },
+  { bg: 'dawn', text: '「俺の反射タックルは\n誰にも止められないぜ！」', art: 'heroTalk' },
   { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n無限の進化を活かして生き残れ！', art: 'party' },
   { bg: 'title', text: '', art: 'title' },
 ];
@@ -46,7 +46,7 @@ function playOpening(onEnd) {
     const sc = OPENING_SCENES[i];
     ov.dataset.bg = sc.bg;
     stage.innerHTML = openingArt(sc.art); stage.classList.remove('in'); void stage.offsetWidth; stage.classList.add('in');
-    const txt = sc.art === 'heroTalk' ? sc.text.replace(/「(.*)」/, (m0, t) => '「' + heroSay(t) + '」') : sc.text; // 勇者のセリフは語尾付き
+    const txt = sc.art === 'heroTalk' ? sc.text.replace(/「([\s\S]*)」/, (m0, t) => '「' + heroSay(t) + '」') : sc.text; // 勇者のセリフは語尾付き
     textEl.textContent = ''; textEl.dataset.full = txt;
     let n = 0;
     if (txt) typing = setInterval(() => { n++; textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
@@ -325,10 +325,10 @@ function opVoice(at, dur, vowel, p0, p1, vol, out, vib = 5) { // 母音の声（
 }
 function opSfx(art) {
   if (!audioCtx) return; const out = opOut();
-  if (art === 'circle') { // 魔法陣が光る：澄んだきらめきが駆け上がる（CSSの光と同じ1.6秒後）
-    opNoise(1.3, 1.2, 0.08, 1500, out, { f1: 7000, atk: 0.6, hold: 0.6 });
-    [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => opOsc(1.55 + i * 0.07, 1.4, 'sine', f, f, 0.07, out, { atk: 0.01, hold: 0.05 }));
-    opOsc(1.6, 2.2, 'triangle', 523, 523, 0.06, out, { atk: 0.2, hold: 0.4, vib: 3 });
+  if (art === 'circle') { // 魔法陣が光る：映画館のロゴのような、地の底から湧き上がる重低音（光る1.6秒後に頂点）
+    [[41, 0], [55, -6], [82, 5], [110, -4], [165, 7], [220, -8]].forEach(([f, dt]) => { opOsc(0.1, 3.6, 'sawtooth', f * 0.94, f * Math.pow(2, dt / 1200), 0.07, out, { lp: 900, q: 2, atk: 1.5, hold: 0.7, vib: 0.6, vibHz: 0.4 }); });
+    opOsc(0.1, 3.8, 'sine', 32, 41, 0.5, out, { atk: 1.5, hold: 0.7 }); // 体に響く超低音
+    opNoise(0.2, 3.4, 0.07, 120, out, { type: 'lowpass', f1: 600, atk: 1.4, hold: 0.7 });
   }
   if (art === 'bosses') { // ドラゴンの咆哮 → 女王の妖しい歌声
     opOsc(0.15, 1.6, 'sawtooth', 150, 62, 0.35, out, { lp: 700, q: 4, vib: 18, vibHz: 23, atk: 0.12, hold: 0.45 });
@@ -360,10 +360,11 @@ function opSfx(art) {
   if (art === 'goal') { // 鼓動：ドクン、ドクン…
     for (let i = 0; i < 5; i++) { const t = 0.2 + i * 0.85; opOsc(t, 0.22, 'sine', 70, 38, 0.55, out, { atk: 0.005, hold: 0.1 }); opOsc(t + 0.2, 0.25, 'sine', 60, 32, 0.4, out, { atk: 0.005, hold: 0.1 }); }
   }
-  if (art === 'title') { // 炎が燃え上がる：ボッと着火して、ゴーッと燃え、パチパチはぜる
-    opNoise(0.05, 0.5, 0.35, 1500, out, { type: 'lowpass', f1: 300 }); opOsc(0.05, 0.5, 'sine', 120, 40, 0.3, out, { atk: 0.005, hold: 0.1 });
-    opNoise(0.1, 3.2, 0.22, 500, out, { type: 'lowpass', q: 1.5, atk: 0.3, hold: 0.6 });
-    opNoise(0.1, 3.2, 0.06, 1800, out, { q: 1, atk: 0.4, hold: 0.6 });
-    for (let i = 0; i < 26; i++) opNoise(0.2 + Math.random() * 2.8, 0.015 + Math.random() * 0.02, 0.15 + Math.random() * 0.2, 2500 + Math.random() * 3000, out, { q: 2, atk: 0.002, hold: 0.1 });
+  if (art === 'title') { // 大爆発：ドカンと衝撃、破片が散って、地鳴りが長く残る
+    opOsc(0.02, 1.4, 'sine', 110, 26, 0.7, out, { atk: 0.003, hold: 0.05 });
+    opOsc(0.02, 0.5, 'square', 70, 30, 0.2, out, { lp: 400, atk: 0.003, hold: 0.05 });
+    opNoise(0.02, 0.35, 0.6, 4000, out, { type: 'lowpass', f1: 500, atk: 0.003, hold: 0.05 });
+    opNoise(0.05, 2.6, 0.4, 900, out, { type: 'lowpass', q: 0.8, f1: 80, atk: 0.01, hold: 0.15 });
+    for (let i = 0; i < 14; i++) opNoise(0.15 + Math.random() * 0.9, 0.03 + Math.random() * 0.05, 0.12 + Math.random() * 0.12, 1500 + Math.random() * 3000, out, { q: 1.5, atk: 0.002, hold: 0.1 }); // 破片
   }
 }
