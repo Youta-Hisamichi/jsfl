@@ -3248,7 +3248,7 @@ if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig3
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
-if (game.evoPickUnlocked && !game.evoPickRefunded) { game.gems += 500; game.evoPickRefunded = true; game.evoPickUnlocked = false; setTimeout(() => showNotice('📜 「進化の指定書」は廃止しました。💎500をお返しします（進化の項目はいつもランダムになりました）', false, 5000), 4000); }
+if (game.evoPickUnlocked) game.evoPickUnlocked = false; // 「進化の指定書」は廃止（本番データではないので補填はしない）
 if (game.evoKindOpen_counter && !game.evoKindBought_counter) game.evoKindBought_counter = true; // すでにカウンターを買っていた人は反撃が続く
 if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.floor((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0)); game.feaMig5 = true; syncFeaTotal(); } // 進化の羽を5種類にしたとき、持っていた羽はN羽に
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
@@ -3274,7 +3274,6 @@ if (game.bestiary && game.bestiary['shape:circle']) {
   if (!game.bestiary['shape:spike']) game.bestiary['shape:spike'] = game.bestiary['shape:circle'];
   delete game.bestiary['shape:circle'];
 }
-if (game.extraArtifactSlots) game.gems += [50, 150, 400].slice(0, game.extraArtifactSlots).reduce((a, b) => a + b, 0);
 delete game.artifactSlots; delete game.extraArtifactSlots;
 if (game.evolutions) delete game.evolutions.swift;
 if (game.gachaShards) delete game.gachaShards.swift;

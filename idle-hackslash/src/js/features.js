@@ -1206,9 +1206,7 @@ function buildGemSourceList() {
   row('最終目標ステージ100万に到達', '💎100', '1回だけ');
   sec('💳 課金ショップ');
   for (const id in SUPERGEM_SHOP_ITEMS) { const it = SUPERGEM_SHOP_ITEMS[id]; row(it.name, it.desc.replace('ジェム +', '💎'), `${it.cost}円`); }
-  sec('🛠️ 補填・デバッグ（ふだんは手に入らない）');
-  row('「進化の指定書」廃止の補填', '💎500', '持っていた人に1回だけ');
-  row('遺物の枠追加の払い戻し', '💎50・150・400', '買っていた人に1回だけ');
+  sec('🛠️ デバッグ・廃止（ふだんは手に入らない）');
   row('デバッグ：ジェム追加', '💎10／💎1000', 'デバッグボタン');
   row('（廃止）転生ボーナス「ジェム」・宝石の掟', '💎10／5%で💎1', '3択ダイアログを削除したので今は出ない');
   if (typeof COMPENSATIONS !== 'undefined') { sec('📮 補填（お詫び・セーブデータの直し）'); COMPENSATIONS.forEach(c => row(c.title + (c.code ? `（コード ${c.code}）` : ''), compRewardText(c) || '—', c.cond ? '対象の人だけ' : 'みんな')); }
