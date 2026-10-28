@@ -13,7 +13,7 @@ function openingArt(kind) {
   const hero = `<img class="op-hero" src="${PLAYER_SPRITE}" alt="">`;
   const en = k => ENEMY_SPRITES[k] ? `<img src="${ENEMY_SPRITES[k]}" alt="">` : '';
   if (kind === 'circle') return `<img class="op-circle" src="assets/img/ui/magic_circle.webp" alt=""><div class="op-circle-flash"></div>`; // 途中で魔法陣がまばゆく光る
-  if (kind === 'bosses') return `<div class="op-bosses">${['b_starEater', 'b_darkWitch', 'b_fireDragon'].map((k, i) => ENEMY_SPRITES[k] ? `<img style="--i:${i}" src="${ENEMY_SPRITES[k]}" alt="">` : '').join('')}</div>`;
+  if (kind === 'bosses') return `<div class="op-bosses">${['b_starEater', 'goal', 'b_fireDragon'].map((k, i) => k === 'goal' ? `<img class="op-hd" style="--i:${i}" src="assets/img/misc/op_goalBoss.webp" alt="">` : ENEMY_SPRITES[k] ? `<img style="--i:${i}" src="${ENEMY_SPRITES[k]}" alt="">` : '').join('')}</div>`; // 真ん中は魔王（目標100万のボスと同じ絵）
   if (kind === 'march') { // 魔物の大群が奥から次々に押し寄せる（ザコの絵からランダムに40体）
     const keys = Object.keys(ENEMY_SPRITES).filter(k => !k.startsWith('b_')).sort(() => Math.random() - 0.5).slice(0, 40);
     return `<div class="op-horde">${keys.map((k, i) => `<span style="--x:${(Math.random() * 78).toFixed(1)}%;--d:${(2.2 + Math.random() * 1.4).toFixed(2)}s;--dl:${(-Math.random() * 3.6).toFixed(2)}s;z-index:${i}"><img src="${ENEMY_SPRITES[k]}" alt=""></span>`).join('')}</div>`;
@@ -21,7 +21,7 @@ function openingArt(kind) {
   if (kind === 'hero') return `<div class="op-light"></div>${hero}`;
   if (kind === 'heroTalk') return `<div class="op-light"></div>${hero}<div class="op-aura"></div>`;
   if (kind === 'party') return `<div class="op-party">${['cat', 'warrior', 'mage', 'priest', 'archer', 'dragon'].map((id, i) => `<img style="--i:${i}" src="${COMPANION_SPRITES[id]}" alt="">`).join('')}</div>${hero}`;
-  if (kind === 'title') return `<img class="op-circle spin" src="assets/img/ui/magic_circle.webp" alt=""><div class="op-title"><small>放置系ハクスラ</small><b>無限反射</b><span>― INFINITE REFLECTION ―</span></div>${hero}<div class="op-tap">TAP TO START</div>`;
+  if (kind === 'title') return `<img class="op-circle spin" src="assets/img/ui/magic_circle.webp" alt=""><div class="op-title"><small>放置系ハクスラ</small><b>無限反射</b><span>― INFINITE REFLECTION ―</span></div>${hero}<div class="op-tap">TAP TO START</div><div class="op-title-flash"></div>`; // 効果音の「ドン」に合わせて光る
   return '';
 }
 function playOpening(onEnd) {
@@ -345,9 +345,9 @@ function opSfx(art) {
     [[880, 0.55], [988, 0.4], [831, 0.55], [740, 1.1]].reduce((t, [f, d]) => { opVoice(t, d + 0.15, 'a', f, f * 0.995, 0.09, out, 9); return t + d; }, 1.9);
   }
   if (art === 'march') { // 魔物の大群の足音：ゴゴゴ…と地鳴りが続き、ドスドスと無数の足音が重なる
-    opNoise(0.05, 4.2, 0.28, 90, out, { type: 'lowpass', q: 0.8, atk: 0.8, hold: 0.8 });
-    opOsc(0.05, 4.2, 'sine', 38, 34, 0.22, out, { atk: 0.8, hold: 0.8, vib: 3, vibHz: 7 });
-    for (let k = 0; k < 70; k++) { const t = 0.1 + Math.random() * 4, f = 55 + Math.random() * 45; opOsc(t, 0.16, 'sine', f, f * 0.5, 0.08 + Math.random() * 0.1, out, { atk: 0.004, hold: 0.05 }); opNoise(t, 0.08, 0.06, 160 + Math.random() * 140, out, { type: 'lowpass', atk: 0.003, hold: 0.05 }); }
+    opNoise(0.05, 4.2, 0.55, 90, out, { type: 'lowpass', q: 0.8, atk: 0.6, hold: 0.8 });
+    opOsc(0.05, 4.2, 'sine', 38, 34, 0.45, out, { atk: 0.6, hold: 0.8, vib: 3, vibHz: 7 });
+    for (let k = 0; k < 90; k++) { const t = 0.1 + Math.random() * 4, f = 55 + Math.random() * 45; opOsc(t, 0.18, 'sine', f, f * 0.5, 0.2 + Math.random() * 0.2, out, { atk: 0.004, hold: 0.05 }); opNoise(t, 0.09, 0.16, 160 + Math.random() * 160, out, { type: 'lowpass', atk: 0.003, hold: 0.05 }); } // 足音は大きめに
   }
   if (art === 'hero') { // パワーアップ：駆け上がる音とキラッ
     [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => opOsc(0.1 + i * 0.06, 0.18, 'square', f, f, 0.05, out, { lp: 3000, atk: 0.005 }));
