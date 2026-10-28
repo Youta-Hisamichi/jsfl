@@ -111,8 +111,8 @@ document.addEventListener('click', e => { if (e.target.closest('#goalChip')) ope
 // 本当に100万に届いたら全クリアのお祝い
 setInterval(() => {
   if (game.finalGoalCleared || (game.bestStage || 0) < FINAL_GOAL_STAGE) return;
-  game.finalGoalCleared = true; game.gems += 1000;
-  try { showRunBanner('🏆 全クリア！！', 'ステージ100万に到達して魔王の玉座を制覇！ +💎1000'); } catch (e) { showNotice('🏆 全クリア！ ステージ100万到達 +💎1000', false, 6000); }
+  game.finalGoalCleared = true; game.gems += 100;
+  try { showRunBanner('🏆 全クリア！！', 'ステージ100万に到達して魔王の玉座を制覇！ +💎100'); } catch (e) { showNotice('🏆 全クリア！ ステージ100万到達 +💎100', false, 6000); }
   try { playLoginBonusSound(); updateStatsUI(); saveGame(); } catch (e) {}
 }, 2000);
 

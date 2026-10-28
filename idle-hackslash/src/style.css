@@ -4743,3 +4743,12 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .gem-src .gs-src { flex: 1; font-size: 0.82rem; font-weight: 700; }
 .gem-src .gs-src small { display: block; font-size: 0.68rem; font-weight: 500; color: #6a5a3a; }
 .gem-src .gs-amt { flex: none; font-size: 0.85rem; color: #0a6aa0; white-space: nowrap; }
+
+/* 補填（お届け物）ダイアログ・デバッグ */
+.comp-panel .comp-item { margin: 8px 0; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.06); text-align: left; }
+.comp-panel .comp-item b { color: #fff; }
+.comp-panel .comp-reward { margin-top: 4px; font-weight: 900; color: #7fe8ff; }
+.comp-dbg button { border: 0; border-radius: 8px; padding: 5px 9px; margin: 2px; font: inherit; font-size: 0.78rem; font-weight: 700; background: #ffd76b; color: #3b2f1a; cursor: pointer; }
+.comp-dbg .cd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; margin: 6px 0; }
+.comp-dbg .cd-grid label { display: flex; flex-direction: column; font-size: 0.72rem; font-weight: 700; }
+.comp-dbg .cd-grid input { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.85rem; padding: 4px; border: 1px solid #c9a14a; border-radius: 6px; min-width: 0; }

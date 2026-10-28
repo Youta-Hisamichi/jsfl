@@ -67,7 +67,7 @@ function setupGimmick(key) {
   if (!key) return;
   game.gimmickSeen = game.gimmickSeen || {};
   gm.isNew = !game.gimmickSeen[key]; game.gimmickSeen[key] = true;
-  if (gm.isNew && !dbgGimmick) { game.gems += GIMMICK_FIND_GEMS; setTimeout(() => spawnDamageText(arena.x, arena.y + 20, `図鑑に登録！ +${GIMMICK_FIND_GEMS} 💎`, '#64e8ff', 0.012, true), 900); if (typeof updateStatsUI === 'function') updateStatsUI(); }
+  if (gm.isNew && !dbgGimmick) setTimeout(() => spawnDamageText(arena.x, arena.y + 20, `図鑑に登録！（クリアで +${GIMMICK_FIND_GEMS} 💎）`, '#64e8ff', 0.012, true), 900); // ジェムは初めてクリアしたときに
   gm.bannerAt = Date.now();
   playTone(660, 0.12, 'triangle', 0.06, 990); setTimeout(() => playTone(990, 0.16, 'triangle', 0.06, 1320), 120);
   const A = gArea();
@@ -331,7 +331,7 @@ function dbgNextGimmick() { // デバッグ：イベントを順番に切り替�
 { const orig = renderQuests; renderQuests = function () {
   orig(); const host = document.getElementById('questBox'); if (!host) return;
   const seen = game.gimmickSeen || {}, n = GIMMICK_KEYS.filter(k => seen[k]).length;
-  host.insertAdjacentHTML('beforeend', `<div class="qb-sec gm-book"><div class="qb-head">🗺️ ステージイベント図鑑 ${n}/${GIMMICK_KEYS.length}<small>（初めて出会うと 💎${GIMMICK_FIND_GEMS}）</small></div><div class="gm-grid">${GIMMICK_KEYS.map(k => seen[k] ? `<div class="gm-cell" title="${GIMMICKS[k].desc}"><b>${GIMMICKS[k].icon}</b><span>${GIMMICKS[k].name}</span></div>` : '<div class="gm-cell un"><b>？</b><span>？？？</span></div>').join('')}</div></div>`);
+  host.insertAdjacentHTML('beforeend', `<div class="qb-sec gm-book"><div class="qb-head">🗺️ ステージイベント図鑑 ${n}/${GIMMICK_KEYS.length}<small>（初めてクリアすると 💎${GIMMICK_FIND_GEMS}）</small></div><div class="gm-grid">${GIMMICK_KEYS.map(k => seen[k] ? `<div class="gm-cell" title="${GIMMICKS[k].desc}"><b>${GIMMICKS[k].icon}</b><span>${GIMMICKS[k].name}</span></div>` : '<div class="gm-cell un"><b>？</b><span>？？？</span></div>').join('')}</div></div>`);
 }; }
 
 // ===== 壺割りまくり・芝刈りしまくり・ブロック叩きまくり：障害物をずらっと並べ、壊してもまた出てくる =====
@@ -806,3 +806,15 @@ const NIGHT_FLOORS = ['mossStone', 'dirt', 'lawn', 'st_village']; // 1周目（3
     });
   }
 }
+
+// ステージイベントを初めてクリアしたら図鑑のジェム（前からのセーブは、出会ったときにもらい済み）
+if (!game.gimmickCleared) game.gimmickCleared = Object.assign({}, game.gimmickSeen || {});
+{ const orig = onStageClear; onStageClear = function (passed) {
+  const key = gm && gm.key;
+  const r = orig.apply(this, arguments);
+  if (key && !passed && !dbgGimmick && !game.gimmickCleared[key]) {
+    game.gimmickCleared[key] = true; game.gems += GIMMICK_FIND_GEMS; updateStatsUI();
+    setTimeout(() => spawnDamageText(arena.x, arena.y + 20, `${GIMMICKS[key].icon} ${GIMMICKS[key].name} 初クリア！ +${GIMMICK_FIND_GEMS} 💎`, '#64e8ff', 0.012, true), 700);
+  }
+  return r;
+}; }

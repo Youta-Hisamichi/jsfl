@@ -45,7 +45,6 @@ function isMetalEnemy(e) { return !!e && !e.isBoss && !e.isAdd && e.emoji === '�
 function enemyDamageCut(e) { return 1 - (isMetalEnemy(e) ? 1 - METAL_DAMAGE_CUT : 1) * (e.guarding ? 1 - SPIN_GUARD_CUT : 1); }
 const ENEMY_DEATH_CHANCE = 0.12;
 const METAL_SLIME_COIN_MULT = 8; // メタルスライム撃破時のコイン倍率
-const METAL_SLIME_GEM_MIN = 1, METAL_SLIME_GEM_MAX = 3; // メタルスライム撃破時のジェム
 const MERGE_MINIONS = 3;
 const BERSERK_FRAMES = 360;        // 発狂の長さ（約6秒）
 const BERSERK_ATK_MULT = 1.3;      // 発狂中の攻撃力
@@ -1692,7 +1691,7 @@ loginBonusCloseBtn.addEventListener('click', () => {
   loginBonusModal.classList.remove('show');
   if (typeof spawnCoinDrop === 'function' && typeof arena !== 'undefined') { spawnCoinDrop(arena.x, arena.y, 0, 14); for (let i = 0; i < 10; i++) setTimeout(() => playCoinChime(i), 300 + i * 45); } // 受け取り演出：コインがはじけて飛び出す
 });
-// 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを1個もらえる（ジェムはここでしか手に入らない）
+// 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを1個もらえる
 const LOGIN_AD_MULT = 3, LOGIN_AD_GEMS = 1;
 const loginBonusAdBtn = document.getElementById('loginBonusAdBtn');
 let loginAdReward = null;

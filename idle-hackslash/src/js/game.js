@@ -515,16 +515,15 @@ function onStageClear(passed) {
   const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
   const coinGain = Math.round(stageCoinRaw() * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
-    const metalGems = METAL_SLIME_GEM_MIN + Math.floor(Math.random() * (METAL_SLIME_GEM_MAX - METAL_SLIME_GEM_MIN + 1));
-    game.gems += metalGems;
+    const fr = rollMetalFeather(); addFea(fr, 1); // メタルスライムはジェムではなく進化の羽1枚
     spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
-    spawnDamageText(arena.x, arena.y - 12, '+' + metalGems + ' 💎', '#64e8ff', 0.01, true);
+    spawnDamageText(arena.x, arena.y - 12, `🪶 ${RARITY_INFO[fr].label}の進化の羽 +1`, RARITY_INFO[fr].color, 0.01, true);
   }
   game.coins += coinGain;
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_petitMimic') { const extra = coinGain * 2; game.coins += extra; spawnDamageText(arena.x, arena.y - 40, `🎁 ぷちミミックのお宝！ +${formatCoinNumber(extra)} 🟡`, '#ffd76b', 0.01, true); } // 宝箱のふり：コイン3倍
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_luckyCat' && Math.random() < 0.15) { game.gems += 1; spawnDamageText(arena.x, arena.y - 40, '🐱 招き猫のご利益！ +1 💎', '#64e8ff', 0.01, true); } // まれにジェム
   const giantKill = !!(defeated && defeated.isGiant);
-  if (isBossStage) game.gems += (giantKill ? 5 * GIANT_BOSS_REWARD_MULT : 5) * (msBoss ? msBoss.reward : 1);
+  // ボス撃破ではジェムを出さない（ジェムは転生と動画が基本。自己ベストの桁が上がったときだけ少し）
   if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? rollChestRarity(20, 'epic') : rollChestRarity(5, 'rare')); }
   if (giantKill) {
     game.coins += coinGain * (GIANT_BOSS_REWARD_MULT - 1);
@@ -570,7 +569,7 @@ function advanceStage(passed, isBossStage) {
     game.bossLoopClears = 0; game.stage = game.bossLoop; game.bossLoop = 0;
     showNotice('🔁 自動でボスに再挑戦！');
   }
-  game.bestStage = Math.max(game.bestStage, game.stage);
+  game.bestStage = Math.max(game.bestStage, game.stage); checkDigitGems();
   const stillLooping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
   loopAnnounceCount = stillLooping ? loopAnnounceCount + 1 : 0;
   if (easyBossKill && !wasTower && !stillLooping && Math.random() < TOWER_SUGGEST_CHANCE) setTimeout(maybeSuggestTower, 2200); // ボスをあっさり倒した直後に、たまに試練の塔をおすすめ
@@ -1027,6 +1026,25 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
+// メタルスライムの羽：N羽が多め。R以上の羽を合わせて3枚以上持っているときは、R以上は出さずN羽にする
+const METAL_FEA_WEIGHTS = { common: 70, rare: 20, epic: 7, legendary: 2.5, mythic: 0.5 };
+function rollMetalFeather() {
+  let roll = Math.random() * Object.values(METAL_FEA_WEIGHTS).reduce((a, b) => a + b, 0), r = 'common';
+  for (const k of FEA_RARITIES) { roll -= METAL_FEA_WEIGHTS[k]; if (roll < 0) { r = k; break; } }
+  const highHeld = FEA_RARITIES.slice(1).reduce((n, k) => n + feaCount(k), 0);
+  return r !== 'common' && highHeld >= 3 ? 'common' : r;
+}
+// 自己ベストの桁が上がったとき（ステージ100・1000・1万・10万を初めてクリア）だけ、ジェムを少し
+const DIGIT_GEMS = [[100, 1], [1000, 2], [10000, 3], [100000, 5]];
+function checkDigitGems() {
+  const best = game.bestStage || 1;
+  if (!game.digitGems) { game.digitGems = {}; for (const [th] of DIGIT_GEMS) if (best > th) game.digitGems[th] = true; return; } // 前からのセーブは、もう越えた桁はもらったことにする
+  for (const [th, g] of DIGIT_GEMS) {
+    if (best <= th || game.digitGems[th]) continue;
+    game.digitGems[th] = true; game.gems += g; updateStatsUI();
+    setTimeout(() => { if (typeof showRunBanner === 'function') showRunBanner(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！`, `自己ベストの桁が上がった！ +💎${g}`); else showNotice(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！ +💎${g}`); }, 1200);
+  }
+}
 function showFirstBossGift() { // 初めてステージ10のボスを倒したときのお祝い
   const ov = document.createElement('div'); ov.className = 'cl-overlay show first-boss-gift';
   ov.innerHTML = `<div class="fbg-panel"><img class="fbg-art" src="assets/img/ui/firstBossGift.webp" alt="初ボス撃破おめでとう！ ジェムを1個プレゼント！"><button class="cl-close fbg-ok" aria-label="ありがとう！"></button></div>`; // 見本の絵をそのまま使い、ボタンだけ重ねる

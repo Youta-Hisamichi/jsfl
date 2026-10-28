@@ -1174,11 +1174,9 @@ function buildGemSourceList() {
   const L = [], sec = t => L.push({ h: t }), row = (src, amt, note) => L.push({ src, amt, note: note || '' });
   const sum = a => a.reduce((n, x) => n + x, 0), pct = v => Math.round(v * 100) + '%';
   sec('⚔️ 戦闘（決まってもらえる）');
-  row('ボス撃破（10ステージごと）', '💎5', `巨大ボスは×${GIANT_BOSS_REWARD_MULT}（💎${5 * GIANT_BOSS_REWARD_MULT}）`);
-  row('ステージ100ごとの「主」', '💎20', 'ボス撃破💎5 × 報酬4倍');
-  row('ステージ1000ごとの「覇王」', '💎50', 'ボス撃破💎5 × 報酬10倍');
   row('はじめてのボス（ステージ10）', '💎1', '1回だけ');
-  row('メタルスライム撃破', `💎${METAL_SLIME_GEM_MIN}〜${METAL_SLIME_GEM_MAX}`, '毎回');
+  DIGIT_GEMS.forEach(([th, g]) => row(`ステージ${th.toLocaleString('ja-JP')}を初めてクリア（自己ベストの桁が上がる）`, `💎${g}`, '1回だけ'));
+  row('（ボス撃破・メタルスライムでは出ない）', '—', 'メタルスライムは進化の羽1枚（R以上の羽を3枚以上持っているとN羽）');
   sec('🎲 戦闘（確率）');
   row('ボスのお供（ザコ）を倒す', '💎1', '30%');
   row('招き猫を倒す', '💎1', '15%');
@@ -1187,7 +1185,7 @@ function buildGemSourceList() {
   row('謎魔法スキル「ジェムが降ってきた！」', '💎3', pct(MYSTERY_EFFECTS.find(e => e.name.includes('ジェム')).w / sum(MYSTERY_EFFECTS.map(e => e.w))));
   row('宝箱（★3・★4・★5）のおまけ', '💎1・2・3', `手持ち💎${CHEST_GEM_MAX_HELD}以下のときだけ、${pct(CHEST_GEM_CHANCE)}`);
   sec('📖 図鑑・発見');
-  row('ステージイベント図鑑（初めて出会う）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
+  row('ステージイベント図鑑（初めてクリア）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
   RARE_ENEMIES.forEach(r => { if (r.reward.gems) row(`レア敵「${r.name}」`, `💎${r.reward.gems}`, `初撃破は2倍（💎${r.reward.gems * 2}）／${r.cond}`); });
   sec('🔁 転生');
   row('転生するたび', `💎${getRebirthGemGain()}（いま）`, '(2 ＋ ステージ÷10 ＋ 永続ボーナス) × 転生効率進化');
@@ -1205,7 +1203,7 @@ function buildGemSourceList() {
   row('フレンドのステージに勝つ', `💎${FRIEND_BEAT_GEMS}`, `フレンド1人につき1回（最大${FRIEND_MAX}人）`);
   row('レビューで応援する', '💎10', '1回だけ');
   row('株（値上がりで精算）', '買った💎×値動き', '翌日に精算');
-  row('最終目標ステージ100万に到達', '💎1000', '1回だけ');
+  row('最終目標ステージ100万に到達', '💎100', '1回だけ');
   sec('💳 課金ショップ');
   for (const id in SUPERGEM_SHOP_ITEMS) { const it = SUPERGEM_SHOP_ITEMS[id]; row(it.name, it.desc.replace('ジェム +', '💎'), `${it.cost}円`); }
   sec('🛠️ 補填・デバッグ（ふだんは手に入らない）');
@@ -1213,6 +1211,7 @@ function buildGemSourceList() {
   row('遺物の枠追加の払い戻し', '💎50・150・400', '買っていた人に1回だけ');
   row('デバッグ：ジェム追加', '💎10／💎1000', 'デバッグボタン');
   row('（廃止）転生ボーナス「ジェム」・宝石の掟', '💎10／5%で💎1', '3択ダイアログを削除したので今は出ない');
+  if (typeof COMPENSATIONS !== 'undefined') { sec('📮 補填（お詫び・セーブデータの直し）'); COMPENSATIONS.forEach(c => row(c.title + (c.code ? `（コード ${c.code}）` : ''), compRewardText(c) || '—', c.cond ? '対象の人だけ' : 'みんな')); }
   return L;
 }
 function openGemSourceList() {
