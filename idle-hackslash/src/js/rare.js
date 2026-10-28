@@ -70,7 +70,7 @@ function pickRare() {
 if (typeof renderQuests === 'function') { const orig = renderQuests; renderQuests = function () {
   orig(); const host = document.getElementById('questBox'); if (!host) return;
   const seen = game.rareSeen || {}, n = RARE_ENEMIES.filter(r => seen[r.id]).length;
-  host.insertAdjacentHTML('beforeend', `<div class="qb-sec rr-box"><div class="qb-head">✨ レア敵図鑑 ${n}/${RARE_ENEMIES.length}</div><div class="rf-list">${RARE_ENEMIES.map(r => `<div class="rf-row ${seen[r.id] ? 'got' : ''}"><span class="rf-ico">${seen[r.id] ? '✨' : '❓'}</span><span class="rf-main"><b>${seen[r.id] ? r.name : '？？？'}</b><small>${r.cond}</small></span><span class="rf-gem">${seen[r.id] ? '×' + seen[r.id] : ''}</span></div>`).join('')}</div></div>`);
+  host.insertAdjacentHTML('beforeend', `<div class="qb-sec rr-box"><div class="qb-head">✨ レア敵図鑑 ${n}/${RARE_ENEMIES.length}</div><div class="rf-list">${RARE_ENEMIES.map(r => `<div class="rf-row ${seen[r.id] ? 'got' : ''}"><span class="rf-ico">${seen[r.id] ? (src => src ? `<img src="${src}" alt="">` : '✨')(ENEMY_SPRITES[EMOJI_ENEMY_SPRITE[r.base] || r.base]) : '❓'}</span><span class="rf-main"><b>${seen[r.id] ? r.name : '？？？'}</b><small>${r.cond}</small></span><span class="rf-gem">${seen[r.id] ? '×' + seen[r.id] : ''}</span></div>`).join('')}</div></div>`);
 }; }
 // デバッグ：イベント確認ダイアログにレア敵ボタン
 if (typeof openEventDebug === 'function') { const orig = openEventDebug; openEventDebug = function () {

@@ -459,16 +459,16 @@ function loginBonusOpen() { return !!document.querySelector('.lb7-ov') || (typeo
 // ===== デイリー／ウィークリーミッション =====
 const QUESTS = {
   daily: [
-    { key: 'kill', text: '敵を50体倒す', goal: 50, gems: 3 },
-    { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 3 },
-    { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 2 },
-    { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 2 },
+    { key: 'kill', text: '敵を50体倒す', goal: 50, gems: 1 },
+    { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 1 },
+    { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 1 },
+    { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 1 },
   ],
   weekly: [
-    { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 15 },
-    { key: 'boss', text: 'ボスを30体倒す', goal: 30, gems: 15 },
-    { key: 'gacha', text: 'ガチャを30回引く', goal: 30, gems: 10 },
-    { key: 'login', text: '5日ログインする', goal: 5, gems: 20 },
+    { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 3 },
+    { key: 'boss', text: 'ボスを30体倒す', goal: 30, gems: 3 },
+    { key: 'gacha', text: 'ガチャを30回引く', goal: 30, gems: 3 },
+    { key: 'login', text: '5日ログインする', goal: 5, gems: 3 },
   ],
 };
 function weekKey(d = new Date()) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり

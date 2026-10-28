@@ -4731,3 +4731,6 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .op-stage.in .op-circle.spin { animation: opIn 1.2s ease-out both, opSpinR 40s linear infinite !important; }
 .op-stage.in .op-goal-boss { animation: opIn 0.9s ease-out both, opGoalBossS 3s ease-in-out infinite alternate !important; } /* 目標のボスはゆっくり拡大縮小（scale で、登場アニメと取り合わない） */
 @keyframes opGoalBossS { from { scale: 0.9; translate: 0 0; } to { scale: 1.1; translate: 0 -8px; } }
+
+.rf-row.got .rf-ico { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex: none; } /* レア敵図鑑：出会った敵の絵（金色のオーラつき） */
+.rf-row.got .rf-ico img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 0 4px #ffd76b) drop-shadow(0 0 2px #ffb000); }
