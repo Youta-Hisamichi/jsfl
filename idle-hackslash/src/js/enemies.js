@@ -1436,7 +1436,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
     spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
-    if (r < 0.15) { const g = 1 + Math.floor(Math.random() * 3); game.gems += g; setTimeout(() => spawnDamageText(x, y - 20, `💎 ジェム +${g}`, '#7fe8ff', 0.016, true), 300); }
+    if (r < 0.15) setTimeout(() => giveBattleFeather(x, y - 20), 300); // 15%で羽ガチャ1枚
   } else if (o.kind === 'pot') { // 壺・袋：割るとコインが出ることが多い
     if (r < 0.75) { const c = coinsFor(0.7); game.coins += c; spawnCoinBurst(o.x, o.y, c, 5); spawnDamageText(x, y, '🏺 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
     else { spawnDamageText(x, y, 'からっぽ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }

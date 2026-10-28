@@ -2082,7 +2082,6 @@ function showChestResult(rarity, loot, mult) {
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.3, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
 const CHEST_FEA_TIE_CHANCE = 0.25; // ★5の宝箱に羽の束ね紐が入っている確率
-const CHEST_GEM_CHANCE = 0.35, CHEST_GEM_MAX_HELD = 3; // 宝箱のおまけのジェム（手持ちが少ないときだけ）
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (typeof obFlag === 'function') obFlag('chest'); // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
   if (!quiet) playChestOpenSound();
@@ -2127,13 +2126,6 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     loot.sub = (loot.sub ? loot.sub + '<br>' : '') + '<b style="color:#ff5c6c"><i class="ico-redpot"></i> スキルポーションも入っていた！ +1</b>';
     updateRedPotionButton();
     showNotice(`🔴 宝箱からスキルポーションを手に入れた！（所持 ${game.redPotions}個）`);
-  }
-  // ★3以上の宝箱は、ジェムが3個以下のときだけジェムも入っていることがある
-  if (CHEST_POTION_RARITIES.includes(rarity) && (game.gems || 0) <= CHEST_GEM_MAX_HELD && Math.random() < CHEST_GEM_CHANCE) {
-    const g = rarity === 'epic' ? 1 : rarity === 'legendary' ? 2 : 3;
-    game.gems = (game.gems || 0) + g;
-    loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:#64e8ff">💎 ジェムも入っていた！ +${g}</b>`;
-    showNotice(`💎 宝箱からジェムを ${g}個 手に入れた！`);
   }
   if (!quiet) { updateStatsUI(); saveGame(); }
   return loot;

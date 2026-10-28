@@ -372,7 +372,7 @@ function processAdds(a) {
             spawnExpGems(add.x, add.y, 4);
             const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3)));
             game.coins += coinGain;
-            if (Math.random() < 0.3) game.gems += 1;
+            if (Math.random() < 0.3) giveBattleFeather(add.x, add.y - 20); // ボスのお供：30%で羽ガチャ1枚
             spawnDamageText(add.x, add.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b');
             updateStatsUI();
             break;
@@ -521,7 +521,7 @@ function onStageClear(passed) {
   }
   game.coins += coinGain;
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_petitMimic') { const extra = coinGain * 2; game.coins += extra; spawnDamageText(arena.x, arena.y - 40, `🎁 ぷちミミックのお宝！ +${formatCoinNumber(extra)} 🟡`, '#ffd76b', 0.01, true); } // 宝箱のふり：コイン3倍
-  if (defeated && !defeated.isBoss && defeated.emoji === 'm_luckyCat' && Math.random() < 0.15) { game.gems += 1; spawnDamageText(arena.x, arena.y - 40, '🐱 招き猫のご利益！ +1 💎', '#64e8ff', 0.01, true); } // まれにジェム
+  if (defeated && !defeated.isBoss && defeated.emoji === 'm_luckyCat' && Math.random() < 0.15) giveBattleFeather(arena.x, arena.y - 40, '🐱 招き猫のご利益！'); // まれに羽ガチャ1枚
   const giantKill = !!(defeated && defeated.isGiant);
   // ボス撃破ではジェムを出さない（ジェムは転生と動画が基本。自己ベストの桁が上がったときだけ少し）
   if (msBoss) { spawnDamageText(arena.x, arena.y - 80, `👑 ${msBoss.label}を撃破！ 報酬×${msBoss.reward}`, '#ffd76b', 0.008, true); dropTreasureChest(game.stage % 1000 === 0 ? rollChestRarity(20, 'epic') : rollChestRarity(5, 'rare')); }
@@ -1026,6 +1026,13 @@ function reincarnateAfterAd() {
 
 // 転生報酬のジェム：基本2＋到達ステージ10ごとに+1＋遺物「輪廻の宝珠」。セルフ転生は動画で3倍にできる
 let rebirthGemMult = 1;
+// 戦闘でたまに出るおまけは、ジェムではなく羽ガチャ1枚（戦績の羽ガチャと同じ確率でレア度を抽選）
+function giveBattleFeather(x, y, head) {
+  const r = rollRecordFeather(); addFea(r, 1);
+  spawnDamageText(x, y, `${head ? head + ' ' : ''}🪶 ${RARITY_INFO[r].label}の進化の羽 +1`, RARITY_INFO[r].color, 0.012, true);
+  if (r !== 'common' && typeof playGachaSound === 'function' && ['legendary', 'mythic'].includes(r)) playGachaSound(r);
+  return r;
+}
 // メタルスライムの羽：N羽が多め。R以上の羽を合わせて3枚以上持っているときは、R以上は出さずN羽にする
 const METAL_FEA_WEIGHTS = { common: 70, rare: 20, epic: 7, legendary: 2.5, mythic: 0.5 };
 function rollMetalFeather() {

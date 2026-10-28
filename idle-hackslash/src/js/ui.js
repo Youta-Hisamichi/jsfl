@@ -2621,7 +2621,7 @@ zeniBtn.addEventListener('click', event => {
 const MYSTERY_EFFECTS = [
   { w: 14, name: '💥 大爆発！', color: '#ff9f43', fn: ({ player, enemy }) => { const { dmg, crit } = rollCrit(Math.round(player.atk * 10), enemy); enemy.hp -= dmg; trackDamage(dmg); spawnAttackDamageText(enemy, dmg, crit, '#ffcf8a'); onPlayerHitEnemy(enemy, dmg); shakeScreenLight(); if (enemy.hp <= 0) triggerEnemyDefeat(enemy, player.x, player.y); } },
   { w: 12, name: '💖 全回復！', color: '#7ee787', fn: ({ player }) => { player.hp = player.maxHp; playHealSound(); } },
-  { w: 10, name: '💎 ジェムが降ってきた！ +3', color: '#64e8ff', fn: () => { game.gems += 3; } },
+  { w: 10, name: '🪶 進化の羽が舞い降りた！', color: '#64e8ff', fn: ({ player }) => { giveBattleFeather(player.x, player.y - player.radius - 30); } },
   { w: 12, name: '🟡 コインの雨！', color: '#ffd76b', fn: ({ player }) => { const g = Math.max(1, Math.round(stageCoinRaw() * 8 * computeBonuses().coinMult)); game.coins += g; spawnCoinBurst(player.x, player.y, g); } },
   { w: 12, name: '⏸ 時間停止！（敵が3秒止まる）', color: '#a5a8ff', fn: ({ enemy }) => { enemy.stunnedUntil = Date.now() + 3000; } },
   { w: 8,  name: '🔻 敵が縮んだ！', color: '#7fd6ff', fn: ({ enemy }) => { enemy.radius = Math.max(8, enemy.radius * 0.7); enemy.traitBaseRadius = enemy.radius; } },
