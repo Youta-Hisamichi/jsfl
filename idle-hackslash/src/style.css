@@ -4843,10 +4843,23 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 /* 初心者ミッションは左上（宝箱の列の右）に出す（下はスキルボタンとかぶるため） */
 .arena-wrap .ob-mission { top: 6px; bottom: auto; left: 54px; border-radius: 10px; }
 body:not(.hp-safe) .arena-wrap .ob-mission { top: 44px; }
-/* ボス戦の敵HPはゲーム画面の上部に重ねる */
-.arena-wrap > .hp-card.enemy.in-arena { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); width: 66%; z-index: 7; margin: 0; pointer-events: none; }
-body:not(.hp-safe) .arena-wrap > .hp-card.enemy.in-arena { top: 40px; }
-body.boss-hp .arena-wrap .ob-mission { display: none; } /* ボス戦のあいだは、上部のミッションを隠してHPを見やすく */
+/* ボス戦：ステージ進捗バーの場所に、自キャラとボスのHPを小さく並べる */
+body.hp-in-bar .stage-bar-row > .exp-wrap, body.hp-in-bar .stage-bar-row > .stage-side-left { display: none !important; }
+body.hp-in-bar .stage-bar-row > .hp-row { flex: 1; min-width: 0; display: flex; gap: 4px; margin: 0 !important; padding: 0 !important; }
+body.hp-in-bar .stage-bar-row > .hp-row .stat-help-btn, body.hp-in-bar .stage-bar-row > .hp-row .atk-tag { display: none !important; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card { min-width: 0; padding: 4px 8px 5px !important; margin: 0 !important; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label { font-size: 0.7rem; line-height: 1.2; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card .hp-bar-track { height: 8px; margin-top: 2px; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card .en-ico { position: static !important; transform: none !important; display: inline-flex; vertical-align: middle; width: 20px !important; height: 20px !important; margin-right: 3px; font-size: 1rem; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card .en-ico img, body.hp-in-bar .stage-bar-row > .hp-row .hp-card .en-ico .enemy-name-sprite { width: 20px !important; height: 20px !important; }
+body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* シェアボタン：隠れているときは画面の外にはみ出さないよう消しておく */
 .moment-share { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-8px) !important; transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s; }
 .moment-share.show { opacity: 1; visibility: visible; pointer-events: auto; transform: none !important; transition: opacity 0.3s, transform 0.3s; }
+
+/* 強さの内訳 */
+.power-break-btn { display: block; width: 100%; margin: 6px 0 2px; padding: 7px 10px; border: 1.5px solid #c9a14a; border-radius: 10px; background: linear-gradient(180deg, #24345e, #121c3a); color: #ffe8a0; font: inherit; font-size: 0.8rem; font-weight: 900; cursor: pointer; text-shadow: 0 1px 2px #000; }
+.pb-body .gs-amt.up { color: #1f7a3a; } .pb-body .gs-amt.dn { color: #b0302a; }
+.pb-body .pb-base { font-size: 0.75rem; font-weight: 700; margin: 2px 2px 4px; color: #4a3a1a; } .pb-body .pb-base b { color: #0a6aa0; }
+.pb-body .pb-total { border-top: 2px solid rgba(0,0,0,0.25); } .pb-body .pb-total .gs-src { font-weight: 900; }
+.pb-body .pb-sub { margin: 6px 2px 2px; font-size: 0.74rem; font-weight: 900; color: #6a4a1a; }

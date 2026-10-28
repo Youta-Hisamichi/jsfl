@@ -184,3 +184,38 @@ function openNewsAdmin(editId) {
   });
 }
 document.getElementById('dbgNewsBtn')?.addEventListener('click', openNewsAdmin);
+
+// ===== 仲間ページ：自キャラと仲間の強さの内訳（何で何倍になっているか） =====
+function powerBreakdown() {
+  bonusTraceOn = true; let b; try { b = computeBonuses(); } finally { bonusTraceOn = false; }
+  const tr = b._trace || [], rows = { atk: [], hp: [], cAtk: [], cHp: [] };
+  for (let i = 0; i < tr.length; i++) { const p = i ? tr[i - 1] : { atk: 1, hp: 1, cAtk: 1, cHp: 1 }; for (const k in rows) { const r = p[k] ? tr[i][k] / p[k] : 1; if (Math.abs(r - 1) > 0.0005) rows[k].push([tr[i].label, r]); } }
+  const sA = 1 + seedUsed('atk') * SEED_PER_USE, sH = 1 + seedUsed('hp') * SEED_PER_USE;
+  if (sA !== 1) rows.atk.push(['パワーの種', sA]); if (sH !== 1) rows.hp.push(['HPの種', sH]);
+  const sub = getSubStatMult(); if (sub !== 1) { rows.atk.push(['紋章（サブスク）', sub]); rows.hp.push(['紋章（サブスク）', sub]); }
+  const atkUp = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; if (atkUp !== 1) rows.atk.push(['攻撃力UPスキル', atkUp]);
+  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1; if (accel !== 1) rows.atk.push(['加速スキル（発動中）', accel]);
+  const ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1; if (ad !== 1) rows.atk.push(['動画バフ', ad]);
+  const early = getEarlyPlayerHpRate(game.stage); if (early !== 1) rows.hp.push(['序盤の補正', early]);
+  return { b, rows, csA: compShare('atk'), csH: compShare('hp') };
+}
+function openPowerBreakdown() {
+  const { b, rows, csA, csH } = powerBreakdown(), F = v => formatCoinNumber(Math.round(v));
+  const M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : Math.abs(v - 1) < 0.05 ? 3 : 2)); // 1に近い小さな補正は細かい桁まで
+  const total = list => list.reduce((t, [, r]) => t * r, 1);
+  const tbl = (list, base, unit) => `<div class="pb-base">もとの${unit} <b>${base}</b></div>` + (list.length ? list.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${r >= 1 ? 'up' : 'dn'}">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>') + `<div class="gs-row pb-total"><span class="gs-src">合計の倍率</span><b class="gs-amt">${M(total(list))}</b></div>`;
+  const comps = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => `<div class="gs-row"><span class="gs-src">${COMPANIONS[id].name}${getCompanionCount(id) > 1 ? ' ×' + getCompanionCount(id) : ''}<small>Lv${(game.companions.level[id] || 0) + 1}</small></span><b class="gs-amt">攻 ${F(getCompanionAtk(id))}／HP ${F(getCompanionMaxHP(id))}</b></div>`).join('') || '<div class="serif-sub">仲間はいません</div>';
+  const ov = document.createElement('div'); ov.className = 'serif-ov';
+  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>📊 強さの内訳</b><button class="serif-x">✕</button></div><div class="serif-body gem-src pb-body">
+    <div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
+    <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}${csH ? `<div class="gs-row"><span class="gs-src">＋ 仲間の最大HPの10%</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
+    <div class="serif-h2">🐾 仲間にかかる倍率</div>
+    <div class="pb-sub">攻撃力</div>${rows.cAtk.length ? rows.cAtk.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}
+    <div class="pb-sub">最大HP</div>${rows.cHp.length ? rows.cHp.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}
+    <div class="serif-h2">🐾 仲間ひとりずつ</div>${comps}
+    <div class="serif-sub">倍率は掛け算で効きます。「強化Lv」は攻撃力・最大HPの強化、「進化」は進化ガチャ、「ショップ」は流星剣・月の盾などです。</div>
+  </div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
+}
+document.getElementById('powerBreakBtn')?.addEventListener('click', openPowerBreakdown);

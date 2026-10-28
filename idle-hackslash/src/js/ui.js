@@ -3047,14 +3047,14 @@ function fitArenaHeight() {
   resizeCanvas();
 }
 { const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); } // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
-{ // ボス戦のあいだは、敵のHPの欄をゲーム画面の上部に重ねる（終わったら下の帯に戻す）
-  const card = document.querySelector('.hp-card.enemy'), aw = document.querySelector('.arena-wrap');
-  if (card && aw) {
-    const home = card.parentElement, ph = document.createElement('div'); ph.className = 'hp-card-ph'; ph.style.flex = '1';
+{ // ボス戦のあいだは、ステージ進捗バーを隠して、その場所に自キャラとボスのHPを小さく並べる（終わったら下に戻す）
+  const row = document.querySelector('.hp-row'), bar = document.querySelector('.stage-bar-row');
+  if (row && bar) {
+    const home = row.parentElement, mark = document.createComment('hp-row'); home.insertBefore(mark, row);
     setInterval(() => {
       const boss = document.body.classList.contains('boss-hp') && getActiveTab() === 'game';
-      if (boss && card.parentElement !== aw) { home.insertBefore(ph, card); aw.appendChild(card); card.classList.add('in-arena'); }
-      else if (!boss && card.parentElement === aw) { home.insertBefore(card, ph); ph.remove(); card.classList.remove('in-arena'); }
+      if (boss && row.parentElement !== bar) { bar.insertBefore(row, bar.querySelector('.stage-side-slot:not(.stage-side-left)')); document.body.classList.add('hp-in-bar'); }
+      else if (!boss && row.parentElement === bar) { home.insertBefore(row, mark.nextSibling); document.body.classList.remove('hp-in-bar'); }
     }, 300);
   }
 }
