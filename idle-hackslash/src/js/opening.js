@@ -344,9 +344,10 @@ function opSfx(art) {
     opOsc(0.1, 0.9, 'sine', 70, 30, 0.45, out, { atk: 0.01, hold: 0.1 }); // 地響き
     [[880, 0.55], [988, 0.4], [831, 0.55], [740, 1.1]].reduce((t, [f, d]) => { opVoice(t, d + 0.15, 'a', f, f * 0.995, 0.09, out, 9); return t + d; }, 1.9);
   }
-  if (art === 'march') { // 魔物の鳴き声と、ザッザッという行進
-    for (let i = 0; i < 12; i++) { const t = 0.2 + i * 0.36; opNoise(t, 0.12, 0.35, 180, out, { type: 'lowpass', q: 0.7 }); opOsc(t, 0.1, 'sine', 90, 50, 0.25, out, { atk: 0.005, hold: 0.05 }); }
-    [[0.4, 'a', 520, 330], [0.9, 'i', 900, 600], [1.5, 'o', 260, 180], [2.1, 'e', 700, 1000], [2.8, 'a', 380, 220], [3.4, 'i', 1100, 700]].forEach(([t, v, p0, p1]) => opVoice(t, 0.35, v, p0, p1, 0.12, out, 25));
+  if (art === 'march') { // 魔物の大群の足音：ゴゴゴ…と地鳴りが続き、ドスドスと無数の足音が重なる
+    opNoise(0.05, 4.2, 0.28, 90, out, { type: 'lowpass', q: 0.8, atk: 0.8, hold: 0.8 });
+    opOsc(0.05, 4.2, 'sine', 38, 34, 0.22, out, { atk: 0.8, hold: 0.8, vib: 3, vibHz: 7 });
+    for (let k = 0; k < 70; k++) { const t = 0.1 + Math.random() * 4, f = 55 + Math.random() * 45; opOsc(t, 0.16, 'sine', f, f * 0.5, 0.08 + Math.random() * 0.1, out, { atk: 0.004, hold: 0.05 }); opNoise(t, 0.08, 0.06, 160 + Math.random() * 140, out, { type: 'lowpass', atk: 0.003, hold: 0.05 }); }
   }
   if (art === 'hero') { // パワーアップ：駆け上がる音とキラッ
     [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => opOsc(0.1 + i * 0.06, 0.18, 'square', f, f, 0.05, out, { lp: 3000, atk: 0.005 }));
