@@ -307,6 +307,7 @@ function playRewardedVideo(onComplete, rewardText) { // rewardText：この動�
 document.addEventListener('click', event => {
   const btn = event.target.closest('[data-reward-ad]');
   if (!btn) return;
+  if (btn.closest('#gemShortModal') && getRewardAdRemaining() <= 0) { gemShortPending = null; gemShortModal.classList.remove('show'); } // ジェム不足のダイアログから動画へ
   if (getRewardAdRemaining() > 0) { showTapError('次の動画はまだ見られません', event.clientX, event.clientY); return; }
   if (isAdFree()) { rewardAdClaimBtn.click(); return; } // 紋章（サブスク）加入中は動画なしで即受け取り
   playRewardedVideo(() => {
@@ -347,7 +348,7 @@ function promptGemShortage(needed, options = {}) {
   document.getElementById('gemShortTitle').textContent = options.title || 'ジェムが足りません';
   const gsIcon = document.getElementById('gemShortIcon');
   if (options.iconHtml) gsIcon.innerHTML = options.iconHtml; else gsIcon.textContent = options.icon || '💎'; // 絵文字は自動でアイコン画像に置き換わる（iconHtml は絵をそのまま出す）
-  gemShortText.textContent = options.text || `ジェムが ${lack} 個不足しています。ジェム購入ショップに行きますか？`;
+  gemShortText.textContent = options.text || `ジェムが ${lack} 個不足しています。動画を見てもらうか、ショップで購入できます。`;
   gemShortPending = options;
   if (options.silent) playTone(880, 0.08, 'triangle', 0.1); else playErrorSound();
   clearTimeout(gemShortBtnTimer);
@@ -754,7 +755,7 @@ function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE
 SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upPctUnlocked' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
 SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
-SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる（転生したときにコインとジェム1個を払う）', rebirth: true };
+SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
 const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
 function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
