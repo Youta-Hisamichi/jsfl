@@ -3419,7 +3419,7 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .bag-row .bag-ico img.ico-img { width: 94%; height: 94%; }
 .tab-page[data-tab="gemshop"] .shop-sec > .title { color: #fff !important; opacity: 1 !important; font-weight: 900; text-shadow: -1px -1px 0 #1a1004, 1px -1px 0 #1a1004, -1px 1px 0 #1a1004, 1px 1px 0 #1a1004, 0 0 4px #000, 0 2px 3px #000 !important; } /* 背景に埋もれないよう縁取り */
 /* ショップのアイテム：所持品と同じ紺のアイテムベースを流用 */
-#shopList .shop-row { position: relative; grid-template-columns: minmax(0, 1fr) auto !important; aspect-ratio: 720 / 138; padding: 4px 4.5% 4px 20.5% !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; }
+#shopList .shop-row { position: relative; grid-template-columns: minmax(0, 1fr) auto !important; aspect-ratio: 720 / 138; padding: 4px 3% 4px 20.5% !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; }
 #shopList .shop-row .sr-ico { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; }
 #shopList .shop-row .sr-ico > * { max-width: 86%; max-height: 86%; }
 #shopList .shop-row .sr-ico-emoji { border: none; background: none; }
@@ -4780,5 +4780,5 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 @keyframes opTitleFlash { 0% { opacity: 0; scale: 0.3; } 12% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.25; } }
 .op-stage.in .op-title { animation: opIn 0.9s ease-out backwards, opTitleGlow 2.4s 1s ease-out both !important; }
 @keyframes opTitleGlow { 0% { filter: none; } 12% { filter: brightness(1.8) drop-shadow(0 0 18px #fff); } 100% { filter: none; } }
-#shopList .sr-coin-price:has(.sr-plus-gem) { flex-wrap: wrap; justify-content: center; row-gap: 0; height: auto; border-radius: 14px; padding: 3px 12px; } /* 転生の値段：コインの下の行に＋ジェム1個 */
-#shopList .sr-coin-price .sr-plus-gem { flex-basis: 100%; text-align: center; color: #7fe8ff; font-size: 0.9em; white-space: nowrap; line-height: 1.2; }
+#shopList .sr-coin-price:has(.sr-plus-gem) { display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center; column-gap: 3px; width: max-content; min-width: 0; height: auto; border-radius: 12px; padding: 2px 8px; } /* 転生の値段：コインの下の行に＋ジェム1個 */
+#shopList .sr-coin-price .sr-plus-gem { grid-column: 1 / -1; text-align: center; color: #7fe8ff; font-size: 0.9em; white-space: nowrap; line-height: 1.2; }
