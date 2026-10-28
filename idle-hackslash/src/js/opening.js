@@ -5,7 +5,7 @@ const OPENING_SCENES = [
   { bg: 'red', text: '草原も、森も、海も、塔も……\nすべてが魔物の群れに飲み込まれていく。', art: 'march' },
   { bg: 'dawn', text: 'その時、ひとりの少年が剣を取った。', art: 'hero' },
   { bg: 'dawn', text: '「俺の反射タックルは\u3000\u200b\n\u3000誰にも止められないぜ！」', art: 'heroTalk' },
-  { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n無限の進化を活かして生き残れ！', art: 'party' },
+  { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n\n無限の進化を活かして生き残れ！', art: 'party' },
   { bg: 'title', text: '', art: 'title' },
 ];
 let openingOn = false;
