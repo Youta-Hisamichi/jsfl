@@ -3,7 +3,7 @@ const OPENING_SCENES = [
   { bg: 'night', text: '遥か昔――\n世界は、魔法陣の光に守られていた。', art: 'circle' },
   { bg: 'red', text: 'だがある夜、魔王の封印が解け、\n無数の魔物があふれ出した。', art: 'bosses' },
   { bg: 'red', text: '草原も、森も、海も、塔も……\nすべてが魔物の群れに飲み込まれていく。', art: 'march' },
-  { bg: 'dawn', text: 'その時、あなたは神の啓示を聞き、剣を取った。', art: 'hero' },
+  { bg: 'dawn', text: 'その時、あなたは神の啓示を聞き、\n剣を取った！', art: 'hero' },
   { bg: 'dawn', text: '「俺の反射タックルは\u3000\u200b\n\u3000誰にも止められないぜ！」', art: 'heroTalk' },
   { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n\n無限の進化を活かして生き残れ！', art: 'party' },
   { bg: 'title', text: '', art: 'title' },
