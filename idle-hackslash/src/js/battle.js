@@ -1529,7 +1529,7 @@ function getDailyClearsForDate(key) {
 }
 
 const LOGIN_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];
-const LOGIN_RARITY_TITLES = { common: 'N', rare: 'R！', epic: 'SR！！', legendary: 'SSR！！！' }; // レア度の呼び名はほかの画面と同じ
+const LOGIN_RARITY_TITLES = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR' }; // レア度の呼び名はほかの画面と同じ
 let loginGachaSkip = null; // 演出中にタップしたら最後まで早送り
 function renderLoginDays(pos) {
   const cycle = LOGIN_BONUS_TABLE.length;
