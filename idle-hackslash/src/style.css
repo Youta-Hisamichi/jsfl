@@ -4840,3 +4840,6 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 #lbPanel.lb2 .lb-orb { position: relative; z-index: 1; }
 @keyframes lbHalo { to { rotate: 360deg; } }
 @keyframes lbHaloPulse { from { opacity: 0.55; scale: 0.92; } to { opacity: 1; scale: 1.08; } }
+/* 初心者ミッションは左上（宝箱の列の右）に出す（下はスキルボタンとかぶるため） */
+.arena-wrap .ob-mission { top: 6px; bottom: auto; left: 54px; border-radius: 10px; }
+body:not(.hp-safe) .arena-wrap .ob-mission { top: 44px; }
