@@ -4,7 +4,7 @@ const OPENING_SCENES = [
   { bg: 'red', text: 'だがある夜、魔王の封印が解け、\n無数の魔物があふれ出した。', art: 'bosses' },
   { bg: 'red', text: '草原も、森も、海も、塔も……\nすべてが魔物の群れに飲み込まれていく。', art: 'march' },
   { bg: 'dawn', text: 'その時、ひとりの少年が剣を取った。', art: 'hero' },
-  { bg: 'dawn', text: '「俺の反射タックルは\n誰にも止められないぜ！」', art: 'heroTalk' },
+  { bg: 'dawn', text: '「俺の反射タックルは\u3000\u200b\n\u3000誰にも止められないぜ！」', art: 'heroTalk' },
   { bg: 'sky', text: 'ぶつかって、跳ね返って、また立ち向かう。\n仲間と共に、何度でも――\n無限の進化を活かして生き残れ！', art: 'party' },
   { bg: 'title', text: '', art: 'title' },
 ];
@@ -51,6 +51,7 @@ function playOpening(onEnd) {
     let n = 0;
     if (txt) typing = setInterval(() => { n++; textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
     try { opSfx(sc.art); } catch (e) {} // 場面ごとの効果音
+    if (sc.art === 'heroTalk') opHeroBounce(ov, stage);
     if (sc.art === 'title') { shakeScreenLight && shakeScreenLight(); }
   };
   ov.addEventListener('click', e => { if (e.target.closest('.op-skip')) { finish(); return; } next(); });
@@ -326,9 +327,9 @@ function opVoice(at, dur, vowel, p0, p1, vol, out, vib = 5) { // 母音の声（
 function opSfx(art) {
   if (!audioCtx) return; const out = opOut();
   if (art === 'circle') { // 魔法陣が光る：映画館のロゴのような、地の底から湧き上がる重低音（光る1.6秒後に頂点）
-    [[41, 0], [55, -6], [82, 5], [110, -4], [165, 7], [220, -8]].forEach(([f, dt]) => { opOsc(0.1, 3.6, 'sawtooth', f * 0.94, f * Math.pow(2, dt / 1200), 0.07, out, { lp: 900, q: 2, atk: 1.5, hold: 0.7, vib: 0.6, vibHz: 0.4 }); });
-    opOsc(0.1, 3.8, 'sine', 32, 41, 0.5, out, { atk: 1.5, hold: 0.7 }); // 体に響く超低音
-    opNoise(0.2, 3.4, 0.07, 120, out, { type: 'lowpass', f1: 600, atk: 1.4, hold: 0.7 });
+    [[41, 0], [55, -6], [82, 5], [110, -4], [165, 7], [220, -8]].forEach(([f, dt]) => { opOsc(0.1, 3.6, 'sawtooth', f * 0.94, f * Math.pow(2, dt / 1200), 0.03, out, { lp: 900, q: 2, atk: 1.5, hold: 0.7, vib: 0.6, vibHz: 0.4 }); });
+    opOsc(0.1, 3.8, 'sine', 32, 41, 0.22, out, { atk: 1.5, hold: 0.7 }); // 体に響く超低音
+    opNoise(0.2, 3.4, 0.03, 120, out, { type: 'lowpass', f1: 600, atk: 1.4, hold: 0.7 });
   }
   if (art === 'bosses') { // ドラゴンの咆哮 → 女王の妖しい歌声
     opOsc(0.15, 1.6, 'sawtooth', 150, 62, 0.35, out, { lp: 700, q: 4, vib: 18, vibHz: 23, atk: 0.12, hold: 0.45 });
@@ -352,19 +353,53 @@ function opSfx(art) {
     opOsc(0.3, 2.0, 'sawtooth', 110, 440, 0.06, out, { lp: 1800, vib: 6, vibHz: 7, atk: 0.4, hold: 0.7 });
     [220, 277, 330, 440].forEach(f => opOsc(1.2, 1.4, 'triangle', f, f, 0.05, out, { atk: 0.05, hold: 0.4, vib: 2 }));
   }
-  if (art === 'party') { // 仲間の声援：わあっという歓声と「おーっ！」
-    opNoise(0.2, 2.2, 0.12, 1100, out, { q: 0.8, atk: 0.4, hold: 0.5 });
-    [[0.3, 'o', 220], [0.38, 'o', 330], [0.45, 'a', 440], [0.5, 'o', 520], [0.6, 'e', 280], [1.4, 'a', 360], [1.5, 'o', 600], [1.55, 'a', 250]].forEach(([t, v, p]) => opVoice(t, 0.6, v, p, p * 1.15, 0.08, out, 8));
-    for (let i = 0; i < 10; i++) opNoise(0.4 + i * 0.12 + Math.random() * 0.05, 0.05, 0.15, 2500, out, { q: 1.5 }); // 拍手
+  if (art === 'party') { // 仲間が並ぶたびに、ピロリン♪とレベルアップ音が連続で上がっていく
+    for (let k = 0; k < 6; k++) { const t = 0.3 + k * 0.15 + 0.1, base = 523 * Math.pow(2, k * 2 / 12);
+      [1, 1.26, 1.5, 2].forEach((m, n) => opOsc(t + n * 0.045, 0.16, 'square', base * m, base * m, 0.045, out, { lp: 4000, atk: 0.004, hold: 0.3 })); }
+    [1047 * 1.5, 1047 * 2].forEach((f, n) => opOsc(1.35 + n * 0.08, 0.6, 'triangle', f, f, 0.06, out, { atk: 0.005, hold: 0.1 }));
   }
   if (art === 'goal') { // 鼓動：ドクン、ドクン…
     for (let i = 0; i < 5; i++) { const t = 0.2 + i * 0.85; opOsc(t, 0.22, 'sine', 70, 38, 0.55, out, { atk: 0.005, hold: 0.1 }); opOsc(t + 0.2, 0.25, 'sine', 60, 32, 0.4, out, { atk: 0.005, hold: 0.1 }); }
   }
-  if (art === 'title') { // 大爆発：ドカンと衝撃、破片が散って、地鳴りが長く残る
-    opOsc(0.02, 1.4, 'sine', 110, 26, 0.7, out, { atk: 0.003, hold: 0.05 });
-    opOsc(0.02, 0.5, 'square', 70, 30, 0.2, out, { lp: 400, atk: 0.003, hold: 0.05 });
-    opNoise(0.02, 0.35, 0.6, 4000, out, { type: 'lowpass', f1: 500, atk: 0.003, hold: 0.05 });
-    opNoise(0.05, 2.6, 0.4, 900, out, { type: 'lowpass', q: 0.8, f1: 80, atk: 0.01, hold: 0.15 });
-    for (let i = 0; i < 14; i++) opNoise(0.15 + Math.random() * 0.9, 0.03 + Math.random() * 0.05, 0.12 + Math.random() * 0.12, 1500 + Math.random() * 3000, out, { q: 1.5, atk: 0.002, hold: 0.1 }); // 破片
+  if (art === 'title') { // 大勢の戦士の勝鬨：「えい！ えい！ おおおーっ！！」
+    const crowd = (t, dur, vowel, rise) => { for (let k = 0; k < 12; k++) { const p = 105 + Math.random() * 150, d = Math.random() * 0.06; opVoice(t + d, dur, vowel, p, p * rise, 0.05, out, 6 + Math.random() * 6); } opNoise(t, dur, 0.12, 700, out, { q: 0.7, atk: 0.05, hold: 0.5 }); };
+    crowd(0.05, 0.38, 'e', 1.12); opOsc(0.05, 0.4, 'sine', 90, 40, 0.4, out, { atk: 0.003, hold: 0.05 });
+    crowd(0.65, 0.38, 'e', 1.12); opOsc(0.65, 0.4, 'sine', 90, 40, 0.4, out, { atk: 0.003, hold: 0.05 });
+    crowd(1.25, 1.9, 'o', 1.18); opOsc(1.25, 1.2, 'sine', 100, 30, 0.55, out, { atk: 0.003, hold: 0.05 });
+    for (let k = 0; k < 16; k++) opNoise(1.4 + Math.random() * 1.2, 0.03, 0.08, 3000 + Math.random() * 2000, out, { q: 2 }); // 武器を打ち鳴らす音
   }
+}
+
+// 勇者のセリフの場面：引っ張って放つと、画面中を反射しながら飛び回る（ゲームの引っ張りアタックと同じ動き）
+function opHeroBounce(ov, stage) {
+  const hero = stage.querySelector('.op-hero'); if (!hero) return;
+  const t0 = performance.now();
+  setTimeout(() => {
+    if (!hero.isConnected) return;
+    const r = hero.getBoundingClientRect(), W = ov.clientWidth, H = ov.clientHeight, w = Math.min(r.width, 120), h = w * (r.height / r.width || 1);
+    hero.style.animation = 'none'; hero.style.transition = 'transform 0.45s ease-in';
+    hero.style.transform = 'translate(0, 26px) scale(1.15, 0.85)'; // ぐっと引っ張る
+    try { if (audioCtx) { const out = opOut(); opOsc(0, 0.45, 'sawtooth', 300, 120, 0.04, out, { lp: 1200, atk: 0.02, hold: 0.6 }); } } catch (e) {}
+    setTimeout(() => {
+      if (!hero.isConnected) return;
+      const img = document.createElement('img'); img.src = hero.src; img.className = 'op-bounce'; img.style.width = w + 'px';
+      let x = r.left + (r.width - w) / 2, y = r.top + (r.height - h) / 2, vx = 760 * (Math.random() < 0.5 ? -1 : 1), vy = -980, spin = 0, last = performance.now(), trail = 0;
+      hero.style.visibility = 'hidden'; ov.appendChild(img);
+      try { if (audioCtx) opNoise(0, 0.35, 0.18, 800, opOut(), { f1: 4000, q: 1.2 }); } catch (e) {} // ビュンッ
+      const step = now => {
+        if (!stage.isConnected || !hero.isConnected || !ov.isConnected) { img.remove(); return; }
+        const dt = Math.min(0.04, (now - last) / 1000); last = now;
+        x += vx * dt; y += vy * dt; spin += (vx > 0 ? 1 : -1) * 900 * dt;
+        let hit = false;
+        if (x < 0) { x = 0; vx = Math.abs(vx); hit = true; } else if (x > W - w) { x = W - w; vx = -Math.abs(vx); hit = true; }
+        if (y < 0) { y = 0; vy = Math.abs(vy); hit = true; } else if (y > H - h) { y = H - h; vy = -Math.abs(vy); hit = true; }
+        if (hit) { try { if (audioCtx) { const out = opOut(); opOsc(0, 0.12, 'square', 520, 260, 0.05, out, { lp: 2500, atk: 0.003, hold: 0.1 }); opNoise(0, 0.08, 0.12, 1800, out, { q: 1.5 }); } } catch (e) {}
+          const f = document.createElement('div'); f.className = 'op-bounce-hit'; f.style.left = (x + w / 2) + 'px'; f.style.top = (y + h / 2) + 'px'; ov.appendChild(f); setTimeout(() => f.remove(), 400); }
+        img.style.transform = `translate(${x}px, ${y}px) rotate(${spin}deg)`;
+        if (++trail % 3 === 0) { const g = img.cloneNode(); g.className = 'op-bounce op-bounce-ghost'; ov.insertBefore(g, img); setTimeout(() => g.remove(), 350); }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, 470);
+  }, 700);
 }
