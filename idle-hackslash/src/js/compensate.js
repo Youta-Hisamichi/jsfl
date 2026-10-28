@@ -180,7 +180,7 @@ function openNewsAdmin(editId) {
       const list = adminNewsLoad().filter(x => x.id !== n.id); list.push(n); adminNewsSave(list); adminNewsApply();
       showNotice('📢 この端末のお知らせに保存しました（右上の📢で見られます）', false, 2500); openNewsAdmin(n.id); return;
     }
-    if (ev.target.closest('#naExport')) { const out = ov.querySelector('#naOut'); out.value = adminNewsLoad().sort((a, b) => b.id - a.id).map(adminNewsCode).join('\n') || '（この端末の下書きはありません）'; out.select(); try { navigator.clipboard.writeText(out.value).then(() => showNotice('📋 コピーしました', false, 1500)).catch(() => {}); } catch (e) {} // コピーできない環境では選択した状態のまま }
+    if (ev.target.closest('#naExport')) { const out = ov.querySelector('#naOut'); out.value = adminNewsLoad().sort((a, b) => b.id - a.id).map(adminNewsCode).join('\n') || '（この端末の下書きはありません）'; out.select(); try { navigator.clipboard.writeText(out.value).then(() => showNotice('📋 コピーしました', false, 1500)).catch(() => {}); } catch (e) {} /* コピーできない環境では選択した状態のまま */ }
   });
 }
 document.getElementById('dbgNewsBtn')?.addEventListener('click', openNewsAdmin);
