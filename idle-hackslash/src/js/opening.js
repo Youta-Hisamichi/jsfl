@@ -30,7 +30,7 @@ function playOpening(onEnd) {
   document.body.appendChild(ov);
   try { ensureAudio(); refreshBgm(); } catch (e) {}
   const stage = ov.querySelector('.op-stage'), textEl = ov.querySelector('.op-text');
-  let i = -1, typing = null, autoT = null;
+  let i = -1, typing = null, autoT = null, heroAt = 0;
   const finish = () => {
     clearInterval(typing); clearTimeout(autoT);
     ov.classList.add('out'); setTimeout(() => ov.remove(), 600);
@@ -46,10 +46,13 @@ function playOpening(onEnd) {
     const sc = OPENING_SCENES[i];
     ov.dataset.bg = sc.bg;
     stage.innerHTML = openingArt(sc.art); stage.classList.remove('in'); void stage.offsetWidth; stage.classList.add('in');
+    if (sc.art === 'hero') heroAt = performance.now();
+    const cont = sc.art === 'heroTalk' && i > 0 && OPENING_SCENES[i - 1].art === 'hero'; // 勇者の場面からはそのまま続ける（出し直さない）
+    stage.classList.toggle('cont', cont); if (cont) stage.style.setProperty('--fd', -((performance.now() - heroAt) / 1000).toFixed(2) + 's'); // ふわふわの揺れも途切れないように
     const txt = sc.art === 'heroTalk' ? sc.text.replace(/「([\s\S]*)」/, (m0, t) => '「' + heroSay(t) + '」') : sc.text; // 勇者のセリフは語尾付き
     textEl.textContent = ''; textEl.dataset.full = txt;
-    let n = 0;
-    if (txt) typing = setInterval(() => { n++; textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
+    let n = 0, pause = 0;
+    if (txt) typing = setInterval(() => { if (pause > 0) { pause--; return; } n++; if (txt.slice(n, n + 2) === '\n\n') pause = 20; /* 空行の前で少し間をおく */ textEl.textContent = txt.slice(0, n); if (n % 2 === 0) playTone(880 + Math.random() * 80, 0.02, 'square', 0.015); if (n >= txt.length) { clearInterval(typing); autoT = setTimeout(next, 2600); } }, 55);
     try { opSfx(sc.art); } catch (e) {} // 場面ごとの効果音
     if (sc.art === 'heroTalk') opHeroBounce(ov, stage);
     if (sc.art === 'title') { shakeScreenLight && shakeScreenLight(); }
@@ -74,7 +77,7 @@ setTimeout(() => {
 const FINAL_GOAL_STAGE = 1000000;
 OPENING_SCENES.splice(OPENING_SCENES.length - 1, 0, { bg: 'red', text: '魔王が待つのは、遥か彼方――\nステージ100万。', art: 'goal' });
 { const orig = openingArt; openingArt = function (kind) {
-  if (kind === 'goal') return `<div class="op-goal"><small>最終目標</small><b>STAGE</b><strong>1,000,000</strong><span>👑 魔王の玉座</span></div>${ENEMY_SPRITES.b_darkWitch ? `<img class="op-goal-boss" src="${ENEMY_SPRITES.b_darkWitch}" alt="">` : ''}`;
+  if (kind === 'goal') return `<div class="op-goal"><small>最終目標</small><b>STAGE</b><strong>1,000,000</strong><span>👑 魔王の玉座</span></div><img class="op-goal-boss" src="assets/img/misc/op_darkWitch.webp" alt="">`;
   return orig.apply(this, arguments);
 }; }
 function finalGoalPct(stage) { return Math.min(100, Math.log10(Math.max(1, stage)) / Math.log10(FINAL_GOAL_STAGE) * 100); } // 桁で進むので対数（10・100・1000…で等間隔）
@@ -361,12 +364,13 @@ function opSfx(art) {
   if (art === 'goal') { // 鼓動：ドクン、ドクン…
     for (let i = 0; i < 5; i++) { const t = 0.2 + i * 0.85; opOsc(t, 0.22, 'sine', 70, 38, 0.55, out, { atk: 0.005, hold: 0.1 }); opOsc(t + 0.2, 0.25, 'sine', 60, 32, 0.4, out, { atk: 0.005, hold: 0.1 }); }
   }
-  if (art === 'title') { // 大勢の戦士の勝鬨：「えい！ えい！ おおおーっ！！」
-    const crowd = (t, dur, vowel, rise) => { for (let k = 0; k < 12; k++) { const p = 105 + Math.random() * 150, d = Math.random() * 0.06; opVoice(t + d, dur, vowel, p, p * rise, 0.05, out, 6 + Math.random() * 6); } opNoise(t, dur, 0.12, 700, out, { q: 0.7, atk: 0.05, hold: 0.5 }); };
-    crowd(0.05, 0.38, 'e', 1.12); opOsc(0.05, 0.4, 'sine', 90, 40, 0.4, out, { atk: 0.003, hold: 0.05 });
-    crowd(0.65, 0.38, 'e', 1.12); opOsc(0.65, 0.4, 'sine', 90, 40, 0.4, out, { atk: 0.003, hold: 0.05 });
-    crowd(1.25, 1.9, 'o', 1.18); opOsc(1.25, 1.2, 'sine', 100, 30, 0.55, out, { atk: 0.003, hold: 0.05 });
-    for (let k = 0; k < 16; k++) opNoise(1.4 + Math.random() * 1.2, 0.03, 0.08, 3000 + Math.random() * 2000, out, { q: 2 }); // 武器を打ち鳴らす音
+  if (art === 'title') { // スーパーパワーアップ：力がぐんぐん溜まって、ドンと弾けてキラキラ輝く
+    opOsc(0, 1.0, 'sawtooth', 110, 1760, 0.05, out, { lp: 3500, atk: 0.05, hold: 0.85 });
+    opNoise(0, 1.0, 0.12, 300, out, { q: 3, f1: 8000, atk: 0.4, hold: 0.85 });
+    [262, 330, 392, 523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, k) => opOsc(0.08 * k, 0.12, 'square', f, f, 0.04, out, { lp: 5000, atk: 0.003 }));
+    opOsc(1.0, 1.2, 'sine', 140, 32, 0.6, out, { atk: 0.003, hold: 0.05 }); opNoise(1.0, 0.6, 0.3, 3000, out, { type: 'lowpass', f1: 300 });
+    [523, 659, 784, 1047].forEach(f => { opOsc(1.0, 2.2, 'triangle', f, f, 0.05, out, { atk: 0.01, hold: 0.4, vib: 4, vibHz: 6 }); opOsc(1.0, 1.4, 'square', f * 2, f * 2, 0.012, out, { lp: 6000, atk: 0.01, hold: 0.3 }); });
+    for (let k = 0; k < 12; k++) { const f = 2000 + Math.random() * 3000; opOsc(1.1 + k * 0.1, 0.4, 'sine', f, f, 0.035, out, { atk: 0.003, hold: 0.05 }); } // キラキラ
   }
 }
 
