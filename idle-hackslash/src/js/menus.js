@@ -844,7 +844,7 @@ function updateStatsUI() {
   const stageInCycle = ((game.stage - 1) % 10) + 1;
   const bossNow = stageInCycle >= 10; // ボスの階は「ボス！」とだけ出す
   const waitRetry = !!game.bossLoop && !bossNow; // ボス戦をリタイヤ（負け）して前の階をくり返している間
-  stageProgressText.textContent = bossNow || waitRetry ? '' : stageInCycle + ' / 10';
+  stageProgressText.textContent = bossNow || waitRetry ? '' : stageInCycle + '/10';
   const toBoss = document.getElementById('stageToBoss'); if (toBoss) { toBoss.textContent = bossNow ? 'ボス！' : waitRetry ? '' : 'ボスまで'; toBoss.classList.toggle('is-boss', bossNow); }
   stageProgressFill.style.width = (stageInCycle / 10 * 100) + '%';
   { const bm = document.getElementById('stageBossMark'); if (bm) bm.classList.toggle('boss-near', stageInCycle >= 8 && !bossNow); } // ボスが近づいたらゴールのボスが赤く光る
