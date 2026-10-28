@@ -371,6 +371,12 @@ function opSfx(art) {
     opOsc(1.0, 1.2, 'sine', 140, 32, 0.6, out, { atk: 0.003, hold: 0.05 }); opNoise(1.0, 0.6, 0.3, 3000, out, { type: 'lowpass', f1: 300 });
     [523, 659, 784, 1047].forEach(f => { opOsc(1.0, 2.2, 'triangle', f, f, 0.05, out, { atk: 0.01, hold: 0.4, vib: 4, vibHz: 6 }); opOsc(1.0, 1.4, 'square', f * 2, f * 2, 0.012, out, { lp: 6000, atk: 0.01, hold: 0.3 }); });
     for (let k = 0; k < 12; k++) { const f = 2000 + Math.random() * 3000; opOsc(1.1 + k * 0.1, 0.4, 'sine', f, f, 0.035, out, { atk: 0.003, hold: 0.05 }); } // キラキラ
+    // 続けて勝利のファンファーレ（オリジナルの短いフレーズ。金管っぽい音で和音を重ねる）
+    const brass = (t, d, f, v = 0.045) => { opOsc(t, d, 'sawtooth', f, f, v, out, { lp: 2600, q: 1.5, atk: 0.03, hold: 0.6, vib: d > 0.5 ? 4 : 0, vibHz: 5.5 }); opOsc(t, d, 'square', f / 2, f / 2, v * 0.4, out, { lp: 1200, atk: 0.03, hold: 0.6 }); };
+    const T = 2.0, b = 0.16; // 拍
+    [[0, 1, 392], [1, 1, 523], [2, 1, 659], [3, 3, 784], [6, 1, 698], [7, 1, 784], [8, 6, 1047]].forEach(([at, len, f]) => brass(T + at * b, len * b + 0.05, f));
+    [523, 659, 784].forEach(f => brass(T + 8 * b, 6 * b + 0.4, f * 0.5, 0.03)); // 最後は和音でじゃーん
+    opOsc(T + 8 * b, 0.8, 'sine', 110, 40, 0.35, out, { atk: 0.003, hold: 0.05 }); opNoise(T + 8 * b, 1.4, 0.08, 6000, out, { q: 0.7, atk: 0.005, hold: 0.1 }); // ティンパニとシンバル
   }
 }
 
