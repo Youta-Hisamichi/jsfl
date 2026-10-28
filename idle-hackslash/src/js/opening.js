@@ -80,7 +80,7 @@ setTimeout(() => {
 const FINAL_GOAL_STAGE = 1000000;
 OPENING_SCENES.splice(OPENING_SCENES.length - 1, 0, { bg: 'red', text: '魔王が待つのは、遥か彼方――\nステージ100万。', art: 'goal' });
 { const orig = openingArt; openingArt = function (kind) {
-  if (kind === 'goal') return `<div class="op-goal"><small>最終目標</small><b>STAGE</b><strong>1,000,000</strong><span>👑 魔王の玉座</span></div><img class="op-goal-boss" src="assets/img/misc/op_darkWitch.webp" alt="">`;
+  if (kind === 'goal') return `<div class="op-goal"><small>最終目標</small><b>STAGE</b><strong>1,000,000</strong><span>👑 魔王の玉座</span></div><img class="op-goal-boss" src="assets/img/misc/op_goalBoss.webp" alt="">`;
   return orig.apply(this, arguments);
 }; }
 function finalGoalPct(stage) { return Math.min(100, Math.log10(Math.max(1, stage)) / Math.log10(FINAL_GOAL_STAGE) * 100); } // 桁で進むので対数（10・100・1000…で等間隔）

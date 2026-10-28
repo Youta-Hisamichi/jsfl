@@ -2657,7 +2657,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .op-goal b { font-size: 1.6rem; font-weight: 900; color: #fff; letter-spacing: 8px; margin-top: 4px; }
 .op-goal strong { font-size: 3.2rem; font-weight: 900; letter-spacing: 2px; line-height: 1.05; background: linear-gradient(180deg, #fff, #ffd76b 50%, #ff6a3a); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #3a0a00); }
 .op-goal span { margin-top: 6px; font-size: 1rem; font-weight: 900; color: #ffb3b3; }
-.op-goal-boss { position: absolute; bottom: 2%; width: 78%; max-width: 330px; opacity: 0.85; filter: drop-shadow(0 0 18px rgba(255,60,80,0.8)) brightness(0.8); animation: opGoalBoss 3s ease-in-out infinite alternate; }
+.op-goal-boss { position: absolute; bottom: -8%; width: 74%; max-width: 310px; opacity: 0.95; filter: drop-shadow(0 0 18px rgba(255,60,80,0.8)); animation: opGoalBoss 3s ease-in-out infinite alternate; }
 @keyframes opGoalIn { 0% { transform: scale(2.2); opacity: 0; filter: blur(6px); } 60% { opacity: 1; } 100% { transform: none; opacity: 1; filter: none; } }
 @keyframes opGoalBoss { from { transform: translateY(0) scale(0.92); } to { transform: translateY(-8px) scale(1.08); } } /* ゆっくり拡大縮小 */
 .fg-panel { max-width: 360px; text-align: center; background: radial-gradient(120% 80% at 50% 0%, #3a1630, #170a1c 70%) !important; border: 2px solid #ffb36b !important; border-image: none !important; border-radius: 16px; color: #fff; box-shadow: 0 0 30px rgba(255,140,80,0.4); }
