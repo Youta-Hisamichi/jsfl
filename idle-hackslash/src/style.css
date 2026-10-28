@@ -4823,3 +4823,10 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .news-gift { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: rgba(255,215,107,0.12); border: 1px solid rgba(255,215,107,0.5); font-size: 0.78rem; font-weight: 900; color: #ffe8a0; text-shadow: 0 1px 2px #000; }
 .news-gift button { flex: none; padding: 5px 14px; border: 0; border-radius: 999px; font: inherit; font-weight: 900; color: #3b2400; background: linear-gradient(180deg, #ffe58a, #f0a820); box-shadow: 0 2px 0 #8a5400; cursor: pointer; text-shadow: none; }
 .news-gift i { flex: none; font-style: normal; color: #9aa4c0; }
+/* スキルガチャとサブウェポンガチャを横に並べる */
+.gacha-pair { display: flex; align-items: flex-start; justify-content: center; gap: 8px; margin: 4px 0 8px; }
+.gacha-pair > .gacha-art-btn { flex: 1 1 0; min-width: 0; max-width: 200px; margin: 0; }
+.gacha-pair .gab-cost { font-size: 0.86rem; } .gacha-pair .gab-sub { font-size: 0.62rem; white-space: nowrap; }
+.comp-dbg .na-body { display: flex; flex-direction: column; font-size: 0.72rem; font-weight: 700; margin: 4px 0; }
+.comp-dbg textarea, .comp-dbg select { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.85rem; padding: 4px; border: 1px solid #c9a14a; border-radius: 6px; }
+.news-tag.t-おわび { background: #c0405a; } .news-tag.t-プレゼント { background: #d09a1a; } .news-tag.t-お知らせ { background: #4a6ad0; }

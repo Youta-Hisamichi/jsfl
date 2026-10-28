@@ -113,3 +113,74 @@ function openRebirthEstimate() {
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
 }
 document.getElementById('dbgRebirthBtn')?.addEventListener('click', openRebirthEstimate);
+
+// ===== デバッグ：お知らせ管理（お知らせの追加・プレゼントの設定） =====
+// ここで作ったお知らせは、この端末だけに出る（下書き・確認用）。みんなに配るときは「書き出す」で出た文を NEWS（features.js）に入れて公開する
+const ADMIN_NEWS_KEY = 'adminNews';
+function adminNewsLoad() { try { const a = JSON.parse(localStorage.getItem(ADMIN_NEWS_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function adminNewsSave(list) { try { localStorage.setItem(ADMIN_NEWS_KEY, JSON.stringify(list)); } catch (e) {} }
+function adminNewsApply() { // 端末に保存した下書きを、お知らせ一覧の先頭に入れる
+  for (let i = NEWS.length - 1; i >= 0; i--) if (NEWS[i].draft) NEWS.splice(i, 1);
+  NEWS.unshift(...adminNewsLoad().map(n => ({ ...n, draft: true })));
+  NEWS.sort((a, b) => b.id - a.id);
+  if (typeof updateNewsDot === 'function') updateNewsDot();
+}
+adminNewsApply();
+function adminNewsCode(n) { // NEWS に貼る1行
+  const g = n.gift && Object.keys(n.gift).length ? `, gift: ${JSON.stringify(n.gift).replace(/"(\w+)":/g, '$1: ')}` : '';
+  return `  { id: ${n.id}, date: '${n.date}', tag: '${n.tag}', title: ${JSON.stringify(n.title)}, body: ${JSON.stringify(n.body)}${g}${n.until ? `, until: '${n.until}'` : ''} },`;
+}
+function openNewsAdmin(editId) {
+  document.querySelectorAll('.news-admin-ov').forEach(o => o.remove());
+  const drafts = adminNewsLoad(), ed = drafts.find(n => n.id === editId) || null;
+  const today = new Date(), ds = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+  const g = (ed && ed.gift) || {}, fea = g.feathers || {};
+  const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const rows = NEWS.map(n => `<div class="gs-row"><span class="gs-src">${n.draft ? '📝 ' : ''}${esc(n.title)}<small>${n.date}・${n.tag}${n.gift ? '・🎁 ' + compRewardText(n.gift) : ''}${n.until ? '・期限 ' + n.until : ''}${n.draft ? '・この端末だけ' : '・公開中'}</small></span>${n.draft ? `<button data-na-edit="${n.id}">直す</button><button data-na-del="${n.id}">消す</button>` : ''}</div>`).join('');
+  const ov = document.createElement('div'); ov.className = 'serif-ov news-admin-ov';
+  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>📢 お知らせ管理</b><button class="serif-x">✕</button></div><div class="serif-body gem-src comp-dbg">
+    <div class="serif-sub">ここで作ったお知らせは<b>この端末だけ</b>に出ます（下書き・見え方の確認用）。みんなに配るには「書き出す」の文を送ってください（ゲームに組み込んで公開します）。</div>
+    <div class="serif-h2">お知らせ一覧</div>${rows}
+    <div class="serif-h2">${ed ? 'お知らせを直す' : '新しいお知らせ'}</div>
+    <div class="cd-grid">
+      <label>見出し<input type="text" id="naTitle" value="${esc(ed ? ed.title : '')}" placeholder="例：いつも遊んでくれてありがとう！"></label>
+      <label>種類<select id="naTag">${['お知らせ', 'イベント', '新機能', 'BGM', 'おわび', 'プレゼント'].map(t => `<option ${ed && ed.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+      <label>日付<input type="text" id="naDate" value="${esc(ed ? ed.date : ds)}"></label>
+      <label>受け取り期限（空なら無期限）<input type="date" id="naUntil" value="${esc(ed && ed.until ? ed.until : '')}"></label>
+    </div>
+    <label class="na-body">本文<textarea id="naBody" rows="4" placeholder="本文（改行できます）">${esc(ed ? ed.body : '')}</textarea></label>
+    <div class="serif-h2">プレゼント（0なら付けない）</div>
+    <div class="cd-grid">
+      <label>💎ジェム<input type="number" min="0" id="naGems" value="${g.gems || 0}"></label>
+      <label>🟡コイン<input type="number" min="0" id="naCoins" value="${g.coins || 0}"></label>
+      ${FEA_RARITIES.map(r => `<label>${RARITY_INFO[r].label}の進化の羽<input type="number" min="0" data-na-fea="${r}" value="${fea[r] || 0}"></label>`).join('')}
+      <label>回復ポーション<input type="number" min="0" id="naPot" value="${g.potions || 0}"></label>
+      <label>スキルポーション<input type="number" min="0" id="naRedPot" value="${g.redPotions || 0}"></label>
+    </div>
+    <button id="naSave">${ed ? '💾 直して保存' : '➕ この端末に追加'}</button>${ed ? '<button id="naNew">新しく作る</button>' : ''}
+    <div class="serif-h2">みんなに配るとき</div>
+    <button id="naExport">📋 書き出す</button>
+    <textarea id="naOut" rows="5" readonly placeholder="ここに書き出した文が出ます" style="width:100%;box-sizing:border-box;font-size:0.7rem"></textarea>
+  </div></div>`;
+  document.body.appendChild(ov);
+  const num = id => Math.max(0, Math.floor(Number(ov.querySelector(id).value) || 0));
+  ov.addEventListener('click', ev => {
+    if (ev.target === ov || ev.target.closest('.serif-x')) { ov.remove(); return; }
+    const e1 = ev.target.closest('[data-na-edit]'), d1 = ev.target.closest('[data-na-del]');
+    if (e1) { openNewsAdmin(+e1.dataset.naEdit); return; }
+    if (d1) { adminNewsSave(adminNewsLoad().filter(n => n.id !== +d1.dataset.naDel)); adminNewsApply(); openNewsAdmin(); return; }
+    if (ev.target.closest('#naNew')) { openNewsAdmin(); return; }
+    if (ev.target.closest('#naSave')) {
+      const title = ov.querySelector('#naTitle').value.trim(); if (!title) { showNotice('見出しを入れてください', true, 1800); return; }
+      const gift = {}; if (num('#naGems')) gift.gems = num('#naGems'); if (num('#naCoins')) gift.coins = num('#naCoins'); if (num('#naPot')) gift.potions = num('#naPot'); if (num('#naRedPot')) gift.redPotions = num('#naRedPot');
+      const fe = {}; ov.querySelectorAll('[data-na-fea]').forEach(i => { const v = Math.max(0, Math.floor(Number(i.value) || 0)); if (v) fe[i.dataset.naFea] = v; }); if (Object.keys(fe).length) gift.feathers = fe;
+      const maxId = Math.max(0, ...NEWS.map(n => n.id));
+      const n = { id: ed ? ed.id : maxId + 1, date: ov.querySelector('#naDate').value.trim() || ds, tag: ov.querySelector('#naTag').value, title, body: ov.querySelector('#naBody').value };
+      if (Object.keys(gift).length) n.gift = gift; const until = ov.querySelector('#naUntil').value; if (until) n.until = until;
+      const list = adminNewsLoad().filter(x => x.id !== n.id); list.push(n); adminNewsSave(list); adminNewsApply();
+      showNotice('📢 この端末のお知らせに保存しました（右上の📢で見られます）', false, 2500); openNewsAdmin(n.id); return;
+    }
+    if (ev.target.closest('#naExport')) { const out = ov.querySelector('#naOut'); out.value = adminNewsLoad().sort((a, b) => b.id - a.id).map(adminNewsCode).join('\n') || '（この端末の下書きはありません）'; out.select(); try { navigator.clipboard.writeText(out.value).then(() => showNotice('📋 コピーしました', false, 1500)).catch(() => {}); } catch (e) {} // コピーできない環境では選択した状態のまま }
+  });
+}
+document.getElementById('dbgNewsBtn')?.addEventListener('click', openNewsAdmin);
