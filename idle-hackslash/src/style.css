@@ -2559,7 +2559,7 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .op-circle { position: absolute; width: 100%; opacity: 0.85; filter: drop-shadow(0 0 18px #8fb4ff); animation: opIn 1.2s ease-out both, opSpin 40s linear infinite !important; }
 @keyframes opSpin { to { transform: rotate(360deg); } }
 .op-bosses { position: relative; width: 100%; height: 100%; }
-.op-bosses img { position: absolute; width: 58%; left: calc(var(--i) * 21%); top: calc(10% + var(--i) * 12%); filter: brightness(0.55) drop-shadow(0 0 14px #ff2a4a); animation: opIn 0.8s calc(var(--i) * 0.35s) both, opFloat 2.4s ease-in-out infinite alternate; }
+.op-bosses img { position: absolute; width: 58%; left: calc(var(--i) * 21%); top: calc(10% + var(--i) * 12%); image-rendering: pixelated; filter: brightness(0.8) drop-shadow(0 0 14px #ff2a4a); animation: opIn 0.8s calc(var(--i) * 0.35s) both, opFloat 2.4s ease-in-out infinite alternate; }
 @keyframes opFloat { to { transform: translateY(-8px); } }
 .op-march { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
 .op-march span { width: 30%; animation: opMarch 1.4s calc(var(--i) * 0.12s) ease-in-out infinite alternate; }
