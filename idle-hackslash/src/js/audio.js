@@ -552,16 +552,6 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h k h s h | k h s h s s ks ks',
   },
-  boss25: { // ボス24 乙女たちの決戦：刻むオクターブベースと鋭いブラスの連打に乗って、劇的な短調の旋律が舞台の大詰めのように燃え上がる、大正浪漫の歌劇団風の決戦曲
-    bpm: 168,
-    echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
-    tracks: [
-      { type: 'vrc6pulse25', gain: 0.03, notes: 'F5 E5 D6 = A5 A#5 F5 = | A5 = = G5 A4 = A4 = | A#4 = A#4 = A4 A4 D5 = | E5 = = = E5 = G5 = | A#5 A5 D6 = A5 A#5 G5 = | D6 = = C#6 F5 = D5 = | D5 = D5 = A#4 A4 D5 = | E5 = = = E5 = G5 = | D6 D6 D6 = C#6 A#5 F5 = | F5 = = A4 F5 = F5 = | A#5 = D6 = D6 D6 D6 = | C#6 = = = G5 = E5 = | F5 E5 D6 = A5 A#5 F5 = | A#5 = = A5 D5 = A#4 = | A4 = A4 = A4 A4 A4 = | D6 = = = = = - -' },
-      { type: 'vrc6pulse12', gain: 0.013, notes: 'D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | E4+G#4+B4 - - E4+G#4+B4 - E4+G#4+B4 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - - | F4+A4+C5 - - F4+A4+C5 - F4+A4+C5 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | A#3+D4+F4 - - A#3+D4+F4 - A#3+D4+F4 - - | G4+A#4+D5 - - G4+A#4+D5 - G4+A#4+D5 - - | A3+C#4+E4 - - A3+C#4+E4 - A3+C#4+E4 - - | D4+F4+A4 - - D4+F4+A4 - D4+F4+A4 - -' },
-      { type: 'vrc6saw', gain: 0.047, notes: 'D2 D2 D3 D2 A2 D2 D3 D2 | D2 D2 D3 D2 A2 D2 D3 D2 | A#2 A#2 A#3 A#2 F3 A#2 A#3 A#2 | A2 A2 A3 A2 E3 A2 A3 A2 | G2 G2 G3 G2 D3 G2 G3 G2 | D2 D2 D3 D2 A2 D2 D3 D2 | E2 E2 E3 E2 B2 E2 E3 E2 | A2 A2 A3 A2 E3 A2 A3 A2 | D2 D2 D3 D2 A2 D2 D3 D2 | F2 F2 F3 F2 C3 F2 F3 F2 | G2 G2 G3 G2 D3 G2 G3 G2 | A2 A2 A3 A2 E3 A2 A3 A2 | A#2 A#2 A#3 A#2 F3 A#2 A#3 A#2 | G2 G2 G3 G2 D3 G2 G3 G2 | A2 A2 A3 A2 E3 A2 A3 A2 | D2 D2 D3 D2 A2 D2 D3 D2' },
-    ],
-    drums: 'k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks s ks ks | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | k h s k k h s h | s s s s ks s ks ks',
-  },
   boss26: { // ボス25 星を滅ぼす巨神：地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲
     bpm: 118,
     echo: { time: 0.22, feedback: 0.22, wet: 0.16 },
@@ -614,6 +604,17 @@ const BGM_SONGS = {
     drums: 'k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k k s s k k ks ks | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | ks - ks - ks ks ks ks',
   },
 
+  boss31: { // ボス20 第一種警戒態勢：刻むオクターブのベースと行進の小太鼓に乗って、金管のような鋭い和音が打ち込まれ、ニ短調の勇ましい旋律が非常事態のように張りつめて迫る。巨大な敵を迎え撃つ迎撃戦の決戦曲（VRC6風・オリジナル）
+    bpm: 150,
+    echo: { time: 0.24, feedback: 0.24, wet: 0.18 },
+    kickBoost: 1.15,
+    tracks: [
+      { type: 'vrc6saw', gain: 0.026, notes: 'D5 = = = A4 = D5 = | F5 = E5 = D5 = C5 = | A#4 = = = C5 = D5 = | A4 = = = - - A4 A4 | D5 = = = F5 = A5 = | G5 = F5 = E5 = F5 = | D5 = = = E5 F5 G5 A5 | A5 = = = - - A5 A5 | A#5 = = = A5 = G5 = | A5 = = = F5 = D5 = | G5 = = = F5 = E5 = | F5 = = = - - A4 C5 | D5 = F5 = A5 = D6 = | C#6 = = = A5 = E5 = | F5 = E5 = D5 = C#5 = | D5 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: 'D4+F4+A4 - - D4+F4+A4 - - D4+F4+A4 - | C4+F4+A4 - - C4+F4+A4 - - C4+F4+A4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | A3+C#4+E4 - - A3+C#4+E4 - - A3+C#4+E4 - | D4+F4+A4 - - D4+F4+A4 - - D4+F4+A4 - | C4+E4+G4 - - C4+E4+G4 - - C4+E4+G4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | A3+C#4+E4 - - A3+C#4+E4 - - A3+C#4+E4 - | A#3+D4+G4 - - A#3+D4+G4 - - A#3+D4+G4 - | A3+D4+F4 - - A3+D4+F4 - - A3+D4+F4 - | A#3+C4+E4 - - A#3+C4+E4 - - A#3+C4+E4 - | A3+C4+F4 - - A3+C4+F4 - - A3+C4+F4 - | D4+F4+A4 - - D4+F4+A4 - - D4+F4+A4 - | A3+C#4+E4 - - A3+C#4+E4 - - A3+C#4+E4 - | A#3+D4+F4 - - A#3+D4+F4 - - A#3+D4+F4 - | D4+F4+A4 - - D4+F4+A4 - - D4+F4+A4 -' },
+      { type: 'vrc6pulse25', gain: 0.042, notes: 'D2 D2 D3 D2 D2 D3 D2 D3 | F1 F1 F2 F1 F1 F2 F1 F2 | A#1 A#1 A#2 A#1 A#1 A#2 A#1 A#2 | A1 A1 A2 A1 A1 A2 A1 A2 | D2 D2 D3 D2 D2 D3 D2 D3 | C2 C2 C3 C2 C2 C3 C2 C3 | A#1 A#1 A#2 A#1 A#1 A#2 A#1 A#2 | A1 A1 A2 A1 A1 A2 A1 A2 | G1 G1 G2 G1 G1 G2 G1 G2 | D2 D2 D3 D2 D2 D3 D2 D3 | C2 C2 C3 C2 C2 C3 C2 C3 | F1 F1 F2 F1 F1 F2 F1 F2 | D2 D2 D3 D2 D2 D3 D2 D3 | A1 A1 A2 A1 A1 A2 A1 A2 | A#1 A#1 A#2 A#1 A#1 A#2 A#1 A#2 | D2 D2 D3 D2 D2 D3 D2 D3' },
+    ],
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s s s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s s s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | s s s s s s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks ks ks ks - - -',
+  },
   boss30: { // ボス20 修羅の鬼武者：叩きつける太鼓と地を這う刻みのベースに乗って、都節の音階のおどろおどろしい旋律が怨念のように迫る、和風の妖怪退治・剣戟の決戦曲（VRC6風・オリジナル。イ短調）
     bpm: 140,
     echo: { time: 0.3, feedback: 0.32, wet: 0.24 },
@@ -866,7 +867,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24', 'boss25', 'boss26', 'boss27', 'boss28', 'boss29', 'boss30'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24', 'boss26', 'boss27', 'boss28', 'boss29', 'boss30', 'boss31'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -942,14 +943,14 @@ const BGM_INFO = [
   { key: 'charge', name: 'ページ ショップ 課金 王家の宝物庫', desc: '弾むオクターブベースと行進曲のスネア、ハープのような分散和音に乗って、ファンファーレ風の旋律が華やかに駆け上がる、王宮の祝宴のような高揚感のある曲。VRC6風チップチューン。ニ長調・BPM132' },
   { key: 'hireget', name: '採用ガチャ やったね！新しい仲間', desc: '採用ガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う曲。VRC6風チップチューン。ヘ長調・BPM150' },
   { key: 'battle35', name: '戦闘15 帝都花舞う行進', desc: '弾むブラスの合いの手と2拍目4拍目のスネアに乗って、華やかで少し懐かしい旋律が胸を張って行進する、大正浪漫の歌劇団風の曲。VRC6風チップチューン。ヘ長調（大正浪漫の歌劇アクションの作風）・BPM152' },
-  { key: 'boss25', name: 'ボス15 乙女たちの決戦', desc: '刻むオクターブベースと鋭いブラスの連打に乗って、劇的な短調の旋律が舞台の大詰めのように燃え上がる、大正浪漫の歌劇団風の決戦曲。VRC6風チップチューン。ニ短調（大正浪漫の歌劇アクションの作風）・BPM168' },
-  { key: 'boss26', name: 'ボス16 星を滅ぼす巨神', desc: '地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲。VRC6風チップチューン。ハ短調（伝説の巨神ロボットアニメの作風）・BPM118' },
-  { key: 'boss27', name: 'ボス17 神竜の咆哮', desc: '疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲。VRC6風チップチューン。ト短調（竜と空の戦記シミュレーションRPGの作風）・BPM156' },
-  { key: 'boss28', name: 'ボス18 絶望を越える行進', desc: '打ち鳴らされる小太鼓の連打と刻むベースに乗って、絶望の中で歯を食いしばるような悲壮で力強い旋律が高まっていく、学徒兵の青春戦記風の決戦曲。VRC6風チップチューン。ホ短調（学園と戦場の青春シミュレーションの作風）・BPM150' },
+  { key: 'boss26', name: 'ボス15 星を滅ぼす巨神', desc: '地を這うベースと重く伸びる和音、ゆっくりとした太鼓の上に、ブラスのような長い旋律が絶望的に響き渡る、伝説の巨神が目覚める決戦曲。VRC6風チップチューン。ハ短調（伝説の巨神ロボットアニメの作風）・BPM118' },
+  { key: 'boss27', name: 'ボス16 神竜の咆哮', desc: '疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲。VRC6風チップチューン。ト短調（竜と空の戦記シミュレーションRPGの作風）・BPM156' },
+  { key: 'boss28', name: 'ボス17 絶望を越える行進', desc: '打ち鳴らされる小太鼓の連打と刻むベースに乗って、絶望の中で歯を食いしばるような悲壮で力強い旋律が高まっていく、学徒兵の青春戦記風の決戦曲。VRC6風チップチューン。ホ短調（学園と戦場の青春シミュレーションの作風）・BPM150' },
   { key: 'battle39', name: '戦闘16 刃に宿る炎', desc: '和太鼓の刻みと三味線のような裏打ちに乗って、都節の音階で駆け抜ける疾走感のある旋律。和風の剣戟活劇をイメージしたオリジナル曲。VRC6風チップチューン。ニ短調。' },
   { key: 'battle40', name: '戦闘17 天下御免の大立ち回り', desc: '太鼓の跳ねるリズムと弾む裏打ちの和音に乗って、陽音階のにぎやかな旋律がお祭り騒ぎのように駆け回る、和風のコミカルな冒険活劇をイメージしたオリジナル曲。VRC6風チップチューン。ニ長調。' },
-  { key: 'boss29', name: 'ボス19 鬼を断つ一閃', desc: '叩きつける和太鼓の連打と刻むベースに乗って、都節の音階の鋭い旋律が一気に斬り込む決戦曲。和風の剣戟活劇をイメージしたオリジナル曲。VRC6風チップチューン。ホ短調。' },
-  { key: 'boss30', name: 'ボス20 修羅の鬼武者', desc: '叩きつける太鼓と地を這う刻みのベースに乗って、都節の音階のおどろおどろしい旋律が怨念のように迫る、和風の妖怪退治・剣戟をイメージしたオリジナルの決戦曲。VRC6風チップチューン。イ短調。' },
+  { key: 'boss29', name: 'ボス18 鬼を断つ一閃', desc: '叩きつける和太鼓の連打と刻むベースに乗って、都節の音階の鋭い旋律が一気に斬り込む決戦曲。和風の剣戟活劇をイメージしたオリジナル曲。VRC6風チップチューン。ホ短調。' },
+  { key: 'boss30', name: 'ボス19 修羅の鬼武者', desc: '叩きつける太鼓と地を這う刻みのベースに乗って、都節の音階のおどろおどろしい旋律が怨念のように迫る、和風の妖怪退治・剣戟をイメージしたオリジナルの決戦曲。VRC6風チップチューン。イ短調。' },
+  { key: 'boss31', name: 'ボス20 第一種警戒態勢', desc: '刻むベースと行進の小太鼓、金管のような鋭い和音に乗って、勇ましい旋律が非常事態のように張りつめて迫る迎撃戦の決戦曲（VRC6風）' },
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
