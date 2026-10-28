@@ -769,6 +769,8 @@ debugRow.addEventListener('click', event => {
   if (action === 'formula') { showFormulaDebug(); return; }
   if (action === 'rebirthRules') { showRebirthRulesDebug(); return; }
   if (action === 'feathers') { FEA_RARITIES.forEach(r => addFea(r, 2)); renderEvolutionList(); }
+  if (action === 'gems0') game.gems = 0;
+  if (action === 'feathers0') { FEA_RARITIES.forEach(r => addFea(r, -feaCount(r))); renderEvolutionList(); }
   if (action === 'die') {
     const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
     if (phase !== 'battle' || !player) { showNotice('DEBUG: 戦闘中のみ使えます', true); return; }
