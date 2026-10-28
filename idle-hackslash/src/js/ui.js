@@ -2399,7 +2399,7 @@ function openRebornConfirm(ctx) {
   document.getElementById('rebornConfirmCancelBtn').querySelector('.msb-name').textContent = rebornCtx && rebornCtx.from === 'final' ? `転生せずステージ${formatStageNumber(Math.max(1, game.stage - 1))}で鍛え直す` : 'キャンセル';
   document.getElementById('rebornGemAmt').textContent = g;
   document.getElementById('rebornFeatherAmt').textContent = getRebirthFeatherGain();
-  document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁' : '<img class="rab-ico" src="assets/img/ui/reb/ico_clap.webp" alt="">'}<span class="rab-txt">${isAdFree() ? '紋章特典で報酬3倍' : '動画を見て報酬3倍'}</span><b><img class="rab-gem" src="assets/img/ui/lb7/gem.webp" alt="">${g * 3}</b>`;
+  document.getElementById('rebornAdBtn').innerHTML = `${isAdFree() ? '🎁' : '<img class="rab-ico" src="assets/img/ui/reb/ico_clap.webp" alt="">'}<span class="rab-txt">${isAdFree() ? '紋章特典で報酬3倍' : '動画を見て報酬3倍'}</span><b><img class="rab-gem" src="assets/img/ui/lb7/gem.webp" alt="">${g * 3}</b><b><img class="rab-gem" src="assets/img/icons/bag_feather.webp" alt="">${getRebirthFeatherGain() * 3}</b>`; // ジェムも羽も3倍
   rebornConfirmModal.classList.add('show');
   if (!rebornCtx && phase === 'battle') { phase = 'paused'; rebornPaused = true; } // 転生パネルを開いている間はゲームを止める
 }
@@ -2430,7 +2430,7 @@ function doSelfRebirth(mult) {
 document.getElementById('rebornConfirmOkBtn').addEventListener('click', () => doSelfRebirth(1));
 document.getElementById('rebornAdBtn').addEventListener('click', () => {
   if (isAdFree()) { doSelfRebirth(3); return; } // 紋章（サブスク）加入中は動画なし
-  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); }, '、転生報酬のジェムが3倍になります');
+  playRewardedVideo(() => { rewardAdModal.classList.remove('show'); doSelfRebirth(3); }, '、転生報酬のジェムと羽ガチャが3倍になります');
 });
 document.getElementById('rebornConfirmCancelBtn').addEventListener('click', closeRebornConfirm);
 rebornConfirmModal.addEventListener('click', event => { if (event.target === rebornConfirmModal) closeRebornConfirm(); });

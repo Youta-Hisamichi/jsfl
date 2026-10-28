@@ -1073,7 +1073,7 @@ function completeReincarnation() {
   const gemBase = getRebirthGemGain(); // ステージを戻す前に計算
   const lvGain = getRebirthLvGain(game.stage);
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
-  const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×桁数枚）
+  const featherGain = getRebirthFeatherGain() * rebirthGemMult; // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×桁数枚）。動画で転生したら羽ガチャも3倍
   const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
