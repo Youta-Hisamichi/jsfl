@@ -3815,12 +3815,12 @@ function showRebirthRulesDebug() {
   sec('流れ（転生のあと、2周目から毎回）');
   line('①', '掟を選ぶ', '全6種からランダムに3つ。「掟なしで始める」も選べる。選んだ掟はその周回のあいだだけ効く');
   line('②', '転生ボーナスを選ぶ', '全6種からランダムに3つ（韋駄天は最高ステージ100以上のときだけ候補に入る）');
-  line('③', 'ダッシュスタート', `最高ステージ${DASH_MIN_BEST}以上なら、最高ステージの${Math.round(DASH_RATE * 100)}%（10の位で切り捨て＋1）から始まる。強化の元手として、そのステージのコイン×15もらえる`);
+  line('③', 'ダッシュスタート', '廃止（試練の塔で先へ飛ぶ意味がなくなるため）。転生後はいつもステージ1から');
   line('リセット', '次に転生すると、掟と転生ボーナスは外れる');
   sec('いまの周回');
   const r = runRule(), bo = runBonus();
   line('掟', r ? `${RUN_RULES[r].icon} ${RUN_RULES[r].name}` : 'なし'); line('転生ボーナス', bo ? `${RUN_BONUSES[bo].icon} ${RUN_BONUSES[bo].name}` : 'なし');
-  line('ダッシュスタート', dashStartStage(null) > 1 ? `ステージ${dashStartStage(null)}から（韋駄天ならステージ${dashStartStage('dash2')}）` : `なし（最高ステージ${DASH_MIN_BEST}未満）`);
+  line('ダッシュスタート', '廃止（いつもステージ1から）');
   sec('掟の一覧（全6種）');
   for (const k of RUN_RULE_KEYS) { const x = RUN_RULES[k], got = game.runFeats && game.runFeats['rule_' + k];
     line(`${x.icon} ${x.name}`, `▲ ${x.good}　▼ ${x.bad}`, `${RUN_RULE_DETAIL[k] || ''}<br>実績「${x.name}の覇者」（この掟でステージ100到達・💎5）：${got ? '達成済み' : '未達成 → 選ぶ画面に「実績チャンス」と出る'}`); }

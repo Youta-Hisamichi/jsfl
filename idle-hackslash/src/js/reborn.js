@@ -161,10 +161,10 @@ function openRunStartDialog() {
   playTone(523, 0.12, 'triangle', 0.08, 784);
 }
 
-// 周回の始まり：掟・転生ボーナスは選ばず、ダッシュスタートだけ自動でかける
+// 周回の始まり：掟・転生ボーナスは選ばない。ダッシュスタートも廃止（試練の塔で先へ飛ぶ意味がなくなるため）。いつもステージ1から
 function startRunAuto() {
   game.runRule = null; game.runBonus = null;
-  const dash = dashStartStage(null);
+  const dash = 1;
   if (dash > 1 && game.stage < dash) {
     game.stage = dash; game.coins += Math.round(stageCoinRaw(dash) * computeBonuses().coinMult * 15); // 強化の元手も少し
     spawnNextEnemy(); refreshPlayerBallStats(true);
