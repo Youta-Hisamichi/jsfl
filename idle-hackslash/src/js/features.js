@@ -820,10 +820,12 @@ const BOSS_SAY = {
 }; }
 
 // ===== お知らせ（右上のボタン → 一覧のページ）。新しいお知らせがあると赤い点 =====
+// gift: { gems: 5, feathers: { rare: 1 }, coins, redPotions, potions } を付けると、そのお知らせに「受け取る」ボタンが出る（1人1回。until: '2026-12-31' で期限）
 const NEWS = [ // 新しいものを上に。id は増やしていく
   { id: 8, date: '2026/10/16', tag: '新機能', title: 'お知らせページができました', body: '右上の📢ボタンから、アップデートやイベントの情報を見られるようになりました。' },
 ];
-function newsUnread() { return NEWS.length && NEWS[0].id > (game.newsSeen || 0); }
+function newsGiftReady(n) { return n.gift && !((game.compGot || {})['news-' + n.id]) && !(n.until && new Date() > new Date(n.until + 'T23:59:59')); }
+function newsUnread() { return (NEWS.length && NEWS[0].id > (game.newsSeen || 0)) || NEWS.some(newsGiftReady); } // 受け取っていないプレゼントがあっても赤い点
 function updateNewsDot() { const b = document.getElementById('newsBtn'); if (b) b.classList.toggle('unread', !!newsUnread()); }
 function openNews() {
   let ov = document.getElementById('newsModal');
@@ -833,11 +835,13 @@ function openNews() {
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.news-close')) { ov.classList.remove('show'); return; }
-      const it = ev.target.closest('.news-item'); if (it) it.classList.toggle('open');
+      const gb = ev.target.closest('[data-news-gift]');
+      if (gb) { const n = NEWS.find(x => x.id === +gb.dataset.newsGift); if (n && newsGiftReady(n)) { grantComp({ id: 'news-' + n.id, ...n.gift }); try { playLoginBonusSound(); } catch (e) {} showNotice(`🎁 ${compRewardText(n.gift)} を受け取りました`, false, 2500); openNews(); updateNewsDot(); } return; }
+      const it = ev.target.closest('.news-item'); if (it && !ev.target.closest('.news-gift')) it.classList.toggle('open');
     });
   }
   const seen = game.newsSeen || 0;
-  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span><div class="news-h">${n.title}</div>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div></div>`).join('');
+  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span><div class="news-h">${n.title}</div>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div>${n.gift ? `<div class="news-gift"><span>🎁 ${compRewardText(n.gift)}</span>${newsGiftReady(n) ? `<button data-news-gift="${n.id}">受け取る</button>` : (game.compGot || {})['news-' + n.id] ? '<i>受け取り済み</i>' : '<i>期限切れ</i>'}</div>` : ''}</div>`).join('');
   ov.classList.add('show');
   game.newsSeen = NEWS[0].id; updateNewsDot(); saveGame();
   if (typeof playTone === 'function') playTone(1047, 0.06, 'square', 0.04);

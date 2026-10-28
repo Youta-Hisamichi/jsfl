@@ -2267,6 +2267,8 @@ document.addEventListener('pointerdown', event => {
   const target = HOLD_TARGETS.find(t => el.dataset[t.attr] !== undefined);
   const id = el.dataset[target.attr];
   const x = event.clientX, y = event.clientY;
+  // 押している間にボタンが描き直されて画面から外れると、指を離しても document まで届かない（スマホ）。押した要素そのものにも「離した」を付けておく
+  [event.target, el].forEach(n => ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(t => n.addEventListener(t, stopHold, { once: true })));
   let interval = HOLD_FIRST_INTERVAL_MS;
   const snap = { t: target, id, x, y, n: 0, coins: game.coins, gems: game.gems, level: holdLevel(target, id), stat: target.attr === 'upgrade' ? getUpgradeStatValue(id) : 0 };
   holdSnap = snap;
@@ -2279,7 +2281,7 @@ document.addEventListener('pointerdown', event => {
   };
   holdTimer = setTimeout(repeat, HOLD_DELAY_MS);
 });
-['pointerup', 'pointercancel'].forEach(type => document.addEventListener(type, stopHold));
+['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(type => document.addEventListener(type, stopHold, true));
 window.addEventListener('blur', stopHold);
 
 function buyRebirthItemMax(id, x, y) {
