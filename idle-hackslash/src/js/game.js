@@ -1034,7 +1034,7 @@ function giveBattleFeather(x, y, head) {
   return r;
 }
 // メタルスライムの羽：N羽が多め。R以上の羽を合わせて3枚以上持っているときは、R以上は出さずN羽にする
-const METAL_FEA_WEIGHTS = { common: 70, rare: 20, epic: 7, legendary: 2.5, mythic: 0.5 };
+const METAL_FEA_WEIGHTS = RECORD_FEA_RATES; // 羽ガチャと同じ確率
 function rollMetalFeather() {
   let roll = Math.random() * Object.values(METAL_FEA_WEIGHTS).reduce((a, b) => a + b, 0), r = 'common';
   for (const k of FEA_RARITIES) { roll -= METAL_FEA_WEIGHTS[k]; if (roll < 0) { r = k; break; } }

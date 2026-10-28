@@ -704,6 +704,7 @@ function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[
 function getRecordGoalReward(lv) { return 1; } // どの段階も進化の羽1枚
 // 羽ガチャ（戦績・戦闘のおまけ・転生）：1枚ずつレア度を抽選（N 80%・R 14%・SR 4.8%・SSR 1%・UR 0.2%）
 const RECORD_FEA_RATES = { common: 80, rare: 14, epic: 4.8, legendary: 1, mythic: 0.2 };
+function feaRateText() { return FEA_RARITIES.map(r => `${RARITY_INFO[r].label} ${RECORD_FEA_RATES[r]}%`).join('・'); } // 羽ガチャの確率の表示（いつも今の数値から）
 function rollRecordFeather() { let r = Math.random() * 100; for (const k of ['mythic', 'legendary', 'epic', 'rare']) { if ((r -= RECORD_FEA_RATES[k]) < 0) return k; } return 'common'; }
 function giveRecordFeathers(n) {
   const got = {};
@@ -718,7 +719,7 @@ function showFeatherGacha(got, n) { // 羽ガチャの結果
   const list = FEA_RARITIES.slice().reverse().filter(r => got[r]);
   const best = list[0] || 'common';
   const ov = document.createElement('div'); ov.className = 'modal-overlay show fg-ov'; ov.style.zIndex = 85;
-  ov.innerHTML = `<div class="modal-panel fg-panel" style="--rc:${RARITY_INFO[best].color}"><div class="fg-title">🪶 羽ガチャ ${n}回</div><div class="fg-list">${list.map((r, i) => `<div class="fg-card${r === 'common' ? '' : ' fg-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.12}s">${feaIco(r, 'fg-ico')}<b>進化の${feaName(r)}</b><span>×${formatCoinNumber(got[r])}</span><small>${rarityStars(r)}</small></div>`).join('')}</div><div class="fg-rates">N 70%・R 20%・SR 7%・SSR 2.5%・UR 0.5%</div><button class="modal-close-btn fg-ok">OK</button></div>`;
+  ov.innerHTML = `<div class="modal-panel fg-panel" style="--rc:${RARITY_INFO[best].color}"><div class="fg-title">🪶 羽ガチャ ${n}回</div><div class="fg-list">${list.map((r, i) => `<div class="fg-card${r === 'common' ? '' : ' fg-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.12}s">${feaIco(r, 'fg-ico')}<b>進化の${feaName(r)}</b><span>×${formatCoinNumber(got[r])}</span><small>${rarityStars(r)}</small></div>`).join('')}</div><div class="fg-rates">${feaRateText()}</div><button class="modal-close-btn fg-ok">OK</button></div>`;
   document.body.appendChild(ov);
   const close = () => ov.remove();
   ov.querySelector('.fg-ok').addEventListener('click', close);
