@@ -1,7 +1,7 @@
 // ===== 属性相場（みんなの属性の流行を株価にたとえた仕組み） =====
 // ・毎日、冒険者たち（全プレイヤー共通の日付シードで動く）の属性の人気が変わる
 // ・人気の属性は魔物に研究されて効きにくく、人気のない属性は不意を突けて効きやすい（戦闘の補正）
-// ・ジェムで属性の「株」を買える。株価＝その属性の人気。翌日の人気が上がれば得、下がれば損（翌日に自動で精算）
+// ・ジェムで属性の「株」を買える。株価＝その属性の人気。翌日に、値動きに合わせた数の進化の羽や種で受け取る（ジェムでは返さない）
 // ・明日みんながどの属性に流れるかは「うわさ」から読むしかない（7割くらい当たる）
 const MKT_ELEMS = ['fire', 'water', 'grass'];
 const MKT_BET_MAX = 30; // 1日に買える株（ジェム）の上限
@@ -64,9 +64,14 @@ function mktSettle() {
   const d0 = new Date(); let off = 0; for (let i = 0; i < 400 && mktDayKey(-i) !== m.day; i++) off = -i - 1;
   for (const e of MKT_ELEMS) { const g = (m.hold || {})[e] || 0; if (!g) continue; const p0 = mktPrice(off, e), p1 = mktPrice(off + 1, e), r = Math.max(0, Math.round(g * p1 / p0)); back += r; put += g; res.push({ e, g, r, p0, p1 }); }
   game.market = { day: mktDayKey(0), hold: {} };
-  if (back) { game.gems += back; game.marketProfit = (game.marketProfit || 0) + back - put; }
+  const items = {}; // 精算はジェムではなく、1つ分ごとに羽ガチャ1枚（75%）か、種1個（25%）
+  for (let i = 0; i < back; i++) {
+    if (Math.random() < 0.75) { const r = rollRecordFeather(); addFea(r, 1); const k = `${RARITY_INFO[r].label}の進化の羽`; items[k] = (items[k] || 0) + 1; }
+    else { const ks = Object.keys(SEEDS), k = ks[Math.floor(Math.random() * ks.length)]; gainSeed(k, 1); items[SEEDS[k].name] = (items[SEEDS[k].name] || 0) + 1; }
+  }
+  const itemTxt = Object.entries(items).map(([k, n]) => `${k}×${n}`).join('・');
   saveGame(); updateStatsUI();
-  return res.length ? { res, back, put } : null;
+  return res.length ? { res, back, put, itemTxt } : null;
 }
 function mktHeld() { const m = game.market; return m && m.day === mktDayKey(0) ? m.hold || {} : {}; }
 function mktBuy(e, n, ev) {
@@ -100,12 +105,12 @@ function openMarket(settled) {
   ov.innerHTML = `<div class="modal-panel mkt-panel">
     <div class="mkt-title">📈 属性相場</div>
     <div class="mkt-lead">冒険者みんなが使う属性は毎日うつり変わる。<b>人気の属性ほど魔物に研究されて効きにくく</b>、人気のない属性ほど不意を突けて<b>強くなる</b>。</div>
-    ${st ? `<div class="mkt-settle">📬 昨日の株を精算：${st.res.map(r => `${ELEMENTS[r.e].icon}💎${r.g}→<b class="${r.r >= r.g ? 'up' : 'dn'}">${r.r}</b>`).join('　')}　合計 <b>💎${st.back}</b>（${st.back - st.put >= 0 ? '+' : ''}${st.back - st.put}）</div>` : ''}
+    ${st ? `<div class="mkt-settle">📬 昨日の株を精算：${st.res.map(r => `${ELEMENTS[r.e].icon}💎${r.g}→<b class="${r.r >= r.g ? 'up' : 'dn'}">${r.r}</b>`).join('　')}　合計 <b>${st.back}個分</b>：${st.itemTxt || 'なし'}</div>` : ''}
     <div class="mkt-head"><span>属性</span><span>昨日→今日の人気</span><span>株価</span><span></span></div>
     ${rows}
     <div class="mkt-news"><b>🗞️ 明日のうわさ</b>${news.map(n => `<div>${ELEMENTS[n.e].icon} ${n.text} <span class="${n.dir === 'up' ? 'up' : 'dn'}">${n.dir === 'up' ? '↗' : '↘'}</span></div>`).join('')}<small>うわさは7割くらいしか当たらない。みんなの気持ちを読もう</small></div>
     <div class="mkt-me">あなたの最近の属性：${myLine}<small>（自分の偏りも人気に1割まざる）</small></div>
-    <div class="mkt-rule">株はジェムで買える（今日 💎${used} / ${MKT_BET_MAX}）。日付が変わると<b>翌日の株価</b>で自動で売れる。人気が上がれば得、下がれば損。${game.marketProfit ? `通算 ${game.marketProfit >= 0 ? '+' : ''}${game.marketProfit}💎` : ''}</div>
+    <div class="mkt-rule">株はジェムで買える（今日 💎${used} / ${MKT_BET_MAX}）。日付が変わると<b>翌日の株価</b>で精算し、その数だけ<b>進化の羽や種</b>がもらえる（ジェムでは戻らない）。人気が上がれば多く、下がれば少なく。</div>
     <button class="modal-close-btn mkt-close">閉じる</button></div>`;
   document.body.appendChild(ov);
   ov.querySelector('.mkt-close').onclick = () => ov.remove();
@@ -116,5 +121,5 @@ function openMarket(settled) {
   if (fb && ELEMENTS_ON) { const b = document.createElement('button'); b.className = 'mkt-entry'; b.id = 'mktEntry'; fb.parentNode.insertBefore(b, fb); b.onclick = () => openMarket(); }
   const renderEntry = () => { const el = document.getElementById('mktEntry'); if (!el) return; const best = MKT_ELEMS.slice().sort((a, b) => marketMult(b) - marketMult(a))[0]; el.innerHTML = `📈 属性相場 <small>今日の狙い目 ${ELEMENTS[best].icon}${ELEMENTS[best].name} ×${marketMult(best).toFixed(2)}</small>`; };
   renderEntry(); setInterval(renderEntry, 30000);
-  setTimeout(() => { const st = mktSettle(); if (st) showNotice(`📈 属性相場：昨日の株を精算して 💎${st.back}（${st.back - st.put >= 0 ? '+' : ''}${st.back - st.put}）`, false, 4000); }, 6000);
+  setTimeout(() => { const st = mktSettle(); if (st) showNotice(`📈 属性相場：昨日の株を精算 → ${st.itemTxt || 'なし'}`, false, 4000); }, 6000);
 }

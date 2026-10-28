@@ -11,6 +11,7 @@ const RARE_ENEMIES = [
 ];
 let dbgRareNext = null; // デバッグ：次に出す
 function pickRare() {
+  if (game.rareDay === todayKey() && !dbgRareNext) return null; // レア敵は1日1回まで
   if (game.skipChallenge || game.stage % 10 === 0) return null;
   if (dbgRareNext) { const r = RARE_ENEMIES.find(x => x.id === dbgRareNext); dbgRareNext = null; return r; }
   for (const r of RARE_ENEMIES) { try { if (r.ok() && Math.random() < r.chance) return r; } catch (e) {} }
@@ -20,7 +21,7 @@ function pickRare() {
   const e = orig.apply(this, arguments);
   if (isPlayer || !e || e.isBoss) return e;
   const r = pickRare(); if (!r) return e;
-  e.emoji = r.base; e.shape = undefined; e.rare = r.id;
+  e.emoji = r.base; e.shape = undefined; e.rare = r.id; game.rareDay = todayKey();
   e.maxHp = e.hp = Math.round(e.maxHp * r.hp); e.radius = Math.round(e.radius * 1.25);
   e.liveFrames = -60 * 30; // 逃げるまで長め
   setTimeout(() => {
@@ -56,7 +57,7 @@ function pickRare() {
   if (!game.rareSeen) game.rareSeen = {};
   const first = !game.rareSeen[r.id]; game.rareSeen[r.id] = (game.rareSeen[r.id] || 0) + 1;
   const w = r.reward, parts = [];
-  if (w.gems) { const g = w.gems * (first ? 2 : 1); game.gems += g; parts.push(`💎${g}`); }
+  { const g = first ? 5 : 1; game.gems += g; parts.push(`💎${g}`); } // ジェムは初撃破だけ5個、2回目からは1個
   if (w.coin) { const c = Math.round(stageCoinRaw() * computeBonuses().coinMult * w.coin); game.coins += c; spawnCoinBurst(pos.x, pos.y, c, 12); parts.push(`🟡${formatCoinNumber(c)}`); }
   if (w.chest) { setTimeout(() => dropTreasureChest(w.chest), 800); parts.push(`${RARITY_INFO[w.chest].label}の宝箱`); }
   setTimeout(() => {

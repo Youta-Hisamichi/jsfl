@@ -1186,7 +1186,8 @@ function buildGemSourceList() {
   row('（羽ガチャの確率）', '—', `N${RECORD_FEA_RATES.common}%・R${RECORD_FEA_RATES.rare}%・SR${RECORD_FEA_RATES.epic}%・SSR${RECORD_FEA_RATES.legendary}%・UR${RECORD_FEA_RATES.mythic}%`);
   sec('📖 図鑑・発見');
   row('ステージイベント図鑑（初めてクリア）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
-  RARE_ENEMIES.forEach(r => { if (r.reward.gems) row(`レア敵「${r.name}」`, `💎${r.reward.gems}`, `初撃破は2倍（💎${r.reward.gems * 2}）／${r.cond}`); });
+  RARE_ENEMIES.forEach(r => row(`レア敵「${r.name}」`, '💎5／💎1', `初撃破は💎5、2回目からは💎1／${r.cond}`));
+  row('（レア敵の出現）', '—', '1日1回まで');
   sec('🔁 転生');
   row('転生するたび', `💎${getRebirthGemGain()}（いま）`, '(ステージの桁数 ＋ 永続ボーナス) × 転生効率進化');
   sec('📅 ログイン・ミッション');
@@ -1202,7 +1203,7 @@ function buildGemSourceList() {
   row('フレンド登録（はじめて）', `💎${FRIEND_FIRST_GEMS}`, '1回だけ');
   row('フレンドのステージに勝つ', `💎${FRIEND_BEAT_GEMS}`, `フレンド1人につき1回（最大${FRIEND_MAX}人）`);
   row('レビューで応援する', '💎10', '1回だけ');
-  row('株（値上がりで精算）', '買った💎×値動き', '翌日に精算');
+  row('株（属性相場）', '羽・種', 'ジェムでは戻らない。翌日に値動きに合わせた数の羽ガチャ・種');
   row('最終目標ステージ100万に到達', '💎100', '1回だけ');
   sec('💳 課金ショップ');
   for (const id in SUPERGEM_SHOP_ITEMS) { const it = SUPERGEM_SHOP_ITEMS[id]; row(it.name, it.desc.replace('ジェム +', '💎'), `${it.cost}円`); }

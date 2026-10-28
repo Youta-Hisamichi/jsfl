@@ -78,14 +78,14 @@ setInterval(() => { if (document.hidden || phase !== 'battle') return; game.runP
 
 // ===== 縛りの実績（周回中に条件を満たすとジェム） =====
 const RUN_FEATS = [
-  { id: 'solo100', icon: '🗡️', name: '一匹狼', desc: '仲間なしでステージ100に到達', gems: 10, check: st => st >= 100 && getCompanionTotal() === 0 },
-  { id: 'noSkill50', icon: '🚫', name: '素手の勇者', desc: 'スキルを1つも装備せずにステージ50に到達', gems: 5, check: st => st >= 50 && getEquippedSkills().length === 0 },
-  { id: 'fast100', icon: '⏱️', name: '韋駄天', desc: '周回開始から10分以内にステージ100に到達', gems: 10, check: st => st >= 100 && (game.runPlayMs || 0) <= 600000 },
-  { id: 'fast500', icon: '🚀', name: '流星', desc: '周回開始から30分以内にステージ500に到達', gems: 20, check: st => st >= 500 && (game.runPlayMs || 0) <= 1800000 },
+  { id: 'solo100', icon: '🗡️', name: '一匹狼', desc: '仲間なしでステージ100に到達', gems: 3, check: st => st >= 100 && getCompanionTotal() === 0 },
+  { id: 'noSkill50', icon: '🚫', name: '素手の勇者', desc: 'スキルを1つも装備せずにステージ50に到達', gems: 3, check: st => st >= 50 && getEquippedSkills().length === 0 },
+  { id: 'fast100', icon: '⏱️', name: '韋駄天', desc: '周回開始から10分以内にステージ100に到達', gems: 3, check: st => st >= 100 && (game.runPlayMs || 0) <= 600000 },
+  { id: 'fast500', icon: '🚀', name: '流星', desc: '周回開始から30分以内にステージ500に到達', gems: 3, check: st => st >= 500 && (game.runPlayMs || 0) <= 1800000 },
   // 掟の覇者の実績は、掟の3択を廃止したので外した
-  { id: 'reb10', icon: '🌌', name: '輪廻の旅人', desc: '転生10回', gems: 10, check: () => (game.reincarnations || 0) >= 10 },
-  { id: 'reb30', icon: '🌠', name: '輪廻の達人', desc: '転生30回', gems: 20, check: () => (game.reincarnations || 0) >= 30 },
-  { id: 'reb100', icon: '♾️', name: '輪廻の覇王', desc: '転生100回', gems: 50, check: () => (game.reincarnations || 0) >= 100 },
+  { id: 'reb10', icon: '🌌', name: '輪廻の旅人', desc: '転生10回', gems: 3, check: () => (game.reincarnations || 0) >= 10 },
+  { id: 'reb30', icon: '🌠', name: '輪廻の達人', desc: '転生30回', gems: 3, check: () => (game.reincarnations || 0) >= 30 },
+  { id: 'reb100', icon: '♾️', name: '輪廻の覇王', desc: '転生100回', gems: 10, check: () => (game.reincarnations || 0) >= 100 },
 ];
 function checkRunProgress() {
   if (!game.runFeats) game.runFeats = {};
