@@ -4787,7 +4787,7 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 #loginBonusModal #lbPanel.lb2 { container-type: inline-size; width: min(380px, 94vw, 60vh); max-height: none; aspect-ratio: 1010 / 1557; padding: 0 !important; overflow: visible; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/lb2/panel.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.7)); }
 #loginBonusModal #lbPanel.lb2::after, #loginBonusModal #lbPanel.lb2::before, #lbPanel.lb2 .lb-rays, #lbPanel.lb2 .lb-title, #lbPanel.lb2 .lb-days { display: none !important; }
 #lbPanel.lb2 .lb-content { position: absolute; inset: 0; }
-#lbPanel.lb2 .lb-content > * { position: absolute; left: 0; right: 0; margin: 0 !important; }
+#lbPanel.lb2 .lb-content > * { position: absolute !important; left: 0; right: 0; width: auto !important; margin: 0 !important; }
 #lbPanel.lb2 #loginBonusStreak { top: 16.6%; height: 4.4%; left: 15%; right: 15%; display: flex; align-items: center; justify-content: center; font-size: 4.1cqw; font-weight: 900; color: #fff; white-space: nowrap; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 2px #000; }
 #lbPanel.lb2 #lbGreet { top: 0; bottom: 0; pointer-events: none; }
 #lbPanel.lb2 #lbGreet .greet { display: block; margin: 0; }
@@ -4798,8 +4798,9 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 #lbPanel.lb2 #lbGreet .gr-bubble b { display: block; font-size: 0.85em; color: #a0601a; }
 #lbPanel.lb2 .lb-orb-wrap { top: 37%; height: 22%; display: flex; align-items: center; justify-content: center; }
 #lbPanel.lb2 .lb-orb-wrap::before { display: none; }
-#lbPanel.lb2 .lb-orb { width: 36cqw; height: 36cqw; }
-#lbPanel.lb2 .lb-orb .ico-img, #lbPanel.lb2 .lb-orb img { width: 34cqw; height: 34cqw; object-fit: contain; }
+#lbPanel.lb2 .lb-orb { width: 38cqw; height: 38cqw; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.55)) !important; } /* N のときに灰色の光でくすまないよう、影だけ */
+#lbPanel.lb2.r-rare .lb-orb, #lbPanel.lb2.r-epic .lb-orb, #lbPanel.lb2.r-legendary .lb-orb { filter: drop-shadow(0 0 12px var(--orb)) drop-shadow(0 6px 8px rgba(0,0,0,0.55)) !important; }
+#lbPanel.lb2 .lb-orb .ico-img, #lbPanel.lb2 .lb-orb img { width: 38cqw; height: 38cqw; object-fit: contain; }
 #lbPanel.lb2 .lb-rarity { top: 57%; height: 5%; display: flex; align-items: center; justify-content: center; gap: 1.5cqw; font-size: 9cqw; color: #fff; text-shadow: -2px -2px 0 #1a2a6a, 2px -2px 0 #1a2a6a, -2px 2px 0 #1a2a6a, 2px 2px 0 #1a2a6a, 0 3px 3px #000; }
 #lbPanel.lb2 .lb-rarity .up { position: absolute; top: -70%; left: 0; right: 0; font-size: 3.6cqw; }
 #lbPanel.lb2 .lb-rarity img { height: 8cqw; width: auto; }

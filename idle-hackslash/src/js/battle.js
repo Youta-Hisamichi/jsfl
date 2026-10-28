@@ -1622,7 +1622,7 @@ function checkLoginBonus(awayMs) {
   // 結果が出たら、プレゼント箱を「手に入った一番良い宝箱」の絵に（宝箱がなければコイン）
   const showRarity = (r, withUp) => { // 真ん中の宝箱は帰還ボーナスのレア度（★）と同じ色の宝箱（サプライズ宝箱などは下の欄に出る）
     const info = RARITY_INFO[r];
-    orb.innerHTML = xi(CHEST_ICON[r]) || '🎁';
+    orb.innerHTML = LB2_CHEST[r] ? `<img class="ico-img" src="${LB2_CHEST[r]}" alt="">` : (xi(CHEST_ICON[r]) || '🎁'); // 帰還ボーナスは超解像で4倍にした宝箱の絵
     panel.style.setProperty('--lb', info.color);
     orb.style.setProperty('--orb', info.color);
     orb.className = 'lb-orb burst';
@@ -1866,6 +1866,7 @@ window.addEventListener('pointerdown', () => {
 // 宝箱にはレア度がある。ステージ左下にレア度ごとにまとめて「×個数」で表示し、タップで1個ずつ開封
 const CHEST_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
 const CHEST_STOCK_MAX = 100; // 持っておける宝箱の最大数（レア度ごとに）
+const LB2_CHEST = { common: 'assets/img/ui/lb2/chest1.webp', rare: 'assets/img/ui/lb2/chest2.webp', epic: 'assets/img/ui/lb2/chest4.webp', legendary: 'assets/img/ui/lb2/chest6.webp', mythic: 'assets/img/ui/lb2/chest7.webp' }; // 帰還ボーナス用の高解像度の宝箱
 const CHEST_ICON = { common: 'x_chest1', rare: 'x_chest2', epic: 'x_chest4', legendary: 'x_chest6', mythic: 'x_chest7' };
 const CHEST_COIN_MULT = { common: 3, rare: 8, epic: 25, legendary: 77, mythic: 255 }; // 宝箱のコイン：開けたステージのザコ1体ぶん×この数
 const CHEST_FEATHER_ICON_N = { rare: 2, epic: 3, legendary: 4, mythic: 5 }; // ★2〜★5の宝箱の羽は束になった絵
