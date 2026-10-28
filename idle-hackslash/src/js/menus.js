@@ -698,8 +698,8 @@ const RECORD_GOALS = {
 };
 function getRecordGoalLevel(key) { return (game.recordGoals && game.recordGoals[key]) || 0; }
 function getRecordGoalReward(lv) { return 1; } // どの段階も進化の羽1枚
-// 戦績のリワードは「羽ガチャ」：1枚ずつレア度を抽選（N 70%・R 20%・SR 7%・SSR 2.5%・UR 0.5%）
-const RECORD_FEA_RATES = { common: 70, rare: 20, epic: 7, legendary: 2.5, mythic: 0.5 };
+// 羽ガチャ（戦績・戦闘のおまけ・転生）：1枚ずつレア度を抽選（N 80%・R 14%・SR 4.8%・SSR 1%・UR 0.2%）
+const RECORD_FEA_RATES = { common: 80, rare: 14, epic: 4.8, legendary: 1, mythic: 0.2 };
 function rollRecordFeather() { let r = Math.random() * 100; for (const k of ['mythic', 'legendary', 'epic', 'rare']) { if ((r -= RECORD_FEA_RATES[k]) < 0) return k; } return 'common'; }
 function giveRecordFeathers(n) {
   const got = {};

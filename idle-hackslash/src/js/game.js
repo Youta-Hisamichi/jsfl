@@ -2359,8 +2359,8 @@ function hintTowerStage(dmg) {
 }
 
 // 転生ボーナスのダイアログ：OKを押すまで出しておき、押したら次の周回へ
-// 転生の羽ガチャ：枚数が多いので戦績の羽ガチャより控えめ（N 85%・R 11%・SR 3%・SSR 0.9%・UR 0.1%）
-const REBIRTH_FEA_RATES = { common: 85, rare: 11, epic: 3, legendary: 0.9, mythic: 0.1 };
+// 転生の羽ガチャも、ほかの羽ガチャと同じ確率
+const REBIRTH_FEA_RATES = RECORD_FEA_RATES;
 function rollRebirthFeathers(n) {
   const got = {};
   for (let i = 0; i < n; i++) { let x = Math.random() * 100, r = 'common'; for (const k of ['mythic', 'legendary', 'epic', 'rare']) { if ((x -= REBIRTH_FEA_RATES[k]) < 0) { r = k; break; } } got[r] = (got[r] || 0) + 1; }

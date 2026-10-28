@@ -466,8 +466,8 @@ const QUESTS = {
   ],
   weekly: [
     { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 3 },
-    { key: 'boss', text: 'ボスを30体倒す', goal: 30, gems: 3 },
-    { key: 'gacha', text: 'ガチャを30回引く', goal: 30, gems: 3 },
+    { key: 'boss', text: 'ボスを300体倒す', goal: 300, gems: 3 },
+    { key: 'evo', text: '進化ガチャを30回引く', goal: 30, gems: 3 },
     { key: 'login', text: '5日ログインする', goal: 5, gems: 3 },
   ],
 };

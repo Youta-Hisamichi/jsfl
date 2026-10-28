@@ -2106,6 +2106,7 @@ const onEvoPanelClick = event => {
   const tierIdx = rollEvoTier(gems, feathers), tier = EVO_TIERS[tierIdx];
   const accWasOpen = isEvoAccUnlocked();
   game.evoCount = (game.evoCount || 0) + 1; // 進化した回数（3回目で命中が開放）
+  if (typeof questTick === 'function') questTick('evo'); // ウィークリー「進化ガチャを30回引く」
    // 結果を閉じたら「命中が開放」を知らせる
   const feaN = evoFeaUseCount(feathers); // 使う羽の枚数（束ね紐で増える）
   game.gems -= gems; if (feathers) addFea(feathers, -feaN);
