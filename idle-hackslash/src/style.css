@@ -4830,3 +4830,13 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .comp-dbg .na-body { display: flex; flex-direction: column; font-size: 0.72rem; font-weight: 700; margin: 4px 0; }
 .comp-dbg textarea, .comp-dbg select { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.85rem; padding: 4px; border: 1px solid #c9a14a; border-radius: 6px; }
 .news-tag.t-おわび { background: #c0405a; } .news-tag.t-プレゼント { background: #d09a1a; } .news-tag.t-お知らせ { background: #4a6ad0; }
+/* 帰還ボーナス：宝箱の後ろでゆっくり回る後光（レア度の色が少し混ざる） */
+#lbPanel.lb2 .lb-orb-wrap::before { content: ''; display: block !important; position: absolute; left: 50%; top: 50%;  bottom: auto; transform: none !important; width: 82cqw; height: 82cqw; translate: -50% -50%; border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.85;
+  background: repeating-conic-gradient(from 0deg, rgba(255,246,200,0.85) 0deg 6deg, rgba(255,246,200,0) 6deg 20deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, rgba(0,0,0,0.7) 42%, transparent 70%); mask: radial-gradient(circle, #000 18%, rgba(0,0,0,0.7) 42%, transparent 70%);
+  animation: lbHalo 14s linear infinite; mix-blend-mode: screen; }
+#lbPanel.lb2 .lb-orb-wrap::after { content: ''; position: absolute; left: 50%; top: 50%;  bottom: auto; transform: none; width: 52cqw; height: 52cqw; translate: -50% -50%; border-radius: 50%; pointer-events: none; z-index: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lb, #ffd76b) 55%, #fff 45%) 0%, rgba(255,240,180,0.35) 35%, transparent 68%); animation: lbHaloPulse 2.4s ease-in-out infinite alternate; }
+#lbPanel.lb2 .lb-orb { position: relative; z-index: 1; }
+@keyframes lbHalo { to { rotate: 360deg; } }
+@keyframes lbHaloPulse { from { opacity: 0.55; scale: 0.92; } to { opacity: 1; scale: 1.08; } }
