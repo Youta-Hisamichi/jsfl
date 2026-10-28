@@ -4782,3 +4782,35 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 @keyframes opTitleGlow { 0% { filter: none; } 12% { filter: brightness(1.8) drop-shadow(0 0 18px #fff); } 100% { filter: none; } }
 #shopList .sr-coin-price:has(.sr-plus-gem) { display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center; column-gap: 3px; width: max-content; min-width: 0; height: auto; border-radius: 12px; padding: 2px 8px; } /* 転生の値段：コインの下の行に＋ジェム1個 */
 #shopList .sr-coin-price .sr-plus-gem { grid-column: 1 / -1; text-align: center; color: #fff; font-size: 1.05rem; white-space: nowrap; line-height: 1.2; } /* コインと同じ白・同じ大きさ */
+
+/* ===== 帰還ボーナス（新デザイン）：見本の絵（lb2/panel.webp）を下地にして、文字・数字・宝箱だけを重ねる ===== */
+#loginBonusModal #lbPanel.lb2 { container-type: inline-size; width: min(380px, 94vw, 60vh); max-height: none; aspect-ratio: 1010 / 1557; padding: 0 !important; overflow: visible; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/lb2/panel.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.7)); }
+#loginBonusModal #lbPanel.lb2::after, #loginBonusModal #lbPanel.lb2::before, #lbPanel.lb2 .lb-rays, #lbPanel.lb2 .lb-title, #lbPanel.lb2 .lb-days { display: none !important; }
+#lbPanel.lb2 .lb-content { position: absolute; inset: 0; }
+#lbPanel.lb2 .lb-content > * { position: absolute; left: 0; right: 0; margin: 0 !important; }
+#lbPanel.lb2 #loginBonusStreak { top: 16.6%; height: 4.4%; left: 15%; right: 15%; display: flex; align-items: center; justify-content: center; font-size: 4.1cqw; font-weight: 900; color: #fff; white-space: nowrap; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 2px #000; }
+#lbPanel.lb2 #lbGreet { top: 0; bottom: 0; pointer-events: none; }
+#lbPanel.lb2 #lbGreet .greet { display: block; margin: 0; }
+#lbPanel.lb2 #lbGreet .gr-ico { position: absolute; left: 6.6%; top: 22.7%; width: 15%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: none; border: none; box-shadow: none; }
+#lbPanel.lb2 #lbGreet .gr-ico img, #lbPanel.lb2 #lbGreet .gr-ico .comp-sprite { width: 100%; height: 100%; object-fit: contain; }
+#lbPanel.lb2 #lbGreet .gr-bubble { position: absolute; left: 27%; right: 8%; top: 22.6%; height: 9.6%; display: flex; flex-direction: column; justify-content: center; padding: 0; margin: 0; background: none !important; border: none !important; box-shadow: none !important; color: #3a2a12; font-size: 3.9cqw; font-weight: 800; line-height: 1.3; text-align: left; }
+#lbPanel.lb2 #lbGreet .gr-bubble::before, #lbPanel.lb2 #lbGreet .gr-bubble::after { display: none !important; }
+#lbPanel.lb2 #lbGreet .gr-bubble b { display: block; font-size: 0.85em; color: #a0601a; }
+#lbPanel.lb2 .lb-orb-wrap { top: 37%; height: 22%; display: flex; align-items: center; justify-content: center; }
+#lbPanel.lb2 .lb-orb-wrap::before { display: none; }
+#lbPanel.lb2 .lb-orb { width: 36cqw; height: 36cqw; }
+#lbPanel.lb2 .lb-orb .ico-img, #lbPanel.lb2 .lb-orb img { width: 34cqw; height: 34cqw; object-fit: contain; }
+#lbPanel.lb2 .lb-rarity { top: 57%; height: 5%; display: flex; align-items: center; justify-content: center; gap: 1.5cqw; font-size: 9cqw; color: #fff; text-shadow: -2px -2px 0 #1a2a6a, 2px -2px 0 #1a2a6a, -2px 2px 0 #1a2a6a, 2px 2px 0 #1a2a6a, 0 3px 3px #000; }
+#lbPanel.lb2 .lb-rarity .up { position: absolute; top: -70%; left: 0; right: 0; font-size: 3.6cqw; }
+#lbPanel.lb2 .lb-rarity img { height: 8cqw; width: auto; }
+#lbPanel.lb2 #loginSlotBox { top: 65.3%; height: 6.9%; left: 9.5%; right: 9.5%; display: flex; align-items: center; justify-content: center; gap: 2cqw; padding: 0; border: none !important; background: none !important; box-shadow: none !important; font-size: 10cqw; }
+#lbPanel.lb2 #loginSlotBox .coin-ico { width: 10cqw; height: 10cqw; }
+#lbPanel.lb2 #loginSlotNum { max-width: none; }
+#lbPanel.lb2 .lb-extras { top: 74%; height: 4.6%; left: 7%; right: 7%; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 3cqw; min-height: 0; }
+#lbPanel.lb2 .lb-chip, #lbPanel.lb2 .lb-chip.lb-big { padding: 0 !important; border: none !important; border-image: none !important; background: none !important; box-shadow: none !important; font-size: 4.4cqw !important; color: #fff; white-space: nowrap; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+#lbPanel.lb2 .lb-chip.lb-big b { color: #ffd76b; font-size: 1.35em; }
+#lbPanel.lb2 #loginBonusAdBtn { top: 80.4%; height: 5%; left: 7.5% !important; right: 7.5% !important; width: auto !important; display: flex; align-items: center; justify-content: center; border: none !important; background: none !important; box-shadow: none !important; font-size: 4.8cqw; font-weight: 900; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+#lbPanel.lb2 #loginBonusAdBtn:not([style*="display: none"]) ~ * {}
+#lbPanel.lb2 #loginBonusCloseBtn { top: 87.6%; height: 6.6%; left: 16%; right: 16%; width: auto; border: none !important; background: none !important; box-shadow: none !important; font-size: 7.4cqw; font-weight: 900; color: #fff; text-shadow: -2px -2px 0 #0a1a5a, 2px -2px 0 #0a1a5a, -2px 2px 0 #0a1a5a, 2px 2px 0 #0a1a5a, 0 3px 3px #000; }
+#lbPanel.lb2 #loginBonusCloseBtn.lb-drawing { font-size: 4.4cqw; }
+#lbPanel.lb2 .lb-confetti { z-index: 5; }

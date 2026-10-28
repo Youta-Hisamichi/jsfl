@@ -1588,7 +1588,7 @@ function checkLoginBonus(awayMs) {
   saveGame();
 
   const panel = document.getElementById('lbPanel'), orb = document.getElementById('lbOrb'), rarityEl = document.getElementById('lbRarity');
-  panel.className = 'modal-panel lb-panel';
+  panel.className = 'modal-panel lb-panel lb2'; // lb2：見本の絵を下地にした新デザイン
   panel.style.setProperty('--lb', '#ffd76b');
   orb.style.setProperty('--orb', '#ffd76b');
   orb.className = 'lb-orb shaking'; orb.innerHTML = xi('x_present') || '🎁'; // 抽選中はプレゼント箱
@@ -1598,7 +1598,7 @@ function checkLoginBonus(awayMs) {
   renderLoginDays(tier);
   loginBonusReward.innerHTML = '';
   loginBonusCloseBtn.disabled = false; // 演出中に押すとスキップ、終わってから押すと閉じる
-  loginBonusCloseBtn.textContent = '抽選中……（タップでスキップ）';
+  loginBonusCloseBtn.textContent = '抽選中……（タップでスキップ）'; loginBonusCloseBtn.classList.add('lb-drawing');
   loginBonusAdBtn.style.display = 'none';
   loginAdReward = { coins: (bonusCoins + idleCoins) * (LOGIN_AD_MULT - 1), gems: LOGIN_AD_GEMS };
   loginSlotBox.classList.remove('settled');
@@ -1673,7 +1673,7 @@ function checkLoginBonus(awayMs) {
     if (!loginSlotBox.classList.contains('settled')) settleCoins();
     showChips();
     loginBonusCloseBtn.disabled = false;
-    loginBonusCloseBtn.textContent = '受け取る';
+    loginBonusCloseBtn.textContent = '受け取る'; loginBonusCloseBtn.classList.remove('lb-drawing');
     loginBonusAdBtn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画で'}コイン${LOGIN_AD_MULT}倍 <b>＋💎${LOGIN_AD_GEMS}</b>`;
     loginBonusAdBtn.style.display = '';
     updateStatsUI(); updatePotionButton(); renderArtifactList();
