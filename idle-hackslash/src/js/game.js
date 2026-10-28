@@ -1059,7 +1059,7 @@ function showFirstBossGift() { // 初めてステージ10のボスを倒した�
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove(); });
   playRegisterSound(); updateStatsUI(); saveGame();
 }
-function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return Math.round(d * d * 2 * getEvoRate('rebirth')); } // 転生報酬の進化の羽：ステージの桁数×桁数×2枚 // 桁数×桁数×10枚
+function getRebirthFeatherGain() { const d = String(Math.max(1, Math.floor(game.stage))).length; return Math.round(d * d * getEvoRate('rebirth')); } // 転生報酬の進化の羽：ステージの桁数×桁数枚 // 桁数×桁数×10枚
 function getRebirthGemGain() { return Math.round((String(Math.max(1, Math.floor(game.stage))).length + computeBonuses().rebirthGems) * getEvoRate('rebirth')); } // 転生ジェム：ステージの桁数（＋永続ボーナス） // 転生効率の進化でジェムと羽が増える
 function completeReincarnation() {
   nextNormalBgm(); // 転生したら雑魚戦の曲を転生前とは別の曲に
@@ -1073,7 +1073,7 @@ function completeReincarnation() {
   const gemBase = getRebirthGemGain(); // ステージを戻す前に計算
   const lvGain = getRebirthLvGain(game.stage);
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
-  const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×桁数×2枚）
+  const featherGain = getRebirthFeatherGain(); // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×桁数枚）
   const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
