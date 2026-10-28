@@ -3043,6 +3043,7 @@ function fitArenaHeight() {
   wrap.style.aspectRatio = a === 1 ? '' : `${Math.round(size)} / ${Math.round(size * a)}`;
   resizeCanvas();
 }
+{ const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); } // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
 setInterval(fitArenaHeight, 500); // スキルボタンやボス再戦ボタンの出し入れで下の高さが変わるので定期的に合わせる
 window.addEventListener('resize', () => requestAnimationFrame(fitArenaHeight));
 
