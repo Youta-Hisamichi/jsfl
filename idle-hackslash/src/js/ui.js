@@ -1143,6 +1143,7 @@ function playAutoUpStep() {
   [[1, 0, 0.04], [1.26, 40, 0.04], [1.5, 80, 0.04], [2, 120, 0.1]].forEach(([m, t, d]) => setTimeout(() => playTone(freq * m, d, 'square', 0.025), t));
 }
 // 強化の飛躍（10/100/1000Lv到達）を演出
+function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+3%' : '×' + l.mult}` : ''; } // レベルアップ文字の2行目（飛躍したときだけ）
 function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
