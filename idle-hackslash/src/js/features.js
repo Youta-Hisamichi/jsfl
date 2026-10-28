@@ -679,14 +679,16 @@ function greetHtml(kind) { // kind: 0=帰還ボーナス 1=ログインボーナ
   const ico = id === 'hero' ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id);
   return `<div class="greet"><span class="gr-ico">${ico}</span><div class="gr-bubble"><b>${name}</b>${t}</div></div>`;
 }
+function addLbGreet() { // 帰還ボーナスに、勇者か仲間のひとこと（毎回）
+  const days = document.getElementById('lbDays'); let el = document.getElementById('lbGreet');
+  if (!el && days) { el = document.createElement('div'); el.id = 'lbGreet'; days.parentNode.insertBefore(el, days); }
+  if (el) el.innerHTML = greetHtml(0);
+}
+if (loginBonusModal.classList.contains('show')) addLbGreet(); // 起動直後の帰還ボーナスは、この仕組みが読み込まれる前に開いているので、ここで付ける
 { const orig = checkLoginBonus; checkLoginBonus = function () {
   const was = loginBonusModal.classList.contains('show');
   const r = orig.apply(this, arguments);
-  if (!was && loginBonusModal.classList.contains('show')) {
-    const days = document.getElementById('lbDays'); let el = document.getElementById('lbGreet');
-    if (!el && days) { el = document.createElement('div'); el.id = 'lbGreet'; days.parentNode.insertBefore(el, days); }
-    if (el) el.innerHTML = greetHtml(0);
-  }
+  if (!was && loginBonusModal.classList.contains('show')) addLbGreet();
   return r;
 }; }
 { const orig = bossDefeated; bossDefeated = function (reason) { const boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying); if (boss && phase === 'battle') enemySay(boss, 'bossWin', true); return orig.apply(this, arguments); }; } // 負けたらボスが勝ち誇る
