@@ -828,7 +828,7 @@ const SKILL_GACHA_SKILLS = {
   skillHeal:     { icon: '💗', name: '回復',     desc: 'HPを回復' },
   skillPoison:   { icon: '☠️', name: '毒',       desc: '当てた敵を毒状態に' },
   skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
-  skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: '取得したら転生まで常に攻撃力1.5倍（セット不要）' },
+  skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: 'ボタンを押すと20秒間 攻撃力1.5倍' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
   skillCoinStrike:{ icon: '🪙', name: 'コイン攻撃', desc: '20秒間 敵めがけてコインを投げまくる（当たるとコイン獲得）・討伐コイン1.5倍' },
   skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },

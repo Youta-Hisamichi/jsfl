@@ -57,7 +57,7 @@ function renderSkillGacha() {
   if (wg) { wg.hidden = true; wg.dataset.full = wFull || !weaponGachaPool().length ? '1' : ''; if (wg.dataset.full) wg.classList.add('is-disabled'); }
   updateSkillButtonVisibility();
 }
-const PASSIVE_SKILLS = ['skillAtkUp', 'skillRegen']; // 取得するだけで効く（スキル枠を使わない）
+const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
 function updateSkillButtonVisibility() {
   let keys;
   try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
@@ -433,7 +433,7 @@ function getPlayerAtk() {
   const b = computeBonuses();
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
-  const atkUpBonus = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; // 攻撃力UPスキル（取得したら転生まで常時発動）
+  const atkUpBonus = Date.now() < atkUpEndAt ? ATK_UP_MULT : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
   return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) + compShare('atk')))); // 仲間の攻撃力の10%も上乗せ
 }
 function getPlayerMaxHP() {

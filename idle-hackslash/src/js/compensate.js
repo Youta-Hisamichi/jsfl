@@ -193,7 +193,7 @@ function powerBreakdown() {
   const sA = 1 + seedUsed('atk') * SEED_PER_USE, sH = 1 + seedUsed('hp') * SEED_PER_USE;
   if (sA !== 1) rows.atk.push(['パワーの種', sA]); if (sH !== 1) rows.hp.push(['HPの種', sH]);
   const sub = getSubStatMult(); if (sub !== 1) { rows.atk.push(['紋章（サブスク）', sub]); rows.hp.push(['紋章（サブスク）', sub]); }
-  const atkUp = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; if (atkUp !== 1) rows.atk.push(['攻撃力UPスキル', atkUp]);
+  const atkUp = (Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1; if (atkUp !== 1) rows.atk.push(['攻撃力UPスキル', atkUp]);
   const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1; if (accel !== 1) rows.atk.push(['加速スキル（発動中）', accel]);
   const ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1; if (ad !== 1) rows.atk.push(['動画バフ', ad]);
   const early = getEarlyPlayerHpRate(game.stage); if (early !== 1) rows.hp.push(['序盤の補正', early]);

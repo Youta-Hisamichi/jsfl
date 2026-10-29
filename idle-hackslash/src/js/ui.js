@@ -3043,9 +3043,11 @@ function fitArenaHeight() {
   if (!size || getActiveTab() !== 'game') return;
   let a = 1;
   if (ARENA_RECT) {
-    const bar = document.querySelector('.cmd-bar'), tab = document.getElementById('tabBar');
-    if (!bar || !tab || !bar.offsetHeight) return;
-    const barBottom = bar.getBoundingClientRect().bottom + window.scrollY; // 下のボタン帯の下端（ページ上の位置。固定表示のデバッグボタンは基準にしない）
+    const tab = document.getElementById('tabBar');
+    if (!tab) return;
+    let barBottom = wrap.getBoundingClientRect().bottom; // ゲーム画面の下に見えている物（ボス再戦ボタンなど）があれば、その下端まで。何もなければタブバーの上まで画面を伸ばす
+    for (let el = wrap.nextElementSibling; el; el = el.nextElementSibling) { if (el.offsetHeight > 12 && getComputedStyle(el).position !== 'fixed') barBottom = Math.max(barBottom, el.getBoundingClientRect().bottom); }
+    barBottom += window.scrollY;
     const line = window.innerHeight - tab.offsetHeight - 4; // タブバーの上端（固定表示）
     const cssH = wrap.getBoundingClientRect().height;
     a = Math.max(1, Math.min(ARENA_MAX_ASPECT, (cssH + line - barBottom) / size));
@@ -3055,7 +3057,8 @@ function fitArenaHeight() {
   wrap.style.aspectRatio = a === 1 ? '' : `${Math.round(size)} / ${Math.round(size * a)}`;
   resizeCanvas();
 }
-{ const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); } // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
+{ const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); }
+{ const db = document.getElementById('debugToggleBtn'), aw = document.querySelector('.arena-wrap'); if (db && aw) aw.appendChild(db); } // デバッグボタンもゲーム画面の中（左下）に重ねる // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
 { // ボス戦のあいだは、ステージ進捗バーを隠して、その場所に自キャラとボスのHPを小さく並べる（終わったら下に戻す）
   const row = document.querySelector('.hp-row'), bar = document.querySelector('.stage-bar-row');
   if (row && bar) {
@@ -3284,6 +3287,7 @@ if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.f
 if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
+if (!game.atkUpBtnMig) { game.atkUpBtnMig = true; if (game.shopOwned.skillAtkUp && Array.isArray(game.equippedSkills) && !game.equippedSkills.includes('skillAtkUp') && getEquippedSkills().length < getSkillSlots()) game.equippedSkills.push('skillAtkUp'); } // 攻撃UPはボタン発動に戻したので、空き枠があれば装備しておく
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
 updateSkillButtonVisibility(); // セーブを読み込んだ後に、装備中スキルのボタンを出す
 if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
@@ -3780,7 +3784,7 @@ function showFormulaDebug() {
   rows.push(`<table class="fd-tb"><tr><th>段階</th><th>攻撃力倍率</th><th>HP倍率</th><th>仲間攻撃倍率</th><th>仲間HP倍率</th></tr>${tr.map((t, i) => { const p = tr[i - 1]; const c = (k) => M(t[k]) + (p && p[k] && t[k] !== p[k] ? `<i>(${t[k] / p[k] >= 1 ? '×' : '×'}${+(t[k] / p[k]).toFixed(3)})</i>` : ''); return `<tr><td>${t.label}</td><td>${c('atk')}</td><td>${c('hp')}</td><td>${c('cAtk')}</td><td>${c('cHp')}</td></tr>`; }).join('')}</table>`);
   sec('進化率');
   EVO_KINDS.forEach(k => line(EVO_KIND_LABEL[k], M(getEvoRate(k)), fmtEvoPct(getEvoRate(k))));
-  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1, atkUp = (game.shopOwned.skillAtkUp || Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1, sub = getSubStatMult(), ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1;
+  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1, atkUp = (Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1, sub = getSubStatMult(), ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1;
   const csA = compShare('atk'), csH = compShare('hp'), early = getEarlyPlayerHpRate(game.stage);
   sec('自キャラの攻撃力');
   line('式', '10 × 攻撃力倍率 × 加速 × 攻撃力UP × 紋章 × 動画バフ ＋ 仲間の攻撃力の10%');
