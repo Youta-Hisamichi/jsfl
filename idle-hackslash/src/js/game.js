@@ -2253,10 +2253,66 @@ const floorImgs = {};
 // 床・背景・障害物はステージが切り替わった瞬間に必要なので、優先して読み込み＆デコードしておく（表示が1〜2秒遅れないように）
 function warmImg(img) { try { img.fetchPriority = 'high'; } catch (e) {} if (img.decode) img.decode().catch(() => {}); return img; }
 for (const k in FLOOR_TILES) { const img = new Image(); img.fetchPriority = 'high'; img.src = FLOOR_TILES[k]; floorImgs[k] = warmImg(img); }
-function getFloorKey(stage) {
-  const cycle = Math.floor((Math.max(1, stage) - 1) / 10);
-  return stage % 10 === 0 ? FLOOR_BOSS[cycle % FLOOR_BOSS.length] : FLOOR_NORMAL[cycle % FLOOR_NORMAL.length];
+function floorRand(seed) { let x = (seed >>> 0) || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; } // 床の並び用の乱数（同じ種なら毎回同じ）
+function floorSeed(a, b) { return Math.imul((a | 0) + 0x9e37, 2654435761) ^ Math.imul((b | 0) + 0x7f4a, 1597334677) ^ Math.imul(game.reincarnations || 0, 805459861); }
+function floorShuffle(list, seed) { const a = list.slice(), r = floorRand(seed); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const floorOrderCache = {};
+function floorOrder(list, lap, salt) {
+  const id = `${salt}|${lap}|${game.reincarnations || 0}`; if (floorOrderCache[id]) return floorOrderCache[id];
+  const a = floorShuffle(list, floorSeed(lap, salt));
+  if (salt === 1 && lap === 0 && !game.reincarnations) { a.splice(a.indexOf('lawn'), 1); a.unshift('lawn'); } // はじめての周回の最初のエリアは草原から
+  return (floorOrderCache[id] = a);
 }
+function getFloorKey(stage) { // エリア（10ステージ）ごとの床。順番は転生のたびに変わるランダム（ひと回りで全部の床を1回ずつ）
+  const cycle = Math.floor((Math.max(1, stage) - 1) / 10);
+  if (stage % 10 === 0) return floorOrder(FLOOR_BOSS, Math.floor(cycle / FLOOR_BOSS.length), 2)[cycle % FLOOR_BOSS.length];
+  return floorOrder(FLOOR_NORMAL, Math.floor(cycle / FLOOR_NORMAL.length), 1)[cycle % FLOOR_NORMAL.length];
+}
+// 床の模様替え：同じエリアでも、ステージごとに別の床を道・水たまりのような島・広場・縁取りの形で重ねて、毎回ちがう地形に見せる
+const FLOOR_MIX = { lawn: ['dirt', 'mossStone', 'market', 'desert'], dirt: ['lawn', 'desert', 'dryCrack', 'mossStone'], desert: ['dryCrack', 'dirt', 'wasteland', 'market'], mossStone: ['lawn', 'ruins', 'dirt', 'town'],
+  town: ['market', 'lawn', 'mossStone', 'brick'], snow: ['mossStone', 'blueTile', 'town', 'panel'], market: ['town', 'lawn', 'dirt', 'woodFloor'], woodFloor: ['market', 'brick', 'town', 'redCarpet'],
+  ruins: ['mossStone', 'lawn', 'dirt', 'wasteland'], tower: ['panel', 'brick', 'mossStone', 'blueTile'] };
+const FLOOR_SHAPES = ['path', 'patches', 'plaza', 'path2', 'frame', 'none'];
+let floorMixCache = null;
+function getFloorMix(stage, key, cols, rows) {
+  const id = `${stage}|${key}|${cols}|${rows}|${game.reincarnations || 0}`;
+  if (floorMixCache && floorMixCache.id === id) return floorMixCache;
+  floorMixCache = { id, over: null, cells: null };
+  const opts = FLOOR_MIX[key]; if (!opts || cols < 4 || rows < 4) return floorMixCache;
+  const r = floorRand(floorSeed(stage, 3));
+  const shape = FLOOR_SHAPES[Math.floor(r() * FLOOR_SHAPES.length)];
+  if (shape === 'none') return floorMixCache; // ときどきは元の床だけ
+  const over = opts[Math.floor(r() * opts.length)];
+  const g = Array.from({ length: rows }, () => new Uint8Array(cols)), set = (x, y) => { if (x >= 0 && y >= 0 && x < cols && y < rows) g[y][x] = 1; };
+  const walk = (vertical, w) => { // くねくねと画面の端から端まで続く道
+    let p = Math.floor((vertical ? cols : rows) * (0.25 + r() * 0.5));
+    for (let t = 0; t < (vertical ? rows : cols); t++) {
+      for (let k = 0; k < w; k++) vertical ? set(p + k, t) : set(t, p + k);
+      if (r() < 0.35) { const np = p + (r() < 0.5 ? -1 : 1); if (np >= 1 && np + w <= (vertical ? cols : rows) - 1) { for (let k = 0; k < w; k++) vertical ? set(np + k, t) : set(t, np + k); p = np; } }
+    }
+  };
+  if (shape === 'path') walk(r() < 0.6, 1 + (r() < 0.5 ? 1 : 0));
+  else if (shape === 'path2') { walk(true, 1 + (r() < 0.4 ? 1 : 0)); walk(false, 1 + (r() < 0.4 ? 1 : 0)); } // 十字路
+  else if (shape === 'patches') { // ところどころの島（池・砂地・石畳の跡のような形）
+    const n = 3 + Math.floor(r() * 4);
+    for (let i = 0; i < n; i++) {
+      const cx = r() * cols, cy = r() * rows, rx = 1.2 + r() * 2.4, ry = 1.2 + r() * 2.8;
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; if (dx * dx + dy * dy < 1 + (r() - 0.5) * 0.7) g[y][x] = 1; }
+    }
+  } else if (shape === 'plaza') { // まんなかの広場
+    const rx = 1.5 + r() * Math.max(1, cols * 0.25), ry = 1.5 + r() * Math.max(1, rows * 0.2), round = r() < 0.5;
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const dx = Math.abs(x + 0.5 - cols / 2) / rx, dy = Math.abs(y + 0.5 - rows / 2) / ry; if (round ? dx * dx + dy * dy < 1 : Math.max(dx, dy) < 1) g[y][x] = 1; }
+    if (r() < 0.5) walk(r() < 0.5, 1);
+  } else if (shape === 'frame') { // 外まわりの縁取り（ところどころ欠ける）
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if ((x === 0 || y === 0 || x === cols - 1 || y === rows - 1) && r() < 0.85) g[y][x] = 1;
+  }
+  for (let it = 0; it < 1; it++) { // 1マスだけ飛び出た角をならして、それっぽい形にする
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { let n = 0; for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) n += (g[y + ay] && g[y + ay][x + ax]) ? 1 : 0; if (g[y][x] && n === 0) g[y][x] = 0; else if (!g[y][x] && n >= 3) g[y][x] = 1; }
+  }
+  floorMixCache.over = over; floorMixCache.cells = g;
+  return floorMixCache;
+}
+const floorMixPatterns = {};
 // サークルの外の背景：バトル背景の一枚絵（cover）か、繰り返しタイル
 const OUTER_TILES = {
   stone: { src: 'assets/img/outer/stone.webp', w: 46, h: 34 },
@@ -2310,6 +2366,7 @@ function drawArenaFloor() {
   const bright = BRIGHT_FLOORS[key]; // 雪原など明るい床は暗くしすぎない
   ctx.globalAlpha = bright ? 1 : 0.9;
   ctx.fillStyle = floorPattern; fillArenaRect();
+  drawFloorMix(key, tilePx);
   ctx.globalAlpha = 1;
   if (bright && bright.glow) { ctx.fillStyle = `rgba(255,255,255,${bright.glow})`; fillArenaRect(); }
   const g = ctx.createRadialGradient(arena.x, arena.y, arena.radius * 0.2, arena.x, arena.y, arena.radius);
@@ -2317,6 +2374,30 @@ function drawArenaFloor() {
   ctx.fillStyle = g; fillArenaRect();
   ctx.restore();
   ctx.imageSmoothingEnabled = true;
+}
+function drawFloorMix(key, tilePx) { // 別の床を、タイルの目にそろえて重ねる
+  const x0 = arena.x - arenaHalf(), y0 = arena.y - arenaHalfY();
+  const ox = arena.x - Math.ceil((arena.x - x0) / tilePx) * tilePx, oy = arena.y - Math.ceil((arena.y - y0) / tilePx) * tilePx; // 床の模様のマス目の位置
+  const cols = Math.ceil((arena.x + arenaHalf() - ox) / tilePx), rows = Math.ceil((arena.y + arenaHalfY() - oy) / tilePx);
+  const mix = getFloorMix(game.stage, key, cols, rows);
+  if (!mix.over) return;
+  const img = floorImgs[mix.over]; if (!img || !img.complete || !img.naturalWidth) return;
+  let pat = floorMixPatterns[mix.over];
+  if (!pat || pat.ctx !== ctx) { pat = floorMixPatterns[mix.over] = { p: ctx.createPattern(img, 'repeat'), ctx }; }
+  pat.p.setTransform(new DOMMatrix().translate(arena.x, arena.y).scale(tilePx * (FLOOR_SPAN[mix.over] || 1) / (img.naturalWidth || FLOOR_TILE_PX)));
+  const area = new Path2D(), edge = new Path2D(), g = mix.cells;
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    if (!g[y][x]) continue;
+    const px = ox + x * tilePx, py = oy + y * tilePx;
+    area.rect(px, py, tilePx, tilePx);
+    if (!(g[y - 1] && g[y - 1][x])) { edge.moveTo(px, py); edge.lineTo(px + tilePx, py); }
+    if (!(g[y + 1] && g[y + 1][x])) { edge.moveTo(px, py + tilePx); edge.lineTo(px + tilePx, py + tilePx); }
+    if (!g[y][x - 1]) { edge.moveTo(px, py); edge.lineTo(px, py + tilePx); }
+    if (!g[y][x + 1]) { edge.moveTo(px + tilePx, py); edge.lineTo(px + tilePx, py + tilePx); }
+  }
+  ctx.save(); ctx.fillStyle = pat.p; ctx.fill(area);
+  ctx.globalAlpha = 1; ctx.lineWidth = Math.max(1.5, tilePx * 0.06); ctx.strokeStyle = 'rgba(40,30,20,0.28)'; ctx.stroke(edge); // 境目に細い縁（段差に見える）
+  ctx.restore();
 }
 function drawPinchAura() {
   const pl = balls.find(ball => isMainPlayerBall(ball));
