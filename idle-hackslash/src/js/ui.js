@@ -3058,7 +3058,7 @@ function fitArenaHeight() {
   resizeCanvas();
 }
 { const sr = document.getElementById('skillRow'), aw = document.querySelector('.arena-wrap'); if (sr && aw) aw.appendChild(sr); }
-{ const db = document.getElementById('debugToggleBtn'), aw = document.querySelector('.arena-wrap'); if (db && aw) aw.appendChild(db); } // デバッグボタンもゲーム画面の中（左下）に重ねる // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
+{ const db = document.getElementById('debugToggleBtn'), th = document.getElementById('topHeader'); if (db && th) th.appendChild(db); } // デバッグボタンは右上の設定ボタンの下に出す（ゲーム画面を狭くしない） // スキルボタンはゲーム画面の下端に重ねる（スキルがあってもゲーム画面を狭くしない）
 { // ボス戦のあいだは、ステージ進捗バーを隠して、その場所に自キャラとボスのHPを小さく並べる（終わったら下に戻す）
   const row = document.querySelector('.hp-row'), bar = document.querySelector('.stage-bar-row');
   if (row && bar) {
