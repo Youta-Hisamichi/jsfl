@@ -2808,10 +2808,11 @@ compRushBtn.addEventListener('click', event => {
   const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton);
   if (!ctxs) return;
   const { player, enemy } = ctxs;
-  const rushUntil = Date.now() + COMP_RUSH_MS, hits = Math.floor(COMP_RUSH_MS / COMP_RUSH_HIT_MS);
-  comps.forEach((comp, i) => { // 仲間全員が敵へ駆け寄って、しばらく猛烈に連続攻撃（合計ダメージは今までの一撃と同じくらい）
-    comp.compRushUntil = rushUntil; comp.compRushTarget = enemy; comp.compRushAng = 0;
-    comp.compRushNextHit = Date.now() + 120 + i * 40;
+  const rushUntil = Date.now() + COMP_RUSH_MS, hits = COMP_RUSH_HITS;
+  comps.forEach((comp, i) => { // 仲間全員が画面内の敵へ次々ぶつかって跳ね返る（合計ダメージは今までと同じくらい）
+    comp.compRushUntil = rushUntil; comp.compRushHitSet = new Set(); comp.compRushLastHit = new WeakMap();
+    compRushPickNext(comp, null);
+    { const t = comp.compRushTarget || enemy, a = Math.atan2(t.y - comp.y, t.x - comp.x) + (Math.random() - 0.5) * 0.4; comp.vx = Math.cos(a); comp.vy = Math.sin(a); }
     comp.compRushDmg = Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') / hits * 1.15));
   });
   coffins.forEach((cf, i) => throwCoffin(cf, enemy, player, i));
