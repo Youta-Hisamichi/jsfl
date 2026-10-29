@@ -3046,7 +3046,7 @@ function fitArenaHeight() {
     const tab = document.getElementById('tabBar');
     if (!tab) return;
     let barBottom = wrap.getBoundingClientRect().bottom; // ゲーム画面の下に見えている物（ボス再戦ボタンなど）があれば、その下端まで。何もなければタブバーの上まで画面を伸ばす
-    for (let el = wrap.nextElementSibling; el; el = el.nextElementSibling) { if (el.offsetHeight > 12 && getComputedStyle(el).position !== 'fixed') barBottom = Math.max(barBottom, el.getBoundingClientRect().bottom); }
+    for (let el = wrap.nextElementSibling; el && el.id !== 'debugPanel'; el = el.nextElementSibling) { /* デバッグパネルは画面の下に続けて出す（開いてもゲーム画面は縮めず、スクロールで見る） */ if (el.offsetHeight > 12 && getComputedStyle(el).position !== 'fixed') barBottom = Math.max(barBottom, el.getBoundingClientRect().bottom); }
     barBottom += window.scrollY;
     const line = window.innerHeight - tab.offsetHeight - 4; // タブバーの上端（固定表示）
     const cssH = wrap.getBoundingClientRect().height;
