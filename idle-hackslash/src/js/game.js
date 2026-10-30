@@ -85,6 +85,7 @@ function step() {
     showNotice(`⚠️ 敵が${n}体！ 全部倒すと次のステージへ`);
     playSwarmSound();
   }
+  if (!e.isBoss && !swarm && !e.encircleChecked && !game.skipChallenge) { e.encircleChecked = true; if (game.stage >= ENCIRCLE_MIN_STAGE && Math.random() < ENCIRCLE_CHANCE) spawnEncircle(e, a); } // ときどき同じ敵がぐるりと取り囲んで迫ってくる
   const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
   if (!e.isBoss && !swarm && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0005) { // 大群ステージは補充しない（全滅させたらクリア）
     adds.push(makeAddEnemy(e));
@@ -1290,6 +1291,23 @@ function renderStageSkipList() {
     const tier = ['bronze', 'silver', 'gold', 'orange', 'red'][i] || 'bronze'; // 遠い階ほど豪華な枠
     return `<button class="tower-floor tf-${tier} ${short ? 'is-disabled' : ''}" data-stage-skip="${i}"><span class="tf-main"><span class="tf-top"><span class="tf-no">${formatStageNumber(target)}F</span><span class="tf-name">👑 ステージ${formatStageNumber(target)}のボス</span></span><span class="tf-desc">+${formatStageNumber(target - game.stage)}ステージ先　HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}</span></span>${bossKey ? enemySpriteHtml(bossKey, 'tf-boss') : '<span class="tf-boss"></span>'}<span class="tf-cost tf-coin">${COIN_ICO}${formatCoinNumber(cost)}</span></button>`;
   }).reverse().join('');
+}
+// 包囲：同じ見た目の敵が、主人公のまわり360度にぐるりと並んで、いっせいに中心へ迫ってくる
+const ENCIRCLE_CHANCE = 0.08, ENCIRCLE_MIN_STAGE = 5, ENCIRCLE_COUNT = 12;
+function spawnEncircle(e, pl) {
+  if (!pl) return;
+  const R = Math.min(arenaHalf(), arenaHalfY()) * 0.72, base = Math.random() * Math.PI * 2;
+  const cx = Math.max(arena.x - arenaHalf() + R + 18, Math.min(arena.x + arenaHalf() - R - 18, pl.x)), cy = Math.max(arena.y - arenaHalfY() + R + 18, Math.min(arena.y + arenaHalfY() - R - 18, pl.y)); // 円が画面からはみ出さないよう中心を内側へ（主人公は必ず円の中）
+  for (let i = 0; i < ENCIRCLE_COUNT; i++) {
+    const ang = base + i * Math.PI * 2 / ENCIRCLE_COUNT, ad = makeAddEnemy(e);
+    const p = { x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R };
+    Object.assign(ad, { x: p.x, y: p.y, vx: 0, vy: 0, shape: e.shape, emoji: e.emoji, color: e.color, glow: e.glow, movementStyle: 'encircle', isEncircle: true,
+      maxHp: Math.max(4, Math.round(e.maxHp * 0.12)), hp: Math.max(4, Math.round(e.maxHp * 0.12)), atk: Math.max(1, Math.round(e.atk * 0.35)), spawnTimer: 0 });
+    adds.push(ad);
+    for (let k = 0; k < 6; k++) particles.push({ x: ad.x, y: ad.y, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3, life: 0.7, color: '#c9a6ff', decay: 0.05 });
+  }
+  showNotice('⚠️ 包囲された！ 敵がぐるりと取り囲んで迫ってくる', true, 2600);
+  try { [196, 233, 277, 330].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sawtooth', 0.06, f * 0.94), i * 90)); thump(80, 40, 0.5, 0.6); } catch (err) {}
 }
 function spawnNextEnemy() {
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);

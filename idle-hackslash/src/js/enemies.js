@@ -2085,6 +2085,8 @@ function walkBall(ball, speedMult, b) {
     } else if (style === 'gravity') {
       const hop = (t % 70) < 22 ? 2.2 : 0.15;
       dvx = nx * speed * hop; dvy = ny * speed * hop;
+    } else if (style === 'encircle') { // 包囲：まっすぐ中心（主人公）へ、ゆっくり確実に迫る
+      dvx = nx * speed * 0.75; dvy = ny * speed * 0.75; w.pause = 0;
     } else if (style === 'rush') { // 狙いを定めて→一直線に猛突進→勢い余って滑る、をくり返す
       const r = ball.rush || (ball.rush = { t: Math.random() * 40, dx: nx, dy: ny });
       r.t += speedMult;
