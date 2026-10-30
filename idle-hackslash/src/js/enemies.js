@@ -426,7 +426,7 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
   ov.classList.add('show');
 });
 
-const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit'];
+const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit', 'rush']; // rush：ひたすらこちらへ一直線に突っ込んでくる
 function pickEnemyMovementStyle(stage) {
   const primary = MOVEMENT_STYLES[stage % MOVEMENT_STYLES.length];
   return Math.random() < 0.65 ? primary : MOVEMENT_STYLES[Math.floor(Math.random() * MOVEMENT_STYLES.length)];
@@ -2080,6 +2080,16 @@ function walkBall(ball, speedMult, b) {
     } else if (style === 'gravity') {
       const hop = (t % 70) < 22 ? 2.2 : 0.15;
       dvx = nx * speed * hop; dvy = ny * speed * hop;
+    } else if (style === 'rush') { // 狙いを定めて→一直線に猛突進→勢い余って滑る、をくり返す
+      const r = ball.rush || (ball.rush = { t: Math.random() * 40, dx: nx, dy: ny });
+      r.t += speedMult;
+      const ph = r.t % 95;
+      if (ph < 14) { dvx = nx * speed * 0.15; dvy = ny * speed * 0.15; r.dx = nx; r.dy = ny; ball.rushDash = false; } // 構え：こちらに向き直る
+      else if (ph < 68) { // 突進
+        dvx = r.dx * speed * 3.6; dvy = r.dy * speed * 3.6; ball.rushDash = true;
+        if (Math.random() < 0.35) particles.push({ x: ball.x - r.dx * ball.radius, y: ball.y - r.dy * ball.radius + ball.radius * 0.6, vx: -r.dx * 1.2 + (Math.random() - 0.5), vy: -r.dy * 1.2 - Math.random() * 0.6, life: 0.6, color: 'rgba(210,190,150,0.9)', decay: 0.05 }); // 土ぼこり
+      } else { dvx = r.dx * speed * 0.3; dvy = r.dy * speed * 0.3; ball.rushDash = false; } // ブレーキ
+      w.pause = 0;
     } else if (style === 'zigzag') {
       const sway = Math.sin(t / 22) * 0.9;
       dvx = (nx - ny * sway) * speed; dvy = (ny + nx * sway) * speed;
@@ -2092,7 +2102,7 @@ function walkBall(ball, speedMult, b) {
     const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
     dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
   }
-  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : 1));
+  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : ball.rushDash && !ball.isPlayer ? 4 : 1)); // 突進はすぐ最高速に
   ball.vx += (dvx - ball.vx) * turn;
   ball.vy += (dvy - ball.vy) * turn;
   applySeparation(ball, speedMult);

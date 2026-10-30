@@ -1650,10 +1650,11 @@ function playSkillCastSound() {
   try { noiseSweep(0.45, 800, 6000, 'bandpass', 0.5, 0.35); } catch (e) {}
   setTimeout(() => { playTone(1568, 0.3, 'triangle', 0.06, 2093); playTone(784, 0.35, 'square', 0.05, 1047); }, 240); // 最後にキラーン
 }
-function showSkillCast(skillKey) {
+function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、半透明でアイコンを出す
   const sk = SKILL_GACHA_SKILLS[skillKey], wrap = document.querySelector('.arena-wrap'); if (!sk || !wrap) return;
   wrap.querySelectorAll('.skill-cast').forEach(e => e.remove());
   const el = document.createElement('div'); el.className = 'skill-cast';
+  if (btn) { const wr = wrap.getBoundingClientRect(), br = btn.getBoundingClientRect(); el.style.left = Math.max(48, Math.min(wr.width - 48, br.left + br.width / 2 - wr.left)) + 'px'; el.style.top = (br.top - wr.top - 6) + 'px'; }
   el.innerHTML = `<div class="sc-ring"></div><div class="sc-ico">${ico(sk)}</div><div class="sc-name">${sk.name}</div>`;
   wrap.appendChild(el); setTimeout(() => el.remove(), 1100);
   playSkillCastSound();
@@ -1665,7 +1666,7 @@ function showSkillCast(skillKey) {
     if (!btn || !snap || btn.id === 'redPotionBtn') return;
     let now; try { now = skillLastTimes(); } catch (e) { return; }
     if (!now.some((v, i) => v !== snap.v[i] && v >= snap.t - 5 && v <= Date.now() + 5)) return; // 待ち時間が新しく始まった＝発動した（ジェムで待ち時間を戻しただけのときは出さない）
-    const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key);
+    const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key, btn);
   });
 }
 function unifiedGachaPull(event) {

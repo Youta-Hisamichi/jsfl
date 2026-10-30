@@ -4910,7 +4910,7 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .skill-cast .sc-ico img, .skill-cast .sc-ico .ico-img { width: 120px !important; height: 120px !important; object-fit: contain; }
 .skill-cast .sc-name { margin-top: 2px; font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 0.08em; -webkit-text-stroke: 1px #3a1d00; text-shadow: 0 0 3px #000, 0 2px 0 #7a3c00, 0 0 14px rgba(255,200,80,0.9); }
 .skill-cast .sc-ring { position: absolute; left: 50%; top: 60px; width: 120px; height: 120px; translate: -50% -50%; border-radius: 50%; border: 4px solid rgba(255,230,140,0.95); box-shadow: 0 0 18px rgba(255,210,100,0.9), inset 0 0 18px rgba(255,210,100,0.7); animation: scRing 0.7s ease-out forwards; }
-@keyframes scIn { 0% { scale: 0.3; opacity: 0; } 14% { scale: 1.25; opacity: 1; } 26% { scale: 1; } 75% { scale: 1.03; opacity: 1; } 100% { scale: 1.12; opacity: 0; } }
+@keyframes scIn { 0% { scale: 0.3; opacity: 0; } 14% { scale: 1.2; opacity: 0.78; } 26% { scale: 1; } 75% { scale: 1.03; opacity: 0.78; } 100% { scale: 1.12; opacity: 0; } }
 @keyframes scRing { from { scale: 0.4; opacity: 1; } to { scale: 2.6; opacity: 0; } }
 .cg-info .cgi-face { font-size: 64px; }
 .cg-info .cgi-face img.comp-sprite { width: 96px !important; height: 96px !important; max-width: none; max-height: none; object-fit: contain; }
@@ -4928,3 +4928,9 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .top-header .th-item.coin { position: relative; }
 .top-header .th-item.coin.auto-up-on::after { content: '🤖自動強化中'; position: absolute; right: 8px; top: 50%; translate: 0 -50%; font-size: 0.55rem; font-weight: 900; color: #7fe8a0; text-shadow: 0 0 2px #000, 0 1px 2px #000; white-space: nowrap; pointer-events: none; animation: autoUpBlink 1.6s ease-in-out infinite; }
 @keyframes autoUpBlink { 50% { opacity: 0.45; } }
+/* スキル発動のアイコンは、押したボタンの少し上に半透明で */
+.skill-cast { translate: -50% -100% !important; opacity: 0.8; }
+.skill-cast .sc-ico { width: 76px !important; height: 76px !important; font-size: 54px !important; }
+.skill-cast .sc-ico img, .skill-cast .sc-ico .ico-img { width: 76px !important; height: 76px !important; }
+.skill-cast .sc-name { font-size: 1.05rem !important; }
+.skill-cast .sc-ring { top: 38px !important; width: 76px !important; height: 76px !important; }
