@@ -4924,3 +4924,7 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .rbd-sk-ico { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 30px; filter: drop-shadow(0 0 6px rgba(160,210,255,0.8)); }
 .rbd-sk-ico img, .rbd-sk-ico .ico-img { width: 44px !important; height: 44px !important; object-fit: contain; }
 @keyframes rbdSkIn { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
+/* オートLvUPがONのときは、ヘッダーのコイン欄の右に🤖（コインが自動で強化に使われている） */
+.top-header .th-item.coin { position: relative; }
+.top-header .th-item.coin.auto-up-on::after { content: '🤖自動強化中'; position: absolute; right: 8px; top: 50%; translate: 0 -50%; font-size: 0.55rem; font-weight: 900; color: #7fe8a0; text-shadow: 0 0 2px #000, 0 1px 2px #000; white-space: nowrap; pointer-events: none; animation: autoUpBlink 1.6s ease-in-out infinite; }
+@keyframes autoUpBlink { 50% { opacity: 0.45; } }

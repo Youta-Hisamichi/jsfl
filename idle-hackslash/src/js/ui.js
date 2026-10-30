@@ -1117,7 +1117,7 @@ setInterval(() => {
   let bought = 0;
   for (let n = 0; n < 1; n++) { // 1回に1レベルずつ
     const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
-    if (!id || game.coins < getUpgradeCost(id)) break;
+    if (!id || game.coins - coinsInFlight() < getUpgradeCost(id)) break; // 使うのはヘッダーに届いたコインだけ（届く前に使って表示が0のまま、にならないように）
     spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
     announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id], true);
   }
