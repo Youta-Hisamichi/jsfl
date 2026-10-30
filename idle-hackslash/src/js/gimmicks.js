@@ -548,7 +548,7 @@ document.getElementById('bagList').addEventListener('click', ev => {
   if (b.dataset.bagSeed) { openSeedPanel(); return; }
   if (b.dataset.bagChest) { switchTab('game'); setTimeout(() => { if (phase === 'battle') openChestBatchDialog(b.dataset.bagChest); else showNotice('戦闘中に開けられます'); }, 200); return; }
   if (b.dataset.bagGo === 'gacha') switchTab('gacha');
-  if (b.dataset.bagGo === 'chara') showShopTab('chara');
+  if (b.dataset.bagGo === 'chara') switchTab('companion'); // ショップの仲間タブは削除したので仲間ページへ
 });
 { const orig = updateSeedButton; updateSeedButton = function () { orig.apply(this, arguments); const sec = document.querySelector('[data-shop-sec="bag"]'); if (sec && !sec.hidden) renderBagList(); }; }
 if (document.querySelector('[data-shop-sec="bag"]') && !document.querySelector('[data-shop-sec="bag"]').hidden) renderBagList();

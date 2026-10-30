@@ -4967,3 +4967,5 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .rbd-sk[data-rbd-skill], .rbd-sk[data-rbd-comp], .cc-portrait[data-comp-info] { cursor: pointer; }
 .rbd-stars { line-height: 1; } .rbd-stars img { width: 9px !important; height: 9px !important; }
 .cg-info .cgi-face .ico-img, .cg-info .cgi-face img { width: 80px !important; height: 80px !important; object-fit: contain; }
+/* 解雇・採用ボタンを消したので、パーティ枠の「＋枠を増やす」が横に伸びすぎないように */
+.party-row #partySlotBtn > button { flex: 0 0 auto !important; width: 176px !important; max-width: 48% !important; margin-left: auto !important; }

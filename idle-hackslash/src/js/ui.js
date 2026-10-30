@@ -1235,7 +1235,7 @@ function compLockDefault(id) { return id !== 'villager'; } // 村人以外は最
 function compFiredCount() { return COMPANION_IDS.filter(id => game.compLocked && game.compLocked[id] === true).length; } // 解雇中（採用したあと解雇した）人数
 function compHiredTotal() { return COMPANION_IDS.filter(id => !isCompLocked(id)).length + compFiredCount(); } // これまでに採用した人数（解雇中も含む）
 function compFireMax() { return Math.floor(compHiredTotal() / 2); } // 解雇できるのは採用した人数の半分まで
-function isCompLocked(id) { return game.compLocked && id in game.compLocked ? !!game.compLocked[id] : compLockDefault(id); }
+function isCompLocked(id) { return !isHireUnlocked(id); } // 採用（解雇・採用ガチャ）はやめた：転生回数・最高ステージの条件を満たした仲間は自動で招集ガチャの候補に入る
 // ★3以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★3→★4→★5の順）
 const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
 const MYTHIC_HIRE_REBIRTHS = 30; // ★5（ミカエルン・バハムート）は転生30回で解放
@@ -1440,10 +1440,10 @@ function showShopTab(key) {
   try { localStorage.setItem('shopTab', key); } catch (e) {}
 }
 document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
-{ let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'chara', 'charge', 'bag'].includes(first) ? first : 'item'); }
+{ let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'charge', 'bag'].includes(first) ? first : 'item'); } // 仲間タブは削除
 document.getElementById('myCharCard').addEventListener('click', openMyCharPicker);
 applyHeroChar();
-document.getElementById('compLockBtn').addEventListener('click', () => { // 仲間ページから、ショップの解雇・採用（仲間タブ）へ
+document.getElementById('compLockBtn')?.addEventListener('click', () => { // 仲間ページから、ショップの解雇・採用（仲間タブ）へ
   switchTab('gemshop'); showShopTab('chara');
   const t = document.querySelector('.shop-tabs'); if (t) { t.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); }
 });
