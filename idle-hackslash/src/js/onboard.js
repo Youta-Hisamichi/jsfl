@@ -84,10 +84,34 @@ function updateMission() {
   el.innerHTML = `<span class="obm-head">🎯 ミッション ${game.obMission + 1}/${BEGINNER_MISSIONS.length}</span><span class="obm-text">${m.text}${m.goal > 1 ? ` <b>${v}/${m.goal}</b>` : ''}</span>`
     + (done ? `<span class="obm-claim">タップで受け取る 💎${m.gems}</span>` : `<span class="obm-sub">${m.hint ? m.hint + '　' : ''}報酬 💎${m.gems}</span>`);
 }
+// ジェムをもらったことが分かる演出：押した所から💎がはじけて、ヘッダーのジェム欄へ飛んでいき、着いたら欄が光る
+function flyGemsToHeader(x, y, n) {
+  const pill = headerGemsEl.parentElement, pr = pill.getBoundingClientRect(), tx = pr.left + 14, ty = pr.top + pr.height / 2;
+  const count = Math.max(3, Math.min(10, n * 3));
+  const pop = document.createElement('div'); pop.className = 'gem-get-pop'; pop.innerHTML = `<img src="${ICON_IMAGES.x_gem}" alt="">+${n} GET!`;
+  pop.style.left = x + 'px'; pop.style.top = y + 'px'; document.body.appendChild(pop); setTimeout(() => pop.remove(), 1500);
+  for (let i = 0; i < count; i++) {
+    const g = document.createElement('img'); g.src = ICON_IMAGES.x_gem; g.className = 'gem-fly'; g.style.left = x + 'px'; g.style.top = y + 'px';
+    document.body.appendChild(g);
+    const a = Math.random() * Math.PI * 2, r = 30 + Math.random() * 40, mx = Math.cos(a) * r, my = Math.sin(a) * r - 20;
+    const anim = g.animate([
+      { transform: 'translate(-50%,-50%) scale(0.3)', opacity: 0 },
+      { transform: `translate(calc(-50% + ${mx}px), calc(-50% + ${my}px)) scale(1.2)`, opacity: 1, offset: 0.3 },
+      { transform: `translate(calc(-50% + ${tx - x}px), calc(-50% + ${ty - y}px)) scale(0.7)`, opacity: 1 }
+    ], { duration: 750 + i * 60, easing: 'cubic-bezier(.5,0,.6,1)', fill: 'forwards' });
+    anim.onfinish = () => {
+      g.remove();
+      pill.classList.remove('gem-pulse'); void pill.offsetWidth; pill.classList.add('gem-pulse');
+      playTone(1568 + i * 60, 0.05, 'square', 0.04); setTimeout(() => playTone(2349 + i * 60, 0.08, 'sine', 0.04), 25);
+    };
+  }
+  [1047, 1319, 1568, 2093].forEach((f, i) => setTimeout(() => playTone(f, 0.1, 'triangle', 0.06), i * 70)); // 「キラキラーン」
+}
 function claimMission(event) {
   const m = BEGINNER_MISSIONS[game.obMission];
   if (!m || m.get() < m.goal) { if (m && m.hint) showTapError('💡 ' + m.hint, event.clientX, event.clientY); return; }
   game.gems += m.gems; game.obMission++; missionHoldUntil = Date.now() + MISSION_GAP_MS; // 次のミッションは少し休んでから
+  { const r = (event.currentTarget || event.target).getBoundingClientRect(); flyGemsToHeader(r.left + r.width / 2, r.top + r.height / 2, m.gems); }
   spawnDamageText(arena.x, arena.y - 30, `🎯 ミッション達成！ +${m.gems} 💎`, '#64e8ff', 0.012, true);
   playTone(1047, 0.1, 'square', 0.05, 1319); setTimeout(() => playTone(1568, 0.2, 'square', 0.05, 2093), 100);
   missionSig = ''; updateMission(); updateStatsUI(); saveGame();
