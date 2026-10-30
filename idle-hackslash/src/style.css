@@ -4953,3 +4953,9 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .sr-fea-price .sfp-fea b { font-size: 0.95rem; color: #ffe08a; margin-left: 2px; }
 .sr-fea-price .sfp-sub { display: inline-flex; align-items: center; gap: 2px; font-size: 0.66rem; font-weight: 900; color: #fff; text-shadow: 0 0 2px #000; }
 .sr-fea-price .sfp-sub img { width: 13px; height: 13px; }
+/* 羽の交換の値段も、転生と同じ金縁の枠に入れる */
+#shopList .sr-fea-price { width: max-content !important; height: auto !important; padding: 3px 10px !important; border-radius: 12px !important; border: 2px solid #c99a3a !important; background: linear-gradient(180deg, #2a3a6a, #121c3a) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2) !important; align-items: center !important; gap: 2px; }
+#shopList .sr-fea-price .sfp-fea { font-size: 0.7rem; }
+#shopList .sr-fea-price .sfp-fea b { font-size: 1.05rem; color: #fff; }
+#shopList .sr-fea-price .sfp-sub { font-size: 0.95rem; }
+#shopList .sr-fea-price .sfp-sub img { width: 18px; height: 18px; }
