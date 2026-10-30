@@ -594,6 +594,17 @@ const BGM_SONGS = {
     drums: 'k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k k s s k k ks ks | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | k - s k - k s - | ks - ks - ks ks ks ks',
   },
 
+  boss32: { // ボス21 月下に踊る幻影：チェンバロのように駆け回る分散和音と脈打つオクターブのベースに乗って、イの和声的短調の妖しく気高い旋律が、月夜の古城で踊る亡霊の舞踏会のように疾走するゴシックな決戦曲（VRC6風・オリジナル）
+    bpm: 168,
+    echo: { time: 0.2, feedback: 0.26, wet: 0.2 },
+    kickBoost: 1.1,
+    tracks: [
+      { type: 'vrc6saw', gain: 0.026, notes: 'E5 = A5 = C6 = B5 A5 | C6 = = = A5 = F5 = | D6 = C6 = A5 = F5 D5 | E5 = G#5 = B5 = = = | A5 C6 E6 = D6 C6 B5 A5 | B5 = D6 = G5 = B5 = | A5 = C6 = F5 = A5 = | G#5 = B5 = E6 = = = | F6 = E6 = D6 = A5 = | E6 = C6 = A5 = E5 = | F5 = A5 = D6 = C6 B5 | C6 = B5 = G#5 = E5 = | A5 = B5 = C6 = E6 = | D6 = C6 = A5 = F6 = | E6 = D6 = B5 = G#5 = | A5 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.016, notes: 'A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | D4 F4 A4 D5 A4 F4 D4 F4 | E4 G#4 B4 E5 B4 G#4 E4 G#4 | A4 C5 E5 A5 E5 C5 A4 C5 | G4 B4 D5 G5 D5 B4 G4 B4 | F4 A4 C5 F5 C5 A4 F4 A4 | E4 G#4 B4 E5 B4 G#4 E4 G#4 | D4 F4 A4 D5 A4 F4 D4 F4 | A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 D5 F5 D5 A4 F4 A4 | E4 G#4 B4 E5 B4 G#4 E4 G#4 | A4 C5 E5 A5 E5 C5 A4 C5 | F4 A4 C5 F5 C5 A4 F4 A4 | E4 G#4 B4 E5 B4 G#4 E4 G#4 | A4 C5 E5 A5 E5 C5 A4 C5' },
+      { type: 'vrc6pulse25', gain: 0.04, notes: 'A1 A2 A1 A2 A1 A2 A1 A2 | F2 F3 F2 F3 F2 F3 F2 F3 | D2 D3 D2 D3 D2 D3 D2 D3 | E2 E3 E2 E3 E2 E3 E2 E3 | A1 A2 A1 A2 A1 A2 A1 A2 | G1 G2 G1 G2 G1 G2 G1 G2 | F2 F3 F2 F3 F2 F3 F2 F3 | E2 E3 E2 E3 E2 E3 E2 E3 | D2 D3 D2 D3 D2 D3 D2 D3 | A1 A2 A1 A2 A1 A2 A1 A2 | F2 F3 F2 F3 F2 F3 F2 F3 | E2 E3 E2 E3 E2 E3 E2 E3 | A1 A2 A1 A2 A1 A2 A1 A2 | F2 F3 F2 F3 F2 F3 F2 F3 | E2 E3 E2 E3 E2 E3 E2 E3 | A1 A2 A1 A2 A1 A2 A1 A2' },
+    ],
+    drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | k s s s ks s ks ks | k h s h k k s h | k h s h k k s h | k h s h k k s h | ks ks ks ks ks - - -',
+  },
   boss31: { // ボス20 第一種警戒態勢：刻むオクターブのベースと行進の小太鼓に乗って、金管のような鋭い和音が打ち込まれ、ニ短調の勇ましい旋律が非常事態のように張りつめて迫る。巨大な敵を迎え撃つ迎撃戦の決戦曲（VRC6風・オリジナル）
     bpm: 150,
     echo: { time: 0.24, feedback: 0.24, wet: 0.18 },
@@ -857,7 +868,7 @@ function nextNormalBgm() {
   normalBgmIndex++;
   if (normalBgmIndex >= normalBgmOrder.length) shuffleNormalBgm(prev);
 }
-const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24', 'boss26', 'boss27', 'boss28', 'boss29', 'boss30', 'boss31'];
+const BOSS_BATTLE_SONGS = ['boss', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'boss11', 'boss12', 'boss16', 'boss17', 'boss21', 'boss22', 'boss23', 'boss24', 'boss26', 'boss27', 'boss28', 'boss29', 'boss30', 'boss31', 'boss32'];
 let bossBgmOrder = [], bossBgmIndex = 0;
 // 最初の1周は決まった順番：1体目のボス＝ボス2 変拍子 → 以降はリストの順に次の曲。1周したらシャッフル（同じ曲が続かない）
 const BOSS_FIRST_ROUND = (() => { const i = BOSS_BATTLE_SONGS.indexOf('boss2'); return BOSS_BATTLE_SONGS.slice(i).concat(BOSS_BATTLE_SONGS.slice(0, i)); })();
@@ -940,6 +951,7 @@ const BGM_INFO = [
   { key: 'boss29', name: 'ボス18 鬼を断つ一閃', desc: '叩きつける和太鼓の連打と刻むベースに乗って、都節の音階の鋭い旋律が一気に斬り込む決戦曲。和風の剣戟活劇をイメージしたオリジナル曲。VRC6風チップチューン。ホ短調。' },
   { key: 'boss30', name: 'ボス19 修羅の鬼武者', desc: '叩きつける太鼓と地を這う刻みのベースに乗って、都節の音階のおどろおどろしい旋律が怨念のように迫る、和風の妖怪退治・剣戟をイメージしたオリジナルの決戦曲。VRC6風チップチューン。イ短調。' },
   { key: 'boss31', name: 'ボス20 第一種警戒態勢', desc: '刻むベースと行進の小太鼓、金管のような鋭い和音に乗って、勇ましい旋律が非常事態のように張りつめて迫る迎撃戦の決戦曲（VRC6風）' },
+  { key: 'boss32', name: 'ボス21 月下に踊る幻影', desc: 'チェンバロのように駆け回る分散和音と脈打つベースに乗って、妖しく気高い短調の旋律が月夜の古城で踊る亡霊の舞踏会のように疾走する、ゴシックな決戦曲（VRC6風）。イ短調・BPM168' },
   { key: 'news', name: 'ページ お知らせ 王宮の謁見', desc: '王道RPGのお城のように、チェンバロ風に刻む3拍子の伴奏に乗って、気品のある旋律がゆったり舞うメヌエット。VRC6風チップチューン。ヘ長調・BPM112' },
   { key: 'settings', name: 'ページ 設定 ファイターズ・ロッカー', desc: '重低音のベースリフと太いキックが響く、格闘ゲーム風RPGのキャラ設定画面のようなクールな曲。VRC6風チップチューン。ホ短調・BPM118' },
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
