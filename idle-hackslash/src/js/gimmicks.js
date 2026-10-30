@@ -795,7 +795,18 @@ const NIGHT_FLOORS = ['mossStone', 'dirt', 'lawn', 'st_village']; // 1周目（3
 { const orig = getFloorKey; getFloorKey = function (stage) { if (typeof gimmickForStage === 'function' && gimmickForStage(stage) === 'night') return NIGHT_FLOORS[((gimmickWindow(stage) % NIGHT_FLOORS.length) + NIGHT_FLOORS.length) % NIGHT_FLOORS.length]; return orig.apply(this, arguments); }; }
 
 // 吹き出しは、イベントの暗闇や色かぶせよりも上に描く（暗いステージでも読めるように）
-{ const orig = draw; draw = function () { orig.apply(this, arguments); try { drawSpeech(); } catch (e) {} }; }
+{ // 吹き出しは専用の重ねキャンバスに描く（左上の宝箱などの上に出るように）
+  const sc = document.getElementById('speechCanvas'), sctx = sc && sc.getContext('2d'); let scDirty = false;
+  const orig = draw; draw = function () {
+    orig.apply(this, arguments);
+    if (!sctx) { try { drawSpeech(); } catch (e) {} return; }
+    if (sc.width !== canvas.width || sc.height !== canvas.height) { sc.width = canvas.width; sc.height = canvas.height; }
+    if (scDirty || speech.length) { sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.clearRect(0, 0, sc.width, sc.height); scDirty = false; }
+    if (!speech.length) return;
+    const main = ctx; ctx = sctx; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    try { drawSpeech(); scDirty = true; } catch (e) {} finally { ctx = main; }
+  };
+}
 // デバッグ：ステージギミック（イベント）を選んで固定する
 { const host = document.getElementById('dbgNowStage');
   if (host) {

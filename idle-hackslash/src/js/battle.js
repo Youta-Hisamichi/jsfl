@@ -1910,13 +1910,15 @@ function lootStackHtml(icon, n, t0) {
   return `<div class="cl-ico cl-stack" style="--t0:${t0}s">${Array.from({ length: k }, (_, j) => `<span class="cl-st" style="--j:${k - 1 - j}">${icon}</span>`).join('')}<b class="cl-cnt" data-n="${n}" data-t0="${t0}">×1</b></div>`;
 }
 function countUpLootStacks(root) {
+  let chainN = 0, chainAt = 0; // 数が増えるたびに連鎖音（宝箱の中身ぜんぶで音階が上がり続ける）
+  const chain = () => { const now = performance.now(); if (now - chainAt < 70) return; chainAt = now; chainN++; try { playPuzzleChain(Math.min(chainN, 15)); } catch (e) {} };
   root.querySelectorAll('.cl-cnt').forEach(el => {
     const n = +el.dataset.n, start = performance.now() + (+el.dataset.t0 + 0.35) * 1000, dur = Math.min(1200, 350 + n * 60);
     let last = 1;
     const step = now => {
       if (!el.isConnected) return;
       const t = Math.max(0, Math.min(1, (now - start) / dur)), v = Math.max(1, Math.round(1 + (n - 1) * (1 - Math.pow(1 - t, 2))));
-      if (v !== last) { last = v; el.textContent = '×' + v; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); if (v % Math.max(1, Math.ceil(n / 12)) === 0) playTone(900 + Math.min(v, 30) * 25, 0.03, 'square', 0.02); }
+      if (v !== last) { last = v; el.textContent = '×' + v; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); if (v % Math.max(1, Math.ceil(n / 12)) === 0) chain(); }
       if (t < 1) requestAnimationFrame(step); else el.classList.add('done');
     };
     requestAnimationFrame(step);
