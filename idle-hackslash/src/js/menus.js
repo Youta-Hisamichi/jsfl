@@ -1894,7 +1894,7 @@ function rerollCompanionGacha(event) {
   if (game.gems < GACHA_REROLL_GEMS) { promptGemShortage(GACHA_REROLL_GEMS); return; }
   game.gems -= GACHA_REROLL_GEMS;
   const { snap, count } = lastCompGacha;
-  game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund; game.summonGuarantee = JSON.parse(snap.guar || '[]'); // 確定枠も引く前に戻す
+  game.companions = JSON.parse(snap.comps); game.companionBook = JSON.parse(snap.book); game.coins -= snap.refund; /* 確定枠（採用したばかりの仲間）は戻さない：戻すと引き直しても毎回同じ仲間になるため */
   if (phase === 'battle') balls = balls.filter(b => !b.isCompanion).concat(makeCompanionBalls()); // 戦場の仲間も召喚前に戻す
   lastCompGacha = null;
   renderCompanionList(); // 一覧も引く前に戻す
