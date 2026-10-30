@@ -1230,16 +1230,8 @@ function getTowerCoinCost(opt) { return coinPrice(Math.max(1, Math.round(stageCo
 function canPayTower(ch) { return ch.currency === 'coin' ? game.coins >= ch.cost : game.gems >= ch.cost; }
 function payTower(ch) { if (ch.currency === 'coin') spendCoins(ch.cost); else game.gems -= ch.cost; }
 function towerCostText(ch) { return ch.currency === 'coin' ? `${COIN_ICO}${formatCoinNumber(ch.cost)}` : `💎${ch.cost}`; }
-function getCustomSkipCost(distance) {
-  const d = Math.max(0, distance);
-  const pts = [[0, 0], ...STAGE_SKIP_OPTIONS.map(o => [o.skip, o.cost])];
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-    if (d <= x1) return Math.max(1, Math.ceil(y0 + (y1 - y0) * (d - x0) / (x1 - x0)));
-  }
-  const [xl, yl] = pts[pts.length - 1];
-  return Math.ceil(yl + (d - xl) * 0.25);
-}
+const TOWER_STAGES_PER_GEM = 10000; // ジェムで好きなステージへ飛ぶ値段：1万ステージごとに💎1（最低💎1）
+function getCustomSkipCost(distance) { return Math.max(1, Math.ceil(Math.max(0, distance) / TOWER_STAGES_PER_GEM)); }
 // 雑魚道中で今の階より明らかに強いとき、試練の塔でのジャンプをおすすめする
 const TOWER_SUGGEST_MIN_JUMP = 30; // これより近いボスならおすすめしない
 const TOWER_SUGGEST_COOLDOWN_STAGES = 40; // 一度出したら、この階数進むまで出さない
@@ -2457,11 +2449,13 @@ function showRebirthRewardDialog(gems, feathers, got) {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show rbd-ov'; ov.style.zIndex = 76;
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
     <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
-    ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🎲 次のスキル</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
-    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間</div><div class="rbd-sk-row">${game.compOn.map(id => `<div class="rbd-sk"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span>${COMPANIONS[id].name}</span></div>`).join('')}</div></div>` : ''}
+    ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🎲 次のスキル</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
+    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間</div><div class="rbd-sk-row">${game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join('')}</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音
+  ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => showCompGachaInfo(el.dataset.rbdComp))); // 次の仲間：タップで概要
+  ov.querySelectorAll('[data-rbd-skill]').forEach(el => el.addEventListener('click', () => { const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); })); // 次のスキル：タップで概要
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }

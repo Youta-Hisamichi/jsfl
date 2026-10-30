@@ -733,6 +733,7 @@ const DEBUG_ACTION_LABELS = {
   gems: 'DEBUG: ジェム +10 を付与しました',
   gems1000: 'DEBUG: ジェム +1000 を付与しました',
   coins1000: 'DEBUG: コイン +1000 を付与しました',
+  coinsx2: 'DEBUG: 手持ちコインを2倍にしました',
   supergems: 'DEBUG: リアルマネー +10000円 を付与しました',
   feathers: 'DEBUG: 進化の羽 +10 を付与しました',
   special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
@@ -765,6 +766,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'gems') game.gems += 10;
   if (action === 'gems1000') game.gems += 1000;
   if (action === 'coins1000') game.coins += 1000;
+  if (action === 'coinsx2') game.coins = Math.max(1, game.coins * 2);
   if (action === 'supergems') game.superGems += 10000;
   if (action === 'formula') { showFormulaDebug(); return; }
   if (action === 'rebirthRules') { showRebirthRulesDebug(); return; }

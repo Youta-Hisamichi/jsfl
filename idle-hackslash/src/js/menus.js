@@ -312,14 +312,10 @@ function renderCompanionList() {
     const level = game.companions.level[id];
     const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
     const down = !sw && game.companions.alive[id] === false, left = down && game.companions.downStages ? game.companions.downStages[id] || 0 : 0; // 倒れている仲間は棺桶の印
-    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div></div></div>`;
-  }).join('');
-  const othersHtml = others.map(([id, c]) => {
-    const rar = RARITY_INFO[c.rarity];
-    return `<button class="cp-tile ${isCompanionUnlocked(id) ? '' : 'sealed'} ${game.companionBook && game.companionBook[id] ? '' : 'never'} ${compInfoId === id ? 'active' : ''}" style="--rc:${rar.color}" data-comp-info="${id}"><span class="cp-tile-img">${companionIconHtml(id)}</span><span class="cp-tile-name">${c.name}</span><span class="cp-tile-stars">${rarityStars(c.rarity)}</span>${elemBadge(COMPANION_ELEMENT[id], 'el-tile')}<span class="cp-tile-lock">${isCompLocked(id) ? '📜 採用前' : '招集で入手'}</span></button>`;
+    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div></div></div>`;
   }).join('');
   companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + '<div id="myCharSlot"></div>' + (mine.length ? mineHtml : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
-    + (others.length ? `<div class="cp-sec">📖 待機中の仲間 <b>${others.length}</b></div><div class="cp-grid">${othersHtml}</div>` : '');
+    ; /* 「待機中の仲間」の一覧は、仲間項目（ページの下）に置き換えたので出さない */
   const slot = document.getElementById('myCharSlot');
   if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }
@@ -427,6 +423,14 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     renderCompanionList();
   };
   runGachaCountdown(bestRarity, reveal, box, { skippable: true }); // タップで演出をスキップ
+}
+function showSkillBrief(it, title, desc, auto) { // スキルの概要（転生ダイアログで次のスキルを押したとき）
+  document.querySelectorAll('.cg-info-ov').forEach(o => o.remove());
+  const ov = document.createElement('div'); ov.className = 'cg-info-ov';
+  ov.innerHTML = `<div class="cg-info"><div class="cgi-face">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</div><div class="cgi-name">${title}</div><div class="cgi-row">${desc}</div><div class="cgi-row cgi-trait">${auto ? '装備すると戦闘中に自動で発動します' : '装備するとゲーム画面にボタンが出て、押すと発動します'}</div><button class="cgi-ok">OK</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cgi-ok')) ov.remove(); });
+  playTone(880, 0.06, 'triangle', 0.05, 1175);
 }
 function showCompGachaInfo(id) { // 招集ガチャの結果でキャラを押したときの概要
   const c = COMPANIONS[id]; if (!c) return;
