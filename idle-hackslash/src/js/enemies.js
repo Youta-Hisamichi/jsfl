@@ -427,6 +427,9 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
 });
 
 const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit', 'rush']; // rush：ひたすらこちらへ一直線に突っ込んでくる
+// 雑魚の大きさのばらつき：12%で小さい（半分の大きさ・HP0.6倍）、12%で大きい（1.5倍の大きさ・HP1.6倍）
+const ENEMY_SIZE_SMALL_RATE = 0.12, ENEMY_SIZE_BIG_RATE = 0.12, ENEMY_SMALL_HP = 0.6, ENEMY_BIG_HP = 1.6;
+function rollEnemySizeMul() { const r = Math.random(); return r < ENEMY_SIZE_SMALL_RATE ? 0.5 : r < ENEMY_SIZE_SMALL_RATE + ENEMY_SIZE_BIG_RATE ? 1.5 : 1; }
 function pickEnemyMovementStyle(stage) {
   const primary = MOVEMENT_STYLES[stage % MOVEMENT_STYLES.length];
   return Math.random() < 0.65 ? primary : MOVEMENT_STYLES[Math.floor(Math.random() * MOVEMENT_STYLES.length)];
@@ -469,6 +472,8 @@ function makeBall(isPlayer) {
       else { isEmoji = true; emoji = val; }
     }
     const movementStyle = es.isBoss ? 'normal' : pickEnemyMovementStyle(game.stage);
+    const sizeMul = es.isBoss || forcedEnemyKey ? 1 : rollEnemySizeMul(); // ときどき小さい（50%）・大きい（150%）敵が出る
+    if (sizeMul !== 1) { es.hp = Math.max(1, Math.round(es.hp * (sizeMul < 1 ? ENEMY_SMALL_HP : ENEMY_BIG_HP))); }
     const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
     return {
       isPlayer: false,
@@ -476,7 +481,7 @@ function makeBall(isPlayer) {
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
       maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
       chaser: es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE, // ときどき、ひたすら主人公を追ってくるボス
-      radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? BOSS_RADIUS : 16) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
+      sizeMul, radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? BOSS_RADIUS : 16 * sizeMul) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
       glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
       shape: es.isBoss ? 'emoji' : (isEmoji ? 'emoji' : style.shape),
@@ -576,7 +581,7 @@ function makeAddEnemy(mainEnemy) {
     isPlayer: false, isAdd: true,
     x: spot.x + (Math.random() - 0.5) * 30, y: spot.y + (Math.random() - 0.5) * 30,
     vx: Math.cos(angle) * 3.4, vy: Math.sin(angle) * 3.4,
-    radius: SLIME_CLASS_EMOJIS.has(emoji) ? 13 : 15, // 雑魚も小さすぎない大きさに maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
+    radius: SLIME_CLASS_EMOJIS.has(emoji) ? 13 : 15, /* 雑魚も小さすぎない大きさに */ maxHp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)), hp: Math.max(6, Math.round(mainEnemy.maxHp * 0.18)),
     atk: Math.max(1, Math.round(mainEnemy.atk * 0.4)),
     color: '#ff9d4f', glow: 'rgba(255,157,79,0.5)', shape: 'emoji', emoji,
     movementStyle: pickEnemyMovementStyle(game.stage),
