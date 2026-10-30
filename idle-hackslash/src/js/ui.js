@@ -1175,6 +1175,7 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   let line = item.desc;
   if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
   else if (item.toggleKind) { const k = item.toggleKind, on = !isEvoKindOpen(k); game['evoKindOpen_' + k] = on; if (on && k === 'counter') game.evoKindBought_counter = true; line = on ? `「${EVO_KIND_NAME[k]}」が進化のランダムに入った！（ON）` : `「${EVO_KIND_NAME[k]}」を進化のランダムから外した（OFF）`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
+  else if (item.feaRarity) { addFea(item.feaRarity, 1); line = `${RARITY_INFO[item.feaRarity].label}の進化の羽 +1（所持 ${feaCount(item.feaRarity)}枚）`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   else if (item.consumableKey) { game[item.consumableKey] = (game[item.consumableKey] || 0) + (item.bundle || 1); /* まとめ買いの品は1回で bundle 個 */ updatePotionButton(); updateRedPotionButton(); line = `+${item.bundle || 1}個 → 所持 ${game[item.consumableKey]}個`; }
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (SHOP_MULTI_ITEMS[id]) { game.shopOwned[id] = shopBuyCount(id) + 1; line = `${SHOP_MULTI_ITEMS[id]}が ${shopMultiRate(id)}倍 になった！`; }

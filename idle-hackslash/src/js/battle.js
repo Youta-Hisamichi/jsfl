@@ -1912,17 +1912,22 @@ function lootStackHtml(icon, n, t0) {
 function countUpLootStacks(root) {
   let chainN = 0, chainAt = 0; // 数が増えるたびに連鎖音（宝箱の中身ぜんぶで音階が上がり続ける）
   const chain = () => { const now = performance.now(); if (now - chainAt < 70) return; chainAt = now; chainN++; try { playPuzzleChain(Math.min(chainN, 15)); } catch (e) {} };
-  root.querySelectorAll('.cl-cnt').forEach(el => {
+  const els = root.querySelectorAll('.cl-cnt'); let left = els.length;
+  const finish = () => { if (--left > 0 || !chainN) return; setTimeout(playChestFanfare, 120); }; // 連鎖音が止まったら「パパパパーン♪」
+  els.forEach(el => {
     const n = +el.dataset.n, start = performance.now() + (+el.dataset.t0 + 0.35) * 1000, dur = Math.min(1200, 350 + n * 60);
     let last = 1;
     const step = now => {
       if (!el.isConnected) return;
       const t = Math.max(0, Math.min(1, (now - start) / dur)), v = Math.max(1, Math.round(1 + (n - 1) * (1 - Math.pow(1 - t, 2))));
       if (v !== last) { last = v; el.textContent = '×' + v; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); if (v % Math.max(1, Math.ceil(n / 12)) === 0) chain(); }
-      if (t < 1) requestAnimationFrame(step); else el.classList.add('done');
+      if (t < 1) requestAnimationFrame(step); else { el.classList.add('done'); finish(); }
     };
     requestAnimationFrame(step);
   });
+}
+function playChestFanfare() { // 宝箱の中身を数え終わったときの短いファンファーレ（ド・ド・ド・ドー↑ソーラーシ ドーン）
+  [[523, 0, 0.09], [523, 0.11, 0.09], [523, 0.22, 0.09], [698, 0.33, 0.28], [784, 0.66, 0.14], [880, 0.82, 0.14], [988, 0.98, 0.14], [1047, 1.14, 0.55]].forEach(([f, at, len]) => setTimeout(() => { playTone(f, len, 'square', 0.07); playTone(f / 2, len, 'triangle', 0.06); if (len > 0.3) playTone(f * 1.25, len, 'square', 0.035); }, at * 1000));
 }
 function setChestStars(rarity, n) { // 宝箱を開けるか選ぶ画面：★の画像＋個数
   const st = RARITY_INFO[rarity].stars;

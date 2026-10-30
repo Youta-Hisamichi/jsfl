@@ -805,7 +805,11 @@ SHOP_ITEMS.evoKind_acc = { icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp'
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: ICON_IMAGES[icon], name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
 });
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
-SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 100, unlockKey: 'rareRingBought' };
+SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 50, unlockKey: 'rareRingBought' };
+// SR以上の進化の羽はショップで1枚ずつ買える（何枚でも）
+[['epic', 'SR', 1, 3], ['legendary', 'SSR', 5, 4], ['mythic', 'UR', 25, 5]].forEach(([r, label, cost, n]) => {
+  SHOP_ITEMS['buyFea_' + r] = { icon: '🪶', img: `assets/img/icons/feather_r${n}.webp`, name: `${label}の進化の羽`, desc: `進化ガチャで使う${label}の羽を1枚`, cost, feaRarity: r };
+});
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
@@ -813,12 +817,12 @@ function isShopItemOwned(id) {
   if (item.slot) return item.slot.cur() >= item.slot.max(); // 枠増やしは最大まで買えば売り切れ
   if (item.action || item.rebirth) return false;
   if (SHOP_MULTI_ITEMS[id]) return false; // 倍率アイテムは何度でも買える
-  if (item.consumableKey) return false; // 消費アイテムは何個でも買える
+  if (item.consumableKey || item.feaRarity) return false; // 消費アイテム・羽は何個でも買える
   if (item.stackKey) return (game[item.stackKey] || 0) >= item.maxStack; // 重ねがけ系は上限まで買えば「所持済み」
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
 function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; if (item.toggleKind) return gemPrice(isEvoKindOpen(item.toggleKind) ? EVO_TOGGLE_OFF_COST : EVO_TOGGLE_ON_COST); return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
-function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) return item.cost * Math.pow(2, shopBuyCount(id)); if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
+function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) { let p = item.cost; for (let k = shopBuyCount(id); k > 0; k--) p = p > 10 ? p + 10 : p * 2; return p; } /* 買うたびに倍。💎10を超えたら次からは前の値段＋10 */ if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
 };
@@ -1417,9 +1421,9 @@ function renderShopList() {
     const item = SHOP_ITEMS[id], owned = sold[id];
     const locked = !owned && ((item.requires && !game[item.requires]) || (item.rebirth && !isRebornUnlocked()));
     const gcost = item.action ? 0 : getShopItemGemCost(id);
-    const note = SHOP_MULTI_ITEMS[id] || item.noNote ? '' : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.shopCount ? `（購入 ${game[item.stackKey] || 0}/${item.maxStack}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
+    const note = SHOP_MULTI_ITEMS[id] || item.noNote ? '' : item.feaRarity ? `（所持 ${feaCount(item.feaRarity)}枚）` : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.shopCount ? `（購入 ${game[item.stackKey] || 0}/${item.maxStack}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
     const costTxt = item.toggleFixed ? 'いつもON' : owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
-    const art = SHOP_ITEM_ART[id], left = owned || item.toggleKind || item.consumableKey || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
+    const art = SHOP_ITEM_ART[id], left = owned || item.toggleKind || item.consumableKey || item.feaRarity || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;
