@@ -4870,3 +4870,21 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 /* デバッグボタンは右上の設定ボタンのすぐ下に重ねる（ゲーム画面を狭くしない） */
 #topHeader > #debugToggleBtn { position: absolute !important; top: calc(100% + 2px) !important; right: 4px !important; left: auto !important; bottom: auto !important; z-index: 61; display: flex !important; align-items: center; gap: 3px; padding: 2px 7px !important; font-size: 0.58rem !important; font-weight: 700; border-radius: 999px !important; background-image: none !important; background: rgba(12,14,30,0.7) !important; color: #e8ecf8 !important; border: 1px solid rgba(255,255,255,0.35) !important; margin: 0 !important; }
 #topHeader > #debugToggleBtn .bb-gear { width: 12px !important; height: 12px; margin: 0 !important; }
+/* スキル項目のON/OFF一覧（スキルページの下） */
+.skt-help { font-size: 0.68rem; line-height: 1.5; margin: 0 2px 6px; color: #fff; text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 4px #000; }
+.skt-count { text-align: right; font-size: 0.7rem; color: #fff; text-shadow: 0 0 2px #000, 0 1px 2px #000; margin: 0 2px 4px; }
+.skt-count b { color: #ffd76a; font-size: 0.85rem; }
+.skt-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
+.skt-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border-radius: 10px; border: 1.5px solid #c9a24a; background: linear-gradient(#1c2846, #0d1630); color: #eef0f6; cursor: pointer; font: inherit; }
+.skt-item.off { border-color: #6b7080; background: linear-gradient(#2a2d36, #1a1c22); }
+.skt-item.off .skt-ico, .skt-item.off .skt-main { opacity: 0.55; }
+.skt-item.is-disabled { filter: none; }
+.skt-ico { flex: 0 0 34px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.skt-ico img, .skt-ico .ico-img { width: 34px !important; height: 34px !important; object-fit: contain; }
+.skt-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.skt-name { font-size: 0.78rem; font-weight: 800; }
+.skt-desc { font-size: 0.62rem; opacity: 0.8; line-height: 1.35; }
+.skt-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.skt-cost { font-size: 0.66rem; font-weight: 800; color: #9fe6ff; }
+.skt-item .evo-tg { font-style: normal; font-size: 0.62rem; font-weight: 900; padding: 1px 7px; border-radius: 999px; background: #555b6a; color: #fff; }
+.skt-item .evo-tg.on { background: #2fb55a; }

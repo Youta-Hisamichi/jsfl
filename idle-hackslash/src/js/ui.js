@@ -1623,11 +1623,11 @@ function runStarRoulette(rarity, el, done) {
 // 枠がいっぱいのときは、装備中のもの（と枠を使わない常時スキル）だけが出る＝使えないものは出ない
 function skillGachaPool() {
   const eq = getEquippedSkills(), free = eq.length < getSkillSlots();
-  return getSkillGachaPool().filter(id => eq.includes(id) || PASSIVE_SKILLS.includes(id) || (free && !game.shopOwned[id]));
+  return getSkillGachaPool().filter(id => isSkillItemOn(id) && (eq.includes(id) || PASSIVE_SKILLS.includes(id) || (free && !game.shopOwned[id]))); // OFFにしたスキルは出ない
 }
 function weaponGachaPool() {
   const eq = getEquippedWeapons(), free = eq.length < getWeaponSlots();
-  return Object.keys(WEAPONS).filter(k => getWeaponLv(k) < WEAPON_MAX_LV && (eq.includes(k) || (free && !getWeaponLv(k))));
+  return Object.keys(WEAPONS).filter(k => isSkillItemOn('w:' + k) && getWeaponLv(k) < WEAPON_MAX_LV && (eq.includes(k) || (free && !getWeaponLv(k))));
 }
 function skillGachaPull(event, isReroll) {
   const pool = skillGachaPool();
@@ -1656,6 +1656,21 @@ function skillGachaPull(event, isReroll) {
   showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
+document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
+  const b = event.target.closest('[data-sk-toggle]'); if (!b) return;
+  const id = b.dataset.skToggle, { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
+  if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
+  const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
+  if (game.gems < cost) { promptGemShortage(cost); return; }
+  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: on ? 'OFFにするとスキルガチャに出なくなります（持っている分・装備中の分はそのまま使えます）' : 'ONにするとスキルガチャに出るようになります', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+    onYes: () => {
+      if (game.gems < cost) { promptGemShortage(cost); return; }
+      game.gems -= cost; game.skillOff = game.skillOff || {};
+      if (on) game.skillOff[id] = true; else delete game.skillOff[id];
+      showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）`);
+      updateStatsUI(); renderCoinShopList(); saveGame();
+    } });
+});
 function unifiedGachaPull(event) {
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
   if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }

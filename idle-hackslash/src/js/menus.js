@@ -58,6 +58,21 @@ function renderSkillGacha() {
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
+// スキル項目のON/OFF：OFFにしたスキルはガチャに出なくなる（進化項目と同じく ON 💎5・OFF 💎10。ONは3つより少なくできない）
+const SKILL_TOGGLE_ON_COST = 5, SKILL_TOGGLE_OFF_COST = 10, SKILL_MIN_ON = 3;
+function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
+function isSkillItemOn(id) { return !(game.skillOff && game.skillOff[id]); }
+function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
+function renderSkillToggleList() {
+  const el = document.getElementById('skillToggleList'); if (!el) return;
+  const ids = skillToggleIds(), onN = ids.filter(isSkillItemOn).length;
+  const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
+    const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id), cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
+    const lock = on && onN <= SKILL_MIN_ON;
+    return `<button class="skt-item ${on ? 'on' : 'off'} ${lock || game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
+  }).join('') + '</div>';
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+}
 function updateSkillButtonVisibility() {
   let keys;
   try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
@@ -72,6 +87,7 @@ function updateSkillButtonVisibility() {
 }
 function renderCoinShopList() {
   renderSkillGacha();
+  renderSkillToggleList();
   coinShopList.innerHTML = Object.entries(COIN_SHOP_ITEMS).filter(([id]) => CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)).map(([id, item]) => {
     const cost = coinPrice(id === 'cloneSlot' ? item.cost * (game.coinCloneSlots + 1) : item.cost);
     const suffix = id === 'cloneSlot' ? `（上限 ${getCloneLimit()}）` : '';
