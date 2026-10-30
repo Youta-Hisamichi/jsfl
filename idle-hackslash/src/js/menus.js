@@ -281,6 +281,7 @@ function openCompInfo(id) {
 }
 const myCharBoxEl = document.getElementById('myCharBox'), autoUpBtnEl = document.getElementById('autoUpgradeBtn'); // 一覧を描き直しても同じ要素を使い回す（ボタンの処理が付いている）
 function renderCompanionList() {
+  try { renderCompToggleList(); } catch (e) {}
   renderMyCharCard();
   if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
   if (!game.companionBook) game.companionBook = {};
@@ -334,10 +335,27 @@ function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
 function getCompSummonCost() { return getCompSummonPrice().coins; } // コインの分（ジェムの回は0）
 function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >= p.coins && game.gems >= p.gems; }
 const COMP_AWAKEN_MAX_REFUND = 2; // 覚醒MAXの仲間が出たときに返すコイン
+// 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ON・OFFとも💎2。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
+// まだ一度も転生していないセーブ（compOn が無い）は、出せる仲間ぜんぶがON
+const COMP_TOGGLE_COST = 2, COMP_MIN_ON = 3;
+function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
+function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
+function compOnCount() { return compPoolIds().filter(isCompOn).length; }
+function rollCompOn() { const a = compPoolIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, COMP_MIN_ON); }
+function renderCompToggleList() {
+  const el = document.getElementById('compToggleList'); if (!el) return;
+  const ids = compPoolIds(), onN = ids.filter(isCompOn).length;
+  const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
+    const c = COMPANIONS[id], on = isCompOn(id), cost = gemPrice(COMP_TOGGLE_COST);
+    return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-comp-toggle="${id}"><span class="skt-ico">${companionIconHtml(id)}</span><span class="skt-main"><span class="skt-name">${rarityStarsImg(c.rarity)} ${c.name}</span><span class="skt-desc">${c.desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
+  }).join('') + '</div>';
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+}
 function pickCompanionId() {
   const q = Array.isArray(game.summonGuarantee) ? game.summonGuarantee : [];
   while (q.length) { const g = q.shift(); if (COMPANIONS[g] && !isCompLocked(g)) return g; } // 採用したばかりの仲間は次の招集で必ず出る
   let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
+  { const on = entries.filter(([id]) => isCompOn(id)); if (on.length) entries = on; } // ONの仲間だけ（ONが誰も出せないときは今までどおり）
   if (!entries.length) entries = Object.entries(COMPANIONS);
   let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
   for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }

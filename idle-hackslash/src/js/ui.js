@@ -1687,6 +1687,23 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
     const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key, btn);
   });
 }
+document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）
+  const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
+  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id);
+  if (on && compOnCount() <= COMP_MIN_ON) { showTapError(`ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
+  const cost = gemPrice(COMP_TOGGLE_COST);
+  if (game.gems < cost) { promptGemShortage(cost); return; }
+  simpleChoice({ icon: companionIconHtml(id), title: c.name, text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+    onYes: () => {
+      if (game.gems < cost) { promptGemShortage(cost); return; }
+      if (!Array.isArray(game.compOn)) game.compOn = compPoolIds(); // 全員ONの状態から切り替えるとき
+      game.gems -= cost;
+      if (on) game.compOn = game.compOn.filter(x => x !== id); else game.compOn.push(id);
+      playRegisterSound();
+      showNotice(on ? `「${c.name}」を招集ガチャから外した（OFF）` : `「${c.name}」が招集ガチャに出るようになった（ON）`);
+      updateStatsUI(); renderCompToggleList(); saveGame();
+    } });
+});
 function unifiedGachaPull(event) {
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
   if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
