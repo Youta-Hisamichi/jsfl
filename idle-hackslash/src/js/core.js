@@ -847,7 +847,7 @@ const SKILL_GACHA_SKILLS = {
 const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen']; // 削除したスキル（古いセーブからも外す）
 const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
 const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
-const SKILL_GACHA_BASE_COST = 10, SKILL_GACHA_COST_GROWTH = 2; // 1回ごとに値段が2倍（転生でリセット）
+const SKILL_GACHA_BASE_COST = 100, SKILL_GACHA_COST_GROWTH = 2; // 1回ごとに値段が2倍（転生でリセット）
 function getSkillLevel(id) {
   if (!game.shopOwned[id]) return 0;
   return Math.max(1, Math.min(SKILL_MAX_LEVEL, (game.skillLevels && game.skillLevels[id]) || 1));

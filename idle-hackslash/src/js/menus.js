@@ -71,8 +71,7 @@ function renderSkillToggleList() {
   const ids = skillToggleIds(), onN = ids.filter(isSkillItemOn).length;
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
     const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id), cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
-    const lock = on && onN <= SKILL_MIN_ON;
-    return `<button class="skt-item ${on ? 'on' : 'off'} ${lock || game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
+    return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
