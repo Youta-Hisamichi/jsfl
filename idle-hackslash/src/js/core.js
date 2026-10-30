@@ -822,7 +822,7 @@ function isShopItemOwned(id) {
   return item.unlockKey ? !!game[item.unlockKey] : !!game.shopOwned[id];
 }
 function getShopItemGemCost(id) { const item = SHOP_ITEMS[id]; if (item.toggleKind) return gemPrice(isEvoKindOpen(item.toggleKind) ? EVO_TOGGLE_OFF_COST : EVO_TOGGLE_ON_COST); return item.slot ? item.slot.cost() : gemPrice(getShopItemBaseCost(id)); }
-function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) { let p = item.cost; for (let k = shopBuyCount(id); k > 0; k--) p = p > 10 ? p + 10 : p * 2; return p; } /* 買うたびに倍。💎10を超えたら次からは前の値段＋10 */ if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
+function getShopItemBaseCost(id) { const item = SHOP_ITEMS[id]; if (SHOP_MULTI_ITEMS[id]) { let p = item.cost; for (let k = shopBuyCount(id); k > 0; k--) p = p >= 10 ? p + 10 : Math.min(10, p * 2); return p; } /* 買うたびに倍（ただし💎10で止める）。💎10からは前の値段＋10（例 8→10→20→30） */ if (item.costGrowth) return item.cost * Math.pow(item.costGrowth, game[item.stackKey] || 0); return item.stackKey ? item.cost * ((game[item.stackKey] || 0) + 1) : item.cost; }
 const COIN_SHOP_ITEMS = {
   cloneSlot: { icon: '👥', name: '増員指令', desc: '分身上限 +1', cost: 45 }
 };
