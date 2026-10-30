@@ -578,7 +578,7 @@ function fullReset() {
   clearSave();
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
-  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 2; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
+  game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaDisc = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 2; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
   game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
@@ -888,7 +888,7 @@ debugRow.addEventListener('click', event => {
   }
   if (action === 'clearSkillsWeapons') { // 取得したスキル・サブウェポンを全部なくす（転生と同じ状態。ガチャの値段も最初に戻す）
     for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-    game.skillLevels = {}; game.equippedSkills = []; game.skillGachaPulls = 0;
+    game.skillLevels = {}; game.equippedSkills = []; game.skillGachaPulls = 0; game.skillGachaDisc = 0;
     game.weapons = {}; game.equippedWeapons = []; game.weaponGachaPulls = 0; weaponProj = []; weaponFx = [];
     showNotice('🗑 スキルとサブウェポンを全部解除しました');
     renderCoinShopList(); updateSkillButtonVisibility(); updateStatsUI(); saveGame();
@@ -1545,6 +1545,7 @@ document.getElementById('weaponList').addEventListener('click', event => {
   if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
     if (skillSwapLocked(event)) return;
     const id = eb.dataset.weaponEquip, eq = getEquippedWeapons();
+    if (!isSkillItemOn('w:' + id)) { showTapError('スキル項目がOFFです（ページ下でONにすると装備できます）', event.clientX, event.clientY); return; }
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getWeaponSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
     eq.push(id);
@@ -1662,11 +1663,15 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
   if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなります（持っている分・装備中の分はそのまま使えます）' : 'ONにするとスキルガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなり、もう持っているこのスキルも装備から外れて使えなくなります（ONに戻すとまた装備できます）' : 'ONにするとスキルガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       game.gems -= cost;
-      if (on) game.skillOn = game.skillOn.filter(x => x !== id); else game.skillOn.push(id);
+      if (on) { // OFFにしたら、もう引いているスキルも外して使えなくする（装備枠は空く）
+        game.skillOn = game.skillOn.filter(x => x !== id);
+        if (auto) game.equippedWeapons = getEquippedWeapons().filter(k => k !== id.slice(2)); else game.equippedSkills = getEquippedSkills().filter(k => k !== id);
+        updateSkillButtonVisibility();
+      } else game.skillOn.push(id);
       playRegisterSound(); // ショップで買ったときと同じ「チャリーン」
       showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）`);
       updateStatsUI(); renderCoinShopList(); saveGame();
@@ -1757,6 +1762,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     if (skillSwapLocked(event)) return;
     const id = equip.dataset.skillEquip;
     if (PASSIVE_SKILLS.includes(id)) { showNotice(`${SKILL_GACHA_SKILLS[id].name} は取得するだけで常に効きます（セット不要）`); return; }
+    if (!isSkillItemOn(id)) { showTapError('スキル項目がOFFです（ページ下でONにすると装備できます）', event.clientX, event.clientY); return; }
     const eq = getEquippedSkills();
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getSkillSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
@@ -1838,7 +1844,8 @@ document.getElementById('skillSlotBtn').addEventListener('click', event => {
   if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('coinshop') }); return; }
   game.gems -= cost;
   game.skillSlots = slots + 1;
-  showNotice(`🎒 スキル枠が ${game.skillSlots} つになりました`);
+  game.skillGachaDisc = (game.skillGachaDisc || 0) + 1; // 枠を増やしたら、いまのスキルガチャの値段を半額に
+  showNotice(`🎒 スキル枠が ${game.skillSlots} つになりました（スキルガチャが半額に！）`);
   playRegisterSound();
   updateStatsUI();
   renderCoinShopList();
