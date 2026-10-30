@@ -43,7 +43,7 @@ function renderSkillGacha() {
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = !lv ? '' : !isSkillItemOn('w:' + id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const pwN = weaponDmg(1, lv + 1), atk = getPlayerAtk();
-    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">🔢 個数 ×${weaponCount(id)}${weaponCount(id) < WEAPON_COUNT_MAX ? '（スキルガチャでダブると+1）' : '（最大）'}<br>⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || ''; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, `${COIN_ICO} ${formatCoinNumber(cost)}`, label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', game.coins < cost); };
@@ -1274,7 +1274,9 @@ function getEquippedWeapons() {
 }
 function equippedWeaponLv(id) { return getEquippedWeapons().includes(id) ? getWeaponLv(id) : 0; }
 function autoEquipWeapon(id) { const eq = getEquippedWeapons(); if (!eq.includes(id) && eq.length < getWeaponSlots()) eq.push(id); } // 空き枠があれば自動で装備
-function weaponCount(lv) { return 1 + Math.floor((Math.min(lv, WEAPON_SHAPE_LV) - 1) / 2); } // Lv1:1 Lv3:2 Lv5:3（それ以上は増えない）
+// 自動スキル（元サブウェポン）の個数は、スキルガチャでダブったときだけ1つ増える（Lvアップでは増えない。最大5つ。転生でリセット）
+const WEAPON_COUNT_MAX = 5;
+function weaponCount(id) { if (!game.weaponDup) game.weaponDup = {}; return Math.min(WEAPON_COUNT_MAX, 1 + (game.weaponDup[id] || 0)); }
 function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('weapon'); } // サブウェポン進化も掛かる // 10Lvごとに飛躍・100Lvごとに超飛躍
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
 // ボスを倒した・リタイヤしたときに、まだ持っていないサブウェポンが1つ手に入る（Lvは上げない。強化はスキル画面で）
@@ -1295,7 +1297,7 @@ function weaponAimAngle(pl, spread) {
   return base + (spread || 0);
 }
 function fireWeapon(id, lv, pl) {
-  const n = weaponCount(lv), W = WEAPONS[id];
+  const n = weaponCount(id), W = WEAPONS[id];
   if (id === 'boomerang') {
     for (let i = 0; i < n; i++) weaponProj.push({ id, x: pl.x, y: pl.y, ang: weaponAimAngle(pl, (i - (n - 1) / 2) * 0.7), t: 0, life: 70, side: i % 2 ? -1 : 1, r: 9, dmg: weaponDmg(0.7, lv), hit: new Set() });
     playTone(500, 0.12, 'triangle', 0.05, 900);

@@ -1088,7 +1088,7 @@ function completeReincarnation() {
   game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaDisc = 0;
   game.skillOn = rollSkillOn(); // ONのスキルは転生のたびにランダムな3つに選び直す
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.equippedWeapons = []; game.runBuffs = {}; weaponProj = []; weaponFx = [];
+  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.weaponDup = {}; game.equippedWeapons = []; game.runBuffs = {}; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);

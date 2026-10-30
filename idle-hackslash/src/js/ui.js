@@ -889,7 +889,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'clearSkillsWeapons') { // 取得したスキル・サブウェポンを全部なくす（転生と同じ状態。ガチャの値段も最初に戻す）
     for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
     game.skillLevels = {}; game.equippedSkills = []; game.skillGachaPulls = 0; game.skillGachaDisc = 0;
-    game.weapons = {}; game.equippedWeapons = []; game.weaponGachaPulls = 0; weaponProj = []; weaponFx = [];
+    game.weapons = {}; game.weaponDup = {}; game.equippedWeapons = []; game.weaponGachaPulls = 0; weaponProj = []; weaponFx = [];
     showNotice('🗑 スキルとサブウェポンを全部解除しました');
     renderCoinShopList(); updateSkillButtonVisibility(); updateStatsUI(); saveGame();
     return;
@@ -1685,13 +1685,17 @@ function weaponGachaPull(event, isReroll) {
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
     spendCoins(cost); game.weaponGachaPulls = (game.weaponGachaPulls || 0) + 1;
   }
-  const snap = { weapons: { ...(game.weapons || {}) }, eq: getEquippedWeapons().slice() }; // 引き直し用
+  const snap = { weapons: { ...(game.weapons || {}) }, eq: getEquippedWeapons().slice(), dup: { ...(game.weaponDup || {}) } }; // 引き直し用
   const id = gachaPick(pool), W = WEAPONS[id];
   if (!game.weapons) game.weapons = {};
+  if (!game.weaponDup) game.weaponDup = {};
+  const dupBefore = weaponCount(id);
+  if (getWeaponLv(id) > 0) game.weaponDup[id] = (game.weaponDup[id] || 0) + 1; // ガチャでダブったら個数+1
+  const countUp = weaponCount(id) > dupBefore;
   const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
-  const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; renderCoinShopList(); weaponGachaPull(ev, true); };
-  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
+  const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; game.weaponDup = snap.dup; renderCoinShopList(); weaponGachaPull(ev, true); };
+  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
@@ -3307,6 +3311,7 @@ if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.f
 if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
+if (!game.weaponDup) { game.weaponDup = {}; for (const k in (game.weapons || {})) { const lv = game.weapons[k] || 0; const old = lv ? Math.floor((Math.min(lv, 5) - 1) / 2) : 0; if (old) game.weaponDup[k] = old; } } // 個数がLvで増えていた頃のセーブは、今の個数をそのまま引き継ぐ
 if (!game.atkUpBtnMig) { game.atkUpBtnMig = true; if (game.shopOwned.skillAtkUp && Array.isArray(game.equippedSkills) && !game.equippedSkills.includes('skillAtkUp') && getEquippedSkills().length < getSkillSlots()) game.equippedSkills.push('skillAtkUp'); } // 攻撃UPはボタン発動に戻したので、空き枠があれば装備しておく
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
 updateSkillButtonVisibility(); // セーブを読み込んだ後に、装備中スキルのボタンを出す
