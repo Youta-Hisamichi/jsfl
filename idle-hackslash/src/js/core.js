@@ -806,10 +806,13 @@ SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/e
 });
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 50, unlockKey: 'rareRingBought' };
-// SR以上の進化の羽はショップで1枚ずつ買える（何枚でも）
-[['epic', 'SR', 1, 3], ['legendary', 'SSR', 5, 4], ['mythic', 'UR', 25, 5]].forEach(([r, label, cost, n]) => {
-  SHOP_ITEMS['buyFea_' + r] = { icon: '🪶', img: `assets/img/icons/feather_r${n}.webp`, name: `${label}の進化の羽`, desc: `進化ガチャで使う${label}の羽を1枚`, cost, feaRarity: r };
+// 進化の羽の交換：1つ下のレア度の羽100枚＋コイン（転生と同じ額×倍率）かジェムで、1つ上の羽を1枚（何枚でも）
+const FEA_TRADE_NEED = 100;
+[['rare', 'R', 'common', 1, 0, 2], ['epic', 'SR', 'rare', 2, 0, 3], ['legendary', 'SSR', 'epic', 4, 0, 4], ['mythic', 'UR', 'legendary', 0, 5, 5]].forEach(([r, label, from, coinMult, gems, n]) => {
+  SHOP_ITEMS['buyFea_' + r] = { icon: '🪶', img: `assets/img/icons/feather_r${n}.webp`, name: `${label}の進化の羽`, desc: `${RARITY_INFO[from].label}の羽${FEA_TRADE_NEED}枚と交換で、${label}の羽を1枚`, cost: gems, feaRarity: r, feaFrom: from, feaCoinMult: coinMult };
 });
+function feaTradeCost(id) { const it = SHOP_ITEMS[id]; return { fea: FEA_TRADE_NEED, coins: it.feaCoinMult ? rebornCoinCost() * it.feaCoinMult : 0, gems: it.cost ? gemPrice(it.cost) : 0 }; }
+function canFeaTrade(id) { const it = SHOP_ITEMS[id], c = feaTradeCost(id); return feaCount(it.feaFrom) >= c.fea && game.coins >= c.coins && game.gems >= c.gems; }
 const POTION_HEAL_RATIO = 0.45;
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
@@ -1428,8 +1431,9 @@ function renderShopList() {
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;
-    const priceHtml = item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b><b class="sr-plus-gem">＋💎${REBORN_SHOP_GEMS}</b></span>` : price;
-    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.rebirth ? game.coins < ccost || game.gems < REBORN_SHOP_GEMS : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
+    const ft = item.feaFrom ? feaTradeCost(id) : null;
+    const priceHtml = ft ? `<span class="cost sr-price sr-fea-price"><span class="sfp-fea">${RARITY_INFO[item.feaFrom].label}羽<b>${ft.fea}</b></span>${ft.coins ? `<span class="sfp-sub"><img src="${COIN_IMG_SRC}" alt="">＋${formatCoinNumber(ft.coins)}</span>` : ''}${ft.gems ? `<span class="sfp-sub">＋💎${ft.gems}</span>` : ''}</span>` : item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b><b class="sr-plus-gem">＋💎${REBORN_SHOP_GEMS}</b></span>` : price;
+    return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.feaFrom ? !canFeaTrade(id) : item.rebirth ? game.coins < ccost || game.gems < REBORN_SHOP_GEMS : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
 // スキルとサブウェポンは1つの装備枠を分け合う（サブウェポンは「自動スキル」としてスキルに統一）

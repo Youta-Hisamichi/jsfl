@@ -1153,6 +1153,20 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= EVO_MIN_ON) { showTapError(`ONの項目は${EVO_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
+  if (item.feaFrom) { // 羽の交換：下のレア度の羽100枚＋コイン／ジェム
+    const c = feaTradeCost(id), fromL = RARITY_INFO[item.feaFrom].label;
+    if (feaCount(item.feaFrom) < c.fea) { showTapError(`${fromL}の羽が足りません（${feaCount(item.feaFrom)} / ${c.fea}枚）`, event.clientX, event.clientY); return; }
+    if (game.coins < c.coins) { showTapError(`🟡 コインが足りません（あと ${formatCoinNumber(Math.ceil(c.coins - game.coins))}）`, event.clientX, event.clientY); return; }
+    if (game.gems < c.gems) { promptGemShortage(c.gems); return; }
+    const costText = `${fromL}の羽 <b>${c.fea}枚</b>` + (c.coins ? `＋🟡<b>${formatCoinNumber(c.coins)}</b>` : '') + (c.gems ? `＋💎<b>${c.gems}</b>` : '');
+    simpleChoice({ icon: ico(item), title: item.name, text: `${costText} で交換しますか？`, sub: `所持：${fromL}の羽 ${feaCount(item.feaFrom)}枚`, yes: '交換する', no: 'やめる', onYes: () => {
+      if (!canFeaTrade(id)) { showNotice('足りなくなりました', true, 1800); return; }
+      addFea(item.feaFrom, -c.fea); if (c.coins) spendCoins(c.coins); game.gems -= c.gems; addFea(item.feaRarity, 1);
+      showNotice(`🪶 ${item.name} を手に入れた！（所持 ${feaCount(item.feaRarity)}枚）`); playRegisterSound();
+      if (typeof renderEvolutionList === 'function') renderEvolutionList(); updateStatsUI(); renderShopList(); saveGame();
+    } });
+    return;
+  }
   if (item.rebirth) { // 転生：確認画面を出し、転生したときに💎を払う
     if (!isRebornUnlocked()) { showTapError(`🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
     if (game.stage < 3 && !game.dbgRebornAlways) { showTapError('ステージ3から転生できます', event.clientX, event.clientY); return; }

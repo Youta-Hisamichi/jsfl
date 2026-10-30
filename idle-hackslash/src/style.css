@@ -4947,3 +4947,9 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .arena-wrap > .speech-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7; pointer-events: none; border-radius: inherit; background: transparent !important; }
 .tower-hint .th-tower { width: auto !important; height: 64px !important; object-fit: contain; }
 .th-tower-big { height: 56px; width: auto; object-fit: contain; }
+/* 羽の交換の値段：羽100枚＋コイン／ジェム */
+.sr-fea-price { display: flex !important; flex-direction: column; align-items: flex-end; gap: 1px; line-height: 1.15; }
+.sr-fea-price .sfp-fea { font-size: 0.62rem; font-weight: 900; color: #fff; text-shadow: 0 0 2px #000; }
+.sr-fea-price .sfp-fea b { font-size: 0.95rem; color: #ffe08a; margin-left: 2px; }
+.sr-fea-price .sfp-sub { display: inline-flex; align-items: center; gap: 2px; font-size: 0.66rem; font-weight: 900; color: #fff; text-shadow: 0 0 2px #000; }
+.sr-fea-price .sfp-sub img { width: 13px; height: 13px; }
