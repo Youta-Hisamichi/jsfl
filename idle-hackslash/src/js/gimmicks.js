@@ -426,7 +426,7 @@ const SEEDS = {
   hp:  { icon: '🍎', img: 'assets/img/icons/bag_seedHp.webp', name: 'HPの種', stat: '最大HP', col: '#7ee787' },
 };
 const SEED_PER_USE = 0.05; // 1個につき +5%
-const SEED_CHEST_CHANCE = { common: 0.08, rare: 0.15, epic: 0.3, legendary: 0.6, mythic: 1 };
+const SEED_CHEST_CHANCE = { common: 0.01, rare: 0.03, epic: 0.08, legendary: 0.12, mythic: 0.2 }; // 宝箱から種が出る確率：N1%・R3%・SR8%・SSR12%・UR20%
 const SEED_CHEST_COUNT = { common: 1, rare: 1, epic: 1, legendary: 2, mythic: 3 };
 function seedHeld(k) { return ((game.seeds || {})[k]) || 0; }
 function seedUsed(k) { return ((game.seedUsed || {})[k]) || 0; }
