@@ -1662,7 +1662,7 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
   if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: on ? 'OFFにするとスキルガチャに出なくなります（持っている分・装備中の分はそのまま使えます）' : 'ONにするとスキルガチャに出るようになります', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなります（持っている分・装備中の分はそのまま使えます）' : 'ONにするとスキルガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       game.gems -= cost;
@@ -1671,6 +1671,33 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
       updateStatsUI(); renderCoinShopList(); saveGame();
     } });
 });
+// スキルを発動したら、そのスキルの絵を画面中央に大きく出して、派手な発動音を鳴らす
+function skillLastTimes() { return [lastSpecialAt, lastAccelAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, lastBlastAt, lastHalveAt]; }
+let skillCastSnap = null;
+function playSkillCastSound() {
+  [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => setTimeout(() => playTone(f, 0.09, i % 2 ? 'square' : 'sawtooth', 0.07, f * 1.5), i * 38)); // 駆け上がるきらめき
+  try { thump(140, 45, 0.45, 0.6); } catch (e) {}
+  try { noiseSweep(0.45, 800, 6000, 'bandpass', 0.5, 0.35); } catch (e) {}
+  setTimeout(() => { playTone(1568, 0.3, 'triangle', 0.06, 2093); playTone(784, 0.35, 'square', 0.05, 1047); }, 240); // 最後にキラーン
+}
+function showSkillCast(skillKey) {
+  const sk = SKILL_GACHA_SKILLS[skillKey], wrap = document.querySelector('.arena-wrap'); if (!sk || !wrap) return;
+  wrap.querySelectorAll('.skill-cast').forEach(e => e.remove());
+  const el = document.createElement('div'); el.className = 'skill-cast';
+  el.innerHTML = `<div class="sc-ring"></div><div class="sc-ico">${ico(sk)}</div><div class="sc-name">${sk.name}</div>`;
+  wrap.appendChild(el); setTimeout(() => el.remove(), 1100);
+  playSkillCastSound();
+}
+{ const row = document.getElementById('skillRow');
+  row.addEventListener('click', () => { try { skillCastSnap = { t: Date.now(), v: skillLastTimes() }; } catch (e) { skillCastSnap = null; } }, true);
+  row.addEventListener('click', event => {
+    const btn = event.target.closest('.action-btn'), snap = skillCastSnap; skillCastSnap = null;
+    if (!btn || !snap || btn.id === 'redPotionBtn') return;
+    let now; try { now = skillLastTimes(); } catch (e) { return; }
+    if (!now.some((v, i) => v !== snap.v[i] && v >= snap.t - 5 && v <= Date.now() + 5)) return; // 待ち時間が新しく始まった＝発動した（ジェムで待ち時間を戻しただけのときは出さない）
+    const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key);
+  });
+}
 function unifiedGachaPull(event) {
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
   if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }

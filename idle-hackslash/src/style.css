@@ -4890,3 +4890,27 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .skt-item .evo-tg.on { background: #2fb55a; }
 /* 進行ゲージのゴールのボスはタップでボスの情報を下見できる */
 #stageBossMark { pointer-events: auto !important; cursor: pointer; z-index: 3; }
+.skt-warn { color: #ffb3b3; }
+/* 招集ガチャ結果でキャラを押したときの概要 */
+.cg-info-ov { position: fixed; inset: 0; z-index: 95; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); padding: 16px; }
+.cg-info { width: min(330px, 100%); padding: 14px 14px 12px; border-radius: 14px; border: 2px solid #c9a24a; background: linear-gradient(#1c2846, #0b1226); color: #eef0f6; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.6); animation: cgiIn 0.22s ease-out; }
+@keyframes cgiIn { from { scale: 0.85; opacity: 0; } to { scale: 1; opacity: 1; } }
+.cg-info .cgi-face { width: 96px; height: 96px; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; }
+.cg-info .cgi-face img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.cg-info .cgi-name { font-weight: 900; font-size: 1rem; color: #ffd76b; }
+.cg-info .cgi-stat { font-size: 0.74rem; margin: 4px 0 6px; }
+.cg-info .cgi-stat b { color: #ffd76b; }
+.cg-info .cgi-row { font-size: 0.74rem; line-height: 1.5; text-align: left; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.06); margin-top: 4px; }
+.cg-info .cgi-trait { color: #bfe9ff; }
+.cg-info .cgi-ok { margin-top: 10px; padding: 7px 28px; border-radius: 999px; border: 2px solid #c9a24a; background: linear-gradient(#2e6be0, #1a3f9a); color: #fff; font-weight: 900; cursor: pointer; }
+[data-cg-info] { cursor: pointer; }
+/* スキル発動：画面中央に大きなアイコン */
+.skill-cast { position: absolute; left: 50%; top: 42%; z-index: 9; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; pointer-events: none; animation: scIn 1.1s ease-out forwards; }
+.skill-cast .sc-ico { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 84px; filter: drop-shadow(0 0 12px rgba(255,240,160,0.95)) drop-shadow(0 0 26px rgba(255,190,80,0.7)); }
+.skill-cast .sc-ico img, .skill-cast .sc-ico .ico-img { width: 120px !important; height: 120px !important; object-fit: contain; }
+.skill-cast .sc-name { margin-top: 2px; font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 0.08em; -webkit-text-stroke: 1px #3a1d00; text-shadow: 0 0 3px #000, 0 2px 0 #7a3c00, 0 0 14px rgba(255,200,80,0.9); }
+.skill-cast .sc-ring { position: absolute; left: 50%; top: 60px; width: 120px; height: 120px; translate: -50% -50%; border-radius: 50%; border: 4px solid rgba(255,230,140,0.95); box-shadow: 0 0 18px rgba(255,210,100,0.9), inset 0 0 18px rgba(255,210,100,0.7); animation: scRing 0.7s ease-out forwards; }
+@keyframes scIn { 0% { scale: 0.3; opacity: 0; } 14% { scale: 1.25; opacity: 1; } 26% { scale: 1; } 75% { scale: 1.03; opacity: 1; } 100% { scale: 1.12; opacity: 0; } }
+@keyframes scRing { from { scale: 0.4; opacity: 1; } to { scale: 2.6; opacity: 0; } }
+.cg-info .cgi-face { font-size: 64px; }
+.cg-info .cgi-face img.comp-sprite { width: 96px !important; height: 96px !important; max-width: none; max-height: none; object-fit: contain; }

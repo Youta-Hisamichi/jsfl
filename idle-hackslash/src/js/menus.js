@@ -58,9 +58,9 @@ function renderSkillGacha() {
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
-// スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎3。ONは3つより少なくできない）
+// スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎2。ONは3つより少なくできない。切り替えは転生でリセット）
 // 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
-const SKILL_TOGGLE_ON_COST = 3, SKILL_TOGGLE_OFF_COST = 3, SKILL_MIN_ON = 3;
+const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 2, SKILL_MIN_ON = 3;
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
 function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_MIN_ON); }
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
@@ -411,20 +411,35 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   };
   runGachaCountdown(bestRarity, reveal, box, { skippable: true }); // タップで演出をスキップ
 }
+function showCompGachaInfo(id) { // 招集ガチャの結果でキャラを押したときの概要
+  const c = COMPANIONS[id]; if (!c) return;
+  document.querySelectorAll('.cg-info-ov').forEach(o => o.remove());
+  const el = typeof compElement === 'function' ? compElement(id) : null, lv = (game.companions.level[id] || 0) + 1, n = getCompanionCount(id);
+  const ov = document.createElement('div'); ov.className = 'cg-info-ov';
+  ov.innerHTML = `<div class="cg-info rarity-${c.rarity}" style="border-color:${RARITY_INFO[c.rarity].color}"><div class="cgi-face">${companionIconHtml(id)}</div>
+    <div class="cgi-name">${rarityStarsImg(c.rarity)} ${c.name}${el ? ' ' + elemBadge(el) : ''}</div>
+    <div class="cgi-stat">Lv.${lv}${n > 1 ? `　×${n}人` : ''}　攻撃 <b>${formatCoinNumber(Math.round(getCompanionAtk(id)))}</b>　HP <b>${formatCoinNumber(Math.round(getCompanionMaxHP(id)))}</b></div>
+    <div class="cgi-row">🎖️ ${c.desc}</div>${c.trait ? `<div class="cgi-row cgi-trait">${c.trait}</div>` : ''}
+    <button class="cgi-ok">OK</button></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cgi-ok')) ov.remove(); });
+  playTone(880, 0.06, 'triangle', 0.05, 1175);
+}
 function showCompanionGachaResult(box, results, count, bestRarity) {
   box.style.display = 'block';
   box.className = 'gacha-result rarity-' + bestRarity;
   box.style.background = rarityBackground(bestRarity);
   const cell = r => {
     const c = COMPANIONS[r.id];
-    return `<div class="gm-item gm-open rarity-${c.rarity}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${companionIconHtml(r.id)}</div><span class="gm-name">${rarityStarsImg(c.rarity)}<br>${c.name}<br><b>${r.label}</b></span></div>`;
+    return `<div class="gm-item gm-open rarity-${c.rarity}" data-cg-info="${r.id}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${companionIconHtml(r.id)}</div><span class="gm-name">${rarityStarsImg(c.rarity)}<br>${c.name}<br><b>${r.label}</b></span></div>`;
   };
   box.innerHTML = count === 1
-    ? `<div class="gr-icon gr-pop">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
+    ? `<div class="gr-icon gr-pop" data-cg-info="${results[0].id}">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
     : `<div class="gr-title gr-pop">🐾 仲間10連招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
   { const cb = document.getElementById('compGachaCloseBtn'), row = document.createElement('div'); row.className = 'gr-btn-row'; cb.before(row); row.insertAdjacentHTML('beforeend', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>`); cb.classList.add('gr-ok-btn'); row.appendChild(cb); row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } // 演出スキップの誤タップを防ぐため、引き直しと閉じるは左右に離して並べる
   document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });
+  box.querySelectorAll('[data-cg-info]').forEach(el => el.addEventListener('click', ev => { ev.stopPropagation(); showCompGachaInfo(el.dataset.cgInfo); })); // キャラを押すとその仲間の概要
   playSummonFanfare(bestRarity); // 仲間が来た！のファンファーレ
   updateStatsUI();
   updateHPUI();
