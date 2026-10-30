@@ -4914,3 +4914,4 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 @keyframes scRing { from { scale: 0.4; opacity: 1; } to { scale: 2.6; opacity: 0; } }
 .cg-info .cgi-face { font-size: 64px; }
 .cg-info .cgi-face img.comp-sprite { width: 96px !important; height: 96px !important; max-width: none; max-height: none; object-fit: contain; }
+.tower-hint .th-tower { width: 52px; height: 52px; object-fit: contain; margin-bottom: 2px; filter: drop-shadow(0 0 6px rgba(255,215,107,0.8)); } /* 試練の塔おすすめに塔のアイコン */
