@@ -1653,7 +1653,7 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
   if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなり、もう持っているこのスキルも装備から外れて使えなくなります（ONに戻すとまた装備できます）' : 'ONにするとスキルガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなり、もう持っているこのスキルも装備から外れて使えなくなります（ONに戻すとまた装備できます）' : 'ONにするとスキルガチャに出るようになり、スキルガチャの値段が半額になります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       game.gems -= cost;
@@ -1661,9 +1661,9 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
         game.skillOn = game.skillOn.filter(x => x !== id);
         if (auto) game.equippedWeapons = getEquippedWeapons().filter(k => k !== id.slice(2)); else game.equippedSkills = getEquippedSkills().filter(k => k !== id);
         updateSkillButtonVisibility();
-      } else game.skillOn.push(id);
+      } else { game.skillOn.push(id); game.skillGachaDisc = (game.skillGachaDisc || 0) + 1; } // ONにしたらスキルガチャの値段を半額に（転生でリセット）
       playRegisterSound(); // ショップで買ったときと同じ「チャリーン」
-      showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）`);
+      showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）　スキルガチャが半額に！`);
       updateStatsUI(); renderCoinShopList(); saveGame();
     } });
 });
