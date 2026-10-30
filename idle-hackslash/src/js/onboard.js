@@ -174,7 +174,7 @@ canvas.addEventListener('pointerup', event => {
   for (const e of foes) { const d = Math.hypot(e.x - x, e.y - y); if (d < (e.radius || 12) * 1.4 + 10 && d < bd) { best = e; bd = d; } }
   if (best) (best.isPlayer ? showAllyInfo(best) : showEnemyInfo(best));
 });
-function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重ねて出す（戦場をふさがない）
+function showEnemyInfo(e, stage, extra) { // ステージ進捗バーの上に半透明で重ねて出す（戦場をふさがない）。stage を渡すとその階の敵として出す（ゴールのボスの下見）
   const host = document.querySelector('.exp-wrap'); if (!host) return;
   let el = document.getElementById('enemyInfoPop');
   if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; host.appendChild(el); }
@@ -184,11 +184,18 @@ function showEnemyInfo(e) { // ステージ進捗バーの上に半透明で重�
   const weak = el2 ? Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el2) : null;
   const m = elementMult(hero, el2);
   const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">属性ダメージ良好×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
-  el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}</small></div>`
+  el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(stage || game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}${extra || ''}</small></div>`
     + (ELEMENTS_ON ? `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
+
+// ---- 進行ゲージのゴールのボスをタップすると、その階のボスの名前・強さ・属性を下見できる ----
+document.getElementById('stageBossMark')?.addEventListener('click', () => {
+  const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), st = getEnemyStats(bs);
+  showEnemyInfo({ isBoss: true, emoji: em, hp: st.hp, maxHp: st.hp, milestone: st.milestone }, bs, `<br>ATK ${formatCoinNumber(st.atk)}　ステージ${formatStageNumber(bs)}のボス`);
+  playTone(660, 0.06, 'triangle', 0.04, 880);
+});
 
 // ---- 待ち時間中のスキルを押したら「チャージ中…」と出す ----
 document.getElementById('skillRow').addEventListener('click', event => {

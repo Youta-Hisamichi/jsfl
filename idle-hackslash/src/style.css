@@ -4888,3 +4888,5 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .skt-cost { font-size: 0.66rem; font-weight: 800; color: #9fe6ff; }
 .skt-item .evo-tg { font-style: normal; font-size: 0.62rem; font-weight: 900; padding: 1px 7px; border-radius: 999px; background: #555b6a; color: #fff; }
 .skt-item .evo-tg.on { background: #2fb55a; }
+/* 進行ゲージのゴールのボスはタップでボスの情報を下見できる */
+#stageBossMark { pointer-events: auto !important; cursor: pointer; z-index: 3; }
