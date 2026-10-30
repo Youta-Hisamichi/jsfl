@@ -1161,7 +1161,9 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
     const trade = k => {
       const m = Math.min(k, feaTradeMax(id)); if (m < 1) { showNotice('足りなくなりました', true, 1800); return; }
       addFea(item.feaFrom, -c.fea * m); if (c.coins) spendCoins(c.coins * m); game.gems -= c.gems * m; addFea(item.feaRarity, m);
-      showNotice(`🪶 ${item.name} を ${m}枚 手に入れた！（所持 ${feaCount(item.feaRarity)}枚）`); playRegisterSound();
+      showNotice(`🪶 ${item.name} を ${m}枚 手に入れた！（所持 ${feaCount(item.feaRarity)}枚）`);
+      for (let i = 0; i < Math.min(m, 12); i++) setTimeout(playRegisterSound, i * 110); // まとめて交換したら、枚数ぶん（最大12回）チャリンチャリンと鳴らす
+      if (m >= 2) setTimeout(() => playCoinChime(Math.min(m, 12) + 4), Math.min(m, 12) * 110 + 60); // 最後に「リン♪」
       if (typeof renderEvolutionList === 'function') renderEvolutionList(); updateStatsUI(); renderShopList(); saveGame();
     };
     simpleChoice({ icon: ico(item), title: item.name, text: `${fromL}の羽 <b>${c.fea}枚</b>${c.gems ? `＋💎<b>${c.gems}</b>` : ''} で1枚と交換`, sub: `所持：${fromL}の羽 ${feaCount(item.feaFrom)}枚${n >= 2 ? `（全部交換なら ${item.name} ${n}枚）` : ''}`,
