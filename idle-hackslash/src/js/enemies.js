@@ -631,16 +631,12 @@ function steerToward(ball, tx, ty, speed, turn) {
   steerBall(ball, dx / d * speed, dy / d * speed, turn);
   return d;
 }
-// 仲間特攻中の動き：ピンボールのように画面内の敵へ次々ぶつかって跳ね返る（壁でも跳ね返る）
-const COMP_RUSH_MS = 2600, COMP_RUSH_HITS = 8; // 1人あたりのおおよそのヒット数（ダメージの分け方の目安）
+// 仲間特攻中の動き：ピンボールのように画面内の敵（取り巻きも）へ次々まっすぐ飛んでぶつかり、跳ね返って次の敵へ（壁でも跳ね返る）
+const COMP_RUSH_MS = 2600, COMP_RUSH_HITS = 24, COMP_RUSH_SPEED = 17; // HITS：1人あたりのおおよそのヒット数（ダメージの分け方の目安）
 let compRushSfxAt = 0;
-function compRushTargetOf(ball) {
-  const t = ball.compRushTarget;
-  if (t && !t.isDying && t.hp > 0 && balls.includes(t)) return t;
-  return compRushPickNext(ball, null);
-}
-function compRushPickNext(ball, last) { // まだぶつかっていない敵を優先して、近い順に狙う（全員に当てたら最初から）
-  const alive = balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0);
+function compRushFoes() { return [...balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0), ...adds.filter(a => a.hp > 0)]; }
+function compRushPickNext(ball, last) { // まだぶつかっていない敵を優先して近い順に（全員に当てたら最初から）
+  const alive = compRushFoes();
   if (!ball.compRushHitSet) ball.compRushHitSet = new Set();
   let pool = alive.filter(b => b !== last && !ball.compRushHitSet.has(b));
   if (!pool.length) { ball.compRushHitSet.clear(); pool = alive.filter(b => b !== last); }
@@ -648,39 +644,43 @@ function compRushPickNext(ball, last) { // まだぶつかっていない敵を�
   ball.compRushTarget = nearestOf(ball, pool) || null;
   return ball.compRushTarget;
 }
-function moveCompRush(ball, speedMult) {
-  const e = compRushTargetOf(ball);
-  if (!e) { ball.compRushUntil = 0; return; }
-  const sp = 13 * speedMult;
-  const dx = e.x - ball.x, dy = e.y - ball.y, d = Math.hypot(dx, dy) || 1;
-  const cur = Math.hypot(ball.vx, ball.vy) || 1;
-  ball.vx = ball.vx / cur * sp; ball.vy = ball.vy / cur * sp; // 速さは一定のまま
-  steerBall(ball, dx / d * sp, dy / d * sp, Math.min(1, 0.22 * speedMult)); // 跳ね返ったあと、次の敵へ曲がりながら向かう
-  ball.x += ball.vx; ball.y += ball.vy;
-  if (Math.random() < 0.7) particles.push({ x: ball.x, y: ball.y, vx: -ball.vx * 0.15, vy: -ball.vy * 0.15, life: 0.6, color: COMPANION_COLORS[ball.companionId] || '#8fe3a0', decay: 0.06 });
-  wallBounce(ball);
-  const now = Date.now();
-  for (const t of balls) { // 進む途中で触れた敵には全部ぶつかる
-    if (t.isPlayer || t.isDying || t.hp <= 0) continue;
-    const ex = t.x - ball.x, ey = t.y - ball.y, ed = Math.hypot(ex, ey) || 1;
-    if (ed > t.radius + ball.radius + 2) continue;
-    if (!ball.compRushLastHit) ball.compRushLastHit = new WeakMap();
-    if (now - (ball.compRushLastHit.get(t) || 0) < 160) continue;
-    ball.compRushLastHit.set(t, now);
-    if (!ball.compRushHitSet) ball.compRushHitSet = new Set();
-    ball.compRushHitSet.add(t);
-    const nx = ex / ed, ny = ey / ed, dot = ball.vx * nx + ball.vy * ny;
-    if (dot > 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; } // 当たった面で跳ね返る
-    ball.x = t.x - nx * (t.radius + ball.radius + 3); ball.y = t.y - ny * (t.radius + ball.radius + 3);
+function compRushHit(ball, t, now) {
+  const ex = t.x - ball.x, ey = t.y - ball.y, ed = Math.hypot(ex, ey) || 1, nx = ex / ed, ny = ey / ed;
+  ball.compRushLastHit.set(t, now); ball.compRushHitSet.add(t);
+  ball.x = t.x - nx * ((t.radius || 12) + ball.radius + 3); ball.y = t.y - ny * ((t.radius || 12) + ball.radius + 3);
+  const hx = t.x - nx * (t.radius || 12), hy = t.y - ny * (t.radius || 12);
+  for (let k = 0; k < 7; k++) { const a = Math.random() * Math.PI * 2, sp2 = 2 + Math.random() * 3; particles.push({ x: hx, y: hy, vx: Math.cos(a) * sp2, vy: Math.sin(a) * sp2, life: 0.7, color: k % 2 ? '#ffffff' : (COMPANION_COLORS[ball.companionId] || '#8fe3a0'), decay: 0.07 }); }
+  if (now - compRushSfxAt > 50) { compRushSfxAt = now; playTone(600 + Math.random() * 700, 0.05, 'square', 0.06, 300); }
+  if (!(t.spawnTimer > 0)) { // 出てくる途中の敵には当たり判定だけ（ダメージなし）
     const { dmg, crit } = rollCrit(Math.max(1, ball.compRushDmg || 1), t);
     t.hp -= dmg; trackDamage(dmg);
-    spawnAttackDamageText(t, dmg, crit, '#d4ffdd');
-    const hx = t.x - nx * t.radius, hy = t.y - ny * t.radius;
-    for (let k = 0; k < 7; k++) { const a = Math.random() * Math.PI * 2, sp2 = 2 + Math.random() * 3; particles.push({ x: hx, y: hy, vx: Math.cos(a) * sp2, vy: Math.sin(a) * sp2, life: 0.7, color: k % 2 ? '#ffffff' : (COMPANION_COLORS[ball.companionId] || '#8fe3a0'), decay: 0.07 }); }
-    if (now - compRushSfxAt > 60) { compRushSfxAt = now; playTone(600 + Math.random() * 700, 0.05, 'square', 0.06, 300); }
-    if (t.hp <= 0 && !t.isDying) triggerEnemyDefeat(t, ball.x, ball.y);
-    if (t === ball.compRushTarget) compRushPickNext(ball, t);
-    updateHPUI();
+    spawnAttackDamageText(t, dmg, crit, '#d4ffdd', t.isAdd ? 6 : undefined);
+    if (t.isAdd) { if (t.hp <= 0) { recordBestiaryKill(t); const coinGain = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3))); game.coins += coinGain; spawnDamageText(t.x, t.y, '+' + formatCoinNumber(coinGain) + ' 🟡', '#ffd76b'); adds = adds.filter(ad => ad.hp > 0); } }
+    else if (t.hp <= 0 && !t.isDying) triggerEnemyDefeat(t, ball.x, ball.y);
+  }
+  const nx2 = compRushPickNext(ball, t);
+  if (!nx2 || nx2 === t) { ball.vx = -nx * COMP_RUSH_SPEED; ball.vy = -ny * COMP_RUSH_SPEED; ball.compRushAwayUntil = now + 160; } // 敵が1体だけなら一度はじかれてから、また飛び込む
+  else ball.compRushAwayUntil = 0;
+  updateHPUI();
+}
+function moveCompRush(ball, speedMult) {
+  if (!ball.compRushHitSet) ball.compRushHitSet = new Set();
+  if (!ball.compRushLastHit) ball.compRushLastHit = new WeakMap();
+  const now = Date.now(), sp = COMP_RUSH_SPEED * speedMult;
+  let e = ball.compRushTarget;
+  if (!e || e.hp <= 0 || e.isDying || !(balls.includes(e) || adds.includes(e))) e = compRushPickNext(ball, null);
+  if (e && now >= (ball.compRushAwayUntil || 0)) { const dx = e.x - ball.x, dy = e.y - ball.y, d = Math.hypot(dx, dy) || 1; ball.vx = dx / d * sp; ball.vy = dy / d * sp; } // 次の敵へまっすぐ飛ぶ（回り込まない）
+  else { const cur = Math.hypot(ball.vx, ball.vy) || 1; ball.vx = ball.vx / cur * sp; ball.vy = ball.vy / cur * sp; } // 敵がいないあいだは壁で跳ね返りながら飛び回る
+  const px = ball.x, py = ball.y;
+  ball.x += ball.vx; ball.y += ball.vy;
+  if (Math.random() < 0.8) particles.push({ x: ball.x, y: ball.y, vx: -ball.vx * 0.15, vy: -ball.vy * 0.15, life: 0.6, color: COMPANION_COLORS[ball.companionId] || '#8fe3a0', decay: 0.06 });
+  wallBounce(ball);
+  for (const t of compRushFoes()) { // 進んだ線の途中で触れた敵にも全部ぶつかる（速くてもすり抜けない）
+    if (now - (ball.compRushLastHit.get(t) || 0) < 120) continue;
+    const sx = ball.x - px, sy = ball.y - py, L = sx * sx + sy * sy || 1, u = Math.max(0, Math.min(1, ((t.x - px) * sx + (t.y - py) * sy) / L));
+    if (Math.hypot(px + sx * u - t.x, py + sy * u - t.y) > (t.radius || 12) + ball.radius + 2) continue;
+    compRushHit(ball, t, now);
+    break; // 1フレームに1体（跳ね返った向きで次へ）
   }
 }
 function moveCompanionCustom(ball, speedMult, player, enemy) {

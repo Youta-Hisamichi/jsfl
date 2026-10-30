@@ -2820,19 +2820,21 @@ compRushBtn.addEventListener('click', event => {
   const comps = balls.filter(ball => ball.isCompanion && ball.hp > 0);
   const coffins = balls.filter(ball => ball.isCompanion && ball.hp <= 0 && !ball.isClone); // 倒れている仲間は棺桶ごと投げつける
   if (game.shopOwned.skillCompRush && !comps.length && !coffins.length && Date.now() - lastCompRushAt >= skillCd('skillCompRush', SKILL_COMPRUSH_COOLDOWN)) { showTapError('戦える仲間がいません', event.clientX, event.clientY); return; }
-  const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton);
+  const ctxs = beginSkill(event, 'skillCompRush', 'compRush', SKILL_COMPRUSH_COOLDOWN, lastCompRushAt, v => { lastCompRushAt = v; }, updateCompRushButton, false); // 次の敵が出てくる途中でも押せる（出てきたら飛びかかる）
   if (!ctxs) return;
-  const { player, enemy } = ctxs;
+  const { player } = ctxs;
+  const enemy = ctxs.enemy || compRushFoes()[0] || null;
   const rushUntil = Date.now() + COMP_RUSH_MS, hits = COMP_RUSH_HITS;
-  comps.forEach((comp, i) => { // 仲間全員が画面内の敵へ次々ぶつかって跳ね返る（合計ダメージは今までと同じくらい）
-    comp.compRushUntil = rushUntil; comp.compRushHitSet = new Set(); comp.compRushLastHit = new WeakMap();
+  comps.forEach(comp => { // 仲間全員が画面内の敵へ次々ぶつかって跳ね返る（合計ダメージは今までと同じくらい）
+    comp.compRushUntil = rushUntil; comp.compRushHitSet = new Set(); comp.compRushLastHit = new WeakMap(); comp.compRushAwayUntil = 0;
     compRushPickNext(comp, null);
-    { const t = comp.compRushTarget || enemy, a = Math.atan2(t.y - comp.y, t.x - comp.x) + (Math.random() - 0.5) * 0.4; comp.vx = Math.cos(a); comp.vy = Math.sin(a); }
+    const t = comp.compRushTarget, a = t ? Math.atan2(t.y - comp.y, t.x - comp.x) : Math.random() * Math.PI * 2; comp.vx = Math.cos(a); comp.vy = Math.sin(a);
     comp.compRushDmg = Math.max(1, Math.round(comp.atk * COMP_RUSH_DMG_MULT * skillPower('skillCompRush') / hits * 1.15));
   });
-  coffins.forEach((cf, i) => throwCoffin(cf, enemy, player, i));
-  spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, comps.length ? `仲間特攻！ ×${comps.length}` + (coffins.length ? `　⚰️×${coffins.length}` : '') : `⚰️ 棺桶アタック！ ×${coffins.length}`, '#8fe3a0', 0.014, true);
-  onPlayerHitEnemy(enemy, 1);
+  if (enemy) coffins.forEach((cf, i) => throwCoffin(cf, enemy, player, i));
+  const tx = enemy ? enemy.x : arena.x, ty = enemy ? enemy.y - (enemy.radius || 12) - 30 : arena.y - 30;
+  spawnDamageText(tx, ty, comps.length ? `仲間特攻！ ×${comps.length}` + (coffins.length && enemy ? `　⚰️×${coffins.length}` : '') : `⚰️ 棺桶アタック！ ×${coffins.length}`, '#8fe3a0', 0.014, true);
+  if (enemy && !enemy.isAdd && !(enemy.spawnTimer > 0)) onPlayerHitEnemy(enemy, 1);
   shakeScreenLight();
   [392, 523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.08, 'square', 0.1), i * 50));
   updateCompRushButton();
