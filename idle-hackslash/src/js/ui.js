@@ -3270,7 +3270,9 @@ document.getElementById('dbgMonCopy').addEventListener('click', () => {
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('dbgEnemyWrap').insertAdjacentHTML('beforeend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
   .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
-document.getElementById('dbgBgmWrap').innerHTML = BGM_INFO.map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''); // BGMの一覧は最初は畳んでおく
+const BGM_NEWEST_ORDER = ['battle41', 'boss32', 'boss31', 'boss30', 'tboss5', 'rebirth', 'battle39', 'boss29', 'boss27', 'boss28', 'hireget', 'charge', 'bgmbook', 'skillget', 'rebornconfirm', 'news', 'dailybonus', 'loginbonus', 'boss24', 'boss23', 'boss22', 'coinshop', 'battle30', 'battle34', 'boss16', 'boss17', 'boss21', 'boss18', 'battle31', 'tboss4', 'boss12', 'boss11', 'boss9', 'gemshop', 'boss', 'continue', 'settings', 'upgrade', 'battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'levelup', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'tboss1', 'tboss3', 'companion', 'artifact', 'tower', 'gacha', 'records', 'ranking', 'gameover']; // 曲を作った順（新しい順）。ここに無い曲＝これから足す新曲は一番上に出る
+const bgmNewestRank = k => { const i = BGM_NEWEST_ORDER.indexOf(k); return i < 0 ? -1 : i; };
+document.getElementById('dbgBgmWrap').innerHTML = BGM_INFO.slice().sort((x, y) => bgmNewestRank(x.key) - bgmNewestRank(y.key)).map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''); // BGMの一覧は最初は畳んでおく
 document.getElementById('debugBgmCat').addEventListener('click', () => { const w = document.getElementById('dbgBgmWrap'), o = !w.classList.contains('open'); w.classList.toggle('open', o); document.getElementById('dbgBgmFoldMark').textContent = o ? '▲ 閉じる' : '▼ 開く'; });
 function renderBgmInfo() { // （関数宣言なので上のデバッグ処理からも呼べる）
   const cur = currentBgmType;
