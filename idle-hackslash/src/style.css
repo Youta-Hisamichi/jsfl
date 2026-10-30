@@ -4960,3 +4960,4 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 #shopList .sr-fea-price .sfp-sub { font-size: 0.95rem; }
 #shopList .sr-fea-price .sfp-sub img { width: 18px; height: 18px; }
 #shopList .sr-fea-price .sfp-all { margin-top: 3px; padding: 2px 8px; border-radius: 999px; border: 1.5px solid #ffd76a; background: linear-gradient(180deg, #3a8a3a, #1d5a1d); color: #fff; font-size: 0.66rem; font-weight: 900; white-space: nowrap; text-shadow: 0 1px 1px #000; cursor: pointer; }
+.sc-btns .sc-yes2 { background: linear-gradient(180deg, #3fa64a, #1d6b25) !important; border-color: #ffd76a !important; }

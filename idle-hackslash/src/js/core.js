@@ -771,11 +771,12 @@ function openBulkUpShop(isPct) { // いきなりショップへ飛ばさず、�
 }
 function simpleChoice(o) { // 軽い2択ダイアログ
   const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 80;
-  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon">${o.icon || ''}</div><div class="sc-title">${o.title}</div><div class="sc-text">${o.text}</div>${o.sub ? `<div class="sc-sub">${o.sub}</div>` : ''}<div class="sc-btns"><button class="modal-close-btn sc-yes">${o.yes || 'OK'}</button><button class="modal-shop-btn sc-no">${o.no || 'キャンセル'}</button></div></div>`;
+  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon">${o.icon || ''}</div><div class="sc-title">${o.title}</div><div class="sc-text">${o.text}</div>${o.sub ? `<div class="sc-sub">${o.sub}</div>` : ''}<div class="sc-btns"><button class="modal-close-btn sc-yes">${o.yes || 'OK'}</button>${o.yes2 ? `<button class="modal-close-btn sc-yes2">${o.yes2}</button>` : ''}<button class="modal-shop-btn sc-no">${o.no || 'キャンセル'}</button></div></div>`;
   document.body.appendChild(ov);
   const close = () => ov.remove();
   ov.querySelector('.sc-no').addEventListener('click', close);
   ov.querySelector('.sc-yes').addEventListener('click', () => { close(); if (o.onYes) o.onYes(); });
+  if (o.yes2) ov.querySelector('.sc-yes2').addEventListener('click', () => { close(); if (o.onYes2) o.onYes2(); }); // 2つ目の決定ボタン（例：全部交換）
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   playTone(880, 0.08, 'triangle', 0.08);
 }
@@ -1433,7 +1434,7 @@ function renderShopList() {
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;
     const ft = item.feaFrom ? feaTradeCost(id) : null;
-    const priceHtml = ft ? `<span class="cost sr-price sr-fea-price"><span class="sfp-fea">${RARITY_INFO[item.feaFrom].label}羽<b>${ft.fea}</b></span>${ft.coins ? `<span class="sfp-sub"><img src="${COIN_IMG_SRC}" alt="">＋${formatCoinNumber(ft.coins)}</span>` : ''}${ft.gems ? `<span class="sfp-sub">＋💎${ft.gems}</span>` : ''}${feaTradeMax(id) >= 2 ? `<span class="sfp-all" data-fea-all="${id}">全部交換 ×${feaTradeMax(id)}</span>` : ''}</span>` : item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b><b class="sr-plus-gem">＋💎${REBORN_SHOP_GEMS}</b></span>` : price;
+    const priceHtml = ft ? `<span class="cost sr-price sr-fea-price"><span class="sfp-fea">${RARITY_INFO[item.feaFrom].label}羽<b>${ft.fea}</b></span>${ft.coins ? `<span class="sfp-sub"><img src="${COIN_IMG_SRC}" alt="">＋${formatCoinNumber(ft.coins)}</span>` : ''}${ft.gems ? `<span class="sfp-sub">＋💎${ft.gems}</span>` : ''}</span>` : item.rebirth ? `<span class="cost sr-price sr-coin-price"><img src="${COIN_IMG_SRC}" alt=""><b>${formatCoinNumber(ccost)}</b><b class="sr-plus-gem">＋💎${REBORN_SHOP_GEMS}</b></span>` : price;
     return `<button class="shop-btn shop-row ${owned ? 'sold-out' : ''} ${owned || locked || (item.feaFrom ? !canFeaTrade(id) : item.rebirth ? game.coins < ccost || game.gems < REBORN_SHOP_GEMS : (!item.action && game.gems < gcost)) ? 'is-disabled' : ''}" data-shop="${id}">${icon}<span class="sr-main"><span class="shop-name sr-name su-name">${item.name}${item.toggleKind ? (isEvoKindOpen(item.toggleKind) ? ' <i class="evo-tg on">ON</i>' : ' <i class="evo-tg">OFF</i>') : ''}${SHOP_MULTI_ITEMS[id] ? ` Lv${shopBuyCount(id) + 1}` : ''}</span><span class="shop-desc">${locked ? (item.rebirth ? `🔒 ステージ${REBORN_UNLOCK_STAGE}到達で解放` : '🔒 先にタックル開放が必要') : SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id) > 1 ? `${shopMultiRate(id)}倍 → ` : ''}<b>${shopMultiRate(id) + 1}倍</b>` : item.desc + note}</span></span><span class="sr-side">${left > 0 ? `<span class="sr-badge su-badge">残り ${left}回</span>` : ''}${priceHtml}</span></button>`;
   }).join('');
 }
