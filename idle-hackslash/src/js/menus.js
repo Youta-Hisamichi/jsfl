@@ -874,7 +874,7 @@ function updateStatsUI() {
   document.getElementById('counterNum').textContent = +(Math.min(1, critBonuses.counter) * 100).toFixed(1) + '%';
   game.bestCoins = Math.max(game.bestCoins || 0, Math.floor(game.coins));
   bestCoinsNumEl.textContent = formatCoinNumber(game.bestCoins);
-  headerCoinsEl.textContent = formatCoinNumber(Math.max(0, game.coins - coinDisplayHold)); // 飛んでいる途中のコインはまだ表示に足さない
+  headerCoinsEl.textContent = formatCoinNumber(Math.max(0, game.coins - coinsInFlight())); // 飛んでいる途中のコインはまだ表示に足さない
   headerGemsEl.textContent = Math.floor(game.gems);
   startedAtText.textContent = new Date(game.startedAt).toLocaleString('ja-JP');
   playTimeText.textContent = formatDuration(game.playTimeMs || 0);

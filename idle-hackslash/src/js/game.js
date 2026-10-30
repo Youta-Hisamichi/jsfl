@@ -1081,7 +1081,7 @@ function completeReincarnation() {
   game.skillSlots = 2; game.weaponSlots = 1; game.companionSlots = 1; // スキル・サブウェポン・パーティの枠も転生でリセット
   if (!document.getElementById('powerUpModal').classList.contains('show')) powerUpPending = false;
   renderLvGauge(); // ゲージの長さもすぐ0に戻す
-  coinFx = []; coinDisplayHold = 0; // 飛んでいる途中のコインも転生で消える
+  coinFx = []; coinDisplayHold = 0; pendingChestCoins = 0; pendingChestCoinPts = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
   game.companionSummons = 0; game.bossJoinSince = 0;
@@ -2456,6 +2456,7 @@ function showRebirthRewardDialog(gems, feathers, got) {
   const ov = document.createElement('div'); ov.className = 'modal-overlay show rbd-ov'; ov.style.zIndex = 76;
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
     <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
+    ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🎲 今回のスキル（ガチャに出るスキル）</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音

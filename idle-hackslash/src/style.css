@@ -4866,7 +4866,7 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 /* スキルとサブウェポンの統一：ガチャは1つ、自動スキルには「自動」の印 */
 #weaponGachaBtn { display: none !important; }
 .gacha-pair > #skillGachaBtn { max-width: 290px; }
-.sk-name .sk-auto { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: linear-gradient(180deg, #5fd0ff, #2a7ad0); color: #fff; font-size: 0.6rem; font-style: normal; font-weight: 900; vertical-align: middle; text-shadow: 0 1px 1px #0a3a70; }
+.sk-name .sk-auto, .rbd-sk .sk-auto, .skt-name .sk-auto { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: linear-gradient(180deg, #5fd0ff, #2a7ad0); color: #fff; font-size: 0.6rem; font-style: normal; font-weight: 900; vertical-align: middle; text-shadow: 0 1px 1px #0a3a70; }
 /* デバッグボタンは右上の設定ボタンのすぐ下に重ねる（ゲーム画面を狭くしない） */
 #topHeader > #debugToggleBtn { position: absolute !important; top: calc(100% + 2px) !important; right: 4px !important; left: auto !important; bottom: auto !important; z-index: 61; display: flex !important; align-items: center; gap: 3px; padding: 2px 7px !important; font-size: 0.58rem !important; font-weight: 700; border-radius: 999px !important; background-image: none !important; background: rgba(12,14,30,0.7) !important; color: #e8ecf8 !important; border: 1px solid rgba(255,255,255,0.35) !important; margin: 0 !important; }
 #topHeader > #debugToggleBtn .bb-gear { width: 12px !important; height: 12px; margin: 0 !important; }
@@ -4915,3 +4915,12 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .cg-info .cgi-face { font-size: 64px; }
 .cg-info .cgi-face img.comp-sprite { width: 96px !important; height: 96px !important; max-width: none; max-height: none; object-fit: contain; }
 .tower-hint .th-tower { width: 52px; height: 52px; object-fit: contain; margin-bottom: 2px; filter: drop-shadow(0 0 6px rgba(255,215,107,0.8)); } /* 試練の塔おすすめに塔のアイコン */
+/* 転生ダイアログ：今回のスキル（ランダムで選ばれたON） */
+.rbd-skills { margin: -4px 0 14px; padding: 8px 8px 10px; border-radius: 10px; background: rgba(10,14,34,0.6); border: 1px solid rgba(160,200,255,0.5); }
+.rbd-sk-h { color: #bfe0ff; font-weight: 900; font-size: 0.8rem; margin-bottom: 6px; text-align: center; }
+.rbd-sk-row { display: flex; justify-content: center; gap: 6px; }
+.rbd-sk { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; color: #fff; font-weight: 800; font-size: 0.72rem; animation: rbdSkIn 0.5s ease-out backwards; }
+.rbd-sk:nth-child(2) { animation-delay: 0.15s; } .rbd-sk:nth-child(3) { animation-delay: 0.3s; }
+.rbd-sk-ico { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 30px; filter: drop-shadow(0 0 6px rgba(160,210,255,0.8)); }
+.rbd-sk-ico img, .rbd-sk-ico .ico-img { width: 44px !important; height: 44px !important; object-fit: contain; }
+@keyframes rbdSkIn { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }

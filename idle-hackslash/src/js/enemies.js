@@ -1049,9 +1049,14 @@ function getCoinTargetInArena() { // ヘッダーのコイン欄の位置。測�
   const k = rect.width / size;
   return (coinTargetCache = { x: (el.left + 10 - rect.left) / k, y: (el.top + el.height / 2 - rect.top) / k });
 }
+function coinsInFlight() { // まだヘッダーに届いていないコイン：飛んでいる途中のコイン＋宝箱を閉じたら散らばるコイン（毎回数え直して、ずれが残らないように）
+  let v = typeof pendingChestCoins === 'number' ? pendingChestCoins : 0;
+  for (const c of coinFx) if (!c.done) v += c.value || 0;
+  return (coinDisplayHold = Math.min(v, Math.max(0, game.coins)));
+}
 function releaseCoin(c) {
-  coinDisplayHold = Math.max(0, coinDisplayHold - c.value);
-  headerCoinsEl.textContent = formatCoinNumber(Math.max(0, game.coins - coinDisplayHold));
+  c.done = true;
+  headerCoinsEl.textContent = formatCoinNumber(Math.max(0, game.coins - coinsInFlight()));
   const pill = headerCoinsEl.parentElement;
   pill.classList.remove('coin-pulse'); void pill.offsetWidth; pill.classList.add('coin-pulse');
 }
