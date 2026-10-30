@@ -1691,13 +1691,17 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
     const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key, btn);
   });
 }
-document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）
+document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
   const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
-  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id);
-  if (on && compOnCount() <= COMP_MIN_ON) { showTapError(`ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
-  const cost = gemPrice(COMP_TOGGLE_COST);
+  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = gemPrice(COMP_TOGGLE_COST);
+  const brief = compBriefHtml(id);
+  if (on && compOnCount() <= COMP_MIN_ON) { // OFFにできない：概要は見せて、理由を赤字で
+    simpleChoice({ icon: companionIconHtml(id), title: c.name, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });
+    playTone(220, 0.12, 'square', 0.05, 160);
+    return;
+  }
   if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: companionIconHtml(id), title: c.name, text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+  simpleChoice({ icon: companionIconHtml(id), title: c.name, text: brief + `<div class="cgb-ask"><b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？</div>`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       if (!Array.isArray(game.compOn)) game.compOn = compPoolIds(); // 全員ONの状態から切り替えるとき

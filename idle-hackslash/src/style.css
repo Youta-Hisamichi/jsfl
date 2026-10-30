@@ -4969,3 +4969,11 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .cg-info .cgi-face .ico-img, .cg-info .cgi-face img { width: 80px !important; height: 80px !important; object-fit: contain; }
 /* 解雇・採用ボタンを消したので、パーティ枠の「＋枠を増やす」が横に伸びすぎないように */
 .party-row #partySlotBtn > button { flex: 0 0 auto !important; width: 176px !important; max-width: 48% !important; margin-left: auto !important; }
+/* 仲間項目のON/OFF確認画面の概要 */
+.cg-brief { text-align: left; font-size: 0.74rem; line-height: 1.5; }
+.cg-brief .cgb-name { text-align: center; font-weight: 900; margin-bottom: 2px; }
+.cg-brief .cgb-stat { text-align: center; margin-bottom: 4px; } .cg-brief .cgb-stat b { color: #ffd76b; }
+.cg-brief .cgb-row { padding: 3px 8px; border-radius: 8px; background: rgba(255,255,255,0.07); margin-top: 3px; }
+.cg-brief .cgb-trait { color: #bfe9ff; }
+.cgb-ask { margin-top: 8px; text-align: center; font-size: 0.85rem; }
+.sc-icon img.comp-sprite { width: 72px !important; height: 72px !important; object-fit: contain; }

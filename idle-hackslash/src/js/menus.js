@@ -432,6 +432,10 @@ function showSkillBrief(it, title, desc, auto) { // スキルの概要（転生�
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cgi-ok')) ov.remove(); });
   playTone(880, 0.06, 'triangle', 0.05, 1175);
 }
+function compBriefHtml(id) { // 仲間の概要（ON/OFFの確認画面などに入れる）
+  const c = COMPANIONS[id], el = typeof compElement === 'function' ? compElement(id) : null, lv = (game.companions.level[id] || 0) + 1;
+  return `<div class="cg-brief"><div class="cgb-name">${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}${el ? ' ' + elemBadge(el) : ''}</div><div class="cgb-stat">Lv.${lv}　攻撃 <b>${formatCoinNumber(Math.round(getCompanionAtk(id)))}</b>　HP <b>${formatCoinNumber(Math.round(getCompanionMaxHP(id)))}</b></div><div class="cgb-row">🎖️ ${c.desc}</div>${c.trait ? `<div class="cgb-row cgb-trait">${c.trait}</div>` : ''}</div>`;
+}
 function showCompGachaInfo(id) { // 招集ガチャの結果でキャラを押したときの概要
   const c = COMPANIONS[id]; if (!c) return;
   document.querySelectorAll('.cg-info-ov').forEach(o => o.remove());

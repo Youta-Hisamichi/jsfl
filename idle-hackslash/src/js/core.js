@@ -771,10 +771,10 @@ function openBulkUpShop(isPct) { // いきなりショップへ飛ばさず、�
 }
 function simpleChoice(o) { // 軽い2択ダイアログ
   const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 80;
-  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon">${o.icon || ''}</div><div class="sc-title">${o.title}</div><div class="sc-text">${o.text}</div>${o.sub ? `<div class="sc-sub">${o.sub}</div>` : ''}<div class="sc-btns"><button class="modal-close-btn sc-yes">${o.yes || 'OK'}</button>${o.yes2 ? `<button class="modal-close-btn sc-yes2">${o.yes2}</button>` : ''}<button class="modal-shop-btn sc-no">${o.no || 'キャンセル'}</button></div></div>`;
+  ov.innerHTML = `<div class="modal-panel sc-panel"><div class="sc-icon">${o.icon || ''}</div><div class="sc-title">${o.title}</div><div class="sc-text">${o.text}</div>${o.sub ? `<div class="sc-sub">${o.sub}</div>` : ''}<div class="sc-btns"><button class="modal-close-btn sc-yes">${o.yes || 'OK'}</button>${o.yes2 ? `<button class="modal-close-btn sc-yes2">${o.yes2}</button>` : ''}${o.no === false ? '' : `<button class="modal-shop-btn sc-no">${o.no || 'キャンセル'}</button>`}</div></div>`;
   document.body.appendChild(ov);
   const close = () => ov.remove();
-  ov.querySelector('.sc-no').addEventListener('click', close);
+  ov.querySelector('.sc-no')?.addEventListener('click', close);
   ov.querySelector('.sc-yes').addEventListener('click', () => { close(); if (o.onYes) o.onYes(); });
   if (o.yes2) ov.querySelector('.sc-yes2').addEventListener('click', () => { close(); if (o.onYes2) o.onYes2(); }); // 2つ目の決定ボタン（例：全部交換）
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
