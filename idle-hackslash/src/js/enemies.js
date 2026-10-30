@@ -426,7 +426,7 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
   ov.classList.add('show');
 });
 
-const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit', 'rush']; // rush：ひたすらこちらへ一直線に突っ込んでくる
+const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit', 'rush', 'sine']; // rush：ひたすらこちらへ一直線に突っ込んでくる／sine：横に進みながら大きな波（サインカーブ）を描く
 // 雑魚の大きさのばらつき：12%で小さい（半分の大きさ・HP0.6倍）、12%で大きい（1.5倍の大きさ・HP1.6倍）
 const ENEMY_SIZE_SMALL_RATE = 0.12, ENEMY_SIZE_BIG_RATE = 0.12, ENEMY_SMALL_HP = 0.6, ENEMY_BIG_HP = 1.6;
 function rollEnemySizeMul() { const r = Math.random(); return r < ENEMY_SIZE_SMALL_RATE ? 0.5 : r < ENEMY_SIZE_SMALL_RATE + ENEMY_SIZE_BIG_RATE ? 1.5 : 1; }
@@ -2085,6 +2085,14 @@ function walkBall(ball, speedMult, b) {
     } else if (style === 'gravity') {
       const hop = (t % 70) < 22 ? 2.2 : 0.15;
       dvx = nx * speed * hop; dvy = ny * speed * hop;
+    } else if (style === 'sine') { // 左右に進みながら上下に大きく波打つ（壁で折り返す。波の中心は主人公の高さへ少しずつ寄る）
+      const sw = ball.sine || (ball.sine = { dir: Math.random() < 0.5 ? -1 : 1, ph: Math.random() * Math.PI * 2 });
+      const half = arenaHalf() - ball.radius - 10;
+      if (ball.x > arena.x + half - 4) sw.dir = -1; else if (ball.x < arena.x - half + 4) sw.dir = 1;
+      sw.ph += 0.06 * speedMult; // 波1つで約250px横へ進む・上下の振れ幅は約±55px
+      dvx = sw.dir * speed * 1.6;
+      dvy = Math.cos(sw.ph) * speed * 2.2 + Math.max(-0.3, Math.min(0.3, (target.y - ball.y) * 0.003)) * speed;
+      ball.sineMove = true; w.pause = 0;
     } else if (style === 'encircle') { // 包囲：まっすぐ中心（主人公）へ、ゆっくり確実に迫る
       dvx = nx * speed * 0.75; dvy = ny * speed * 0.75; w.pause = 0;
     } else if (style === 'rush') { // 狙いを定めて→一直線に猛突進→勢い余って滑る、をくり返す
@@ -2109,7 +2117,7 @@ function walkBall(ball, speedMult, b) {
     const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
     dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
   }
-  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : ball.rushDash && !ball.isPlayer ? 4 : 1)); // 突進はすぐ最高速に
+  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : ball.rushDash && !ball.isPlayer ? 4 : ball.sineMove && !ball.isPlayer ? 1 / Math.max(0.0001, WALK_TURN * speedMult) : 1)); // 突進はすぐ最高速に・サインカーブは波の形を崩さない
   ball.vx += (dvx - ball.vx) * turn;
   ball.vy += (dvy - ball.vy) * turn;
   applySeparation(ball, speedMult);
