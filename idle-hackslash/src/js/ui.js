@@ -1153,8 +1153,19 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= EVO_MIN_ON) { showTapError(`ONの項目は${EVO_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
-  if (item.feaFrom) { // 羽の交換：下のレア度の羽100枚＋コイン／ジェム
-    const c = feaTradeCost(id), fromL = RARITY_INFO[item.feaFrom].label;
+  if (item.feaFrom) { // 羽の交換：下のレア度の羽100枚（URは＋ジェム）。「全部交換」なら交換できるだけまとめて
+    const fromL = RARITY_INFO[item.feaFrom].label;
+    if (event.target.closest && event.target.closest('[data-fea-all]')) {
+      const n = feaTradeMax(id), c1 = feaTradeCost(id); if (n < 1) return;
+      simpleChoice({ icon: ico(item), title: `${item.name} ×${n}`, text: `${fromL}の羽 <b>${c1.fea * n}枚</b>${c1.gems ? `＋💎<b>${c1.gems * n}</b>` : ''} を、${item.name} <b>${n}枚</b>に全部交換しますか？`, sub: `所持：${fromL}の羽 ${feaCount(item.feaFrom)}枚`, yes: '全部交換する', no: 'やめる', onYes: () => {
+        const m = Math.min(n, feaTradeMax(id)); if (m < 1) return;
+        addFea(item.feaFrom, -c1.fea * m); if (c1.coins) spendCoins(c1.coins * m); game.gems -= c1.gems * m; addFea(item.feaRarity, m);
+        showNotice(`🪶 ${item.name} を ${m}枚 手に入れた！（所持 ${feaCount(item.feaRarity)}枚）`); playRegisterSound();
+        if (typeof renderEvolutionList === 'function') renderEvolutionList(); updateStatsUI(); renderShopList(); saveGame();
+      } });
+      return;
+    }
+    const c = feaTradeCost(id);
     if (feaCount(item.feaFrom) < c.fea) { showTapError(`${fromL}の羽が足りません（${feaCount(item.feaFrom)} / ${c.fea}枚）`, event.clientX, event.clientY); return; }
     if (game.coins < c.coins) { showTapError(`🟡 コインが足りません（あと ${formatCoinNumber(Math.ceil(c.coins - game.coins))}）`, event.clientX, event.clientY); return; }
     if (game.gems < c.gems) { promptGemShortage(c.gems); return; }
