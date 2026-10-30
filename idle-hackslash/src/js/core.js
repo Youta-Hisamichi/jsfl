@@ -754,7 +754,7 @@ const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
 SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upPctUnlocked' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
-SHOP_ITEMS.autoUpgrade = { icon: '🤖', name: 'オートLvUP', desc: 'たまったコインで攻撃力・最大HPを自動で上げる（仲間ページの自キャラ強化でON/OFF）', cost: 20, unlockKey: 'autoUpgradeUnlocked' };
+// オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
 const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
 function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍

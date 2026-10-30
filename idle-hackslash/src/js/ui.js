@@ -1097,43 +1097,8 @@ function showUpgradeLevelUpPop(id, x, y, text) {
   if (item) { const r = item.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; } // 行の上端から出す（行の文字にかぶらないように）
   showLevelUpPop(x, y, text);
 }
-// オートLvUP：ONにすると、たまったコインで攻撃力・最大HPのうち安い方を自動で上げ続ける（放置向け）
-const AUTO_UPGRADE_IDS = ['atk', 'hp']; // 攻撃力・最大HP のうち、いちばん安いものから
-const AUTO_UPGRADE_QUIET_VOL = 0.25; // 強化ページ以外でのオートLvUPの音の大きさ
-function renderAutoUpgradeBtn() {
-  const b = document.getElementById('autoUpgradeBtn'); if (!b) return;
-  if (!game.autoUpgradeUnlocked) { b.textContent = '🔒 オートLvUP（ショップで購入）'; b.classList.add('off'); return; } // ショップのアイテムを買うと使える
-  b.textContent = game.autoUpgrade ? '🤖 オートLvUP ON（攻撃力・HPを自動で強化）' : '🤖 オートLvUP OFF（タップでON）';
-  b.classList.toggle('off', !game.autoUpgrade);
-}
-document.getElementById('autoUpgradeBtn').addEventListener('click', () => {
-  if (!game.autoUpgradeUnlocked) { switchTab('gemshop'); showShopTab('item'); { const it = document.querySelector('[data-shop="autoUpgrade"]'); if (it) it.scrollIntoView({ block: 'center' }); } showNotice('🤖 オートLvUPはショップで購入できます'); return; }
-  game.autoUpgrade = !game.autoUpgrade; renderAutoUpgradeBtn(); saveGame();
-});
-const AUTO_UPGRADE_TEXT_INTERVAL = 5000; // ゲーム画面にオートLvUPの文字を出す間隔（ミリ秒）
-let autoUpgradeTextAt = -Infinity, autoUpgradeTextCount = 0;
-setInterval(() => {
-  if (!game.autoUpgrade || !game.autoUpgradeUnlocked || phase !== 'battle') return;
-  let bought = 0;
-  for (let n = 0; n < 1; n++) { // 1回に1レベルずつ
-    const id = AUTO_UPGRADE_IDS.filter(k => UPGRADES[k] && game.upgrades[k] < getUpgradeLevelCap(k)).sort((x, y) => getUpgradeCost(x) - getUpgradeCost(y))[0];
-    if (!id || game.coins - coinsInFlight() < getUpgradeCost(id)) break; // 使うのはヘッダーに届いたコインだけ（届く前に使って表示が0のまま、にならないように）
-    spendCoins(getUpgradeCost(id)); game.upgrades[id]++; bought++;
-    announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id], true);
-  }
-  if (!bought) return;
-  refreshPlayerBallStats(false); updateStatsUI(); updateHPUI();
-  const pl = balls.find(isMainPlayerBall);
-  autoUpgradeTextCount += bought;
-  if (pl && getActiveTab() === 'game' && performance.now() - autoUpgradeTextAt >= AUTO_UPGRADE_TEXT_INTERVAL) { // ゲーム画面の文字は5秒に1回だけ（その間に上がった分をまとめて出す）
-    spawnDamageText(pl.x, pl.y - pl.radius - 30, `🤖 オートLvUP +${autoUpgradeTextCount}`, '#7fe8a0', 0.03);
-    autoUpgradeTextAt = performance.now(); autoUpgradeTextCount = 0;
-  }
-  if (getActiveTab() === 'companion') { // 強化のある仲間ページでは1レベルごとに、連鎖音のように音階が上がっていく音（いちばん上まで行ったら最初に戻る）
-    renderUpgradeList();
-    playAutoUpStep();
-  }
-}, 1100); // 1.1秒ごとに1レベル
+// オートLvUPは削除（古いセーブでONでも動かない）
+game.autoUpgrade = false;
 let autoUpStep = 0;
 function playAutoUpStep() {
   const step = autoUpStep; autoUpStep = (autoUpStep + 1) % 7; // ドレミソラ・ド・レの7段で1周
@@ -1151,7 +1116,7 @@ function announceUpgradeLeap(id, from, to, auto = false) {
   showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv + 1)} ${leap.name}！ ${leap.every === 10 ? '+3%' : '×' + leap.mult}`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
-  playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'companion' ? AUTO_UPGRADE_QUIET_VOL : 1); // オートLvUPは強化ページ以外では小さく
+  playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'companion' ? 0.25 : 1); // オートLvUPは強化ページ以外では小さく
 }
 // 大きな「飛躍！」文字を画面中央に出す
 function showLeapBanner(text, tier) {
@@ -1220,7 +1185,6 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
   if (id === 'rareRing') { gainArtifact('rareRing'); line = `レアリングを手に入れた！（★4以上のレアドロップ率2倍）`; renderArtifactList(); }
   if (id === 'forbiddenSword') { gainArtifact('forbiddenSword'); line = `禁断の剣を手に入れた！（${game.ownedArtifacts.forbiddenSword}本・ボスHP -${Math.min(50, game.ownedArtifacts.forbiddenSword)}%）`; renderArtifactList(); }
-  if (id === 'autoUpgrade') { game.autoUpgrade = true; renderAutoUpgradeBtn(); line = 'オートLvUPが使えるようになった！（強化ページでON/OFF）'; }
   showShopPurchaseFx(SHOP_ITEM_ART[id] ? `<span class="sr-ico su-i_${SHOP_ITEM_ART[id]}"></span>` : ico(item), item.name, line); // ショップの一覧と同じ絵
   renderShopList();
   refreshPlayerBallStats(false);
@@ -3425,7 +3389,6 @@ updateCompRushButton();
 updateNovaButton();
 currentLang = game.language || 'ja';
 applyLanguage(currentLang);
-renderAutoUpgradeBtn();
 checkLoginBonus(game.lastSeenAt ? Date.now() - game.lastSeenAt : 0);
 game.lastSeenAt = Date.now();
 if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開
