@@ -1667,6 +1667,7 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       game.gems -= cost;
       if (on) game.skillOn = game.skillOn.filter(x => x !== id); else game.skillOn.push(id);
+      playRegisterSound(); // ショップで買ったときと同じ「チャリーン」
       showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）`);
       updateStatsUI(); renderCoinShopList(); saveGame();
     } });
