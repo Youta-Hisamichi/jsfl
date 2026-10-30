@@ -58,10 +58,13 @@ function renderSkillGacha() {
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
-// スキル項目のON/OFF：OFFにしたスキルはガチャに出なくなる（進化項目と同じく ON 💎5・OFF 💎10。ONは3つより少なくできない）
-const SKILL_TOGGLE_ON_COST = 5, SKILL_TOGGLE_OFF_COST = 10, SKILL_MIN_ON = 3;
+// スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎3。ONは3つより少なくできない）
+// 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
+const SKILL_TOGGLE_ON_COST = 3, SKILL_TOGGLE_OFF_COST = 3, SKILL_MIN_ON = 3;
+const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
+function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_MIN_ON); }
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
-function isSkillItemOn(id) { return !(game.skillOff && game.skillOff[id]); }
+function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id); }
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
 function renderSkillToggleList() {
   const el = document.getElementById('skillToggleList'); if (!el) return;

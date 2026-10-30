@@ -1665,8 +1665,8 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
   simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: on ? 'OFFにするとスキルガチャに出なくなります（持っている分・装備中の分はそのまま使えます）' : 'ONにするとスキルガチャに出るようになります', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
-      game.gems -= cost; game.skillOff = game.skillOff || {};
-      if (on) game.skillOff[id] = true; else delete game.skillOff[id];
+      game.gems -= cost;
+      if (on) game.skillOn = game.skillOn.filter(x => x !== id); else game.skillOn.push(id);
       showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）`);
       updateStatsUI(); renderCoinShopList(); saveGame();
     } });
