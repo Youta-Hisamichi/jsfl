@@ -4945,3 +4945,5 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 #myCharBox #powerBreakBtn { background: linear-gradient(180deg, #2c3f72, #121c3a) !important; border: 2px solid #d8b25a !important; border-radius: 10px !important; color: #fff !important; font-weight: 900 !important; text-shadow: 0 0 2px #000, 0 1px 2px #000 !important; box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.4) !important; opacity: 1 !important; filter: none !important; }
 /* キャラの吹き出し専用の重ねキャンバス（宝箱・ミッションより上） */
 .arena-wrap > .speech-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7; pointer-events: none; border-radius: inherit; background: transparent !important; }
+.tower-hint .th-tower { width: auto !important; height: 64px !important; object-fit: contain; }
+.th-tower-big { height: 56px; width: auto; object-fit: contain; }

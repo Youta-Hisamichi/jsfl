@@ -2436,7 +2436,7 @@ function hintTowerStage(dmg) {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
   document.querySelectorAll('.tower-hint').forEach(e => e.remove());
   const el = document.createElement('div'); el.className = 'tower-hint';
-  el.innerHTML = `<img class="th-tower" src="${ICON_IMAGES.x_tower}" alt="試練の塔"><small>💡 この強さなら…</small><b>ステージ${formatStageNumber(Math.floor(s / 10) * 10)}</b>くらいまで行けそう<small>試練の塔で挑んでみる？</small>`;
+  el.innerHTML = `<img class="th-tower" src="assets/img/misc/tower_hint.webp" alt="試練の塔"><small>💡 この強さなら…</small><b>ステージ${formatStageNumber(Math.floor(s / 10) * 10)}</b>くらいまで行けそう<small>試練の塔で挑んでみる？</small>`;
   wrap.appendChild(el); setTimeout(() => el.remove(), 6200);
 }
 
