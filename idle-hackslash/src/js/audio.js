@@ -332,6 +332,28 @@ const BGM_SONGS = {
     drums: 'k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k s k s ks s ks ks | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | k k s h k k s k | ks ks ks ks s s s s',
   },
 
+  tboss6: { // 試練の塔ボス7 闘魂の入場：地鳴りのように刻むオクターブのベースと、打ち鳴らす力強い和音に乗って、ニ短調の雄大な旋律が花道を進む闘士のように高らかに歌い上げる、格闘技の入場式のような荘厳で熱い決戦曲（VRC6風・オリジナル）
+    bpm: 138,
+    echo: { time: 0.26, feedback: 0.28, wet: 0.22 },
+    kickBoost: 1.15,
+    tracks: [
+      { type: 'vrc6saw', gain: 0.027, notes: 'D5 = = = A4 = D5 = | F5 = = = E5 = D5 = | F5 = = = G5 = A5 = | G5 = = = E5 = C5 = | D5 = = = A5 = = = | G5 = F5 = E5 = F5 = | D6 = = = C6 = A#5 = | A5 = = = = = - - | A#5 = = = A5 = G5 = | F5 = = = D5 = F5 = | E5 = G5 = C6 = A#5 = | A5 = = = D5 = = = | A#5 = D6 = F6 = = = | E6 = C6 = G5 = = = | C#6 = = = E6 = = = | D6 = = = = = - -' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: 'D4+F4+A4 = = = D4+F4+A4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | A#3+D4+F4 = = = A#3+D4+F4 = = = | C4+E4+G4 = = = C4+E4+G4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | A#3+D4+F4 = = = A#3+D4+F4 = = = | A3+C#4+E4 = = = A3+C#4+E4 = = = | G3+A#3+D4 = = = G3+A#3+D4 = = = | A#3+D4+F4 = = = A#3+D4+F4 = = = | C4+E4+G4 = = = C4+E4+G4 = = = | D4+F4+A4 = = = D4+F4+A4 = = = | A#3+D4+F4 = = = A#3+D4+F4 = = = | C4+E4+G4 = = = C4+E4+G4 = = = | A3+C#4+E4 = = = A3+C#4+E4 = = = | D4+F4+A4 = = = D4+F4+A4 = = =' },
+      { type: 'vrc6pulse25', gain: 0.042, notes: 'D2 D2 D3 D2 D2 D2 D3 D2 | D2 D2 D3 D2 D2 D2 D3 D2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | D2 D2 D3 D2 D2 D2 D3 D2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | A1 A1 A2 A1 A1 A1 A2 A1 | G1 G1 G2 G1 G1 G1 G2 G1 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | A#1 A#1 A#2 A#1 A#1 A#1 A#2 A#1 | C2 C2 C3 C2 C2 C2 C3 C2 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2' },
+    ],
+    drums: 'k - s - k k s - | k - s - k k s - | k - s - k k s - | k s k s ks ks ks ks | k - s - k k s - | k - s - k k s - | k - s - k k s - | k s k s ks ks ks ks | k - s - k k s - | k - s - k k s - | k - s - k k s - | k s k s ks ks ks ks | k - s - k k s - | k - s - k k s - | k - s - k k s - | k s k s ks ks ks ks',
+  },
+  tboss7: { // 試練の塔ボス8 極秘指令：5拍子でうごめくベースの反復と、緊張をあおる短い和音の刺し込みに乗って、ト短調の忍び足のような旋律が潜入任務のスリルを描くスパイ映画風の決戦曲（VRC6風・オリジナル。1小節＝8分音符10個の5/4拍子）
+    bpm: 170,
+    echo: { time: 0.18, feedback: 0.2, wet: 0.14 },
+    kickBoost: 1.15,
+    tracks: [
+      { type: 'vrc6saw', gain: 0.027, notes: 'D5 = = = = = C5 = A#4 = | G4 = = = = = - - - - | D5 = = = D#5 = D5 = C5 = | D5 = = = = = - - - - | G5 = = = F5 = D#5 = D5 = | D#5 = = = D5 = C5 = A#4 = | C5 = = = A#4 = A4 = A#4 = | G4 = = = = = - - - - | A#5 = = = = = A5 = G5 = | D5 = = = = = - - - - | G5 = = = G#5 = G5 = F5 = | G5 = = = = = - - D5 D#5 | F5 = = = D#5 = D5 = C5 = | D#5 = = = D5 = C5 = A#4 = | A4 = = = C5 = D#5 = F#5 = | G5 = = = = = - - - -' },
+      { type: 'vrc6pulse12', gain: 0.014, notes: '- - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - D#4+G4+A#4 - - - D#4+G4+A#4 - - - | - - C4+D#4+G4 - - - C4+D#4+G4 - - - | - - D4+F#4+A4 - - - D4+F#4+A4 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - - | - - D#4+G4+A#4 - - - D#4+G4+A#4 - - - | - - C4+D#4+G4 - - - C4+D#4+G4 - - - | - - D4+F#4+A4 - - - D4+F#4+A4 - - - | - - G4+A#4+D5 - - - G4+A#4+D5 - - -' },
+      { type: 'vrc6pulse25', gain: 0.042, notes: 'G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | D#2 - D#3 - D#2 - C#2 - D#2 D#3 | C2 - C3 - C2 - A#1 - C2 C3 | D2 - D3 - D2 - C2 - D2 D3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | G2 - G3 - G2 - F2 - G2 G3 | D#2 - D#3 - D#2 - C#2 - D#2 D#3 | C2 - C3 - C2 - A#1 - C2 C3 | D2 - D3 - D2 - C2 - D2 D3 | G2 - G3 - G2 - F2 - G2 G3' },
+    ],
+    drums: 'k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k s k s s s ks ks ks ks | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k - h - s - h - k s | k s k s s s ks ks ks ks',
+  },
   tboss5: { // 試練の塔ボス5 峠を駆ける閃光：4つ打ちのキックと跳ねるオクターブベースに乗って、きらびやかなシンセのリフが疾走するユーロビート風の決戦曲（VRC6風・オリジナル。ニ短調）
     bpm: 158,
     echo: { time: 0.19, feedback: 0.22, wet: 0.16 },
@@ -874,7 +896,7 @@ function nextBossBgm() {
   const prev = bossBgmOrder[bossBgmIndex];
   if (++bossBgmIndex >= bossBgmOrder.length) shuffleBossBgm(prev);
 }
-const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'tboss5', 'boss9', 'boss18']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
+const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'tboss5', 'boss9', 'boss18', 'tboss6', 'tboss7']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
 function resolveBgmType(type) {
   if (type === 'boss' && game.skipChallenge) return TOWER_BOSS_SONGS[(game.skipChallenge.bgm || 0) % TOWER_BOSS_SONGS.length];
   if ((type === 'normal' || type === 'boss') && dbgBgmOverride) return dbgBgmOverride;
@@ -921,6 +943,8 @@ const BGM_INFO = [
   { key: 'tboss5', name: '試練の塔ボス4 峠を駆ける閃光', desc: '4つ打ちのキックと跳ねるオクターブベースに乗って、きらびやかなシンセのリフが疾走するユーロビート風の決戦曲。オリジナル曲。VRC6風チップチューン。ニ短調。' },
   { key: 'boss9', name: '試練の塔ボス5 荒波の海賊船', desc: '6/8拍子で駆ける弦の刻みと勇ましいブラスの合いの手に乗って、荒波を越えていくような勇壮な旋律が後半でさらに高く舞い上がる。VRC6風チップチューン。ニ短調（海賊映画の冒険活劇系の作風）・BPM200' },
   { key: 'boss18', name: '試練の塔ボス6 緊急配備', desc: '跳ねるファンクのベースと鋭いブラスの連打に乗って、緊迫の旋律が事件現場へ急行する。全署に緊急配備が敷かれた大捜査。VRC6風チップチューン。ト短調（刑事ドラマのアクションテーマの作風）・BPM144' },
+  { key: 'tboss6', name: '試練の塔ボス7 闘魂の入場', desc: '地鳴りのように刻むベースと打ち鳴らす和音に乗って、雄大な旋律が花道を進む闘士のように高らかに歌い上げる、格闘技の入場式のような熱い決戦曲（VRC6風）。ニ短調・BPM138' },
+  { key: 'tboss7', name: '試練の塔ボス8 極秘指令', desc: '5拍子でうごめくベースの反復と緊張をあおる和音の刺し込みに乗って、忍び足の旋律が潜入任務のスリルを描くスパイ映画風の決戦曲（VRC6風）。ト短調・5/4拍子' },
   { key: 'upgrade', name: 'ページ 強化 迷宮のパルティータ', desc: '古典RPGのダンジョン曲のような、チェンバロ調の分散和音が五度圏を巡るバロック風の旋律を、四つ打ちビートで音ゲー風にアレンジ。VRC6風チップチューン。ニ短調・BPM140' },
   { key: 'companion', name: 'ページ 仲間 なかまとホーム', desc: '王道進行G-A-F#m-Bmの明るくキャッチーな曲。VRC6風チップチューン。ニ長調（スマホゲームのホーム画面系の作風）・BPM140' },
   { key: 'coinshop', name: 'ページ スキル 錬金工房のフラスコ', desc: 'フラスコが泡立つような分散和音と弾むベースに、ちょっと怪しくて楽しい旋律が乗る、スマホRPGの錬金画面のような曲。VRC6風チップチューン。ニ短調・BPM132' },
