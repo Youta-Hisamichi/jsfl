@@ -1047,6 +1047,7 @@ debugRow.addEventListener('click', event => {
     game.login7Date = null; const y = new Date(); y.setDate(y.getDate() - 1); game.login7Date = todayKey(y); checkDailyLogin();
     return;
   }
+  if (action === 'anniv') { showAnnivList(); return; }
   if (action === 'loginBonus') {
     checkLoginBonus([15, 45, 90, 240, 600, 2000][Math.floor(Math.random() * 6)] * 60000);
     return;

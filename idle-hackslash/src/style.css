@@ -4977,3 +4977,6 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .cg-brief .cgb-trait { color: #bfe9ff; }
 .cgb-ask { margin-top: 8px; text-align: center; font-size: 0.85rem; }
 .sc-icon img.comp-sprite { width: 72px !important; height: 72px !important; object-fit: contain; }
+.anniv-list{text-align:left;font-size:.8rem;line-height:1.7}
+.anniv-row{display:flex;gap:6px;align-items:center;border-bottom:1px solid rgba(255,255,255,.12)}
+.anniv-st{margin-left:auto;font-size:.72rem;opacity:.85}

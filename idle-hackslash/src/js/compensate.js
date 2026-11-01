@@ -47,12 +47,40 @@ function showCompDialog(list, onDone) { // 届いたお詫びをまとめて見�
     if (onDone) onDone();
   };
 }
+// ---- 記念日報酬：その日に遊ぶと💎1（記念日ごとに1年1回）。一覧はデバッグの「記念日一覧」で見られる ----
+const ANNIVERSARIES = [
+  { id: 'newyear', md: '1-1', name: '元日', icon: '🎍' },
+  { id: 'valentine', md: '2-14', name: 'バレンタインデー', icon: '🍫' },
+  { id: 'hina', md: '3-3', name: 'ひなまつり', icon: '🎎' },
+  { id: 'kodomo', md: '5-5', name: 'こどもの日', icon: '🎏' },
+  { id: 'tanabata', md: '7-7', name: '七夕', icon: '🎋' },
+  { id: 'halloween', md: '10-31', name: 'ハロウィン', icon: '🎃' },
+  { id: 'xmas', md: '12-25', name: 'クリスマス', icon: '🎄' },
+  { id: 'start', md: null, name: '冒険を始めた日', icon: '🎂' }, // 始めた日の毎年の記念日（始めた年はなし）
+];
+const ANNIV_GEMS = 1;
+function annivStartKey() { // 始めた日（遊んだ日の記録でいちばん古い日）
+  if (!game.anniStart) { const ks = Object.keys(game.playDays || {}).map(k => k.split('-').map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]); const d = new Date(); game.anniStart = ks.length ? ks[0].join('-') : todayKey(d); }
+  return game.anniStart;
+}
+function annivMd(a) { return a.md || annivStartKey().split('-').slice(1).join('-'); }
+function annivToday(d = new Date()) { // 今日の記念日で、まだ受け取っていないもの
+  const md = `${d.getMonth() + 1}-${d.getDate()}`, y = d.getFullYear();
+  return ANNIVERSARIES.filter(a => annivMd(a) === md && !(a.id === 'start' && +annivStartKey().split('-')[0] >= y))
+    .map(a => ({ id: `anniv-${a.id}-${y}`, title: `${a.icon} 記念日：${a.name}`, text: `今日は${a.name}！ 遊びに来てくれてありがとう。`, gems: ANNIV_GEMS }))
+    .filter(c => !(game.compGot || {})[c.id]);
+}
+function showAnnivList() { // デバッグ用：設定してある記念日の一覧
+  const y = new Date().getFullYear();
+  const rows = ANNIVERSARIES.map(a => { const [m, dd] = annivMd(a).split('-'); const got = (game.compGot || {})[`anniv-${a.id}-${y}`]; return `<div class="anniv-row">${a.icon} <b>${m}月${dd}日</b> ${a.name} <span class="anniv-st">${got ? '受取済' : '💎' + ANNIV_GEMS}</span></div>`; }).join('');
+  simpleChoice({ icon: '📅', title: '記念日一覧', text: `<div class="anniv-list">${rows}</div>`, sub: `その日に遊ぶと💎${ANNIV_GEMS}（記念日ごとに1年1回）。冒険を始めた日：${annivStartKey().replace(/-/g, '/')}`, yes: '閉じる', no: false });
+}
 // 起動してほかのダイアログが閉じたら、届いているお詫びを出す（コード入力のものは除く）
 { let tries = 0; const t = setInterval(() => {
   if (++tries > 60) { clearInterval(t); return; }
   if (!game.openingSeen || (typeof openingOn !== 'undefined' && openingOn) || document.querySelector('.modal-overlay.show, .op-ov')) return;
   clearInterval(t);
-  const list = COMPENSATIONS.filter(c => !c.code && compActive(c));
+  const list = COMPENSATIONS.filter(c => !c.code && compActive(c)).concat(annivToday());
   if (list.length) showCompDialog(list);
 }, 2000); }
 // 設定に「補填コードを入力」
