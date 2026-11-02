@@ -809,7 +809,7 @@ SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/e
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: `assets/img/icons/omen_${r}.webp` /* 吹き出しの上に宝箱（宝箱そのものと見分けやすく） */, imgCls: 'omen-ico', name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
 });
-SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
+SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/fea_bundle.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 50, unlockKey: 'rareRingBought' };
 // 進化の羽の交換：1つ下のレア度の羽100枚で、1つ上の羽を1枚（URだけ💎5も）。何枚でも・まとめて交換もできる
 const FEA_TRADE_NEED = 100;
