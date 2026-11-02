@@ -30,7 +30,7 @@ function renderSkillGacha() {
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP);
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">⚔️ 威力 ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>目安 ≈ ${est}（攻撃力×威力）</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top">${ico(sk)}<div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 威力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${game.overHealUnlocked ? '（限界突破）' : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（攻撃力×威力）`}</span></div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -1866,9 +1866,11 @@ function updateRegen() {
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   const dt = Math.min(0.1, (now - (lastRegenTickAt || now)) / 1000);
   lastRegenTickAt = now;
-  if (!player || player.hp <= 0 || player.hp >= player.maxHp) return;
-  const heal = player.maxHp * rate * dt;
-  player.hp = Math.min(player.maxHp, player.hp + heal);
+  if (!player || player.hp <= 0) return;
+  const cap = now < regenEndAt ? healCap(player) : player.maxHp; // リジェネスキル中は回復限界突破が効く
+  if (player.hp >= cap) return;
+  const heal = player.maxHp * rate * dt * (now < regenEndAt ? skillPower('skillRegen') : 1);
+  player.hp = Math.min(cap, player.hp + heal);
   regenHealAccum += heal;
   if (regenHealAccum >= Math.max(1, player.maxHp * 0.02)) { // 最大HPの2%たまるごとにまとめて表示
     spawnDamageText(player.x, player.y - player.radius - 14, '+' + Math.round(regenHealAccum) + ' HP', '#5fe0a8', 0.012); // 約1.4秒表示

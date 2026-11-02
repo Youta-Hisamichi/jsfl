@@ -413,7 +413,8 @@ function updateHPUI() {
   const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
   const en = getHpDisplayEnemy();
   if (!p || !en) return;
-  playerHPFill.style.width = Math.max(0, p.hp / p.maxHp * 100) + '%';
+  playerHPFill.style.width = Math.min(100, Math.max(0, p.hp / p.maxHp * 100)) + '%';
+  playerHPFill.classList.toggle('over-heal', p.hp > p.maxHp); // 回復限界突破で上限を超えているとき
   const hpRatio = p.hp / p.maxHp;
   document.body.classList.toggle('player-pinch', p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
   document.body.classList.toggle('player-critical', p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);

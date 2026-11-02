@@ -753,6 +753,10 @@ function shopMultiRate(id) { return 1 + shopBuyCount(id); } // 0回なら1倍
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
 SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upPctUnlocked' };
+// 回復限界突破：回復スキル・リジェネスキル・回復ポーションで最大HPを超えて回復できる（最大HPの OVERHEAL_MAX 倍まで）
+const OVERHEAL_MAX = 2, HEAL_SKILL_RATIO = 0.5, HEAL_SKILLS = ['skillHeal', 'skillRegen'];
+function healCap(p) { return p.maxHp * (game.overHealUnlocked ? OVERHEAL_MAX : 1); }
+SHOP_ITEMS.overHeal = { icon: '💖', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる（最大HPの${OVERHEAL_MAX}倍まで）`, cost: 30, unlockKey: 'overHealUnlocked' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };

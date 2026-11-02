@@ -1491,10 +1491,10 @@ potionBtn.addEventListener('click', event => {
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
   if (!canUseHealNow()) { showTapError('回復ポーションはボス戦でだけ使えます', event.clientX, event.clientY); return; } // ボス戦以外ではHPが減らない
-  if (player.hp >= player.maxHp) { showTapError('HPが満タンです', event.clientX, event.clientY); return; }
+  if (player.hp >= healCap(player)) { showTapError(game.overHealUnlocked ? 'HPが限界突破の上限です' : 'HPが満タンです', event.clientX, event.clientY); return; }
   game.potions--;
   const heal = Math.round(player.maxHp * POTION_HEAL_RATIO);
-  player.hp = Math.min(player.maxHp, player.hp + heal);
+  player.hp = Math.min(healCap(player), player.hp + heal);
   spawnDamageText(player.x, player.y - player.radius - 12, '🧪 +' + heal + ' HP', '#7ee787');
   spawnHitParticles(player.x, player.y, '#7ee787');
   playHealSound();
@@ -1641,7 +1641,7 @@ function skillGachaPull(event, isReroll) {
     renderCoinShopList(); updateSkillButtonVisibility();
     skillGachaPull(ev, true);
   };
-  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? '超飛躍！！ 威力×3' : slv % 10 === 0 ? '飛躍！ 威力×1.5' : '威力・待ち時間がアップ'), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
+  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? `超飛躍！！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×3` : slv % 10 === 0 ? `飛躍！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×1.5` : `${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}・待ち時間がアップ`), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
@@ -2560,8 +2560,9 @@ healBtn.addEventListener('click', event => {
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   if (!player) return;
   lastHealAt = Date.now();
-  player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.5);
-  spawnDamageText(player.x, player.y - player.radius - 12, '+HEAL', '#7ee787');
+  const healAmt = Math.round(player.maxHp * HEAL_SKILL_RATIO * skillPower('skillHeal')), before = player.hp; // 回復力（スキルLv）で回復量が増える
+  player.hp = Math.min(healCap(player), player.hp + healAmt);
+  spawnDamageText(player.x, player.y - player.radius - 12, `💗 +${formatCoinNumber(Math.max(0, Math.round(player.hp - before)))} HP${player.hp > player.maxHp ? '（限界突破）' : ''}`, '#7ee787');
   spawnHitParticles(player.x, player.y, '#7ee787');
   playHealSound();
   updateHealButton();
