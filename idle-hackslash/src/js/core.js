@@ -869,6 +869,11 @@ function skillPower(id) {
   return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); // スキル進化も掛かる
 }
 const SKILL_GACHA_MIN_COST = 100; // スキルガチャはいちばん安くても100コイン（半額・割引のあとも）
+// スキルガチャ：1周回（転生まで）10回まで。5回目からはコインに加えて💎1（スキル項目をON/OFFした直後の1回はジェムなし）
+const SKILL_GACHA_MAX_PULLS = 10, SKILL_GACHA_GEM_FROM = 5, SKILL_GACHA_GEM = 1;
+function skillGachaLeft() { return Math.max(0, SKILL_GACHA_MAX_PULLS - (game.skillGachaPulls || 0)); }
+function getSkillGachaGem() { return (game.skillGachaPulls || 0) + 1 >= SKILL_GACHA_GEM_FROM && !game.skillGachaGemFree ? SKILL_GACHA_GEM : 0; }
+const SKILL_DUP_LV_MULT = 1.5; function skillDupLv(lv) { return Math.max(lv + 1, Math.round(lv * SKILL_DUP_LV_MULT)); } // ダブったらLv1.5倍（最低+1）
 function getSkillGachaCost() { return Math.max(SKILL_GACHA_MIN_COST, coinPrice(Math.max(1, Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0) / Math.pow(2, game.skillGachaDisc || 0))))); } // 装備枠を増やすたびに半額（skillGachaDisc。転生でリセット）
 const WEAPON_GACHA_BASE_COST = 40, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
 function getWeaponGachaCost() { return coinPrice(Math.round(WEAPON_GACHA_BASE_COST * Math.pow(WEAPON_GACHA_COST_GROWTH, game.weaponGachaPulls || 0))); }
@@ -1444,7 +1449,7 @@ function renderShopList() {
 }
 // スキルとサブウェポンは1つの装備枠を分け合う（サブウェポンは「自動スキル」としてスキルに統一）
 const SKILL_SLOT_MAX = 11;
-function getTotalSlots() { return Math.max(1, Math.min(SKILL_SLOT_MAX, game.skillSlots || 1)); }
+function getTotalSlots() { return SKILL_SLOT_MAX; } // 装備枠は増やさなくても最大（スキルガチャは1周回10回までにしたので枠の制限はなくした）
 function getSkillSlots() { return getTotalSlots() - getEquippedWeapons().length; } // スキルに使える枠（自動スキルが使っている分を引く）
 function getSkillSlotCost() { return Math.max(1, getTotalSlots() - 1); } // 枠増やしは1回目💎1、増やすたび1個ずつ値上げ（転生でリセット）
 function getEquippedSkills() { if (!Array.isArray(game.equippedSkills)) game.equippedSkills = []; if (game.equippedSkills.some(id => !SKILL_GACHA_SKILLS[id])) game.equippedSkills = game.equippedSkills.filter(id => SKILL_GACHA_SKILLS[id]); return game.equippedSkills; }

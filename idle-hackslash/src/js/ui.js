@@ -1634,7 +1634,7 @@ function skillGachaPull(event, isReroll) {
     game.shopOwned[id] = true; game.skillLevels[id] = 1;
     const eq = getEquippedSkills();
     if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(id)) { eq.push(id); lastSetSkill = id; } // 空き枠に自動で装備（転生まで外せない）
-  } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
+  } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, skillDupLv(getSkillLevel(id))); // ガチャでダブったらLv1.5倍
   const slv = game.skillLevels[id];
   saveGame(); updateStatsUI();
   const undo = ev => { // 引く前に戻してから、もう一度
@@ -1661,7 +1661,8 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
         game.skillOn = game.skillOn.filter(x => x !== id);
         if (auto) game.equippedWeapons = getEquippedWeapons().filter(k => k !== id.slice(2)); else game.equippedSkills = getEquippedSkills().filter(k => k !== id);
         updateSkillButtonVisibility();
-      } else { game.skillOn.push(id); game.skillGachaDisc = (game.skillGachaDisc || 0) + 1; } // ONにしたらスキルガチャの値段を半額に（転生でリセット）
+      } else { game.skillOn.push(id); game.skillGachaDisc = (game.skillGachaDisc || 0) + 1; }
+      game.skillGachaGemFree = true; // ON/OFFした直後の1回はスキルガチャにジェムがいらない // ONにしたらスキルガチャの値段を半額に（転生でリセット）
       playRegisterSound(); // ショップで買ったときと同じ「チャリーン」
       showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）　スキルガチャが半額に！`);
       updateStatsUI(); renderCoinShopList(); saveGame();
@@ -1724,9 +1725,11 @@ document.getElementById('compToggleList')?.addEventListener('click', event => { 
 function unifiedGachaPull(event) {
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
   if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
-  const cost = getSkillGachaCost();
+  if (!skillGachaLeft()) { showTapError(`スキルガチャは1周回${SKILL_GACHA_MAX_PULLS}回までです（転生でリセット）`, event.clientX, event.clientY); return; }
+  const cost = getSkillGachaCost(), gem = getSkillGachaGem();
   if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-  spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+  if (game.gems < gem) { promptGemShortage(gem, { returnTo: () => switchTab('coinshop') }); return; }
+  spendCoins(cost); game.gems -= gem; game.skillGachaPulls = (game.skillGachaPulls || 0) + 1; game.skillGachaGemFree = false; // ON/OFF直後のジェムなしは1回だけ
   if (Math.random() * (sp + wp) < sp) skillGachaPull(event, true); else weaponGachaPull(event, true);
 }
 function weaponGachaPull(event, isReroll) {
@@ -1744,12 +1747,12 @@ function weaponGachaPull(event, isReroll) {
   const dupBefore = weaponCount(id);
   if (getWeaponLv(id) > 0) game.weaponDup[id] = (game.weaponDup[id] || 0) + 1; // ガチャでダブったら個数+1
   const countUp = weaponCount(id) > dupBefore;
-  const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
+  const prevLv = getWeaponLv(id), lv = game.weapons[id] = prevLv ? Math.min(WEAPON_MAX_LV, skillDupLv(prevLv)) : 1; /* ダブったらLv1.5倍 */ weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; game.weaponDup = snap.dup; renderCoinShopList(); weaponGachaPull(ev, true); };
   showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
 }
-document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
+document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
 function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
   const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
