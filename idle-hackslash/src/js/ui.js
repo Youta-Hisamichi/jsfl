@@ -3870,8 +3870,8 @@ function showFormulaDebug() {
   line('最大HP', F(getPlayerMaxHP()));
   line('ボスへのダメージ', `(1 + ${+b.bossDmg.toFixed(3)}) × ボス特攻進化 ${M(getEvoRate('bossDmg'))} = ${M((1 + b.bossDmg) * getEvoRate('bossDmg'))}`);
   sec('仲間（パーティ）');
-  line('攻撃力の式', '自キャラ攻撃力 × (0.3 + Lv×0.05) × 覚醒・絆 × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
-  line('HPの式', '自キャラ最大HP × (基本 + HPLv×成長) × 0.8 × 覚醒・絆 × ゴーレム × 仲間HP倍率（進化込み）');
+  line('攻撃力の式', '自キャラ攻撃力 × (0.3 + Lv×0.05) × 絆 × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
+  line('HPの式', '自キャラ最大HP × (基本 + HPLv×成長) × 0.8 × 絆 × ゴーレム × 仲間HP倍率（進化込み）');
   const pa = getPlayerAtk(), ph = getPlayerMaxHP();
   const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
   for (const id of Object.keys(COMPANIONS)) {
