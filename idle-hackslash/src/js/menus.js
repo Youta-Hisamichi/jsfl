@@ -386,7 +386,7 @@ function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を�
   const ids = Object.keys(COMPANIONS).sort((a, b) => rank(a) - rank(b) || (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${pool.length}　📖 図鑑 <b>${found}</b> / ${ids.length}</div><div class="cbk-grid">` + ids.map(id => {
     const c = COMPANIONS[id], got = !!book[id], inPool = pool.includes(id), on = inPool && isCompOn(id), e = compEvo(id), cost = inPool ? compToggleCost(id) : 0;
-    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} ${inPool && !on && game.gems < cost ? 'is-disabled' : ''}" ${inPool ? `data-comp-toggle="${id}"` : ''} style="--rc:${RARITY_INFO[c.rarity].color}">`
+    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} ${inPool && !on && game.gems < cost ? 'is-disabled' : ''}" ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
       + `${inPool ? `<i class="cbk-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i>` : '<i class="cbk-tg lock">🔒</i>'}`
       + `<span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>`
       + `<small class="cbk-evo">🧬 ⚔️Lv${e.atk + 1} ❤️Lv${e.hp + 1}</small>`
@@ -396,7 +396,7 @@ function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を�
 }
 function pickCompanionId() {
   const q = Array.isArray(game.summonGuarantee) ? game.summonGuarantee : [];
-  while (q.length) { const g = q.shift(); if (COMPANIONS[g] && !isCompLocked(g)) return g; } // 採用したばかりの仲間は次の招集で必ず出る
+  while (q.length) { const g = q.shift(); if (COMPANIONS[g] && !isCompLocked(g) && isCompOn(g)) return g; } // 昔の「採用したら次で確定」の残り。OFFの仲間は出さない
   let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
   { const on = entries.filter(([id]) => isCompOn(id)); if (on.length) entries = on; } // ONの仲間だけ（ONが誰も出せないときは今までどおり）
   if (!entries.length) entries = Object.entries(COMPANIONS);

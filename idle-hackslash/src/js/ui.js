@@ -1693,6 +1693,10 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
   });
 }
 document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
+  const lk = event.target.closest('[data-comp-lockinfo]'); // 未解放の仲間：概要（未取得なら伏せる）と解放の条件
+  if (lk) { const id = lk.dataset.compLockinfo, c = COMPANIONS[id], got = !!(game.companionBook || {})[id], need = typeof hireNeedText === 'function' ? hireNeedText(id) : '';
+    simpleChoice({ icon: got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, title: got ? c.name : '？？？', text: got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`, sub: `<b style="color:#ffd76b">🔒 未解放：${need ? need + 'で招集ガチャに出せるようになります' : 'まだ招集ガチャに出せません'}</b>`, yes: '閉じる', no: false });
+    return; }
   const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
   const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
   const got = !!(game.companionBook || {})[id], cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
