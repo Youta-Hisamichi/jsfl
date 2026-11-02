@@ -1103,7 +1103,8 @@ function completeReincarnation() {
   game.compOn = rollCompOn(compGacha && compGacha.id); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
   applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
-  if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ grantCompanion(compGacha.id); renderCompanionList(); }
+  if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ else { if (!game.companionBook) game.companionBook = {}; game.companionBook[compGacha.id] = true; } }
+  game.heroChar = null; renderCompanionList(); // 転生後のパーティはいつも勇者1人（仲間ガチャで出た仲間は図鑑と招集ガチャへ。パーティには入れない）
   renderArtifactList();
   updateStatsUI();
   saveGame();
@@ -2500,7 +2501,7 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha) {
   ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => { if (!el.classList.contains('rbd-cg') || el.classList.contains('shown')) showCompGachaInfo(el.dataset.rbdComp); })); // 仲間ガチャ：開いたあとタップで概要
   if (compGacha) setTimeout(() => { // ❓ が回ってから、手に入った仲間を見せる
     const el = ov.querySelector('.rbd-cg'); if (!el) return; const c = COMPANIONS[compGacha.id];
-    el.innerHTML = `<span class="rbd-sk-ico">${companionIconHtml(compGacha.id)}</span><span class="rbd-stars">${rarityStarsImg(c.rarity)}</span><span>${c.name}</span><i class="rbd-cg-new">${compGacha.evo ? `ダブり → キャラ進化！<br>${compGacha.evo}` : 'NEW！ 仲間に加入！'}</i>`;
+    el.innerHTML = `<span class="rbd-sk-ico">${companionIconHtml(compGacha.id)}</span><span class="rbd-stars">${rarityStarsImg(c.rarity)}</span><span>${c.name}</span><i class="rbd-cg-new">${compGacha.evo ? `ダブり → キャラ進化！<br>${compGacha.evo}` : 'NEW！ 図鑑に登録<br>招集ガチャに登場！'}</i>`;
     el.classList.add('shown', 'r-' + c.rarity);
     if (typeof playGachaSound === 'function') playGachaSound(c.rarity);
   }, 900 + list.length * 180);
