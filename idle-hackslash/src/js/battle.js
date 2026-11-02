@@ -892,7 +892,9 @@ function drawEnemyTelegraphs() {
 
 const ATK_UP_COOLDOWN = SKILL_MIN_CD;
 const ATK_UP_MS = 20 * 1000;
-const ATK_UP_MULT = 1.5;
+const ATK_UP_MULT = 1.5, ATK_UP_PER_LV = 0.001; // 攻撃UPスキル：×1.5、Lv1つごとに+0.1%
+function atkUpMult(lv) { lv = lv || (game.shopOwned && game.shopOwned.skillAtkUp ? getSkillLevel('skillAtkUp') : 1); return ATK_UP_MULT + ATK_UP_PER_LV * (lv - 1); }
+const fmtAtkUp = v => +v.toFixed(3);
 let lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
 let atkUpEndAt = 0;
 function drawAtkUpEffects() {

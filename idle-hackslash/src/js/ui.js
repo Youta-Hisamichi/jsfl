@@ -1753,7 +1753,7 @@ document.getElementById('weaponGachaBtn').addEventListener('click', event => { i
 function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
   const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
   const sid = inf.dataset.skInfo, { it, auto, name, desc } = skillToggleInfo(sid), lv = sid.startsWith('w:') ? getWeaponLv(sid.slice(2)) : getSkillLevel(sid);
-  const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 威力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv);
+  const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 威力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv, true);
   showSkillBrief(it, `${name}${auto ? '（自動）' : ''} Lv${lv}`, desc + (extra ? `<div class="skb-param">${extra}</div>` : ''), auto);
   return true;
 }
@@ -2590,11 +2590,11 @@ atkUpBtn.addEventListener('click', event => {
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   if (player) {
     player.atk = getPlayerAtk();
-    spawnDamageText(player.x, player.y - player.radius - 14, `💪 攻撃力 ×${ATK_UP_MULT}`, '#ff6b6b', 0.012);
+    spawnDamageText(player.x, player.y - player.radius - 14, `💪 攻撃力 ×${fmtAtkUp(atkUpMult())}`, '#ff6b6b', 0.012);
     spawnHitParticles(player.x, player.y, '#ff6b6b');
   }
   playAtkUpSound();
-  showNotice(`💪 攻撃力UP！ ${ATK_UP_MS / 1000}秒間 攻撃力 ×${ATK_UP_MULT}`);
+  showNotice(`💪 攻撃力UP！ ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult())}`);
   updateAtkUpButton();
   updateHPUI();
 });
@@ -3871,7 +3871,7 @@ function showFormulaDebug() {
   rows.push(`<table class="fd-tb"><tr><th>段階</th><th>攻撃力倍率</th><th>HP倍率</th><th>仲間攻撃倍率</th><th>仲間HP倍率</th></tr>${tr.map((t, i) => { const p = tr[i - 1]; const c = (k) => M(t[k]) + (p && p[k] && t[k] !== p[k] ? `<i>(${t[k] / p[k] >= 1 ? '×' : '×'}${+(t[k] / p[k]).toFixed(3)})</i>` : ''); return `<tr><td>${t.label}</td><td>${c('atk')}</td><td>${c('hp')}</td><td>${c('cAtk')}</td><td>${c('cHp')}</td></tr>`; }).join('')}</table>`);
   sec('進化率');
   EVO_KINDS.forEach(k => line(EVO_KIND_LABEL[k], M(getEvoRate(k)), fmtEvoPct(getEvoRate(k))));
-  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1, atkUp = (Date.now() < atkUpEndAt) ? ATK_UP_MULT : 1, sub = getSubStatMult(), ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1;
+  const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1, atkUp = (Date.now() < atkUpEndAt) ? atkUpMult() : 1, sub = getSubStatMult(), ad = typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1;
   const csA = compShare('atk'), csH = compShare('hp'), early = getEarlyPlayerHpRate(game.stage);
   sec('自キャラの攻撃力');
   line('式', '10 × 攻撃力倍率 × 加速 × 攻撃力UP × 紋章 × 動画バフ ＋ 仲間の攻撃力の10%');

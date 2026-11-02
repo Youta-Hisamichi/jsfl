@@ -30,7 +30,7 @@ function renderSkillGacha() {
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP);
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 威力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${game.overHealUnlocked ? '（限界突破）' : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（攻撃力×威力）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 威力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${game.overHealUnlocked ? '（限界突破）' : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（攻撃力×威力）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -544,7 +544,7 @@ function getPlayerAtk() {
   const b = computeBonuses();
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
-  const atkUpBonus = Date.now() < atkUpEndAt ? ATK_UP_MULT : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
+  const atkUpBonus = Date.now() < atkUpEndAt ? atkUpMult() : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
   return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) + compShare('atk')))); // 仲間の攻撃力の10%も上乗せ
 }
 function getPlayerMaxHP() {
@@ -1926,11 +1926,12 @@ function deathChance(boss, stage = deathStage(), lv) {
 const pct1 = v => (Math.round(v * 1000) / 10) + '%';
 // スキルLv（威力）が効くスキル。ほかは威力を出さず、関係するパラメータを出す
 const POWER_SKILLS = ['skillSpecial', 'skillPoison', 'skillParalyze', 'skillCompRush', 'skillBlast', 'skillHeal', 'skillRegen', 'skillNova'];
-function skillParamHtml(id, lv) { // 威力が関係ないスキルの中身（カードと概要で使う）
+function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中身（カードと概要で使う）
   const s = deathStage();
-  if (id === 'skillDeath') return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b><br>Lvごとに+1%（最大100%）・同じ敵には1回だけ（ボスはコンテニューで+1回）<br>ボスの即死耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}`;
+  if (id === 'skillDeath' && !brief) return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）`; // カードは%だけ。決まりは概要に
+  if (id === 'skillDeath') return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）<br>Lvごとに+1%（最大100%）・同じ敵には1回だけ（ボスはコンテニューで+1回）<br>ボスの即死耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}`;
   if (id === 'skillAccel') return `⏩ ${ACCEL_DURATION / 1000}秒間 2.5倍速<br>Lvを上げても効果は変わりません`;
-  if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${ATK_UP_MULT}<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult(lv))}<br>Lvごとに+0.1%`;
   if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 コインを投げ続ける（当たるとコイン獲得）・討伐コイン ×1.5<br>Lvを上げても効果は変わりません`;
   if (id === 'skillZeni') return `💰 手持ちコインの半分を投げる（${ZENI_MIN_COINS}枚以上必要）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} ＋ 攻撃力<br>Lvを上げても効果は変わりません`;
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
@@ -1939,7 +1940,8 @@ function skillParamHtml(id, lv) { // 威力が関係ないスキルの中身（�
 }
 function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一言
   const k = HEAL_SKILLS.includes(id) ? '回復力' : '威力';
-  if (id === 'skillDeath') return '即死率 +1%';
+  if (id === 'skillDeath') return '即死率 +1%（例外あり）';
+  if (id === 'skillAtkUp') return `攻撃力UP ×${fmtAtkUp(atkUpMult(slv))}`;
   if (!POWER_SKILLS.includes(id)) return 'Lvアップ';
   return slv % 100 === 0 ? `超飛躍！！ ${k}×3` : slv % 10 === 0 ? `飛躍！ ${k}×1.5` : `${k}がアップ`;
 }
