@@ -1695,21 +1695,22 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
 document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
   const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
   const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
-  const brief = compBriefHtml(id);
+  const got = !!(game.companionBook || {})[id], cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
+  const brief = got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`; // 未取得は名前と中身を伏せる
   if (on && compOnCount() <= COMP_MIN_ON) { // OFFにできない：概要は見せて、理由を赤字で
-    simpleChoice({ icon: companionIconHtml(id), title: c.name, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });
+    simpleChoice({ icon: cIcon, title: cName, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });
     playTone(220, 0.12, 'square', 0.05, 160);
     return;
   }
   if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: companionIconHtml(id), title: c.name, text: brief + `<div class="cgb-ask"><b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？</div>`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
+  simpleChoice({ icon: cIcon, title: cName, text: brief + `<div class="cgb-ask"><b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？</div>`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
     onYes: () => {
       if (game.gems < cost) { promptGemShortage(cost); return; }
       if (!Array.isArray(game.compOn)) game.compOn = compPoolIds(); // 全員ONの状態から切り替えるとき
       game.gems -= cost;
       if (on) game.compOn = game.compOn.filter(x => x !== id); else game.compOn.push(id);
       playRegisterSound();
-      showNotice(on ? `「${c.name}」を招集ガチャから外した（OFF）` : `「${c.name}」が招集ガチャに出るようになった（ON）`);
+      showNotice(on ? `「${cName}」を招集ガチャから外した（OFF）` : `「${cName}」が招集ガチャに出るようになった（ON）`);
       updateStatsUI(); renderCompToggleList(); saveGame();
     } });
 });

@@ -5002,3 +5002,15 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .cbk-st img { height: 9px; }
 .cbk-it small { font-size: 0.56rem; color: #d8c8ff; }
 .mc-evo { display: inline-block; margin-top: 3px; font-size: 0.62rem; }
+button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer; padding-top: 14px; }
+.cbk-it.on { background: rgba(40,90,60,0.75); box-shadow: 0 0 8px var(--rc); }
+.cbk-it.lock { opacity: 0.6; cursor: default; }
+.cbk-it.is-disabled .cbk-cost { color: #ff8a8a; }
+.cbk-tg { position: absolute; top: 2px; left: 2px; font-style: normal; font-size: 0.55rem; font-weight: 900; padding: 0 5px; border-radius: 999px; background: #555c70; color: #fff; }
+.cbk-tg.on { background: linear-gradient(180deg, #6be08a, #2a9a4a); }
+.cbk-tg.lock { background: transparent; }
+.cbk-cost { position: absolute; top: 2px; right: 3px; font-size: 0.55rem; font-weight: 900; color: #bfe6ff; }
+.cbk-cost.lock { color: #aab; }
+.cbk-evo { font-size: 0.54rem !important; color: #d8c8ff; white-space: nowrap; }
+.cbk-sil img, .cbk-sil { filter: brightness(0) drop-shadow(0 0 2px rgba(255,255,255,0.5)); }
+.cbk-it b { font-size: 0.68rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
