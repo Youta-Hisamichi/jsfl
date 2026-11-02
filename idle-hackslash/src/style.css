@@ -5029,7 +5029,9 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head > span:first-child { flex: 0 1 auto; text-align: right; }
 .tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,14,10,0.25) 0px, rgba(4,14,10,0.42) 500px, rgba(4,16,10,0.78) 900px, #06120c 1200px), url(assets/img/ui/skill2/bg.webp) 50% 0 / 100% auto no-repeat, #06120c !important; }
 /* スキルカード：アイコンを下げて、アイコンの下の空きを埋める（行の高さは変えない） */
-.tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top > .sk-info-ico { position: relative; top: 26px; }
+.tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top > .sk-info-ico { grid-column: 1; grid-row: 1 / 3; align-self: end; position: static; } /* アイコンの下端を右の概要ウィンドウの下端にそろえる */
+.tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top > .sk-info-ico .ico-img { width: 54px !important; height: 54px !important; margin: 0 !important; }
+.tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top > div { margin-top: 10px !important; } /* スキル名とLvも少し下げる */
 /* 宝箱を開けた結果：中身のアイコンを大きく */
 .chest-loot-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
 .cl-card .cl-ico { font-size: 2.8rem; height: 60px; }
