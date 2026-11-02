@@ -712,6 +712,7 @@ continueBtn.addEventListener('click', event => {
   giveUpBtn.style.display = 'none';
   toast.classList.remove('show');
   revivePlayerInPlace();
+  balls.forEach(b => { if (!b.isPlayer && b.isBoss) b.deathAllow = (b.deathAllow || 1) + 1; }); // コンテニューしたらボスに即死魔法をもう1回使える
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
   updateStatsUI();
@@ -1528,6 +1529,7 @@ document.getElementById('weaponSlotHead').addEventListener('click', event => { /
   updateStatsUI(); renderCoinShopList(); saveGame();
 });
 document.getElementById('weaponList').addEventListener('click', event => {
+  if (openSkillInfoFromEvent(event)) return;
   const eb = event.target.closest('[data-weapon-equip]');
   if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
     if (skillSwapLocked(event)) return;
@@ -1641,7 +1643,7 @@ function skillGachaPull(event, isReroll) {
     renderCoinShopList(); updateSkillButtonVisibility();
     skillGachaPull(ev, true);
   };
-  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? `超飛躍！！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×3` : slv % 10 === 0 ? `飛躍！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×1.5` : `${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}・待ち時間がアップ`), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo, { noStars: true });
+  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : skillLvUpText(id, slv), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo, { noStars: true });
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
@@ -1748,7 +1750,15 @@ function weaponGachaPull(event, isReroll) {
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
+function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
+  const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
+  const sid = inf.dataset.skInfo, { it, auto, name, desc } = skillToggleInfo(sid), lv = sid.startsWith('w:') ? getWeaponLv(sid.slice(2)) : getSkillLevel(sid);
+  const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 威力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv);
+  showSkillBrief(it, `${name}${auto ? '（自動）' : ''} Lv${lv}`, desc + (extra ? `<div class="skb-param">${extra}</div>` : ''), auto);
+  return true;
+}
 document.getElementById('skillLevelList').addEventListener('click', event => {
+  if (openSkillInfoFromEvent(event)) return; // スキルアイコンを押したら概要
   const buy = event.target.closest('[data-skill-buy]');
   const equip = event.target.closest('[data-skill-equip]');
   if (buy) {
@@ -2619,10 +2629,13 @@ silenceBtn.addEventListener('click', event => {
 });
 
 deathBtn.addEventListener('click', event => {
+  { const tgt = balls.find(ball => !ball.isPlayer && !ball.isDying); // 同じ敵には1回だけ（ボスはコンテニューで+1回）。使えないときは待ち時間を減らさない
+    if (game.shopOwned.skillDeath && phase === 'battle' && tgt && (tgt.deathUsed || 0) >= (tgt.deathAllow || 1) && Date.now() - lastDeathAt >= skillCd('skillDeath', SKILL_DEATH_COOLDOWN)) { showTapError(tgt.isBoss ? '💀 このボスにはもう使えない（コンテニューするとまた使える）' : '💀 この敵にはもう使えない', event.clientX, event.clientY); return; } }
   const ctxs = beginSkill(event, 'skillDeath', 'death', SKILL_DEATH_COOLDOWN, lastDeathAt, v => { lastDeathAt = v; }, updateDeathButton);
   if (!ctxs) return;
   const { player, enemy } = ctxs;
-  const chance = enemy.isBoss ? DEATH_CHANCE_BOSS : DEATH_CHANCE;
+  enemy.deathUsed = (enemy.deathUsed || 0) + 1;
+  const chance = deathChance(!!enemy.isBoss);
   for (let i = 0; i < 14; i++) particles.push({ x: enemy.x + (Math.random() - 0.5) * 40, y: enemy.y + (Math.random() - 0.5) * 40, vx: 0, vy: -0.8, life: 1, color: '#b48cff', decay: 0.025 });
   playTone(110, 0.6, 'sawtooth', 0.16, 55);
   if (Math.random() < chance) {
@@ -2632,7 +2645,7 @@ deathBtn.addEventListener('click', event => {
     triggerEnemyDefeat(enemy, player.x, player.y);
     shakeScreenLight();
   } else {
-    spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, '即死魔法… 効かなかった', '#9aa3b8', 0.014);
+    spawnDamageText(enemy.x, enemy.y - enemy.radius - 30, `即死魔法… 効かなかった（即死率 ${pct1(chance)}）`, '#9aa3b8', 0.014);
   }
   updateDeathButton();
   updateHPUI();

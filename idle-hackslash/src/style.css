@@ -5021,3 +5021,5 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 @keyframes overHealShine { from { background-position: 0 0; } to { background-position: 200% 0; } }
 .ico-img.omen-ico { transform: scale(1.22); } /* 宝箱の予感：吹き出しを少し大きく */
 #skGachaModal #skGachaResult.skr-nostar .gr-stars-row { display: none !important; }
+.sk-info-ico { cursor: pointer; display: inline-flex; }
+.skb-param { margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); font-size: 0.72rem; line-height: 1.5; text-align: left; }
