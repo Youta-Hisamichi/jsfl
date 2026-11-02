@@ -337,7 +337,17 @@ const COMP_TOGGLE_COST = 2, COMP_MIN_ON = 3;
 function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
 function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
 function compOnCount() { return compPoolIds().filter(isCompOn).length; }
-function rollCompOn() { const a = compPoolIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, COMP_MIN_ON); }
+// 転生のときの3択：招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）で、かぶりなしに選ぶ。first は必ず入れる（仲間ガチャで出た仲間）
+function rollCompOn(first) {
+  const pool = compPoolIds(), out = first && pool.includes(first) ? [first] : [];
+  let rest = pool.filter(id => !out.includes(id));
+  while (out.length < COMP_MIN_ON && rest.length) {
+    let x = Math.random() * rest.reduce((t, id) => t + COMPANIONS[id].weight, 0), pick = rest[rest.length - 1];
+    for (const id of rest) { if ((x -= COMPANIONS[id].weight) < 0) { pick = id; break; } }
+    out.push(pick); rest = rest.filter(id => id !== pick);
+  }
+  return out;
+}
 function renderCompToggleList() {
   const el = document.getElementById('compToggleList'); if (!el) return;
   const ids = compPoolIds(), onN = ids.filter(isCompOn).length;

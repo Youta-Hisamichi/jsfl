@@ -1097,8 +1097,9 @@ function completeReincarnation() {
   renderCompanionList();
   const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
   game.gems += rebirthGemGain; game.reincarnations++;
-  game.compOn = rollCompOn(); /* 招集ガチャに出る仲間も、転生のたびにランダムな3人に選び直す */ game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
+  game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
   const compGacha = rollRebirthCompanion(compGachaStage); // 転生の仲間ガチャ：1人もらえる（進んだステージが高いほど高レアが出やすい）
+  game.compOn = rollCompOn(compGacha && compGacha.id); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   if (compGacha) { grantCompanion(compGacha.id); renderCompanionList(); }
   renderArtifactList();
   updateStatsUI();
