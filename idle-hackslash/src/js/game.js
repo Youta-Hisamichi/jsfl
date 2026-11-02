@@ -1076,6 +1076,7 @@ function completeReincarnation() {
   game.rebirthLv = (game.rebirthLv || 0) + lvGain;
   const featherGain = getRebirthFeatherGain() * rebirthGemMult; // 転生報酬：遺物の代わりに進化の羽（ステージの桁数×桁数枚）。動画で転生したら羽ガチャも3倍
   const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
+  const compGachaStage = game.stage; // 仲間ガチャのレア率はステージを戻す前の到達ステージで決める
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
   game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
   game.puSlots = 0; // 3択の追加枠も転生まで
@@ -1096,7 +1097,9 @@ function completeReincarnation() {
   renderCompanionList();
   const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
   game.gems += rebirthGemGain; game.reincarnations++;
-  game.compOn = rollCompOn(); // 招集ガチャに出る仲間も、転生のたびにランダムな3人に選び直す game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
+  game.compOn = rollCompOn(); /* 招集ガチャに出る仲間も、転生のたびにランダムな3人に選び直す */ game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
+  const compGacha = rollRebirthCompanion(compGachaStage); // 転生の仲間ガチャ：1人もらえる（進んだステージが高いほど高レアが出やすい）
+  if (compGacha) { grantCompanion(compGacha.id); renderCompanionList(); }
   renderArtifactList();
   updateStatsUI();
   saveGame();
@@ -1104,7 +1107,7 @@ function completeReincarnation() {
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot); // 転生ボーナスはダイアログで（OKを押すまで消えない）
+  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot, compGacha); // 転生ボーナスはダイアログで（OKを押すまで消えない）
   renderChestTray();
   if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
@@ -2460,7 +2463,24 @@ function rollRebirthFeathers(n) {
   for (const r in got) addFea(r, got[r]);
   return got;
 }
-function showRebirthRewardDialog(gems, feathers, got) {
+// 転生の仲間ガチャ：レア度ごとの確率（%）。到達ステージが1→100万で LO から HI へ（桁数でなめらかに）
+const REBIRTH_COMP_RATES_LO = { common: 60, rare: 30, epic: 8, legendary: 1.8, mythic: 0.2 };
+const REBIRTH_COMP_RATES_HI = { common: 15, rare: 35, epic: 30, legendary: 15, mythic: 5 };
+function rebirthCompRates(stage) {
+  const t = Math.min(1, Math.max(0, Math.log10(Math.max(1, stage)) / 6)), r = {};
+  for (const k in REBIRTH_COMP_RATES_LO) r[k] = REBIRTH_COMP_RATES_LO[k] + (REBIRTH_COMP_RATES_HI[k] - REBIRTH_COMP_RATES_LO[k]) * t;
+  return r;
+}
+function rollRebirthCompanion(stage) {
+  const pool = compPoolIds(); if (!pool.length) return null;
+  const rates = rebirthCompRates(stage), avail = RARITY_ORDER.filter(r => pool.some(id => COMPANIONS[id].rarity === r)); // まだ出せないレア度は抽選から外す
+  let x = Math.random() * avail.reduce((t, r) => t + rates[r], 0), rar = avail[0];
+  for (const r of avail) { if ((x -= rates[r]) < 0) { rar = r; break; } }
+  const ids = pool.filter(id => COMPANIONS[id].rarity === rar);
+  return { id: ids[Math.floor(Math.random() * ids.length)], stage };
+}
+function rebirthCompRatesText(stage) { /* まだ出せないレア度を除いて100%に直して見せる */ const r = rebirthCompRates(stage), pool = compPoolIds(), av = RARITY_ORDER.filter(k => pool.some(id => COMPANIONS[id].rarity === k)).reverse(), tot = av.reduce((t, k) => t + r[k], 0) || 1, f = v => v >= 10 ? Math.round(v) : +v.toFixed(1); return av.map(k => `${RARITY_INFO[k].label} ${f(r[k] / tot * 100)}%`).join('・'); }
+function showRebirthRewardDialog(gems, feathers, got, compGacha) {
   got = got || { common: feathers };
   const list = FEA_RARITIES.slice().reverse().filter(r => got[r]), best = list[0] || 'common';
   document.querySelectorAll('.rbd-ov').forEach(e => e.remove());
@@ -2468,11 +2488,17 @@ function showRebirthRewardDialog(gems, feathers, got) {
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
     <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
     ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🎲 次のスキル</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
-    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間</div><div class="rbd-sk-row">${game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join('')}</div></div>` : ''}
+    ${compGacha ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🐾 仲間ガチャ<small>（ステージ${formatStageNumber(compGacha.stage)}まで進んだ分レア率UP）</small></div><div class="rbd-sk-row"><div class="rbd-sk rbd-cg" data-rbd-comp="${compGacha.id}" style="--rc:${RARITY_INFO[COMPANIONS[compGacha.id].rarity].color}"><span class="rbd-sk-ico rbd-cg-q">❓</span></div></div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音
-  ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => showCompGachaInfo(el.dataset.rbdComp))); // 次の仲間：タップで概要
+  ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => { if (el.classList.contains('shown')) showCompGachaInfo(el.dataset.rbdComp); })); // 仲間ガチャ：開いたあとタップで概要
+  if (compGacha) setTimeout(() => { // ❓ が回ってから、手に入った仲間を見せる
+    const el = ov.querySelector('.rbd-cg'); if (!el) return; const c = COMPANIONS[compGacha.id];
+    el.innerHTML = `<span class="rbd-sk-ico">${companionIconHtml(compGacha.id)}</span><span class="rbd-stars">${rarityStarsImg(c.rarity)}</span><span>${c.name}</span><i class="rbd-cg-new">仲間に加入！</i>`;
+    el.classList.add('shown', 'r-' + c.rarity);
+    if (typeof playGachaSound === 'function') playGachaSound(c.rarity);
+  }, 900 + list.length * 180);
   ov.querySelectorAll('[data-rbd-skill]').forEach(el => el.addEventListener('click', () => { const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); })); // 次のスキル：タップで概要
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });

@@ -4980,3 +4980,10 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .anniv-list{text-align:left;font-size:.8rem;line-height:1.7}
 .anniv-row{display:flex;gap:6px;align-items:center;border-bottom:1px solid rgba(255,255,255,.12)}
 .anniv-st{margin-left:auto;font-size:.72rem;opacity:.85}
+.rbd-sk-h small { display: block; font-size: 0.62rem; color: #ffe9a8; font-weight: 700; }
+.rbd-cg { max-width: 130px; padding: 6px 4px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.25); }
+.rbd-cg-q { font-size: 34px; animation: rbdCgSpin 0.45s linear infinite; }
+@keyframes rbdCgSpin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+.rbd-cg.shown { border-color: var(--rc); box-shadow: 0 0 14px var(--rc), inset 0 0 10px var(--rc); animation: rbdCgPop 0.5s ease-out; }
+@keyframes rbdCgPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+.rbd-cg-new { font-style: normal; font-size: 0.62rem; color: #fff6b0; text-shadow: 0 1px 2px #000; }
