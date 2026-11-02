@@ -510,8 +510,9 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
 }; }
 // ★4（SSR）・★5（UR）の宝箱から、ときどき仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
 const CHEST_COMP_CHANCE = { legendary: 0.05, mythic: 0.15 };
-function rollChestCompanion() {
-  const pool = compPoolIds(); if (!pool.length) return null;
+const CHEST_COMP_EXCLUDE = { legendary: ['common'], mythic: ['common', 'rare'] }; // ★4はNを出さない、★5はNとRを出さない
+function rollChestCompanion(rarity) {
+  const ex = CHEST_COMP_EXCLUDE[rarity] || [], pool = compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); if (!pool.length) return null;
   let x = Math.random() * pool.reduce((t, id) => t + COMPANIONS[id].weight, 0);
   for (const id of pool) { if ((x -= COMPANIONS[id].weight) < 0) return id; }
   return pool[pool.length - 1];
@@ -519,7 +520,7 @@ function rollChestCompanion() {
 { const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
   const loot = orig.apply(this, arguments);
   if (Math.random() < (CHEST_COMP_CHANCE[rarity] || 0)) {
-    const id = rollChestCompanion();
+    const id = rollChestCompanion(rarity);
     if (id) {
       const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '', r = grantCompanion(id);
       const t = dup ? `ダブり → キャラ進化！ ${evo}` : (r && r.label) || '仲間に加入';
