@@ -350,7 +350,7 @@ function rollCompOn(first) {
 }
 function renderCompToggleList() {
   const el = document.getElementById('compToggleList'); if (!el) return;
-  const ids = compPoolIds(), onN = ids.filter(isCompOn).length;
+  const ids = compPoolIds().sort((a, b) => isCompOn(b) - isCompOn(a)), onN = ids.filter(isCompOn).length; // ONの仲間を上に
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
     const c = COMPANIONS[id], on = isCompOn(id), cost = gemPrice(COMP_TOGGLE_COST);
     return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-comp-toggle="${id}"><span class="skt-ico">${companionIconHtml(id)}</span><span class="skt-main"><span class="skt-name">${rarityStarsImg(c.rarity)} ${c.name}</span><span class="skt-desc">${c.desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
