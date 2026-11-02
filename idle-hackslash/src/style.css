@@ -5028,3 +5028,5 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head { justify-content: flex-end; }
 .tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head > span:first-child { flex: 0 1 auto; text-align: right; }
 .tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,14,10,0.25) 0px, rgba(4,14,10,0.42) 500px, rgba(4,16,10,0.78) 900px, #06120c 1200px), url(assets/img/ui/skill2/bg.webp) 50% 0 / 100% auto no-repeat, #06120c !important; }
+/* スキルカード：アイコンを下げて、アイコンの下の空きを埋める（行の高さは変えない） */
+.tab-page[data-tab="coinshop"] :is(#skillLevelList, #weaponList) .sk-card .sk-top > .sk-info-ico { position: relative; top: 26px; }

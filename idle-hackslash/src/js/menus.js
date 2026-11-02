@@ -15,7 +15,7 @@ function renderSkillGacha() {
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
   // 見出し：装備数（スキル＋自動スキル）／枠数と「＋枠を増やす」だけ
-  const headHtml = `<span>スキルガチャ <b>${game.skillGachaPulls || 0} / ${skillGachaLimit()}</b>回<small class="slot-reset">（転生でリセット）</small></span>`; // 枠を増やす代わりに、ガチャは1周回10回まで
+  const headHtml = `<span>スキルガチャ <b>${game.skillGachaPulls || 0} / ${skillGachaLimit()}</b><small class="slot-reset">（転生でリセット）</small></span>`; // 枠を増やす代わりに、ガチャは1周回10回まで
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
