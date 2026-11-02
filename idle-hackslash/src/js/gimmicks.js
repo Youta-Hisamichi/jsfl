@@ -531,6 +531,18 @@ function rollChestCompanion(rarity) {
   }
   return loot;
 }; }
+// ★3（SR）・★4（SSR）・★5（UR）の宝箱から、ときどき自キャラが出て進化する（攻撃力かHPの初期Lv+1）
+const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
+{ const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
+  const loot = orig.apply(this, arguments);
+  if (Math.random() < (CHEST_HERO_CHANCE[rarity] || 0)) {
+    const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : (game.username || '勇者'), t = heroEvolve();
+    if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:#ffd76b">🦸 自キャラ（${name}）が出てきた！ 進化！ ${t}</b>`;
+    if (quiet) showNotice(`🦸 宝箱から自キャラ！ 進化 ${t}`);
+    try { renderMyCharCard(); saveGame(); } catch (e) {}
+  }
+  return loot;
+}; }
 // 転生で使った種の効果はリセット（持っている種はそのまま）
 // 使ったドーピングの種は、転生のときに進化の羽で還元（1個につき羽 SEED_FEATHER_REFUND 枚。転生報酬の羽に上乗せ）
 const SEED_FEATHER_REFUND = 1;

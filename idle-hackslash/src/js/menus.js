@@ -193,6 +193,16 @@ function compEvolve(id) { // 攻撃力かHPのどちらかを+1（今の周回�
   return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}の初期Lv ${e[k]} → ${e[k] + 1}`;
 }
 function applyCompEvoLevels() { for (const id in (game.compEvo || {})) { const e = compEvo(id); if (e.atk) game.companions.level[id] = Math.max(game.companions.level[id] || 0, e.atk); if (e.hp) setCompUpLv(id, 'hp', Math.max(compHpLv(id), e.hp)); } } // 転生直後：進化した分を初期Lvに
+// 自キャラの進化：宝箱から自キャラが出ると、自キャラの攻撃力かHPの初期Lvが+1（転生しても残る・最大 初期Lv1000）
+function heroEvo() { const e = game.heroEvo || {}; return { atk: e.atk || 0, hp: e.hp || 0 }; }
+function heroEvolve() {
+  const e = heroEvo(), ks = ['atk', 'hp'].filter(k => e[k] < COMP_EVO_MAX); if (!ks.length) return '進化MAX';
+  const k = ks[Math.floor(Math.random() * ks.length)]; e[k]++; game.heroEvo = e;
+  game.upgrades[k] = (game.upgrades[k] || 0) + 1; // 今の周回にもすぐ+1
+  try { refreshPlayerBallStats(); updateStatsUI(); updateHPUI(); } catch (er) {}
+  return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ 最大HP'}の初期Lv ${e[k]} → ${e[k] + 1}`;
+}
+function applyHeroEvoLevels() { const e = heroEvo(); for (const k of ['atk', 'hp']) if (e[k]) game.upgrades[k] = Math.max(game.upgrades[k] || 0, e[k]); }
 function compEvoChip(id) { const e = compEvo(id); return e.atk || e.hp ? `<span class="cc-chip cc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; }
 function compBookHtml() { // パーティにいない仲間：手に入れたことがあれば色つき、まだなら影と？？？
   const ord = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 }, book = game.companionBook || {};
@@ -233,7 +243,7 @@ function renderMyCharCard() {
   el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : ELEMENTS_ON ? '<span class="el-badge el-none">属性なし</span>' : ''}</span>${heroTypeHtml(id)}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
+  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : ELEMENTS_ON ? '<span class="el-badge el-none">属性なし</span>' : ''}</span>${heroTypeHtml(id)}${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
 function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
   const info = heroTypeInfo(id);

@@ -1101,6 +1101,7 @@ function completeReincarnation() {
   const compGacha = rollRebirthCompanion(compGachaStage); // 転生の仲間ガチャ：1人もらえる（進んだステージが高いほど高レアが出やすい）
   game.compOn = rollCompOn(compGacha && compGacha.id); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
+  applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
   if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ grantCompanion(compGacha.id); renderCompanionList(); }
   renderArtifactList();
   updateStatsUI();
