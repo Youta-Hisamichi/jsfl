@@ -60,7 +60,7 @@ function renderSkillGacha() {
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
 // スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎2。ONは3つより少なくできない。切り替えは転生でリセット）
 // 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
-const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 2, SKILL_MIN_ON = 3;
+const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 5, SKILL_MIN_ON = 3;
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
 function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_MIN_ON); }
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
@@ -370,8 +370,8 @@ function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >
 const COMP_DUP_LV_MULT = 1.5; // 招集ガチャなどでパーティにいる仲間がダブったら、Lvが1.5倍
 // 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ONはレア度でN💎1〜UR💎16・OFFは💎10。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
 // まだ一度も転生していないセーブ（compOn が無い）は、出せる仲間ぜんぶがON
-const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 10;
-function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎10
+const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 5;
+function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎5
 function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
 function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
 function compOnCount() { return compPoolIds().filter(isCompOn).length; }

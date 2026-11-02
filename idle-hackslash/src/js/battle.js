@@ -1932,6 +1932,22 @@ function playChestFanfare() { // 宝箱の中身を数え終わったときの�
   [[523, 0, 0.09], [523, 0.11, 0.09], [523, 0.22, 0.09], [698, 0.33, 0.28], [784, 0.66, 0.14], [880, 0.82, 0.14], [988, 0.98, 0.14], [1047, 1.14, 0.55]].forEach(([f, at, len]) => setTimeout(() => { playTone(f, len, 'square', 0.07); playTone(f / 2, len, 'triangle', 0.06); if (len > 0.3) playTone(f * 1.25, len, 'square', 0.035); }, at * 1000));
 }
 function chestCoinIco(rarity) { return rarity && rarity !== 'common' ? `<img class="ico-img chest-coin-ico" src="assets/img/icons/chest_coin_${rarity}.webp" alt="">` : ''; } // ★2〜★5の宝箱のコインは、レア度ごとのコインの山の絵
+function showChestOdds(rarity) { // そのレア度の宝箱から何がどれくらい出るか（いまの設定値から計算）
+  const P = v => (Math.round(v * 1000) / 10) + '%', info = RARITY_INFO[rarity], ac = CHEST_ARTIFACT_CHANCE[rarity] || 0, rows = [];
+  if (ac < 1) rows.push([chestCoinIco(rarity) || COIN_ICO, chestCoinName(rarity), P(1 - ac), `ザコ${CHEST_COIN_MULT[rarity]}体ぶん`]); // コインが出ない宝箱（UR）は出さない
+  let pool = ARTIFACT_POOL.filter(a => !BOSS_DROP_ONLY.includes(a.id) && (!ARTIFACT_STACK_LIMIT[a.id] || (game.ownedArtifacts[a.id] || 0) < ARTIFACT_STACK_LIMIT[a.id]));
+  if (!pool.length) pool = ARTIFACT_POOL;
+  if (pool.some(a => a.rarity === rarity)) pool = pool.filter(a => a.rarity === rarity); // pickWeightedArtifact と同じ：そのレア度があればその中から、なければ出せるものから均等
+  pool.forEach(a => rows.push([chestArtIco(a, rarity), a.id === 'evoFeather' ? `進化の${feaName(rarity)}` : a.name, P(ac / pool.length), '']));
+  const ex = []; // いっしょに入っていることがあるもの（上とは別に抽選）
+  if (rarity === 'mythic' && (game.feaUseBuys || 0) < FEA_USE_SHOP_MAX) ex.push(['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', P(CHEST_FEA_TIE_CHANCE)]);
+  if (CHEST_POTION_RARITIES.includes(rarity)) { ex.push(['🧪', '回復ポーション', P(CHEST_POTION_CHANCE), '3個以上持っていると入らない']); ex.push(['<i class="ico-redpot"></i>', 'スキルポーション', P(CHEST_POTION_CHANCE), '3個以上持っていると入らない']); }
+  if (typeof SEED_CHEST_CHANCE !== 'undefined' && SEED_CHEST_CHANCE[rarity]) ex.push(['🌱', `ドーピングの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, P(SEED_CHEST_CHANCE[rarity])]);
+  if (typeof CHEST_COMP_CHANCE !== 'undefined' && CHEST_COMP_CHANCE[rarity]) ex.push(['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', P(CHEST_COMP_CHANCE[rarity]), rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ']);
+  if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) ex.push(['🦸', '自キャラ（進化して初期Lv+1）', P(CHEST_HERO_CHANCE[rarity])]);
+  const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
+  simpleChoice({ icon: xi(CHEST_ICON[rarity]) || '🎁', title: `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱で出るもの</span>`, text: `<div class="co-list"><div class="co-h">どれか1つ</div>${rows.map(row).join('')}${ex.length ? `<div class="co-h">さらに、いっしょに入っていることがある</div>${ex.map(row).join('')}` : ''}</div>`, yes: '閉じる', no: false });
+}
 function chestCoinName(rarity) { return rarity && rarity !== 'common' ? `★${RARITY_INFO[rarity].stars}のコイン` : 'コイン'; } // R以上の宝箱のコインは「★2のコイン」など
 function setChestStars(rarity, n) { // 宝箱を開けるか選ぶ画面：★の画像＋個数
   const st = RARITY_INFO[rarity].stars;
@@ -2012,7 +2028,7 @@ function openChestBatchDialog(rarity) {
     document.getElementById('chestModalTitle').innerHTML = `<span style="color:${info.color}">${info.label}の宝箱${opened > 1 ? ` ${opened}個` : ''} 開封！${mult > 1 ? '（3倍）' : ''}</span>`;
     document.getElementById('chestModalText').innerHTML = `<div class="chest-loot-grid">${cards.join('')}</div>`;
     countUpLootStacks(document.getElementById('chestModalText'));
-    document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
+    document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button><button class="modal-shop-btn" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`; document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity);
     document.getElementById('chestCloseBtn').onclick = closeChestDialog;
   };
   document.getElementById('chestOpenBtn').onclick = () => openAll(1);
@@ -2089,7 +2105,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestModalIcon').className = 'chest-big';
   document.getElementById('chestModalIcon').innerHTML = loot.icon;
   document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:${loot.color}">${loot.main}${mult > 1 ? ' <span style="color:#ff5c6c">×3！</span>' : ''}</div>${loot.sub || ''}`;
-  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button>`;
+  document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button><button class="modal-shop-btn" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`; document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity);
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.3, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
