@@ -4987,3 +4987,5 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .rbd-cg.shown { border-color: var(--rc); box-shadow: 0 0 14px var(--rc), inset 0 0 10px var(--rc); animation: rbdCgPop 0.5s ease-out; }
 @keyframes rbdCgPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 .rbd-cg-new { font-style: normal; font-size: 0.62rem; color: #fff6b0; text-shadow: 0 1px 2px #000; }
+.rbd-panel { max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.rbd-panel .rbd-ok { position: sticky; bottom: 0; z-index: 2; }
