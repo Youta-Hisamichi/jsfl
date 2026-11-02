@@ -2003,3 +2003,9 @@ function rerollCompanionGacha(event) {
   renderCompanionList(); // 一覧も引く前に戻す
   runCompanionGacha(count, 0, event, true);
 }
+
+// ガチャボタン：一度も引いたことがないガチャだけ、絵をゆっくり拡大縮小して「押せる」と分かるようにする
+const GACHA_NEW_BTNS = { skillGachaBtn: 'skill', compGachaBtn: 'comp', evoGoBtn: 'evo' };
+function updateGachaNewPulse() { const u = game.gachaUsed || {}; for (const id in GACHA_NEW_BTNS) { const el = document.getElementById(id); if (el) el.classList.toggle('gacha-new', !u[GACHA_NEW_BTNS[id]]); } }
+document.addEventListener('click', ev => { const b = ev.target.closest('#skillGachaBtn, #compGachaBtn, #evoGoBtn'); if (!b || b.classList.contains('is-disabled')) return; (game.gachaUsed = game.gachaUsed || {})[GACHA_NEW_BTNS[b.id]] = true; setTimeout(updateGachaNewPulse, 0); }, true);
+setInterval(updateGachaNewPulse, 1000);

@@ -5060,6 +5060,7 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button.chest-odds-pre:active { transform: translateX(-50%) scale(0.96); }
 /* ガチャ・動画のボタンは押せることが分かるよう、ゆっくり拡大縮小（押せないときは止める） */
 @keyframes tapPulse { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
-:is(.gacha-art-btn, #compGachaBtn, .reward-ad-btn, #bossContAdBtn, #loginBonusAdBtn, #towerReadyAdBtn, #rewardAdClaimBtn, #rbAdBtn, #chestAdBtn):not(.is-disabled):not(:disabled) { animation: tapPulse 1.3s ease-in-out infinite; }
+:is(.reward-ad-btn, #bossContAdBtn, #loginBonusAdBtn, #towerReadyAdBtn, #rewardAdClaimBtn, #rbAdBtn, #chestAdBtn):not(.is-disabled):not(:disabled) { animation: tapPulse 1.3s ease-in-out infinite; }
+.gacha-art-btn.gacha-new:not(.is-disabled) > .gacha-art { animation: tapPulse 1.3s ease-in-out infinite; } /* ガチャはまだ一度も引いていないときだけ、絵の部分だけ動かす（値段は動かさない） */
 .chest-panel:has(#chestCancelBtn) #chestAdBtn { animation: none; } /* 開封前の画面の動画ボタンは絵の上の透明な当たり判定なので動かさない */
-@media (prefers-reduced-motion: reduce) { :is(.gacha-art-btn, #compGachaBtn, .reward-ad-btn, #bossContAdBtn, #loginBonusAdBtn, #towerReadyAdBtn, #rewardAdClaimBtn, #rbAdBtn, #chestAdBtn) { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { :is(.gacha-art-btn > .gacha-art, .reward-ad-btn, #bossContAdBtn, #loginBonusAdBtn, #towerReadyAdBtn, #rewardAdClaimBtn, #rbAdBtn, #chestAdBtn) { animation: none !important; } }
