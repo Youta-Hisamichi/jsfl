@@ -182,6 +182,25 @@ function renderRebirthShopList() {
 
 // 仲間の強化は自キャラと同じく「攻撃力」と「HP」を別々に上げる（level＝攻撃力、hpLv＝HP）
 const COMP_UP_COST_RATE = 0.5; // 2つに分けたので1回の値段は半分（両方上げると前と同じ）
+// ===== キャラ進化：持っている仲間がダブると、その仲間の初期Lv（攻撃力かHPのどちらか）が+1。転生しても残る（最大 初期Lv1000） =====
+const COMP_EVO_MAX = 999; // 初期Lv1000 ＝ +999
+function compEvo(id) { const e = (game.compEvo || {})[id]; return { atk: (e && e.atk) || 0, hp: (e && e.hp) || 0 }; }
+function compEvolve(id) { // 攻撃力かHPのどちらかを+1（今の周回のLvにもすぐ+1）。上がった内容の文を返す
+  const e = compEvo(id), ks = ['atk', 'hp'].filter(k => e[k] < COMP_EVO_MAX); if (!ks.length) return '進化MAX';
+  const k = ks[Math.floor(Math.random() * ks.length)]; e[k]++;
+  if (!game.compEvo) game.compEvo = {}; game.compEvo[id] = e;
+  setCompUpLv(id, k, compUpLv(id, k) + 1);
+  return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}の初期Lv ${e[k]} → ${e[k] + 1}`;
+}
+function applyCompEvoLevels() { for (const id in (game.compEvo || {})) { const e = compEvo(id); if (e.atk) game.companions.level[id] = Math.max(game.companions.level[id] || 0, e.atk); if (e.hp) setCompUpLv(id, 'hp', Math.max(compHpLv(id), e.hp)); } } // 転生直後：進化した分を初期Lvに
+function compEvoChip(id) { const e = compEvo(id); return e.atk || e.hp ? `<span class="cc-chip cc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; }
+function compBookHtml() { // パーティにいない仲間：手に入れたことがあれば色つき、まだなら影と？？？
+  const ord = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 }, book = game.companionBook || {};
+  const ids = Object.keys(COMPANIONS).filter(id => !game.companions.recruited[id]).sort((a, b) => (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
+  if (!ids.length) return '';
+  return `<div class="cbk-h">📖 仲間図鑑（パーティ外）</div><div class="cbk-grid">${ids.map(id => { const c = COMPANIONS[id], got = !!book[id], e = compEvo(id);
+    return `<div class="cbk-it ${got ? 'got' : 'unk'}" ${got ? `data-comp-info="${id}"` : ''} style="--rc:${RARITY_INFO[c.rarity].color}"><span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>${got && (e.atk || e.hp) ? `<small>🧬⚔️+${e.atk} ❤️+${e.hp}</small>` : ''}</div>`; }).join('')}</div>`;
+}
 function compHpLv(id) { const m = game.companions.hpLv; return (m && m[id]) || 0; }
 function compUpLv(id, kind = 'atk') { return kind === 'hp' ? compHpLv(id) : (game.companions.level[id] || 0); }
 function setCompUpLv(id, kind, v) { if (kind === 'hp') { if (!game.companions.hpLv) game.companions.hpLv = {}; game.companions.hpLv[id] = v; } else game.companions.level[id] = v; }
@@ -312,10 +331,10 @@ function renderCompanionList() {
     const level = game.companions.level[id];
     const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
     const down = !sw && game.companions.alive[id] === false, left = down && game.companions.downStages ? game.companions.downStages[id] || 0 : 0; // 倒れている仲間は棺桶の印
-    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span></div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div></div></div>`;
+    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}${typeof bondLevel === 'function' ? `<span class="cc-bond" data-comp-info="${id}">💞${bondLevel(id)}</span>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}<span class="cc-awaken">覚醒 ${'★'.repeat(aw)}${'☆'.repeat(COMPANION_AWAKEN_MAX - aw)}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatCoinNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span>${compEvoChip(id)}</div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div></div></div>`;
   }).join('');
   companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + '<div id="myCharSlot"></div>' + (mine.length ? mineHtml : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
-    ; /* 「待機中の仲間」の一覧は、仲間項目（ページの下）に置き換えたので出さない */
+    + compBookHtml(); /* 「待機中の仲間」の一覧は、仲間項目（ページの下）に置き換えたので出さない */
   const slot = document.getElementById('myCharSlot');
   if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }

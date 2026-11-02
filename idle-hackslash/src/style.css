@@ -4989,3 +4989,15 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .rbd-cg-new { font-style: normal; font-size: 0.62rem; color: #fff6b0; text-shadow: 0 1px 2px #000; }
 .rbd-panel { max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 .rbd-panel .rbd-ok { position: sticky; bottom: 0; z-index: 2; }
+.cc-chip.cc-evo { background: rgba(140,90,255,0.35); border-color: #b99bff; }
+.cbk-h { margin: 14px 0 6px; font-weight: 900; font-size: 0.82rem; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+.cbk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.cbk-it { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 2px; border-radius: 10px; background: rgba(10,16,40,0.6); border: 1px solid var(--rc); color: #fff; font-size: 0.66rem; text-align: center; text-shadow: 0 1px 2px #000; }
+.cbk-it.got { cursor: pointer; }
+.cbk-it.unk { border-color: rgba(255,255,255,0.2); }
+.cbk-it.unk b { color: #aab3cc; letter-spacing: 1px; }
+.cbk-ico { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.cbk-ico img { width: 44px; height: 44px; object-fit: contain; }
+.cbk-it.unk .cbk-ico { filter: brightness(0) drop-shadow(0 0 2px rgba(255,255,255,0.5)); opacity: 0.85; }
+.cbk-st img { height: 9px; }
+.cbk-it small { font-size: 0.56rem; color: #d8c8ff; }

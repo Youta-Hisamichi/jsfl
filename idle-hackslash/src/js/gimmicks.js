@@ -508,6 +508,28 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
   }
   return loot;
 }; }
+// ★4（SSR）・★5（UR）の宝箱から、ときどき仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
+const CHEST_COMP_CHANCE = { legendary: 0.05, mythic: 0.15 };
+function rollChestCompanion() {
+  const pool = compPoolIds(); if (!pool.length) return null;
+  let x = Math.random() * pool.reduce((t, id) => t + COMPANIONS[id].weight, 0);
+  for (const id of pool) { if ((x -= COMPANIONS[id].weight) < 0) return id; }
+  return pool[pool.length - 1];
+}
+{ const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
+  const loot = orig.apply(this, arguments);
+  if (Math.random() < (CHEST_COMP_CHANCE[rarity] || 0)) {
+    const id = rollChestCompanion();
+    if (id) {
+      const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '', r = grantCompanion(id);
+      const t = dup ? `ダブり → キャラ進化！ ${evo}` : (r && r.label) || '仲間に加入';
+      if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:${RARITY_INFO[c.rarity].color}">🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）が出てきた！ ${t}</b>`;
+      if (quiet) showNotice(`🐾 宝箱から${c.name}！ ${t}`);
+      try { renderCompanionList(); saveGame(); } catch (e) {}
+    }
+  }
+  return loot;
+}; }
 // 転生で使った種の効果はリセット（持っている種はそのまま）
 // 使ったドーピングの種は、転生のときに進化の羽で還元（1個につき羽 SEED_FEATHER_REFUND 枚。転生報酬の羽に上乗せ）
 const SEED_FEATHER_REFUND = 1;
