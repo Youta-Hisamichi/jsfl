@@ -807,7 +807,7 @@ const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 10;
 SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp', name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎5・OFF 💎10）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // 命中ははじめからON
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
-  SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: ICON_IMAGES[icon], name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
+  SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: `assets/img/icons/omen_${r}.webp` /* 吹き出しの上に宝箱（宝箱そのものと見分けやすく） */, name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
 });
 SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/feather_r4.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 50, unlockKey: 'rareRingBought' };
