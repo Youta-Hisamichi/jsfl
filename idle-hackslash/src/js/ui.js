@@ -1694,7 +1694,7 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
 }
 document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
   const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
-  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = gemPrice(COMP_TOGGLE_COST);
+  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
   const brief = compBriefHtml(id);
   if (on && compOnCount() <= COMP_MIN_ON) { // OFFにできない：概要は見せて、理由を赤字で
     simpleChoice({ icon: companionIconHtml(id), title: c.name, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });

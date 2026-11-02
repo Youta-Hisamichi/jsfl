@@ -331,9 +331,10 @@ function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
 function getCompSummonCost() { return getCompSummonPrice().coins; } // コインの分（ジェムの回は0）
 function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >= p.coins && game.gems >= p.gems; }
 const COMP_AWAKEN_MAX_REFUND = 2; // 覚醒MAXの仲間が出たときに返すコイン
-// 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ON・OFFとも💎2。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
+// 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ONはレア度でN💎1〜UR💎16・OFFは💎10。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
 // まだ一度も転生していないセーブ（compOn が無い）は、出せる仲間ぜんぶがON
-const COMP_TOGGLE_COST = 2, COMP_MIN_ON = 3;
+const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 10;
+function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎10
 function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
 function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
 function compOnCount() { return compPoolIds().filter(isCompOn).length; }
@@ -352,7 +353,7 @@ function renderCompToggleList() {
   const el = document.getElementById('compToggleList'); if (!el) return;
   const ids = compPoolIds().sort((a, b) => isCompOn(b) - isCompOn(a)), onN = ids.filter(isCompOn).length; // ONの仲間を上に
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
-    const c = COMPANIONS[id], on = isCompOn(id), cost = gemPrice(COMP_TOGGLE_COST);
+    const c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
     return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-comp-toggle="${id}"><span class="skt-ico">${companionIconHtml(id)}</span><span class="skt-main"><span class="skt-name">${rarityStarsImg(c.rarity)} ${c.name}</span><span class="skt-desc">${c.desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
