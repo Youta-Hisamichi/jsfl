@@ -2120,7 +2120,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.05, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
-const CHEST_FEA_TIE_CHANCE = 0.1; // ★5の宝箱に羽の束ね紐が入っている確率
+const CHEST_FEA_TIE_CHANCE = 0.05; // ★5の宝箱に羽の束ね紐が入っている確率
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (typeof obFlag === 'function') obFlag('chest'); // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
   if (!quiet) playChestOpenSound();
