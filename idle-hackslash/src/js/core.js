@@ -868,13 +868,13 @@ function skillPower(id) {
   const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100;
   return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); // スキル進化も掛かる
 }
-const SKILL_GACHA_MIN_COST = 100; // スキルガチャはいちばん安くても100コイン（半額・割引のあとも）
+const SKILL_GACHA_MIN_COST = 100; // スキルガチャの値段は最低100コイン（ONにしたときの半額は、この値段からさらに半分にする）
 // スキルガチャ：1周回（転生まで）10回まで。5回目からはコインに加えて💎1（スキル項目をON/OFFした直後の1回はジェムなし）
 const SKILL_GACHA_MAX_PULLS = 10, SKILL_GACHA_GEM_FROM = 5, SKILL_GACHA_GEM = 1;
 function skillGachaLeft() { return Math.max(0, SKILL_GACHA_MAX_PULLS - (game.skillGachaPulls || 0)); }
 function getSkillGachaGem() { return (game.skillGachaPulls || 0) + 1 >= SKILL_GACHA_GEM_FROM && !game.skillGachaGemFree ? SKILL_GACHA_GEM : 0; }
 const SKILL_DUP_LV_MULT = 1.5; function skillDupLv(lv) { return Math.max(lv + 1, Math.round(lv * SKILL_DUP_LV_MULT)); } // ダブったらLv1.5倍（最低+1）
-function getSkillGachaCost() { return Math.max(SKILL_GACHA_MIN_COST, coinPrice(Math.max(1, Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0) / Math.pow(2, game.skillGachaDisc || 0))))); } // 装備枠を増やすたびに半額（skillGachaDisc。転生でリセット）
+function getSkillGachaCost() { const full = Math.max(SKILL_GACHA_MIN_COST, coinPrice(Math.round(SKILL_GACHA_BASE_COST * Math.pow(SKILL_GACHA_COST_GROWTH, game.skillGachaPulls || 0)))); return Math.max(1, Math.round(full / Math.pow(2, game.skillGachaDisc || 0))); } // 最低100コインは割引前の値段。スキルをONにするたびに、そこから半額（skillGachaDisc。転生でリセット）
 const WEAPON_GACHA_BASE_COST = 40, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウェポンガチャも1回ごとに値上げ（転生でリセット）
 function getWeaponGachaCost() { return coinPrice(Math.round(WEAPON_GACHA_BASE_COST * Math.pow(WEAPON_GACHA_COST_GROWTH, game.weaponGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
