@@ -522,8 +522,9 @@ function rollChestCompanion(rarity) {
   if (Math.random() < (CHEST_COMP_CHANCE[rarity] || 0)) {
     const id = rollChestCompanion(rarity);
     if (id) {
-      const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '', r = grantCompanion(id);
-      const t = dup ? `ダブり → キャラ進化！ ${evo}` : (r && r.label) || '仲間に加入';
+      const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : ''; // 転生の仲間ガチャと同じ：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化
+      if (!dup) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
+      const t = dup ? `ダブり → キャラ進化！ ${evo}` : 'NEW！ 図鑑に登録';
       if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:${RARITY_INFO[c.rarity].color}">🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）が出てきた！ ${t}</b>`;
       if (quiet) showNotice(`🐾 宝箱から${c.name}！ ${t}`);
       try { renderCompanionList(); saveGame(); } catch (e) {}
