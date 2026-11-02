@@ -428,7 +428,7 @@ document.getElementById('bestiaryList').addEventListener('click', ev => {
 
 const MOVEMENT_STYLES = ['normal', 'gravity', 'zigzag', 'orbit', 'rush', 'sine']; // rush：ひたすらこちらへ一直線に突っ込んでくる／sine：横に進みながら大きな波（サインカーブ）を描く
 // 雑魚の大きさのばらつき：12%で小さい（半分の大きさ・HP0.6倍）、12%で大きい（1.5倍の大きさ・HP1.6倍）
-const ENEMY_SIZE_SMALL_RATE = 0.12, ENEMY_SIZE_BIG_RATE = 0.12, ENEMY_SMALL_HP = 0.6, ENEMY_BIG_HP = 1.6;
+const ENEMY_SIZE_SMALL_RATE = 0, ENEMY_SIZE_BIG_RATE = 0.12, ENEMY_SMALL_HP = 0.6, ENEMY_BIG_HP = 1.6;
 function rollEnemySizeMul() { const r = Math.random(); return r < ENEMY_SIZE_SMALL_RATE ? 0.5 : r < ENEMY_SIZE_SMALL_RATE + ENEMY_SIZE_BIG_RATE ? 1.5 : 1; }
 function pickEnemyMovementStyle(stage) {
   const primary = MOVEMENT_STYLES[stage % MOVEMENT_STYLES.length];
@@ -472,7 +472,7 @@ function makeBall(isPlayer) {
       else { isEmoji = true; emoji = val; }
     }
     const movementStyle = es.isBoss ? 'normal' : pickEnemyMovementStyle(game.stage);
-    const sizeMul = es.isBoss || forcedEnemyKey ? 1 : rollEnemySizeMul(); // ときどき小さい（50%）・大きい（150%）敵が出る
+    const sizeMul = es.isBoss || forcedEnemyKey ? 1 : rollEnemySizeMul(); // ときどき大きい（150%）敵が出る（小さい敵はなし）
     if (sizeMul !== 1) { es.hp = Math.max(1, Math.round(es.hp * (sizeMul < 1 ? ENEMY_SMALL_HP : ENEMY_BIG_HP))); }
     const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
     return {
