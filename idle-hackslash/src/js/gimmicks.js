@@ -500,7 +500,7 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
   if (o.kind === 'pot' && Math.random() < (o.gm ? 0.015 : 0.04)) { const k = randomSeedKey(); gainSeed(k); setTimeout(() => seedDropText(k, 1, o.x, o.y - 30), 250); }
 }; }
 // 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
-// ★4（SSR）・★5（UR）の宝箱から、ときどき仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
+// ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
 const CHEST_COMP_CHANCE = { legendary: 0.05, mythic: 0.15 };
 const CHEST_COMP_EXCLUDE = { legendary: ['common'], mythic: ['common', 'rare'] }; // ★4はNを出さない、★5はNとRを出さない
 function rollChestCompanion(rarity) {
@@ -509,33 +509,23 @@ function rollChestCompanion(rarity) {
   for (const id of pool) { if ((x -= COMPANIONS[id].weight) < 0) return id; }
   return pool[pool.length - 1];
 }
-{ const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
-  const loot = orig.apply(this, arguments);
-  if (Math.random() < (CHEST_COMP_CHANCE[rarity] || 0)) {
-    const id = rollChestCompanion(rarity);
-    if (id) {
-      const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : ''; // 転生の仲間ガチャと同じ：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化
-      if (!dup) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
-      const t = dup ? `ダブり → キャラ進化！ ${evo}` : 'NEW！ 図鑑に登録';
-      if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:${RARITY_INFO[c.rarity].color}">🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）が出てきた！ ${t}</b>`;
-      if (quiet) showNotice(`🐾 宝箱から${c.name}！ ${t}`);
-      try { renderCompanionList(); saveGame(); } catch (e) {}
-    }
-  }
-  return loot;
-}; }
-// ★3（SR）・★4（SSR）・★5（UR）の宝箱から、ときどき自キャラが出て進化する（攻撃力かHPの初期Lv+1）
+function chestCompPool(rarity) { const ex = CHEST_COMP_EXCLUDE[rarity] || []; return compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); }
+let chestCompRenderT = 0;
+function chestCompLoot(rarity) { // 宝箱の中身「仲間」：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化
+  const id = rollChestCompanion(rarity); if (!id) return null;
+  const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '';
+  if (!dup) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
+  const t = dup ? `ダブり → キャラ進化！ ${evo}` : 'NEW！ 図鑑に登録';
+  if (!chestCompRenderT) chestCompRenderT = setTimeout(() => { chestCompRenderT = 0; try { renderCompanionList(); } catch (e) {} }, 0); // まとめて開けても描き直しは1回
+  return { misc: 'comp:' + id, n: 1, icon: companionIconHtml(id), main: `🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）`, cardName: c.name, cardDesc: dup ? 'ダブり → キャラ進化' : 'NEW！ 図鑑に登録', color: RARITY_INFO[c.rarity].color, sub: t };
+}
+// ★3（SR）・★4（SSR）・★5（UR）の宝箱の中身の1つとして、自キャラが出て進化する（攻撃力かHPの初期Lv+1）
 const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
-{ const orig = openTreasureChest; openTreasureChest = function (rarity = 'common', mult = 1, quiet = false) {
-  const loot = orig.apply(this, arguments);
-  if (Math.random() < (CHEST_HERO_CHANCE[rarity] || 0)) {
-    const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : (game.username || '勇者'), t = heroEvolve();
-    if (loot) loot.sub = (loot.sub ? loot.sub + '<br>' : '') + `<b style="color:#ffd76b">🦸 自キャラ（${name}）が出てきた！ 進化！ ${t}</b>`;
-    if (quiet) showNotice(`🦸 宝箱から自キャラ！ 進化 ${t}`);
-    try { renderMyCharCard(); saveGame(); } catch (e) {}
-  }
-  return loot;
-}; }
+function chestHeroLoot() { // 宝箱の中身「自キャラ」：攻撃力かHPの初期Lv+1
+  const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : (game.username || '勇者'), t = heroEvolve();
+  setTimeout(() => { try { renderMyCharCard(); } catch (e) {} }, 0);
+  return { misc: 'hero', n: 1, icon: hid ? companionIconHtml(hid) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 自キャラ（${name}）`, cardName: `自キャラ（${name}）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
+}
 // 転生で使った種の効果はリセット（持っている種はそのまま）
 // 使ったドーピングの種は、転生のときに進化の羽で還元（1個につき羽 SEED_FEATHER_REFUND 枚。転生報酬の羽に上乗せ）
 const SEED_FEATHER_REFUND = 1;

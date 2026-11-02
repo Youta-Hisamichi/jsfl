@@ -5064,3 +5064,4 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .gacha-art-btn.gacha-new:not(.is-disabled) > .gacha-art { animation: tapPulse 1.3s ease-in-out infinite; } /* ガチャはまだ一度も引いていないときだけ、絵の部分だけ動かす（値段は動かさない） */
 .chest-panel:has(#chestCancelBtn) #chestAdBtn { animation: none; } /* 開封前の画面の動画ボタンは絵の上の透明な当たり判定なので動かさない */
 @media (prefers-reduced-motion: reduce) { :is(.gacha-art-btn > .gacha-art, .reward-ad-btn, #bossContAdBtn, #loginBonusAdBtn, #towerReadyAdBtn, #rewardAdClaimBtn, #rbAdBtn, #chestAdBtn) { animation: none !important; } }
+.chest-emoji { font-size: 2.4rem; line-height: 1; } .chest-redpot { display: inline-block; width: 44px; height: 44px; }
