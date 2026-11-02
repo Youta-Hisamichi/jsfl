@@ -1647,6 +1647,7 @@ function skillGachaPull(event, isReroll) {
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
+  if (openSkillInfoFromEvent(event)) return; // アイコンを押したら概要（ON/OFFはアイコン以外を押す）
   const b = event.target.closest('[data-sk-toggle]'); if (!b) return;
   const id = b.dataset.skToggle, { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
@@ -1754,7 +1755,8 @@ function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイ
   const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
   const sid = inf.dataset.skInfo, { it, auto, name, desc } = skillToggleInfo(sid), lv = sid.startsWith('w:') ? getWeaponLv(sid.slice(2)) : getSkillLevel(sid);
   const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 威力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv, true);
-  showSkillBrief(it, `${name}${auto ? '（自動）' : ''} Lv${lv}`, desc + (extra ? `<div class="skb-param">${extra}</div>` : ''), auto);
+  const owned = sid.startsWith('w:') ? lv > 0 : !!game.shopOwned[sid];
+  showSkillBrief(it, `${name}${auto ? '（自動）' : ''}${owned ? ' Lv' + lv : '（未取得）'}`, desc + (extra ? `<div class="skb-param">${extra}</div>` : ''), auto);
   return true;
 }
 document.getElementById('skillLevelList').addEventListener('click', event => {
