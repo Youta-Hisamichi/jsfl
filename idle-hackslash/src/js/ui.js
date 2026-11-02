@@ -1563,14 +1563,14 @@ function gachaPick(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
 // ガチャの演出（進化ガチャと同じ召喚演出）。Lvアップは控えめ、新規解放は派手、飛躍はさらに派手に
 const skGachaModal = document.getElementById('skGachaModal'), skGachaResult = document.getElementById('skGachaResult');
 let skGachaBusy = false;
-function skGachaRarity(isNew, lv) { return lv % 100 === 0 && lv > 1 ? 'mythic' : lv % 10 === 0 ? 'legendary' : isNew ? 'epic' : 'rare'; }
+function skGachaRarity() { return 'epic'; } // スキルガチャはレア度なし：どれも同じ確率・同じ演出（★も出さない）
 const SK_GACHA_FX_MS = { common: 800, rare: 900, epic: 1200, legendary: 1600, mythic: 2000 }; // スキル・サブウェポンガチャの演出は短め
 function showSkGachaReveal(rarity, iconHtml, title, sub, after, reroll, opts) {
   skGachaBusy = true; skGachaModal.classList.add('show');
   const reveal = () => {
     const info = RARITY_INFO[rarity];
     playPachinkoWin(rarity); startSkGachaBgm();
-    skGachaResult.className = 'gacha-result skr rarity-' + rarity; // スキル・サブウェポンの結果は紫の魔法陣パネル
+    skGachaResult.className = 'gacha-result skr rarity-' + rarity + (opts && opts.noStars ? ' skr-nostar' : ''); // スキル・サブウェポンの結果は紫の魔法陣パネル（スキルはレア度なしなので★を出さない）
     skGachaResult.style.background = '';
     skGachaResult.innerHTML = `<div class="gr-halo-wrap" style="--hc:${info.color}"><div class="gr-halo"></div><div class="gr-icon gr-pop">${iconHtml}</div></div><div class="gr-stars-row gr-pop">${rarityStarsImg(rarity)}</div><div class="gr-title gr-pop" style="color:${info.color}">${title}</div><div class="gr-sub">${sub}</div><div class="gr-btn-row">${reroll ? `<button class="gacha-reroll-btn" id="skGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>` : ''}<button class="action-btn gr-ok-btn" id="skGachaCloseBtn">OK</button></div>`;
     { const row = skGachaResult.querySelector('.gr-btn-row'); if (row) { row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } } // 演出スキップの連打で誤って押さないよう少しだけ待つ
@@ -1641,7 +1641,7 @@ function skillGachaPull(event, isReroll) {
     renderCoinShopList(); updateSkillButtonVisibility();
     skillGachaPull(ev, true);
   };
-  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? `超飛躍！！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×3` : slv % 10 === 0 ? `飛躍！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×1.5` : `${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}・待ち時間がアップ`), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo);
+  showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : (slv % 100 === 0 ? `超飛躍！！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×3` : slv % 10 === 0 ? `飛躍！ ${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}×1.5` : `${HEAL_SKILLS.includes(id) ? '回復力' : '威力'}・待ち時間がアップ`), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo, { noStars: true });
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
@@ -1744,7 +1744,7 @@ function weaponGachaPull(event, isReroll) {
   const lv = game.weapons[id] = getWeaponLv(id) + 1; weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; game.weaponDup = snap.dup; renderCoinShopList(); weaponGachaPull(ev, true); };
-  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo);
+  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });

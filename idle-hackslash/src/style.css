@@ -5020,3 +5020,4 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 #playerHPFill.over-heal { background: linear-gradient(90deg, #ffd76b, #ff8adf, #ffd76b) !important; background-size: 200% 100% !important; animation: overHealShine 1.2s linear infinite; box-shadow: 0 0 8px #ffb3ec; }
 @keyframes overHealShine { from { background-position: 0 0; } to { background-position: 200% 0; } }
 .ico-img.omen-ico { transform: scale(1.22); } /* 宝箱の予感：吹き出しを少し大きく */
+#skGachaModal #skGachaResult.skr-nostar .gr-stars-row { display: none !important; }
