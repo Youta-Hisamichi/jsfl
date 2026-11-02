@@ -5024,3 +5024,7 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .sk-info-ico { cursor: pointer; display: inline-flex; }
 .skb-param { margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); font-size: 0.72rem; line-height: 1.5; text-align: left; }
 .rbd-panel .rbd-glow { inset: auto; left: 50%; top: 52px; width: 1000px; height: 1000px; margin: -500px 0 0 -500px; } /* 後光は「輪廻転生」の文字を中心に回す（パネルが縦に長くても見切れない） */
+/* スキルページ：ガチャ回数は右端に、背景は少し暗く */
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head { justify-content: flex-end; }
+.tab-page[data-tab="coinshop"] .sk-headrow .weapon-slot-head > span:first-child { flex: 0 1 auto; text-align: right; }
+.tab-page[data-tab="coinshop"] > .artifact-panel { background: linear-gradient(180deg, rgba(4,14,10,0.25) 0px, rgba(4,14,10,0.42) 500px, rgba(4,16,10,0.78) 900px, #06120c 1200px), url(assets/img/ui/skill2/bg.webp) 50% 0 / 100% auto no-repeat, #06120c !important; }
