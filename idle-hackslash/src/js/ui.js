@@ -1705,6 +1705,11 @@ document.getElementById('compToggleList')?.addEventListener('click', event => { 
   const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
   const got = !!(game.companionBook || {})[id], cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
   const brief = got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`; // 未取得は名前と中身を伏せる
+  if (!on && !got) { // まだ出会っていない仲間はONにできない（転生の仲間ガチャや宝箱で出会うと図鑑に載ってONにできる）
+    simpleChoice({ icon: cIcon, title: cName, text: brief, sub: '<b style="color:#ff8a8a">⚠ まだ出会っていない仲間はONにできません</b><br>転生の仲間ガチャや宝箱で出会うと、ONにできるようになります', yes: '閉じる', no: false });
+    playTone(220, 0.12, 'square', 0.05, 160);
+    return;
+  }
   if (on && compOnCount() <= COMP_MIN_ON) { // OFFにできない：概要は見せて、理由を赤字で
     simpleChoice({ icon: cIcon, title: cName, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });
     playTone(220, 0.12, 'square', 0.05, 160);

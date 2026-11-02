@@ -386,11 +386,11 @@ function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を�
   const ids = Object.keys(COMPANIONS).sort((a, b) => rank(a) - rank(b) || (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${pool.length}　📖 図鑑 <b>${found}</b> / ${ids.length}</div><div class="cbk-grid">` + ids.map(id => {
     const c = COMPANIONS[id], got = !!book[id], inPool = pool.includes(id), on = inPool && isCompOn(id), e = compEvo(id), cost = inPool ? compToggleCost(id) : 0;
-    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} ${inPool && !on && game.gems < cost ? 'is-disabled' : ''}" ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
+    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} ${inPool && !on && (game.gems < cost || !got) ? 'is-disabled' : ''}" ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
       + `${inPool ? `<i class="cbk-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i>` : '<i class="cbk-tg lock">🔒</i>'}`
       + `<span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>`
       + `<small class="cbk-evo">🧬 ⚔️Lv${e.atk + 1} ❤️Lv${e.hp + 1}</small>`
-      + `${inPool ? `<span class="cbk-cost">💎${cost}</span>` : '<span class="cbk-cost lock">未解放</span>'}</button>`;
+      + `${!inPool ? '<span class="cbk-cost lock">未解放</span>' : !on && !got ? '<span class="cbk-cost lock">未入手</span>' : `<span class="cbk-cost">💎${cost}</span>`}</button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
