@@ -1550,7 +1550,7 @@ function updateCustomSkip() {
   const cost = getCustomSkipCost(getCustomSkipInput() - game.stage);
   const es = getEnemyStats(target);
   customSkipCost.textContent = '💎 ' + cost.toLocaleString('ja-JP');
-  customSkipInfo.textContent = `👑 ステージ${target} のボス（${target - game.stage}ステージ先）HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}`;
+  customSkipInfo.textContent = `👑 ステージ${target} のボス（${formatCoinNumber(target - game.stage)}ステージ ジャンプ → ジャンプ${formatCoinNumber(TOWER_STAGES_PER_GEM)}ステージごとに💎1）HP ${formatCoinNumber(es.hp)} / ATK ${formatCoinNumber(es.atk)}`;
   customSkipBtn.classList.toggle('is-disabled', game.gems < cost);
 }
 customSkipInput.addEventListener('input', updateCustomSkip);
