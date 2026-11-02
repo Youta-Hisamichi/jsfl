@@ -5055,3 +5055,6 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .co-name small { display: block; font-size: 0.6rem; color: #aab3cc; }
 .co-row b { white-space: nowrap; color: #fff; }
 #chestOddsBtn { margin-top: 6px; }
+/* 開封前の画面：中身の確率ボタンは絵の外（パネルのすぐ下）に、見える普通のボタンとして置く */
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button.chest-odds-pre { top: calc(100% + 8px); left: 50%; width: auto; height: auto; transform: translateX(-50%); padding: 7px 16px !important; border-radius: 999px !important; background: rgba(12,18,40,0.92) !important; border: 2px solid #e8c46a !important; color: #ffe9a8 !important; font-size: 0.8rem !important; line-height: 1.3 !important; font-weight: 800; white-space: nowrap; opacity: 1 !important; text-shadow: 0 1px 2px #000 !important; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button.chest-odds-pre:active { transform: translateX(-50%) scale(0.96); }

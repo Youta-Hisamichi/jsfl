@@ -1963,6 +1963,7 @@ function openChestDialog(rarity) {
   document.getElementById('chestModalText').textContent = `残り ${(getHeldChests()[rarity] || 0) + rebirthChestCount(rarity)} 個`; setChestStars(rarity, (getHeldChests()[rarity] || 0) + rebirthChestCount(rarity));
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">そのまま開ける</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
+  document.getElementById('chestModalBtns').insertAdjacentHTML('beforeend', `<button class="modal-shop-btn chest-odds-pre" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`); document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity); // 開ける前にも中身の確率を見られる
   chestModal.classList.add('show');
   const open = mult => {
     const hc = getHeldChests(); if (!(hc[rarity] > 0)) return;
@@ -1984,6 +1985,7 @@ function openChestBatchDialog(rarity) {
   document.getElementById('chestModalText').textContent = nRebirth ? `（うち遺物確定の宝箱 ${nRebirth}個）` : ''; setChestStars(rarity, total);
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestAdBtn">${isAdFree() ? '🎁 紋章特典で3倍ゲット' : '🎬 動画を見て3倍ゲット'}</button><button class="modal-shop-btn" id="chestOpenBtn" style="justify-content:center;"><span class="msb-name">${total > 1 ? `${total}個 まとめて開ける` : '開ける'}</span></button><button class="modal-shop-btn chest-cancel-btn" id="chestCancelBtn" style="justify-content:center;"><span class="msb-name">↩ 開けずに戻る</span></button>`;
   document.getElementById('chestCancelBtn').onclick = closeChestDialog;
+  document.getElementById('chestModalBtns').insertAdjacentHTML('beforeend', `<button class="modal-shop-btn chest-odds-pre" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`); document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity); // 開ける前にも中身の確率を見られる
   chestModal.classList.add('show');
   const openAll = mult => {
     const ownedBefore = { ...game.ownedArtifacts }; // 効果の推移を見せるため開封前の所持数を覚える
