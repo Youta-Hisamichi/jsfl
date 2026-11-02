@@ -68,7 +68,7 @@ function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SK
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
 function renderSkillToggleList() {
   const el = document.getElementById('skillToggleList'); if (!el) return;
-  const ids = skillToggleIds(), onN = ids.filter(isSkillItemOn).length;
+  const ids = skillToggleIds().sort((a, b) => isSkillItemOn(b) - isSkillItemOn(a)), onN = ids.filter(isSkillItemOn).length;
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
     const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id), cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
     return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
