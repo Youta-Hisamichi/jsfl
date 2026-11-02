@@ -75,7 +75,15 @@ function renderSkillToggleList() {
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
+// スキル列が横にあふれるときは、右端のボタンを画面の真ん中あたりまでスクロールできるよう右に余白（一時停止・種のボタンに重ならない）
+function updateSkillStripOverflow() {
+  const st = document.getElementById('skillRow'); if (!st) return;
+  const w = [...st.children].filter(c => c.offsetParent !== null).reduce((t, c) => t + c.offsetWidth + 6, 0);
+  st.classList.toggle('sk-over', w > st.clientWidth - 8);
+}
+window.addEventListener('resize', () => updateSkillStripOverflow());
 function updateSkillButtonVisibility() {
+  setTimeout(updateSkillStripOverflow, 0);
   let keys;
   try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
   for (const btnId in keys) {

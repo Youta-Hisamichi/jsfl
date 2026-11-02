@@ -5035,3 +5035,12 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .cl-card .cl-ico { font-size: 2.8rem; height: 60px; }
 .cl-card .cl-ico .ico-img, .cl-card .cl-ico img { width: 60px !important; height: 60px !important; object-fit: contain; }
 .cl-card .cl-stack { height: 66px; }
+#skillRow.skill-strip.sk-over { justify-content: flex-start; }
+#skillRow.skill-strip.sk-over::after { content: ''; flex: 0 0 48%; pointer-events: none; } /* 右端のボタンを真ん中あたりまでスクロールできる余白 */
+/* 宝箱の結果：★2以上のコインの絵は大きめ、ほかのアイコンは少し小さめ */
+.cl-card .cl-ico .ico-img, .cl-card .cl-ico img { width: 50px !important; height: 50px !important; }
+.cl-card .cl-ico { height: 52px; }
+.cl-card .cl-stack { height: 58px; }
+.cl-card.coin .cl-ico { height: 74px; }
+.cl-card.coin .cl-ico img.chest-coin-ico { width: 76px !important; height: 76px !important; }
+.cl-card.coin .cl-stack { height: 80px; }
