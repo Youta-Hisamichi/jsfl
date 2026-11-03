@@ -226,4 +226,12 @@ function renderFriendBox() {
   document.querySelectorAll('.tab-btn[data-tab="ranking"]').forEach(b => b.addEventListener('click', () => setTimeout(renderFriendBox, 0)));
   renderFriendBox();
 }
+// デバッグ：テスト用の挑戦状コード（正しい形のコードを作って、コピーや登録を試せる）
+function makeRivalCode(stage, id) { const st = Math.max(1, Math.floor(stage)).toString(36).toUpperCase(); return `MH${st}-${id}${shortCheck(st + id)}`; }
+function openFriendCodeDebug() {
+  const me = game.bestStage || 1, rid = () => Math.floor(Math.random() * 1679616).toString(36).toUpperCase().padStart(4, '0');
+  const list = [['自分より少し下（登録したらすぐ突破）', Math.max(1, me - 5)], ['自分より少し上', me + 10], ['自分の2倍', me * 2], ['ステージ1000', 1000], ['ステージ10万', 100000]].map(([t, st]) => ({ t, code: makeRivalCode(st, rid()) }));
+  simpleChoice({ icon: '👥', title: '挑戦状テストコード', text: `<div class="fdbg">${list.map(c => `<div class="fdbg-row"><small>${c.t}</small><code>${c.code}</code><button data-fd-add="${c.code}">登録</button></div>`).join('')}<div class="fdbg-row"><small>まちがったコード（エラーの確認）</small><code>MH2S-ABCD0</code><button data-fd-add="MH2S-ABCD0">登録</button></div></div>`, sub: `自分のコード：${myRivalCode()}　登録中のフレンド ${(game.friends || []).length}人`, yes: '🗑 フレンドを全部消す', onYes: () => { game.friends = []; game.friendBonusGot = false; saveGame(); renderFriendBox(); showNotice('DEBUG: フレンドと初回ボーナスの記録を消しました'); }, no: '閉じる' });
+  document.querySelectorAll('[data-fd-add]').forEach(b => b.onclick = () => { const msg = addFriendCode(b.dataset.fdAdd); showNotice(msg, msg.startsWith('⚠️'), 2600); renderFriendBox(); b.textContent = msg.startsWith('⚠️') ? 'NG' : '✓'; });
+}
 // 戦績ページ（ミッション上部）の占いボタンは削除

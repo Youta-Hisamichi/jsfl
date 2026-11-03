@@ -1049,6 +1049,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'friendCode') { openFriendCodeDebug(); return; }
   if (action === 'loginBonus') {
     checkLoginBonus([15, 45, 90, 240, 600, 2000][Math.floor(Math.random() * 6)] * 60000);
     return;
