@@ -1,5 +1,5 @@
 // キャラの魅力・継続・課金まわりの追加機能
-// セリフ／絆レベル／プロフィール／組み合わせボーナス／★4・★5の専用演出／自キャラの専用技／
+// セリフ／プロフィール／組み合わせボーナス／★4・★5の専用演出／自キャラの専用技／
 // 7日ログイン／デイリー・ウィークリーミッション／転生で解放されるものの見える化／ピックアップ採用券／ボス戦前の動画バフ
 
 // ===== 仲間のプロフィールとセリフ =====
@@ -301,19 +301,7 @@ setInterval(() => {
 }, 1500);
 { const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawBossBuffIcon(); } catch (e) {} }; }
 
-// ===== 絆レベル（一緒に戦うほど上がる。Lvごとに攻撃力・HP +3%） =====
-const BOND_MAX = 10, BOND_BONUS = 0.03;
-function bondPoints(id) { return (game.bond && game.bond[id]) || 0; }
-function bondLevel(id) { return Math.min(BOND_MAX, Math.floor(Math.sqrt(bondPoints(id) / 5))); } // 5,20,45,80…ポイント
-function bondNext(id) { const lv = bondLevel(id); return lv >= BOND_MAX ? 0 : (lv + 1) * (lv + 1) * 5; }
-function bondMult(id) { return 1 + BOND_BONUS * bondLevel(id); }
-function addBond(n) {
-  if (!game.bond) game.bond = {};
-  for (const id in game.companions.recruited) if (game.companions.recruited[id] && game.companions.alive[id] !== false) {
-    const before = bondLevel(id); game.bond[id] = bondPoints(id) + n;
-    if (bondLevel(id) > before) { showNotice(`💞 ${COMPANIONS[id].name}との絆が Lv${bondLevel(id)} に！`, false, 2400); const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) companionSay(b, 'これからもよろしくね！'); }
-  }
-}
+// （絆レベルは削除した）
 
 // ===== 仲間同士の組み合わせボーナス =====
 const COMP_COMBOS = [
@@ -576,7 +564,7 @@ function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(i
 { const orig = showSkGachaReveal; showSkGachaReveal = function () { questTick('gacha'); return orig.apply(this, arguments); }; }
 function featureOnKill(isBoss) {
   if (!isBoss) { const r = Math.random(); if (r < 0.15) heroChuuni('kill'); else if (r < 0.32) compTalk('k'); }
-  questTick('kill'); if (isBoss) { questTick('boss'); addBond(3); setTimeout(() => sayByEvent(2), 600); } else addBond(1);
+  questTick('kill'); if (isBoss) { questTick('boss'); setTimeout(() => sayByEvent(2), 600); }
 }
 setInterval(() => { if (Math.random() < 0.06 && phase === 'battle' && getActiveTab() === 'game' && !isBossFight()) compTalk('i'); }, 500); // ときどき仲間がひとこと
 { let wasBoss = false, lastGm = null;
@@ -607,12 +595,11 @@ function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
 { const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
 checkDailyLogin(); questState();
 
-// ===== 仲間の詳細（プロフィール・絆・組み合わせ）とパーティの組み合わせ一覧 =====
+// ===== 仲間の詳細（プロフィール・組み合わせ）とパーティの組み合わせ一覧 =====
 function compExtraHtml(id) {
   const p = COMP_PROFILE[id]; if (!p) return '';
-  const lv = bondLevel(id), nx = bondNext(id), combos = COMP_COMBOS.filter(c => c.ids.includes(id));
+  const combos = COMP_COMBOS.filter(c => c.ids.includes(id));
   return `<div class="cp-prof"><div class="cpp-text">${p.p}</div><div class="cpp-like">❤️ 好きなもの：${p.like}</div><div class="cpp-say">「${p.say[0]}」</div>`
-    + `<div class="cpp-bond">💞 絆Lv.${lv}${lv < BOND_MAX ? `（次まで ${nx - bondPoints(id)}）` : '（MAX）'}　攻撃力・HP +${Math.round((bondMult(id) - 1) * 100)}%</div>`
     + (combos.length ? `<div class="cpp-combo">🤝 組み合わせ：${combos.map(c => `<b class="${activeCombos().includes(c) ? 'on' : ''}">${c.name}</b>（${c.ids.filter(x => x !== id).map(x => COMPANIONS[x].name).join('・')}と／${c.desc}）`).join('　')}</div>` : '') + '</div>';
 }
 function comboListHtml() {

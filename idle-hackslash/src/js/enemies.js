@@ -758,7 +758,7 @@ const COMPANION_SPRITE_MIN_RADIUS = 16; // ドット絵の描画サイズの下�
 const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
 function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
-function getCompanionPower(id) { return typeof bondMult === 'function' ? bondMult(id) : 1; } // 絆レベルで強くなる（覚醒はなくした）
+function getCompanionPower(id) { return 1; } // （覚醒・絆レベルはなくした）
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const c = COMPANIONS[id];
