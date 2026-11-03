@@ -204,6 +204,7 @@ setInterval(() => { // フレンドの記録を超えたら報酬
     if (game.friendBeatDay !== todayKey()) { game.friendBeatDay = todayKey(); game.friendBeatN = 0; }
     game.friendBeatN++; f.beaten = true; const got = rollSsrFeathers(FRIEND_BEAT_FEA); updateStatsUI(); saveGame();
     if (typeof showRunBanner === 'function') showRunBanner(`👥 ${f.name}の挑戦状を突破！`, `ステージ${f.stage}を超えた！ SSR以上の羽ガチャ${FRIEND_BEAT_FEA}回：${got}`);
+    setTimeout(() => offerShareMoment(`👥 ${f.name}の挑戦状を突破！`, `ステージ${formatStageNumber(f.stage)}を超えた！ 次はキミの番だ`), 1500); // 突破したらシェアをすすめる（挑戦状コードも載る）
   }
 }, 2000);
 function friendRankEntries(mode) { // ベストステージのランキングにフレンドも並べる
