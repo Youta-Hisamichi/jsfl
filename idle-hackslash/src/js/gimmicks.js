@@ -535,6 +535,81 @@ function seedRefundFeathers() { return (seedUsed('atk') + seedUsed('hp')) * SEED
 { const orig = rebornGoalsHtml; rebornGoalsHtml = function () { const h = orig.apply(this, arguments), used = seedUsed('atk') + seedUsed('hp'); if (!used) return h; return h.replace(/<\/div>$/, `<div class="rg-item"><img src="${SEEDS.atk.img}" alt=""><span>使った種 ${used}個 → 進化の羽 +${used * SEED_FEATHER_REFUND}枚に還元（転生報酬に込み）</span></div></div>`); }; }
 
 // ===== ショップの「所持品」タブ：持っている消耗品・宝箱・種などを一覧（使えるものはここから使う） =====
+
+// ===== 宝箱から出る使いきりアイテム（持ち越し可。Lv倍増券だけは1周回に1回まで） =====
+const CHEST_ITEMS = {
+  skillTicket: { icon: '🎫', name: 'スキルガチャ券', desc: 'スキルガチャを1回、コインなしで回せる（回数の上限にも数えない）', col: '#8ad0ff' },
+  compTicket:  { icon: '📜', name: '招集ガチャ券', desc: '招集ガチャを1回、コインなしで回せる', col: '#ffc46b' },
+  maneki:      { icon: '🐱', name: '金の招き猫', desc: '5分間、手に入るコインが2倍', col: '#ffd76b' },
+  doll:        { icon: '🪆', name: '身代わり人形', desc: 'ボス戦・試練の塔で倒れたとき、1回だけHP50%で立ち直る（自動で使う）', col: '#ff9a9a' },
+  lv15:        { icon: '⏫', name: 'Lv1.5倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部1.5倍（Lv倍増券は1周回に1回まで）', col: '#c28aff' },
+  lv2:         { icon: '⏫', name: 'Lv2倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部2倍（Lv倍増券は1周回に1回まで）', col: '#ff8adf' },
+  ret15:       { icon: '🏠', name: '帰還ボーナス1.5倍券', desc: '次の帰還ボーナスのコインが1.5倍（自動で使う）', col: '#7ee7c8' },
+  ret2:        { icon: '🏠', name: '帰還ボーナス2倍券', desc: '次の帰還ボーナスのコインが2倍（自動で使う。1.5倍券より先に使う）', col: '#5fe0ff' },
+};
+// 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
+const CHEST_ITEM_DROP = {
+  rare: [['skillTicket', 0.05], ['compTicket', 0.05], ['maneki', 0.03]],
+  epic: [['doll', 0.03]],
+  legendary: [['doll', 0.03], ['lv15', 0.02], ['ret15', 0.05]],
+  mythic: [['doll', 0.03], ['lv15', 0.01], ['lv2', 0.01], ['ret2', 0.05]],
+};
+const MANEKI_MS = 5 * 60 * 1000;
+function itemHeld(k) { return ((game.items || {})[k]) || 0; }
+function gainItem(k, n = 1) { game.items = game.items || {}; game.items[k] = itemHeld(k) + n; updateItemTicketBtns(); }
+function spendItem(k) { if (!itemHeld(k)) return false; game.items[k]--; updateItemTicketBtns(); return true; }
+{ const orig = computeBonuses; computeBonuses = function () { const b = orig.apply(this, arguments); if (b && Date.now() < (game.manekiUntil || 0)) b.coinMult *= 2; return b; }; } // 招き猫の間はコイン2倍
+function useManeki(ev) {
+  if (!spendItem('maneki')) return;
+  game.manekiUntil = Math.max(Date.now(), game.manekiUntil || 0) + MANEKI_MS; playRegisterSound(); saveGame();
+  showNotice(`🐱 金の招き猫！ ${Math.round((game.manekiUntil - Date.now()) / 60000)}分間 コイン2倍`); renderBagList();
+}
+function useLvTicket(k) {
+  const m = k === 'lv2' ? 2 : 1.5;
+  if (game.lvTicketUsed) { showNotice('⏫ Lv倍増券は1周回に1回までです（転生でまた使える）', true, 2500); return; }
+  simpleChoice({ icon: '⏫', title: CHEST_ITEMS[k].name, text: `パーティの仲間の攻撃力Lv・HPLvと、持っているスキル・自動スキルのLvを全部 <b>${m}倍</b> にしますか？`, sub: '<b style="color:#ff8a8a">⚠ Lv倍増券（1.5倍券・2倍券）は1周回に1回だけ使えます</b>', yes: `${m}倍にする`, no: 'やめる', onYes: () => {
+    if (game.lvTicketUsed || !spendItem(k)) return;
+    const up = lv => Math.max(lv + 1, Math.round(lv * m));
+    for (const id of Object.keys(COMPANIONS)) if (getCompanionCount(id) > 0) for (const kind of ['atk', 'hp']) setCompUpLv(id, kind, up(compUpLv(id, kind) + 1) - 1);
+    for (const id in SKILL_GACHA_SKILLS) if (game.shopOwned[id]) game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, up(getSkillLevel(id)));
+    for (const w in (game.weapons || {})) if (game.weapons[w] > 0) game.weapons[w] = Math.min(WEAPON_MAX_LV, up(game.weapons[w]));
+    game.lvTicketUsed = true; playRegisterSound();
+    try { refreshCompanionBalls(); renderCompanionList(); renderCoinShopList(); updateStatsUI(); } catch (e) {}
+    saveGame(); renderBagList(); showNotice(`⏫ 仲間とスキルのLvが${m}倍になった！`);
+  } });
+}
+function useSkillTicket(ev) {
+  if (!itemHeld('skillTicket')) return;
+  if (typeof skGachaBusy !== 'undefined' && skGachaBusy) return;
+  const sp = skillGachaPool().length, wp = weaponGachaPool().length;
+  if (!sp && !wp) { showTapError('引けるスキルがありません', ev.clientX, ev.clientY); return; }
+  spendItem('skillTicket'); saveGame();
+  if (Math.random() * (sp + wp) < sp) skillGachaPull(ev, true); else weaponGachaPull(ev, true); // コインも回数もかからない
+}
+function useCompTicket(ev) {
+  if (!itemHeld('compTicket') || compSummoning) return;
+  spendItem('compTicket'); saveGame();
+  runCompanionGacha(1, 0, ev, true); // コインなしで1回
+}
+// ガチャボタンの下に、券を持っていれば「券で回す」ボタン
+function updateItemTicketBtns() {
+  for (const [btnId, k, fn] of [['skillGachaBtn', 'skillTicket', useSkillTicket], ['compGachaBtn', 'compTicket', useCompTicket]]) {
+    const btn = document.getElementById(btnId); if (!btn) continue;
+    let t = document.getElementById(btnId + 'Ticket');
+    if (!itemHeld(k)) { if (t) t.remove(); continue; }
+    if (!t) { t = document.createElement('button'); t.id = btnId + 'Ticket'; t.className = 'ticket-pull-btn'; t.addEventListener('click', ev => fn(ev)); (btn.closest('.gacha-pair, .gacha-actions') || btn).insertAdjacentElement('afterend', t); } // ガチャの絵の行の下に置く（横に並べると絵が縮む）
+    const h = `${CHEST_ITEMS[k].icon} ${CHEST_ITEMS[k].name}で回す（${itemHeld(k)}枚）`; if (t.textContent !== h) t.textContent = h;
+  }
+}
+setInterval(updateItemTicketBtns, 1000);
+// 身代わり人形：ボス戦・試練の塔で倒れたら自動で使って立ち直る
+{ const orig = onPlayerDeath; onPlayerDeath = function (forceRebirth = false) {
+  if (!forceRebirth && !filmMode && (game.skipChallenge || isBossFight()) && spendItem('doll')) {
+    const p = balls.find(isMainPlayerBall); if (p) { p.hp = Math.round(p.maxHp * 0.5); p.safeHp = p.hp; spawnDamageText(p.x, p.y - p.radius - 16, '🪆 身代わり人形！', '#ff9a9a', 0.012, true); }
+    updateHPUI(); saveGame(); showNotice(`🪆 身代わり人形が身代わりになった！（残り${itemHeld('doll')}個）`); return;
+  }
+  return orig.apply(this, arguments);
+}; }
 function bagRows() {
   const rows = [], hc = getHeldChests();
   rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
@@ -552,6 +627,9 @@ function bagRows() {
     const art = SHOP_ITEM_ART[id];
     rows.push({ icon: art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:100%;height:100%"></span>` : ico(item), name: item.name + (SHOP_MULTI_ITEMS[id] ? ` Lv${n}` : item.toggleKind ? '（ON）' : ''), n, desc: SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id)}倍` : item.desc, shop: true });
   }
+  for (const [k, I] of Object.entries(CHEST_ITEMS)) { const n = itemHeld(k); if (!n) continue;
+    const btn = k === 'maneki' ? '<button data-bag-item="maneki">使う</button>' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
+    rows.push({ icon: `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc + (k === 'maneki' && Date.now() < (game.manekiUntil || 0) ? `（いま効いている：あと${Math.ceil((game.manekiUntil - Date.now()) / 60000)}分）` : ''), btn }); }
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
 }
@@ -565,6 +643,10 @@ document.getElementById('bagList').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
   if (b.dataset.bagSeed) { openSeedPanel(); return; }
   if (b.dataset.bagChest) { switchTab('game'); setTimeout(() => { if (phase === 'battle') openChestBatchDialog(b.dataset.bagChest); else showNotice('戦闘中に開けられます'); }, 200); return; }
+  if (b.dataset.bagItem === 'maneki') { useManeki(ev); return; }
+  if (b.dataset.bagItem === 'lv15' || b.dataset.bagItem === 'lv2') { useLvTicket(b.dataset.bagItem); return; }
+  if (b.dataset.bagItem === 'goSkill') { switchTab('coinshop'); return; } // スキルガチャの下の「券で回す」で使う
+  if (b.dataset.bagItem === 'goChara') { switchTab('companion'); return; }
   if (b.dataset.bagGo === 'gacha') switchTab('gacha');
   if (b.dataset.bagGo === 'chara') switchTab('companion'); // ショップの仲間タブは削除したので仲間ページへ
 });

@@ -1443,7 +1443,7 @@ const RETURN_MIN_MS = 10 * 60 * 1000;
 const IDLE_REWARD_MAX_MS = 8 * 60 * 60 * 1000; // 放置中の戦果は最大8時間ぶん
 const IDLE_KILLS_PER_MIN = 3;                   // 放置中は1分に3体倒している扱い
 const IDLE_COIN_RATE = 0.5;                     // 放置中のコインは実際に戦うときの半分
-const RETURN_BONUS_SCALE = 0.5;                 // 帰還ボーナスのコイン（ボーナス分・放置中の戦果とも）は半分に
+const RETURN_BONUS_SCALE = 0.4;                 // 帰還ボーナスのコイン（ボーナス分・放置中の戦果とも）は少なめ（宝箱の帰還ボーナス券で1.5倍・2倍にできる）
 const IDLE_CHEST_EVERY_MIN = 30;                // 30分ごとに宝箱1個
 const LOGIN_BONUS_TABLE = [
   { min: 10, label: '10分', coins: 60, gems: 0, chest: 0.05 },
@@ -1564,7 +1564,9 @@ function checkLoginBonus(awayMs) {
   const rarity = pickLoginRarity(tier);
   const rarityInfo = RARITY_INFO[rarity];
   const b = computeBonuses();
-  const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity] * RETURN_BONUS_SCALE);
+  const retTicket = typeof itemHeld === 'function' ? (itemHeld('ret2') ? 'ret2' : itemHeld('ret15') ? 'ret15' : null) : null, retMult = retTicket === 'ret2' ? 2 : retTicket === 'ret15' ? 1.5 : 1; // 帰還ボーナス券は自動で1枚使う（2倍券が先）
+  if (retTicket) { spendItem(retTicket); setTimeout(() => showNotice(`🏠 ${CHEST_ITEMS[retTicket].name}を使った！ 帰還ボーナスのコイン ×${retMult}`), 600); }
+  const bonusCoins = Math.round(reward.coins / 30 * stageCoinRaw() * b.loginBonusMult * LOGIN_RARITY_MULT[rarity] * RETURN_BONUS_SCALE * retMult);
   const rIdx = LOGIN_RARITY_ORDER.indexOf(rarity);
   const chestArtifact = null; // サプライズ宝箱は廃止（ふつうに拾った宝箱とまぎらわしいため）
   const bonusPotion = rIdx >= 2 ? 1 : 0;
@@ -1573,7 +1575,7 @@ function checkLoginBonus(awayMs) {
   // 放置中の戦果：離れている間も自キャラは戦い続けていた（最大8時間ぶん）
   const idleMin = Math.min(awayMs, IDLE_REWARD_MAX_MS) / 60000;
   const idleKills = Math.floor(idleMin * IDLE_KILLS_PER_MIN);
-  const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE * RETURN_BONUS_SCALE);
+  const idleCoins = Math.round(idleKills * stageCoinRaw() * b.coinMult * IDLE_COIN_RATE * RETURN_BONUS_SCALE * retMult);
   const hcIdle = getHeldChests();
   let idleChests = 0; const idleChestRarities = {};
   // 放置中の宝箱は出さない（帰還ボーナスの宝箱とまぎらわしいため）
@@ -1940,7 +1942,7 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
   if (!pool.length) pool = ARTIFACT_POOL;
   if (pool.some(a => a.rarity === rarity)) pool = pool.filter(a => a.rarity === rarity);
   pool.forEach(a => rows.push([chestArtIco(a, rarity), a.id === 'evoFeather' ? `進化の${feaName(rarity)}` : a.name, P(rest * ac / pool.length), '']));
-  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: ['🦸', '自キャラ（進化して初期Lv+1）', ''] };
+  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: ['🦸', '自キャラ（進化して初期Lv+1）', ''] };
   specs.forEach(([k, p]) => rows.push([SPEC[k][0], SPEC[k][1], P(p), SPEC[k][2]]));
   const ex = [];
   const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
@@ -1953,6 +1955,7 @@ function chestSpecials(rarity) { // コイン・羽以外の中身と、その�
   if (typeof CHEST_COMP_CHANCE !== 'undefined' && CHEST_COMP_CHANCE[rarity] && chestCompPool(rarity).length) o.push(['comp', CHEST_COMP_CHANCE[rarity]]);
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
   if (typeof SEED_CHEST_CHANCE !== 'undefined' && SEED_CHEST_CHANCE[rarity]) o.push(['seed', SEED_CHEST_CHANCE[rarity]]);
+  if (typeof CHEST_ITEM_DROP !== 'undefined') for (const [k, p] of (CHEST_ITEM_DROP[rarity] || [])) o.push(['item:' + k, p]); // 使いきりアイテム（ガチャ券・招き猫・身代わり人形・Lv倍増券・帰還ボーナス券）
   return o;
 }
 function chestCoinName(rarity) { return rarity ? `★${RARITY_INFO[rarity].stars}のコイン` : 'コイン'; } // R以上の宝箱のコインは「★2のコイン」など
@@ -2133,6 +2136,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   else if (sp === 'tie') { game.feaUseBuys = (game.feaUseBuys || 0) + 1; if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'tie', n: 1, icon: '<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', main: '羽の束ね紐', cardDesc: `進化1回で使える羽 ${getFeaUseMax()}枚に`, color: '#ffd76b', sub: `進化1回で使える羽が ${getFeaUseMax()}枚に` }; }
   else if (sp === 'potion') { game.potions = (game.potions || 0) + mult; updatePotionButton(); loot = { misc: 'potion', n: mult, icon: '<span class="chest-emoji">🧪</span>', main: `回復ポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: '回復ポーション', cardDesc: `所持 ${game.potions}個`, color: '#ff7eb6', sub: `HPを最大値の45%回復・所持 ${game.potions}個` }; }
   else if (sp === 'redPotion') { game.redPotions = (game.redPotions || 0) + mult; updateRedPotionButton(); loot = { misc: 'redPotion', n: mult, icon: '<i class="ico-redpot chest-redpot"></i>', main: `スキルポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: 'スキルポーション', cardDesc: `所持 ${game.redPotions}個`, color: '#ff5c6c', sub: `スキルの待ち時間をリセット・所持 ${game.redPotions}個` }; }
+  else if (sp && sp.startsWith('item:')) { const k = sp.slice(5), I = CHEST_ITEMS[k]; gainItem(k, mult); loot = { misc: 'item' + k, n: mult, icon: `<span class="chest-emoji">${I.icon}</span>`, main: `${I.name}${mult > 1 ? ` ×${mult}` : ''}`, cardName: I.name, cardDesc: I.desc, color: I.col, sub: `${I.desc}・所持 ${itemHeld(k)}個` }; }
   const isSeed = sp === 'seed';
   const isCoin = !loot && !isSeed && Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   if (loot) { if (quiet) showNotice(`🎁 宝箱から${loot.main}！`); }
