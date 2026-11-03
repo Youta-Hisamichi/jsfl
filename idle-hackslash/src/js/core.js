@@ -937,15 +937,24 @@ function getRebirthMaxCount(id) {
   return count;
 }
 // 宝箱のレア度の出る確率：★5=1/500、★4=1/100、★3=1/32、★2=1/6、残りが★1
-const CHEST_RARITY_ODDS = (() => { const w = [1, 0.1, 0.01, 0.001, 0.0001], t = w.reduce((a, b) => a + b, 0); return { rare: w[1] / t, epic: w[2] / t, legendary: w[3] / t, mythic: w[4] / t }; })(); // レア度が1つ上がるごとに1/10（コモン約90%・レア9%・エピック0.9%・レジェンド0.09%・ミシック0.009%）
+const CHEST_RARITY_ODDS = { rare: 0.09, epic: 0.009, legendary: 0.002, mythic: 0.001 }; // ふつうの宝箱のレア度：N 約89.8%・R 9%・SR 0.9%・SSR 0.2%・UR 0.1%（約1000分の1）
 const REBIRTH_REWARD_RARITY_WEIGHTS = { mythic: 0.2, legendary: 1, epic: 3.125, rare: 16.667, common: 79.008 };
 function rollChestRarity(luck = 1, min = 'common') { // luck 倍だけ高レア度が出やすい（岩・ボスなど苦労して手に入れる宝箱用）
+  luck *= chestLuckBonus();
   const order = ['common', 'rare', 'epic', 'legendary', 'mythic'];
   let r = Math.random(), got = 'common';
   for (const k of ['mythic', 'legendary', 'epic', 'rare']) { const p = Math.min(0.9, CHEST_RARITY_ODDS[k] * luck); if (r < p) { got = k; break; } r -= p; if (r < 0) break; }
   if (order.indexOf(got) < order.indexOf(min)) got = min;
   while (!isChestRarityOpen(got)) got = order[order.indexOf(got) - 1]; // SR以上はショップの「宝箱の予感」を買うまで出ない（1つ下のレア度になる）
   return got;
+}
+// 高レアが出やすくなる場面：ジェムで挑む試練の塔（×3）、ステージ1000以上で自己ベストを更新中（×3）。重なると×9
+const CHEST_LUCK_GEM_TOWER = 3, CHEST_LUCK_RECORD = 3, CHEST_LUCK_RECORD_FROM = 1000;
+function chestLuckBonus() {
+  let m = 1;
+  if (game.skipChallenge && game.skipChallenge.currency !== 'coin') m *= CHEST_LUCK_GEM_TOWER;
+  if (!game.skipChallenge && !game.bossLoop && game.stage >= CHEST_LUCK_RECORD_FROM && game.stage >= (game.bestStage || 1)) m *= CHEST_LUCK_RECORD;
+  return m;
 }
 function isChestRarityOpen(r) { return r === 'common' || r === 'rare' || !!game['chestOmen_' + r]; } // ふつうに拾える宝箱のレア度（確定の報酬の宝箱は別）
 function pickWeightedArtifact(pool, weights) {
