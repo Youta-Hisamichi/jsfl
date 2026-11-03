@@ -136,7 +136,7 @@ function step() {
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
-        onPlayerHitEnemy(e, dmg);
+        onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'player'); // みだれうち・にとうりゅう
         playPlayerAttackSound();
         applyHitKnockback(e, a, 3.2);
       } else if (!enemyAttackHits(e)) {
@@ -172,7 +172,7 @@ function step() {
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
         noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
-        onPlayerHitEnemy(e, dmg);
+        onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'player'); // みだれうち・にとうりゅう
         playPlayerAttackSound();
         applyHitKnockback(e, a, 3.2);
       }
@@ -251,7 +251,7 @@ function step() {
           spawnHitParticles(comp.x, comp.y, comp.color);
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
           noteElementHit(compElement(comp.companionId), e);
-          onPlayerHitEnemy(e, dmg);
+          onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'comp'); // アゲアゲダンス
           if (comp.launchUntil > Date.now()) { // 弾き飛ばされた仲間が直撃
             comp.launchUntil = 0; e.vx += comp.vx * 0.6; e.vy += comp.vy * 0.6;
             spawnDamageText(e.x, e.y - e.radius - 40, `💥 仲間シュート直撃！×${ALLY_LAUNCH_DMG_MULT}`, '#ffe066', 0.014, true);

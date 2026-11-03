@@ -545,14 +545,19 @@ const CHEST_ITEMS = {
   lv15:        { icon: '⏫', name: 'Lv1.5倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部1.5倍（Lv倍増券は1周回に1回まで）', col: '#c28aff' },
   lv2:         { icon: '⏫', name: 'Lv2倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部2倍（Lv倍増券は1周回に1回まで）', col: '#ff8adf' },
   ret15:       { icon: '🏠', name: '帰還ボーナス1.5倍券', desc: '次の帰還ボーナスのコインが1.5倍（自動で使う）', col: '#7ee7c8' },
+  midare:      { icon: '📜', name: 'みだれうちの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が4回攻撃になる', col: '#ff8a5c', buff: 'midare' },
+  nitoryu:     { icon: '📜', name: 'にとうりゅうの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が2回攻撃になる', col: '#ffb35c', buff: 'nitoryu' },
+  yamabiko:    { icon: '📜', name: 'やまびこの巻物', desc: '使うと次のボスを倒すまで、メテオなどの攻撃スキルがもう1回落ちる', col: '#8ad0ff', buff: 'yamabiko' },
+  ageage:      { icon: '💃', name: 'アゲアゲダンス', desc: '使うと次のボスを倒すまで、仲間の攻撃が2回攻撃になる', col: '#ff8adf', buff: 'ageage' },
+  lifeglass:   { icon: '⏳', name: '命の砂時計', desc: 'ボス戦で使うと、減ったHPと残りのHPが入れかわる（ゲーム画面のスキル列から使う）', col: '#ffd76b' },
   ret2:        { icon: '🏠', name: '帰還ボーナス2倍券', desc: '次の帰還ボーナスのコインが2倍（自動で使う。1.5倍券より先に使う）', col: '#5fe0ff' },
 };
 // 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
 const CHEST_ITEM_DROP = {
   rare: [['skillTicket', 0.05], ['compTicket', 0.05], ['maneki', 0.03]],
-  epic: [['doll', 0.03]],
-  legendary: [['doll', 0.03], ['lv15', 0.02], ['ret15', 0.05]],
-  mythic: [['doll', 0.03], ['lv15', 0.01], ['lv2', 0.01], ['ret2', 0.05]],
+  epic: [['doll', 0.03], ['lifeglass', 0.03]],
+  legendary: [['doll', 0.03], ['lv15', 0.02], ['ret15', 0.05], ['lifeglass', 0.03]],
+  mythic: [['doll', 0.03], ['lv15', 0.01], ['lv2', 0.01], ['ret2', 0.05], ['midare', 0.01], ['nitoryu', 0.02], ['yamabiko', 0.02], ['ageage', 0.02]],
 };
 const MANEKI_MS = 5 * 60 * 1000;
 function itemHeld(k) { return ((game.items || {})[k]) || 0; }
@@ -564,6 +569,55 @@ function useManeki(ev) {
   game.manekiUntil = Math.max(Date.now(), game.manekiUntil || 0) + MANEKI_MS; playRegisterSound(); saveGame();
   showNotice(`🐱 金の招き猫！ ${Math.round((game.manekiUntil - Date.now()) / 60000)}分間 コイン2倍`); renderBagList();
 }
+// ===== 次のボスを倒すまで効く巻物・ダンス（みだれうち×4・にとうりゅう×2・やまびこ・アゲアゲダンス） =====
+function bossBuffOn(k) { return !!(game.bossBuffs || {})[k]; }
+function useBossBuff(k) {
+  const I = CHEST_ITEMS[k]; if (bossBuffOn(I.buff)) { showNotice(`${I.icon} ${I.name}はもう効いています（次のボスを倒すまで）`, true, 2200); return; }
+  if (!spendItem(k)) return;
+  game.bossBuffs = game.bossBuffs || {}; game.bossBuffs[I.buff] = true; playRegisterSound(); saveGame(); renderBagList();
+  showNotice(`${I.icon} ${I.name}！ 次のボスを倒すまで効く`);
+}
+function bossBuffExtraHits(e, dmg, who) { // 当たった攻撃を、決まった回数まで追加で当てる（ダメージはすぐ、数字は少しずつ出す）
+  const n = who === 'comp' ? (bossBuffOn('ageage') ? 2 : 1) : (bossBuffOn('midare') ? 4 : bossBuffOn('nitoryu') ? 2 : 1);
+  if (n < 2 || !e || !(dmg > 0)) return;
+  for (let i = 1; i < n; i++) {
+    e.hp -= dmg; trackDamage(dmg);
+    setTimeout(() => { if ([...balls, ...adds].includes(e)) spawnAttackDamageText(e, dmg, false, who === 'comp' ? '#ffb8ec' : '#ffd0a0', -14 * i); }, i * 90);
+  }
+}
+{ const orig = markBossBeaten; markBossBeaten = function () { if (game.bossBuffs && Object.keys(game.bossBuffs).length) { game.bossBuffs = {}; setTimeout(() => showNotice('📜 巻物・ダンスの効果が切れた'), 900); } return orig.apply(this, arguments); }; }
+// やまびこ：攻撃スキルを使ったら、少しあとにもう1回同じスキルが発動する（待ち時間は増やさない）
+const ECHO_SKILL_BTNS = { specialBtn: () => lastSpecialAt, poisonBtn: () => lastPoisonAt, paralyzeBtn: () => lastParalyzeAt, novaBtn: () => lastNovaAt, blastBtn: () => lastBlastAt };
+const ECHO_SKILL_SET = { specialBtn: v => { lastSpecialAt = v; }, poisonBtn: v => { lastPoisonAt = v; }, paralyzeBtn: v => { lastParalyzeAt = v; }, novaBtn: v => { lastNovaAt = v; }, blastBtn: v => { lastBlastAt = v; } };
+let echoing = false;
+Object.keys(ECHO_SKILL_BTNS).forEach(id => { const btn = document.getElementById(id); if (!btn) return;
+  let before = 0;
+  btn.addEventListener('click', () => { try { before = ECHO_SKILL_BTNS[id](); } catch (e) { before = 0; } }, true);
+  btn.addEventListener('click', () => {
+    if (echoing || !bossBuffOn('yamabiko')) return;
+    let now; try { now = ECHO_SKILL_BTNS[id](); } catch (e) { return; }
+    if (now === before) return; // 発動しなかった
+    setTimeout(() => { if (phase !== 'battle') return; echoing = true; ECHO_SKILL_SET[id](0); try { btn.click(); spawnDamageText(arena.x, arena.y - arena.radius * 0.3, '📜 やまびこ！', '#8ad0ff', 0.014, true); } finally { ECHO_SKILL_SET[id](now); echoing = false; } }, 700);
+  });
+});
+// 命の砂時計：ボス戦で使うと、減ったHPと残りHPが入れかわる
+function useLifeGlass(ev) {
+  const p = balls.find(isMainPlayerBall);
+  if (phase !== 'battle' || !p || !isBossFight()) { showTapError('命の砂時計はボス戦でだけ使えます', ev.clientX, ev.clientY); return; }
+  if (!spendItem('lifeglass')) return;
+  const before = p.hp; p.hp = Math.max(1, p.maxHp - p.hp); p.safeHp = p.hp;
+  spawnDamageText(p.x, p.y - p.radius - 16, `⏳ 命の砂時計！ HP ${formatCoinNumber(Math.round(before))} → ${formatCoinNumber(Math.round(p.hp))}`, '#ffd76b', 0.012, true);
+  playHealSound(); updateHPUI(); saveGame(); updateLifeGlassBtn();
+}
+function updateLifeGlassBtn() {
+  const row = document.getElementById('skillRow'); if (!row) return;
+  let b = document.getElementById('lifeGlassBtn');
+  const show = itemHeld('lifeglass') > 0 && phase === 'battle' && isBossFight();
+  if (!b) { b = document.createElement('button'); b.id = 'lifeGlassBtn'; b.className = 'action-btn lifeglass'; b.addEventListener('click', useLifeGlass); row.appendChild(b); }
+  b.style.display = show ? '' : 'none';
+  const h = `<span class="lg-ico">⏳</span><b>${itemHeld('lifeglass')}</b>`; if (b.dataset.h !== h) { b.innerHTML = h; b.dataset.h = h; }
+}
+setInterval(updateLifeGlassBtn, 500);
 function useLvTicket(k) {
   const m = k === 'lv2' ? 2 : 1.5;
   if (game.lvTicketUsed) { showNotice('⏫ Lv倍増券は1周回に1回までです（転生でまた使える）', true, 2500); return; }
@@ -628,7 +682,7 @@ function bagRows() {
     rows.push({ icon: art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:100%;height:100%"></span>` : ico(item), name: item.name + (SHOP_MULTI_ITEMS[id] ? ` Lv${n}` : item.toggleKind ? '（ON）' : ''), n, desc: SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id)}倍` : item.desc, shop: true });
   }
   for (const [k, I] of Object.entries(CHEST_ITEMS)) { const n = itemHeld(k); if (!n) continue;
-    const btn = k === 'maneki' ? '<button data-bag-item="maneki">使う</button>' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
+    const btn = CHEST_ITEMS[k].buff ? (bossBuffOn(CHEST_ITEMS[k].buff) ? '<button class="is-disabled" disabled>効いている</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'lifeglass' ? '' : k === 'maneki' ? '<button data-bag-item="maneki">使う</button>' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
     rows.push({ icon: `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc + (k === 'maneki' && Date.now() < (game.manekiUntil || 0) ? `（いま効いている：あと${Math.ceil((game.manekiUntil - Date.now()) / 60000)}分）` : ''), btn }); }
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
@@ -644,6 +698,7 @@ document.getElementById('bagList').addEventListener('click', ev => {
   if (b.dataset.bagSeed) { openSeedPanel(); return; }
   if (b.dataset.bagChest) { switchTab('game'); setTimeout(() => { if (phase === 'battle') openChestBatchDialog(b.dataset.bagChest); else showNotice('戦闘中に開けられます'); }, 200); return; }
   if (b.dataset.bagItem === 'maneki') { useManeki(ev); return; }
+  if (b.dataset.bagItem && CHEST_ITEMS[b.dataset.bagItem] && CHEST_ITEMS[b.dataset.bagItem].buff) { useBossBuff(b.dataset.bagItem); return; }
   if (b.dataset.bagItem === 'lv15' || b.dataset.bagItem === 'lv2') { useLvTicket(b.dataset.bagItem); return; }
   if (b.dataset.bagItem === 'goSkill') { switchTab('coinshop'); return; } // スキルガチャの下の「券で回す」で使う
   if (b.dataset.bagItem === 'goChara') { switchTab('companion'); return; }

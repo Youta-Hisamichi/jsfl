@@ -5068,3 +5068,6 @@ button.cbk-it { position: relative; font: inherit; color: #fff; cursor: pointer;
 .ticket-pull-btn { display: block; margin: -2px auto 8px; padding: 6px 14px; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(12,18,40,0.9); color: #ffe9a8; font: inherit; font-size: 0.78rem; font-weight: 800; cursor: pointer; text-shadow: 0 1px 2px #000; }
 .ticket-pull-btn:active { transform: scale(0.96); }
 .bag-emoji { font-size: 1.8rem; line-height: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+#skillRow.skill-strip #lifeGlassBtn { order: -1; }
+#skillRow.skill-strip #lifeGlassBtn .lg-ico { position: absolute; left: 50%; top: 26px; font-size: 30px; transform: translate(-50%, -50%); }
+#skillRow.skill-strip #lifeGlassBtn b { position: absolute; right: 0; top: 34px; padding: 0 5px; border-radius: 999px; border: 1.5px solid #6a7aa8; background: #0b1226; font-size: 0.68rem; line-height: 1.3; }
