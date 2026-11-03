@@ -359,7 +359,7 @@ const LOGIN7 = [
   { label: '💎4', give: () => { game.gems += 4; return '💎4'; } },
   { label: '<i class="ico-redpot"></i>×3', give: () => { game.redPotions = (game.redPotions || 0) + 3; return 'スキルポーション×3'; } },
   { label: '💎4', give: () => { game.gems += 4; return '💎4'; } },
-  { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic'); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
+  { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic', true); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
 ];
 function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
 function checkDailyLogin() {

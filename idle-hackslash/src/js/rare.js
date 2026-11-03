@@ -59,7 +59,7 @@ function pickRare() {
   const w = r.reward, parts = [];
   { const g = first ? 5 : 1; game.gems += g; parts.push(`💎${g}`); } // ジェムは初撃破だけ5個、2回目からは1個
   if (w.coin) { const c = Math.round(stageCoinRaw() * computeBonuses().coinMult * w.coin); game.coins += c; spawnCoinBurst(pos.x, pos.y, c, 12); parts.push(`🟡${formatCoinNumber(c)}`); }
-  if (w.chest) { setTimeout(() => dropTreasureChest(w.chest), 800); parts.push(`${RARITY_INFO[w.chest].label}の宝箱`); }
+  if (w.chest) { setTimeout(() => dropTreasureChest(w.chest, true), 800); parts.push(`${RARITY_INFO[w.chest].label}の宝箱`); }
   setTimeout(() => {
     if (typeof showRunBanner === 'function') showRunBanner(`🏆 レア敵「${r.name}」撃破！${first ? '（初撃破ボーナス）' : ''}`, parts.join('・'));
     playGachaSound && playGachaSound('legendary');

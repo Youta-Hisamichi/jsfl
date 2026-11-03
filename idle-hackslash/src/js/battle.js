@@ -1880,8 +1880,14 @@ function getHeldChests() { // 古いセーブ（個数だけ）はノーマル�
   if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
   return game.heldChests;
 }
-function dropTreasureChest(rarity) {
+function dropTreasureChest(rarity, force = false) {
   if (!rarity) rarity = rollChestRarity();
+  if (game.bossLoop && !force) { // ボスリタイヤ中（1つ前の階をループ中）は宝箱を出さず、コインに変える（レア敵・ログインボーナスなど確定の報酬は別）
+    for (let i = damageTexts.length - 1; i >= Math.max(0, damageTexts.length - 3); i--) if (/宝箱/.test(damageTexts[i].text || '')) damageTexts.splice(i, 1); // 直前に出した「宝箱！」の文字は消す
+    const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * (CHEST_COIN_MULT[rarity] || 3)));
+    game.coins += c; spawnDamageText(arena.x, arena.y + 30, `🔁 リタイヤ中は宝箱なし → +${formatCoinNumber(c)} 🟡`, '#c8b070', 0.016);
+    return;
+  }
   const hc = getHeldChests();
   if ((hc[rarity] || 0) >= CHEST_STOCK_MAX) { const info = RARITY_INFO[rarity]; spawnDamageText(arena.x, arena.y + 30, `${info.label}の宝箱がいっぱい！（最大${CHEST_STOCK_MAX}個）`, '#ff6b6b', TREASURE_TEXT_DECAY); { const src = ICON_IMAGES[CHEST_ICON[rarity]]; if (src) { const im = new Image(); im.src = src; damageTexts[damageTexts.length - 1].img = im; } } return; } // レア度ごとに最大100個。文字の左にその宝箱の絵
   hc[rarity] = (hc[rarity] || 0) + 1;
