@@ -229,7 +229,7 @@ let simAcc = 0, lastSimAt = 0;
 function loop() {
   battleSfx = true; // ここで鳴る音は戦闘の効果音（ゲーム画面以外では鳴らさない）
   try {
-    if (userPaused || stageSkipModal.classList.contains('show') || rewardAdModal.classList.contains('show')) { draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
+    if (userPaused || stageSkipModal.classList.contains('show') || rewardAdModal.classList.contains('show') || (typeof loginBonusOpen === 'function' && loginBonusOpen())) { /* ログインボーナス・放置（帰還）ボーナスの画面中も止める */ draw(); drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // 一時停止中・試練の塔の選択中はゲームを止める
     if (activeTabCache !== 'game') { drawFlyouts(); battleSfx = false; animId = requestAnimationFrame(loop); return; } // drawFlyouts は画面全体の重ね描きを消すため（残像が残らないように）
     // 固定ステップ：描画が重くて fps が落ちてもゲームの進み（1秒＝60ステップ）は変わらない。120Hz の画面でも速くなりすぎない
     const now = performance.now();
@@ -1052,8 +1052,8 @@ debugRow.addEventListener('click', event => {
     showBossWarning();
     startBgm('boss');
   }
-  if (action === 'saveReset') { // セーブを消して読み込み直す（進化など、すべてが最初の状態に戻る）
-    window.__noSave = true; clearSave(); location.reload();
+  if (action === 'saveReset') { // セーブを消して読み込み直す（進化など、すべてが最初の状態に戻る）。押す前に確認
+    simpleChoice({ icon: '🗑️', title: 'ゲームリセット', text: 'セーブを消して、最初からやり直しますか？<br>（進化・ジェム・仲間など、すべて最初の状態に戻ります）', yes: 'リセットする', no: 'やめる', onYes: () => { window.__noSave = true; clearSave(); location.reload(); } });
     return;
   }
   if (action === 'opening') { playOpening(); return; }

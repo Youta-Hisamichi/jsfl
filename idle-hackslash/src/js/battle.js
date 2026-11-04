@@ -632,7 +632,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     e.tgTimer -= speedMult;
     if (e.tgTimer <= 0) {
       e.dashing = false; e.vx *= 0.2; e.vy *= 0.2;
-      if (e.tgBig) { e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！ チャンス！', '#ffd76b', 0.016, true); }
+      if (e.tgBig) { e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true; }
       else e.traitState = null;
     }
     return false;
@@ -706,7 +706,6 @@ function updateEnemyTelegraph(a, e, speedMult) {
     const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
   } else if (tg.big) { // 大技の後だけ隙ができる
     e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true;
-    spawnDamageText(e.x, e.y - e.radius - 22, 'スキ！ チャンス！', '#ffd76b', 0.016, true);
   } else { e.traitState = null; e.traitFreeze = false; }
   if (hit) {
     applyHitKnockback(a, e, 5);
@@ -883,7 +882,6 @@ function drawEnemyTelegraphs() {
       for (let i = 0; i < 3; i++) { const an = now / 220 + i * Math.PI * 2 / 3; ctx.fillText('⭐', e.x + Math.cos(an) * r * 0.7, e.y - r - 6 + Math.sin(an) * 4); }
       const ly = e.y - r - 34;
       ctx.font = `900 ${Math.round(15 + p * 3)}px sans-serif`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.fillStyle = '#ffd76b';
-      ctx.strokeText(`スキ！×${TG_STUN_DMG}`, e.x, ly); ctx.fillText(`スキ！×${TG_STUN_DMG}`, e.x, ly);
       const bw = 44; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(e.x - bw / 2, ly + 11, bw, 4); ctx.fillStyle = '#ffd76b'; ctx.fillRect(e.x - bw / 2, ly + 11, bw * left, 4); // 隙の残り時間
       ctx.restore();
     }

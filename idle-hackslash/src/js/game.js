@@ -106,7 +106,7 @@ function step() {
   const styleMult = collided ? (rushingNow ? b.rushDmgUp : b.meleeMult) || 1 : 1; // 強化：体当たり／接近戦
   const autoMult = collided && !rushingNow && isAutoMode() ? AUTO_ATK_MULT : 1; // 放置（AUTO）中のふつうの衝突は控えめ
   const tapDmgMult = getTapDmgMult(a.tapSpeedMult) * rushMult * styleMult * autoMult * (isRampage() ? RAMPAGE_DMG : 1); // 隙の3倍は rollCrit の中でどの攻撃にもかかる
-  if (stunMult > 1 && a.hitCooldown === 0 && e.hitCooldown === 0) spawnDamageText(e.x, e.y - e.radius - 40, `スキあり！×${TG_STUN_DMG}`, '#ffd76b', 0.02, true); // リセット前の連打ボーナスでダメージを計算する
+  // 「スキあり！」の文字は出さない // リセット前の連打ボーナスでダメージを計算する
   if (collided && (!rushPierce || (a.hitCooldown === 0 && e.hitCooldown === 0))) consumeRushHit(e.x, e.y - e.radius); // 貫通中は実際に攻撃が入ったときだけ数える
   if (collided && rushingNow && !isRampage()) rushKnockFly(e, a); // 体当たりが当たった敵は貫通せずに吹っ飛ぶ
   if (collided && !piercing) a.tapSpeedMult = 1; // 敵に衝突したらタップ加速をリセット
