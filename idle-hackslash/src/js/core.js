@@ -1460,7 +1460,7 @@ function renderShopList() {
   }).join('');
 }
 // スキルとサブウェポンは1つの装備枠を分け合う（サブウェポンは「自動スキル」としてスキルに統一）
-const SKILL_SLOT_MAX = 11;
+const SKILL_SLOT_MAX = 30; // スキル13種＋自動スキル8種が全部入る数（枠が足りずに手に入れたスキルのボタンが出ないことがないように）
 function getTotalSlots() { return SKILL_SLOT_MAX; } // 装備枠は増やさなくても最大（スキルガチャは1周回10回までにしたので枠の制限はなくした）
 function getSkillSlots() { return getTotalSlots() - getEquippedWeapons().length; } // スキルに使える枠（自動スキルが使っている分を引く）
 function getSkillSlotCost() { return Math.max(1, getTotalSlots() - 1); } // 枠増やしは1回目💎1、増やすたび1個ずつ値上げ（転生でリセット）

@@ -82,8 +82,15 @@ function updateSkillStripOverflow() {
   st.classList.toggle('sk-over', w > st.clientWidth - 8);
 }
 window.addEventListener('resize', () => updateSkillStripOverflow());
+// 手に入れているのに装備されていないスキル・自動スキル（前は枠が11だったので「枠なし」になっていた）を装備する
+function equipAllOwnedSkills() {
+  const eq = getEquippedSkills();
+  for (const id in SKILL_GACHA_SKILLS) if (game.shopOwned && game.shopOwned[id] && !eq.includes(id) && !PASSIVE_SKILLS.includes(id) && isSkillItemOn(id)) eq.push(id);
+  if (typeof getEquippedWeapons === 'function' && typeof getWeaponLv === 'function') { const weq = getEquippedWeapons(); for (const k in WEAPONS) if (getWeaponLv(k) && !weq.includes(k) && isSkillItemOn('w:' + k)) weq.push(k); }
+}
 function updateSkillButtonVisibility() {
   setTimeout(updateSkillStripOverflow, 0);
+  try { equipAllOwnedSkills(); } catch (e) {}
   let keys;
   try { keys = SKILL_BUTTON_KEYS; } catch (err) { return; } // 初期化前は何もしない
   for (const btnId in keys) {
