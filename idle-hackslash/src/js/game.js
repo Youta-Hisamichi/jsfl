@@ -517,9 +517,7 @@ function onStageClear(passed) {
   const msBoss = isBossStage && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは報酬も大きい
   const coinGain = Math.round(stageCoinRaw() * b.coinMult * (isBossStage ? 3 : 1) * (msBoss ? msBoss.reward : 1) * (isCoinStrike() ? COIN_STRIKE_KILL_MULT : 1) * (isMetal ? METAL_SLIME_COIN_MULT : 1));
   if (isMetal) {
-    const fr = rollMetalFeather(); addFea(fr, 1); // メタルスライムはジェムではなく進化の羽1枚
-    spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true);
-    spawnDamageText(arena.x, arena.y - 12, `🪶 ${RARITY_INFO[fr].label}の進化の羽 +1`, RARITY_INFO[fr].color, 0.01, true);
+    spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true); // メタルスライムはコインだけ（進化の羽は出さない）
   }
   game.coins += coinGain;
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_petitMimic') { const extra = coinGain * 2; game.coins += extra; spawnDamageText(arena.x, arena.y - 40, `🎁 ぷちミミックのお宝！ +${formatCoinNumber(extra)} 🟡`, '#ffd76b', 0.01, true); } // 宝箱のふり：コイン3倍
@@ -1043,14 +1041,6 @@ function giveBattleFeather(x, y, head) {
   spawnDamageText(x, y, `${head ? head + ' ' : ''}🪶 ${RARITY_INFO[r].label}の進化の羽 +1`, RARITY_INFO[r].color, 0.012, true);
   if (r !== 'common' && typeof playGachaSound === 'function' && ['legendary', 'mythic'].includes(r)) playGachaSound(r);
   return r;
-}
-// メタルスライムの羽：N羽が多め。R以上の羽を合わせて3枚以上持っているときは、R以上は出さずN羽にする
-const METAL_FEA_WEIGHTS = RECORD_FEA_RATES; // 羽ガチャと同じ確率
-function rollMetalFeather() {
-  let roll = Math.random() * Object.values(METAL_FEA_WEIGHTS).reduce((a, b) => a + b, 0), r = 'common';
-  for (const k of FEA_RARITIES) { roll -= METAL_FEA_WEIGHTS[k]; if (roll < 0) { r = k; break; } }
-  const highHeld = FEA_RARITIES.slice(1).reduce((n, k) => n + feaCount(k), 0);
-  return r !== 'common' && highHeld >= 3 ? 'common' : r;
 }
 // 自己ベストの桁が上がったとき（ステージ100・1000・1万…を初めてクリア）だけ、ジェムを少し：桁数−1個（100→💎2、1000→💎3、1万→💎4…）
 function digitGemList(best) { const L = []; for (let th = 100; th < Math.max(best, 1e7); th *= 10) L.push([th, String(th).length - 1]); return L; }
