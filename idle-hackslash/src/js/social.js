@@ -180,7 +180,20 @@ function friendCodeOpen() { return (game.bestStage || 1) >= FRIEND_CODE_STAGE; }
 function rollSsrFeathers(n) { // SSR以上の羽ガチャ（SSR:UR はふだんの羽ガチャと同じ比率 1:0.2）
   const got = {}; for (let i = 0; i < n; i++) { const r = Math.random() * (RECORD_FEA_RATES.legendary + RECORD_FEA_RATES.mythic) < RECORD_FEA_RATES.mythic ? 'mythic' : 'legendary'; got[r] = (got[r] || 0) + 1; }
   for (const r in got) addFea(r, got[r]);
+  rollSsrFeathers.last = got;
   return ['mythic', 'legendary'].filter(r => got[r]).map(r => `${RARITY_INFO[r].label}の羽×${got[r]}`).join('・');
+}
+// 羽ガチャの結果画面（宝箱の結果と同じカード）。閉じるまで残す。share があればシェアボタンも
+function showFeaGachaResult(title, sub, got, share) {
+  document.querySelectorAll('.fgr-ov').forEach(o => o.remove());
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show fgr-ov'; ov.style.zIndex = 84;
+  const cards = ['mythic', 'legendary'].filter(r => got[r]).map((r, i) => `<div class="cl-card" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.15}s">${lootStackHtml(`<img class="ico-img" src="assets/img/icons/feather_r${CHEST_FEATHER_ICON_N[r]}.webp" alt="">`, got[r], i * 0.15)}<div class="cl-name">進化の${feaName(r)}</div><div class="cl-desc">進化1回で1枚使い、倍率×${FEA_MULT[r]}</div><div class="cl-trans">所持 <b>${feaCount(r)}枚</b></div></div>`).join('');
+  ov.innerHTML = `<div class="modal-panel chest-panel fgr-panel"><div class="fgr-title">${title}</div><div class="fgr-sub">${sub}</div><div class="chest-loot-grid">${cards}</div><button class="modal-close-btn fgr-ok">閉じる</button>${share ? '<button class="modal-shop-btn fgr-share">📤 突破をシェアする</button>' : ''}</div>`;
+  document.body.appendChild(ov);
+  if (typeof playGachaSound === 'function') playGachaSound(got.mythic ? 'mythic' : 'legendary');
+  ov.querySelectorAll('.cl-cnt').forEach(el => { const n = +el.dataset.n; el.textContent = '×' + n; });
+  ov.querySelector('.fgr-ok').onclick = () => { ov.remove(); if (share) offerShareMoment(share.title, share.text); };
+  const sb = ov.querySelector('.fgr-share'); if (sb) sb.onclick = () => { ov.remove(); shareMoment = { title: share.title, text: share.text }; openShare('moment'); };
 }
 function friendBeatLeftToday() { return game.friendBeatDay === todayKey() ? Math.max(0, FRIEND_BEAT_DAILY - (game.friendBeatN || 0)) : FRIEND_BEAT_DAILY; }
 function addFriendCode(code) {
@@ -194,7 +207,7 @@ function addFriendCode(code) {
   if (game.friends.length >= FRIEND_MAX) game.friends.shift();
   game.friends.push({ ...f, beaten: false, at: Date.now() });
   let msg = `👥 ${f.name}から挑戦状！ ステージ${f.stage}を超えろ`;
-  if (!game.friendBonusGot) { game.friendBonusGot = true; msg += `（はじめての登録：SSR以上の羽ガチャ${FRIEND_FIRST_FEA}回 → ${rollSsrFeathers(FRIEND_FIRST_FEA)}）`; }
+  if (!game.friendBonusGot) { game.friendBonusGot = true; msg += `（はじめての登録：SSR以上の羽ガチャ${FRIEND_FIRST_FEA}回 → ${rollSsrFeathers(FRIEND_FIRST_FEA)}）`; const g = rollSsrFeathers.last; setTimeout(() => showFeaGachaResult('👥 はじめてのフレンド！', `SSR以上の羽ガチャ ${FRIEND_FIRST_FEA}回`, g), 300); }
   updateStatsUI(); saveGame(); return msg;
 }
 setInterval(() => { // フレンドの記録を超えたら報酬
@@ -204,7 +217,7 @@ setInterval(() => { // フレンドの記録を超えたら報酬
     if (game.friendBeatDay !== todayKey()) { game.friendBeatDay = todayKey(); game.friendBeatN = 0; }
     game.friendBeatN++; f.beaten = true; const got = rollSsrFeathers(FRIEND_BEAT_FEA); updateStatsUI(); saveGame();
     if (typeof showRunBanner === 'function') showRunBanner(`👥 ${f.name}の挑戦状を突破！`, `ステージ${f.stage}を超えた！ SSR以上の羽ガチャ${FRIEND_BEAT_FEA}回：${got}`);
-    setTimeout(() => offerShareMoment(`👥 ${f.name}の挑戦状を突破！`, `ステージ${formatStageNumber(f.stage)}を超えた！ 次はキミの番だ`), 1500); // 突破したらシェアをすすめる（挑戦状コードも載る）
+    { const g = rollSsrFeathers.last, sh = { title: `👥 ${f.name}の挑戦状を突破！`, text: `ステージ${formatStageNumber(f.stage)}を超えた！ 次はキミの番だ` }; setTimeout(() => showFeaGachaResult(`👥 ${f.name}の挑戦状を突破！`, `ステージ${formatStageNumber(f.stage)}を超えた！ SSR以上の羽ガチャ ${FRIEND_BEAT_FEA}回`, g, sh), 800); } // 結果画面（閉じるまで残る）→ シェアをすすめる
   }
 }, 2000);
 function friendRankEntries(mode) { // ベストステージのランキングにフレンドも並べる
