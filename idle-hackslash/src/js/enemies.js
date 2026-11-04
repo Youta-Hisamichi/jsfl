@@ -1263,8 +1263,8 @@ function obstacleMult(o) {
   if (o.bm === undefined) o.bm = rollBounceMult();
   return o.bm;
 }
-function bounceMultLabel(v) { return v > 0 ? `×${v}` : `÷${-v}`; }
-function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `÷${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
+function bounceMultLabel(v) { return v > 0 ? `×${v}` : `-${-v}`; } // 割り算はマイナス表記
+function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `-${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot); } // 射出したタックルの間（AUTOの射出も含む）
 // 反射の音：プラスは「キラリン↑」と上がる明るい音（大きい倍率ほど高く華やか）、マイナスは「ボヨ〜ン↓」と下がるしょんぼり音
@@ -1285,8 +1285,8 @@ function playBounceMultSound(v) {
 function applyBounceObjMult(ball, o) {
   const v = obstacleMult(o); if (!v) return;
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
-  o.bm = v > 0 ? Math.min(BOUNCE_OBJ_MAX, v + 1) : Math.max(-BOUNCE_OBJ_MAX, v - 1); o.bmFlash = now; // 跳ね返るたびに×は+1・÷は-1（最大100）。ポヨンと弾んで変わる
-  if (!tackleShotNow()) return; // 倍率がたまるのは射出したタックルのときだけ
+  if (!tackleShotNow()) return; // 数値が変わるのも、倍率がたまるのも、射出したタックルのときだけ
+  o.bm = v > 0 ? Math.min(BOUNCE_OBJ_MAX, v + 1) : Math.max(-BOUNCE_OBJ_MAX, v - 1); o.bmFlash = now; // 跳ね返るたびに×は+1・マイナスは-1（最大100）。ポヨンと弾んで変わる
   const m = v > 0 ? v : 1 / -v;
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
   spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
@@ -1418,7 +1418,7 @@ function setupObstacles(dropDebug) {
     const r = baseR;
     const p = spot(r); if (!p) continue;
     const o = { x: p.x, y: p.y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] };
-    if (kind === 'reflector') o.r = r * 1.05; // 反射板は倍率の文字が収まる大きさ
+    if (kind === 'reflector') o.r = r * 0.85; // 反射板（少し小さめ）
     else if (kind === 'tansu') { o.kind = 'qbox'; o.tansu = true; o.multi = 3; o.r = r * 0.95; } // タンス（引き出し3段）
     if (kind === 'rock') o.sprite = rockSprite;
     else if (kind === 'bumper') { o.r = r * 0.85; o.sprite = 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
