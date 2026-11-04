@@ -2036,7 +2036,7 @@ function openChestBatchDialog(rarity) {
       const t0 = Math.min(i, 20) * 0.06;
       if (g.misc) return `<div class="cl-card" style="--rc:${g.color};${delay}">${lootStackHtml(g.icon, g.n, t0)}<div class="cl-name">${g.name}</div><div class="cl-desc">${g.desc}</div></div>`;
       if (g.seed) { const S = SEEDS[g.seed]; return `<div class="cl-card" style="--rc:${S.col};${delay}">${lootStackHtml(`<img class="ico-img" src="${S.img}" alt="">`, g.n, t0)}<div class="cl-name">${S.name}</div><div class="cl-desc">1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）</div><div class="cl-trans">所持 <b>${seedHeld(g.seed)}個</b></div></div>`; }
-      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(chestCoinIco(rarity) || COIN_ICO, g.count, t0)}<div class="cl-name">${chestCoinName(rarity)}</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
+      if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(chestCoinIco(rarity) || COIN_ICO, g.count, t0)}<div class="cl-name">${chestCoinName(rarity)}</div><div class="cl-desc">1個 ザコ${CHEST_COIN_MULT[rarity] * mult}体ぶんのコイン</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
       if (g.fea) { const fc = RARITY_INFO[g.fea].color, nn = feaCount(g.fea); return `<div class="cl-card" style="--rc:${fc};${delay}">${lootStackHtml(chestArtIco(g.art, g.fea), g.n, t0)}<div class="cl-name">進化の${feaName(g.fea)}</div><div class="cl-desc">進化1回で1枚使い、倍率×${FEA_MULT[g.fea]}</div><div class="cl-trans">${nn - g.n}枚 → <b>${nn}枚</b></div></div>`; } // 進化の羽はレア度ごと
       const c = RARITY_INFO[g.art.rarity].color;
       return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(g.rebirth ? ico(g.art) : chestArtIco(g.art, rarity), g.n, t0)}<div class="cl-name">${g.art.name}</div>${ARTIFACT_STACK_LIMIT[g.art.id] === 1 ? '' /* 1個だけの遺物（レアリングなど）は下の効果と同じ文になるので出さない */ : `<div class="cl-desc">${g.art.id === 'evoFeather' ? '進化を加速させる素材' : (g.n > 1 ? '合計 ' : '') + sumDesc(g.art.desc, g.n)}</div>`}${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
@@ -2154,7 +2154,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     const bonus = Math.round(stageCoinRaw() * CHEST_COIN_MULT[rarity] * computeBonuses().coinMult) * mult;
     game.coins += bonus;
     pendingChestCoins += bonus; coinDisplayHold += bonus; pendingChestCoinPts += (CHEST_COIN_FX_PTS[rarity] || 1) * Math.sqrt(mult); // コインの演出は宝箱を閉じたときに（表示の数字も回収されるまで増やさない）
-    loot = { icon: chestCoinIco(rarity) || xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${COIN_ICO} ${formatCoinNumber(bonus)} ${chestCoinName(rarity)}`, color: '#d18b00' };
+    loot = { icon: chestCoinIco(rarity) || xi('x_coin') || '<span style="font-size:4rem">🟡</span>', main: `${chestCoinName(rarity)}　${COIN_ICO} ${formatCoinNumber(bonus)}`, color: '#d18b00', sub: `ザコ${CHEST_COIN_MULT[rarity] * mult}体ぶんのコイン` };
   } else {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
     if (pick.id === 'evoFeather') { // 進化の羽は宝箱と同じレア度の羽（N宝箱→N羽 … UR宝箱→UR羽）
