@@ -5093,3 +5093,5 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 @keyframes lbMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { #lbPanel .lb-mq { animation-duration: calc(var(--mq-dur, 8s) * 2); } }
 #lbPanel #loginBonusReward.lb-mq-on { cursor: pointer; pointer-events: auto; user-select: none; -webkit-user-select: none; }
+#lbPanel #loginBonusAdBtn.lb-ad-done { color: #ffe98a !important; cursor: default; animation: lbAdDone 0.5s ease-out; opacity: 1 !important; filter: none !important; }
+@keyframes lbAdDone { 0% { transform: scale(0.8); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }

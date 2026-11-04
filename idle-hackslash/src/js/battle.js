@@ -1679,7 +1679,7 @@ function checkLoginBonus(awayMs) {
     loginBonusCloseBtn.disabled = false;
     loginBonusCloseBtn.textContent = '受け取る'; loginBonusCloseBtn.classList.remove('lb-drawing');
     loginBonusAdBtn.innerHTML = `${isAdFree() ? '🎁 紋章特典で' : '🎬 動画で'}コイン${LOGIN_AD_MULT}倍 <b>＋💎${LOGIN_AD_GEMS}</b>`;
-    loginBonusAdBtn.style.display = '';
+    loginBonusAdBtn.style.display = ''; loginBonusAdBtn.classList.remove('lb-ad-done'); loginBonusAdBtn.disabled = false;
     updateStatsUI(); updatePotionButton(); renderArtifactList();
   };
   loginGachaSkip = finish;
@@ -1705,7 +1705,7 @@ loginBonusAdBtn.addEventListener('click', ev => {
   const give = () => {
     const r = loginAdReward; if (!r) return; loginAdReward = null;
     game.coins += r.coins; game.gems += r.gems;
-    loginBonusAdBtn.style.display = 'none';
+    loginBonusAdBtn.innerHTML = `✨ コイン${LOGIN_AD_MULT}倍になりました！`; loginBonusAdBtn.classList.add('lb-ad-done'); loginBonusAdBtn.disabled = true; // 空白にせず、3倍になったことを出しておく
     loginSlotNum.textContent = formatCoinNumber(r.coins / (LOGIN_AD_MULT - 1) * LOGIN_AD_MULT);
     loginBonusReward.insertAdjacentHTML('afterbegin', `<span class="lb-chip special">🎬 コイン${LOGIN_AD_MULT}倍！ ${COIN_ICO} +${formatCoinNumber(r.coins)}　💎 +${r.gems}</span>`);
     playSlotSettleSound(); playBossFanfare(250); celebrateLoginAd(); updateStatsUI(); saveGame(); // 動画のあとはファンファーレと紙吹雪でお祝い
