@@ -1418,7 +1418,7 @@ function setupObstacles(dropDebug) {
     const r = baseR;
     const p = spot(r); if (!p) continue;
     const o = { x: p.x, y: p.y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] };
-    if (kind === 'reflector') o.r = r * 0.85; // 反射板（少し小さめ）
+    if (kind === 'reflector') o.r = r * 0.95; // 反射板
     else if (kind === 'tansu') { o.kind = 'qbox'; o.tansu = true; o.multi = 3; o.r = r * 0.95; } // タンス（引き出し3段）
     if (kind === 'rock') o.sprite = rockSprite;
     else if (kind === 'bumper') { o.r = r * 0.85; o.sprite = 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
