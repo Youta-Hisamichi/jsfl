@@ -1122,7 +1122,16 @@ function drawBossWeakPoints() {
     ctx.restore();
   }
 }
+let coinStealAt = 0;
+function coinStealFrom(e) { // 敵からコインが噴き出して自キャラへ飛んでくる（盗んだ分だけ増える）
+  const now = Date.now(); if (now - coinStealAt < 120) return; coinStealAt = now; // 連続ヒットでも出しすぎない
+  const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_STEAL_RATE * computeBonuses().coinMult));
+  game.coins += gain; spawnCoinDrop(e.x, e.y, gain, 3); // 敵の位置からコインが噴き出して集まる
+  spawnDamageText(e.x, e.y - e.radius - 20, `🪙 +${formatCoinNumber(gain)}`, '#ffd76b', 0.03);
+  if (Math.random() < 0.6) playCoinChime(Math.floor(Math.random() * 5));
+}
 function onPlayerHitEnemy(enemy, dmg) {
+  if (typeof isCoinStrike === 'function' && isCoinStrike() && enemy && !enemy.isPlayer) coinStealFrom(enemy); // コイン盗み：攻撃が当たるたびに敵からコインが噴き出す
   if (!enemy.hitsTaken) enemy.firstHitAt = Date.now(); // 戦い始め（最初に攻撃が当たったとき）
   enemy.hitsTaken = (enemy.hitsTaken || 0) + 1; enemy.bestHit = Math.max(enemy.bestHit || 0, dmg || 0); // ボスを一撃で倒したかを見る（試練の塔のヒント）
   focusHpEnemy(enemy);

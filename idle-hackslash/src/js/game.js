@@ -1750,7 +1750,7 @@ function renderSkillButton(btn, skillKey, resetKey, label, cooldown, lastAt, act
   btn.textContent = cooldownLabel(resetKey, label, remaining);
 }
 function updateDeathButton() { renderSkillButton(deathBtn, 'skillDeath', 'death', '💀 即死魔法', SKILL_DEATH_COOLDOWN, lastDeathAt); }
-function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン攻撃', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン攻撃中'); }
+function updateCoinStrikeButton() { renderSkillButton(coinStrikeBtn, 'skillCoinStrike', 'coinStrike', '🪙 コイン盗み', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, coinStrikeEndAt, '🪙 コイン盗み中'); }
 function updateZeniButton() { renderSkillButton(zeniBtn, 'skillZeni', 'zeni', '💰 ゼニ投げ', SKILL_ZENI_COOLDOWN, lastZeniAt); }
 function updateHalveButton() { renderSkillButton(halveBtn, 'skillHalve', 'halve', '🌗 半減魔法', SKILL_HALVE_COOLDOWN, lastHalveAt); }
 function updateBlastButton() { renderSkillButton(blastBtn, 'skillBlast', 'blast', '💣 大爆発', SKILL_BLAST_COOLDOWN, lastBlastAt); }

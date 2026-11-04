@@ -738,7 +738,7 @@ const DEBUG_ACTION_LABELS = {
   encircle: 'DEBUG: 包囲の敵を出しました',
   supergems: 'DEBUG: リアルマネー +10000円 を付与しました',
   feathers: 'DEBUG: 進化の羽 +10 を付与しました',
-  special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン攻撃・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
+  special: 'DEBUG: メテオ・加速・回復・バリア・ホーミング・毒・麻痺・眠り・攻撃UP・リヒール・魔法封じ・捨て身・即死魔法・コイン盗み・ゼニ投げ・謎魔法・仲間特攻・全体攻撃のクールダウンをすべてリセットしました',
   prev: 'DEBUG: 1ステージ戻しました',
   next: 'DEBUG: 1ステージ進めました',
   nextboss: 'DEBUG: 次のボスのステージまでスキップしました',
@@ -1488,9 +1488,11 @@ function updateRedPotionButton() { // スキル列の左端の赤ポーション
 redPotionBtn.addEventListener('click', event => {
   if ((game.redPotions || 0) <= 0) { promptGemShortage(0, { title: 'スキルポーションがありません', text: 'ショップで「スキルポーション」を買いますか？', silent: true, iconHtml: '<i class="ico-redpot" style="width:1em;height:1em;vertical-align:-0.1em"></i>' }); return; }
   if (!anySkillCoolingDown()) { showTapError('待ち時間中のスキルがありません', event.clientX, event.clientY); return; }
+  const cooling = [...document.querySelectorAll('#skillRow .action-btn')].filter(b => b.offsetParent && b.id !== 'redPotionBtn' && b.id !== 'lifeGlassBtn' && b.classList.contains('is-disabled')); // 回復するボタン（使う前に待ち時間中だったもの）
   game.redPotions--;
   resetAllSkillCooldowns();
   playFullRestoreSound();
+  cooling.forEach((b, i) => setTimeout(() => { b.classList.remove('sk-restored'); void b.offsetWidth; b.classList.add('sk-restored'); setTimeout(() => b.classList.remove('sk-restored'), 700); playTone(880 + i * 120, 0.06, 'triangle', 0.05); }, 120 + i * 110)); // 1つずつ時間差でポンと大きくなって、回復したのが分かるように
   showNotice('🧪 スキルポーションで全スキルの待ち時間をリセット！');
   updateRedPotionButton();
   saveGame();
@@ -2680,8 +2682,8 @@ coinStrikeBtn.addEventListener('click', event => {
   const ctxs = beginSkill(event, 'skillCoinStrike', 'coinStrike', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, v => { lastCoinStrikeAt = v; }, updateCoinStrikeButton, false);
   if (!ctxs) return;
   coinStrikeEndAt = Date.now() + COIN_STRIKE_MS;
-  spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン攻撃', '#ffd76b', 0.012);
-  showNotice(`🪙 コイン攻撃！ ${COIN_STRIKE_MS / 1000}秒間 敵めがけてコインを投げまくる・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
+  spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン盗み', '#ffd76b', 0.012);
+  showNotice(`🪙 コイン盗み！ ${COIN_STRIKE_MS / 1000}秒間 攻撃するたびに敵からコインが噴き出す・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
   playTone(988, 0.12, 'square', 0.12, 1318);
   updateCoinStrikeButton();
 });
@@ -3117,7 +3119,7 @@ canvas.addEventListener('pointerdown', event => {
         spawnTapMarker(x, y);
       }
     }
-    onCoinStrikeTap(x, y); // コイン攻撃中はタップでコイン
+    onCoinStrikeTap(x, y); // コイン盗み中はタップでもコイン
     game.totalTaps++;
     if (!CLONES_ENABLED) { updateStatsUI(); return; }
     const limit = getCloneLimit();

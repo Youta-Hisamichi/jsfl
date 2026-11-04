@@ -1420,16 +1420,6 @@ function fireWeapon(id, lv, pl) {
 }
 function updateWeapons(pl, speedMult) {
   if (!pl || pl.hp <= 0) { weaponProj = []; return; }
-  if (isCoinStrike()) { // コイン攻撃中：敵めがけてコインを投げまくる
-    coinThrowCd = (coinThrowCd || 0) - speedMult;
-    const tg = nearestOf(pl, weaponFoes());
-    if (tg && coinThrowCd <= 0) {
-      coinThrowCd = 6;
-      const a = Math.atan2(tg.y - pl.y, tg.x - pl.x) + (Math.random() - 0.5) * 0.35, sp = 9 + Math.random() * 2;
-      weaponProj.push({ id: 'coin', x: pl.x, y: pl.y - 4, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0, life: 70, r: 7, dmg: 0.3, hit: new Set(), spin: Math.random() * 6 });
-      if (Math.random() < 0.5) playTone(1500 + Math.random() * 500, 0.04, 'square', 0.025, 2200);
-    }
-  }
   for (const id in WEAPONS) {
     const lv = equippedWeaponLv(id); if (!lv || id === 'shield') continue;
     weaponCd[id] = (weaponCd[id] ?? WEAPONS[id].cd * 0.5) - speedMult;
@@ -1940,7 +1930,7 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   if (id === 'skillDeath') return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）<br>Lvごとに+1%（最大100%）・同じ敵には1回だけ（ボスはコンテニューで+1回）<br>ボスの即死耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}`;
   if (id === 'skillAccel') return `⏩ ${ACCEL_DURATION / 1000}秒間 2.5倍速<br>Lvを上げても効果は変わりません`;
   if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult(lv))}<br>Lvごとに+0.1%`;
-  if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 コインを投げ続ける（当たるとコイン獲得）・討伐コイン ×1.5<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 敵を攻撃するたびにコインが噴き出して手に入る・討伐コイン ×1.5<br>Lvを上げても効果は変わりません`;
   if (id === 'skillZeni') return `💰 手持ちコインの半分を投げる（${ZENI_MIN_COINS}枚以上必要）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} ＋ 攻撃力<br>Lvを上げても効果は変わりません`;
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
   if (id === 'skillHalve') return `🌗 敵のHPを半分にする（ボスに効く確率 ${pct1(HALVE_CHANCE_BOSS)}・効いたボスにはもう効かない）<br>Lvを上げても効果は変わりません`;
@@ -1955,7 +1945,7 @@ function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一�
 }
 const SKILL_COINSTRIKE_COOLDOWN = SKILL_MIN_CD;
 const COIN_STRIKE_MS = 20 * 1000;
-const COIN_STRIKE_KILL_MULT = 1.5; // コイン攻撃中の討伐コイン倍率
+const COIN_STRIKE_KILL_MULT = 1.5, COIN_STEAL_RATE = 0.1; // コイン盗み中の討伐コイン倍率・1回攻撃するごとに盗むコイン（ザコ1体の何倍）
 const SKILL_ZENI_COOLDOWN = SKILL_MIN_CD;
 const ZENI_MIN_COINS = 10;
 const ZENI_DMG_PER_COIN = 1.5;   // 投げたコイン1枚あたりのダメージ
