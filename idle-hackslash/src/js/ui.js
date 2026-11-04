@@ -750,10 +750,27 @@ const DEBUG_ACTION_LABELS = {
   clearSubs: 'DEBUG: サブスク（紋章）を解除しました',
   rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
 };
+// 使ったデバッグ項目は、次から一番上の「🕘 最近使った」に並べる（新しい順・最大8個。この端末に記録）
+const DBG_RECENT_KEY = 'dbgRecent', DBG_RECENT_MAX = 8;
+function dbgRecentList() { try { return JSON.parse(localStorage.getItem(DBG_RECENT_KEY) || '[]').filter(a => typeof a === 'string'); } catch (e) { return []; } }
+function renderDebugRecent() {
+  debugRow.querySelectorAll('.dbg-recent').forEach(e => e.remove());
+  const list = dbgRecentList().map(a => debugRow.querySelector(`[data-debug="${CSS.escape(a)}"]:not(.dbg-recent)`)).filter(Boolean);
+  if (!list.length) return;
+  const head = document.createElement('div'); head.className = 'debug-cat dbg-recent'; head.textContent = '🕘 最近使った';
+  const frag = [head, ...list.map(b => { const c = b.cloneNode(true); c.classList.add('dbg-recent'); c.removeAttribute('id'); return c; })];
+  debugRow.prepend(...frag);
+}
+function noteDebugUse(action) {
+  try { const l = dbgRecentList().filter(a => a !== action); l.unshift(action); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify(l.slice(0, DBG_RECENT_MAX))); } catch (e) {}
+  setTimeout(renderDebugRecent, 0);
+}
+renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
 debugRow.addEventListener('click', event => {
   const button = event.target.closest('[data-debug]');
   if (!button) return;
   const action = button.dataset.debug;
+  noteDebugUse(action);
   if (action === 'reload') { saveGame(); location.reload(); return; }
   if (action === 'size') { showGameSize(); return; }
   if (action === 'arenaRect') { // お試しの四角い戦闘エリアと丸を切り替え
@@ -1125,7 +1142,7 @@ upgradeList.addEventListener('click', event => {
     refreshPlayerBallStats(false);
     if (isPct) playUpgradeSoundClassic(); else playUpgradeSound(); // 10%は元の音
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
-    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${UPGRADES[id].name} ${formatUpgradeStat(id, before)} → ${formatUpgradeStat(id, getUpgradeStatValue(id))}` + leapPopLine(fromLv, game.upgrades[id]));
+    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${UPGRADES[id].name} ${formatChange(before, getUpgradeStatValue(id)).join(' → ')}` + leapPopLine(fromLv, game.upgrades[id]));
     updateStatsUI();
     updateHPUI();
     return;
@@ -1192,7 +1209,7 @@ function levelUpUpgrade(id, x, y) {
   announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
-  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id] + 1)}\n${UPGRADES[id].name} ${formatUpgradeStat(id, before)} → ${formatUpgradeStat(id, getUpgradeStatValue(id))}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
+  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id] + 1)}\n${UPGRADES[id].name} ${formatChange(before, getUpgradeStatValue(id)).join(' → ')}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
   updateStatsUI();
   updateHPUI();
   return true;
@@ -2347,7 +2364,7 @@ companionList.addEventListener('click', event => {
     spendCoins(total);
     const before = compUpStat(id, kind, compUpLv(id, kind));
     setCompUpLv(id, kind, compUpLv(id, kind) + count);
-    showLevelUpPop(event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatPreciseNumber(before)} → ${formatPreciseNumber(compUpStat(id, kind, compUpLv(id, kind)))}`);
+    showLevelUpPop(event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatChange(before, compUpStat(id, kind, compUpLv(id, kind))).join(' → ')}`);
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
     playUpgradeSound();
@@ -2374,7 +2391,7 @@ function levelUpCompanion(id, x, y, kind = 'atk') {
   refreshPlayerBallStats(false);
   refreshCompanionBalls();
   playUpgradeSound();
-  if (x || y) showLevelUpPop(x, y, `レベルアップ！ Lv.${formatCoinNumber(compUpLv(id, kind) + 1)}\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatPreciseNumber(before)} → ${formatPreciseNumber(compUpStat(id, kind, compUpLv(id, kind)))}`); // 数値の変化を見せる
+  if (x || y) showLevelUpPop(x, y, `レベルアップ！ Lv.${formatCoinNumber(compUpLv(id, kind) + 1)}\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatChange(before, compUpStat(id, kind, compUpLv(id, kind))).join(' → ')}`); // 数値の変化を見せる
   updateStatsUI();
   updateHPUI();
   return true;

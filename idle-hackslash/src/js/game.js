@@ -338,7 +338,7 @@ function step() {
         meteor.hit = true;
         spawnHitParticles(e.x, e.y, '#ffbc5c'); spawnHitParticles(e.x, e.y, '#ff5a1f');
         meteorBlasts.push({ x: e.x, y: e.y + e.radius * 0.3, r: Math.max(meteor.radius, e.radius), start: Date.now() }); shakeScreen(); // 大爆発
-        spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + meteorDmg, '#ffd76b');
+        spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + formatCoinNumber(meteorDmg), '#ffd76b');
         playMeteorImpactSound();
         updateHPUI();
         if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }

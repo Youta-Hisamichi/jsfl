@@ -1488,14 +1488,20 @@ function formatStageNumber(num) {
   return parts.join('');
 }
 // 強化の数値用：ふつうの表示より1桁多く出す（Lvアップでの小さな変化もわかるように）
-function formatPreciseNumber(num) {
+function formatPreciseNumber(num, extra = 1) { // extra：ふつうの表示より何桁多く出すか
   num = Number(num) || 0; if (!isFinite(num) || num >= 1e72) return formatCoinNumber(num);
-  if (num < 0) return '-' + formatPreciseNumber(-num);
-  num = Math.floor(num); if (num < 10000) return num.toLocaleString('ja-JP');
+  if (num < 0) return '-' + formatPreciseNumber(-num, extra);
+  if (num < 10000) { const d = Math.max(0, extra - 1); const v = Math.floor(num * Math.pow(10, d)) / Math.pow(10, d); return v.toLocaleString('ja-JP', { minimumFractionDigits: 0, maximumFractionDigits: d }); }
   let idx = BIG_UNITS.length - 1; while (idx > 0 && num < BIG_UNITS[idx].value) idx--;
-  while (true) { const u = BIG_UNITS[idx], raw = num / u.value, d = raw < 10 ? 3 : raw < 100 ? 2 : 1, r = Math.floor(raw * Math.pow(10, d)) / Math.pow(10, d);
+  while (true) { const u = BIG_UNITS[idx], raw = num / u.value, d = (raw < 10 ? 2 : raw < 100 ? 1 : 0) + extra, r = Math.floor(raw * Math.pow(10, d)) / Math.pow(10, d);
     if (r >= 10000 && idx < BIG_UNITS.length - 1) { idx++; continue; }
     return r.toLocaleString('ja-JP', { minimumFractionDigits: d, maximumFractionDigits: d }) + u.symbol; }
+}
+// 「前 → 後」の表示：同じに見えるときは、違いが見えるまで桁を増やす（最大+8桁）
+function formatChange(a, b, extra = 1) {
+  let e = extra, sa = formatPreciseNumber(a, e), sb = formatPreciseNumber(b, e);
+  while (sa === sb && a !== b && e < extra + 8) { e++; sa = formatPreciseNumber(a, e); sb = formatPreciseNumber(b, e); }
+  return [sa, sb];
 }
 function formatCoinNumber(num) {
   num = Number(num) || 0;
