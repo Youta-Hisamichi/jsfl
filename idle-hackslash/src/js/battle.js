@@ -2305,3 +2305,9 @@ function fitLoginExtrasMarquee() {
   el.classList.add('lb-mq-on');
 }
 { const el = document.getElementById('loginBonusReward'); if (el) new MutationObserver(() => { if (!el._mqSelf) requestAnimationFrame(fitLoginExtrasMarquee); }).observe(el, { childList: true }); }
+// 流れている文字は、押している間だけ速く流す（離すと元の速さ）
+{ const el = document.getElementById('loginBonusReward');
+  if (el) { const rate = r => { const mq = el.querySelector('.lb-mq'); if (mq) mq.getAnimations().forEach(a => { a.playbackRate = r; }); };
+    el.addEventListener('pointerdown', () => rate(5));
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => el.addEventListener(t, () => rate(1)));
+    el.style.touchAction = 'none'; } }

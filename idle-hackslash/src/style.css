@@ -5092,3 +5092,4 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 #lbPanel .lb-mq-gap { color: #ffd76b; font-size: 3cqw; text-shadow: 0 1px 2px #000; }
 @keyframes lbMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { #lbPanel .lb-mq { animation-duration: calc(var(--mq-dur, 8s) * 2); } }
+#lbPanel #loginBonusReward.lb-mq-on { cursor: pointer; pointer-events: auto; user-select: none; -webkit-user-select: none; }
