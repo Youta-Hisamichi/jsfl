@@ -1930,7 +1930,7 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   if (id === 'skillDeath') return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）<br>Lvごとに+1%（最大100%）・同じ敵には1回だけ（ボスはコンテニューで+1回）<br>ボスの即死耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}`;
   if (id === 'skillAccel') return `⏩ ${ACCEL_DURATION / 1000}秒間 2.5倍速<br>Lvを上げても効果は変わりません`;
   if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult(lv))}<br>Lvごとに+0.1%`;
-  if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 敵からコインを吸い取り続け、攻撃を当てるとコインが大噴出・討伐コイン ×1.5<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 敵からコインを吸い取り続け、攻撃を当てるとザコ1体の半分のコインが大噴出<br>Lvを上げても効果は変わりません`;
   if (id === 'skillZeni') return `💰 手持ちコインの半分を投げる（${ZENI_MIN_COINS}枚以上必要）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} ＋ 攻撃力<br>Lvを上げても効果は変わりません`;
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
   if (id === 'skillHalve') return `🌗 敵のHPを半分にする（ボスに効く確率 ${pct1(HALVE_CHANCE_BOSS)}・効いたボスにはもう効かない）<br>Lvを上げても効果は変わりません`;
@@ -1945,7 +1945,7 @@ function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一�
 }
 const SKILL_COINSTRIKE_COOLDOWN = SKILL_MIN_CD;
 const COIN_STRIKE_MS = 30 * 1000;
-const COIN_STRIKE_KILL_MULT = 1.5, COIN_STEAL_RATE = 0.25, COIN_DRAIN_RATE = 0.03, COIN_DRAIN_MS = 400; // コイン盗み中の討伐コイン倍率・1回攻撃するごとに盗むコイン（ザコ1体の何倍）
+const COIN_STRIKE_KILL_MULT = 1, COIN_STEAL_RATE = 0.5, COIN_DRAIN_RATE = 0.03, COIN_DRAIN_MS = 400; // コイン盗み中の討伐コイン倍率・1回攻撃するごとに盗むコイン（ザコ1体の何倍）
 const SKILL_ZENI_COOLDOWN = SKILL_MIN_CD;
 const ZENI_MIN_COINS = 10;
 const ZENI_DMG_PER_COIN = 1.5;   // 投げたコイン1枚あたりのダメージ

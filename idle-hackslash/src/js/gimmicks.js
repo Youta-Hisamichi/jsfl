@@ -609,7 +609,13 @@ function useLifeGlass(ev) {
   if (!spendItem('lifeglass')) return;
   boss.glassUsed = true; bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = Date.now();
   spawnDamageText(arena.x, arena.y - 40, `⏳ 命の砂時計！ 残り時間が ${Math.round(bossTimeLeftMs / 1000)}秒 に戻った`, '#ffd76b', 0.012, true);
-  playHealSound(); saveGame(); updateLifeGlassBtn();
+  playLifeGlassSound(); if (typeof songState !== 'undefined' && songState) songState.tempo = 1; // 早回しになっていたBGMもすぐ元の速さに
+  saveGame(); updateLifeGlassBtn();
+}
+function playLifeGlassSound() { // 重い柱時計の音が、だんだんゆっくり・低くなって止まる（時間が巻き戻る感じ）
+  if (typeof noiseSweep === 'function') noiseSweep(0.9, 3000, 200, 'lowpass', 1, 0.25); // ヒュウゥン…と巻き戻る風
+  let at = 0; [0, 1, 2, 3, 4, 5].forEach(i => { at += 180 + i * i * 70; const f = 70 - i * 6; setTimeout(() => { thump(f * 2, f, 0.5 + i * 0.08, 0.9 - i * 0.08, 'sine'); thump(f * 4, f * 2, 0.08, 0.25, 'square'); }, at); }); // ゴーン…ゴーン……ゴーン（間がのびていく）
+  setTimeout(() => thump(55, 28, 1.6, 0.9, 'sine'), at + 600); // 最後に深いゴォン
 }
 function updateLifeGlassBtn() {
   const row = document.getElementById('skillRow'); if (!row) return;
