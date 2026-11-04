@@ -254,7 +254,7 @@ function compUpRowHtml(id, kind) {
 // 自キャラ：勇者か、獲得済みの仲間から選ぶ（見た目と属性が変わる）
 function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
-  const canChange = COMPANION_IDS.some(isCharSummoned); // まだ誰も招集していなければ自キャラ変更は出さない
+  const canChange = false; // 自キャラの変更はなくした
   el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;

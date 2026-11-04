@@ -1066,6 +1066,10 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'chestItems') { // 宝箱で出る使いきりアイテムを1つずつ
+    for (const k in CHEST_ITEMS) gainItem(k, 1);
+    saveGame(); if (typeof renderBagList === 'function') renderBagList(); if (typeof updateLifeGlassBtn === 'function') updateLifeGlassBtn();
+    showNotice(`DEBUG: 宝箱のアイテムを1つずつ（${Object.values(CHEST_ITEMS).map(I => I.name).join('・')}）`, false, 5000); return; }
   if (action === 'blitzEnemy') { forceBlitzNext = true; showNotice('DEBUG: 次に出る敵が「爆速」になります'); return; }
   if (action === 'skillFormula') { // 全スキル（手動スキル・自動スキル）の計算式といまの数字。持っていないものは Lv1 で計算
     const atk = getPlayerAtk(), b = computeBonuses(), F = v => formatCoinNumber(Math.round(v)), M = v => '×' + (+v.toFixed(3));
@@ -1512,7 +1516,7 @@ function showShopTab(key) {
 }
 document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('click', () => showShopTab(t.dataset.shopTab)));
 { let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'charge', 'bag'].includes(first) ? first : 'item'); } // 仲間タブは削除
-document.getElementById('myCharCard').addEventListener('click', openMyCharPicker);
+// 自キャラの変更はなくした（カードを押しても何もしない）
 applyHeroChar();
 document.getElementById('compLockBtn')?.addEventListener('click', () => { // 仲間ページから、ショップの解雇・採用（仲間タブ）へ
   switchTab('gemshop'); showShopTab('chara');

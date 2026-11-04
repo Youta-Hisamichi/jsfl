@@ -67,7 +67,7 @@ function setupGimmick(key) {
   if (!key) return;
   game.gimmickSeen = game.gimmickSeen || {};
   gm.isNew = !game.gimmickSeen[key]; game.gimmickSeen[key] = true;
-  if (gm.isNew && !dbgGimmick) setTimeout(() => spawnDamageText(arena.x, arena.y + 20, `図鑑に登録！（クリアで +${GIMMICK_FIND_GEMS} 💎）`, '#64e8ff', 0.012, true), 900); // ジェムは初めてクリアしたときに
+  // ステージイベント図鑑（初クリアのジェム）はなくした // ジェムは初めてクリアしたときに
   gm.bannerAt = Date.now();
   playTone(660, 0.12, 'triangle', 0.06, 990); setTimeout(() => playTone(990, 0.16, 'triangle', 0.06, 1320), 120);
   const A = gArea();
@@ -331,7 +331,7 @@ function dbgNextGimmick() { // デバッグ：イベントを順番に切り替�
 { const orig = renderQuests; renderQuests = function () {
   orig(); const host = document.getElementById('questBox'); if (!host) return;
   const seen = game.gimmickSeen || {}, n = GIMMICK_KEYS.filter(k => seen[k]).length;
-  host.insertAdjacentHTML('beforeend', `<div class="qb-sec gm-book"><div class="qb-head">🗺️ ステージイベント図鑑 ${n}/${GIMMICK_KEYS.length}<small>（初めてクリアすると 💎${GIMMICK_FIND_GEMS}）</small></div><div class="gm-grid">${GIMMICK_KEYS.map(k => seen[k] ? `<div class="gm-cell" title="${GIMMICKS[k].desc}"><b>${GIMMICKS[k].icon}</b><span>${GIMMICKS[k].name}</span></div>` : '<div class="gm-cell un"><b>？</b><span>？？？</span></div>').join('')}</div></div>`);
+  if (false) host.insertAdjacentHTML('beforeend', `<div class="qb-sec gm-book"><div class="qb-head">🗺️ ステージイベント図鑑 ${n}/${GIMMICK_KEYS.length}<small>（初めてクリアすると 💎${GIMMICK_FIND_GEMS}）</small></div><div class="gm-grid">${GIMMICK_KEYS.map(k => seen[k] ? `<div class="gm-cell" title="${GIMMICKS[k].desc}"><b>${GIMMICKS[k].icon}</b><span>${GIMMICKS[k].name}</span></div>` : '<div class="gm-cell un"><b>？</b><span>？？？</span></div>').join('')}</div></div>`);
 }; }
 
 // ===== 壺割りまくり・芝刈りしまくり・ブロック叩きまくり：障害物をずらっと並べ、壊してもまた出てくる =====
@@ -426,7 +426,8 @@ const SEEDS = {
   hp:  { icon: '🍎', img: 'assets/img/icons/bag_seedHp.webp', name: 'HPの種', stat: '最大HP', col: '#7ee787' },
 };
 const SEED_PER_USE = 0.05; // 1個につき +5%
-const SEED_CHEST_CHANCE = { common: 0.01, rare: 0.03, epic: 0.08, legendary: 0.12, mythic: 0.2 }; // 宝箱から種が出る確率：N1%・R3%・SR8%・SSR12%・UR20%
+const SEED_CHEST_CHANCE = {}; // ドーピングの種はなくした（宝箱からも出ない）
+const SEED_CHEST_CHANCE_OLD = { common: 0.01, rare: 0.03, epic: 0.08, legendary: 0.12, mythic: 0.2 }; // 宝箱から種が出る確率：N1%・R3%・SR8%・SSR12%・UR20%
 const SEED_CHEST_COUNT = { common: 1, rare: 1, epic: 1, legendary: 2, mythic: 3 };
 function seedHeld(k) { return ((game.seeds || {})[k]) || 0; }
 function seedUsed(k) { return ((game.seedUsed || {})[k]) || 0; }
@@ -457,7 +458,7 @@ function seedUseFx(k, n) { // 種を使った演出：ダイアログの中央�
 const seedBtn = document.getElementById('seedBtn');
 function updateSeedButton() {
   const held = seedHeld('atk') + seedHeld('hp'), used = seedUsed('atk') + seedUsed('hp');
-  seedBtn.style.display = held || used ? '' : 'none';
+  seedBtn.style.display = 'none'; { const tb = document.getElementById('towerSeedBtn'); if (tb) tb.style.display = 'none'; } // ドーピングの種はなくした
   const html = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt=""><b>×${held}</b>`; if (seedBtn.dataset.html !== html) { seedBtn.innerHTML = html; seedBtn.dataset.html = html; }
   seedBtn.classList.toggle('is-disabled', !held);
   const t = document.getElementById('towerSeedBtn'); if (t) { t.style.display = held || used ? '' : 'none'; t.innerHTML = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">種でドーピング <small>所持 ${held}個${used ? `／使用中 ${used}個` : ''}</small>`; }
@@ -493,11 +494,11 @@ updateSeedButton();
 function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `${S.icon} ${S.name}${n > 1 ? ` ×${n}` : ''}を見つけた！`, S.col, 0.012, true); playCoinChime(11); }
 { const orig = openTansu; openTansu = function (o) {
   const before = gm.broke; orig.apply(this, arguments);
-  if (gm.broke !== before && Math.random() < 0.06) { const k = randomSeedKey(); gainSeed(k); setTimeout(() => seedDropText(k, 1, o.x, o.y - o.r - 34), 250); }
+  // ドーピングの種はなくした
 }; }
 { const orig = breakObstacleLoot; breakObstacleLoot = function (o) {
   orig.apply(this, arguments);
-  if (o.kind === 'pot' && Math.random() < (o.gm ? 0.015 : 0.04)) { const k = randomSeedKey(); gainSeed(k); setTimeout(() => seedDropText(k, 1, o.x, o.y - 30), 250); }
+  // ドーピングの種はなくした
 }; }
 // 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
 // ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
@@ -540,10 +541,9 @@ function seedRefundFeathers() { return (seedUsed('atk') + seedUsed('hp')) * SEED
 const CHEST_ITEMS = {
   skillTicket: { icon: '🎫', name: 'スキルガチャ券', desc: 'スキルガチャを1回、コインなしで回せる（回数の上限にも数えない）', col: '#8ad0ff' },
   compTicket:  { icon: '📜', name: '招集ガチャ券', desc: '招集ガチャを1回、コインなしで回せる', col: '#ffc46b' },
-  maneki:      { icon: '🐱', name: '金の招き猫', desc: '5分間、手に入るコインが2倍', col: '#ffd76b' },
   doll:        { icon: '🪆', name: '身代わり人形', desc: 'ボス戦・試練の塔で倒れたとき、1回だけHP50%で立ち直る（自動で使う）', col: '#ff9a9a' },
-  lv15:        { icon: '⏫', name: 'Lv1.5倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部1.5倍（Lv倍増券は1周回に1回まで）', col: '#c28aff' },
-  lv2:         { icon: '⏫', name: 'Lv2倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部2倍（Lv倍増券は1周回に1回まで）', col: '#ff8adf' },
+  lv15:        { icon: '🎟️', img: 'assets/img/icons/bag_ticket.webp', name: 'Lv1.5倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部1.5倍（Lv倍増券は1周回に1回まで）', col: '#c28aff' },
+  lv2:         { icon: '🎟️', img: 'assets/img/icons/bag_ticket.webp', name: 'Lv2倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部2倍（Lv倍増券は1周回に1回まで）', col: '#ff8adf' },
   ret15:       { icon: '🏠', name: '帰還ボーナス1.5倍券', desc: '次の帰還ボーナスのコインが1.5倍（自動で使う）', col: '#7ee7c8' },
   midare:      { icon: '📜', name: 'みだれうちの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が4回攻撃になる', col: '#ff8a5c', buff: 'midare' },
   nitoryu:     { icon: '📜', name: 'にとうりゅうの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が2回攻撃になる', col: '#ffb35c', buff: 'nitoryu' },
@@ -554,7 +554,7 @@ const CHEST_ITEMS = {
 };
 // 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
 const CHEST_ITEM_DROP = {
-  rare: [['skillTicket', 0.05], ['compTicket', 0.05], ['maneki', 0.03]],
+  rare: [['skillTicket', 0.05], ['compTicket', 0.05]],
   epic: [['doll', 0.03], ['lifeglass', 0.03]],
   legendary: [['doll', 0.03], ['lv15', 0.02], ['ret15', 0.05], ['lifeglass', 0.03]],
   mythic: [['doll', 0.03], ['lv15', 0.01], ['lv2', 0.01], ['ret2', 0.05], ['midare', 0.01], ['nitoryu', 0.02], ['yamabiko', 0.02], ['ageage', 0.02]],
@@ -676,7 +676,7 @@ function bagRows() {
   const rows = [], hc = getHeldChests();
   rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
   rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキルポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
-  for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
+  if (false) for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
   for (const r of FEA_RARITIES) { const n = feaCount(r); // 進化の羽はレア度ごと（0枚でも5種とも表示）
@@ -986,9 +986,16 @@ if (!game.gimmickCleared) game.gimmickCleared = Object.assign({}, game.gimmickSe
 { const orig = onStageClear; onStageClear = function (passed) {
   const key = gm && gm.key;
   const r = orig.apply(this, arguments);
-  if (key && !passed && !dbgGimmick && !game.gimmickCleared[key]) {
+  if (false && key && !passed && !dbgGimmick && !game.gimmickCleared[key]) { // ステージイベント図鑑のジェムはなくした
     game.gimmickCleared[key] = true; game.gems += GIMMICK_FIND_GEMS; updateStatsUI();
     setTimeout(() => spawnDamageText(arena.x, arena.y + 20, `${GIMMICKS[key].icon} ${GIMMICKS[key].name} 初クリア！ +${GIMMICK_FIND_GEMS} 💎`, '#64e8ff', 0.012, true), 700);
   }
   return r;
 }; }
+// ドーピングの種・金の招き猫・自キャラの変更はなくした：持っていた種（使った分も）と招き猫は、1つにつきN羽1枚にして返す
+if (!game.seedGone) {
+  const n = (seedHeld('atk') + seedHeld('hp') + seedUsed('atk') + seedUsed('hp')) + itemHeld('maneki');
+  game.seeds = {}; game.seedUsed = {}; if (game.items) delete game.items.maneki; game.manekiUntil = 0; game.heroChar = null; game.seedGone = true;
+  if (n > 0) { addFea('common', n); setTimeout(() => showNotice(`🪶 ドーピングの種・金の招き猫はなくなりました。持っていた分を 進化のN羽 ×${n} にして返しました`, false, 6000), 3000); }
+  try { updateSeedButton(); refreshPlayerBallStats(false); saveGame(); } catch (e) {}
+}

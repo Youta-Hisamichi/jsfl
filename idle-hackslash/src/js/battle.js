@@ -1977,7 +1977,7 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
   if (!pool.length) pool = ARTIFACT_POOL;
   if (pool.some(a => a.rarity === rarity)) pool = pool.filter(a => a.rarity === rarity);
   pool.forEach(a => rows.push([chestArtIco(a, rarity), a.id === 'evoFeather' ? `進化の${feaName(rarity)}` : a.name, P(rest * ac / pool.length), '']));
-  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], overheal: ['💖', '回復限界突破', `回復の上限+0.5倍（最大${OVERHEAL_CAP}倍で出なくなる）`], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.img ? `<img class="ico-img" src="${I.img}" alt="">` : I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: ['🦸', '自キャラ（進化して初期Lv+1）', ''] };
+  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], overheal: ['💖', '回復限界突破', `回復の上限+0.5倍（最大${OVERHEAL_CAP}倍で出なくなる）`], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.img ? `<img class="ico-img" src="${I.img}" alt="">` : I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: [`<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '自キャラ（進化して初期Lv+1）', ''] };
   specs.forEach(([k, p]) => rows.push([SPEC[k][0], SPEC[k][1], P(p), SPEC[k][2]]));
   const ex = [];
   const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
@@ -1990,7 +1990,6 @@ function chestSpecials(rarity) { // コイン・羽以外の中身と、その�
   if (CHEST_POTION_RARITIES.includes(rarity)) { if ((game.potions || 0) < CHEST_POTION_MAX_HELD) o.push(['potion', CHEST_POTION_CHANCE]); if ((game.redPotions || 0) < CHEST_POTION_MAX_HELD) o.push(['redPotion', CHEST_POTION_CHANCE]); }
   if (typeof CHEST_COMP_CHANCE !== 'undefined' && CHEST_COMP_CHANCE[rarity] && chestCompPool(rarity).length) o.push(['comp', CHEST_COMP_CHANCE[rarity]]);
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
-  if (typeof SEED_CHEST_CHANCE !== 'undefined' && SEED_CHEST_CHANCE[rarity]) o.push(['seed', SEED_CHEST_CHANCE[rarity]]);
   if (typeof CHEST_ITEM_DROP !== 'undefined') for (const [k, p] of (CHEST_ITEM_DROP[rarity] || [])) o.push(['item:' + k, p]); // 使いきりアイテム（ガチャ券・招き猫・身代わり人形・Lv倍増券・帰還ボーナス券）
   return o;
 }

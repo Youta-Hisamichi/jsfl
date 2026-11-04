@@ -1188,7 +1188,6 @@ function buildGemSourceList() {
   row('謎魔法スキル「進化の羽が舞い降りた！」', '🪶1', pct(MYSTERY_EFFECTS.find(e => e.name.includes('羽')).w / sum(MYSTERY_EFFECTS.map(e => e.w))));
   row('（羽ガチャの確率）', '—', `N${RECORD_FEA_RATES.common}%・R${RECORD_FEA_RATES.rare}%・SR${RECORD_FEA_RATES.epic}%・SSR${RECORD_FEA_RATES.legendary}%・UR${RECORD_FEA_RATES.mythic}%`);
   sec('📖 図鑑・発見');
-  row('ステージイベント図鑑（初めてクリア）', `💎${GIMMICK_FIND_GEMS}`, `${GIMMICK_KEYS.length}種 → 最大💎${GIMMICK_FIND_GEMS * GIMMICK_KEYS.length}`);
   RARE_ENEMIES.forEach(r => row(`レア敵「${r.name}」`, '💎5／💎1', `初撃破は💎5、2回目からは💎1／${r.cond}`));
   row('（レア敵の出現）', '—', '1日1回まで');
   sec('🔁 転生');

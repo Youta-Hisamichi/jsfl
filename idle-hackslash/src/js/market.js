@@ -64,10 +64,10 @@ function mktSettle() {
   const d0 = new Date(); let off = 0; for (let i = 0; i < 400 && mktDayKey(-i) !== m.day; i++) off = -i - 1;
   for (const e of MKT_ELEMS) { const g = (m.hold || {})[e] || 0; if (!g) continue; const p0 = mktPrice(off, e), p1 = mktPrice(off + 1, e), r = Math.max(0, Math.round(g * p1 / p0)); back += r; put += g; res.push({ e, g, r, p0, p1 }); }
   game.market = { day: mktDayKey(0), hold: {} };
-  const items = {}; // 精算はジェムではなく、1つ分ごとに羽ガチャ1枚（75%）か、種1個（25%）
+  const items = {}; // 精算はジェムではなく、1つ分ごとに羽ガチャ1枚（75%）か、N羽1枚（25%。前は種）
   for (let i = 0; i < back; i++) {
     if (Math.random() < 0.75) { const r = rollRecordFeather(); addFea(r, 1); const k = `${RARITY_INFO[r].label}の進化の羽`; items[k] = (items[k] || 0) + 1; }
-    else { const ks = Object.keys(SEEDS), k = ks[Math.floor(Math.random() * ks.length)]; gainSeed(k, 1); items[SEEDS[k].name] = (items[SEEDS[k].name] || 0) + 1; }
+    else { addFea('common', 1); const k = '進化のN羽'; items[k] = (items[k] || 0) + 1; }
   }
   const itemTxt = Object.entries(items).map(([k, n]) => `${k}×${n}`).join('・');
   saveGame(); updateStatsUI();

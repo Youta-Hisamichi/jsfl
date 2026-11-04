@@ -1157,7 +1157,7 @@ function elementMult(att, def) { return !ELEMENTS_ON || !att || !def ? 1 : ELEME
 function elemBadge(el, cls = '') { return ELEMENTS_ON && el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
 // 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
 function isCharSummoned(id) { return !!(game.companions && game.companions.recruited && game.companions.recruited[id]) && isCharObtained(id); } // いま招集している（パーティに入れている）仲間だけ
-function getHeroChar() { return game.heroChar && COMPANIONS[game.heroChar] && isCharSummoned(game.heroChar) ? game.heroChar : null; }
+function getHeroChar() { return null; } // 自キャラの変更はなくした（いつも勇者）
 function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMENT[id]; } // 自キャラと交代した仲間は勇者が代わりに出るので属性なし
 const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
 // 自キャラのタイプ：仲間の得意分野で決まり、長所はレア度が高いほど大きい。短所は固定。勇者は補正なし・属性なし（相性の不利も受けない）
