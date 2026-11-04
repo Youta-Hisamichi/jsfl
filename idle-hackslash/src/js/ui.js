@@ -2904,7 +2904,7 @@ halveBtn.addEventListener('click', event => { // 半減魔法：敵のHPを半�
     playThunderStrike(); playTone(110, 0.4, 'sawtooth', 0.12, 55); noiseSweep(0.35, 7000, 2500, 'highpass', 0.8, 0.3); setTimeout(() => playTone(880, 0.12, 'square', 0.06, 1760), 40); // バチバチッと電撃
     const y = enemy.y - enemy.radius - 30;
     if (enemy.isBoss && enemy.halved) { spawnDamageText(enemy.x, y, '🌗 このボスにはもう効かない…', '#9aa3b8', 0.014); }
-    else if (enemy.isBoss && Math.random() >= HALVE_CHANCE_BOSS) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
+    else if (enemy.isBoss && Math.random() >= halveChanceBoss()) { spawnDamageText(enemy.x, y, '🌗 半減魔法… ボスには効かなかった', '#9aa3b8', 0.014); }
     else {
       const cut = Math.floor(enemy.hp / 2);
       if (cut > 0) { enemy.hp -= cut; trackDamage(cut); }

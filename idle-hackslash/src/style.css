@@ -5184,3 +5184,5 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max b { font-size: 0.85rem; font-weight: 900; color: #ffd76b; text-shadow: 0 1px 2px #000; }
 .tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max small { font-size: 0.56rem; color: #f3e7c4; font-weight: 700; }
 .party-row #partySlotBtn button .ps-cost, .party-row #skillCountRow button .ps-cost { display: inline; }
+/* 招集ガチャの値段の下地は、スキルガチャと同じ絵 */
+.tab-page[data-tab="companion"] .gacha-art-btn .gab-cost { min-width: 0 !important; width: 40%; white-space: nowrap; aspect-ratio: 260 / 85; display: flex; align-items: center; justify-content: center; padding: 0 !important; border: none !important; border-radius: 0 !important; background: url(assets/img/ui/skill2/cost.webp) center / 100% 100% no-repeat !important; font-size: 1.05rem; }

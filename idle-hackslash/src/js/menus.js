@@ -1976,12 +1976,13 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   if (id === 'skillCoinStrike') return `🪙 <b>${+coinStealSecs(lv).toFixed(2)}秒間</b>${lv < SKILL_MAX_LEVEL ? `（次のLv ${+coinStealSecs(lv + 1).toFixed(2)}秒）` : ''} 敵からコインを吸い取り続け、攻撃を当てるとザコ1体の半分のコインが大噴出<br>Lvで長くなる（30秒までは+1秒、そこから30秒ごとに増え方が半分）`;
   if (id === 'skillZeni') { const e = zeniEstimate(lv); return `💰 ダメージ倍率 <b>×${+zeniMult(lv).toFixed(3)}</b>${lv < SKILL_MAX_LEVEL ? `（次のLv ×${+zeniMult(lv + 1).toFixed(3)}）` : ''}<br>目安 ≈ <b>${formatCoinNumber(e.dmg)}</b>（いま投げると ${formatCoinNumber(e.thrown)}枚）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} × 倍率 ＋ 攻撃力（手持ちの半分を投げる・${ZENI_MIN_COINS}枚以上必要）`; }
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
-  if (id === 'skillHalve') return `🌗 敵のHPを半分にする（ボスに効く確率 ${pct1(HALVE_CHANCE_BOSS)}・効いたボスにはもう効かない）<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillHalve') { const s = deathStage(); return `🌗 敵のHPを半分にする（ボスに効く確率 <b>${pct1(halveChanceBoss(lv, s))}</b>・効いたボスにはもう効かない）<br>Lvごとにボスに効く確率+1%（Lv1で10%）${brief ? `<br>ボスの半減魔法耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}` : ''}`; }
   return '';
 }
 function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一言
   const k = HEAL_SKILLS.includes(id) ? '回復力' : '倍率';
   if (id === 'skillDeath') return '即死率 +1%（例外あり）';
+  if (id === 'skillHalve') return `ボスに効く確率 ${pct1(halveChanceBoss(slv))}（+1%）`;
   if (id === 'skillAtkUp') return `攻撃力UP ×${fmtAtkUp(atkUpMult(slv))}`;
   if (id === 'skillCoinStrike') return `コイン盗み ${+coinStealSecs(slv).toFixed(2)}秒`;
   if (id === 'skillZeni') return `ダメージ倍率 ×${+zeniMult(slv).toFixed(3)}`;
@@ -2027,7 +2028,13 @@ const BLAST_KNOCK = 30, BLAST_KNOCK_BOSS = 14; // 大爆発で敵が吹っ飛ぶ
 const BLAST_DMG_MULT = 15; // 大爆発：敵1体あたり攻撃力の15倍（ボスは2割増しの手応え演出のみ）
 let lastBlastAt = Date.now() - SKILL_BLAST_COOLDOWN;
 const SKILL_HALVE_COOLDOWN = SKILL_MIN_CD;
-const HALVE_CHANCE_BOSS = 0.15; // 半減魔法がボスに効く確率（効いたらそのボスにはもう効かない）
+const HALVE_CHANCE_BOSS = 0.10, HALVE_PER_LV = 0.01; // 半減魔法がボスに効く確率：Lv1で10%、Lvごとに+1%（効いたらそのボスにはもう効かない）
+// ボスの半減魔法耐性：即死魔法と同じく、ステージ1000から100ステージごとに+1%（ステージ100万からは最大1%）
+function halveChanceBoss(lv = Math.max(1, getSkillLevel('skillHalve')), stage = deathStage()) {
+  let c = Math.min(1, HALVE_CHANCE_BOSS + HALVE_PER_LV * (lv - 1)) - bossDeathResist(stage);
+  if (stage >= DEATH_BOSS_CAP_STAGE) c = Math.min(c, DEATH_BOSS_CAP);
+  return Math.max(0, c);
+}
 let lastHalveAt = Date.now() - SKILL_HALVE_COOLDOWN;
 let blastFx = null; // 大爆発の閃光 { start }
 function isCoinStrike() { return Date.now() < coinStrikeEndAt; }

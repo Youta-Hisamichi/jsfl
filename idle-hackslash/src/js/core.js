@@ -849,7 +849,7 @@ const SKILL_GACHA_SKILLS = {
   skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
   skillBlast:    { icon: '💣', name: '大爆発', desc: '画面全体を吹き飛ばす大爆発！敵すべてに超特大ダメージ（待機長め）' },
-  skillHalve:    { icon: '🌗', name: '半減魔法', desc: '敵のHPを一瞬で半分にする（ボスにはまれにしか効かず、効いてもボス1体に1回だけ）' }
+  skillHalve:    { icon: '🌗', name: '半減魔法', desc: '敵のHPを一瞬で半分にする（ボスに効く確率はLv1で10%・Lvごとに+1%。効いてもボス1体に1回だけ）' }
 };
 const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen']; // 削除したスキル（古いセーブからも外す）
 const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
