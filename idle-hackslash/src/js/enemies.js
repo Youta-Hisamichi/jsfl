@@ -1250,7 +1250,8 @@ function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; re
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
 // 反射オブジェクトの倍率：どの障害物にも「×1.5〜×16」か「÷1.5〜÷16」が付いている（大きい倍率ほど稀。ボス階は大きめが出やすい）。
 // タップを離して射出したタックルの間だけ、跳ね返るたびに倍率がたまり（掛け算）、敵に当てたダメージに掛かる。跳ね返った反射物の倍率は変わる
-const BOUNCE_OBJ_MULTS = [[1.5, 40], [2, 25], [3, 15], [5, 10], [8, 6], [16, 4]], BOUNCE_OBJ_MULTS_BOSS = [[1.5, 14], [2, 18], [3, 22], [5, 20], [8, 15], [16, 11]];
+const BOUNCE_OBJ_MULTS = [[2, 45], [3, 25], [5, 15], [8, 9], [16, 6]], BOUNCE_OBJ_MULTS_BOSS = [[2, 20], [3, 25], [5, 23], [8, 18], [16, 14]]; // 初期値（×1.5・÷1.5はなし）
+const BOUNCE_OBJ_MAX = 100; // 跳ね返るたびに数値が1ずつ大きくなる（×は+1、÷は-1）。最大100
 const BOUNCE_OBJ_PLUS = 0.6, BOUNCE_MULT_CAP = 4096;
 function rollBounceMult() {
   const tbl = game.stage % 10 === 0 ? BOUNCE_OBJ_MULTS_BOSS : BOUNCE_OBJ_MULTS; let r = Math.random() * tbl.reduce((t, x) => t + x[1], 0), m = 1.5;
@@ -1284,12 +1285,12 @@ function playBounceMultSound(v) {
 function applyBounceObjMult(ball, o) {
   const v = obstacleMult(o); if (!v) return;
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
-  if (!tackleShotNow()) return; // 射出したタックルのときだけ
+  o.bm = v > 0 ? Math.min(BOUNCE_OBJ_MAX, v + 1) : Math.max(-BOUNCE_OBJ_MAX, v - 1); o.bmFlash = now; // 跳ね返るたびに×は+1・÷は-1（最大100）。ポヨンと弾んで変わる
+  if (!tackleShotNow()) return; // 倍率がたまるのは射出したタックルのときだけ
   const m = v > 0 ? v : 1 / -v;
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
   spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
   playBounceMultSound(v);
-  if (!o.bmPending) { o.bmPending = true; o.bmPendAt = now; } // 1回跳ね返ったら、約2秒後に（最後は点滅して）倍率が変わる
 }
 function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
