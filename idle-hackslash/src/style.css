@@ -5149,3 +5149,10 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max { flex: 0 0 auto !important; width: 40%; margin-left: auto; aspect-ratio: 320 / 80; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: var(--gold); line-height: 1.1; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max b { font-size: 0.85rem; font-weight: 900; color: #ffd76b; text-shadow: 0 1px 2px #000; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max small { font-size: 0.56rem; color: #f3e7c4; font-weight: 700; }
+/* 転生画面：後光の中心はパネル全体の真ん中 */
+.rbd-panel .rbd-glow { top: 50% !important; width: 2200px !important; height: 2200px !important; margin: -1100px 0 0 -1100px !important; }
+/* 転生画面：決まる前のアイコンのルーレット */
+.rbd-sk.rbd-rolling .rbd-sk-ico { filter: brightness(1.15) blur(0.4px); }
+.rbd-roll-q { color: #9fb4e8; font-weight: 900; }
+.rbd-sk.rbd-pop { animation: rbdPop 0.45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes rbdPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }

@@ -2509,14 +2509,27 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha) {
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音
-  ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => { if (!el.classList.contains('rbd-cg') || el.classList.contains('shown')) showCompGachaInfo(el.dataset.rbdComp); })); // 仲間ガチャ：開いたあとタップで概要
+  // 決まる前の演出：次のスキル・次の仲間・仲間ガチャのアイコンを約3秒ランダムに切り替えてから、決まったものを見せる
+  const rndSkillIco = () => { const ids = skillToggleIds(), { it, auto } = skillToggleInfo(ids[Math.floor(Math.random() * ids.length)]); return auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it); };
+  const rndCompIco = () => { const ids = typeof compPoolIds === 'function' && compPoolIds().length ? compPoolIds() : COMPANION_IDS; return companionIconHtml(ids[Math.floor(Math.random() * ids.length)]); };
+  let tickOwner = null;
+  const rollIcons = (el, icoFn, ms) => {
+    const fin = el.innerHTML; el.classList.add('rbd-rolling'); if (!tickOwner) tickOwner = el;
+    const t = setInterval(() => { el.innerHTML = `<span class="rbd-sk-ico">${icoFn()}</span><span class="rbd-roll-q">？？？</span>`; if (tickOwner === el && typeof playTone === 'function') playTone(1300 + Math.random() * 300, 0.02, 'square', 0.025); }, 90);
+    setTimeout(() => { clearInterval(t); if (tickOwner === el) tickOwner = null; el.innerHTML = fin; el.classList.remove('rbd-rolling'); el.classList.add('rbd-pop'); if (typeof playTone === 'function') { playTone(988, 0.08, 'square', 0.05); setTimeout(() => playTone(1319, 0.14, 'square', 0.05), 70); } }, ms);
+  };
+  ov.querySelectorAll('[data-rbd-skill]').forEach((el, i) => rollIcons(el, rndSkillIco, 2400 + i * 300));
+  ov.querySelectorAll('[data-rbd-comp]:not(.rbd-cg)').forEach((el, i) => rollIcons(el, rndCompIco, 2600 + i * 300));
+  const CG_REVEAL_MS = 3600;
+  { const cg = ov.querySelector('.rbd-cg'); if (cg) { cg.classList.add('rbd-rolling'); cg._roll = setInterval(() => { cg.innerHTML = `<span class="rbd-sk-ico">${rndCompIco()}</span><span class="rbd-roll-q">？？？</span>`; }, 90); } }
+  ov.querySelectorAll('[data-rbd-comp]').forEach(el => el.addEventListener('click', () => { if (el.classList.contains('rbd-rolling')) return; if (!el.classList.contains('rbd-cg') || el.classList.contains('shown')) showCompGachaInfo(el.dataset.rbdComp); })); // 仲間ガチャ：開いたあとタップで概要
   if (compGacha) setTimeout(() => { // ❓ が回ってから、手に入った仲間を見せる
-    const el = ov.querySelector('.rbd-cg'); if (!el) return; const c = COMPANIONS[compGacha.id];
+    const el = ov.querySelector('.rbd-cg'); if (!el) return; const c = COMPANIONS[compGacha.id]; clearInterval(el._roll); el.classList.remove('rbd-rolling');
     el.innerHTML = `<span class="rbd-sk-ico">${companionIconHtml(compGacha.id)}</span><span class="rbd-stars">${rarityStarsImg(c.rarity)}</span><span>${c.name}</span><i class="rbd-cg-new">${compGacha.evo ? `ダブり → キャラ進化！<br>${compGacha.evo}` : 'NEW！ 図鑑に登録<br>招集ガチャに登場！'}</i>`;
     el.classList.add('shown', 'r-' + c.rarity);
     if (typeof playGachaSound === 'function') playGachaSound(c.rarity);
-  }, 900 + list.length * 180);
-  ov.querySelectorAll('[data-rbd-skill]').forEach(el => el.addEventListener('click', () => { const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); })); // 次のスキル：タップで概要
+  }, Math.max(CG_REVEAL_MS, 900 + list.length * 180));
+  ov.querySelectorAll('[data-rbd-skill]').forEach(el => el.addEventListener('click', () => { if (el.classList.contains('rbd-rolling')) return; const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); })); // 次のスキル：タップで概要
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }
