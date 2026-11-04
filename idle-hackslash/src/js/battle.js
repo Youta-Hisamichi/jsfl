@@ -2345,8 +2345,8 @@ setInterval(() => {
     c.t += 0.035; if (c.t < 0) return true;
     const k = Math.min(1, c.t), ease = k * k; // だんだん速く吸い込まれる
     const x = c.x + (pl.x - c.x) * ease + Math.sin(c.wob + k * 9) * 6 * (1 - k), y = c.y + (pl.y - c.y) * ease + Math.cos(c.wob + k * 9) * 6 * (1 - k);
-    const r = 5.2 * (1 - k * 0.45); // 吸い込まれる金貨（少し大きめ）
-    ctx.globalAlpha = 0.95; ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#a86a00'; ctx.lineWidth = 1;
+    const r = 7.5 * (1 - k * 0.4); // 吸い込まれる金貨（大きめ）
+    ctx.globalAlpha = 0.95; ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#a86a00'; ctx.lineWidth = 1.4;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff6c0'; ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, Math.PI * 2); ctx.fill();
     return k < 1;

@@ -1538,6 +1538,15 @@ redPotionBtn.addEventListener('click', event => {
   updateRedPotionButton();
   saveGame();
 });
+// 回復ポーションの演出：ボタンが弾んで光り、キャラから緑の光の粒が立ちのぼり、画面がふわっと緑に光る。ゴクッ→キラキラ上がる音
+function potionHealFx(pl) {
+  potionBtn.classList.remove('potion-used'); void potionBtn.offsetWidth; potionBtn.classList.add('potion-used');
+  for (let i = 0; i < 36; i++) { const a = Math.random() * Math.PI * 2, r = Math.random() * pl.radius * 1.4; particles.push({ x: pl.x + Math.cos(a) * r, y: pl.y + Math.sin(a) * r * 0.6 + 6, vx: (Math.random() - 0.5) * 0.8, vy: -1.2 - Math.random() * 2.2, life: 1, color: ['#7ee787', '#b6ffc9', '#ffffff', '#4fdc8a'][i % 4], decay: 0.018 + Math.random() * 0.012 }); }
+  for (let i = 0; i < 18; i++) { const a = Math.PI * 2 * i / 18; particles.push({ x: pl.x, y: pl.y, vx: Math.cos(a) * 3.2, vy: Math.sin(a) * 3.2, life: 0.8, color: '#9dffb8', decay: 0.04 }); } // 広がる光の輪
+  const wrap = document.querySelector('.arena-wrap');
+  if (wrap) { const fl = document.createElement('div'); fl.className = 'potion-flash'; wrap.appendChild(fl); setTimeout(() => fl.remove(), 700); }
+  if (typeof playPotionSound === 'function') playPotionSound(); else playHealSound();
+}
 potionBtn.addEventListener('click', event => {
   if ((game.potions || 0) <= 0) { promptGemShortage(0, { title: '回復ポーションがありません', text: 'ショップで回復ポーションを買いますか？', silent: true, icon: '🧪' }); return; }
   const player = balls.find(ball => isMainPlayerBall(ball));
@@ -1547,9 +1556,8 @@ potionBtn.addEventListener('click', event => {
   game.potions--;
   const heal = Math.round(player.maxHp * POTION_HEAL_RATIO);
   player.hp = Math.min(healCap(player), player.hp + heal);
-  spawnDamageText(player.x, player.y - player.radius - 12, '🧪 +' + heal + ' HP', '#7ee787');
-  spawnHitParticles(player.x, player.y, '#7ee787');
-  playHealSound();
+  spawnDamageText(player.x, player.y - player.radius - 12, '🧪 +' + heal + ' HP', '#7ee787', 0.015, true);
+  potionHealFx(player);
   updatePotionButton();
   updateHPUI();
   saveGame();
@@ -2745,8 +2753,8 @@ zeniBtn.addEventListener('click', event => {
   const { player, enemy } = ctxs;
   const thrown = Math.floor(game.coins / 2);
   spendCoins(thrown);
-  // コイン30枚を猛烈な勢いで連射する（1枚ずつ敵めがけて飛び、当たるたびにチャリン）。最後の1枚が当たったところでまとめてダメージ
-  const ZENI_COINS = 30, ZENI_GAP_MS = 22, ZENI_SPEED = 15;
+  // コイン60枚を猛烈な勢いで連射する（1枚ずつ敵めがけて飛び、当たるたびにチャリン）。最後の1枚が当たったところでまとめてダメージ
+  const ZENI_COINS = 60, ZENI_GAP_MS = 22, ZENI_SPEED = 15; // 連射の時間は約1.3秒（60枚）
   spawnDamageText(player.x, player.y - player.radius - 22, `💰 ゼニ投げ！（${formatCoinNumber(thrown)}枚）`, '#ffcf4a', 0.012, true);
   thump(150, 45, 0.3, 0.8, 'sine'); noiseSweep(0.35, 600, 4000, 'bandpass', 1.2, 0.5); // 投げ始めのドウッ
   let ux = 1, uy = 0;

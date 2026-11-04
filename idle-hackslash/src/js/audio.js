@@ -1699,6 +1699,13 @@ function playAccelSound() {
 function playHealSound() {
   [523.25, 659.25, 880].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.14), i * 70));
 }
+// 回復ポーション：ゴクッと飲む音→明るい和音が駆け上がり、キラキラがこぼれる
+function playPotionSound() {
+  thump(260, 120, 0.12, 0.25, 'sine'); thump(240, 110, 0.12, 0.2, 'sine', 0.13); // ゴクッゴクッ
+  [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.28, 'triangle', 0.1), 260 + i * 60));
+  [2093, 2637, 3136, 2637, 3520].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'sine', 0.045), 560 + i * 55));
+  setTimeout(() => playTone(1046.5, 0.7, 'sine', 0.06, 1568), 560);
+}
 // 敵のヒール：やわらかく揺れる和音がふわっと満ちて、上でキラキラ光がこぼれる回復魔法の音
 function playEnemyHealSound() {
   [659.25, 830.61, 987.77].forEach(f => playTone(f, 0.7, 'triangle', 0.06, f * 1.5)); // ふわっと昇る和音

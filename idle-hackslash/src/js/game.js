@@ -779,7 +779,7 @@ const BOSS_CONT_SECONDS = 10;
 let bossContTimer = null, bossContLeft = 0;
 function startBossContCountdown() {
   clearInterval(bossContTimer); bossContLeft = BOSS_CONT_SECONDS;
-  const el = document.getElementById('bossContCount');
+  const el = document.getElementById('bossContCount'); el.classList.remove('stopped');
   const show = () => { const n = Math.max(0, Math.min(10, bossContLeft)); el.innerHTML = String(n).split('').map(d => `<i class="go2-num" style="background-position:${d / 9 * 100}% 0"></i>`).join(''); /* 数字は絵の文字 */ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); };
   show(); playContinueTick(bossContLeft);
   bossContTimer = setInterval(() => {
@@ -789,6 +789,11 @@ function startBossContCountdown() {
     if (bossContLeft <= 0) { clearInterval(bossContTimer); document.getElementById('bossContGiveUpBtn').click(); }
   }, 1000);
 }
+// コンテニュー画面でどれかのボタンを押したら、カウントダウンは止める（選んでいる途中で勝手にあきらめないように）
+if (typeof bossContModal !== 'undefined' && bossContModal) bossContModal.addEventListener('click', e => {
+  if (!e.target.closest('button') || !bossContTimer) return;
+  clearInterval(bossContTimer); bossContTimer = null; const c = document.getElementById('bossContCount'); if (c) c.classList.add('stopped');
+}, true);
 function bossContinue() {
   clearInterval(bossContTimer); knockoutFx = null;
   bossContModal.classList.remove('show'); refreshBgm();

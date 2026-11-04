@@ -5106,3 +5106,13 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 @keyframes skRestored { 0% { transform: scale(1); filter: brightness(1); } 35% { transform: scale(1.32); filter: brightness(1.8) drop-shadow(0 0 8px #ff6b8a); } 70% { transform: scale(0.94); } 100% { transform: scale(1); filter: none; } }
 #skillRow.skill-strip #lifeGlassBtn img.lg-ico { position: absolute; left: 50%; top: 26px; width: 38px; height: 38px; transform: translate(-50%, -50%); font-size: 0; object-fit: contain; }
 #skillRow.skill-strip #lifeGlassBtn .lg-name { position: absolute; left: -4px; right: -4px; bottom: 0; text-align: center; font-size: 0.56rem; font-weight: 900; color: #fff; white-space: nowrap; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+
+/* 回復ポーションを使ったとき：ボタンが弾んで緑に光る・画面がふわっと緑に光る */
+.potion-float.potion-used { animation: potionUsed 0.7s cubic-bezier(.34,1.56,.64,1); }
+@keyframes potionUsed { 0% { transform: scale(1); } 30% { transform: scale(1.35) rotate(-12deg); filter: brightness(1.8) drop-shadow(0 0 10px #7ee787); box-shadow: 0 0 18px #7ee787; } 60% { transform: scale(0.92) rotate(6deg); } 100% { transform: scale(1); } }
+.potion-flash { position: absolute; inset: 0; pointer-events: none; z-index: 3; background: radial-gradient(circle, rgba(126,231,135,0.35), rgba(126,231,135,0.12) 60%, transparent); animation: potionFlash 0.7s ease-out forwards; }
+@keyframes potionFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+/* ボス戦はポーションの下に宝箱を並べる（重ならないように） */
+#potionBtn { top: 6px !important; left: 6px !important; }
+body:not(.hp-safe) .chest-tray { top: 62px; }
+#bossContCount.stopped { opacity: 0.45; filter: grayscale(0.6); } /* ボタンを押してカウントが止まった */
