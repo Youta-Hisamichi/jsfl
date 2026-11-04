@@ -5120,3 +5120,10 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 #rebornConfirmModal .reb2 #rebornConfirmTitle.long { background: none !important; -webkit-background-clip: border-box; background-clip: border-box; color: #ffe682 !important; -webkit-text-fill-color: #ffe682; filter: none !important; text-shadow: -1px -1px 0 #3a1c00, 1px -1px 0 #3a1c00, -1px 1px 0 #3a1c00, 1px 1px 0 #3a1c00, 0 -1.5px 0 #3a1c00, 0 1.5px 0 #3a1c00, -1.5px 0 0 #3a1c00, 1.5px 0 0 #3a1c00, 0 3px 0 #1a0c00, 0 0 6px rgba(0,0,0,0.8); }
 /* この瞬間をシェア：ゲーム画面の左上端にくっつける */
 .moment-share { left: 0 !important; right: auto !important; top: 0 !important; border-radius: 0 0 12px 0 !important; border-top: none !important; border-left: none !important; }
+/* 試練の塔：動画を見たあとの「攻撃力2倍＆報酬2倍」 */
+.tower-boost { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
+.tower-boost > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 2px solid #ffd76b; background: linear-gradient(180deg, rgba(255,215,107,0.25), rgba(255,140,40,0.12)); animation: towerBoostPop 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+.tower-boost > div:nth-child(2) { animation-delay: 0.15s; }
+.tower-boost b { font-size: 1.15rem; font-weight: 900; color: #ffe27a; text-shadow: 0 0 2px #000, 0 1px 0 #000, 0 0 6px rgba(255,180,60,0.8); }
+.tower-boost small { font-size: 0.68rem; opacity: 0.9; }
+@keyframes towerBoostPop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }

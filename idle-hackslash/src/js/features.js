@@ -530,11 +530,15 @@ function bossAdBuffMult() { return bossAdBuffFor && balls.includes(bossAdBuffFor
 const towerReadyModal = document.getElementById('towerReadyModal');
 { const orig = startSkipChallenge; let pending = null, prevPhase = null;
   const close = () => { towerReadyModal.classList.remove('show'); if (phase === 'paused' && prevPhase) phase = prevPhase; prevPhase = null; };
-  const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); stageSkipModal.classList.remove('show'); towerBuffPending = buff; orig(ch); };
+  const go = buff => { const ch = pending; pending = null; if (!ch) return; close(); stageSkipModal.classList.remove('show'); towerBuffPending = buff; orig(ch); if (buff && game.skipChallenge) { game.skipChallenge.adBoost = true; saveGame(); } }; // 動画を見たら報酬も2倍（リトライしても続く）
+  const boostDialog = buff => { // 動画のあと、攻撃力2倍・報酬2倍になったことをはっきり見せてから挑む
+    playBossFanfare(0);
+    simpleChoice({ icon: '💪', title: '攻撃力2倍＆報酬2倍！', text: `<div class="tower-boost"><div><b>💪 攻撃力 ×2</b><small>このボス戦の間ずっと</small></div><div><b>🎁 報酬 ×2</b><small>突破すると宝箱が2個</small></div></div>`, sub: `ステージ${formatStageNumber(pending.target)}のボスに挑みます`, yes: '⚔️ 挑む！', no: false, onYes: () => go(buff) });
+  };
   startSkipChallenge = function (challenge) {
     pending = challenge; prevPhase = phase === 'battle' ? 'battle' : null; if (prevPhase) phase = 'paused'; // 見ている間は一時停止
     document.getElementById('towerReadyText').innerHTML = `ステージ<b>${formatStageNumber(challenge.target)}</b>のボスに挑みます。`;
-    document.getElementById('towerReadyAdBtn').innerHTML = `<span class="trd-ico">${isAdFree() ? '🎁' : '🎬'}</span><span>${isAdFree() ? '紋章特典で' : '動画を見て'} <b>攻撃力2倍</b>で挑む</span>`;
+    document.getElementById('towerReadyAdBtn').innerHTML = `<span class="trd-ico">${isAdFree() ? '🎁' : '🎬'}</span><span>${isAdFree() ? '紋章特典で' : '動画を見て'} <b>攻撃力2倍＆報酬2倍</b>で挑む</span>`;
     stageSkipModal.classList.add('show'); // 確認は試練の塔の画面（背景・BGM）の上に出す
     towerReadyModal.classList.add('show');
   };
@@ -542,16 +546,19 @@ const towerReadyModal = document.getElementById('towerReadyModal');
   document.getElementById('towerReadyCancelBtn').addEventListener('click', () => { pending = null; close(); renderStageSkipList(); }); // やめたら塔の階選びに戻る（塔の画面は開いたまま）
   document.getElementById('towerReadyAdBtn').addEventListener('click', () => {
     if (!pending) return;
-    if (isAdFree()) { go('free'); return; }
-    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); go(true); }, '、このボス戦の間 攻撃力が2倍になります');
+    if (isAdFree()) { boostDialog('free'); return; }
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); boostDialog(true); }, '、このボス戦の間 攻撃力が2倍・突破の報酬も2倍になります');
   });
 }
 function applyTowerBuff() { // 塔のボスが出たら、選んでいた動画バフをかける
   if (!towerBuffPending) return; const kind = towerBuffPending; towerBuffPending = false;
   const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss) return;
-  bossAdBuffFor = boss; if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力2倍！', '#ffd76b', 0.012, true); playBossFanfare(0);
+  bossAdBuffFor = boss; if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💪 攻撃力2倍！\n🎁 報酬2倍！', '#ffd76b', 0.008, true); playBossFanfare(0);
 }
-function drawBossBuffIcon() { if (bossAdBuffMult() > 1) { const b = balls.find(isMainPlayerBall); if (b) { ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💪', b.x + b.radius, b.y - b.radius); ctx.restore(); } } }
+function drawBossBuffIcon() { if (bossAdBuffMult() > 1 && typeof arenaHalfY === 'function') { // 動画バフ中は画面上に「攻撃力×2・報酬×2」を出し続ける
+    ctx.save(); ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const t = '💪攻撃力×2　🎁報酬×2', y = arena.y + arenaHalfY() - 14;
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(t, arena.x, y); ctx.fillStyle = '#ffe27a'; ctx.fillText(t, arena.x, y); ctx.restore(); }
+  if (bossAdBuffMult() > 1) { const b = balls.find(isMainPlayerBall); if (b) { ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💪', b.x + b.radius, b.y - b.radius); ctx.restore(); } } }
 
 // ===== 既存処理へのフック =====
 { const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); applyTowerBuff(); }, BOSS_WARNING_MS + 600); }; }

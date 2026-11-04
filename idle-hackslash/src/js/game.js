@@ -562,8 +562,10 @@ function advanceStage(passed, isBossStage) {
     showNotice(`🏰 試練の塔 突破！ ステージ${game.stage} のボスを撃破`);
     const skipped = game.skipChallenge.target - game.skipChallenge.origin;
     if (skipped > (game.bestTowerJump || 0)) { game.bestTowerJump = skipped; setTimeout(() => showNotice(`🏆 試練の塔 自己ベスト更新！ +${skipped}ステージ`), 2400); }
+    const boosted = !!game.skipChallenge.adBoost;
     game.skipChallenge = null;
     setTimeout(() => dropSkipArtifact(skipped), 1200); // 成功表示の後に遺物をドロップ
+    if (boosted) setTimeout(() => { showNotice('🎬 動画ボーナス：報酬2倍！'); dropSkipArtifact(skipped); }, 2600); // 動画を見て挑んだら宝箱をもう1個
   }
   const looping = !!(game.bossLoop && game.stage === game.bossLoop - 1);
   if (!filmMode && !looping) game.stage++; // 撮影モード中・ボスに負けたあとのループ中は同じステージを繰り返す
