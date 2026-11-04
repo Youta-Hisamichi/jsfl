@@ -5116,3 +5116,7 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 #potionBtn { top: 6px !important; left: 6px !important; }
 body:not(.hp-safe) .chest-tray { top: 62px; }
 #bossContCount.stopped { opacity: 0.45; filter: grayscale(0.6); } /* ボタンを押してカウントが止まった */
+/* 「ステージ○○で力尽きた…転生しますか？」：文字は明るい金、縁取りと影は暗く（グラデの文字抜きはスマホで明暗が逆に見えるのでやめる） */
+#rebornConfirmModal .reb2 #rebornConfirmTitle.long { background: none !important; -webkit-background-clip: border-box; background-clip: border-box; color: #ffe682 !important; -webkit-text-fill-color: #ffe682; filter: none !important; text-shadow: -1px -1px 0 #3a1c00, 1px -1px 0 #3a1c00, -1px 1px 0 #3a1c00, 1px 1px 0 #3a1c00, 0 -1.5px 0 #3a1c00, 0 1.5px 0 #3a1c00, -1.5px 0 0 #3a1c00, 1.5px 0 0 #3a1c00, 0 3px 0 #1a0c00, 0 0 6px rgba(0,0,0,0.8); }
+/* この瞬間をシェア：ゲーム画面の左上端にくっつける */
+.moment-share { left: 0 !important; right: auto !important; top: 0 !important; border-radius: 0 0 12px 0 !important; border-top: none !important; border-left: none !important; }
