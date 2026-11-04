@@ -5145,3 +5145,7 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .companion-card button.power-break-btn, .companion-card button.power-break-btn:hover { display: block; width: 100%; margin: 6px 0 2px !important; padding: 7px 10px !important; border: 1.5px solid #c9a14a !important; border-radius: 10px !important; background: linear-gradient(180deg, #24345e, #121c3a) !important; color: #ffe8a0 !important; font-size: 0.8rem !important; font-weight: 900 !important; text-shadow: 0 1px 2px #000; box-shadow: none !important; } /* 仲間カードのボタンも自キャラと同じ見た目 */
 .pb-formula { margin: 4px 2px 8px; padding: 6px 8px; border-radius: 8px; background: rgba(0,0,0,0.06); font-size: 0.72rem; line-height: 1.5; color: #3a2e18; }
 .pb-formula b { color: #0a6aa0; }
+/* 招集ガチャのパーティ枠MAX：右端に、パーティ枠と同じ台座で表示 */
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max { flex: 0 0 auto !important; width: 40%; margin-left: auto; aspect-ratio: 320 / 80; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: var(--gold); line-height: 1.1; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max b { font-size: 0.85rem; font-weight: 900; color: #ffd76b; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="companion"] .party-row #partySlotBtn > .ws-max small { font-size: 0.56rem; color: #f3e7c4; font-weight: 700; }

@@ -337,8 +337,8 @@ function renderCompanionList() {
   if (psb) {
     const lim = getPartyLimit();
     psb.innerHTML = `<span>パーティ枠 <b>${getCompanionTotal()} / ${lim}</b></span>` + (lim >= COMPANION_PARTY_MAX // スキルの「＋枠を増やす」と同じ見た目
-      ? '<span class="ws-max">枠MAX</span>'
-      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠を増やす<span class="ps-cost">💎${getPartySlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>`);
+      ? '<span class="ws-max"><b>枠MAX</b><small>（転生でリセット）</small></span>'
+      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠をMAX（${COMPANION_PARTY_MAX}人）に<span class="ps-cost">💎${getPartySlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;
@@ -415,7 +415,7 @@ function pickCompanionId() {
 }
 const COMPANION_PARTY_MAX = 8; // パーティ枠の最大（ジェムで拡張できる上限）
 function getPartyLimit() { return Math.max(1, Math.min(COMPANION_PARTY_MAX, game.companionSlots || 1)); }
-function getPartySlotCost() { return 1; } // 枠増やしはジェム1個（転生でリセット）
+function getPartySlotCost() { return 1; } // ジェム1個で一気にMAXまで（転生でリセット）
 function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
 function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
 function grantCompanion(id) {

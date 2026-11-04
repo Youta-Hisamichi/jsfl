@@ -2000,8 +2000,8 @@ document.getElementById('partySlotBtn').addEventListener('click', event => {
   const cost = getPartySlotCost();
   if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('companion') }); return; }
   game.gems -= cost;
-  game.companionSlots = lim + 1;
-  showNotice(`🐾 パーティ枠が ${game.companionSlots} 人になりました`);
+  game.companionSlots = COMPANION_PARTY_MAX; // ジェム1個で一気にMAXまで
+  showNotice(`🐾 パーティ枠がMAX（${game.companionSlots} 人）になりました（転生でリセット）`);
   playRegisterSound();
   updateStatsUI();
   renderCompanionList();
