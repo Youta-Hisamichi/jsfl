@@ -110,7 +110,7 @@ function openMarket(settled) {
     ${rows}
     <div class="mkt-news"><b>🗞️ 明日のうわさ</b>${news.map(n => `<div>${ELEMENTS[n.e].icon} ${n.text} <span class="${n.dir === 'up' ? 'up' : 'dn'}">${n.dir === 'up' ? '↗' : '↘'}</span></div>`).join('')}<small>うわさは7割くらいしか当たらない。みんなの気持ちを読もう</small></div>
     <div class="mkt-me">あなたの最近の属性：${myLine}<small>（自分の偏りも人気に1割まざる）</small></div>
-    <div class="mkt-rule">株はジェムで買える（今日 💎${used} / ${MKT_BET_MAX}）。日付が変わると<b>翌日の株価</b>で精算し、その数だけ<b>進化の羽や種</b>がもらえる（ジェムでは戻らない）。人気が上がれば多く、下がれば少なく。</div>
+    <div class="mkt-rule">株はジェムで買える（今日 💎${used} / ${MKT_BET_MAX}）。日付が変わると<b>翌日の株価</b>で精算し、その数だけ<b>進化の羽</b>がもらえる（ジェムでは戻らない）。人気が上がれば多く、下がれば少なく。</div>
     <button class="modal-close-btn mkt-close">閉じる</button></div>`;
   document.body.appendChild(ov);
   ov.querySelector('.mkt-close').onclick = () => ov.remove();
