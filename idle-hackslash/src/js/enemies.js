@@ -1575,6 +1575,7 @@ function pushObstacle(o, nx, ny, ball) {
   o.hitSet = new Set(); // 1回飛ばすごとに、同じ敵には1回だけ当たる
 }
 function tickMovingObstacles(speedMult) {
+  { const now = Date.now(); let gone = false; for (const o of obstacles) if (o.tansu && o.used && now - (o.usedAt || 0) > 3000) { o.broken = true; gone = true; } if (gone) obstacles = obstacles.filter(o => !o.broken); } // 空になって消えたタンスは、影や倍率も残さず取り除く
   const pl = balls.find(isMainPlayerBall);
   for (const o of obstacles) {
     if (!o.mvx && !o.mvy) continue;
@@ -1791,7 +1792,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
       if (o.bmBlinkAt && now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { o.bm = rollBounceMult(); o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
     }
     const fade = o.bmBlinkAt ? Math.min(1, (now - o.bmBlinkAt) / BOUNCE_BLINK_MS) : 0; // 変わる直前に薄くなる
-    const v = obstacleMult(o); if (!v || o.broken || o.dead) continue;
+    const v = obstacleMult(o); if (!v || o.broken || o.dead || (o.tansu && o.used)) continue; // 空になって消えていくタンスは倍率を出さない
     ctx.globalAlpha = 1;
     const plus = v > 0, big = Math.abs(v) >= 8, pt = o.bmFlash ? (now - o.bmFlash) / BOUNCE_POYON_MS : 1, pop = (pt < 1 ? 1 + 0.28 * Math.sin(pt * Math.PI * 2.5) * (1 - pt) : 1) * (1 - 0.12 * fade); // 変わった直後はポヨンと弾む
     if (o.kind === 'reflector') { // 反射板：青（プラス）か赤（マイナス）に光る円盤

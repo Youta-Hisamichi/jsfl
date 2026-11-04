@@ -1375,26 +1375,23 @@ function getCloneLimit() {
   return 3 + game.coinCloneSlots + (game.shopOwned.summoner ? 2 : 0) + game.rebirthBonus.cloneSlots;
 }
 const PCT_BUDGET = 0.1; // 「10%」ボタン：手持ちコインの10%分だけまとめてレベルアップ
-function getUpgradeCost(id) { return coinPrice(UPGRADES[id].baseCost * (game.upgrades[id] + 1)); }
+// 自キャラの強化の値段：Lvの2乗で上がる（前はLvに比例。進化・転生・ショップで強くなるので、Lvアップは高めに）
+const UPGRADE_COST_POW = 2;
+function upgradeLvCost(base, L) { return base * Math.pow(L + 1, UPGRADE_COST_POW); } // L→L+1 の値段（割引前）
+function getUpgradeCost(id) { return coinPrice(upgradeLvCost(UPGRADES[id].baseCost, game.upgrades[id])); }
 function sumUpgradeCost(id, fromLevel, count) {
-  const base = UPGRADES[id].baseCost;
+  const base = UPGRADES[id].baseCost, S = n => n * (n + 1) * (2 * n + 1) / 6; // 1²+2²+…+n²
   const s = getActiveSub();
-  const total = base * count * (2 * fromLevel + count + 1) / 2;
+  const total = base * (S(fromLevel + count) - S(fromLevel));
   return s ? Math.ceil(total * s.coinPriceMult) : total;
 }
 function getMaxAffordableUpgradeLevels(id, coins) {
   coins = Math.max(0, safeNum(coins));
-  const base = UPGRADES[id].baseCost;
   const L = game.upgrades[id];
-  const sub = getActiveSub();
-  const A = base, B = base * (2 * L + 1), C = -2 * (coins / (sub ? sub.coinPriceMult : 1)) - 2 * base; // 割引分だけ多めに見積もり、下で実際の合計で調整
-  let count = Math.floor((-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A));
-  if (!isFinite(count) || count < 0) count = 0;
-  count = Math.min(count, 1e12);
-  // 誤差の補正は回数を決めて二分探索（大きな数でも無限ループしない）
-  let lo = 0, hi = Math.max(1, count * 2 + 2);
-  for (let i = 0; i < 80 && lo < hi; i++) { const mid = Math.floor((lo + hi + 1) / 2); if (mid === lo) break; if (sumUpgradeCost(id, L, mid) <= coins) lo = mid; else hi = mid - 1; }
-  count = lo;
+  let hi = 1; while (hi < 1e12 && sumUpgradeCost(id, L, hi) <= coins) hi *= 2;
+  let lo = 0;
+  for (let i = 0; i < 90 && lo < hi; i++) { const mid = Math.floor((lo + hi + 1) / 2); if (mid === lo) break; if (sumUpgradeCost(id, L, mid) <= coins) lo = mid; else hi = mid - 1; }
+  const count = lo;
   return Math.max(0, Math.min(count, getUpgradeLevelCap(id) - L)); // 上限レベルを超えない
 }
 

@@ -230,7 +230,7 @@ function compBookHtml() { // パーティにいない仲間：手に入れたこ
 function compHpLv(id) { const m = game.companions.hpLv; return (m && m[id]) || 0; }
 function compUpLv(id, kind = 'atk') { return kind === 'hp' ? compHpLv(id) : (game.companions.level[id] || 0); }
 function setCompUpLv(id, kind, v) { if (kind === 'hp') { if (!game.companions.hpLv) game.companions.hpLv = {}; game.companions.hpLv[id] = v; } else game.companions.level[id] = v; }
-function compUpCost(id, lv) { return Math.max(1, coinPrice(COMPANIONS[id].levelCostBase * COMP_UP_COST_RATE * (lv + 1))); }
+function compUpCost(id, lv) { return Math.max(1, coinPrice(COMPANIONS[id].levelCostBase * COMP_UP_COST_RATE * Math.pow(lv + 1, UPGRADE_COST_POW))); } // 仲間の強化もLvの2乗で上がる
 function getCompanionMaxLevels(id, budget = game.coins, kind = 'atk') {
   let level = compUpLv(id, kind), coins = budget, count = 0, total = 0;
   while (count < 9999) {
