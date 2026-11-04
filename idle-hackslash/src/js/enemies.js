@@ -1266,6 +1266,21 @@ function bounceMultLabel(v) { return v > 0 ? `×${v}` : `÷${-v}`; }
 function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `÷${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.auto); } // タップを離して射出したタックルの間
+// 反射の音：プラスは「キラリン↑」と上がる明るい音（大きい倍率ほど高く華やか）、マイナスは「ボヨ〜ン↓」と下がるしょんぼり音
+function playBounceMultSound(v) {
+  if (typeof playTone !== 'function') return;
+  const a = Math.abs(v), lvl = [1.5, 2, 3, 5, 8, 16].indexOf(a);
+  if (v > 0) {
+    const base = 880 * Math.pow(2, lvl / 6), notes = [1, 1.26, 1.5, 2].slice(0, 2 + Math.min(2, Math.floor(lvl / 2)));
+    if (typeof thump === 'function') thump(420, 900, 0.06, 0.12, 'triangle');
+    notes.forEach((r, i) => setTimeout(() => playTone(base * r, 0.09, 'square', 0.045), i * 45));
+    setTimeout(() => playTone(base * 2, 0.25 + lvl * 0.04, 'sine', 0.05, base * 2.5), notes.length * 45); // キラーンと余韻
+  } else {
+    const base = 520 / Math.pow(2, lvl / 6);
+    if (typeof thump === 'function') { thump(base, base * 0.45, 0.28 + lvl * 0.03, 0.22, 'sawtooth'); thump(120, 60, 0.18, 0.2, 'sine', 0.05); }
+    playTone(base * 0.8, 0.3 + lvl * 0.03, 'triangle', 0.05, base * 0.35); // ボヨ〜ンと下がる
+  }
+}
 function applyBounceObjMult(ball, o) {
   const v = obstacleMult(o); if (!v) return;
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
@@ -1273,7 +1288,7 @@ function applyBounceObjMult(ball, o) {
   const m = v > 0 ? v : 1 / -v;
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
   spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
-  if (typeof playTone === 'function') { if (v > 0) playTone(700 + Math.min(16, m) * 60, 0.08, 'square', 0.04, 1500); else playTone(500, 0.12, 'sawtooth', 0.04, 220); }
+  playBounceMultSound(v);
   o.bm = rollBounceMult(); o.bmFlash = now; // 1回跳ね返ったら倍率が変わる
 }
 function dashDmgMult(ball) {
