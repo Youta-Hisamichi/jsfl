@@ -5095,3 +5095,9 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 #lbPanel #loginBonusReward.lb-mq-on { cursor: pointer; pointer-events: auto; user-select: none; -webkit-user-select: none; }
 #lbPanel #loginBonusAdBtn.lb-ad-done { color: #ffe98a !important; cursor: default; animation: lbAdDone 0.5s ease-out; opacity: 1 !important; filter: none !important; }
 @keyframes lbAdDone { 0% { transform: scale(0.8); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+/* ゲーム画面のミッション：戦場の上のふちにすき間なくくっつける */
+.arena-wrap .ob-mission, body:not(.hp-safe) .arena-wrap .ob-mission { top: 0 !important; border-top-left-radius: 0 !important; border-top-right-radius: 0 !important; }
+.dbg-list { text-align: left; font-size: 0.72rem; max-height: 56vh; overflow-y: auto; line-height: 1.45; }
+.dbg-list .dl-h { margin: 8px 0 2px; font-weight: 900; color: #ffd76b; }
+.dbg-list .dl-r { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.dbg-list .dl-r small { display: block; color: #aab3cc; font-size: 0.64rem; }

@@ -442,7 +442,7 @@ function renderEnemyTraitBadge(en, trait) {
   const el = document.getElementById('enemyTraitBadge'); if (!el) return;
   const tags = [];
   if (en && !en.isDying && phase !== 'gameover') {
-    if (en.isBoss) tags.push([en.milestone && !game.skipChallenge ? `👑 ${en.milestone.label}` : '👑 ボス', 'warn']);
+    if (en.isBoss) tags.push(['👑 ボス', 'warn']); // 「ステージ○○の主」などの肩書きは特徴には出さない
     if (en.isGiant) tags.push(['⬆️ 激デカ', 'warn']);
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
@@ -667,7 +667,7 @@ function drawBossTimer() { // カウントダウン。残りが少ないほど�
   const beat = lv ? Math.abs(Math.sin(now / (lv === 3 ? 150 : lv === 2 ? 180 : 260))) : 0;
   const size = [18, 20, 24, 28][lv] * (1 + beat * [0, 0.06, 0.1, 0.14][lv]);
   const col = lv === 3 ? (Math.floor(now / 350) % 2 ? '#ff3b3b' : '#ff9a9a') : ['#ffffff', '#ffe066', '#ff9f43', '#ff3b3b'][lv]; // 終盤もチカチカしすぎないように
-  let x = arena.x, y = arena.y - arena.radius + 8;
+  let x = arena.x, y = arena.y - (typeof arenaHalfY === 'function' ? arenaHalfY() : arena.radius) + 8; // 四角い戦場でも上のふちに出す
   if (lv >= 2) { x += (Math.random() - 0.5) * (lv === 3 ? 3 : 2); y += (Math.random() - 0.5) * (lv === 3 ? 2 : 1); }
   if (lv === 3) { // 画面のふちを赤く明滅
     ctx.save(); const g = ctx.createRadialGradient(arena.x, arena.y, arena.radius * 0.55, arena.x, arena.y, arena.radius * 1.15);
