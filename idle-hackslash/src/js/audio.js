@@ -1033,7 +1033,7 @@ function refreshBgm() {
   else if (hireGachaHush) type = 'silent'; // 採用ガチャのルーレット中
   else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
-  else if (document.getElementById('creditsModal').classList.contains('show')) type = 'battle31'; // スタッフロール専用の曲（エースの飛翔）
+  else if (document.getElementById('creditsModal').classList.contains('show') || document.getElementById('shareModal')?.classList.contains('show')) type = 'battle31'; // シェア画面もスタッフロールの曲 // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面
   else if (document.getElementById('newsModal')?.classList.contains('show')) type = 'news'; // お知らせ画面
   else if (gameOverBgm) type = 'gameover';

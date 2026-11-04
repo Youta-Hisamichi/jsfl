@@ -228,21 +228,20 @@ function powerBreakdown() {
   return { b, rows, csA: compShare('atk'), csH: compShare('hp') };
 }
 // 仲間ひとりの強さの内訳（強さの内訳ダイアログと、仲間ページのカードの下で使う）。compact は1行ずつの式
-function compBreakdownHtml(id, compact) {
+function lvMultFormula(level) { // 強化Lvの倍率の式（自キャラ・仲間共通）
+  level = Math.max(0, Math.floor(level || 0)); const n1000 = Math.floor(level / 1000), n100 = Math.floor(level / 100) - n1000, n10 = Math.floor(level / 10) - Math.floor(level / 100);
+  const p = Math.pow(level + 1, UPGRADE_POW), l1 = 1 + 0.01 * n10, l2 = 1 + 0.1 * n100, l3 = 1 + 0.25 * n1000, f = v => +v.toFixed(v >= 100 ? 1 : 3);
+  return `Lv${(level + 1).toLocaleString('ja-JP')}：Lv^${UPGRADE_POW} = ${f(p)}<br>× プチ飛躍 (1 + 0.01×${n10}回) = ×${f(l1)}<br>× 大飛躍 (1 + 0.1×${n100}回) = ×${f(l2)}<br>× 超大飛躍 (1 + 0.25×${n1000}回) = ×${f(l3)}<br>＝ <b>×${f(p * l1 * l2 * l3)}</b>`;
+}
+// 仲間ひとりの強さの内訳（仲間カードのボタンで開く）
+function compBreakdownHtml(id) {
   const F = v => formatCoinNumber(Math.round(v)), M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : 2));
   const c = COMPANIONS[id], b = computeBonuses(), lv = game.companions.level[id] || 0, hlv = compHpLv(id), n = getCompanionCount(id), golem = compKind(id) === 'golem', dragon = compKind(id) === 'dragon';
-  const pa = getPlayerAtk(), ph = getPlayerMaxHP(), inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
-  const hpLvRate = c.baseBonus + hlv * c.perLevel * COMP_HP_LV_RATE, extra = dragon ? getCompanionAtk(id) - getCompanionBaseAtk(id) : 0;
-  const atkParts = [['自キャラ', F(pa)], [`Lv${lv + 1}`, M(compAtkLvRate(lv))], ...(inspire !== 1 ? [['応援', M(inspire)]] : []), ...(b.companionAtkMult !== 1 ? [['仲間倍率', M(b.companionAtkMult)]] : [])];
-  const hpParts = [['自キャラ', F(ph)], [`Lv${hlv + 1}`, M(hpLvRate)], ['補正', '×0.8'], ...(golem ? [['ゴーレム', M(GOLEM_HP_MULT)]] : []), ...(b.companionHpMult !== 1 ? [['仲間倍率', M(b.companionHpMult)]] : [])];
-  if (compact) {
-    const eq = parts => parts.map(([l, v], k) => `${k ? ' × ' : ''}<span>${l} ${v}</span>`).join('');
-    return `<div class="cc-break"><div class="cc-break-h">📊 強さの内訳</div><div><b>⚔️ ${F(getCompanionAtk(id))}</b> ＝ ${eq(atkParts)}${dragon ? ` ＋ 仲間の合計 ${F(extra)}` : ''}</div><div><b>❤️ ${F(getCompanionMaxHP(id))}</b> ＝ ${eq(hpParts)}</div></div>`;
-  }
+  const rb = compRarityBase(id), insp = compInspire(), extra = dragon ? getCompanionAtk(id) - getCompanionBaseAtk(id) : 0;
   const r2 = (l, v, cls) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${cls || ''}">${v}</b></div>`;
-  let h = `<div class="pb-comp"><div class="pb-sub">${c.name}${n > 1 ? ' ×' + n : ''}</div>`;
-  h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('自キャラの攻撃力', F(pa)) + r2(`攻撃力Lv${lv + 1}（0.3 + Lv×${COMP_ATK_PER_LV}）`, M(compAtkLvRate(lv)), 'up') + (inspire !== 1 ? r2('踊り子・王様の応援', M(inspire), 'up') : '') + (b.companionAtkMult !== 1 ? r2('仲間の攻撃力の倍率（上の合計）', M(b.companionAtkMult), 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(extra)) : '');
-  h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('自キャラの最大HP', F(ph)) + r2(`HP Lv${hlv + 1}（基本${+c.baseBonus.toFixed(3)} + Lv×${+(c.perLevel * COMP_HP_LV_RATE).toFixed(4)}）`, M(hpLvRate), hpLvRate >= 1 ? 'up' : 'dn') + r2('仲間の補正', '×0.8', 'dn') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（上の合計）', M(b.companionHpMult), 'up') : '');
+  let h = `<div class="pb-comp"><div class="pb-sub">${c.name}${n > 1 ? ' ×' + n : ''}（${RARITY_INFO[c.rarity].label}：同じLvの自キャラの${M(rb)}）</div>`;
+  h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('もとの攻撃力', '10') + r2(`強化Lv（攻撃力Lv${lv + 1}）<small>${lvMultFormula(lv)}</small>`, M(upgradeLvMult(lv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (insp !== 1 ? r2('踊り子・王様の応援', M(insp), 'up') : '') + (b.companionAtkMult !== 1 ? r2('仲間の攻撃力の倍率（進化・遺物など）', M(b.companionAtkMult), 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(extra)) : '');
+  h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('もとの最大HP', '100') + r2(`強化Lv（HP Lv${hlv + 1}）<small>${lvMultFormula(hlv)}</small>`, M(upgradeLvMult(hlv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（進化・遺物など）', M(b.companionHpMult), 'up') : '');
   return h + '</div>';
 }
 function playerBreakdownHtml() { // 自キャラの強さの内訳（仲間ページのボタンを押すと、その場に開く）
@@ -250,8 +249,8 @@ function playerBreakdownHtml() { // 自キャラの強さの内訳（仲間ペ�
   const M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : Math.abs(v - 1) < 0.05 ? 3 : 2)); // 1に近い小さな補正は細かい桁まで
   const total = list => list.reduce((t, [, r]) => t * r, 1);
   const tbl = (list, base, unit) => `<div class="pb-base">もとの${unit} <b>${base}</b></div>` + (list.length ? list.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${r >= 1 ? 'up' : 'dn'}">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>') + `<div class="gs-row pb-total"><span class="gs-src">合計の倍率</span><b class="gs-amt">${M(total(list))}</b></div>`;
-  return `<div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
-    <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}${csH ? `<div class="gs-row"><span class="gs-src">＋ 仲間の最大HPの10%</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
+  return `<div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}<div class="pb-formula"><b>強化Lvの倍率の計算</b><br>${lvMultFormula(game.upgrades.atk || 0)}</div>${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
+    <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}<div class="pb-formula"><b>強化Lvの倍率の計算</b><br>${lvMultFormula(game.upgrades.hp || 0)}</div>${csH ? `<div class="gs-row"><span class="gs-src">＋ 仲間の最大HPの10%</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
     <div class="serif-h2">🐾 仲間にかかる倍率</div>
     <div class="pb-sub">攻撃力</div>${rows.cAtk.length ? rows.cAtk.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}
     <div class="pb-sub">最大HP</div>${rows.cHp.length ? rows.cHp.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}

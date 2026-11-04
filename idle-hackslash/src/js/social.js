@@ -260,3 +260,6 @@ function openFriendCodeDebug() {
   document.querySelectorAll('[data-fd-add]').forEach(b => b.onclick = () => { const msg = addFriendCode(b.dataset.fdAdd); showNotice(msg, msg.startsWith('⚠️'), 2600); renderFriendBox(); b.textContent = msg.startsWith('⚠️') ? 'NG' : '✓'; });
 }
 // 戦績ページ（ミッション上部）の占いボタンは削除
+
+// シェア画面を開いている間はスタッフロールの曲（開け閉めで曲を切り替える）
+{ const sm = document.getElementById('shareModal'); if (sm) { let was = sm.classList.contains('show'); new MutationObserver(() => { const now = sm.classList.contains('show'); if (now !== was) { was = now; if (typeof refreshBgm === 'function') refreshBgm(); } }).observe(sm, { attributes: true, attributeFilter: ['class'] }); } }
