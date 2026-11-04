@@ -5,7 +5,7 @@ function draw() {
   document.body.classList.toggle('boss-hp', isBossFight()); // HPパネルの見た目はボスがいる間ずっとボス戦用（負けた直後や試練の塔でも）
   ctx.clearRect(0, 0, size, sizeH || size);
   drawArenaFloor();
-  drawObstacles();
+  drawObstacles(); drawBounceObjMults();
   drawBossEntrance();
   arenaPath();
   ctx.strokeStyle = 'rgba(150,160,190,0.35)';

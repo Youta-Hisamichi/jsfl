@@ -1248,8 +1248,30 @@ const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通っ
 const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
+// 反射オブジェクトの倍率：どの障害物にも「×1.5〜×16」か「÷1.5〜÷16」が付いている（大きい倍率ほど稀）。
+// 自キャラが跳ね返るたびに倍率がたまり（掛け算）、次に敵へ当てたダメージに掛かって元に戻る
+const BOUNCE_OBJ_MULTS = [[1.5, 40], [2, 25], [3, 15], [5, 10], [8, 6], [16, 4]], BOUNCE_OBJ_PLUS = 0.6, BOUNCE_MULT_CAP = 4096;
+function obstacleMult(o) {
+  if (!o || FLOOR_OBSTACLES.has(o.kind)) return null;
+  if (o.bm === undefined) { let r = Math.random() * 100, m = 1.5; for (const [v, w] of BOUNCE_OBJ_MULTS) { if ((r -= w) < 0) { m = v; break; } } o.bm = Math.random() < BOUNCE_OBJ_PLUS ? m : -m; } // 正＝×m、負＝÷m
+  return o.bm;
+}
+function bounceMultLabel(v) { return v > 0 ? `×${v}` : `÷${-v}`; }
+function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `÷${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
+function applyBounceObjMult(ball, o) {
+  const v = obstacleMult(o); if (!v) return;
+  const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
+  const m = v > 0 ? v : 1 / -v;
+  ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
+  o.bmFlash = now;
+  spawnDamageText(o.x, o.y - o.r - 14, `${bounceMultLabel(v)}（ダメージ ${fmtBounceTotal(ball.bounceMult)}）`, v > 0 ? '#7dff9a' : '#ff6b7a', 0.03, Math.abs(v) >= 5);
+  if (typeof playTone === 'function') { if (v > 0) playTone(700 + Math.min(16, m) * 60, 0.08, 'square', 0.04, 1500); else playTone(500, 0.12, 'sawtooth', 0.04, 220); }
+}
 function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
+  if (ball && isMainPlayerBall(ball) && ball.bounceMult && ball.bounceMult !== 1) { // 反射オブジェクトでためた倍率を、このダメージで使い切る
+    m *= ball.bounceMult; spawnDamageText(ball.x, ball.y - ball.radius - 46, `反射 ${fmtBounceTotal(ball.bounceMult)}！`, ball.bounceMult >= 1 ? '#7dff9a' : '#ff6b7a', 0.022, ball.bounceMult >= 5); ball.bounceMult = 1;
+  }
   if (ball && isMainPlayerBall(ball)) { // ダメージを出すたびに溜めを使い切る
     const w = heroWaitMult(ball); ball.lastAtkAt = Date.now(); m *= w;
     if (w >= HERO_WAIT_MAX && typeof obFlag === 'function') obFlag('chargeMax');
@@ -1535,7 +1557,7 @@ function obstacleBounce(ball) {
       }
     }
     if (o.kind === 'qbox' && !o.used && (isMainPlayerBall(ball) || (o.gm && ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)))) { openQBox(o); continue; } // パンドラの箱：自キャラが当たると中身が飛び出す
-    if (dot < -0.6 && isMainPlayerBall(ball)) game.totalBounces = (game.totalBounces || 0) + 1; // 障害物での反射も数える
+    if (dot < -0.6 && isMainPlayerBall(ball)) { game.totalBounces = (game.totalBounces || 0) + 1; applyBounceObjMult(ball, o); } // 障害物での反射も数える。反射オブジェクトの倍率でダメージが増減
     if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));
       ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
@@ -1675,6 +1697,19 @@ function drawObstacleCracks(o, h, dark) { // ぶつけるたびに増えるひ�
   ctx.save(); ctx.beginPath(); ctx.arc(o.x, o.y, h, 0, Math.PI * 2); ctx.clip();
   ctx.strokeStyle = dark; ctx.lineWidth = 1.8; ctx.lineJoin = 'round';
   for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
+  ctx.restore();
+}
+function drawBounceObjMults() { // 反射オブジェクトの倍率を、障害物の上に表示（＋は緑の×、−は赤の÷）。自キャラにたまっている倍率も頭の上に
+  const now = Date.now();
+  ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const o of obstacles) {
+    const v = obstacleMult(o); if (!v || o.broken || o.dead) continue;
+    const big = Math.abs(v) >= 8, fs = Math.round(Math.max(11, Math.min(18, o.r * 0.55)) * (big ? 1.15 : 1)), pop = o.bmFlash && now - o.bmFlash < 300 ? 1 + 0.35 * (1 - (now - o.bmFlash) / 300) : 1;
+    ctx.font = `900 ${Math.round(fs * pop)}px sans-serif`; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = v > 0 ? (big ? '#ffe45c' : '#8dff9e') : (big ? '#ff3b6b' : '#ff8a8a'); ctx.fillText(t, o.x, o.y);
+  }
+  const pl = balls.find(isMainPlayerBall);
+  if (pl && pl.bounceMult && pl.bounceMult !== 1) { const t = 'ダメージ ' + fmtBounceTotal(pl.bounceMult); ctx.font = '900 12px sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(t, pl.x, pl.y + pl.radius + 12); ctx.fillStyle = pl.bounceMult >= 1 ? '#8dff9e' : '#ff8a8a'; ctx.fillText(t, pl.x, pl.y + pl.radius + 12); }
   ctx.restore();
 }
 function drawObstacles() {
