@@ -5047,7 +5047,7 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal .custom-skip { border: 12px solid transparent; border-image: url(assets/img/ui/skin/plate_dark.webp) 13 fill / 12px stretch; background: none; border-radius: 0; padding: 2px 4px; margin: 0; }
 #stageSkipModal .custom-skip-title { color: #ffe27a; font-size: 0.8rem; text-align: center; }
 #stageSkipModal .custom-skip-row input { background: #0b1226; color: #fff; border: 2px solid #c99a3a; border-radius: 8px; font-size: 0.95rem; font-weight: 800; }
-#stageSkipModal .custom-skip-row .modal-shop-btn, #towerReadyModal .modal-shop-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #fff; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.6); padding: 2px 8px; }
+#stageSkipModal .custom-skip-row .modal-shop-btn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #fff; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.6); padding: 2px 8px; }
 #stageSkipModal #customSkipBtn { border-image-source: url(assets/img/ui/skin/btn_gold.webp); color: #2a1a00; text-shadow: 0 1px 0 #fff2b0; }
 #stageSkipModal .custom-skip-info { color: #cdd6ee; text-align: center; }
 #stageSkipModal .custom-skip-info.error { color: #ff8a8a; }
@@ -5063,15 +5063,31 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal .tower-floor img { max-height: 70%; max-width: 54px; object-fit: contain; }
 #stageSkipModal .tower-floor .tf-cost, #stageSkipModal .tower-floor > b, #stageSkipModal .tower-floor .tf-price { flex: none; font-weight: 900; color: #ffe27a; font-size: 0.9rem; white-space: nowrap; }
 #stageSkipModal #stageSkipCloseBtn { margin-top: 2px; }
-#towerReadyModal .modal-panel { width: min(92vw, 380px); text-align: center; }
-#towerReadyModal .tower-head { display: flex; align-items: center; justify-content: center; gap: 6px; }
-#towerReadyModal .tower-head h2 { margin: 0; color: #ffe27a; font-weight: 900; text-shadow: 0 2px 0 #6a3a00; }
-#towerReadyModal .modal-shop-list { display: flex; flex-direction: column; gap: 6px; }
-#towerReadyModal #towerReadyAdBtn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_gold.webp) 13 fill / 8px stretch; background: none; border-radius: 0; color: #2a1a00; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; }
-#towerReadyModal #towerReadyCancelBtn { border-image-source: url(assets/img/ui/skin/btn_gray.webp); }
 #stageSkipModal .tower-help summary { list-style: none; display: flex; align-items: center; height: 30px; padding-left: 13%; max-width: 200px; background: url(assets/img/ui/skill/helpbar.webp) left center / 100% 100% no-repeat; color: #fff; font-size: 0.8rem; text-shadow: 0 1px 2px #000; }
 #stageSkipModal .tower-help summary::-webkit-details-marker { display: none; }
 #stageSkipModal .tower-help { background: none; border: none; padding: 0; margin: 0; }
 #stageSkipModal .tower-floor { padding-left: 20.5%; }
 #stageSkipModal .tower-floor .tf-boss { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; display: flex; align-items: center; justify-content: center; }
 #stageSkipModal .tower-floor .tf-boss img, #stageSkipModal .tower-floor img.tf-boss { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* 試練の塔の最終確認ダイアログは元のデザインのまま */
+#towerReadyModal { background: rgba(6,8,14,0.55); } /* 後ろの試練の塔の画面が見えるように薄めに暗くする */
+#towerReadyModal .modal-panel { --w: min(96vw, 480px); --u: calc(var(--w) / 1454); position: relative !important; width: var(--w) !important; max-width: none !important; height: calc(var(--u) * 1033) !important; max-height: none !important; padding: 0 !important; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/tower/ready_bg.webp) center / 100% 100% no-repeat !important; overflow: visible !important; }
+#towerReadyModal .modal-panel::before, #towerReadyModal .modal-panel::after, #towerReadyModal .tower-head { display: none !important; }
+#towerReadyModal #towerReadyText { position: absolute; left: calc(var(--u) * 100); width: calc(var(--u) * 1254); top: calc(var(--u) * 462); height: calc(var(--u) * 90); margin: 0 !important; display: flex; align-items: center; justify-content: center; color: #fff !important; font-size: calc(var(--u) * 46) !important; font-weight: 900; text-shadow: 0 2px 3px #000; white-space: nowrap !important; }
+#towerReadyModal #towerReadyText b { margin: 0 0.2em; color: #8fe8ff; font-size: 1.45em; text-shadow: 0 0 8px rgba(80,200,255,0.6), 0 2px 3px #000; }
+#towerReadyModal .modal-shop-list { position: static !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+#towerReadyModal .modal-shop-list > button { position: absolute !important; margin: 0 !important; padding: 0 !important; min-height: 0 !important; background: transparent !important; border: none !important; border-image: none !important; box-shadow: none !important; filter: none !important; border-radius: calc(var(--u) * 30) !important; cursor: pointer; }
+#towerReadyModal .modal-shop-list > button:active { background: rgba(255,255,255,0.12) !important; transform: scale(0.98); }
+#towerReadyModal #towerReadyAdBtn { left: calc(var(--u) * 150); width: calc(var(--u) * 1154); top: calc(var(--u) * 588); height: calc(var(--u) * 120); display: flex !important; align-items: center; justify-content: center; gap: calc(var(--u) * 14); color: #fff !important; font-size: calc(var(--u) * 48) !important; font-weight: 900; text-shadow: 0 2px 2px #0a2a6a, 0 0 4px rgba(0,30,90,0.6) !important; white-space: nowrap; }
+#towerReadyModal #towerReadyAdBtn b { color: #ffe27a; }
+#towerReadyModal #towerReadyAdBtn .trd-ico { font-size: 1.2em; margin-right: calc(var(--u) * 10); }
+#towerReadyModal #towerReadyGoBtn { left: calc(var(--u) * 134); width: calc(var(--u) * 1185); top: calc(var(--u) * 735); height: calc(var(--u) * 100); }
+#towerReadyModal #towerReadyCancelBtn { left: calc(var(--u) * 129); width: calc(var(--u) * 1190); top: calc(var(--u) * 855); height: calc(var(--u) * 110); }
+#towerReadyModal #towerReadyGoBtn .msb-name, #towerReadyModal #towerReadyCancelBtn .msb-name { visibility: hidden; }
+#towerReadyModal { background: rgba(0,0,0,0.78) !important; } /* 後ろの塔の画面を黒っぽく暗く沈める */
+/* 試練の塔：画面いっぱい（100%）に広げる。タイトルの横に塔のアイコン */
+#stageSkipModal { padding: 0 !important; align-items: stretch !important; justify-content: stretch !important; }
+#stageSkipModal .modal-panel { width: 100vw !important; max-width: none !important; height: 100vh !important; height: 100dvh !important; max-height: none !important; margin: 0 !important; box-sizing: border-box; }
+#stageSkipModal .tower-title-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+#stageSkipModal .tower-title-row .ico-img, #stageSkipModal .tower-title-row img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
