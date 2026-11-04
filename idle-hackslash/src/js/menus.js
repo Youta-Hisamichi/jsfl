@@ -157,11 +157,11 @@ function gachaArtHtml(i, cost, sub) { return `<span class="gacha-art ga-${i}"></
 function updateCompSummonVisibility() {
   const cgb = document.getElementById('compGachaBtn');
   if (!cgb) return;
-  const full = getCompanionTotal() >= getPartyLimit();
+  const full = !compGachaLeft(); // 回数を使い切ったら（転生でリセット）
   const pr = getCompSummonPrice(); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
-  cgb.classList.toggle('is-disabled', full || !canAffordSummon()); // 満員・コイン不足のときは消さずにグレー
+  cgb.classList.toggle('is-disabled', full ? compGachaLimit() >= COMP_GACHA_MAX_PULLS : !canAffordSummon()); // 満員・コイン不足のときは消さずにグレー
   cgb.dataset.full = full ? '1' : '';
-  { const h = gachaArtHtml(0, pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
+  { const h = gachaArtHtml(0, full ? (compGachaLimit() < COMP_GACHA_MAX_PULLS ? `💎${COMP_GACHA_EXTRA_GEM}で+${COMP_GACHA_EXTRA_PULLS}回` : `上限${COMP_GACHA_MAX_PULLS}回`) : pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！', `残り ${compGachaLeft()} / ${compGachaLimit()}回（転生でリセット）`); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
   cgb.parentElement.style.display = '';
 }
 function renderRebirthShopList() {
@@ -337,15 +337,15 @@ function renderCompanionList() {
   document.getElementById('companionProgress').innerHTML = `${found} / ${compIds.length}<small>${compRate}%</small>`;
   document.getElementById('compBookBar').style.width = compRate + '%';
   const pc = document.getElementById('partyCount');
-  if (pc) pc.innerHTML = `${getCompanionTotal()} / ${getPartyLimit()}<small>人</small>`;
-  { const pb = document.getElementById('partyBar'); if (pb) pb.style.width = Math.min(100, getCompanionTotal() / getPartyLimit() * 100) + '%'; }
+  if (pc) pc.innerHTML = `${getCompanionTotal()}<small>人</small>`; // パーティ枠の上限はなくした
+  { const pb = document.getElementById('partyBar'); if (pb) pb.style.width = Math.min(100, compGachaLeft() / Math.max(1, compGachaLimit()) * 100) + '%'; }
   updateCompSummonVisibility();
   const psb = document.getElementById('partySlotBtn');
   if (psb) {
     const lim = getPartyLimit();
-    psb.innerHTML = `<span>パーティ枠 <b>${getCompanionTotal()} / ${lim}</b></span>` + (lim >= COMPANION_PARTY_MAX // スキルの「＋枠を増やす」と同じ見た目
-      ? '<span class="ws-max"><b>枠MAX</b><small>（転生でリセット）</small></span>'
-      : `<button class="${game.gems < getPartySlotCost() ? 'is-disabled' : ''}">＋枠をMAX（${COMPANION_PARTY_MAX}人）に<span class="ps-cost">💎${getPartySlotCost()}</span><small class="slot-reset">（転生でリセット）</small></button>`);
+    psb.innerHTML = `<span>残り <b>${compGachaLeft()}/${compGachaLimit()}</b>回</span>` + (compGachaLimit() >= COMP_GACHA_MAX_PULLS // パーティ枠の代わりに、招集ガチャの回数
+      ? '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>'
+      : `<button class="${game.gems < COMP_GACHA_EXTRA_GEM ? 'is-disabled' : ''}">＋${COMP_GACHA_EXTRA_PULLS}回<span class="ps-cost">💎${COMP_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;
@@ -428,8 +428,18 @@ function pickCompanionId() {
   for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }
   return entries[0][0];
 }
-const COMPANION_PARTY_MAX = 8; // パーティ枠の最大（ジェムで拡張できる上限）
-function getPartyLimit() { return Math.max(1, Math.min(COMPANION_PARTY_MAX, game.companionSlots || 1)); }
+const COMPANION_PARTY_MAX = 999; // パーティ枠の最大（ジェムで拡張できる上限）
+function getPartyLimit() { return COMPANION_PARTY_MAX; } // パーティ枠の制限はなくした（招集ガチャは回数で制限）
+// 招集ガチャの回数：1周回（転生まで）5回まで。💎1で+5回（最大10回）。転生でリセット
+const COMP_GACHA_BASE_PULLS = 5, COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = 10;
+function compGachaLimit() { return Math.min(COMP_GACHA_MAX_PULLS, COMP_GACHA_BASE_PULLS + (game.compGachaExtra || 0)); }
+function compGachaLeft() { return Math.max(0, compGachaLimit() - (game.companionSummons || 0)); }
+function buyCompGachaExtra(ev) {
+  if (compGachaLimit() >= COMP_GACHA_MAX_PULLS) { showTapError(`招集ガチャは1周回${COMP_GACHA_MAX_PULLS}回までです（転生でリセット）`, ev.clientX, ev.clientY); return; }
+  if (game.gems < COMP_GACHA_EXTRA_GEM) { promptGemShortage(COMP_GACHA_EXTRA_GEM, { returnTo: () => switchTab('companion') }); return; }
+  game.gems -= COMP_GACHA_EXTRA_GEM; game.compGachaExtra = (game.compGachaExtra || 0) + COMP_GACHA_EXTRA_PULLS;
+  showNotice(`🐾 招集ガチャが +${COMP_GACHA_EXTRA_PULLS}回 回せるようになりました（転生でリセット）`); playRegisterSound(); updateStatsUI(); renderCompanionList(); saveGame();
+}
 function getPartySlotCost() { return 1; } // ジェム1個で一気にMAXまで（転生でリセット）
 function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
 function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
@@ -545,7 +555,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   updateStatsUI();
   updateHPUI();
 }
-document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { showTapError('パーティがいっぱいです（枠を増やすか、転生でリセットするとまた招集できます）', event.clientX, event.clientY); return; } runCompanionGacha(1, 0, event); });
+document.getElementById('compGachaBtn').addEventListener('click', event => { if (event.currentTarget.dataset.full && !compSummoning) { buyCompGachaExtra(event); return; } runCompanionGacha(1, 0, event); });
 ['compGachaResult', 'gachaResult'].forEach(boxId => { // 招集ガチャ・進化ガチャの演出と結果は、ページの中ではなくダイアログで重ねて出す（結果欄が見えている間だけ開く）
   const box = document.getElementById(boxId), ov = document.createElement('div'); if (!box) return;
   ov.className = 'comp-gacha-overlay'; document.body.appendChild(ov);

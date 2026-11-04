@@ -1995,20 +1995,7 @@ supergemShopList.addEventListener('click', event => {
   saveGame();
 });
 
-document.getElementById('partySlotBtn').addEventListener('click', event => {
-  if (!event.target.closest('button')) return; // ボタン以外（見出しの文字）は押しても何もしない
-  const lim = getPartyLimit();
-  if (lim >= COMPANION_PARTY_MAX) { showTapError('パーティ枠は最大です', event.clientX, event.clientY); return; }
-  const cost = getPartySlotCost();
-  if (game.gems < cost) { promptGemShortage(cost, { returnTo: () => switchTab('companion') }); return; }
-  game.gems -= cost;
-  game.companionSlots = COMPANION_PARTY_MAX; // ジェム1個で一気にMAXまで
-  showNotice(`🐾 パーティ枠がMAX（${game.companionSlots} 人）になりました（転生でリセット）`);
-  playRegisterSound();
-  updateStatsUI();
-  renderCompanionList();
-  saveGame();
-});
+document.getElementById('partySlotBtn').addEventListener('click', event => { if (event.target.closest('button')) buyCompGachaExtra(event); }); // 招集ガチャの回数を増やす
 function buySubscription(id, event) {
   const sub = SUBSCRIPTIONS[id];
   const active = getActiveSub();

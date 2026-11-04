@@ -1087,7 +1087,7 @@ function completeReincarnation() {
   coinFx = []; coinDisplayHold = 0; pendingChestCoins = 0; pendingChestCoinPts = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
-  game.companionSummons = 0; game.bossJoinSince = 0;
+  game.companionSummons = 0; game.compGachaExtra = 0; game.bossJoinSince = 0;
   game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaDisc = 0; game.skillGachaGemFree = false; game.skillGachaExtra = 0; game.lvTicketUsed = false; /* Lv倍増券はまた1回使える */ /* スキルガチャの回数の上限も転生でリセット */
   game.skillOn = rollSkillOn(); // ONのスキルは転生のたびにランダムな3つに選び直す
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
