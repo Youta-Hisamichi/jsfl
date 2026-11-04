@@ -2289,3 +2289,19 @@ function preemptStrike(e) {
     updateHPUI();
   }, 260);
 }
+// 帰還ボーナスの下の行（動画で3倍・放置中の戦果など）：はみ出すときは電光掲示板のように右から左へ流す
+function fitLoginExtrasMarquee() {
+  const el = document.getElementById('loginBonusReward'); if (!el) return;
+  const self = fn => { el._mqSelf = true; fn(); setTimeout(() => { el._mqSelf = false; }, 0); }; // 自分で書き換えたときは、監視の反応を無視する
+  const old = el.querySelector(':scope > .lb-mq'); if (old) self(() => { el.innerHTML = old.dataset.src; });
+  el.classList.remove('lb-mq-on');
+  const chips = [...el.children]; if (!chips.length) return;
+  const need = chips.reduce((t, c) => t + c.scrollWidth, 0) + 12 * (chips.length - 1);
+  if (need <= el.clientWidth - 4) return;
+  const src = el.innerHTML, inner = chips.map(c => c.outerHTML).join('<span class="lb-mq-gap">　◆　</span>'), part = `${inner}<span class="lb-mq-gap">　◆　</span>`;
+  self(() => { el.innerHTML = `<div class="lb-mq"><div class="lb-mq-part">${part}</div><div class="lb-mq-part" aria-hidden="true">${part}</div></div>`; });
+  const mq = el.querySelector('.lb-mq'); mq.dataset.src = src;
+  mq.style.setProperty('--mq-dur', Math.max(5, mq.querySelector('.lb-mq-part').scrollWidth / 45) + 's'); // 1秒に約45pxの速さ
+  el.classList.add('lb-mq-on');
+}
+{ const el = document.getElementById('loginBonusReward'); if (el) new MutationObserver(() => { if (!el._mqSelf) requestAnimationFrame(fitLoginExtrasMarquee); }).observe(el, { childList: true }); }

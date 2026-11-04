@@ -5084,3 +5084,11 @@ body.floor-bg::before { display: none !important; animation: none !important; } 
 .fgr-sub { font-size: 0.76rem; color: #e8ecf8; margin-bottom: 8px; }
 .fgr-panel .chest-loot-grid { justify-content: center; grid-template-columns: repeat(auto-fit, minmax(100px, 130px)); }
 .fgr-panel .modal-shop-btn { justify-content: center; margin-top: 6px; width: 100%; }
+/* 帰還ボーナスの下の行：はみ出すときは電光掲示板のように流す */
+#lbPanel #loginBonusReward.lb-mq-on { justify-content: flex-start !important; overflow: hidden; }
+#lbPanel .lb-mq { display: flex; flex: none; width: max-content; animation: lbMarquee var(--mq-dur, 8s) linear infinite; }
+#lbPanel .lb-mq-part { display: flex; flex: none; align-items: center; white-space: nowrap; }
+#lbPanel .lb-mq .lb-chip { overflow: visible !important; text-overflow: clip !important; max-width: none !important; animation: none !important; }
+#lbPanel .lb-mq-gap { color: #ffd76b; font-size: 3cqw; text-shadow: 0 1px 2px #000; }
+@keyframes lbMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { #lbPanel .lb-mq { animation-duration: calc(var(--mq-dur, 8s) * 2); } }
