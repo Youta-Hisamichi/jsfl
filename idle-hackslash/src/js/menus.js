@@ -1467,17 +1467,21 @@ function updateWeapons(pl, speedMult) {
         playTone(1800, 0.05, 'triangle', 0.04, 2400); updateStatsUI();
       }
     } else if (p.id === 'dove') { // 一番近い敵へ向きを変えながら飛ぶ
-      const tg = p.t > 16 && nearestOf(p, foes.filter(f => f.hp > 0)); // 狙い始めが遅く、曲がりも鈍いので外れやすい
+      const tg = p.t > 10 && nearestOf(p, foes.filter(f => f.hp > 0));
       const sp = Math.min(DOVE_SPEED_MAX, 1.6 * Math.pow(DOVE_ACCEL, p.t)); // ミサイルのように加速度的に速くなる
       const cur = Math.atan2(p.vy, p.vx);
-      let a = cur;
+      let a = cur, slow = false;
       if (tg) {
+        // 狙っている敵の実際の動きを見る：ほぼ止まっている敵にはしっかり曲がってまず当てる。動いている敵には鈍く、ふらつくので外れやすい
+        const mv = p.tgRef === tg ? Math.hypot(tg.x - p.tgx, tg.y - p.tgy) / Math.max(0.2, speedMult) : 0;
+        p.tgMv = p.tgRef === tg ? (p.tgMv || 0) * 0.7 + mv * 0.3 : 0; p.tgRef = tg; p.tgx = tg.x; p.tgy = tg.y;
+        slow = p.tgMv < 1.5;
         const want = Math.atan2(tg.y - p.y, tg.x - p.x);
         let d = want - cur; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-        const turn = 0.085 * Math.max(0.25, 1 - sp / DOVE_SPEED_MAX); // 速くなるほど曲がりにくい
+        const turn = 0.085 * Math.max(0.25, 1 - sp / DOVE_SPEED_MAX) * (slow ? 3.5 : 1.6); // 速くなるほど曲がりにくい
         a = cur + Math.max(-turn, Math.min(turn, d)) * speedMult;
       }
-      a += (Math.random() - 0.5) * 0.18 * speedMult; // ふらふら飛ぶ
+      if (!slow) a += (Math.random() - 0.5) * 0.18 * speedMult; // 動く敵を追うときはふらふら飛ぶ
       p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
       if (sp > 5 && Math.random() < 0.7 * speedMult) particles.push({ x: p.x - p.vx * 0.8, y: p.y - p.vy * 0.8, vx: -p.vx * 0.08 + (Math.random() - 0.5), vy: -p.vy * 0.08 + (Math.random() - 0.5), life: 0.6, color: sp > 10 ? 'rgba(255,220,140,0.9)' : 'rgba(255,255,255,0.85)', decay: 0.06 }); // 噴射の軌跡
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
