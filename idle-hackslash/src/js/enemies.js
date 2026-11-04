@@ -1781,7 +1781,7 @@ function drawObstacleCracks(o, h, dark) { // ぶつけるたびに増えるひ�
   for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
   ctx.restore();
 }
-const BOUNCE_CHANGE_MS = 2000, BOUNCE_BLINK_MS = 900; // 跳ね返ってから倍率が変わるまで約2秒（最後の0.9秒は点滅）
+const BOUNCE_CHANGE_MS = 2000, BOUNCE_BLINK_MS = 260, BOUNCE_POYON_MS = 520; // 跳ね返ってから約2秒で倍率が変わる（直前に文字がすっと薄くなり、変わったらポヨンと弾む）
 function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラスは青、マイナスは赤）。反射板はここで丸ごと描く。射出中は自キャラの近くに今の倍率
   const now = Date.now();
   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1790,10 +1790,10 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
       if (!o.bmBlinkAt && now - (o.bmPendAt || now) >= BOUNCE_CHANGE_MS - BOUNCE_BLINK_MS) o.bmBlinkAt = now;
       if (o.bmBlinkAt && now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { o.bm = rollBounceMult(); o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
     }
-    const blinkOff = o.bmBlinkAt && Math.floor((now - o.bmBlinkAt) / 110) % 2 === 1;
+    const fade = o.bmBlinkAt ? Math.min(1, (now - o.bmBlinkAt) / BOUNCE_BLINK_MS) : 0; // 変わる直前に薄くなる
     const v = obstacleMult(o); if (!v || o.broken || o.dead) continue;
-    ctx.globalAlpha = blinkOff ? 0.25 : 1;
-    const plus = v > 0, big = Math.abs(v) >= 8, pop = o.bmFlash && now - o.bmFlash < 350 ? 1 + 0.45 * (1 - (now - o.bmFlash) / 350) : 1;
+    ctx.globalAlpha = 1;
+    const plus = v > 0, big = Math.abs(v) >= 8, pt = o.bmFlash ? (now - o.bmFlash) / BOUNCE_POYON_MS : 1, pop = (pt < 1 ? 1 + 0.28 * Math.sin(pt * Math.PI * 2.5) * (1 - pt) : 1) * (1 - 0.12 * fade); // 変わった直後はポヨンと弾む
     if (o.kind === 'reflector') { // 反射板：青（プラス）か赤（マイナス）に光る円盤
       const R = o.r * pop, g = ctx.createRadialGradient(o.x - R * 0.3, o.y - R * 0.35, R * 0.1, o.x, o.y, R);
       g.addColorStop(0, plus ? '#d6f0ff' : '#ffd6da'); g.addColorStop(0.55, plus ? '#3d8dff' : '#ff3b4f'); g.addColorStop(1, plus ? '#123a8a' : '#7a0f1c');
@@ -1801,6 +1801,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
       ctx.lineWidth = 3; ctx.strokeStyle = big ? '#ffe45c' : 'rgba(255,255,255,0.9)'; ctx.stroke();
     }
+    ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
     ctx.font = `900 ${fs}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
     const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS); ctx.fillText(t, o.x, o.y);
