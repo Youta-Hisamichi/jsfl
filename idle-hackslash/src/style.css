@@ -5156,3 +5156,4 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .rbd-roll-q { color: #9fb4e8; font-weight: 900; }
 .rbd-sk.rbd-pop { animation: rbdPop 0.45s cubic-bezier(.34,1.56,.64,1); }
 @keyframes rbdPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+.rbd-h-ico { width: 1.25em; height: 1.25em; vertical-align: -0.28em; object-fit: contain; border-radius: 3px; }
