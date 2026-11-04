@@ -1049,6 +1049,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'lifeglass') { gainItem('lifeglass', 3); saveGame(); updateLifeGlassBtn(); showNotice(`DEBUG: 命の砂時計 +3（所持 ${itemHeld('lifeglass')}個）`); return; }
   if (action === 'npcLines') { // 各ページの上の案内役のセリフ
     simpleChoice({ icon: '💬', title: '各ページの案内役のセリフ', text: `<div class="dbg-list">${Object.values(SHOPKEEPERS).map(k => `<div class="dl-h">${k.name}</div>${k.lines.map(t => `<div class="dl-r">・${t}</div>`).join('')}`).join('')}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'traitList') { // ゲーム画面右上に出る敵の特徴

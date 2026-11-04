@@ -1441,7 +1441,7 @@ function failSkipChallenge() {
   meteors = []; adds = []; clearEnemyTraitObjects();
   resetCombo();
   playDeathSound();
-  const ch = { cost: cost || 0, currency: game.skipChallenge.currency };
+  const ch = towerRetryCost();
   skipRetryText.innerHTML = `ステージ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持${ch.currency === 'coin' ? `コイン: ${COIN_ICO}${formatCoinNumber(Math.floor(game.coins))}` : `ジェム: 💎${Math.floor(game.gems)}`}）`;
   skipRetryBtn.innerHTML = `<span class="msb-name">🔁 ${towerCostText(ch)} でリトライ</span>`;
   skipRetryBtn.classList.toggle('is-disabled', !canPayTower(ch));
@@ -1459,6 +1459,7 @@ function revivePlayerInPlace() {
   gameOverBgm = false; updateSkipBtnVisibility();
   refreshBgm();
   endDeathFx();
+  balls.forEach(b => { if (!b.isPlayer && b.isBoss) b.glassUsed = false; }); // コンテニュー・リトライで命の砂時計がまた使える
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!player || !enemy) { balls = spawnBattleBalls(); refreshPlayerBallStats(true); return; }
@@ -1471,9 +1472,11 @@ function revivePlayerInPlace() {
   spawnDamageText(player.x, player.y - player.radius - 12, 'REVIVE!', '#7ee787');
   playHealSound();
 }
+// 試練の塔のリトライ（コンテニュー）はいつもジェム：ジェムの挑戦は同じ値段、コインの挑戦は飛んだステージ数のジェム（1万ステージごとに💎1・最低💎1）
+function towerRetryCost() { const c = game.skipChallenge || {}; return { currency: 'gem', cost: c.currency === 'coin' ? getCustomSkipCost((c.target || 0) - (c.origin || 0)) : (c.cost || 0) }; }
 function retrySkipChallenge() {
-  const { target, cost } = game.skipChallenge;
-  payTower({ cost: cost || 0, currency: game.skipChallenge.currency });
+  const { target } = game.skipChallenge;
+  payTower(towerRetryCost());
   game.skipChallenge.lost = false;
   skipRetryModal.classList.remove('show');
   revivePlayerInPlace();
@@ -1578,8 +1581,8 @@ customSkipBtn.addEventListener('click', event => {
 stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
 skipRetryBtn.addEventListener('click', event => {
   if (!game.skipChallenge || !skipRetryButtonsReady()) return;
-  if (game.skipChallenge.currency === 'coin' ? game.coins < (game.skipChallenge.cost || 0) : false) { showTapError('コインが足りません', event.clientX, event.clientY); return; }
-  if (game.skipChallenge.currency !== 'coin' && game.gems < (game.skipChallenge.cost || 0)) { promptGemShortage(game.skipChallenge.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
+  const rc = towerRetryCost();
+  if (game.gems < rc.cost) { promptGemShortage(rc.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
   retrySkipChallenge();
 });
 skipGiveUpBtn.addEventListener('click', () => {

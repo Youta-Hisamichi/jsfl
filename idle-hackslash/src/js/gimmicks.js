@@ -549,7 +549,7 @@ const CHEST_ITEMS = {
   nitoryu:     { icon: '📜', name: 'にとうりゅうの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が2回攻撃になる', col: '#ffb35c', buff: 'nitoryu' },
   yamabiko:    { icon: '📜', name: 'やまびこの巻物', desc: '使うと次のボスを倒すまで、メテオなどの攻撃スキルがもう1回落ちる', col: '#8ad0ff', buff: 'yamabiko' },
   ageage:      { icon: '💃', name: 'アゲアゲダンス', desc: '使うと次のボスを倒すまで、仲間の攻撃が2回攻撃になる', col: '#ff8adf', buff: 'ageage' },
-  lifeglass:   { icon: '⏳', name: '命の砂時計', desc: 'ボス戦で使うと、減ったHPと残りのHPが入れかわる（ゲーム画面のスキル列から使う）', col: '#ffd76b' },
+  lifeglass:   { icon: '⏳', name: '命の砂時計', desc: 'ボス戦で使うと、ボス戦の残り時間が最初に戻る（同じボスには1回だけ。コンテニューするとまた使える。ゲーム画面のスキル列から使う）', col: '#ffd76b' },
   ret2:        { icon: '🏠', name: '帰還ボーナス2倍券', desc: '次の帰還ボーナスのコインが2倍（自動で使う。1.5倍券より先に使う）', col: '#5fe0ff' },
 };
 // 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
@@ -600,19 +600,21 @@ Object.keys(ECHO_SKILL_BTNS).forEach(id => { const btn = document.getElementById
     setTimeout(() => { if (phase !== 'battle') return; echoing = true; ECHO_SKILL_SET[id](0); try { btn.click(); spawnDamageText(arena.x, arena.y - arena.radius * 0.3, '📜 やまびこ！', '#8ad0ff', 0.014, true); } finally { ECHO_SKILL_SET[id](now); echoing = false; } }, 700);
   });
 });
-// 命の砂時計：ボス戦で使うと、減ったHPと残りHPが入れかわる
+// 命の砂時計：ボス戦で使うと、残り時間が最初に戻る（同じボスには1回だけ。コンテニュー・リトライでまた使える）
+function lifeGlassBoss() { return balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function useLifeGlass(ev) {
-  const p = balls.find(isMainPlayerBall);
-  if (phase !== 'battle' || !p || !isBossFight()) { showTapError('命の砂時計はボス戦でだけ使えます', ev.clientX, ev.clientY); return; }
+  const p = balls.find(isMainPlayerBall), boss = lifeGlassBoss();
+  if (phase !== 'battle' || !p || !boss) { showTapError('命の砂時計はボス戦でだけ使えます', ev.clientX, ev.clientY); return; }
+  if (boss.glassUsed) { showTapError('このボスにはもう使えない（コンテニューするとまた使える）', ev.clientX, ev.clientY); return; }
   if (!spendItem('lifeglass')) return;
-  const before = p.hp; p.hp = Math.max(1, p.maxHp - p.hp); p.safeHp = p.hp;
-  spawnDamageText(p.x, p.y - p.radius - 16, `⏳ 命の砂時計！ HP ${formatCoinNumber(Math.round(before))} → ${formatCoinNumber(Math.round(p.hp))}`, '#ffd76b', 0.012, true);
-  playHealSound(); updateHPUI(); saveGame(); updateLifeGlassBtn();
+  boss.glassUsed = true; bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = Date.now();
+  spawnDamageText(arena.x, arena.y - 40, `⏳ 命の砂時計！ 残り時間が ${Math.round(bossTimeLeftMs / 1000)}秒 に戻った`, '#ffd76b', 0.012, true);
+  playHealSound(); saveGame(); updateLifeGlassBtn();
 }
 function updateLifeGlassBtn() {
   const row = document.getElementById('skillRow'); if (!row) return;
   let b = document.getElementById('lifeGlassBtn');
-  const show = itemHeld('lifeglass') > 0 && phase === 'battle' && isBossFight();
+  const bb = lifeGlassBoss(), show = itemHeld('lifeglass') > 0 && phase === 'battle' && !!bb && !bb.glassUsed;
   if (!b) { b = document.createElement('button'); b.id = 'lifeGlassBtn'; b.className = 'action-btn lifeglass'; b.addEventListener('click', useLifeGlass); row.appendChild(b); }
   b.style.display = show ? '' : 'none';
   const h = `<span class="lg-ico">⏳</span><b>${itemHeld('lifeglass')}</b>`; if (b.dataset.h !== h) { b.innerHTML = h; b.dataset.h = h; }
