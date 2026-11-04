@@ -1487,6 +1487,16 @@ function formatStageNumber(num) {
   for (let i = -1; n > 0; i++) { const g = n % 10000; n = Math.floor(n / 10000); if (g) parts.unshift(g + (i >= 0 ? BIG_UNITS[i].symbol : '')); }
   return parts.join('');
 }
+// 強化の数値用：ふつうの表示より2桁多く出す（Lvアップでの小さな変化もわかるように）
+function formatPreciseNumber(num) {
+  num = Number(num) || 0; if (!isFinite(num) || num >= 1e72) return formatCoinNumber(num);
+  if (num < 0) return '-' + formatPreciseNumber(-num);
+  num = Math.floor(num); if (num < 10000) return num.toLocaleString('ja-JP');
+  let idx = BIG_UNITS.length - 1; while (idx > 0 && num < BIG_UNITS[idx].value) idx--;
+  while (true) { const u = BIG_UNITS[idx], raw = num / u.value, d = raw < 10 ? 4 : raw < 100 ? 3 : 2, r = Math.floor(raw * Math.pow(10, d)) / Math.pow(10, d);
+    if (r >= 10000 && idx < BIG_UNITS.length - 1) { idx++; continue; }
+    return r.toLocaleString('ja-JP', { minimumFractionDigits: d, maximumFractionDigits: d }) + u.symbol; }
+}
 function formatCoinNumber(num) {
   num = Number(num) || 0;
   if (!isFinite(num)) num = num < 0 ? -Number.MAX_VALUE : Number.MAX_VALUE;

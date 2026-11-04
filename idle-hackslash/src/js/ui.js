@@ -1119,13 +1119,13 @@ upgradeList.addEventListener('click', event => {
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
     const totalCost = sumUpgradeCost(id, game.upgrades[id], count);
     spendCoins(totalCost);
-    const fromLv = game.upgrades[id];
+    const fromLv = game.upgrades[id], before = getUpgradeStatValue(id);
     game.upgrades[id] += count;
     announceUpgradeLeap(id, fromLv, game.upgrades[id]);
     refreshPlayerBallStats(false);
     if (isPct) playUpgradeSoundClassic(); else playUpgradeSound(); // 10%は元の音
     showNotice(`${UPGRADES[id].name} を ${count}Lv 一括強化！`);
-    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv` + leapPopLine(fromLv, game.upgrades[id]));
+    showUpgradeLevelUpPop(id, event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${UPGRADES[id].name} ${formatUpgradeStat(id, before)} → ${formatUpgradeStat(id, getUpgradeStatValue(id))}` + leapPopLine(fromLv, game.upgrades[id]));
     updateStatsUI();
     updateHPUI();
     return;
@@ -1163,12 +1163,12 @@ function playAutoUpStep() {
   [[1, 0, 0.04], [1.26, 40, 0.04], [1.5, 80, 0.04], [2, 120, 0.1]].forEach(([m, t, d]) => setTimeout(() => playTone(freq * m, d, 'square', 0.025), t));
 }
 // 強化の飛躍（10/100/1000Lv到達）を演出
-function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ ${l.every === 10 ? '+3%' : '×' + l.mult}` : ''; } // レベルアップ文字の2行目（飛躍したときだけ）
+function leapPopLine(from, to) { const l = crossedUpgradeLeap(from, to); return l ? `\n✨${l.name}！ +${Math.round(l.add * 100)}%` : ''; } // レベルアップ文字の2行目（飛躍したときだけ）
 function announceUpgradeLeap(id, from, to, auto = false) {
   const leap = crossedUpgradeLeap(from, to);
   if (!leap) return;
   const lv = Math.floor(to / leap.every) * leap.every;
-  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv + 1)} ${leap.name}！ ${leap.every === 10 ? '+3%' : '×' + leap.mult}`);
+  showNotice(`✨ ${UPGRADES[id].name} Lv.${formatCoinNumber(lv + 1)} ${leap.name}！ +${Math.round(leap.add * 100)}%`);
   const pl = balls.find(isMainPlayerBall);
   if (pl && getActiveTab() === 'game') spawnDamageText(pl.x, pl.y - pl.radius - 50, `✨${leap.name}！`, leap.color, 0.025);
   playLeapSound(leap.every >= 100 ? 2 : 1, auto && getActiveTab() !== 'companion' ? 0.25 : 1); // オートLvUPは強化ページ以外では小さく
@@ -1187,11 +1187,12 @@ function levelUpUpgrade(id, x, y) {
   const cost = getUpgradeCost(id);
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
   spendCoins(cost);
+  const before = getUpgradeStatValue(id);
   game.upgrades[id]++;
   announceUpgradeLeap(id, game.upgrades[id] - 1, game.upgrades[id]);
   refreshPlayerBallStats(false);
   playUpgradeSound();
-  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id] + 1)}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
+  showUpgradeLevelUpPop(id, x, y, `レベルアップ！ Lv.${formatCoinNumber(game.upgrades[id] + 1)}\n${UPGRADES[id].name} ${formatUpgradeStat(id, before)} → ${formatUpgradeStat(id, getUpgradeStatValue(id))}` + leapPopLine(game.upgrades[id] - 1, game.upgrades[id]));
   updateStatsUI();
   updateHPUI();
   return true;
@@ -2344,7 +2345,9 @@ companionList.addEventListener('click', event => {
     const { count, total } = getCompanionMaxLevels(id, isPct ? game.coins * PCT_BUDGET : game.coins, kind);
     if (count < 1) { showTapError(isPct ? '手持ちの10%では1Lvも上がりません' : 'コインが足りません', event.clientX, event.clientY); return; }
     spendCoins(total);
+    const before = compUpStat(id, kind, compUpLv(id, kind));
     setCompUpLv(id, kind, compUpLv(id, kind) + count);
+    showLevelUpPop(event.clientX, event.clientY, `レベルアップ！ +${formatCoinNumber(count)}Lv\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatPreciseNumber(before)} → ${formatPreciseNumber(compUpStat(id, kind, compUpLv(id, kind)))}`);
     refreshPlayerBallStats(false);
     refreshCompanionBalls();
     playUpgradeSound();
@@ -2366,10 +2369,12 @@ function levelUpCompanion(id, x, y, kind = 'atk') {
   const cost = getCompanionLevelCost(id, kind);
   if (game.coins < cost) { showTapError('コインが足りません', x, y); return false; }
   spendCoins(cost);
+  const before = compUpStat(id, kind, compUpLv(id, kind));
   setCompUpLv(id, kind, compUpLv(id, kind) + 1);
   refreshPlayerBallStats(false);
   refreshCompanionBalls();
   playUpgradeSound();
+  if (x || y) showLevelUpPop(x, y, `レベルアップ！ Lv.${formatCoinNumber(compUpLv(id, kind) + 1)}\n${kind === 'hp' ? '最大HP' : '攻撃力'} ${formatPreciseNumber(before)} → ${formatPreciseNumber(compUpStat(id, kind, compUpLv(id, kind)))}`); // 数値の変化を見せる
   updateStatsUI();
   updateHPUI();
   return true;
@@ -3961,15 +3966,15 @@ function showFormulaDebug() {
   line('最大HP', F(getPlayerMaxHP()));
   line('ボスへのダメージ', `(1 + ${+b.bossDmg.toFixed(3)}) × ボス特攻進化 ${M(getEvoRate('bossDmg'))} = ${M((1 + b.bossDmg) * getEvoRate('bossDmg'))}`);
   sec('仲間（パーティ）');
-  line('攻撃力の式', '自キャラ攻撃力 × (0.3 + Lv×0.05) × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
+  line('攻撃力の式', `自キャラ攻撃力 × (0.3 + Lv×${COMP_ATK_PER_LV}) × 踊り子・王様 × 仲間攻撃倍率（進化込み）`);
   line('HPの式', '自キャラ最大HP × (基本 + HPLv×成長) × 0.8 × ゴーレム × 仲間HP倍率（進化込み）');
   const pa = getPlayerAtk(), ph = getPlayerMaxHP();
   const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
   for (const id of Object.keys(COMPANIONS)) {
     const n = getCompanionCount(id); if (!n) continue;
     const c = COMPANIONS[id], lv = game.companions.level[id] || 0, hlv = typeof compHpLv === 'function' ? compHpLv(id) : lv, pw = getCompanionPower(id);
-    line(`${c.name || id} ×${n}`, `攻 ${F(pa)} × ${+(0.3 + lv * 0.05).toFixed(2)} × ${+pw.toFixed(3)} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}${compKind(id) === 'dragon' ? `（竜は他の仲間の合計も足して ${F(getCompanionAtk(id))}）` : ''}`,
-      `HP ${F(ph)} × ${+(c.baseBonus + hlv * c.perLevel).toFixed(3)} × 0.8 × ${+pw.toFixed(3)} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
+    line(`${c.name || id} ×${n}`, `攻 ${F(pa)} × ${+compAtkLvRate(lv).toFixed(2)} × ${+pw.toFixed(3)} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}${compKind(id) === 'dragon' ? `（竜は他の仲間の合計も足して ${F(getCompanionAtk(id))}）` : ''}`,
+      `HP ${F(ph)} × ${+(c.baseBonus + hlv * c.perLevel * COMP_HP_LV_RATE).toFixed(3)} × 0.8 × ${+pw.toFixed(3)} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
   }
   sec('スキル（ダメージ = 自キャラ攻撃力 × 倍率）');
   const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };

@@ -711,19 +711,19 @@ const UPGRADES = {
   cHp: { icon: '🧿', name: '仲間の最大HP', desc: '+20%', baseCost: 3, group: 'companion' },
 };
 const UPGRADE_LEAPS = [
-  { every: 1000, mult: 1.5, name: '超大飛躍', color: '#ff5cd6' },
-  { every: 100, mult: 1.2, name: '大飛躍', color: '#e08a00' },
-  { every: 10, mult: 1.03, name: 'プチ飛躍', color: '#2a9d55' },
+  { every: 1000, mult: 1.25, add: 0.25, name: '超大飛躍', color: '#ff5cd6' },
+  { every: 100, mult: 1.1, add: 0.1, name: '大飛躍', color: '#e08a00' },
+  { every: 10, mult: 1.01, add: 0.01, name: 'プチ飛躍', color: '#2a9d55' },
 ];
 // そのレベルで到達済みの飛躍倍率。どの飛躍も「足し算で積み上がる倍率」をかけ合わせる（指数的に爆発して数値があふれないように）
 // 例：初めての大飛躍で×1.5、2回目で×2.0、3回目で×2.5…（超大飛躍も×2→×3→×4…）
 function upgradeLeapMult(level) {
   level = Math.max(0, Math.min(1e12, Number(level) || 0));
   const n1000 = Math.floor(level / 1000), n100 = Math.floor(level / 100) - n1000, n10 = Math.floor(level / 10) - Math.floor(level / 100);
-  return (1 + 0.03 * n10) * (1 + 0.2 * n100) * (1 + 0.5 * n1000);
+  return (1 + 0.01 * n10) * (1 + 0.1 * n100) * (1 + 0.25 * n1000); // インフレをゆるめた（進化・転生・ショップで強くなるため）
 }
-// 攻撃力・最大HPの強化：Lv^1.2 で伸びる（＋飛躍）。数値がなだらかに増えるように
-const UPGRADE_POW = 1.2;
+// 攻撃力・最大HPの強化：Lv^0.8 で伸びる（＋飛躍）。強くなるのは進化・転生・ショップが主で、Lvアップはゆるやかに
+const UPGRADE_POW = 0.8;
 function upgradeLvMult(level) { level = Math.max(0, Number(level) || 0); return Math.pow(level + 1, UPGRADE_POW) * upgradeLeapMult(level); }
 const NUM_CAP = 1e300; // これ以上は扱わない（Infinity・NaN でフリーズしないための安全柵）
 function safeNum(v) { v = Number(v); return isFinite(v) ? Math.max(-NUM_CAP, Math.min(NUM_CAP, v)) : (v > 0 ? NUM_CAP : v < 0 ? -NUM_CAP : 0); }
@@ -1414,7 +1414,7 @@ function getUpgradeStatValue(id) {
 }
 function formatUpgradeStat(id, v) {
   if (id === 'tackle' || id === 'compAtk' || id === 'melee' || id === 'rush' || id === 'cAtk' || id === 'cHp' || id === 'cSpd') return '×' + (v >= 1000 ? formatCoinNumber(Math.round(v)) : +v.toFixed(2));
-  return formatCoinNumber(Math.round(v));
+  return formatPreciseNumber(Math.round(v));
 }
 const UPGRADE_SHOWN = ['atk', 'hp']; // 仲間全体の強化（cAtk・cSpd・cHp）は廃止（今のLvの効果は転生まで残る）
 function renderUpgradeList() { // 自キャラの強化（仲間カードの強化行と同じ形）
@@ -1432,7 +1432,7 @@ function renderUpgradeList() { // 自キャラの強化（仲間カードの強�
     game.upgrades[id] = level + 1;
     const next = getUpgradeStatValue(id);
     game.upgrades[id] = level;
-    return `<div class="cc-up ${cls}" data-upgrade-card="${id}"><div class="cc-up-info"><b>${label} <small>Lv.${formatCoinNumber(level + 1)}</small>${leapTag}</b><span>${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cc-up-cost">${COIN_ICO} ${formatCoinNumber(cost)}</span></div><div class="cc-level-row cc-side"><button class="cc-lvup ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><b>+1</b><span>Lv.UP</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-upgrade-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10% <span>+${formatCoinNumber(pctCount)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-upgrade-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX <span>+${formatCoinNumber(maxCount)} Lv.</span></button>`}</div></div>`;
+    return `<div class="cc-up ${cls}" data-upgrade-card="${id}"><div class="cc-up-info"><b>${label} <small>Lv.${formatCoinNumber(level + 1)}</small>${leapTag}</b><span>${formatUpgradeStat(id, now)} → <b>${formatUpgradeStat(id, next)}</b></span><span class="cc-up-cost">${COIN_ICO} ${formatPreciseNumber(cost)}</span></div><div class="cc-level-row cc-side"><button class="cc-lvup ${game.coins < cost ? 'is-disabled' : ''}" data-upgrade="${id}"><b>+1</b><span>Lv.UP</span></button>${bulkUpLocked(true) ? `<button class="cc-max-btn cc-pct-btn is-disabled bulk-locked" data-upgrade-pct="${id}">${bulkUpLockedBtn(true)}</button>` : `<button class="cc-max-btn cc-pct-btn ${pctCount < 1 ? 'is-disabled' : ''}" data-upgrade-pct="${id}">10% <span>+${formatCoinNumber(pctCount)} Lv.</span></button>`}${bulkUpLocked(false) ? `<button class="cc-max-btn is-disabled bulk-locked" data-upgrade-max="${id}">${bulkUpLockedBtn(false)}</button>` : `<button class="cc-max-btn ${maxCount < 1 ? 'is-disabled' : ''}" data-upgrade-max="${id}">MAX <span>+${formatCoinNumber(maxCount)} Lv.</span></button>`}</div></div>`;
   };
   upgradeList.innerHTML = Object.entries(UPGRADES).filter(([id]) => UPGRADE_SHOWN.includes(id)).map(row).join('');
 }

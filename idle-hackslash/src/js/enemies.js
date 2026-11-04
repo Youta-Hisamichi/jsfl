@@ -759,11 +759,14 @@ const COMPANION_AWAKEN_MAX = 5;
 const COMPANION_AWAKEN_BONUS = 0.2; // 覚醒1段階ごとに攻撃力・HP +20%
 function getCompanionAwaken(id) { return (game.companions.awaken && game.companions.awaken[id]) || 0; }
 function getCompanionPower(id) { return 1; } // （覚醒・絆レベルはなくした）
+// 仲間のLvでの伸び（インフレをゆるめた）：攻撃力は 0.3 + Lv×0.02、HPは1Lvあたりの伸びを0.4倍に
+const COMP_ATK_PER_LV = 0.02, COMP_HP_LV_RATE = 0.4;
+function compAtkLvRate(level) { return 0.3 + (level || 0) * COMP_ATK_PER_LV; }
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const c = COMPANIONS[id];
   const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
-  const baseBonus = c.baseBonus + level * c.perLevel;
+  const baseBonus = c.baseBonus + level * c.perLevel * COMP_HP_LV_RATE; // Lvでの伸びはゆるめ
   const playerMaxHP = getPlayerMaxHP();
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
   return Math.round(playerMaxHP * baseBonus * 0.8 * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost);
@@ -772,7 +775,7 @@ function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
   const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); // 踊り子（1人ごと+10%）・王様の号令（+30%）
   const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」・進化「絆の欠片」
-  return Math.max(1, Math.round(getPlayerAtk() * (0.3 + level * 0.05) * getCompanionPower(id) * inspire * boost));
+  return Math.max(1, Math.round(getPlayerAtk() * compAtkLvRate(level) * getCompanionPower(id) * inspire * boost));
 }
 function getCompanionAtk(id) {
   if (compKind(id) !== 'dragon') return getCompanionBaseAtk(id);
