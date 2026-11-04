@@ -1478,7 +1478,7 @@ function updateWeapons(pl, speedMult) {
         slow = p.tgMv < 1.5;
         const want = Math.atan2(tg.y - p.y, tg.x - p.x);
         let d = want - cur; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-        const turn = 0.085 * Math.max(0.25, 1 - sp / DOVE_SPEED_MAX) * (slow ? 3.5 : 1.6); // 速くなるほど曲がりにくい
+        const turn = 0.085 * Math.max(0.25, 1 - sp / DOVE_SPEED_MAX) * 3.5; // 速くなるほど曲がりにくい（止まっている敵も動く敵も同じ曲がる力）
         a = cur + Math.max(-turn, Math.min(turn, d)) * speedMult;
       }
       if (!slow) a += (Math.random() - 0.5) * 0.18 * speedMult; // 動く敵を追うときはふらふら飛ぶ
