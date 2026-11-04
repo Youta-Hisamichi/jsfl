@@ -377,7 +377,7 @@ function getCompSummonCost() { return getCompSummonPrice().coins; } // コイン
 function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >= p.coins && game.gems >= p.gems; }
 const COMP_DUP_LV_MULT = 1.5; // 招集ガチャなどでパーティにいる仲間がダブったら、Lvが1.5倍
 // 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ONはレア度でN💎1〜UR💎16・OFFは💎10。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
-// まだ一度も転生していないセーブ（compOn が無い）は、出せる仲間ぜんぶがON
+// まだ一度も転生していないセーブ（compOn が無い）は、起動時に initialCompOn() で決める
 const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 5;
 function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎5
 function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
@@ -392,6 +392,14 @@ function rollCompOn(first) {
     for (const id of rest) { if ((x -= COMPANIONS[id].weight) < 0) { pick = id; break; } }
     out.push(pick); rest = rest.filter(id => id !== pick);
   }
+  return out;
+}
+// 最初（まだ転生していないとき）の招集ガチャに出る仲間：★1は村人・ホビット・名犬ポチ・相棒ニャンタの4人、★2は2人、★3は1人（★2・★3はランダム）。ほかはOFF
+const COMP_FIRST_COMMON = ['villager', 'hobbit', 'dog', 'cat'];
+function initialCompOn() {
+  const pick = (r, n) => Object.keys(COMPANIONS).filter(id => COMPANIONS[id].rarity === r).sort(() => Math.random() - 0.5).slice(0, n);
+  const out = [...COMP_FIRST_COMMON, ...pick('rare', 2), ...pick('epic', 1)];
+  for (const id of out) if (typeof isCompLocked === 'function' && isCompLocked(id)) { if (!game.ticketUnlocked) game.ticketUnlocked = {}; game.ticketUnlocked[id] = true; } // まだ出せない仲間（★3など）は、選ばれたら出せるようにする
   return out;
 }
 function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を合体：全員をタイルで並べ、未取得は影と？？？、進化Lvも出す

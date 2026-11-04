@@ -3477,7 +3477,8 @@ if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.f
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
 if (game.forbiddenWatchBought && !game.forbiddenWatchBuys) game.forbiddenWatchBuys = 1; if (game.forbiddenKnifeBought && !game.forbiddenKnifeBuys) game.forbiddenKnifeBuys = 1; // 懐中時計を1個買い切りだったころに買った人は、1個買ったことにする
 REMOVED_SKILLS.forEach(id => { if (game.shopOwned) delete game.shopOwned[id]; if (game.skillLevels) delete game.skillLevels[id]; }); // 削除したスキルは持ち物から消す
-if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x)); // 常時発動になったスキルは枠から外す
+if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !PASSIVE_SKILLS.includes(x));
+if (!Array.isArray(game.compOn) || !game.compOnInit) { if (!Array.isArray(game.compOn) || !(game.reincarnations > 0)) game.compOn = initialCompOn(); game.compOnInit = true; } // 最初の招集ガチャに出る仲間（全員ONにはしない） // 常時発動になったスキルは枠から外す
 if (!game.weaponDup) { game.weaponDup = {}; for (const k in (game.weapons || {})) { const lv = game.weapons[k] || 0; const old = lv ? Math.floor((Math.min(lv, 5) - 1) / 2) : 0; if (old) game.weaponDup[k] = old; } } // 個数がLvで増えていた頃のセーブは、今の個数をそのまま引き継ぐ
 if (!game.atkUpBtnMig) { game.atkUpBtnMig = true; if (game.shopOwned.skillAtkUp && Array.isArray(game.equippedSkills) && !game.equippedSkills.includes('skillAtkUp') && getEquippedSkills().length < getSkillSlots()) game.equippedSkills.push('skillAtkUp'); } // 攻撃UPはボタン発動に戻したので、空き枠があれば装備しておく
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
