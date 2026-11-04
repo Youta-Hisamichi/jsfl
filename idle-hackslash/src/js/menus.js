@@ -15,7 +15,8 @@ function renderSkillGacha() {
   const slots = getSkillSlots();
   const eq = getEquippedSkills();
   // 見出し：装備数（スキル＋自動スキル）／枠数と「＋枠を増やす」だけ
-  const headHtml = `<span>スキルガチャ <b>${game.skillGachaPulls || 0} / ${skillGachaLimit()}</b><small class="slot-reset">（転生でリセット）</small></span>`; // 枠を増やす代わりに、ガチャは1周回10回まで
+  const headHtml = ''; // 回数はガチャの下の左右に出す（招集ガチャと同じ）
+  { const sr = document.getElementById('skillCountRow'); if (sr) { const h = `<span>残り <b>${skillGachaLeft()}/${skillGachaLimit()}</b>回</span>` + (skillGachaLimit() >= SKILL_GACHA_MAX_PULLS ? '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>' : `<button class="${game.gems < SKILL_GACHA_EXTRA_GEM ? 'is-disabled' : ''}" data-sk-extra="1"><span>上限+${SKILL_GACHA_EXTRA_PULLS}回 💎${SKILL_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`); if (sr.dataset.html !== h) { sr.innerHTML = h; sr.dataset.html = h; } } }
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
@@ -46,7 +47,7 @@ function renderSkillGacha() {
     return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon sk-info-ico" data-sk-info="w:${id}">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">🔢 個数 ×${weaponCount(id)}${weaponCount(id) < WEAPON_COUNT_MAX ? '（スキルガチャでダブると+1）' : '（最大）'}<br>⚔️ 自キャラ攻撃力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || ''; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
-  const gachaBtn = (el, label, cost) => { if (!el) return; const gem = el.id === 'skillGachaBtn' ? getSkillGachaGem() : 0, done = el.id === 'skillGachaBtn' && !skillGachaLeft(), canExtra = skillGachaLimit() < SKILL_GACHA_MAX_PULLS; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, done ? (canExtra ? `💎${SKILL_GACHA_EXTRA_GEM}で+${SKILL_GACHA_EXTRA_PULLS}回` : `上限${SKILL_GACHA_MAX_PULLS}回`) : `${COIN_ICO} ${formatCoinNumber(cost)}`, done ? (canExtra ? `${skillGachaLimit()}回 回しきりました（転生でリセット）` : '転生でまた回せます') : el.id === 'skillGachaBtn' ? `${label}（残り${skillGachaLeft()}回）` : label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', el.id === 'skillGachaBtn' && !skillGachaLeft() ? skillGachaLimit() >= SKILL_GACHA_MAX_PULLS || game.gems < SKILL_GACHA_EXTRA_GEM : game.coins < cost); };
+  const gachaBtn = (el, label, cost) => { if (!el) return; const gem = el.id === 'skillGachaBtn' ? getSkillGachaGem() : 0, done = el.id === 'skillGachaBtn' && !skillGachaLeft(), canExtra = skillGachaLimit() < SKILL_GACHA_MAX_PULLS; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, done ? (canExtra ? `💎${SKILL_GACHA_EXTRA_GEM}で+${SKILL_GACHA_EXTRA_PULLS}回` : `上限${SKILL_GACHA_MAX_PULLS}回`) : `${COIN_ICO} ${formatCoinNumber(cost)}`, done ? (canExtra ? `${skillGachaLimit()}回 回しきりました（転生でリセット）` : '転生でまた回せます') : label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', el.id === 'skillGachaBtn' && !skillGachaLeft() ? skillGachaLimit() >= SKILL_GACHA_MAX_PULLS || game.gems < SKILL_GACHA_EXTRA_GEM : game.coins < cost); };
   gachaBtn(document.getElementById('skillGachaBtn'), 'ランダムで解放・Lvアップ', getSkillGachaCost());
   gachaBtn(document.getElementById('weaponGachaBtn'), 'ランダムで入手・Lvアップ', getWeaponGachaCost());
   // 装備枠に空きがなければガチャボタンは隠す（枠を増やすとまた出る）
@@ -161,7 +162,7 @@ function updateCompSummonVisibility() {
   const pr = getCompSummonPrice(); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', full ? compGachaLimit() >= COMP_GACHA_MAX_PULLS : !canAffordSummon()); // 満員・コイン不足のときは消さずにグレー
   cgb.dataset.full = full ? '1' : '';
-  { const h = gachaArtHtml(0, full ? (compGachaLimit() < COMP_GACHA_MAX_PULLS ? `💎${COMP_GACHA_EXTRA_GEM}で+${COMP_GACHA_EXTRA_PULLS}回` : `上限${COMP_GACHA_MAX_PULLS}回`) : pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！', `残り ${compGachaLeft()} / ${compGachaLimit()}回（転生でリセット）`); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
+  { const h = gachaArtHtml(0, full ? (compGachaLimit() < COMP_GACHA_MAX_PULLS ? `💎${COMP_GACHA_EXTRA_GEM}で+${COMP_GACHA_EXTRA_PULLS}回` : `上限${COMP_GACHA_MAX_PULLS}回`) : pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
   cgb.parentElement.style.display = '';
 }
 function renderRebirthShopList() {
@@ -345,7 +346,7 @@ function renderCompanionList() {
     const lim = getPartyLimit();
     psb.innerHTML = `<span>残り <b>${compGachaLeft()}/${compGachaLimit()}</b>回</span>` + (compGachaLimit() >= COMP_GACHA_MAX_PULLS // パーティ枠の代わりに、招集ガチャの回数
       ? '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>'
-      : `<button class="${game.gems < COMP_GACHA_EXTRA_GEM ? 'is-disabled' : ''}">＋${COMP_GACHA_EXTRA_PULLS}回<span class="ps-cost">💎${COMP_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`);
+      : `<button class="${game.gems < COMP_GACHA_EXTRA_GEM ? 'is-disabled' : ''}"><span>上限+${COMP_GACHA_EXTRA_PULLS}回 💎${COMP_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
   const owned = id => game.companions.recruited[id] ? 1 : 0;

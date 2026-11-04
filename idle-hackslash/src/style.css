@@ -5163,3 +5163,24 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .arena-wrap .ob-mission, body:not(.hp-safe) .arena-wrap .ob-mission { left: 50% !important; right: auto !important; transform: translateX(-50%); align-items: center; text-align: center; border-radius: 0 0 10px 10px !important; max-width: 70%; }
 .arena-wrap .ob-mission.done { animation: none; }
 body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius: 10px !important; }
+
+/* スキルガチャの残り回数と「上限+5回」：招集ガチャと同じく、ガチャの下の左右に */
+.party-row #skillCountRow { display: contents; }
+.party-row #skillCountRow > span:first-child { order: 0; flex: 1; font-size: 0.8rem; color: var(--text-dim); }
+.party-row #skillCountRow > button, .party-row #skillCountRow > .ws-max { order: 2; }
+.party-row #skillCountRow > button, .party-row #compLockBtn { border: 8px solid transparent; border-image: url(assets/img/ui/skin/btn_blue.webp) 13 fill / 8px stretch; background: none; color: #fff; font-weight: 800; font-size: 0.74rem; padding: 0 6px; cursor: pointer; line-height: 1.2; text-align: center; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.6); border-radius: 0; box-shadow: none; margin: 0; width: auto; }
+.party-row #skillCountRow > button.is-disabled { filter: grayscale(0.7); opacity: 0.7; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > span:first-child { flex: 0 0 auto; width: 33%; aspect-ratio: 320 / 64; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: #f3e7c4; font-size: 0.72rem; font-weight: 800; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > span:first-child b { color: #fff; font-size: 1rem; margin-left: 4px; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > button, .tab-page[data-tab="coinshop"] .party-row #compLockBtn { flex: 1; aspect-ratio: 236 / 114; border: none !important; border-image: none !important; background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat !important; padding: 0 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-size: 0.74rem; font-weight: 900; line-height: 1.2; text-shadow: 0 1px 2px #000; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max { flex: 1; text-align: center; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > button, .tab-page[data-tab="coinshop"] .party-row #compLockBtn { aspect-ratio: 180 / 109; background: url(assets/img/ui/rb/comp_btn2.webp) center / 100% 100% no-repeat !important; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > button, .tab-page[data-tab="coinshop"] .party-row #compLockBtn { aspect-ratio: 180 / 88; }
+.party-row #skillCountRow .ps-cost { display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; }
+.party-row #skillCountRow .ps-cost .ico-img, .party-row #skillCountRow .ps-cost img { display: inline-block; width: 1em; height: 1em; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > button, .tab-page[data-tab="coinshop"] .party-row #compLockBtn { aspect-ratio: 248 / 92; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
+.party-row #skillCountRow > button { flex: 0 0 auto !important; width: 176px !important; max-width: 48% !important; margin-left: auto !important; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max { flex: 0 0 auto !important; width: 40%; margin-left: auto; aspect-ratio: 320 / 80; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: var(--gold); line-height: 1.1; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max b { font-size: 0.85rem; font-weight: 900; color: #ffd76b; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > .ws-max small { font-size: 0.56rem; color: #f3e7c4; font-weight: 700; }
+.party-row #partySlotBtn button .ps-cost, .party-row #skillCountRow button .ps-cost { display: inline; }

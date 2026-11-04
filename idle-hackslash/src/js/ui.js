@@ -1809,10 +1809,12 @@ document.getElementById('compToggleList')?.addEventListener('click', event => { 
       updateStatsUI(); renderCompToggleList(); saveGame();
     } });
 });
-function unifiedGachaPull(event) {
+// スキルガチャの「上限+5回」ボタン（ガチャの下の右）：残っていても先に増やせる
+document.getElementById('skillCountRow')?.addEventListener('click', ev => { if (ev.target.closest('[data-sk-extra]')) unifiedGachaPull(ev, true); });
+function unifiedGachaPull(event, extraOnly) {
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
-  if (!sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
-  if (!skillGachaLeft()) { // 回数の上限：💎1で+5回（最大10回）。上限は転生でリセット
+  if (!extraOnly && !sp && !wp) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; }
+  if (extraOnly || !skillGachaLeft()) { // 回数の上限：💎1で+5回（最大10回）。上限は転生でリセット
     if (skillGachaLimit() >= SKILL_GACHA_MAX_PULLS) { showTapError(`スキルガチャは1周回${SKILL_GACHA_MAX_PULLS}回までです（転生でリセット）`, event.clientX, event.clientY); return; }
     simpleChoice({ icon: '🎰', title: 'スキルガチャの回数を増やす', text: `<b>💎${SKILL_GACHA_EXTRA_GEM}</b> で、スキルガチャをあと <b>${SKILL_GACHA_EXTRA_PULLS}回</b> 回せるようにしますか？`, sub: `いま ${skillGachaLimit()}回 → ${skillGachaLimit() + SKILL_GACHA_EXTRA_PULLS}回（最大${SKILL_GACHA_MAX_PULLS}回・転生でリセット）`, yes: `💎${SKILL_GACHA_EXTRA_GEM} で+${SKILL_GACHA_EXTRA_PULLS}回`, no: 'やめる',
       onYes: () => { if (game.gems < SKILL_GACHA_EXTRA_GEM) { promptGemShortage(SKILL_GACHA_EXTRA_GEM, { returnTo: () => switchTab('coinshop') }); return; }
