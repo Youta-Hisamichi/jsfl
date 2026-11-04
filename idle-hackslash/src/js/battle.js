@@ -1126,7 +1126,7 @@ let coinStealAt = 0;
 function coinStealFrom(e) { // 敵からコインが噴き出して自キャラへ飛んでくる（盗んだ分だけ増える）
   const now = Date.now(); if (now - coinStealAt < 120) return; coinStealAt = now; // 連続ヒットでも出しすぎない
   const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_STEAL_RATE * computeBonuses().coinMult));
-  game.coins += gain; spawnCoinDrop(e.x, e.y, gain, 7); // 攻撃が当たると敵からコインが大噴出
+  game.coins += gain; coinStolenSec += gain; spawnCoinDrop(e.x, e.y, gain, 7); // 攻撃が当たると敵からコインが大噴出
   spawnDamageText(e.x, e.y - e.radius - 20, `🪙 +${formatCoinNumber(gain)}`, '#ffd76b', 0.03);
   if (Math.random() < 0.6) playCoinChime(Math.floor(Math.random() * 5));
 }
@@ -2325,13 +2325,23 @@ function fitLoginExtrasMarquee() {
 
 // コイン盗み中は、攻撃しなくても敵から小さいコインが少しずつ吸い込まれてくる
 let coinSuck = [], coinDrainAt = 0;
+// 盗んだ量：約1秒ごとに自キャラの上へ「この1秒で盗んだ量（発動してからの合計）」を出す
+let coinStolenSec = 0, coinStolenTotal = 0;
+setInterval(() => {
+  if (typeof isCoinStrike !== 'function' || !isCoinStrike()) { coinStolenSec = 0; coinStolenTotal = 0; return; }
+  if (phase !== 'battle' || coinStolenSec <= 0) return;
+  coinStolenTotal += coinStolenSec;
+  const pl = balls.find(isMainPlayerBall);
+  if (pl) spawnDamageText(Math.max(arena.x - 100, Math.min(arena.x + 100, pl.x)), pl.y - pl.radius - 34, `🪙盗み +${formatCoinNumber(coinStolenSec)}（計${formatCoinNumber(coinStolenTotal)}）`, '#ffe27a', 0.02, true); // 端でもはみ出さないように横位置をおさえる
+  coinStolenSec = 0;
+}, 1000);
 setInterval(() => {
   if (typeof isCoinStrike !== 'function' || !isCoinStrike() || phase !== 'battle') return;
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
   const foes = [...balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0 && !(b.spawnTimer > 0)), ...adds.filter(a => a.hp > 0)];
   if (!foes.length) return;
   const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_DRAIN_RATE * computeBonuses().coinMult));
-  game.coins += gain; updateStatsUI(); // 吸収は時間で一定（敵が何体いても同じ量）
+  game.coins += gain; coinStolenSec += gain; updateStatsUI(); // 吸収は時間で一定（敵が何体いても同じ量）
   const e = foes[Math.floor(Math.random() * foes.length)];
   for (let i = 0; i < 3; i++) coinSuck.push({ x: e.x + (Math.random() - 0.5) * e.radius, y: e.y + (Math.random() - 0.5) * e.radius, t: -i * 0.12, wob: Math.random() * 6 });
   if (Math.random() < 0.35) playTone(2000 + Math.random() * 600, 0.025, 'sine', 0.02);
