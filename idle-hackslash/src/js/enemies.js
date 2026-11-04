@@ -475,12 +475,13 @@ function makeBall(isPlayer) {
     const sizeMul = es.isBoss || forcedEnemyKey ? 1 : rollEnemySizeMul(); // ときどき大きい（150%）敵が出る（小さい敵はなし）
     if (sizeMul !== 1) { es.hp = Math.max(1, Math.round(es.hp * (sizeMul < 1 ? ENEMY_SMALL_HP : ENEMY_BIG_HP))); }
     const orbitRadius = arena.radius * (0.4 + Math.random() * 0.3);
+    const blitz = rollBlitzEnemy(es); if (blitz && !es.isBoss) es.hp = Math.max(1, Math.round(es.hp * BLITZ_ZAKO_HP)); // 爆速の敵（ザコは少し打たれ弱い）
     return {
       isPlayer: false,
       ...farSpawnPoint(0.72),
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
       maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
-      chaser: es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE, // ときどき、ひたすら主人公を追ってくるボス
+      blitz, chaser: blitz || (es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE), // ときどき、ひたすら主人公を追ってくるボス（爆速の敵も追いかける）
       sizeMul, radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? BOSS_RADIUS : 16 * sizeMul) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
       glow: es.isBoss ? 'rgba(186,108,255,0.65)' : style.glow,
@@ -1995,6 +1996,14 @@ function movePlayerSideBalls(list, speedMult, b) {
 }
 const WALK_SPEED = 1.5;   // 基本の歩く速さ（px/フレーム・ゲーム速度1倍）
 const WALK_TURN = 0.06;   // 向き・速さの変わりやすさ（小さいほどゆったり）
+// とんでもないスピードで追いかけてくる敵（ザコ・ボス）：主人公だけを狙い、ふつうの約4倍の速さで突っ込んでくる
+const BLITZ_ZAKO_CHANCE = 0.05, BLITZ_BOSS_CHANCE = 0.12, BLITZ_FROM_STAGE = 8, BLITZ_SPEED = 4.2, BLITZ_ZAKO_HP = 0.6;
+let forceBlitzNext = false; // デバッグ：次の敵を爆速にする
+function rollBlitzEnemy(es) {
+  if (forceBlitzNext) { forceBlitzNext = false; return true; }
+  if (game.skipChallenge || game.stage < BLITZ_FROM_STAGE) return false;
+  return Math.random() < (es.isBoss ? BLITZ_BOSS_CHANCE : BLITZ_ZAKO_CHANCE);
+}
 const CHASER_CHANCE = 0.3, CHASER_SPEED = 1.7; // ときどき出る「ひたすら主人公を追ってくるボス」の確率と速さ（ふつうのボスは0.85）
 function nearestOf(ball, list) {
   let best = null, bd = Infinity;
@@ -2072,7 +2081,7 @@ function walkBall(ball, speedMult, b) {
     if (isMain && (ball.tapSpeedMult || 1) > 1) w.pause = 0;
   } else {
     target = ball.chaser ? (balls.find(x => isMainPlayerBall(x) && x.hp > 0) || nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0))) : nearestOf(ball, balls.filter(x => x.isPlayer && x.hp > 0));
-    speed = WALK_SPEED * (ball.isAdd ? 1.1 : ball.chaser ? CHASER_SPEED : ball.isBoss ? 0.85 : 1); // 追跡ボスは主人公だけをしつこく追う
+    speed = WALK_SPEED * (ball.blitz ? BLITZ_SPEED : ball.isAdd ? 1.1 : ball.chaser ? CHASER_SPEED : ball.isBoss ? 0.85 : 1); // 追跡ボスは主人公だけをしつこく追う
     if (ball.chaser) w.pause = 0; // 立ち止まらない
   }
   let dvx = 0, dvy = 0;
@@ -2121,9 +2130,10 @@ function walkBall(ball, speedMult, b) {
     const ang = (ball.walkSeed ??= Math.random() * 6) + t / 120;
     dvx = Math.cos(ang) * speed * 0.4; dvy = Math.sin(ang) * speed * 0.4;
   }
-  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.chaser ? 1.8 : ball.rushDash && !ball.isPlayer ? 4 : ball.sineMove && !ball.isPlayer ? 1 / Math.max(0.0001, WALK_TURN * speedMult) : 1)); // 突進はすぐ最高速に・サインカーブは波の形を崩さない
+  const turn = Math.min(1, WALK_TURN * speedMult * (isMain && (ball.tapSpeedMult || 1) > 1 ? 2.5 : ball.blitz ? 3.5 : ball.chaser ? 1.8 : ball.rushDash && !ball.isPlayer ? 4 : ball.sineMove && !ball.isPlayer ? 1 / Math.max(0.0001, WALK_TURN * speedMult) : 1)); // 突進はすぐ最高速に・サインカーブは波の形を崩さない
   ball.vx += (dvx - ball.vx) * turn;
   ball.vy += (dvy - ball.vy) * turn;
+  if (ball.blitz && Math.hypot(ball.vx, ball.vy) > WALK_SPEED * 2 && Math.random() < 0.8 * speedMult) { const sp = Math.hypot(ball.vx, ball.vy) || 1, ux = ball.vx / sp, uy = ball.vy / sp, o = (Math.random() - 0.5) * ball.radius * 1.4; particles.push({ x: ball.x - ux * ball.radius - uy * o, y: ball.y - uy * ball.radius + ux * o, vx: -ux * 2.5, vy: -uy * 2.5, life: 0.55, color: Math.random() < 0.5 ? 'rgba(255,255,255,0.9)' : 'rgba(255,214,90,0.9)', decay: 0.07 }); } // 爆速の敵は風を切る筋を残す
   applySeparation(ball, speedMult);
   if (isMain && (ball.tapSpeedMult || 1) > 1.2) {
     ball.stepDist = (ball.stepDist || 0) + Math.hypot(ball.vx, ball.vy) * speedMult;

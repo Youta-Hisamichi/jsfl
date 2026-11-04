@@ -447,7 +447,7 @@ function renderEnemyTraitBadge(en, trait) {
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
     if (en.berserk) tags.push(['🔥 発狂中！防御ダウン', 'warn']);
-    if (en.chaser) tags.push(['🏃 しつこく追ってくる', 'warn']);
+    if (en.blitz) tags.push(['⚡ 爆速で追ってくる！', 'warn']); else if (en.chaser) tags.push(['🏃 しつこく追ってくる', 'warn']);
   }
   const key = en && getEnemySpriteKey(en), img = key && ENEMY_SPRITES[key];
   const head = tags.length ? `<span class="etb-head">${img ? `<img src="${img}" alt="">` : '👾'}敵の特徴</span>` : ''; // 誰の情報か分かるよう、敵の顔つきの見出し

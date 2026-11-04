@@ -1066,6 +1066,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'blitzEnemy') { forceBlitzNext = true; showNotice('DEBUG: 次に出る敵が「爆速」になります'); return; }
   if (action === 'skillFormula') { // 全スキル（手動スキル・自動スキル）の計算式といまの数字。持っていないものは Lv1 で計算
     const atk = getPlayerAtk(), b = computeBonuses(), F = v => formatCoinNumber(Math.round(v)), M = v => '×' + (+v.toFixed(3));
     const powAt = lv => { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); };
@@ -1111,7 +1112,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'npcLines') { // 各ページの上の案内役のセリフ
     simpleChoice({ icon: '💬', title: '各ページの案内役のセリフ', text: `<div class="dbg-list">${Object.values(SHOPKEEPERS).map(k => `<div class="dl-h">${k.name}</div>${k.lines.map(t => `<div class="dl-r">・${t}</div>`).join('')}`).join('')}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'traitList') { // ゲーム画面右上に出る敵の特徴
-    const fixed = [['👑 ボス', 'ボス戦'], ['⬆️ 激デカ', '激デカボス'], ['🪨 硬い（ダメージ減）', 'メタル系'], ['🔥 発狂中！防御ダウン', 'HPが減って発狂した'], ['🏃 しつこく追ってくる', '追いかけてくる敵']];
+    const fixed = [['👑 ボス', 'ボス戦'], ['⬆️ 激デカ', '激デカボス'], ['🪨 硬い（ダメージ減）', 'メタル系'], ['🔥 発狂中！防御ダウン', 'HPが減って発狂した'], ['🏃 しつこく追ってくる', '追いかけてくる敵'], ['⚡ 爆速で追ってくる！', 'とんでもない速さで主人公を追いかける敵（ステージ8から・ザコ5%／ボス12%）']];
     const tr = Object.keys(ENEMY_TRAIT_LABELS).map(k => [`${ENEMY_TRAIT_ICONS[k] || '✨'} ${ENEMY_TRAIT_LABELS[k]}`, (typeof ENEMY_TRAIT_DESCS !== 'undefined' && ENEMY_TRAIT_DESCS[k]) || '']);
     simpleChoice({ icon: '👾', title: '敵の特徴一覧', text: `<div class="dbg-list">${[...fixed, ...tr].map(([n, d]) => `<div class="dl-r"><b>${n}</b>${d ? `<small>${d}</small>` : ''}</div>`).join('')}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'friendCode') { openFriendCodeDebug(); return; }
