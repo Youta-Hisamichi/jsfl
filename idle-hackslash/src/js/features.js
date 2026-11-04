@@ -504,7 +504,7 @@ function rebornGoalsHtml() {
   if (newComps) items.push(`<span>❓ 新しい仲間が<b>${newComps}人</b>ガチャに登場（だれかはお楽しみ）</span>`);
   items.push(`<span>🐾 仲間ガチャ1回（いまのステージ${formatStageNumber(game.stage)}なら ${rebirthCompRatesText(game.stage)}）</span>`);
   if (!(game.reincarnations > 0)) items.push('<span>🗝️ すべてのページ・試練の塔が最初から開放</span>');
-  items.push(`<span>💪 転生ボーナス ×${rebirthPowerMult()} → ×${rebirthPowerMult() + 1}（攻撃力・最大HP）</span>`);
+  items.push(`<span>💪 転生ボーナス ×${rebirthPowerMult()} → ×${rebirthPowerMult() + 1}（自キャラと仲間の攻撃力・最大HP）</span>`);
   return `<div class="rg-box"><div class="rg-title"><span class="rg-spark">✨</span>次の転生（${next}回目）で手に入るもの</div>${items.map(h => `<div class="rg-item">${h}</div>`).join('')}</div>`;
 }
 { const orig = openRebornConfirm; openRebornConfirm = function (ctx) {

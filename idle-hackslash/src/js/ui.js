@@ -3985,14 +3985,14 @@ function showFormulaDebug() {
   line('最大HP', F(getPlayerMaxHP()));
   line('ボスへのダメージ', `(1 + ${+b.bossDmg.toFixed(3)}) × ボス特攻進化 ${M(getEvoRate('bossDmg'))} = ${M((1 + b.bossDmg) * getEvoRate('bossDmg'))}`);
   sec('仲間（パーティ）');
-  line('攻撃力の式', '10 × 強化Lvの倍率（仲間の攻撃力Lv） × レア度（N0.3・R0.5・SR1・SSR2・UR4） × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
-  line('HPの式', '100 × 強化Lvの倍率（仲間のHP Lv） × レア度 × ゴーレム × 仲間HP倍率（進化込み）');
+  line('攻撃力の式', '10 × 強化Lvの倍率（仲間の攻撃力Lv） × レア度（N0.3・R0.5・SR1・SSR2・UR4） × 転生ボーナス × 踊り子・王様 × 仲間攻撃倍率（進化込み）');
+  line('HPの式', '100 × 強化Lvの倍率（仲間のHP Lv） × レア度 × 転生ボーナス × ゴーレム × 仲間HP倍率（進化込み）');
   const inspire = compInspire(), pa = getPlayerAtk(), ph = getPlayerMaxHP();
   for (const id of Object.keys(COMPANIONS)) {
     const n = getCompanionCount(id); if (!n) continue;
     const c = COMPANIONS[id], lv = game.companions.level[id] || 0, hlv = typeof compHpLv === 'function' ? compHpLv(id) : lv, rb = compRarityBase(id);
-    line(`${c.name || id} ×${n}`, `攻 10 × ${M(upgradeLvMult(lv))} × ${rb} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}`,
-      `HP 100 × ${M(upgradeLvMult(hlv))} × ${rb} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
+    line(`${c.name || id} ×${n}`, `攻 10 × ${M(upgradeLvMult(lv))} × ${rb} × ${rebirthPowerMult()} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}`,
+      `HP 100 × ${M(upgradeLvMult(hlv))} × ${rb} × ${rebirthPowerMult()} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
   }
   sec('スキル（ダメージ = 自キャラ攻撃力 × 倍率）');
   const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };

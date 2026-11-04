@@ -941,7 +941,7 @@ function updateStatsUI() {
   stageNumEl.textContent = formatStageNumber(game.stage); // 万・億などの単位を付ける
   superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
   rebornNumEl.textContent = formatCoinNumber(game.reincarnations);
-  { const el = document.getElementById('rebirthLvNum'); if (el) { el.textContent = '×' + rebirthPowerMult(); document.getElementById('rebirthLvBonus').textContent = `攻撃力・HP ×${rebirthPowerMult()}`; } }
+  { const el = document.getElementById('rebirthLvNum'); if (el) { el.textContent = '×' + rebirthPowerMult(); document.getElementById('rebirthLvBonus').textContent = `自キャラ・仲間の攻撃力・HP ×${rebirthPowerMult()}`; } }
   bestStageNumEl.textContent = formatCoinNumber(game.bestStage);
   totalKillsNumEl.textContent = formatCoinNumber(game.totalKills);
   totalTapsNumEl.textContent = formatCoinNumber(game.totalTaps);
