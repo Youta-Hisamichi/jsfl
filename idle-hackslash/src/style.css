@@ -5099,3 +5099,18 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal .tower-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; color: #c8d0e6; }
 #stageSkipModal .tower-help p { margin: 5px 8px 0; font-size: 0.8rem; line-height: 1.5; }
 #stageSkipModal #stageSkipCloseBtn { display: flex; align-items: center; justify-content: center; width: 62%; max-width: 300px; height: auto !important; aspect-ratio: 248 / 92; margin: 6px auto 0; padding: 0 !important; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 0 1px 2px #000, 0 0 4px rgba(0,0,0,0.6); }
+/* 試練の塔：スクロールなしで1画面に収める。「しくみ」はヘッダー絵の下に重ね、「塔を降りる」は灰色のプレート */
+#stageSkipModal .modal-panel { gap: 3px !important; overflow: hidden !important; padding-bottom: 2px !important; }
+#stageSkipModal .tower-head { gap: 0 !important; padding: 0 !important; }
+#stageSkipModal .tower-head-wrap { position: relative; width: 100%; max-width: 520px; margin: 0 auto; }
+#stageSkipModal .tower-head-img { margin: 0 auto !important; }
+#stageSkipModal .tower-head-wrap .tower-help { position: absolute !important; left: 2px; bottom: 2px; z-index: 3; margin: 0 !important; }
+#stageSkipModal .tower-head-wrap .tower-help[open] { width: calc(100% - 4px); bottom: auto; top: calc(100% - 38px); }
+#stageSkipModal .tower-best { line-height: 1.2; }
+#stageSkipModal .tower-floors { gap: 2px !important; flex: 1 1 auto; min-height: 0; }
+#stageSkipModal .tower-floor { aspect-ratio: auto !important; height: min(calc((100dvh - 330px) / 5 - 2px), calc((100vw - 20px) * 138 / 720)); min-height: 44px; }
+#stageSkipModal .tower-head-img { max-height: 18dvh; width: auto !important; max-width: 100%; }
+#stageSkipModal .custom-skip { padding: 0 4px !important; }
+#stageSkipModal .custom-skip-title { margin-bottom: 2px; }
+#stageSkipModal .custom-skip-info { margin-top: 2px; min-height: 0; }
+#stageSkipModal #stageSkipCloseBtn { width: 40% !important; max-width: 190px !important; aspect-ratio: 561 / 150 !important; margin: 2px auto 0 !important; background: url(assets/img/ui/tower/btn_gray.webp) center / 100% 100% no-repeat !important; font-size: 0.88rem !important; }
