@@ -842,7 +842,7 @@ const SKILL_GACHA_SKILLS = {
   skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
   skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: 'ボタンを押すと20秒間 攻撃力1.5倍（Lvで少しずつ上がる）' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
-  skillCoinStrike:{ icon: '🪙', name: 'コイン盗み', desc: '30秒間 敵からコインを吸い取り続け、攻撃を当てるとコインが大噴出' },
+  skillCoinStrike:{ icon: '🪙', name: 'コイン盗み', desc: '一定時間 敵からコインを吸い取り続け、攻撃を当てるとコインが大噴出（Lvで長くなる）' },
   skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
   skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },
@@ -1467,7 +1467,7 @@ const SKILL_ORDER = Object.keys(SKILL_GACHA_SKILLS);
 function getSkillBasePrice(id) { return Math.round(100 * Math.pow(1.3, Math.max(0, SKILL_ORDER.indexOf(id))) / 10) * 10; }
 function getSkillBuyCost(id) { // 解放 → Lv10まではLvアップごとに×2.5、その先は多項式でゆるやかに増える（高Lvまで届くように）
   const lv = game.shopOwned[id] ? getSkillLevel(id) : 0;
-  const mult = Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1);
+  const mult = Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1) * (id === 'skillCoinStrike' ? Math.pow(1.25, lv) : 1); // コイン盗みは長くなるほど稼げるので、値上がりを強めに
   return coinPrice(Math.round(getSkillBasePrice(id) * mult));
 }
 let lastSetSkill = null; // 直前にセットしたスキル（その枠だけアニメさせる）

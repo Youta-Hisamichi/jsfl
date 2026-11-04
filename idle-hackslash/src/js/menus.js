@@ -1930,7 +1930,7 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   if (id === 'skillDeath') return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）<br>Lvごとに+1%（最大100%）・同じ敵には1回だけ（ボスはコンテニューで+1回）<br>ボスの即死耐性：いまのステージ ${pct1(bossDeathResist(s))}${s >= DEATH_BOSS_CAP_STAGE ? '・ステージ100万からは最大1%' : '（ステージ1000から100ステージごとに+1%）'}`;
   if (id === 'skillAccel') return `⏩ ${ACCEL_DURATION / 1000}秒間 2.5倍速<br>Lvを上げても効果は変わりません`;
   if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult(lv))}<br>Lvごとに+0.1%`;
-  if (id === 'skillCoinStrike') return `🪙 ${COIN_STRIKE_MS / 1000}秒間 敵からコインを吸い取り続け、攻撃を当てるとザコ1体の半分のコインが大噴出<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillCoinStrike') return `🪙 <b>${+coinStealSecs(lv).toFixed(2)}秒間</b>${lv < SKILL_MAX_LEVEL ? `（次のLv ${+coinStealSecs(lv + 1).toFixed(2)}秒）` : ''} 敵からコインを吸い取り続け、攻撃を当てるとザコ1体の半分のコインが大噴出<br>Lvで長くなる（30秒までは+1秒、そこから30秒ごとに増え方が半分）`;
   if (id === 'skillZeni') return `💰 手持ちコインの半分を投げる（${ZENI_MIN_COINS}枚以上必要）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} ＋ 攻撃力<br>Lvを上げても効果は変わりません`;
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
   if (id === 'skillHalve') return `🌗 敵のHPを半分にする（ボスに効く確率 ${pct1(HALVE_CHANCE_BOSS)}・効いたボスにはもう効かない）<br>Lvを上げても効果は変わりません`;
@@ -1940,11 +1940,19 @@ function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一�
   const k = HEAL_SKILLS.includes(id) ? '回復力' : '威力';
   if (id === 'skillDeath') return '即死率 +1%（例外あり）';
   if (id === 'skillAtkUp') return `攻撃力UP ×${fmtAtkUp(atkUpMult(slv))}`;
+  if (id === 'skillCoinStrike') return `コイン盗み ${+coinStealSecs(slv).toFixed(2)}秒`;
   if (!POWER_SKILLS.includes(id)) return 'Lvアップ';
   return slv % 100 === 0 ? `超飛躍！！ ${k}×3` : slv % 10 === 0 ? `飛躍！ ${k}×1.5` : `${k}がアップ`;
 }
 const SKILL_COINSTRIKE_COOLDOWN = SKILL_MIN_CD;
-const COIN_STRIKE_MS = 30 * 1000;
+// コイン盗みの長さ：Lv1で10秒、Lvごとに+1秒。30秒からは+0.5秒、60秒からは+0.25秒…と30秒ごとに増え方が半分になる
+function coinStealSecs(lv) {
+  lv = lv || (game.shopOwned && game.shopOwned.skillCoinStrike ? getSkillLevel('skillCoinStrike') : 1);
+  let sec = 10, step = 1, left = lv - 1;
+  while (left > 0) { const cap = sec < 30 ? 30 : Math.floor(sec / 30) * 30 + 30, need = Math.ceil((cap - sec) / step - 1e-9), n = Math.min(left, need); sec += n * step; left -= n; if (left > 0) step /= 2; }
+  return Math.round(sec * 1000) / 1000;
+}
+function coinStealMs(lv) { return coinStealSecs(lv) * 1000; }
 const COIN_STRIKE_KILL_MULT = 1, COIN_STEAL_RATE = 0.5, COIN_DRAIN_RATE = 0.03, COIN_DRAIN_MS = 400; // コイン盗み中の討伐コイン倍率・1回攻撃するごとに盗むコイン（ザコ1体の何倍）
 const SKILL_ZENI_COOLDOWN = SKILL_MIN_CD;
 const ZENI_MIN_COINS = 10;

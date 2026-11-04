@@ -2682,9 +2682,9 @@ coinStrikeBtn.addEventListener('click', event => {
   if (Date.now() < coinStrikeEndAt) return;
   const ctxs = beginSkill(event, 'skillCoinStrike', 'coinStrike', SKILL_COINSTRIKE_COOLDOWN, lastCoinStrikeAt, v => { lastCoinStrikeAt = v; }, updateCoinStrikeButton, false);
   if (!ctxs) return;
-  coinStrikeEndAt = Date.now() + COIN_STRIKE_MS;
+  coinStrikeEndAt = Date.now() + coinStealMs();
   spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン盗み', '#ffd76b', 0.012);
-  showNotice(`🪙 コイン盗み！ ${COIN_STRIKE_MS / 1000}秒間 敵からコインを吸い取る（攻撃を当てると大噴出）`);
+  showNotice(`🪙 コイン盗み！ ${+coinStealSecs().toFixed(2)}秒間 敵からコインを吸い取る（攻撃を当てると大噴出）`);
   playTone(988, 0.12, 'square', 0.12, 1318);
   updateCoinStrikeButton();
 });
