@@ -5137,3 +5137,9 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .cc-break-h { font-weight: 900; color: #ffe27a; font-size: 0.7rem; }
 .cc-break b { color: #fff; }
 .cc-break span { white-space: nowrap; }
+/* 強さの内訳：ボタンを押すとその場に開く */
+.pb-inline { display: none; margin: 6px 0 2px; padding: 4px 10px 8px; border-radius: 10px; background: #f7f3e8; color: #222; border: 2px solid #c9a14a; font-size: 0.82rem; line-height: 1.5; text-align: left; }
+.pb-inline.open { display: block; }
+.pb-inline .pb-comp { background: none; border: none; padding: 0; margin: 0; }
+.power-break-btn.open { filter: brightness(1.15); }
+.companion-card .power-break-btn { color: #ffe9b0 !important; font-weight: 900; }

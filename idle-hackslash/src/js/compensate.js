@@ -245,23 +245,25 @@ function compBreakdownHtml(id, compact) {
   h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('自キャラの最大HP', F(ph)) + r2(`HP Lv${hlv + 1}（基本${+c.baseBonus.toFixed(3)} + Lv×${+(c.perLevel * COMP_HP_LV_RATE).toFixed(4)}）`, M(hpLvRate), hpLvRate >= 1 ? 'up' : 'dn') + r2('仲間の補正', '×0.8', 'dn') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（上の合計）', M(b.companionHpMult), 'up') : '');
   return h + '</div>';
 }
-function openPowerBreakdown() {
-  const { b, rows, csA, csH } = powerBreakdown(), F = v => formatCoinNumber(Math.round(v));
+function playerBreakdownHtml() { // 自キャラの強さの内訳（仲間ページのボタンを押すと、その場に開く）
+  const { rows, csA, csH } = powerBreakdown(), F = v => formatCoinNumber(Math.round(v));
   const M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : Math.abs(v - 1) < 0.05 ? 3 : 2)); // 1に近い小さな補正は細かい桁まで
   const total = list => list.reduce((t, [, r]) => t * r, 1);
   const tbl = (list, base, unit) => `<div class="pb-base">もとの${unit} <b>${base}</b></div>` + (list.length ? list.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${r >= 1 ? 'up' : 'dn'}">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>') + `<div class="gs-row pb-total"><span class="gs-src">合計の倍率</span><b class="gs-amt">${M(total(list))}</b></div>`;
-  const comps = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => compBreakdownHtml(id)).join('') || '<div class="serif-sub">仲間がいません</div>';
-  const ov = document.createElement('div'); ov.className = 'serif-ov';
-  ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>📊 強さの内訳</b><button class="serif-x">✕</button></div><div class="serif-body gem-src pb-body">
-    <div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
+  return `<div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
     <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}${csH ? `<div class="gs-row"><span class="gs-src">＋ 仲間の最大HPの10%</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
     <div class="serif-h2">🐾 仲間にかかる倍率</div>
     <div class="pb-sub">攻撃力</div>${rows.cAtk.length ? rows.cAtk.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}
     <div class="pb-sub">最大HP</div>${rows.cHp.length ? rows.cHp.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>'}
-    <div class="serif-h2">🐾 仲間ひとりずつ</div>${comps}
-    <div class="serif-sub">倍率は掛け算で効きます。「強化Lv」は攻撃力・最大HPの強化、「進化」は進化ガチャ、「ショップ」は流星剣・月の盾などです。</div>
-  </div></div>`;
-  document.body.appendChild(ov);
-  ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.serif-x')) ov.remove(); });
+    <div class="serif-sub">倍率は掛け算で効きます。「強化Lv」は攻撃力・最大HPの強化、「進化」は進化ガチャ、「ショップ」は流星剣・月の盾などです。</div>`;
 }
-document.getElementById('powerBreakBtn')?.addEventListener('click', openPowerBreakdown);
+function renderPowerBreakInline() { const el = document.getElementById('powerBreakPanel'); if (el && el.classList.contains('open')) el.innerHTML = playerBreakdownHtml(); }
+document.getElementById('powerBreakBtn')?.addEventListener('click', () => {
+  const el = document.getElementById('powerBreakPanel'); if (!el) return;
+  const open = !el.classList.contains('open'); el.classList.toggle('open', open); el.innerHTML = open ? playerBreakdownHtml() : '';
+  document.getElementById('powerBreakBtn').classList.toggle('open', open);
+});
+// 仲間カードの「📊 強さの内訳」ボタン：押すとカードの中に開く（開いた仲間は描き直しても開いたまま）
+const compBreakOpen = new Set();
+document.addEventListener('click', e => { const b = e.target.closest('[data-comp-break]'); if (!b) return; const id = b.dataset.compBreak; if (compBreakOpen.has(id)) compBreakOpen.delete(id); else compBreakOpen.add(id); if (typeof renderCompanionList === 'function') renderCompanionList(); });
+function compBreakBtnHtml(id) { const open = compBreakOpen.has(id); return `<button class="power-break-btn ${open ? 'open' : ''}" data-comp-break="${id}">📊 強さの内訳</button>${open ? `<div class="pb-inline gem-src pb-body open">${compBreakdownHtml(id)}</div>` : ''}`; }
