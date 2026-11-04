@@ -1258,7 +1258,7 @@ function rollBounceMult() {
   return Math.random() < BOUNCE_OBJ_PLUS ? m : -m; // 正＝×m、負＝÷m
 }
 function obstacleMult(o) {
-  if (!o || FLOOR_OBSTACLES.has(o.kind)) return null;
+  if (!o || FLOOR_OBSTACLES.has(o.kind) || (o.kind === 'qbox' && !o.tansu)) return null; // 宝箱（パンドラの箱）には倍率なし（タンスにはある）
   if (o.bm === undefined) o.bm = rollBounceMult();
   return o.bm;
 }
@@ -1499,7 +1499,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   const x = o.x, y = o.y - 10, r = Math.random();
   const coinsFor = m => Math.max(1, Math.round(stageCoinRaw() * m * 2));
   if (o.kind === 'crate') { // 超たまに激レア宝箱、たまにコイン、たいていはスカ
-    if (r < 0.04 * earlyChestMult()) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
+    if (r < 0.04 * earlyChestMult()) { const rar = rollChestRarity(); spawnChestText(x, y, '宝箱！', rar, '#ffd76b', 0.012, true); dropTreasureChest(rar); }
     else if (r < 0.3) { const c = coinsFor(0.6); game.coins += c; spawnDamageText(x, y, '+' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); playTone(1568, 0.12, 'square', 0.06, 2093); }
     else { spawnDamageText(x, y, 'スカ…', '#9aa0b4', 0.02); playTone(220, 0.18, 'triangle', 0.06, 150); }
   } else if (o.kind === 'barrel') { // 樽：コインが出やすい
@@ -1521,7 +1521,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
   } else if (o.kind === 'stump') { // 切り株：コイン
     const c = coinsFor(1); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🪵 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true);
   } else if (o.kind === 'ruin') { // 崩れた柱：たまに宝箱
-    if (r < 0.15 * earlyChestMult()) { spawnDamageText(x, y, '🎁 宝箱！', '#ffd76b', 0.012, true); dropTreasureChest(rollChestRarity()); }
+    if (r < 0.15 * earlyChestMult()) { const rar = rollChestRarity(); spawnChestText(x, y, '宝箱！', rar, '#ffd76b', 0.012, true); dropTreasureChest(rar); }
     else { const c = coinsFor(1.2); game.coins += c; spawnCoinBurst(o.x, o.y, c, 6); spawnDamageText(x, y, '🏛️ +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
   } else if (o.kind === 'techBox') { // 魔導コンテナ：かならず良い宝箱
     const rar = rollChestRarity(6, 'rare'); // 魔導コンテナは良い宝箱が出やすい
@@ -1661,7 +1661,7 @@ function openQBox(o) {
   o.used = true; o.popAt = Date.now();
   playTone(988, 0.07, 'square', 0.08); setTimeout(() => playTone(1319, 0.2, 'square', 0.08), 70); // ピコーン
   const r = Math.random(), x = o.x, y = o.y - o.r - 10;
-  if (r < 0.2) { const rar = rollChestRarity(2); spawnDamageText(x, y, `🎁 ${RARITY_INFO[rar].label}の宝箱！`, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
+  if (r < 0.2) { const rar = rollChestRarity(2); spawnChestText(x, y, `${RARITY_INFO[rar].label}の宝箱！`, rar, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
   else if (r < 0.55) { const coins = Math.max(1, Math.round(stageCoinRaw() * 2.5)); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
   else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
   else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }

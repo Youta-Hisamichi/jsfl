@@ -5159,3 +5159,7 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .rbd-h-ico { width: 1.25em; height: 1.25em; vertical-align: -0.28em; object-fit: contain; border-radius: 3px; }
 /* ショップの所持品：宝箱のアイコンは少し小さく */
 .bag-row:has([data-bag-chest]) .bag-ico .ico-img, .bag-row:has([data-bag-chest]) .bag-ico img { width: 64% !important; height: 64% !important; }
+/* ミッション表示：ゲーム画面の上部中央（ボス戦は残り時間の下） */
+.arena-wrap .ob-mission, body:not(.hp-safe) .arena-wrap .ob-mission { left: 50% !important; right: auto !important; transform: translateX(-50%); align-items: center; text-align: center; border-radius: 0 0 10px 10px !important; max-width: 70%; }
+.arena-wrap .ob-mission.done { animation: none; }
+body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius: 10px !important; }

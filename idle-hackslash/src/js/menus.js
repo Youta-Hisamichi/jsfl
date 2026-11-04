@@ -660,7 +660,7 @@ function dropSkipArtifact(skipped) { // 中身は見せずに宝箱へ封入（�
   if (!Array.isArray(game.rebirthChests)) game.rebirthChests = [];
   game.rebirthChests.push(pick.id); // 転生ガチャの宝箱と同じしくみ：中身は決まっているが、開けるまで秘密
   const info = RARITY_INFO[rarity];
-  spawnDamageText(arena.x, arena.y - 30, `${rarityStars(rarity)}\n🎁 ${info.label}の宝箱`, info.color, TREASURE_TEXT_DECAY, true);
+  spawnDamageText(arena.x, arena.y - 30, `${info.label}の宝箱\n${rarityStars(rarity)}`, info.color, TREASURE_TEXT_DECAY, true); attachChestImg(rarity);
   for (let i = 0; i < 16; i++) {
     const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3;
     particles.push({ x: arena.x, y: arena.y - 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: info.color, decay: 0.015 });

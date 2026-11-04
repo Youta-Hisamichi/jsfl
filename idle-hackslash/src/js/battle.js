@@ -1907,6 +1907,8 @@ function getHeldChests() { // 古いセーブ（個数だけ）はノーマル�
   if (typeof game.heldChests !== 'object' || !game.heldChests) game.heldChests = { common: Number(game.heldChests) || 0 };
   return game.heldChests;
 }
+function attachChestImg(rarity) { const src = ICON_IMAGES[CHEST_ICON[rarity || 'common']]; const d = damageTexts[damageTexts.length - 1]; if (src && d) { const im = new Image(); im.src = src; d.img = im; } } // 直前に出した文字の左に、その宝箱の絵
+function spawnChestText(x, y, text, rarity, color, decay, big) { spawnDamageText(x, y, text, color, decay, big); attachChestImg(rarity); } // 「○○の宝箱！」の文字（🎁ではなく宝箱の絵）
 function dropTreasureChest(rarity, force = false) {
   if (!rarity) rarity = rollChestRarity();
   if (game.bossLoop && !force) { // ボスリタイヤ中（1つ前の階をループ中）は宝箱を出さず、コインに変える（レア敵・ログインボーナスなど確定の報酬は別）
