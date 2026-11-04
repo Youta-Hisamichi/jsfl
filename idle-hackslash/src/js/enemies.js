@@ -1289,7 +1289,7 @@ function applyBounceObjMult(ball, o) {
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
   spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
   playBounceMultSound(v);
-  o.bmPending = true; // 1回跳ね返ったら、止まってから点滅して倍率が変わる
+  if (!o.bmPending) { o.bmPending = true; o.bmPendAt = now; } // 1回跳ね返ったら、約2秒後に（最後は点滅して）倍率が変わる
 }
 function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
@@ -1781,14 +1781,14 @@ function drawObstacleCracks(o, h, dark) { // ぶつけるたびに増えるひ�
   for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
   ctx.restore();
 }
-const BOUNCE_BLINK_MS = 900; // 止まってから倍率が変わるまでの点滅の長さ
+const BOUNCE_CHANGE_MS = 2000, BOUNCE_BLINK_MS = 900; // 跳ね返ってから倍率が変わるまで約2秒（最後の0.9秒は点滅）
 function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラスは青、マイナスは赤）。反射板はここで丸ごと描く。射出中は自キャラの近くに今の倍率
   const now = Date.now();
   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const o of obstacles) {
-    if (o.bmPending && !o.mvx && !o.mvy && !o.broken) { // 止まったら点滅してから新しい倍率に
-      if (!o.bmBlinkAt) o.bmBlinkAt = now;
-      if (now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { o.bm = rollBounceMult(); o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
+    if (o.bmPending && !o.broken) { // 跳ね返ってから約2秒：後半は点滅して、新しい倍率に
+      if (!o.bmBlinkAt && now - (o.bmPendAt || now) >= BOUNCE_CHANGE_MS - BOUNCE_BLINK_MS) o.bmBlinkAt = now;
+      if (o.bmBlinkAt && now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { o.bm = rollBounceMult(); o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
     }
     const blinkOff = o.bmBlinkAt && Math.floor((now - o.bmBlinkAt) / 110) % 2 === 1;
     const v = obstacleMult(o); if (!v || o.broken || o.dead) continue;
