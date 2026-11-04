@@ -115,13 +115,30 @@ function tickGimmick(sp) {
     if (p) { gm.treasureDone = true; spawnDamageText(gm.spot.x, gm.spot.y - 20, '🗺️ お宝はっけん！', '#ffe36b', 0.012, true); playCoinChime(4); setTimeout(() => playCoinChime(7), 120); if (typeof questTick === 'function') dropTreasureChest(); }
   }
   // 拾える物
+  // 雪だるまもビリヤードのように飛んでいく（ぶつかると押され、敵に当たるとダメージ。止まったらその場に残る）
+  function snowmanPush(it, b) { const dx = it.x - b.x, dy = it.y - b.y, d = Math.hypot(dx, dy) || 1, bs = Math.max(Math.hypot(b.vx || 0, b.vy || 0), isMainPlayerBall(b) && holdRush && holdRush.shot ? holdRush.speed || 0 : 0), v = Math.min(14, Math.max(3, bs * 0.95)); it.mvx = dx / d * v; it.mvy = dy / d * v; it.hitSet = new Set(); }
+  function snowmanMove(it, sp, A) {
+    if (!it.mvx && !it.mvy) return;
+    it.x += it.mvx * sp; it.y += it.mvy * sp; const f = Math.pow(0.972, sp); it.mvx *= f; it.mvy *= f;
+    if (it.x < A.l + 20) { it.x = A.l + 20; it.mvx = Math.abs(it.mvx) * 0.8; } else if (it.x > A.r - 20) { it.x = A.r - 20; it.mvx = -Math.abs(it.mvx) * 0.8; }
+    if (it.y < A.t + 24) { it.y = A.t + 24; it.mvy = Math.abs(it.mvy) * 0.8; } else if (it.y > A.b - 20) { it.y = A.b - 20; it.mvy = -Math.abs(it.mvy) * 0.8; }
+    const v = Math.hypot(it.mvx, it.mvy); if (v < 0.12) { it.mvx = it.mvy = 0; return; }
+    const pl = balls.find(isMainPlayerBall); if (!pl || v < 2.2) return;
+    for (const e of [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0), ...adds.filter(x => x.hp > 0)]) {
+      const dx = e.x - it.x, dy = e.y - it.y, d = Math.hypot(dx, dy) || 1;
+      if (d >= 18 + e.radius || it.hitSet.has(e)) continue; it.hitSet.add(e);
+      playerHitEnemyBy(e, pl, Math.min(1.5, v / 8 + 0.5), '#e8f6ff', 1.4, it, true);
+      e.vx = (e.vx || 0) + dx / d * v * 0.6; e.vy = (e.vy || 0) + dy / d * v * 0.6; it.mvx *= 0.7; it.mvy *= 0.7;
+      spawnHitParticles(it.x, it.y, '#ffffff'); if (typeof thump === 'function') thump(240, 110, 0.1, 0.22, 'square');
+    }
+  }
   for (const it of gm.items) {
     if (it.dead) continue;
     else if (it.kind === 'bubble') { it.y += it.vy * sp; it.ph += 0.05 * sp; it.x += Math.sin(it.ph) * 0.5 * sp; if (it.y < A.t - 30) it.dead = true; else if (touch(it, it.r)) popGimmickItem(it); }
     else if (it.kind === 'star') { it.life -= 0.0028 * sp; if (it.life <= 0) it.dead = true; else if (touch(it, 12)) popGimmickItem(it); }
     else if (it.kind === 'coin') { if (it.y < it.landY) it.y += it.vy * sp; else it.ground = (it.ground || 0) + sp; it.spin += 0.15 * sp; if (it.ground > 360) it.dead = true; else if (touch(it, 9)) popGimmickItem(it); }
     else if (it.kind === 'firefly') { it.ph += 0.05 * sp; it.x += (it.vx + Math.sin(it.ph * 0.7) * 0.4) * sp; it.y += (it.vy + Math.cos(it.ph * 0.5) * 0.4) * sp; if (it.x < A.l + 10 || it.x > A.r - 10) it.vx *= -1; if (it.y < A.t + 10 || it.y > A.b - 10) it.vy *= -1; it.x = Math.max(A.l + 10, Math.min(A.r - 10, it.x)); it.y = Math.max(A.t + 10, Math.min(A.b - 10, it.y)); if (touch(it, 8)) popGimmickItem(it); }
-    else if (it.kind === 'snowman') { if (!it.cool || it.cool < gm.t) { const b = touch(it, 14); if (b) { it.cool = gm.t + 30; it.hp--; it.shake = now; playTone(500, 0.06, 'square', 0.05, 300); spawnHitParticles(it.x, it.y, '#ffffff'); if (it.hp <= 0) popGimmickItem(it); } } }
+    else if (it.kind === 'snowman') { snowmanMove(it, sp, A); if (!it.cool || it.cool < gm.t) { const b = touch(it, 14); if (b) { it.cool = gm.t + 30; it.hp--; it.shake = now; snowmanPush(it, b); playTone(500, 0.06, 'square', 0.05, 300); spawnHitParticles(it.x, it.y, '#ffffff'); if (it.hp <= 0) popGimmickItem(it); } } }
   }
   gm.items = gm.items.filter(i => !i.dead);
   // 演出
