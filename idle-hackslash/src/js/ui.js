@@ -1049,6 +1049,35 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'skillFormula') { // 全スキル（手動スキル・自動スキル）の計算式といまの数字。持っていないものは Lv1 で計算
+    const atk = getPlayerAtk(), b = computeBonuses(), F = v => formatCoinNumber(Math.round(v)), M = v => '×' + (+v.toFixed(3));
+    const powAt = lv => { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); };
+    const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${v}${n ? `<small>${n}</small>` : ''}</div>`;
+    const DMG = { skillSpecial: ['メテオ（1発）', () => METEOR_ATK_MULT * shopMultiRate('meteor') * b.specialMult * b.specialDmgMult, ''],
+      skillPoison: ['毒（1スタック・1回）', () => POISON_DMG_MULT, POISON_DMG_MULT], skillParalyze: ['麻痺の雷（1発）', () => PARALYZE_DMG_MULT, PARALYZE_DMG_MULT],
+      skillBlast: ['大爆発（敵1体）', () => BLAST_DMG_MULT, BLAST_DMG_MULT] };
+    let h = `<div class="dbg-list"><div class="dl-h">基本</div>${row('自キャラ攻撃力', F(atk))}${row('最大HP', F(getPlayerMaxHP()))}
+      <div class="dl-h">手動スキルの倍率（Lvで上がる）</div>${row('倍率', 'Lv1 ×1、Lvごとに +0.1', '10Lvごとに ×1.5（飛躍）・100Lvごとに ×3（超飛躍）・スキル進化 ' + M(getEvoRate('skill')))}${row('待機', '最低5分', 'Lvで短くなるが5分より短くはならない')}`;
+    h += '<div class="dl-h">手動スキル</div>';
+    for (const [id, sk] of Object.entries(SKILL_GACHA_SKILLS)) {
+      const own = !!(game.shopOwned && game.shopOwned[id]), lv = own ? getSkillLevel(id) : 1, pw = powAt(lv), tag = `${sk.icon} ${sk.name} ${own ? 'Lv' + lv : '（未所持・Lv1で計算）'}`;
+      if (DMG[id]) { const k = DMG[id][1](); h += row(tag, `≈ ${F(atk * k * pw)}`, `自キャラ攻撃力 ${F(atk)} × ${id === 'skillSpecial' ? `${METEOR_ATK_MULT} × メテオ強化・進化 ${M(k / METEOR_ATK_MULT)}` : DMG[id][2]} × 倍率 ${M(pw)}`); continue; }
+      if (id === 'skillCompRush') { h += row(tag, '仲間ごと', `仲間の攻撃力 × ${COMP_RUSH_DMG_MULT} × 1.15 × 倍率 ${M(pw)}（1体ずつ突撃）`); continue; }
+      if (id === 'skillHeal') { h += row(tag, `+${F(getPlayerMaxHP() * HEAL_SKILL_RATIO * pw)} HP`, `最大HP × ${HEAL_SKILL_RATIO} × 回復力 ${M(pw)}（傷ついた仲間も同じ割合で回復）`); continue; }
+      const p = typeof skillParamHtml === 'function' ? skillParamHtml(id, lv, true) : '';
+      h += row(tag, '', p || sk.desc);
+    }
+    h += `<div class="dl-h">自動スキルの倍率（Lvで上がる）</div>${row('1ヒット', '自キャラ攻撃力 × 倍率', 'ダッシュ・溜めは掛からない。会心は掛かる')}${row('倍率', 'Lv1 ×0.1、Lvごとに +0.1', '×10 から +0.05、以降 ×10 ごとに上がり幅が半分・自動スキル進化 ' + M(getEvoRate('weapon')))}`;
+    h += row('倍率の例', [1, 10, 50, 100, 200, 300, 700, 1000].map(l => `Lv${l} ×${+weaponMult(l).toFixed(2)}`).join('　'));
+    h += row('待機', 'Lvごとに -6%（Lv5まで）');
+    h += '<div class="dl-h">自動スキル</div>';
+    const WN = { boomerang: '弧を描いて戻る・往復で当たる', cross: '真横へ飛んで戻る・往復で当たる', axe: '放物線・貫通', holyWater: '炎の上の敵に約0.2秒ごと', knife: `まっすぐ・Lv÷3体を貫通`, shield: '盾に触れた敵', thunder: '落ちた場所の周りの敵すべて', dove: 'ホーミング・1体に当たると消える' };
+    for (const [id, W] of Object.entries(WEAPONS)) {
+      const lv = getWeaponLv(id), L = Math.max(1, lv), m = weaponDmg(1, L), cd = W.cd ? (W.cd * (1 - 0.06 * (Math.min(L, WEAPON_SHAPE_LV) - 1)) / 60).toFixed(2) + '秒ごと' : '常に回る';
+      h += row(`${W.icon} ${W.name} ${lv ? 'Lv' + lv : '（未所持・Lv1で計算）'}`, `≈ ${F(atk * m)}`, `自キャラ攻撃力 ${F(atk)} × 倍率 ${M(m)}・${id === 'shield' ? `盾 ${[0, 1, 2, 2, 3, 4][Math.min(L, 5)]}枚` : `個数 ${weaponCount(id)}`}・${cd}・${WN[id] || ''}`);
+    }
+    h += '</div>';
+    simpleChoice({ icon: '📐', title: '全スキルの計算式', text: h, sub: '敵の防御・属性・弱点・ボス特攻・会心は入れていません', yes: '閉じる', no: false }); return; }
   if (action === 'dmgGuide') { // 通常攻撃のダメージ目安（いまの攻撃力・強化から計算。敵の防御や属性・弱点は入れない）
     const b = computeBonuses(), atk = getPlayerAtk(), F = v => formatCoinNumber(Math.round(v)), mel = b.meleeMult || 1, rush = b.rushDmgUp || 1, cm = CRIT_MULT + b.critMultBonus;
     const combo = n => 1 + Math.min(n - 1, COMBO_MAX_STACKS) * (COMBO_STEP + b.comboGrowth) * getEvoRate('combo');
