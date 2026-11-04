@@ -1543,8 +1543,8 @@ const customSkipBtn = document.getElementById('customSkipBtn');
 const customSkipCost = document.getElementById('customSkipCost');
 const customSkipInfo = document.getElementById('customSkipInfo');
 function getCustomSkipInput() {
-  const v = Math.floor(Number(customSkipInput.value));
-  return v > game.stage ? v : null;
+  const n = Math.floor(Number(customSkipInput.value)); // 入力は「登るステージ数」
+  return n >= 1 ? game.stage + n : null; // 行き先のステージ
 }
 function getCustomSkipTarget() {
   const v = getCustomSkipInput();
@@ -1555,13 +1555,13 @@ function updateCustomSkip() {
   customSkipInfo.classList.remove('error');
   if (!customSkipInput.value) {
     customSkipCost.textContent = '💎 -';
-    customSkipInfo.textContent = `ステージ${game.stage + 1} 以降を入力（ボスのステージに切り上げ）`;
+    customSkipInfo.textContent = `登るステージ数を入力（いまはステージ${game.stage}。行き先はボスのステージに切り上げ）`;
     customSkipBtn.classList.add('is-disabled');
     return;
   }
   if (!target) {
     customSkipCost.textContent = '💎 -';
-    customSkipInfo.textContent = `現在の ステージ${game.stage} より先を入力してください`;
+    customSkipInfo.textContent = '1以上の数を入力してください';
     customSkipInfo.classList.add('error');
     customSkipBtn.classList.add('is-disabled');
     return;
@@ -1580,7 +1580,7 @@ document.getElementById('customSkipMaxBtn').addEventListener('click', event => {
   while (getCustomSkipCost(hi * 2) <= game.gems && hi < 1e7) hi *= 2;
   hi *= 2;
   while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (getCustomSkipCost(mid) <= game.gems) lo = mid; else hi = mid - 1; }
-  customSkipInput.value = game.stage + lo;
+  customSkipInput.value = lo;
   updateCustomSkip();
 });
 customSkipInput.addEventListener('keydown', event => { if (event.key === 'Enter') customSkipBtn.click(); });

@@ -460,13 +460,13 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <p>勝てばそのステージまで一気に進み、負けたら今のステージ<b id="stageSkipOrigin">1</b> に戻ります。</p>
     </details>
     <div class="custom-skip">
-      <div class="custom-skip-title">🎯 登るステージを指定（ジェムは距離に応じて消費）</div>
+      <div class="custom-skip-title">🎯 登るステージ数を指定（ジェムは距離に応じて消費）</div>
       <div class="custom-skip-row">
-        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="挑戦するステージ">
+        <input type="number" id="customSkipInput" inputmode="numeric" min="1" step="10" placeholder="登るステージ数">
         <button class="modal-shop-btn" id="customSkipMaxBtn"><span class="msb-name">手持ちMAX</span></button>
         <button class="modal-shop-btn" id="customSkipBtn"><span class="msb-name">挑戦</span><span class="msb-cost" id="customSkipCost">💎 -</span></button>
       </div>
-      <div class="custom-skip-info" id="customSkipInfo">挑戦したいステージを入力してください</div>
+      <div class="custom-skip-info" id="customSkipInfo">登るステージ数を入力してください</div>
     </div>
     <button class="tower-seed-btn" id="towerSeedBtn"><img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">種でドーピングしてから挑む</button>
     <div class="modal-shop-list tower-floors" id="stageSkipList"></div>
