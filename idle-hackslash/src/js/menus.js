@@ -27,7 +27,7 @@ function renderSkillGacha() {
     const on = isSkillEquipped(id);
     const coinIco = xi('x_coin') || '🟡';
     const buyLabel = !owned ? `解放 ${coinIco}${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ ${coinIco}${formatCoinNumber(cost)}`;
-    const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
+    const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP * (id === 'skillSpecial' ? METEOR_ATK_MULT * shopMultiRate('meteor') * computeBonuses().specialMult * computeBonuses().specialDmgMult : 1));
     return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 自キャラ攻撃力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${overHealOn() ? `（限界突破 最大HPの${overHealMult()}倍まで）` : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（自キャラ攻撃力×倍率）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
@@ -41,7 +41,7 @@ function renderSkillGacha() {
   const wHtml = (Object.entries(WEAPONS).filter(([id]) => getWeaponLv(id)).map(([id, W]) => {
     const lv = getWeaponLv(id), cost = getWeaponBuyCost(id), on = weq.includes(id);
     const pw = weaponDmg(1, Math.max(1, lv));
-    const equipBtn = !lv ? '' : !isSkillItemOn('w:' + id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
+    const equipBtn = !lv ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : !isSkillItemOn('w:' + id) ? '<span class="sk-equip off">OFF中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const pwN = weaponDmg(1, lv + 1), atk = getPlayerAtk();
     return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon sk-info-ico" data-sk-info="w:${id}">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">🔢 個数 ×${weaponCount(id)}${weaponCount(id) < WEAPON_COUNT_MAX ? '（スキルガチャでダブると+1）' : '（最大）'}<br>⚔️ 自キャラ攻撃力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || ''; // 取得したサブウェポンだけ並べる
@@ -85,8 +85,8 @@ window.addEventListener('resize', () => updateSkillStripOverflow());
 // 手に入れているのに装備されていないスキル・自動スキル（前は枠が11だったので「枠なし」になっていた）を装備する
 function equipAllOwnedSkills() {
   const eq = getEquippedSkills();
-  for (const id in SKILL_GACHA_SKILLS) if (game.shopOwned && game.shopOwned[id] && !eq.includes(id) && !PASSIVE_SKILLS.includes(id) && isSkillItemOn(id)) eq.push(id);
-  if (typeof getEquippedWeapons === 'function' && typeof getWeaponLv === 'function') { const weq = getEquippedWeapons(); for (const k in WEAPONS) if (getWeaponLv(k) && !weq.includes(k) && isSkillItemOn('w:' + k)) weq.push(k); }
+  for (const id in SKILL_GACHA_SKILLS) if (game.shopOwned && game.shopOwned[id] && !eq.includes(id) && !PASSIVE_SKILLS.includes(id)) eq.push(id); // ガチャで引いたものは、項目をOFFにしても装備したまま
+  if (typeof getEquippedWeapons === 'function' && typeof getWeaponLv === 'function') { const weq = getEquippedWeapons(); for (const k in WEAPONS) if (getWeaponLv(k) && !weq.includes(k)) weq.push(k); }
 }
 function updateSkillButtonVisibility() {
   setTimeout(updateSkillStripOverflow, 0);
