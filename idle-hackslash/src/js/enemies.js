@@ -1265,7 +1265,7 @@ function obstacleMult(o) {
 function bounceMultLabel(v) { return v > 0 ? `×${v}` : `÷${-v}`; }
 function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `÷${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
-function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.auto); } // タップを離して射出したタックルの間
+function tackleShotNow() { return !!(holdRush && holdRush.shot); } // 射出したタックルの間（AUTOの射出も含む）
 // 反射の音：プラスは「キラリン↑」と上がる明るい音（大きい倍率ほど高く華やか）、マイナスは「ボヨ〜ン↓」と下がるしょんぼり音
 function playBounceMultSound(v) {
   if (typeof playTone !== 'function') return;
