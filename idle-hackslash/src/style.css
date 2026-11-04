@@ -5092,3 +5092,10 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal .tower-title-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
 #stageSkipModal .tower-title-row .ico-img, #stageSkipModal .tower-title-row img { width: 2.2rem; height: 2.2rem; object-fit: contain; }#stageSkipModal .tower-head-img { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto 4px; } /* 縦横比はそのまま */
 #stageSkipModal .tower-head { padding-top: 0; }
+/* 試練の塔：「しくみ」はスキルページと同じ見た目、「塔を降りる」は仲間ページの「上限+5回」と同じ下地 */
+#stageSkipModal .tower-help summary { width: 112px !important; max-width: none !important; height: 36px !important; padding-left: 16px !important; gap: 6px; background: url(assets/img/ui/skill2/help.webp) center / 100% 100% no-repeat !important; font-size: 0.8rem; white-space: nowrap; cursor: pointer; }
+#stageSkipModal .tower-help summary::before { content: '▶'; flex: none; font-size: 0.6rem; color: #f3e7c4; transition: transform 0.2s; }
+#stageSkipModal .tower-help[open] summary::before { transform: rotate(90deg); }
+#stageSkipModal .tower-help[open] { padding-bottom: 6px; background: rgba(10,16,40,0.7); border: 1px solid rgba(200,160,70,0.5); border-radius: 8px; color: #c8d0e6; }
+#stageSkipModal .tower-help p { margin: 5px 8px 0; font-size: 0.8rem; line-height: 1.5; }
+#stageSkipModal #stageSkipCloseBtn { display: flex; align-items: center; justify-content: center; width: 62%; max-width: 300px; height: auto !important; aspect-ratio: 248 / 92; margin: 6px auto 0; padding: 0 !important; border: none !important; border-image: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 0 1px 2px #000, 0 0 4px rgba(0,0,0,0.6); }
