@@ -821,6 +821,12 @@ function feaTradeCost(id) { const it = SHOP_ITEMS[id]; return { fea: FEA_TRADE_N
 function feaTradeMax(id) { const it = SHOP_ITEMS[id], c = feaTradeCost(id); let n = Math.floor(feaCount(it.feaFrom) / c.fea); if (c.coins) n = Math.min(n, Math.floor(game.coins / c.coins)); if (c.gems) n = Math.min(n, Math.floor(game.gems / c.gems)); return Math.max(0, n); } // まとめて何枚交換できるか
 function canFeaTrade(id) { const it = SHOP_ITEMS[id], c = feaTradeCost(id); return feaCount(it.feaFrom) >= c.fea && game.coins >= c.coins && game.gems >= c.gems; }
 const POTION_HEAL_RATIO = 0.45;
+// ★4のコイン：💎1で、SSRの宝箱のコイン（ザコ77体ぶん）。10分に1回だけ買える
+const COIN4_GEMS = 1, COIN4_COOLDOWN_MS = 10 * 60 * 1000;
+function coin4WaitMs() { return Math.max(0, (game.coin4At || 0) + COIN4_COOLDOWN_MS - Date.now()); }
+function fmtWaitMs(ms) { const t = Math.ceil(ms / 1000); return `${Math.floor(t / 60)}分${t % 60}秒`; }
+SHOP_ITEMS.coin4 = { icon: '🪙', img: 'assets/img/icons/chest_coin_legendary.webp', name: '★4のコイン', cost: COIN4_GEMS, coinPack: 'legendary', noNote: true };
+Object.defineProperty(SHOP_ITEMS.coin4, 'desc', { get() { const w = coin4WaitMs(); return 'SSRの宝箱のコイン（ザコ77体ぶん）がもらえる。10分に1回だけ買える' + (w ? `（あと ${fmtWaitMs(w)}）` : '（いま買えます）'); }, enumerable: true });
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
   if (item.toggleKind) return !!item.toggleFixed; // ON/OFFの品は何度でも切り替えられる（攻撃力・HPは固定）
@@ -1447,7 +1453,7 @@ function renderShopList() {
     const gcost = item.action ? 0 : getShopItemGemCost(id);
     const note = SHOP_MULTI_ITEMS[id] || item.noNote ? '' : item.feaRarity ? `（所持 ${feaCount(item.feaRarity)}枚）` : item.consumableKey ? `（所持 ${game[item.consumableKey] || 0}個）` : item.slot ? `（現在 ${item.slot.cur()}${item.slot.unit} / 最大 ${item.slot.max()}${item.slot.unit}）` : item.shopCount ? `（購入 ${game[item.stackKey] || 0}/${item.maxStack}）` : item.stackKey ? `（現在 +${((game[item.stackKey] || 0) * TACKLE_PIERCE_MS_PER_LV / 1000).toFixed(1)}秒・${game[item.stackKey] || 0}/${item.maxStack}）` : '';
     const costTxt = item.toggleFixed ? 'いつもON' : owned ? (item.unlockKey ? '✓ 開放済み' : item.slot || item.stackKey ? '✓ 最大' : '✓ 購入済み') : item.action ? '開く' : '💎 ' + gcost;
-    const art = SHOP_ITEM_ART[id], left = owned || item.toggleKind || item.consumableKey || item.feaRarity || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
+    const art = SHOP_ITEM_ART[id], left = owned || item.coinPack || item.toggleKind || item.consumableKey || item.feaRarity || item.action || item.rebirth || SHOP_MULTI_ITEMS[id] ? 0 : item.slot ? item.slot.max() - item.slot.cur() : item.stackKey ? item.maxStack - (game[item.stackKey] || 0) : 1; // 残り何回買えるか
     const icon = art ? `<span class="sr-ico su-i_${art}"></span>` : `<span class="sr-ico sr-ico-emoji"><span class="item-icon">${ico(item)}</span></span>`;
     const price = owned || item.action ? `<span class="cost sr-price-txt">${costTxt}</span>` : `<span class="cost sr-price su-price"><b>${gcost}</b></span>`;
     const ccost = item.rebirth ? rebornCoinCost() : 0;

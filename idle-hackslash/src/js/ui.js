@@ -1230,6 +1230,14 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   const item = SHOP_ITEMS[id];
   if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
   if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= EVO_MIN_ON) { showTapError(`ONの項目は${EVO_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
+  if (item.coinPack) { // ★4のコイン（10分に1回）
+    const w = coin4WaitMs(); if (w) { showTapError(`あと ${fmtWaitMs(w)}で買えます`, event.clientX, event.clientY); return; }
+    if (game.gems < COIN4_GEMS) { promptGemShortage(COIN4_GEMS); return; }
+    game.gems -= COIN4_GEMS; game.coin4At = Date.now();
+    const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * (CHEST_COIN_MULT[item.coinPack] || 77))); game.coins += c;
+    showShopPurchaseFx(chestCoinIco(item.coinPack) || COIN_ICO, item.name, `+${formatCoinNumber(c)} コイン`); playRegisterSound();
+    updateStatsUI(); renderShopList(); saveGame(); return;
+  }
   if (isShopItemOwned(id)) { showTapError(item.unlockKey ? 'すでに所持しています' : item.slot || item.stackKey ? 'これ以上増やせません' : 'すでに所持しています', event.clientX, event.clientY); return; }
   if (item.action) { item.action(); return; }
   if (item.feaFrom) { // 羽の交換：下のレア度の羽100枚（URは＋ジェム）。確認画面で「1枚交換」か「全部交換」を選ぶ
