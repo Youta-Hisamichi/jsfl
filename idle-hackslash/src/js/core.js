@@ -842,7 +842,7 @@ const SKILL_GACHA_SKILLS = {
   skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
   skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: 'ボタンを押すと20秒間 攻撃力1.5倍（Lvで少しずつ上がる）' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
-  skillCoinStrike:{ icon: '🪙', name: 'コイン盗み', desc: '20秒間 敵を攻撃するたびにコインが噴き出して手に入る・討伐コイン1.5倍' },
+  skillCoinStrike:{ icon: '🪙', name: 'コイン盗み', desc: '30秒間 敵からコインを吸い取り続け、攻撃を当てるとコインが大噴出・討伐コイン1.5倍' },
   skillZeni:     { icon: '💰', name: 'ゼニ投げ', desc: '手持ちコインの半分を投げて大ダメージ' },
   skillMystery:  { icon: '❓', name: '謎魔法',   desc: '何が起きるかわからない' },
   skillCompRush: { icon: '🐾', name: '仲間特攻', desc: '仲間全員が敵に突撃して大ダメージ' },

@@ -1126,7 +1126,7 @@ let coinStealAt = 0;
 function coinStealFrom(e) { // 敵からコインが噴き出して自キャラへ飛んでくる（盗んだ分だけ増える）
   const now = Date.now(); if (now - coinStealAt < 120) return; coinStealAt = now; // 連続ヒットでも出しすぎない
   const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_STEAL_RATE * computeBonuses().coinMult));
-  game.coins += gain; spawnCoinDrop(e.x, e.y, gain, 3); // 敵の位置からコインが噴き出して集まる
+  game.coins += gain; spawnCoinDrop(e.x, e.y, gain, 7); // 攻撃が当たると敵からコインが大噴出
   spawnDamageText(e.x, e.y - e.radius - 20, `🪙 +${formatCoinNumber(gain)}`, '#ffd76b', 0.03);
   if (Math.random() < 0.6) playCoinChime(Math.floor(Math.random() * 5));
 }
@@ -2320,3 +2320,34 @@ function fitLoginExtrasMarquee() {
     el.addEventListener('pointerdown', () => rate(5));
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => el.addEventListener(t, () => rate(1)));
     el.style.touchAction = 'none'; } }
+
+// コイン盗み中は、攻撃しなくても敵から小さいコインが少しずつ吸い込まれてくる
+let coinSuck = [], coinDrainAt = 0;
+setInterval(() => {
+  if (typeof isCoinStrike !== 'function' || !isCoinStrike() || phase !== 'battle') return;
+  const pl = balls.find(isMainPlayerBall); if (!pl) return;
+  const foes = [...balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0 && !(b.spawnTimer > 0)), ...adds.filter(a => a.hp > 0)];
+  if (!foes.length) return;
+  const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_DRAIN_RATE * computeBonuses().coinMult));
+  game.coins += gain; updateStatsUI(); // 吸収は時間で一定（敵が何体いても同じ量）
+  const e = foes[Math.floor(Math.random() * foes.length)];
+  for (let i = 0; i < 3; i++) coinSuck.push({ x: e.x + (Math.random() - 0.5) * e.radius, y: e.y + (Math.random() - 0.5) * e.radius, t: -i * 0.12, wob: Math.random() * 6 });
+  if (Math.random() < 0.35) playTone(2000 + Math.random() * 600, 0.025, 'sine', 0.02);
+}, COIN_DRAIN_MS);
+(function wrapCoinSuckDraw() { if (typeof draw !== 'function') { setTimeout(wrapCoinSuckDraw, 100); return; } const baseDraw = draw; draw = function () { // draw は後のファイル（ui.js）で作られるので、できてから包む
+  baseDraw.apply(this, arguments);
+  if (!coinSuck.length) return;
+  const pl = balls.find(isMainPlayerBall); if (!pl) { coinSuck = []; return; }
+  ctx.save();
+  coinSuck = coinSuck.filter(c => {
+    c.t += 0.035; if (c.t < 0) return true;
+    const k = Math.min(1, c.t), ease = k * k; // だんだん速く吸い込まれる
+    const x = c.x + (pl.x - c.x) * ease + Math.sin(c.wob + k * 9) * 6 * (1 - k), y = c.y + (pl.y - c.y) * ease + Math.cos(c.wob + k * 9) * 6 * (1 - k);
+    const r = 3.2 * (1 - k * 0.5);
+    ctx.globalAlpha = 0.95; ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#a86a00'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff6c0'; ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    return k < 1;
+  });
+  ctx.restore();
+}; })();

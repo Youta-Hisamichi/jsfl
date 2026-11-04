@@ -2684,7 +2684,7 @@ coinStrikeBtn.addEventListener('click', event => {
   if (!ctxs) return;
   coinStrikeEndAt = Date.now() + COIN_STRIKE_MS;
   spawnDamageText(ctxs.player.x, ctxs.player.y - ctxs.player.radius - 14, '🪙 コイン盗み', '#ffd76b', 0.012);
-  showNotice(`🪙 コイン盗み！ ${COIN_STRIKE_MS / 1000}秒間 攻撃するたびに敵からコインが噴き出す・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
+  showNotice(`🪙 コイン盗み！ ${COIN_STRIKE_MS / 1000}秒間 敵からコインを吸い取る（攻撃を当てると大噴出）・討伐コイン×${COIN_STRIKE_KILL_MULT}`);
   playTone(988, 0.12, 'square', 0.12, 1318);
   updateCoinStrikeButton();
 });
