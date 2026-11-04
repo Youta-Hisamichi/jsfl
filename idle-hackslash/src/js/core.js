@@ -795,8 +795,8 @@ SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェ�
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
-// 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎5、OFFは💎5。攻撃力・HPははじめからON（OFFにもできる）、命中は進化3回目で自動でON（OFFにできない）
-const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 5;
+// 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎2、OFFは💎3。攻撃力・HPははじめからON（OFFにもできる）、命中は進化3回目で自動でON（OFFにできない）
+const EVO_TOGGLE_ON_COST = 2, EVO_TOGGLE_OFF_COST = 3;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
  ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn'],
@@ -805,7 +805,7 @@ const EVO_TOGGLE_ON_COST = 5, EVO_TOGGLE_OFF_COST = 5;
  ['tower', '🏰', '試練の塔', '試練の塔のボスへのダメージが上がる', 'x_tower'], ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { hideInShop: true, /* 進化ページの下から切り替える（ショップには並べない） */ icon, img: `assets/img/ui/evo2/icon_${k}.webp`, /* 進化の結果と同じ絵 */ name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };
 });
-SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp', name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎5・OFF 💎5）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // 命中ははじめからON
+SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp', name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎2・OFF 💎3）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // 命中ははじめからON
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
 [['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: `assets/img/icons/omen_${r}.webp` /* 吹き出しの上に宝箱（宝箱そのものと見分けやすく） */, imgCls: 'omen-ico', name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
