@@ -490,7 +490,7 @@ let statPausedPhase = null;
 document.getElementById('statModalCloseBtn').addEventListener('click', closeStatModal);
 statModal.addEventListener('click', event => { if (event.target === statModal) closeStatModal(); });
 
-const ENEMY_PASS_FRAMES = 60 * 15, ENEMY_ESCAPE_FRAMES = 36; // 雑魚がにげるまで約15秒・にげる演出の長さ
+const ENEMY_PASS_FRAMES = 60 * 40, ENEMY_ESCAPE_FRAMES = 36; // 雑魚がにげるまで約40秒・にげる演出の長さ
 function startEnemyEscape(e) {
   e.escaping = ENEMY_ESCAPE_FRAMES; e.vx = e.vy = 0;
   spawnDamageText(escTextX(e), e.y - e.radius - 16, '逃走', '#e8e8e8', 0.012, true);

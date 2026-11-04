@@ -1248,29 +1248,39 @@ const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通っ
 const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
-// 反射オブジェクトの倍率：どの障害物にも「×1.5〜×16」か「÷1.5〜÷16」が付いている（大きい倍率ほど稀）。
-// 自キャラが跳ね返るたびに倍率がたまり（掛け算）、次に敵へ当てたダメージに掛かって元に戻る
-const BOUNCE_OBJ_MULTS = [[1.5, 40], [2, 25], [3, 15], [5, 10], [8, 6], [16, 4]], BOUNCE_OBJ_PLUS = 0.6, BOUNCE_MULT_CAP = 4096;
+// 反射オブジェクトの倍率：どの障害物にも「×1.5〜×16」か「÷1.5〜÷16」が付いている（大きい倍率ほど稀。ボス階は大きめが出やすい）。
+// タップを離して射出したタックルの間だけ、跳ね返るたびに倍率がたまり（掛け算）、敵に当てたダメージに掛かる。跳ね返った反射物の倍率は変わる
+const BOUNCE_OBJ_MULTS = [[1.5, 40], [2, 25], [3, 15], [5, 10], [8, 6], [16, 4]], BOUNCE_OBJ_MULTS_BOSS = [[1.5, 14], [2, 18], [3, 22], [5, 20], [8, 15], [16, 11]];
+const BOUNCE_OBJ_PLUS = 0.6, BOUNCE_MULT_CAP = 4096;
+function rollBounceMult() {
+  const tbl = game.stage % 10 === 0 ? BOUNCE_OBJ_MULTS_BOSS : BOUNCE_OBJ_MULTS; let r = Math.random() * tbl.reduce((t, x) => t + x[1], 0), m = 1.5;
+  for (const [v, w] of tbl) { if ((r -= w) < 0) { m = v; break; } }
+  return Math.random() < BOUNCE_OBJ_PLUS ? m : -m; // 正＝×m、負＝÷m
+}
 function obstacleMult(o) {
   if (!o || FLOOR_OBSTACLES.has(o.kind)) return null;
-  if (o.bm === undefined) { let r = Math.random() * 100, m = 1.5; for (const [v, w] of BOUNCE_OBJ_MULTS) { if ((r -= w) < 0) { m = v; break; } } o.bm = Math.random() < BOUNCE_OBJ_PLUS ? m : -m; } // 正＝×m、負＝÷m
+  if (o.bm === undefined) o.bm = rollBounceMult();
   return o.bm;
 }
 function bounceMultLabel(v) { return v > 0 ? `×${v}` : `÷${-v}`; }
 function fmtBounceTotal(t) { return t >= 1 ? `×${+t.toFixed(t >= 10 ? 0 : 2)}` : `÷${+(1 / t).toFixed(1 / t >= 10 ? 0 : 2)}`; }
+const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
+function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.auto); } // タップを離して射出したタックルの間
 function applyBounceObjMult(ball, o) {
   const v = obstacleMult(o); if (!v) return;
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
+  if (!tackleShotNow()) return; // 射出したタックルのときだけ
   const m = v > 0 ? v : 1 / -v;
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, (ball.bounceMult || 1) * m));
-  o.bmFlash = now;
-  spawnDamageText(o.x, o.y - o.r - 14, `${bounceMultLabel(v)}（ダメージ ${fmtBounceTotal(ball.bounceMult)}）`, v > 0 ? '#7dff9a' : '#ff6b7a', 0.03, Math.abs(v) >= 5);
+  spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
   if (typeof playTone === 'function') { if (v > 0) playTone(700 + Math.min(16, m) * 60, 0.08, 'square', 0.04, 1500); else playTone(500, 0.12, 'sawtooth', 0.04, 220); }
+  o.bm = rollBounceMult(); o.bmFlash = now; // 1回跳ね返ったら倍率が変わる
 }
 function dashDmgMult(ball) {
   let m = ball && ball.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
-  if (ball && isMainPlayerBall(ball) && ball.bounceMult && ball.bounceMult !== 1) { // 反射オブジェクトでためた倍率を、このダメージで使い切る
-    m *= ball.bounceMult; spawnDamageText(ball.x, ball.y - ball.radius - 46, `反射 ${fmtBounceTotal(ball.bounceMult)}！`, ball.bounceMult >= 1 ? '#7dff9a' : '#ff6b7a', 0.022, ball.bounceMult >= 5); ball.bounceMult = 1;
+  if (ball && isMainPlayerBall(ball) && ball.bounceMult && ball.bounceMult !== 1) { // 反射オブジェクトでためた倍率を、このダメージで使い切る（射出したタックルのときだけ）
+    if (tackleShotNow()) { m *= ball.bounceMult; spawnDamageText(ball.x, ball.y - ball.radius - 46, `反射ダメージ ${fmtBounceTotal(ball.bounceMult)}！`, ball.bounceMult >= 1 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.022, true); }
+    ball.bounceMult = 1;
   }
   if (ball && isMainPlayerBall(ball)) { // ダメージを出すたびに溜めを使い切る
     const w = heroWaitMult(ball); ball.lastAtkAt = Date.now(); m *= w;
@@ -1288,7 +1298,10 @@ const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪
   { ice: 16, crystal: 6, tree: 14 }, { barrel: 14, crate: 14, qbox: 12, pot: 14, hay: 7, pillar: 6 }, { barrel: 16, crate: 12, pot: 6 }, { crystal: 9, techBox: 6, spike: 10, pillar: 18, ruin: 12, tree: 5 }, { portal: 9, techBox: 7, crystal: 8, pillar: 12, ruin: 7 },
 ];
 function stageRand(seed) { let x = seed * 9301 + 49297; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
+// ふだんのステージの反射物は、反射板（倍率つき）と、ツボ・タンス・宝箱（パンドラの箱）だけにした
+const OBSTACLE_WEIGHTS_NOW = { reflector: 70, pot: 12, tansu: 8, qbox: 10 };
 function pickObstacleKind(rnd, zoneIdx) {
+  { let t = rnd() * Object.values(OBSTACLE_WEIGHTS_NOW).reduce((a, b) => a + b, 0); for (const k in OBSTACLE_WEIGHTS_NOW) if ((t -= OBSTACLE_WEIGHTS_NOW[k]) < 0) return k; return 'reflector'; }
   const w = Object.assign({}, OBSTACLE_WEIGHTS, ZONE_OBSTACLE_BIAS[zoneIdx % ZONE_OBSTACLE_BIAS.length]);
   let t = rnd() * Object.values(w).reduce((a, b) => a + b, 0);
   for (const k in w) if ((t -= w[k]) < 0) return k;
@@ -1314,6 +1327,7 @@ const SPECIAL_LAYOUTS = {
 };
 function layoutRing(n, rr, kind) { const a = []; for (let i = 0; i < n; i++) { const t = -Math.PI / 2 + i / n * Math.PI * 2; a.push([Math.cos(t) * rr, Math.sin(t) * rr, typeof kind === 'function' ? kind(i) : kind]); } return a; }
 function pickSpecialLayout(block, zone) {
+  return null; // 特殊配置（岩・バンパーなどの並び）はなくした
   if (game.stage <= 20 || game.stage % 10 === 0 || game.skipChallenge) return null;
   const r = stageRand(block * 17 + 11); r();
   if (r() >= SPECIAL_LAYOUT_RATE) return null;
@@ -1388,6 +1402,8 @@ function setupObstacles(dropDebug) {
     const r = baseR;
     const p = spot(r); if (!p) continue;
     const o = { x: p.x, y: p.y, r, seed: rnd(), kind, hp: BREAKABLES[kind] ? BREAKABLES[kind].hp : kind === 'rock' ? ROCK_HP : 1, cracks: [] };
+    if (kind === 'reflector') o.r = r * 1.05; // 反射板は倍率の文字が収まる大きさ
+    else if (kind === 'tansu') { o.kind = 'qbox'; o.tansu = true; o.multi = 3; o.r = r * 0.95; } // タンス（引き出し3段）
     if (kind === 'rock') o.sprite = rockSprite;
     else if (kind === 'bumper') { o.r = r * 0.85; o.sprite = 'orb_' + ORB_COLORS[Math.floor(rnd() * ORB_COLORS.length)]; }
     else if (kind === 'spike') { o.r = r * 0.9; o.sprite = SPIKE_SPRITES[Math.floor(rnd() * SPIKE_SPRITES.length)]; }
@@ -1699,17 +1715,30 @@ function drawObstacleCracks(o, h, dark) { // ぶつけるたびに増えるひ�
   for (const c of o.cracks) { ctx.beginPath(); c.forEach(([px, py], k) => k ? ctx.lineTo(o.x + px, o.y + py) : ctx.moveTo(o.x + px, o.y + py)); ctx.stroke(); }
   ctx.restore();
 }
-function drawBounceObjMults() { // 反射オブジェクトの倍率を、障害物の上に表示（＋は緑の×、−は赤の÷）。自キャラにたまっている倍率も頭の上に
+function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラスは青、マイナスは赤）。反射板はここで丸ごと描く。射出中は自キャラの近くに今の倍率
   const now = Date.now();
   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const o of obstacles) {
     const v = obstacleMult(o); if (!v || o.broken || o.dead) continue;
-    const big = Math.abs(v) >= 8, fs = Math.round(Math.max(11, Math.min(18, o.r * 0.55)) * (big ? 1.15 : 1)), pop = o.bmFlash && now - o.bmFlash < 300 ? 1 + 0.35 * (1 - (now - o.bmFlash) / 300) : 1;
-    ctx.font = `900 ${Math.round(fs * pop)}px sans-serif`; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = v > 0 ? (big ? '#ffe45c' : '#8dff9e') : (big ? '#ff3b6b' : '#ff8a8a'); ctx.fillText(t, o.x, o.y);
+    const plus = v > 0, big = Math.abs(v) >= 8, pop = o.bmFlash && now - o.bmFlash < 350 ? 1 + 0.45 * (1 - (now - o.bmFlash) / 350) : 1;
+    if (o.kind === 'reflector') { // 反射板：青（プラス）か赤（マイナス）に光る円盤
+      const R = o.r * pop, g = ctx.createRadialGradient(o.x - R * 0.3, o.y - R * 0.35, R * 0.1, o.x, o.y, R);
+      g.addColorStop(0, plus ? '#d6f0ff' : '#ffd6da'); g.addColorStop(0.55, plus ? '#3d8dff' : '#ff3b4f'); g.addColorStop(1, plus ? '#123a8a' : '#7a0f1c');
+      ctx.shadowColor = plus ? 'rgba(80,170,255,0.9)' : 'rgba(255,70,90,0.9)'; ctx.shadowBlur = big ? 22 : 12;
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.lineWidth = 3; ctx.strokeStyle = big ? '#ffe45c' : 'rgba(255,255,255,0.9)'; ctx.stroke();
+    }
+    const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
+    ctx.font = `900 ${fs}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+    const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS); ctx.fillText(t, o.x, o.y);
   }
   const pl = balls.find(isMainPlayerBall);
-  if (pl && pl.bounceMult && pl.bounceMult !== 1) { const t = 'ダメージ ' + fmtBounceTotal(pl.bounceMult); ctx.font = '900 12px sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(t, pl.x, pl.y + pl.radius + 12); ctx.fillStyle = pl.bounceMult >= 1 ? '#8dff9e' : '#ff8a8a'; ctx.fillText(t, pl.x, pl.y + pl.radius + 12); }
+  if (pl && !tackleShotNow() && pl.bounceMult && pl.bounceMult !== 1) pl.bounceMult = 1; // 射出が終わったらリセット
+  if (pl && tackleShotNow()) { // 射出中は自キャラの頭の上に今の反射ダメージ倍率
+    const bmv = pl.bounceMult || 1, t = '反射ダメージ ' + fmtBounceTotal(bmv);
+    ctx.font = '900 17px sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)'; const y = pl.y - pl.radius - 22;
+    ctx.strokeText(t, pl.x, y); ctx.fillStyle = bmv > 1 ? BOUNCE_COL_PLUS : bmv < 1 ? BOUNCE_COL_MINUS : '#ffffff'; ctx.fillText(t, pl.x, y);
+  }
   ctx.restore();
 }
 function drawObstacles() {
@@ -1746,7 +1775,7 @@ function drawObstacles() {
     ctx.restore();
   }
   for (const o of obstacles) {
-    if (FLOOR_OBSTACLES.has(o.kind)) continue;
+    if (FLOOR_OBSTACLES.has(o.kind) || o.kind === 'reflector') continue; // 反射板は drawBounceObjMults で描く
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(o.x + 3, o.y + o.r * 0.6, o.r * 1.05, o.r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); // 影
     const wt = now - (o.wobAt || 0);
