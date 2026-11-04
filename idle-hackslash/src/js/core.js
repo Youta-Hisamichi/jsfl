@@ -760,7 +760,7 @@ function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
-SHOP_ITEMS.reborn = { icon: '🌌', name: '転生', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
+SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
 const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
 function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ

@@ -1080,9 +1080,9 @@ function playBgmTrack(type) {
   if (currentBgmType === type) return;
   if (type && !BATTLE_BGM_KEYS[type]) unlockBgmBook(type); // ページ・コンテニューの曲は聴いたら図鑑に登録
   bgmToken++;
-  if (type === 'levelup' && songState && currentBgmType) bgmResume = { type: currentBgmType, step: songState.step }; // 3択の後に戦闘曲を続きから再開するため覚えておく
+  if (songState && currentBgmType && isBattleSong(currentBgmType) && !isBattleSong(type)) bgmResume = { type: currentBgmType, step: songState.step }; // 3択・ほかのページ・画面を開いている間は、戦闘曲の続きの位置を覚えておく
   const resumeStep = bgmResume && bgmResume.type === type ? bgmResume.step : 0;
-  if (type !== 'levelup') bgmResume = null;
+  if (isBattleSong(type)) bgmResume = null; // 戦闘曲に戻った（または別の戦闘曲になった）ら使い終わり
   currentBgmType = type;
   if ((NORMAL_BATTLE_SONGS.includes(type) || BOSS_BATTLE_SONGS.includes(type)) && type !== lastBattleBgm) { prevBattleBgm = lastBattleBgm; lastBattleBgm = type; } // デバッグ表示用：1つ前の戦闘曲
   clearTimeout(bgmTimer);
@@ -1106,7 +1106,9 @@ document.getElementById('dbgNowBgm').addEventListener('click', () => { // 押す
   d.style.display = d.style.display === 'none' ? '' : 'none';
   updateDebugNowBgm();
 });
+function isBattleSong(t) { return NORMAL_BATTLE_SONGS.includes(t) || BOSS_BATTLE_SONGS.includes(t); }
 function stopBgm(hard) {
+  if (songState && currentBgmType && isBattleSong(currentBgmType)) bgmResume = { type: currentBgmType, step: songState.step }; // 止めても、戻ったら続きから
   bgmToken++;
   currentBgmType = null;
   clearTimeout(bgmTimer);
