@@ -1480,8 +1480,9 @@ function revivePlayerInPlace() {
   spawnDamageText(player.x, player.y - player.radius - 12, 'REVIVE!', '#7ee787');
   playHealSound();
 }
-// 試練の塔のリトライ（コンテニュー）はいつもジェム：ジェムの挑戦は同じ値段、コインの挑戦は飛んだステージ数のジェム（1万ステージごとに💎1・最低💎1）
-function towerRetryCost() { const c = game.skipChallenge || {}; return { currency: 'gem', cost: c.currency === 'coin' ? getCustomSkipCost((c.target || 0) - (c.origin || 0)) : (c.cost || 0) }; }
+// 試練の塔のリトライ（コンテニュー）はいつもジェム1個（どれだけジャンプしても同じ）
+const TOWER_RETRY_GEMS = 1;
+function towerRetryCost() { return { currency: 'gem', cost: TOWER_RETRY_GEMS }; }
 // 試練の塔のコンテニュー回数：ふつうは1回、熟練者の紋章で3回、伝説の勇者の紋章なら何回でも
 function towerRetryMax() { return isSubActive('hero') ? Infinity : isSubActive('veteran') ? 3 : 1; }
 function towerRetriesLeft() { return Math.max(0, towerRetryMax() - ((game.skipChallenge && game.skipChallenge.retries) || 0)); }
