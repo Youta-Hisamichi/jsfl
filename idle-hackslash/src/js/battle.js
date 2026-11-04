@@ -1957,7 +1957,7 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
   if (!pool.length) pool = ARTIFACT_POOL;
   if (pool.some(a => a.rarity === rarity)) pool = pool.filter(a => a.rarity === rarity);
   pool.forEach(a => rows.push([chestArtIco(a, rarity), a.id === 'evoFeather' ? `進化の${feaName(rarity)}` : a.name, P(rest * ac / pool.length), '']));
-  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.img ? `<img class="ico-img" src="${I.img}" alt="">` : I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: ['🦸', '自キャラ（進化して初期Lv+1）', ''] };
+  const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], overheal: ['💖', '回復限界突破', `回復の上限+0.5倍（最大${OVERHEAL_CAP}倍で出なくなる）`], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.img ? `<img class="ico-img" src="${I.img}" alt="">` : I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: ['🦸', '自キャラ（進化して初期Lv+1）', ''] };
   specs.forEach(([k, p]) => rows.push([SPEC[k][0], SPEC[k][1], P(p), SPEC[k][2]]));
   const ex = [];
   const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
@@ -1966,6 +1966,7 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
 function chestSpecials(rarity) { // コイン・羽以外の中身と、その確率（持ちすぎ・上限のものは出ない＝その分はコインか羽に）
   const o = [];
   if (rarity === 'mythic' && (game.feaUseBuys || 0) < FEA_USE_SHOP_MAX) o.push(['tie', CHEST_FEA_TIE_CHANCE]);
+  if (rarity === 'mythic' && overHealCount() < OVERHEAL_MAX_BUYS) o.push(['overheal', CHEST_OVERHEAL_CHANCE]); // 回復限界突破（ショップと同じ。上限まで持っていたら出ない）
   if (CHEST_POTION_RARITIES.includes(rarity)) { if ((game.potions || 0) < CHEST_POTION_MAX_HELD) o.push(['potion', CHEST_POTION_CHANCE]); if ((game.redPotions || 0) < CHEST_POTION_MAX_HELD) o.push(['redPotion', CHEST_POTION_CHANCE]); }
   if (typeof CHEST_COMP_CHANCE !== 'undefined' && CHEST_COMP_CHANCE[rarity] && chestCompPool(rarity).length) o.push(['comp', CHEST_COMP_CHANCE[rarity]]);
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
@@ -2138,7 +2139,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.05, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
-const CHEST_FEA_TIE_CHANCE = 0.05; // ★5の宝箱に羽の束ね紐が入っている確率
+const CHEST_FEA_TIE_CHANCE = 0.05, CHEST_OVERHEAL_CHANCE = 0.03; // ★5の宝箱に羽の束ね紐が入っている確率
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (typeof obFlag === 'function') obFlag('chest'); // 中身を決めて受け取る。表示用の情報を返す（quiet＝まとめて開封）
   if (!quiet) playChestOpenSound();
@@ -2149,6 +2150,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   if (sp === 'comp') loot = chestCompLoot(rarity);
   else if (sp === 'hero') loot = chestHeroLoot();
   else if (sp === 'tie') { game.feaUseBuys = (game.feaUseBuys || 0) + 1; if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'tie', n: 1, icon: '<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', main: '羽の束ね紐', cardDesc: `進化1回で使える羽 ${getFeaUseMax()}枚に`, color: '#ffd76b', sub: `進化1回で使える羽が ${getFeaUseMax()}枚に` }; }
+  else if (sp === 'overheal') { game.overHealBuys = overHealCount() + 1; loot = { misc: 'overheal', n: 1, icon: '<span class="chest-emoji">💖</span>', main: '回復限界突破', cardDesc: `最大HPの${overHealMult()}倍まで回復できる`, color: '#ff8adf', sub: `回復の上限が最大HPの${overHealMult()}倍に` }; }
   else if (sp === 'potion') { game.potions = (game.potions || 0) + mult; updatePotionButton(); loot = { misc: 'potion', n: mult, icon: '<span class="chest-emoji">🧪</span>', main: `回復ポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: '回復ポーション', cardDesc: `所持 ${game.potions}個`, color: '#ff7eb6', sub: `HPを最大値の45%回復・所持 ${game.potions}個` }; }
   else if (sp === 'redPotion') { game.redPotions = (game.redPotions || 0) + mult; updateRedPotionButton(); loot = { misc: 'redPotion', n: mult, icon: '<i class="ico-redpot chest-redpot"></i>', main: `スキルポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: 'スキルポーション', cardDesc: `所持 ${game.redPotions}個`, color: '#ff5c6c', sub: `スキルの待ち時間をリセット・所持 ${game.redPotions}個` }; }
   else if (sp && sp.startsWith('item:')) { const k = sp.slice(5), I = CHEST_ITEMS[k]; gainItem(k, mult); loot = { misc: 'item' + k, n: mult, icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="chest-emoji">${I.icon}</span>`, main: `${I.name}${mult > 1 ? ` ×${mult}` : ''}`, cardName: I.name, cardDesc: I.desc, color: I.col, sub: `${I.desc}・所持 ${itemHeld(k)}個` }; }

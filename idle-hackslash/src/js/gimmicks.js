@@ -604,6 +604,7 @@ Object.keys(ECHO_SKILL_BTNS).forEach(id => { const btn = document.getElementById
 function lifeGlassBoss() { return balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function useLifeGlass(ev) {
   const p = balls.find(isMainPlayerBall), boss = lifeGlassBoss();
+  if (phase === 'battle' && !boss && typeof bossWarning !== 'undefined' && bossWarning.classList.contains('show')) { showTapError('ボスが現れたら使えます', ev.clientX, ev.clientY); return; }
   if (phase !== 'battle' || !p || !boss) { showTapError('命の砂時計はボス戦でだけ使えます', ev.clientX, ev.clientY); return; }
   if (boss.glassUsed) { showTapError('このボスにはもう使えない（コンテニューするとまた使える）', ev.clientX, ev.clientY); return; }
   if (!spendItem('lifeglass')) return;
@@ -620,7 +621,7 @@ function playLifeGlassSound() { // 重い柱時計の音が、だんだんゆっ
 function updateLifeGlassBtn() {
   const row = document.getElementById('skillRow'); if (!row) return;
   let b = document.getElementById('lifeGlassBtn');
-  const bb = lifeGlassBoss(), show = itemHeld('lifeglass') > 0 && phase === 'battle' && !!bb && !bb.glassUsed;
+  const bb = lifeGlassBoss(), warn = typeof bossWarning !== 'undefined' && bossWarning.classList.contains('show'), show = itemHeld('lifeglass') > 0 && phase === 'battle' && (warn || (!!bb && !bb.glassUsed)); // WARNING中から出しておく
   if (!b) { b = document.createElement('button'); b.id = 'lifeGlassBtn'; b.className = 'action-btn lifeglass'; b.addEventListener('click', useLifeGlass); row.appendChild(b); }
   b.style.display = show ? '' : 'none';
   const h = `<img class="lg-ico" src="assets/img/icons/item_lifeglass.webp" alt=""><b>${itemHeld('lifeglass')}</b><span class="lg-name">命の砂時計</span>`; if (b.dataset.h !== h) { b.innerHTML = h; b.dataset.h = h; }

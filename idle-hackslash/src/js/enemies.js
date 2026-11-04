@@ -838,7 +838,7 @@ function refreshPlayerBallStats(healFull) {
   if (!p) return;
   const newMax = getPlayerMaxHP();
   if (healFull) p.hp = newMax;
-  else if (p.hp > p.maxHp) p.hp = Math.min(p.hp, newMax * (game.overHealUnlocked ? OVERHEAL_MAX : 1)); // 限界突破で上限を超えている分は残す
+  else if (p.hp > p.maxHp) p.hp = Math.min(p.hp, newMax * overHealMult()); // 限界突破で上限を超えている分は残す
   else p.hp = Math.min(newMax, p.hp + (newMax - p.maxHp > 0 ? newMax - p.maxHp : 0));
   p.maxHp = newMax;
   p.atk = getPlayerAtk();

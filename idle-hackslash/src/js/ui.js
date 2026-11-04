@@ -1514,7 +1514,7 @@ potionBtn.addEventListener('click', event => {
   const player = balls.find(ball => isMainPlayerBall(ball));
   if (phase !== 'battle' || !player) { showTapError('戦闘中のみ使用できます', event.clientX, event.clientY); return; }
   if (!canUseHealNow()) { showTapError('回復ポーションはボス戦でだけ使えます', event.clientX, event.clientY); return; } // ボス戦以外ではHPが減らない
-  if (player.hp >= healCap(player)) { showTapError(game.overHealUnlocked ? 'HPが限界突破の上限です' : 'HPが満タンです', event.clientX, event.clientY); return; }
+  if (player.hp >= healCap(player)) { showTapError(overHealOn() ? 'HPが限界突破の上限です' : 'HPが満タンです', event.clientX, event.clientY); return; }
   game.potions--;
   const heal = Math.round(player.maxHp * POTION_HEAL_RATIO);
   player.hp = Math.min(healCap(player), player.hp + heal);
