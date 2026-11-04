@@ -126,7 +126,7 @@ const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', b
 const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率', skill: 'スキル', weapon: 'サブウェポン', melee: '近接攻撃', tackle: 'タックル', combo: 'コンボ', crit: 'クリティカル', tower: '試練の塔', pinch: 'ピンチ補正', zako: 'ザコ特攻' };
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
 function isEvoPickUnlocked() { return false; } // 進化の項目はいつもランダム（「進化の指定書」は廃止）
-const EVO_MIN_ON = 3; // 進化の項目はいつも3つ以上ON（以後ずっとON）
+const EVO_MIN_ON = 2; // 進化の項目はいつも2つ以上ON（以後ずっとON）
 function isEvoAccUnlocked() { return true; } // 命中ははじめからON（進化3回目で開放するのはやめた）
 function isEvoAccOpen() { return isEvoAccUnlocked() && game.evoKindOpen_acc !== false; } // 開放後はON（進化ページでOFFにもできる）
 const EVO_KIND_DEFAULT = ['atk', 'hp', 'acc']; // はじめから進化できるのは攻撃力とHPだけ。ほかはショップで項目を買って増やす
