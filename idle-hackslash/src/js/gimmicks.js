@@ -613,10 +613,11 @@ function useLifeGlass(ev) {
   playLifeGlassSound(); if (typeof songState !== 'undefined' && songState) songState.tempo = 1; // 早回しになっていたBGMもすぐ元の速さに
   saveGame(); updateLifeGlassBtn();
 }
-function playLifeGlassSound() { // 重い柱時計の音が、だんだんゆっくり・低くなって止まる（時間が巻き戻る感じ）
-  if (typeof noiseSweep === 'function') noiseSweep(0.9, 3000, 200, 'lowpass', 1, 0.25); // ヒュウゥン…と巻き戻る風
-  let at = 0; [0, 1, 2, 3, 4, 5].forEach(i => { at += 180 + i * i * 70; const f = 70 - i * 6; setTimeout(() => { thump(f * 2, f, 0.5 + i * 0.08, 0.9 - i * 0.08, 'sine'); thump(f * 4, f * 2, 0.08, 0.25, 'square'); }, at); }); // ゴーン…ゴーン……ゴーン（間がのびていく）
-  setTimeout(() => thump(55, 28, 1.6, 0.9, 'sine'), at + 600); // 最後に深いゴォン
+function playLifeGlassSound() { // 時計の「チク・タク・チク・タク…ボーン」
+  const tick = (hi, at) => setTimeout(() => { playTone(hi ? 2400 : 1700, 0.03, 'square', 0.09); thump(hi ? 900 : 650, hi ? 500 : 380, 0.05, 0.35, 'triangle'); if (typeof playNoiseBurst === 'function') playNoiseBurst(0.02, 0.12); }, at);
+  for (let i = 0; i < 6; i++) tick(i % 2 === 0, i * 280); // チク・タク ×3
+  const bong = at => setTimeout(() => { [[196, 0.32], [392, 0.14], [588, 0.08], [784, 0.05], [988, 0.03]].forEach(([f, g]) => playTone(f, 2.4, 'sine', g)); thump(98, 70, 1.2, 0.6, 'sine'); }, at); // ボーン（柱時計の鐘：倍音を重ねて長く響かせる）
+  bong(6 * 280 + 120); bong(6 * 280 + 1300);
 }
 function updateLifeGlassBtn() {
   const row = document.getElementById('skillRow'); if (!row) return;

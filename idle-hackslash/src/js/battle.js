@@ -1128,8 +1128,12 @@ function coinStealFrom(e) { // 敵からコインが噴き出して自キャラ�
   const gain = Math.max(1, Math.round(stageCoinRaw() * COIN_STEAL_RATE * computeBonuses().coinMult));
   game.coins += gain; coinStolenSec += gain; spawnCoinDrop(e.x, e.y, gain, 7); // 攻撃が当たると敵からコインが大噴出
   spawnDamageText(e.x, e.y - e.radius - 20, `🪙 +${formatCoinNumber(gain)}`, '#ffd76b', 0.03);
-  if (Math.random() < 0.6) playCoinChime(Math.floor(Math.random() * 5));
+  coinStealChime();
 }
+// コイン盗み中のチャリン：連鎖のように1音ずつ高くなり、一番高い音まで行ったら一番低い音に戻ってくり返す
+let coinStealStep = 0;
+const COIN_STEAL_STEPS = 15; // 5音×3オクターブ（COIN_CHIME_SCALE は後のファイルで定義）
+function coinStealChime() { playCoinChime(coinStealStep); coinStealStep = (coinStealStep + 1) % COIN_STEAL_STEPS; }
 function onPlayerHitEnemy(enemy, dmg) {
   if (typeof isCoinStrike === 'function' && isCoinStrike() && enemy && !enemy.isPlayer) coinStealFrom(enemy); // コイン盗み：攻撃が当たるたびに敵からコインが噴き出す
   if (!enemy.hitsTaken) enemy.firstHitAt = Date.now(); // 戦い始め（最初に攻撃が当たったとき）
@@ -2344,7 +2348,7 @@ setInterval(() => {
   game.coins += gain; coinStolenSec += gain; updateStatsUI(); // 吸収は時間で一定（敵が何体いても同じ量）
   const e = foes[Math.floor(Math.random() * foes.length)];
   for (let i = 0; i < 3; i++) coinSuck.push({ x: e.x + (Math.random() - 0.5) * e.radius, y: e.y + (Math.random() - 0.5) * e.radius, t: -i * 0.12, wob: Math.random() * 6 });
-  if (Math.random() < 0.35) playTone(2000 + Math.random() * 600, 0.025, 'sine', 0.02);
+  coinStealChime(); // 吸い込むたびにも連鎖のチャリン
 }, COIN_DRAIN_MS);
 (function wrapCoinSuckDraw() { if (typeof draw !== 'function') { setTimeout(wrapCoinSuckDraw, 100); return; } const baseDraw = draw; draw = function () { // draw は後のファイル（ui.js）で作られるので、できてから包む
   baseDraw.apply(this, arguments);
