@@ -5118,8 +5118,8 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 #bossContCount.stopped { opacity: 0.45; filter: grayscale(0.6); } /* ボタンを押してカウントが止まった */
 /* 「ステージ○○で力尽きた…転生しますか？」：文字は明るい金、縁取りと影は暗く（グラデの文字抜きはスマホで明暗が逆に見えるのでやめる） */
 #rebornConfirmModal .reb2 #rebornConfirmTitle.long { background: none !important; -webkit-background-clip: border-box; background-clip: border-box; color: #ffe682 !important; -webkit-text-fill-color: #ffe682; filter: none !important; text-shadow: -1px -1px 0 #3a1c00, 1px -1px 0 #3a1c00, -1px 1px 0 #3a1c00, 1px 1px 0 #3a1c00, 0 -1.5px 0 #3a1c00, 0 1.5px 0 #3a1c00, -1.5px 0 0 #3a1c00, 1.5px 0 0 #3a1c00, 0 3px 0 #1a0c00, 0 0 6px rgba(0,0,0,0.8); }
-/* この瞬間をシェア：ゲーム画面の左上端にくっつける */
-.moment-share { left: 0 !important; right: auto !important; top: 0 !important; border-radius: 0 0 12px 0 !important; border-top: none !important; border-left: none !important; }
+/* この瞬間をシェア：ゲーム画面の右上端にくっつける（左上は宝箱・ミッションと重なる） */
+.moment-share { left: auto !important; right: 0 !important; top: 0 !important; border-radius: 0 0 0 12px !important; border-top: none !important; border-right: none !important; }
 /* 試練の塔：動画を見たあとの「攻撃力2倍＆報酬2倍」 */
 .tower-boost { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
 .tower-boost > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 2px solid #ffd76b; background: linear-gradient(180deg, rgba(255,215,107,0.25), rgba(255,140,40,0.12)); animation: towerBoostPop 0.5s cubic-bezier(.34,1.56,.64,1) both; }
