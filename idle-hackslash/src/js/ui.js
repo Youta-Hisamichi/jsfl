@@ -1658,6 +1658,7 @@ function skillGachaPull(event, isReroll) {
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
   if (openSkillInfoFromEvent(event)) return; // アイコンを押したら概要（ON/OFFはアイコン以外を押す）
+  if (event.target.closest('[data-sk-toggle]') && !skillGachaLeft() && skillGachaLimit() >= SKILL_GACHA_MAX_PULLS) { showTapError('ガチャ上限なのでON/OFFできません\n転生してください', event.clientX, event.clientY); return; } // もう引けないのでON/OFFは無意味
   const b = event.target.closest('[data-sk-toggle]'); if (!b) return;
   const id = b.dataset.skToggle, { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
