@@ -5090,4 +5090,5 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal { padding: 0 !important; align-items: stretch !important; justify-content: stretch !important; }
 #stageSkipModal .modal-panel { width: 100vw !important; max-width: none !important; height: 100vh !important; height: 100dvh !important; max-height: none !important; margin: 0 !important; box-sizing: border-box; }
 #stageSkipModal .tower-title-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
-#stageSkipModal .tower-title-row .ico-img, #stageSkipModal .tower-title-row img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
+#stageSkipModal .tower-title-row .ico-img, #stageSkipModal .tower-title-row img { width: 2.2rem; height: 2.2rem; object-fit: contain; }#stageSkipModal .tower-head-img { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto 4px; } /* 縦横比はそのまま */
+#stageSkipModal .tower-head { padding-top: 0; }
