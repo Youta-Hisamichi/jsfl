@@ -576,7 +576,7 @@ const ARTIFACT_ALL = [
   { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
   { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
   { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
-  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。進化1回につき1枚使い、倍率が上がる（N羽×2・R羽×3・SR羽×4・SSR羽×5・UR羽×10）', rarity: 'common' },
+  { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。進化1回につき1枚使い、倍率が上がる（N羽×1.5・R羽×2・SR羽×3・SSR羽×4・UR羽×8）', rarity: 'common' },
   { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
   { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
   { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
@@ -668,7 +668,7 @@ function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アッ�
 function evoLuck(gems, feathers) { return 0; } // 確率は固定（捧げた数は倍率に掛かる）
 // 進化の羽：N・R・SR・SSR・URの5種類（同じレア度の宝箱から出る）。進化1回につき1枚、使う羽（または使わない）を選べる
 const FEA_RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic'];
-const FEA_MULT = { common: 2, rare: 3, epic: 4, legendary: 5, mythic: 10 }; // N羽×2 R羽×3 SR羽×4 SSR羽×5 UR羽×10
+const FEA_MULT = { common: 1.5, rare: 2, epic: 3, legendary: 4, mythic: 8 }; // N羽×1.5 R羽×2 SR羽×3 SSR羽×4 UR羽×8
 const FEA_ICON = { common: 'assets/img/icons/bag_feather.webp', rare: 'assets/img/icons/feather_r2.webp', epic: 'assets/img/icons/feather_r3.webp', legendary: 'assets/img/icons/feather_r4.webp', mythic: 'assets/img/icons/feather_r5.webp' };
 function feaStock() { if (!game.evoFea || typeof game.evoFea !== 'object') game.evoFea = {}; return game.evoFea; }
 function feaCount(r) { return Math.max(0, Math.floor(Number(feaStock()[r]) || 0)); }
@@ -689,7 +689,7 @@ function feaIco(r, cls = 'ico-img') { return `<img class="${cls}" src="${FEA_ICO
 const FEA_USE_SHOP_MAX = 9; // ショップの「羽の束ね紐」：1回に使える羽の枚数 +1（9個まで＝最大10枚）
 function getFeaUseMax() { return 1 + Math.min(FEA_USE_SHOP_MAX, Math.max(0, Math.floor(game.feaUseBuys || 0))); }
 function evoFeaUseCount(fea) { return fea ? Math.min(getFeaUseMax(), feaCount(fea)) : 0; } // 次の進化で使う枚数（持っている分まで）
-function evoFeatherMult(fea, n = evoFeaUseCount(fea)) { return fea && n > 0 ? (FEA_MULT[fea] || 1) * n : 1; } // 羽の倍率×使う枚数（N羽×2を3枚なら×6。羽なしは×1）
+function evoFeatherMult(fea, n = evoFeaUseCount(fea)) { return fea && n > 0 ? (FEA_MULT[fea] || 1) * n : 1; } // 羽の倍率×使う枚数（N羽×1.5を3枚なら×4.5。羽なしは×1）
 function evoStake(gems, feathers) { return Math.max(1, gems) * evoFeatherMult(feathers); } // 捧げた量（ジェム数×羽の倍率）
 function evoTotal(mult, gems, feathers, feaN) { return 1 + (mult - 1) * Math.max(1, gems) * evoFeatherMult(feathers, feaN); } // 1回の倍率：上がる割合（+1%など）にジェム数と羽の倍率を掛ける（N +1% はジェム2で +2%、N羽ならさらに2倍で +4%）
 function evoOdds(gems, feathers) {
