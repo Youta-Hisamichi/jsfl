@@ -5133,3 +5133,7 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 @keyframes fgrSharePulse { from { transform: scale(1); box-shadow: 0 0 0 rgba(255,138,216,0); } to { transform: scale(1.04); box-shadow: 0 0 14px rgba(255,138,216,0.8); } }
 .pb-comp { margin: 6px 0 10px; padding: 6px 8px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
 .pb-comp .pb-base { margin-top: 4px; }
+.cc-break { margin-top: 6px; padding: 5px 8px; border-radius: 8px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); font-size: 0.68rem; line-height: 1.5; color: #e8ecff; }
+.cc-break-h { font-weight: 900; color: #ffe27a; font-size: 0.7rem; }
+.cc-break b { color: #fff; }
+.cc-break span { white-space: nowrap; }

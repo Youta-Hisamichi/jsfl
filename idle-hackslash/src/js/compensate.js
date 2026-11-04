@@ -227,21 +227,30 @@ function powerBreakdown() {
   const early = getEarlyPlayerHpRate(game.stage); if (early !== 1) rows.hp.push(['序盤の補正', early]);
   return { b, rows, csA: compShare('atk'), csH: compShare('hp') };
 }
+// 仲間ひとりの強さの内訳（強さの内訳ダイアログと、仲間ページのカードの下で使う）。compact は1行ずつの式
+function compBreakdownHtml(id, compact) {
+  const F = v => formatCoinNumber(Math.round(v)), M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : 2));
+  const c = COMPANIONS[id], b = computeBonuses(), lv = game.companions.level[id] || 0, hlv = compHpLv(id), n = getCompanionCount(id), golem = compKind(id) === 'golem', dragon = compKind(id) === 'dragon';
+  const pa = getPlayerAtk(), ph = getPlayerMaxHP(), inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
+  const hpLvRate = c.baseBonus + hlv * c.perLevel * COMP_HP_LV_RATE, extra = dragon ? getCompanionAtk(id) - getCompanionBaseAtk(id) : 0;
+  const atkParts = [['自キャラ', F(pa)], [`Lv${lv + 1}`, M(compAtkLvRate(lv))], ...(inspire !== 1 ? [['応援', M(inspire)]] : []), ...(b.companionAtkMult !== 1 ? [['仲間倍率', M(b.companionAtkMult)]] : [])];
+  const hpParts = [['自キャラ', F(ph)], [`Lv${hlv + 1}`, M(hpLvRate)], ['補正', '×0.8'], ...(golem ? [['ゴーレム', M(GOLEM_HP_MULT)]] : []), ...(b.companionHpMult !== 1 ? [['仲間倍率', M(b.companionHpMult)]] : [])];
+  if (compact) {
+    const eq = parts => parts.map(([l, v], k) => `${k ? ' × ' : ''}<span>${l} ${v}</span>`).join('');
+    return `<div class="cc-break"><div class="cc-break-h">📊 強さの内訳</div><div><b>⚔️ ${F(getCompanionAtk(id))}</b> ＝ ${eq(atkParts)}${dragon ? ` ＋ 仲間の合計 ${F(extra)}` : ''}</div><div><b>❤️ ${F(getCompanionMaxHP(id))}</b> ＝ ${eq(hpParts)}</div></div>`;
+  }
+  const r2 = (l, v, cls) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${cls || ''}">${v}</b></div>`;
+  let h = `<div class="pb-comp"><div class="pb-sub">${c.name}${n > 1 ? ' ×' + n : ''}</div>`;
+  h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('自キャラの攻撃力', F(pa)) + r2(`攻撃力Lv${lv + 1}（0.3 + Lv×${COMP_ATK_PER_LV}）`, M(compAtkLvRate(lv)), 'up') + (inspire !== 1 ? r2('踊り子・王様の応援', M(inspire), 'up') : '') + (b.companionAtkMult !== 1 ? r2('仲間の攻撃力の倍率（上の合計）', M(b.companionAtkMult), 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(extra)) : '');
+  h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('自キャラの最大HP', F(ph)) + r2(`HP Lv${hlv + 1}（基本${+c.baseBonus.toFixed(3)} + Lv×${+(c.perLevel * COMP_HP_LV_RATE).toFixed(4)}）`, M(hpLvRate), hpLvRate >= 1 ? 'up' : 'dn') + r2('仲間の補正', '×0.8', 'dn') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（上の合計）', M(b.companionHpMult), 'up') : '');
+  return h + '</div>';
+}
 function openPowerBreakdown() {
   const { b, rows, csA, csH } = powerBreakdown(), F = v => formatCoinNumber(Math.round(v));
   const M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : Math.abs(v - 1) < 0.05 ? 3 : 2)); // 1に近い小さな補正は細かい桁まで
   const total = list => list.reduce((t, [, r]) => t * r, 1);
   const tbl = (list, base, unit) => `<div class="pb-base">もとの${unit} <b>${base}</b></div>` + (list.length ? list.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${r >= 1 ? 'up' : 'dn'}">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>') + `<div class="gs-row pb-total"><span class="gs-src">合計の倍率</span><b class="gs-amt">${M(total(list))}</b></div>`;
-  const cAtkT = total(rows.cAtk), cHpT = total(rows.cHp), pa = getPlayerAtk(), ph = getPlayerMaxHP();
-  const inspire = 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king');
-  const r2 = (l, v, cls) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${cls || ''}">${v}</b></div>`;
-  const comps = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => { // 仲間ひとりずつ：自キャラと同じように、何で何倍かを並べる
-    const c = COMPANIONS[id], lv = game.companions.level[id] || 0, hlv = compHpLv(id), n = getCompanionCount(id), golem = compKind(id) === 'golem', dragon = compKind(id) === 'dragon';
-    const hpLvRate = c.baseBonus + hlv * c.perLevel * COMP_HP_LV_RATE;
-    let h = `<div class="pb-comp"><div class="pb-sub">${COMPANIONS[id].name}${n > 1 ? ' ×' + n : ''}</div>`;
-    h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('自キャラの攻撃力', F(pa)) + r2(`攻撃力Lv${lv + 1}（0.3 + Lv×${COMP_ATK_PER_LV}）`, M(compAtkLvRate(lv)), 'up') + (inspire !== 1 ? r2('踊り子・王様の応援', M(inspire), 'up') : '') + (cAtkT !== 1 ? r2('仲間の攻撃力の倍率（上の合計）', M(cAtkT), 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(getCompanionAtk(id) - getCompanionBaseAtk(id))) : '');
-    h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('自キャラの最大HP', F(ph)) + r2(`HP Lv${hlv + 1}（基本${+c.baseBonus.toFixed(3)} + Lv×${+(c.perLevel * COMP_HP_LV_RATE).toFixed(4)}）`, M(hpLvRate), hpLvRate >= 1 ? 'up' : 'dn') + r2('仲間の補正', M(0.8), 'dn') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (cHpT !== 1 ? r2('仲間の最大HPの倍率（上の合計）', M(cHpT), 'up') : '');
-    return h + '</div>'; }).join('') || '<div class="serif-sub">仲間がいません</div>';
+  const comps = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0).map(id => compBreakdownHtml(id)).join('') || '<div class="serif-sub">仲間がいません</div>';
   const ov = document.createElement('div'); ov.className = 'serif-ov';
   ov.innerHTML = `<div class="serif-panel"><div class="serif-head"><b>📊 強さの内訳</b><button class="serif-x">✕</button></div><div class="serif-body gem-src pb-body">
     <div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}${csA ? `<div class="gs-row"><span class="gs-src">＋ 仲間の攻撃力の10%</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
