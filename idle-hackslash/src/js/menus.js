@@ -29,7 +29,7 @@ function renderSkillGacha() {
     const buyLabel = !owned ? `解放 ${coinIco}${formatCoinNumber(cost)}` : maxed ? 'Lv MAX' : `Lv↑ ${coinIco}${formatCoinNumber(cost)}`;
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
-    const est = formatCoinNumber(getPlayerAtk() * nowP);
+    const est = formatCoinNumber(getPlayerAtk() * nowP * (id === 'skillSpecial' ? METEOR_ATK_MULT * shopMultiRate('meteor') * computeBonuses().specialMult * computeBonuses().specialDmgMult : 1));
     return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 威力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${game.overHealUnlocked ? '（限界突破）' : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（攻撃力×威力）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
@@ -60,9 +60,9 @@ function renderSkillGacha() {
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
 // スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎2。ONは3つより少なくできない。切り替えは転生でリセット）
 // 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
-const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 5, SKILL_MIN_ON = 3;
+const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 5, SKILL_MIN_ON = 2, SKILL_REBIRTH_ON = 3; // ONは2つより少なくできない。転生のときは3つ選ぶ
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
-function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_MIN_ON); }
+function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_REBIRTH_ON); }
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
 function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id); }
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
@@ -663,6 +663,7 @@ let artifactFilter = 'all';
 const ARTIFACT_FILTERS = [{ id: 'all', label: 'すべて' }, ...REBIRTH_SHOP_CATEGORIES];
 // 遺物だけで合計どれくらい強くなっているか（ページ上部にまとめて表示）
 function renderArtifactTotal() {
+  if (!document.getElementById('artifactTotal')) return;
   const b = applyArtifactBonuses(baseBonuses());
   const fmtMult = m => '×' + (m >= 100 ? formatCoinNumber(Math.round(m)) : (Math.round(m * 100) / 100).toString());
   const pct = v => '+' + (Math.round(v * 1000) / 10) + '%';
@@ -679,6 +680,7 @@ function renderArtifactTotal() {
     : '<div class="af-total-empty">まだ効果はありません（遺物を集めると強くなります）</div>');
 }
 function renderArtifactList() {
+  if (!artifactListEl) return; // 遺物ページは削除した
   const ownedKinds = ARTIFACT_POOL.filter(a => (game.ownedArtifacts[a.id] || 0) > 0).length;
   const total = ARTIFACT_POOL.length;
   const rate = (total ? Math.floor(ownedKinds / total * 1000) / 10 : 0).toFixed(1);
@@ -1404,7 +1406,7 @@ function fireWeapon(id, lv, pl) {
     for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
     playTone(1500, 0.05, 'triangle', 0.04, 2200);
   } else if (id === 'dove') {
-    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 1.6, vy: Math.sin(a) * 1.6, t: 0, life: 110, r: 9, dmg: weaponDmg(0.8, lv), hit: new Set(), pierce: 0 }); }
+    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 1.6, vy: Math.sin(a) * 1.6, t: 0, life: 110, r: 9, dmg: weaponDmg(0.5, lv), hit: new Set(), pierce: 0 }); }
     [1400, 1800].forEach((f, i) => thump(f, f * 1.15, 0.06, 0.03, 'triangle', i * 0.07)); // パタパタ
   } else if (id === 'thunder') {
     const foes = weaponFoes().sort(() => Math.random() - 0.5);
@@ -1931,7 +1933,7 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   if (id === 'skillAccel') return `⏩ ${ACCEL_DURATION / 1000}秒間 2.5倍速<br>Lvを上げても効果は変わりません`;
   if (id === 'skillAtkUp') return `💪 ${ATK_UP_MS / 1000}秒間 攻撃力 ×${fmtAtkUp(atkUpMult(lv))}<br>Lvごとに+0.1%`;
   if (id === 'skillCoinStrike') return `🪙 <b>${+coinStealSecs(lv).toFixed(2)}秒間</b>${lv < SKILL_MAX_LEVEL ? `（次のLv ${+coinStealSecs(lv + 1).toFixed(2)}秒）` : ''} 敵からコインを吸い取り続け、攻撃を当てるとザコ1体の半分のコインが大噴出<br>Lvで長くなる（30秒までは+1秒、そこから30秒ごとに増え方が半分）`;
-  if (id === 'skillZeni') return `💰 手持ちコインの半分を投げる（${ZENI_MIN_COINS}枚以上必要）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} ＋ 攻撃力<br>Lvを上げても効果は変わりません`;
+  if (id === 'skillZeni') { const e = zeniEstimate(lv); return `💰 ダメージ倍率 <b>×${+zeniMult(lv).toFixed(3)}</b>${lv < SKILL_MAX_LEVEL ? `（次のLv ×${+zeniMult(lv + 1).toFixed(3)}）` : ''}<br>目安 ≈ <b>${formatCoinNumber(e.dmg)}</b>（いま投げると ${formatCoinNumber(e.thrown)}枚）<br>ダメージ ＝ 投げたコイン × ${ZENI_DMG_PER_COIN} × 倍率 ＋ 攻撃力（手持ちの半分を投げる・${ZENI_MIN_COINS}枚以上必要）`; }
   if (id === 'skillMystery') return `❓ ${typeof MYSTERY_EFFECTS !== 'undefined' ? MYSTERY_EFFECTS.length + '種類の' : ''}効果からランダム（良いことも悪いことも起きる）<br>Lvを上げても効果は変わりません`;
   if (id === 'skillHalve') return `🌗 敵のHPを半分にする（ボスに効く確率 ${pct1(HALVE_CHANCE_BOSS)}・効いたボスにはもう効かない）<br>Lvを上げても効果は変わりません`;
   return '';
@@ -1941,6 +1943,7 @@ function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一�
   if (id === 'skillDeath') return '即死率 +1%（例外あり）';
   if (id === 'skillAtkUp') return `攻撃力UP ×${fmtAtkUp(atkUpMult(slv))}`;
   if (id === 'skillCoinStrike') return `コイン盗み ${+coinStealSecs(slv).toFixed(2)}秒`;
+  if (id === 'skillZeni') return `ダメージ倍率 ×${+zeniMult(slv).toFixed(3)}`;
   if (!POWER_SKILLS.includes(id)) return 'Lvアップ';
   return slv % 100 === 0 ? `超飛躍！！ ${k}×3` : slv % 10 === 0 ? `飛躍！ ${k}×1.5` : `${k}がアップ`;
 }
@@ -1956,7 +1959,15 @@ function coinStealMs(lv) { return coinStealSecs(lv) * 1000; }
 const COIN_STRIKE_KILL_MULT = 1, COIN_STEAL_RATE = 0.5, COIN_DRAIN_RATE = 0.03, COIN_DRAIN_MS = 400; // コイン盗み中の討伐コイン倍率・1回攻撃するごとに盗むコイン（ザコ1体の何倍）
 const SKILL_ZENI_COOLDOWN = SKILL_MIN_CD;
 const ZENI_MIN_COINS = 10;
-const ZENI_DMG_PER_COIN = 1.5;   // 投げたコイン1枚あたりのダメージ
+const ZENI_DMG_PER_COIN = 1.5;
+// ゼニ投げのダメージ倍率：Lvごとに+0.1。倍率10からは+0.05、20からは+0.025…と倍率が10増えるごとに上がり方が半分
+function zeniMult(lv) {
+  lv = lv || (game.shopOwned && game.shopOwned.skillZeni ? getSkillLevel('skillZeni') : 1);
+  let m = 1, step = 0.1, left = lv - 1;
+  while (left > 0) { const cap = Math.floor(m / 10 + 1e-9) * 10 + 10, need = Math.ceil((cap - m) / step - 1e-9), n = Math.min(left, need); m += n * step; left -= n; if (left > 0) step /= 2; }
+  return Math.round(m * 1000) / 1000;
+}
+function zeniEstimate(lv) { const thrown = Math.floor(game.coins / 2); return { thrown, dmg: Math.round(thrown * ZENI_DMG_PER_COIN * zeniMult(lv) + getPlayerAtk()) }; }   // 投げたコイン1枚あたりのダメージ
 const SKILL_MYSTERY_COOLDOWN = SKILL_MIN_CD;
 let lastDeathAt = Date.now() - SKILL_DEATH_COOLDOWN;
 let lastCoinStrikeAt = Date.now() - SKILL_COINSTRIKE_COOLDOWN;

@@ -549,7 +549,7 @@ const CHEST_ITEMS = {
   nitoryu:     { icon: '📜', name: 'にとうりゅうの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が2回攻撃になる', col: '#ffb35c', buff: 'nitoryu' },
   yamabiko:    { icon: '📜', name: 'やまびこの巻物', desc: '使うと次のボスを倒すまで、メテオなどの攻撃スキルがもう1回落ちる', col: '#8ad0ff', buff: 'yamabiko' },
   ageage:      { icon: '💃', name: 'アゲアゲダンス', desc: '使うと次のボスを倒すまで、仲間の攻撃が2回攻撃になる', col: '#ff8adf', buff: 'ageage' },
-  lifeglass:   { icon: '⏳', name: '命の砂時計', desc: 'ボス戦で使うと、ボス戦の残り時間が最初に戻る（同じボスには1回だけ。コンテニューするとまた使える。ゲーム画面のスキル列から使う）', col: '#ffd76b' },
+  lifeglass:   { icon: '⏳', img: 'assets/img/icons/item_lifeglass.webp', name: '命の砂時計', desc: 'ボス戦で使うと、ボス戦の残り時間が最初に戻る（同じボスには1回だけ。コンテニューするとまた使える。ゲーム画面のスキル列から使う）', col: '#ffd76b' },
   ret2:        { icon: '🏠', name: '帰還ボーナス2倍券', desc: '次の帰還ボーナスのコインが2倍（自動で使う。1.5倍券より先に使う）', col: '#5fe0ff' },
 };
 // 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
@@ -623,7 +623,7 @@ function updateLifeGlassBtn() {
   const bb = lifeGlassBoss(), show = itemHeld('lifeglass') > 0 && phase === 'battle' && !!bb && !bb.glassUsed;
   if (!b) { b = document.createElement('button'); b.id = 'lifeGlassBtn'; b.className = 'action-btn lifeglass'; b.addEventListener('click', useLifeGlass); row.appendChild(b); }
   b.style.display = show ? '' : 'none';
-  const h = `<span class="lg-ico">⏳</span><b>${itemHeld('lifeglass')}</b>`; if (b.dataset.h !== h) { b.innerHTML = h; b.dataset.h = h; }
+  const h = `<img class="lg-ico" src="assets/img/icons/item_lifeglass.webp" alt=""><b>${itemHeld('lifeglass')}</b><span class="lg-name">命の砂時計</span>`; if (b.dataset.h !== h) { b.innerHTML = h; b.dataset.h = h; }
 }
 setInterval(updateLifeGlassBtn, 500);
 function useLvTicket(k) {
@@ -691,7 +691,7 @@ function bagRows() {
   }
   for (const [k, I] of Object.entries(CHEST_ITEMS)) { const n = itemHeld(k); if (!n) continue;
     const btn = CHEST_ITEMS[k].buff ? (bossBuffOn(CHEST_ITEMS[k].buff) ? '<button class="is-disabled" disabled>効いている</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'lifeglass' ? '' : k === 'maneki' ? '<button data-bag-item="maneki">使う</button>' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
-    rows.push({ icon: `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc + (k === 'maneki' && Date.now() < (game.manekiUntil || 0) ? `（いま効いている：あと${Math.ceil((game.manekiUntil - Date.now()) / 60000)}分）` : ''), btn }); }
+    rows.push({ icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc + (k === 'maneki' && Date.now() < (game.manekiUntil || 0) ? `（いま効いている：あと${Math.ceil((game.manekiUntil - Date.now()) / 60000)}分）` : ''), btn }); }
   if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
   return rows;
 }

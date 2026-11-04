@@ -650,7 +650,9 @@ let loopAnnounceCount = 0; // ループ中の周回数（階の表示を間引�
 const AUTO_BOSS_RETRY_LOOPS = 4; // ループを4周したら自動でボスに再挑戦（OFFにもできる）
 let bossTimeLeftMs = 0, bossTimerLastAt = 0, bossTimerFor = null;
 function isPlayerHpShown() { return isBossFight() || !!game.skipChallenge; } // 雑魚戦ではHPが減らないので、HP表示はボス戦だけ
-function canUseHealNow() { return isBossFight() || !!game.skipChallenge; } // 回復はボス戦だけ（ほかはHPが減らない）
+function canUseHealNow() { return isBossFight() || !!game.skipChallenge; } // 回復ポーションはボス戦だけ（ほかは自分のHPが減らない）
+function companionsHurt() { return balls.some(b => b.isCompanion && b.hp > 0 && b.hp < b.maxHp); }
+function canUseHealSkill() { return canUseHealNow() || companionsHurt(); } // 回復スキルは、ザコ戦でも仲間のHPが減っていれば使える
 function isBossFight() { return balls.some(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0); }
 function tickBossTimer() {
   const now = Date.now(), boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying && b.hp > 0);
@@ -1443,8 +1445,9 @@ function failSkipChallenge() {
   playDeathSound();
   const ch = towerRetryCost();
   skipRetryText.innerHTML = `ステージ${target} のボスに敗北しました。<br>もう一度挑戦しますか？（所持${ch.currency === 'coin' ? `コイン: ${COIN_ICO}${formatCoinNumber(Math.floor(game.coins))}` : `ジェム: 💎${Math.floor(game.gems)}`}）`;
-  skipRetryBtn.innerHTML = `<span class="msb-name">🔁 ${towerCostText(ch)} でリトライ</span>`;
-  skipRetryBtn.classList.toggle('is-disabled', !canPayTower(ch));
+  const left = towerRetriesLeft(), max = towerRetryMax();
+  skipRetryBtn.innerHTML = left ? `<span class="msb-name">🔁 ${towerCostText(ch)} でリトライ${max === Infinity ? '' : `（あと${left}回）`}</span>` : '<span class="msb-name">🔁 リトライは使い切りました</span>';
+  skipRetryBtn.classList.toggle('is-disabled', !left || !canPayTower(ch));
   skipGiveUpBtn.innerHTML = `<span class="msb-name">🏳️ あきらめて ステージ${origin} に戻る</span>`;
   skipRetryActions.style.visibility = 'hidden';
   const shownAt = skipRetryShownAt = Date.now();
@@ -1474,9 +1477,15 @@ function revivePlayerInPlace() {
 }
 // 試練の塔のリトライ（コンテニュー）はいつもジェム：ジェムの挑戦は同じ値段、コインの挑戦は飛んだステージ数のジェム（1万ステージごとに💎1・最低💎1）
 function towerRetryCost() { const c = game.skipChallenge || {}; return { currency: 'gem', cost: c.currency === 'coin' ? getCustomSkipCost((c.target || 0) - (c.origin || 0)) : (c.cost || 0) }; }
+// 試練の塔のコンテニュー回数：ふつうは1回、熟練者の紋章で3回、伝説の勇者の紋章なら何回でも
+function towerRetryMax() { return isSubActive('hero') ? Infinity : isSubActive('veteran') ? 3 : 1; }
+function towerRetriesLeft() { return Math.max(0, towerRetryMax() - ((game.skipChallenge && game.skipChallenge.retries) || 0)); }
 function retrySkipChallenge() {
   const { target } = game.skipChallenge;
+  if (!towerRetriesLeft()) return;
   payTower(towerRetryCost());
+  game.skipChallenge.retries = (game.skipChallenge.retries || 0) + 1;
+  bossTimeLeftMs = bossTimeLimitMs(); bossTimerLastAt = Date.now(); lastBossTickSec = 0; // 制限時間も最初に戻す
   game.skipChallenge.lost = false;
   skipRetryModal.classList.remove('show');
   revivePlayerInPlace();
@@ -1581,6 +1590,7 @@ customSkipBtn.addEventListener('click', event => {
 stageSkipCloseBtn.addEventListener('click', () => stageSkipModal.classList.remove('show'));
 skipRetryBtn.addEventListener('click', event => {
   if (!game.skipChallenge || !skipRetryButtonsReady()) return;
+  if (!towerRetriesLeft()) { showTapError(`リトライは${towerRetryMax()}回までです（紋章で増やせます）`, event.clientX, event.clientY); return; }
   const rc = towerRetryCost();
   if (game.gems < rc.cost) { promptGemShortage(rc.cost, { returnTo: () => { switchTab('game'); failSkipChallenge(); }, mustResume: true }); return; }
   retrySkipChallenge();
@@ -1680,7 +1690,7 @@ function updateHealButton() {
   const remaining = Math.max(0, skillCd('skillHeal', HEAL_COOLDOWN) - (Date.now() - lastHealAt));
   if (remaining === 0) {
     healBtn.disabled = false;
-    healBtn.classList.toggle('is-disabled', phase !== 'battle' || !canUseHealNow());
+    healBtn.classList.toggle('is-disabled', phase !== 'battle' || !canUseHealSkill());
     healBtn.textContent = '💗 回復';
     return;
   }

@@ -659,7 +659,7 @@ usernameSaveBtn.addEventListener('click', () => {
   showNotice(name ? `ユーザー名を「${name}」に設定しました` : 'ユーザー名をリセットしました');
 });
 
-artifactListEl.addEventListener('click', event => {
+artifactListEl?.addEventListener('click', event => {
   const chip = event.target.closest('[data-artifact]');
   if (!chip) return;
   const artifact = ARTIFACT_BY_ID[chip.dataset.artifact];
@@ -1049,6 +1049,18 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'dmgGuide') { // 通常攻撃のダメージ目安（いまの攻撃力・強化から計算。敵の防御や属性・弱点は入れない）
+    const b = computeBonuses(), atk = getPlayerAtk(), F = v => formatCoinNumber(Math.round(v)), mel = b.meleeMult || 1, rush = b.rushDmgUp || 1, cm = CRIT_MULT + b.critMultBonus;
+    const combo = n => 1 + Math.min(n - 1, COMBO_MAX_STACKS) * (COMBO_STEP + b.comboGrowth) * getEvoRate('combo');
+    const pull = c => (1 + (RUSH_RUN_MAX - 1) * c) * (1 + 0.25 * getRunBuff('pull')) * rush;
+    const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${F(v)}${n ? `<small>${n}</small>` : ''}</div>`;
+    const html = `<div class="dbg-list"><div class="dl-h">基本</div>${row('攻撃力', atk)}
+      <div class="dl-h">近接攻撃（ぶつかったとき）</div>${row('ふつう（手動）', atk * mel, `攻撃力 × 接近戦の強化 ×${+mel.toFixed(2)}`)}${row('AUTO中', atk * mel * AUTO_ATK_MULT, `× ${AUTO_ATK_MULT}（放置中は控えめ）`)}${row('溜めMAX（3秒待ってから当てる）', atk * mel * HERO_WAIT_MAX, `× ${HERO_WAIT_MAX}`)}
+      <div class="dl-h">引っ張りアタック（引いた量の段階別）</div>${[0, 0.25, 0.5, 0.75, 1].map(c => row(`引き ${Math.round(c * 100)}%`, atk * pull(c), `× ${+pull(c).toFixed(2)}`)).join('')}${row('引きMAX＋連打MAX', atk * pull(1) * PULL_MASH_MAX_MULT, `飛んでいる間の連打で最大 × ${PULL_MASH_MAX_MULT}`)}
+      <div class="dl-h">連鎖（コンボ）</div>${[2, 5, 8, COMBO_MAX_STACKS + 1].map(n => row(`${n}連鎖`, atk * combo(n), `× ${+combo(n).toFixed(2)}`)).join('')}
+      <div class="dl-h">クリティカル</div>${row('クリティカル1発', atk * cm, `× ${+cm.toFixed(2)}（発生率 ${+((CRIT_CHANCE + b.critChance) * 100).toFixed(1)}%）`)}${row('引きMAX＋クリティカル', atk * pull(1) * cm)}
+      <div class="dl-h">その他</div>${row('ダッシュパネル通過後', atk * mel * DASH_DMG_MULT, `3秒間 × ${DASH_DMG_MULT}`)}${row('攻撃後のスキ（スキあり！）', atk * mel * TG_STUN_DMG, `× ${TG_STUN_DMG}`)}</div>`;
+    simpleChoice({ icon: '⚔️', title: '通常攻撃のダメージ目安', text: html, sub: '敵の防御・属性の相性・弱点・ボス特攻は入れていません。倍率は掛け算で重なります', yes: '閉じる', no: false }); return; }
   if (action === 'lifeglass') { gainItem('lifeglass', 3); saveGame(); updateLifeGlassBtn(); showNotice(`DEBUG: 命の砂時計 +3（所持 ${itemHeld('lifeglass')}個）`); return; }
   if (action === 'npcLines') { // 各ページの上の案内役のセリフ
     simpleChoice({ icon: '💬', title: '各ページの案内役のセリフ', text: `<div class="dbg-list">${Object.values(SHOPKEEPERS).map(k => `<div class="dl-h">${k.name}</div>${k.lines.map(t => `<div class="dl-r">・${t}</div>`).join('')}`).join('')}</div>`, yes: '閉じる', no: false }); return; }
@@ -2569,7 +2581,7 @@ specialBtn.addEventListener('click', event => {
   if (!enemy) return;
   const b = computeBonuses();
   const multiplier = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
-  const damage = Math.round(enemy.maxHp * 0.35 * multiplier);
+  const damage = Math.round(getPlayerAtk() * METEOR_ATK_MULT * multiplier); // 攻撃力の10倍から（メテオ倍率・スキル威力で上がる）
   lastSpecialAt = Date.now();
   meteors.push({
     x: arena.x + (Math.random() - 0.5) * arena.radius,
@@ -2593,7 +2605,7 @@ accelBtn.addEventListener('click', event => {
 healBtn.addEventListener('click', event => {
   if (!game.shopOwned.skillHeal) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
   if (phase !== 'battle') { showTapError('今は回復できません', event.clientX, event.clientY); return; }
-  if (!canUseHealNow()) { showTapError('回復はボス戦でだけ使えます', event.clientX, event.clientY); return; } // ボス戦以外ではHPが減らないので使えない
+  if (!canUseHealSkill()) { showTapError('回復するHPがありません', event.clientX, event.clientY); return; } // ボス戦か、仲間のHPが減っているときに使える
   if (Date.now() - lastHealAt < skillCd('skillHeal', HEAL_COOLDOWN)) { tryGemResetSkill('heal', event, () => { lastHealAt = Date.now() - HEAL_COOLDOWN; }, updateHealButton); return; }
   const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
   if (!player) return;
@@ -2602,6 +2614,7 @@ healBtn.addEventListener('click', event => {
   player.hp = Math.min(healCap(player), player.hp + healAmt);
   spawnDamageText(player.x, player.y - player.radius - 12, `💗 +${formatCoinNumber(Math.max(0, Math.round(player.hp - before)))} HP${player.hp > player.maxHp ? '（限界突破）' : ''}`, '#7ee787');
   spawnHitParticles(player.x, player.y, '#7ee787');
+  for (const c of balls) if (c.isCompanion && c.hp > 0 && c.hp < c.maxHp) { const h = Math.round(c.maxHp * HEAL_SKILL_RATIO * skillPower('skillHeal')); c.hp = Math.min(c.maxHp, c.hp + h); if (game.companions.hp && c.companionId) game.companions.hp[c.companionId] = c.hp; spawnHitParticles(c.x, c.y, '#7ee787'); spawnDamageText(c.x, c.y - c.radius - 10, '💗 回復', '#7ee787', 0.02); } // 仲間も回復
   playHealSound();
   updateHealButton();
   updateBarrierButton();
@@ -2727,7 +2740,7 @@ zeniBtn.addEventListener('click', event => {
   const flyMs = Math.max(1, Math.hypot(enemy.x - player.x, enemy.y - player.y)) / ZENI_SPEED / 60 * 1000;
   setTimeout(() => {
     if (phase !== 'battle' || enemy.isDying || !(enemy.hp > 0) || !([...balls, ...adds].includes(enemy))) return; // 当たる前に敵がいなくなった
-    const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN + player.atk)), enemy);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(thrown * ZENI_DMG_PER_COIN * zeniMult() + player.atk)), enemy);
     enemy.hp -= dmg;
     trackDamage(dmg);
     spawnAttackDamageText(enemy, dmg, crit, '#ffe9a8');
@@ -3926,7 +3939,7 @@ function showFormulaDebug() {
   for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
     if (!game.shopOwned[id]) continue;
     const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);
-    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `敵の最大HP × 0.35 × メテオ倍率 ${M(m)}`, `スキル威力 ${M(pw)}`); continue; }
+    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `攻撃力 × ${METEOR_ATK_MULT} × メテオ倍率 ${M(m)}`, `スキル威力 ${M(pw)}`); continue; }
     if (SK[id]) { const k = SK[id][1](); line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)} = ${F(pa * k * pw)}`); continue; }
     line(`${name} Lv${lv}`, `スキル威力 ${M(pw)}`, 'ダメージ以外の効果');
   }

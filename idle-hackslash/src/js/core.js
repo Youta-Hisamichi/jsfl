@@ -180,7 +180,6 @@ const NPC_SPRITES = {
 const SHOPKEEPERS = {
   companion: { npc: 'guild',     name: 'ギルドマスター', lines: ['頼れる仲間を紹介しよう。', '仲間が揃えば、どんな敵も怖くないぞ。', 'パーティにいる仲間がまた来れば、Lvが1.5倍になるぞ。', '転生すれば、新しい仲間と出会えるかもしれん。', '宝箱から仲間が飛び出すこともあるそうだ。', '一度出会った仲間は、図鑑にその名を残す。', '招集ガチャに来る仲間は、下の一覧で選べるぞ。', '出会いを重ねた仲間ほど、強くなって戻ってくる。'] },
   coinshop:  { npc: 'sage',      name: '魔導書の賢者ソフィア', lines: ['スキルのことなら、この魔導書におまかせを。', '好きなスキルを選んで鍛えましょう！', '修行の代金はコインでけっこうですよ。', '戦闘中しか使えない技もあるので気をつけて。', 'ガチャ上限はジェムで増やせます。転生でリセット。', 'ガチャ上限に到達したらON/OFFは無意味なので、転生しましょう。'] },
-  artifact:  { npc: 'scholar',   name: '学者のリナ', lines: ['遺物の研究ならお任せください。', 'この遺物、とても興味深い力を秘めています…', '集めた遺物は、転生しても力を失いません。', '図鑑を埋めるのが楽しみですね！'] },
   gemshop:   { npc: 'princess',  name: 'エメラ姫', lines: ['ようこそ、わたくしの宝石店へ♪', 'ジェムの輝きは永遠ですわ。', 'お気に入りの品は見つかりまして？', '買った効果は転生しても続きますのよ。'] },
   gacha:     { npc: 'fortune',   name: '占い師マダム', lines: ['ふふ…あなたの力を進化させてあげる。', '水晶玉が…光っているわ…！', '貯めたジェムと羽、すべて賭ける覚悟はある？', 'ジェムの数と羽の数…掛け算で運命が跳ね上がるわ。'] },
   records:   { npc: 'elder',     name: '記録係の長老', lines: ['ほっほっ、よく戦っておるのう。', 'おぬしの戦いの記録、しっかり残しておるぞ。', '図鑑を埋めるのも冒険の楽しみじゃ。', '最高記録を更新する日が楽しみじゃわい。'] },
@@ -862,6 +861,7 @@ function skillCdCut(lv) { return lv <= 10 ? SKILL_CD_CUT_PER_LV * (lv - 1) : 0.5
 const SKILL_MIN_CD = 5 * 60 * 1000; // どのスキルも待ち時間は最低5分（Lvが上がっても短くならない）
 function skillCd(id, base) { return Math.max(SKILL_MIN_CD, Math.round(base * (1 - skillCdCut(Math.max(1, getSkillLevel(id)))))); }
 // スキルの威力：Lvごとに+10%、10Lvごとに飛躍（×1.5）、100Lvごとに超飛躍（×3）
+const METEOR_ATK_MULT = 10; // メテオのダメージ：攻撃力の10倍から
 function skillPower(id) {
   const lv = game.shopOwned && game.shopOwned[id] ? getSkillLevel(id) : 1;
   const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100;

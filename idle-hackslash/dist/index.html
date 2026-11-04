@@ -176,6 +176,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
+      <div class="debug-cat">⚔️ ダメージ</div><button data-debug="dmgGuide">⚔️ 通常攻撃のダメージ目安</button>
       <div class="debug-cat">⚡ よく使う</div><button data-debug="nextboss">👑 次のボス出現</button>
       <div class="debug-cat">🎒 アイテム</div><button data-debug="lifeglass">⏳ 命の砂時計 +3</button>
       <div class="debug-cat">📖 一覧</div><button data-debug="npcLines">💬 各ページの案内役のセリフ</button><button data-debug="traitList">👾 敵の特徴一覧</button>
@@ -270,20 +271,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="sk-section-divider" aria-hidden="true"><span>◆</span></div>
       <div class="skt-help">ONのスキルだけがスキルガチャに出ます。転生するとONの3つがランダムに選び直されます（周回ごとに違う戦い方を楽しもう）。</div>
       <div id="skillToggleList"></div>
-    </div>
-  </div>
-
-  <!-- ===== アーティファクトタブ ===== -->
-  <div class="tab-page" data-tab="artifact">
-    <div class="artifact-panel">
-      <div class="shopkeeper" data-npc-tab="artifact"></div>
-      <div class="af-hero" id="artifactProgress"></div>
-      <div class="af-total" id="artifactTotal"></div>
-      <div class="af-note">✨ 遺物は転生報酬やショップで手に入り、効果は永続。持っている遺物はすべて同時に効果を発揮します。</div>
-      <div class="sub-tabs af-tabs" id="artifactTabs"></div>
-      <div class="artifact-list" id="artifactList">
-        <span class="artifact-empty">まだ何も持っていません</span>
-      </div>
     </div>
   </div>
 
@@ -450,7 +437,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   <button class="tab-btn active" data-tab="game"><span class="tab-icon">🎮</span><span class="tab-label" data-i18n="tabGame">ゲーム</span></button>
     <button class="tab-btn" data-tab="companion"><span class="tab-icon">🐾</span><span class="tab-label" data-i18n="tabCompanion">仲間</span></button>
   <button class="tab-btn" data-tab="coinshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabShop">スキル</span></button>
-  <button class="tab-btn" data-tab="artifact" style="display:none"><span class="tab-icon">🏺</span><span class="tab-label" data-i18n="tabArtifact">遺物</span></button>
   <button class="tab-btn" data-tab="gemshop"><span class="tab-icon">🛒</span><span class="tab-label" data-i18n="tabGem">ショップ</span></button>
   <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">進化</span></button>
   <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
