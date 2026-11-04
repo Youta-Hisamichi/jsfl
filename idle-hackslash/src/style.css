@@ -5114,3 +5114,7 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #stageSkipModal .custom-skip-title { margin-bottom: 2px; }
 #stageSkipModal .custom-skip-info { margin-top: 2px; min-height: 0; }
 #stageSkipModal #stageSkipCloseBtn { width: 40% !important; max-width: 190px !important; aspect-ratio: 561 / 150 !important; margin: 2px auto 0 !important; background: url(assets/img/ui/tower/btn_gray.webp) center / 100% 100% no-repeat !important; font-size: 0.88rem !important; }
+/* 試練の塔：「しくみ」はコイン・ジェムの行の左端（コイン表示は真ん中のまま） */
+#stageSkipModal .tower-gems-row { position: relative; width: 100%; min-height: 36px; display: flex; align-items: center; justify-content: center; }
+#stageSkipModal .tower-gems-row .tower-help { position: absolute !important; left: 0; top: 0; bottom: auto; z-index: 3; margin: 0 !important; }
+#stageSkipModal .tower-gems-row .tower-help[open] { width: 100%; top: 0; }
