@@ -1563,8 +1563,8 @@ function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな
   }
 }
 let bombBlasts = [];
-// ===== ビリヤード：壊れない障害物（反射板・木・柱など）は、自キャラがぶつかると飛んでいき、敵に当たるとダメージ。止まったらその場に残る =====
-const OBS_PUSH_NOT = new Set(['qbox', 'bomb', 'egg', 'rock', 'spike', 'slime', 'bumper']);
+// ===== ビリヤード：壊れない障害物（反射板・木・柱・宝箱・タンスなど）は、自キャラがぶつかると飛んでいき、敵に当たるとダメージ。止まったらその場に残る =====
+const OBS_PUSH_NOT = new Set(['bomb', 'egg', 'rock', 'spike', 'slime', 'bumper']);
 function obstacleMovable(o) { return o && !FLOOR_OBSTACLES.has(o.kind) && !BREAKABLES[o.kind] && !OBS_PUSH_NOT.has(o.kind) && !o.broken; }
 const OBS_PUSH_MAX = 16, OBS_FRICTION = 0.972, OBS_HIT_MIN_SPEED = 2.2;
 function pushObstacle(o, nx, ny, ball) {
