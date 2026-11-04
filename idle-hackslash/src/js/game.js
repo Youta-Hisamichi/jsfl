@@ -12,6 +12,7 @@ function step() {
   } else a.safeHp = null;
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
+  if (typeof tickMovingObstacles === 'function') tickMovingObstacles(speedMult); // ビリヤードのように飛んでいく障害物
   updateExpGems(speedMult);
   const foeEl = getFoeElement(); syncElementAtk(foeEl);
   a.atk = Math.max(1, Math.round(getPlayerAtk() * elementMult(getHeroElement(), foeEl))); // 加速中ボーナス等を毎フレーム反映（自キャラの属性の相性込み）

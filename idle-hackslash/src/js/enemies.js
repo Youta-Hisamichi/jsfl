@@ -1563,6 +1563,56 @@ function explodeBomb(o) { // 爆弾：周りの敵に大ダメージ、みんな
   }
 }
 let bombBlasts = [];
+// ===== ビリヤード：壊れない障害物（反射板・木・柱など）は、自キャラがぶつかると飛んでいき、敵に当たるとダメージ。止まったらその場に残る =====
+const OBS_PUSH_NOT = new Set(['qbox', 'bomb', 'egg', 'rock', 'spike', 'slime', 'bumper']);
+function obstacleMovable(o) { return o && !FLOOR_OBSTACLES.has(o.kind) && !BREAKABLES[o.kind] && !OBS_PUSH_NOT.has(o.kind) && !o.broken; }
+const OBS_PUSH_MAX = 16, OBS_FRICTION = 0.972, OBS_HIT_MIN_SPEED = 2.2;
+function pushObstacle(o, nx, ny, ball) {
+  if (!obstacleMovable(o)) return;
+  const sp = Math.max(Math.hypot(ball.vx, ball.vy), holdRush && holdRush.shot ? holdRush.speed || 0 : 0);
+  o.mvx = (o.mvx || 0) - nx * sp * 0.95; o.mvy = (o.mvy || 0) - ny * sp * 0.95;
+  const v = Math.hypot(o.mvx, o.mvy); if (v > OBS_PUSH_MAX) { o.mvx *= OBS_PUSH_MAX / v; o.mvy *= OBS_PUSH_MAX / v; }
+  o.hitSet = new Set(); // 1回飛ばすごとに、同じ敵には1回だけ当たる
+}
+function tickMovingObstacles(speedMult) {
+  const pl = balls.find(isMainPlayerBall);
+  for (const o of obstacles) {
+    if (!o.mvx && !o.mvy) continue;
+    o.x += o.mvx * speedMult; o.y += o.mvy * speedMult;
+    const f = Math.pow(OBS_FRICTION, speedMult); o.mvx *= f; o.mvy *= f;
+    if (Math.hypot(o.mvx, o.mvy) < 0.12) { o.mvx = o.mvy = 0; continue; } // 止まったらその場に残る
+    // 壁で跳ね返る
+    if (ARENA_RECT) {
+      const h = arenaHalf() - o.r, hy = arenaHalfY() - o.r;
+      if (o.x < arena.x - h) { o.x = arena.x - h; o.mvx = Math.abs(o.mvx) * 0.8; } else if (o.x > arena.x + h) { o.x = arena.x + h; o.mvx = -Math.abs(o.mvx) * 0.8; }
+      if (o.y < arena.y - hy) { o.y = arena.y - hy; o.mvy = Math.abs(o.mvy) * 0.8; } else if (o.y > arena.y + hy) { o.y = arena.y + hy; o.mvy = -Math.abs(o.mvy) * 0.8; }
+    } else {
+      const dx = o.x - arena.x, dy = o.y - arena.y, d = Math.hypot(dx, dy) || 1, lim = arena.radius - o.r;
+      if (d > lim) { const nx = dx / d, ny = dy / d, dot = o.mvx * nx + o.mvy * ny; o.x = arena.x + nx * lim; o.y = arena.y + ny * lim; if (dot > 0) { o.mvx -= 2 * dot * nx * 0.9; o.mvy -= 2 * dot * ny * 0.9; } }
+    }
+    // ほかの障害物にぶつかったら跳ね返る（動かない物は押し返すだけ）
+    for (const q of obstacles) {
+      if (q === o || q.broken || FLOOR_OBSTACLES.has(q.kind)) continue;
+      const dx = o.x - q.x, dy = o.y - q.y, d = Math.hypot(dx, dy) || 1, min = o.r + q.r;
+      if (d >= min) continue;
+      const nx = dx / d, ny = dy / d; o.x = q.x + nx * min; o.y = q.y + ny * min;
+      const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * 0.8; o.mvy -= 2 * dot * ny * 0.8; }
+    }
+    // 敵に当たるとダメージ（自キャラの攻撃力 × 反射板の倍率。÷の反射板は弱い）
+    const sp = Math.hypot(o.mvx, o.mvy);
+    if (!pl || sp < OBS_HIT_MIN_SPEED) continue;
+    for (const e of [...balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0), ...adds.filter(a => a.hp > 0)]) {
+      const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy) || 1;
+      if (d >= o.r + e.radius || (o.hitSet && o.hitSet.has(e))) continue;
+      if (!o.hitSet) o.hitSet = new Set(); o.hitSet.add(e);
+      const v = obstacleMult(o), m = v ? (v > 0 ? v : 1 / -v) : 1;
+      playerHitEnemyBy(e, pl, m * Math.min(1.5, sp / 8 + 0.5), v && v < 0 ? '#ff8a8a' : '#8fd0ff', 1.4, o, true);
+      const nx = dx / d, ny = dy / d; e.vx = (e.vx || 0) + nx * sp * 0.6; e.vy = (e.vy || 0) + ny * sp * 0.6; // 敵を押しのける
+      o.mvx *= 0.7; o.mvy *= 0.7;
+      if (typeof thump === 'function') thump(260, 120, 0.1, 0.25, 'square');
+    }
+  }
+}
 function obstacleBounce(ball) {
   const now = Date.now();
   for (const o of obstacles) {
@@ -1577,6 +1627,7 @@ function obstacleBounce(ball) {
     if (dot < 0) { ball.vx -= 2 * dot * nx; ball.vy -= 2 * dot * ny; }
     if (ball.kbx || ball.kby) { const kd = ball.kbx * nx + ball.kby * ny; if (kd < 0) { ball.kbx -= 2 * kd * nx; ball.kby -= 2 * kd * ny; } }
     const hard = dot < -0.6 && now - (ball.wallSoundAt || 0) > 150;
+    if (dot < -0.3 && isMainPlayerBall(ball)) pushObstacle(o, nx, ny, ball); // ビリヤード：自キャラがぶつかると、壊れない障害物は弾き飛ばされる
     if (dot < -0.3) { // ブルッと揺れる＋種類ごとに跳ね返りの速さが変わる（バンパーとスライムは下で個別に加速）
       const info = obstacleBounceInfo(o);
       o.wobAt = now; o.wobAmp = Math.min(1, Math.max(0.35, -dot / 8)) * info.wobble;
