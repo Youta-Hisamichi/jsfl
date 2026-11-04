@@ -374,7 +374,7 @@ function buildPowerUpPool() { // 3択パワーアップの候補すべて
   for (const id in WEAPONS) {
     const lv = getWeaponLv(id), W = WEAPONS[id];
     if (lv >= WEAPON_MAX_LV || !lv) continue; // サブウェポンは勝手に増えない：持っているもののレベルアップだけ
-    pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? '威力・数・範囲がアップ' : W.desc + '（自動で発動）' });
+    pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? `自キャラ攻撃力 ×${+weaponMult(lv).toFixed(2)} → ×${+weaponMult(lv + 1).toFixed(2)}` : W.desc + '（自動で発動）' });
   }
   pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
   pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: COIN_ICO, name: 'コインの山', desc: '今のステージに応じたコイン' });
@@ -1785,14 +1785,14 @@ function weaponGachaPull(event, isReroll) {
   const prevLv = getWeaponLv(id), lv = game.weapons[id] = prevLv ? Math.min(WEAPON_MAX_LV, skillDupLv(prevLv)) : 1; /* ダブったらLv1.5倍 */ weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; game.weaponDup = snap.dup; renderCoinShopList(); weaponGachaPull(ev, true); };
-  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : (lv % 100 === 0 ? '超飛躍！！' : lv % 10 === 0 ? '飛躍！' : '威力アップ'), () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
+  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : `自キャラ攻撃力 ×${+weaponMult(lv - 1).toFixed(2)} → ×${+weaponMult(lv).toFixed(2)}`, () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
 function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
   const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
   const sid = inf.dataset.skInfo, { it, auto, name, desc } = skillToggleInfo(sid), lv = sid.startsWith('w:') ? getWeaponLv(sid.slice(2)) : getSkillLevel(sid);
-  const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 威力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv, true);
+  const extra = sid.startsWith('w:') ? '' : POWER_SKILLS.includes(sid) ? `${HEAL_SKILLS.includes(sid) ? '💗 回復力' : '⚔️ 自キャラ攻撃力'} ×${+skillPower(sid).toFixed(2)}（Lvで上がる）` : skillParamHtml(sid, lv, true);
   const owned = sid.startsWith('w:') ? lv > 0 : !!game.shopOwned[sid];
   showSkillBrief(it, `${name}${auto ? '（自動）' : ''}${owned ? ' Lv' + lv : '（未取得）'}`, desc + (extra ? `<div class="skb-param">${extra}</div>` : ''), auto);
   return true;
@@ -3934,17 +3934,17 @@ function showFormulaDebug() {
     line(`${c.name || id} ×${n}`, `攻 ${F(pa)} × ${+(0.3 + lv * 0.05).toFixed(2)} × ${+pw.toFixed(3)} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}${compKind(id) === 'dragon' ? `（竜は他の仲間の合計も足して ${F(getCompanionAtk(id))}）` : ''}`,
       `HP ${F(ph)} × ${+(c.baseBonus + hlv * c.perLevel).toFixed(3)} × 0.8 × ${+pw.toFixed(3)} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
   }
-  sec('スキル（威力 = 自キャラ攻撃力 × 倍率 × スキル威力）');
+  sec('スキル（ダメージ = 自キャラ攻撃力 × 倍率）');
   const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };
   for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
     if (!game.shopOwned[id]) continue;
     const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);
-    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `攻撃力 × ${METEOR_ATK_MULT} × メテオ倍率 ${M(m)}`, `スキル威力 ${M(pw)}`); continue; }
+    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `攻撃力 × ${METEOR_ATK_MULT} × メテオ倍率 ${M(m)}`, `スキル倍率 ${M(pw)}`); continue; }
     if (SK[id]) { const k = SK[id][1](); line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)} = ${F(pa * k * pw)}`); continue; }
-    line(`${name} Lv${lv}`, `スキル威力 ${M(pw)}`, 'ダメージ以外の効果');
+    line(`${name} Lv${lv}`, `スキル倍率 ${M(pw)}`, 'ダメージ以外の効果');
   }
-  sec('サブウェポン（1ヒット = 自キャラ攻撃力 × 基本 × Lv倍率）');
-  const WB = { boomerang: 0.7, cross: 0.9, axe: 1.3, holyWater: 0.25, knife: 0.55, shield: 0.4, thunder: 1.5, dove: 0.8 };
+  sec('自動スキル（1ヒット = 自キャラ攻撃力 × 倍率。ダッシュ・溜めは掛からない）');
+  const WB = {};
   for (const id of getEquippedWeapons()) { const lv = Math.max(1, getWeaponLv(id)), k = WB[id] || 1, m = weaponDmg(1, lv); line(`${WEAPONS[id].name} Lv${lv}`, `${F(pa)} × ${k} × ${M(m)} = ${F(pa * k * m)}`, id === 'holyWater' ? '炎の1回あたり' : ''); }
   if (!getEquippedWeapons().length) line('（装備なし）', '');
   sec('会心・その他');

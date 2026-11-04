@@ -30,7 +30,7 @@ function renderSkillGacha() {
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP * (id === 'skillSpecial' ? METEOR_ATK_MULT * shopMultiRate('meteor') * computeBonuses().specialMult * computeBonuses().specialDmgMult : 1));
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 威力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${overHealOn() ? `（限界突破 最大HPの${overHealMult()}倍まで）` : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（攻撃力×威力）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 自キャラ攻撃力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${overHealOn() ? `（限界突破 最大HPの${overHealMult()}倍まで）` : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : `目安 ≈ ${est}（自キャラ攻撃力×倍率）`}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -43,7 +43,7 @@ function renderSkillGacha() {
     const pw = weaponDmg(1, Math.max(1, lv));
     const equipBtn = !lv ? '' : !isSkillItemOn('w:' + id) ? '<span class="sk-equip off">OFF中</span>' : on ? '<span class="sk-equip on">✓ 装備中</span>' : weq.length < wslots ? `<button class="sk-equip" data-weapon-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const pwN = weaponDmg(1, lv + 1), atk = getPlayerAtk();
-    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon sk-info-ico" data-sk-info="w:${id}">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">🔢 個数 ×${weaponCount(id)}${weaponCount(id) < WEAPON_COUNT_MAX ? '（スキルガチャでダブると+1）' : '（最大）'}<br>⚔️ 威力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${lv ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="item-icon sk-info-ico" data-sk-info="w:${id}">${ico(W)}</span><div><div class="sk-name">${W.name}<i class="sk-auto">自動</i></div><div class="sk-lv">${lv ? `<b class="sk-lvp">Lv${lv}</b>` : '未所持'}</div></div></div><div class="sk-desc">${W.desc}<span class="sk-stat">🔢 個数 ×${weaponCount(id)}${weaponCount(id) < WEAPON_COUNT_MAX ? '（スキルガチャでダブると+1）' : '（最大）'}<br>⚔️ 自キャラ攻撃力 ×${+pw.toFixed(2)} → <b>×${+pwN.toFixed(2)}</b><br>1発の目安 ≈ ${formatCoinNumber(atk * pw)} → <b>${formatCoinNumber(atk * pwN)}</b></span></div><div class="sk-btns">${lv && lv < WEAPON_MAX_LV ? skUpBtns('weapon', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || ''; // 取得したサブウェポンだけ並べる
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const gem = el.id === 'skillGachaBtn' ? getSkillGachaGem() : 0, done = el.id === 'skillGachaBtn' && !skillGachaLeft(), canExtra = skillGachaLimit() < SKILL_GACHA_MAX_PULLS; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, done ? (canExtra ? `💎${SKILL_GACHA_EXTRA_GEM}で+${SKILL_GACHA_EXTRA_PULLS}回` : `上限${SKILL_GACHA_MAX_PULLS}回`) : `${COIN_ICO} ${formatCoinNumber(cost)}`, done ? (canExtra ? `${skillGachaLimit()}回 回しきりました（転生でリセット）` : '転生でまた回せます') : el.id === 'skillGachaBtn' ? `${label}（残り${skillGachaLeft()}回）` : label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', el.id === 'skillGachaBtn' && !skillGachaLeft() ? skillGachaLimit() >= SKILL_GACHA_MAX_PULLS || game.gems < SKILL_GACHA_EXTRA_GEM : game.coins < cost); };
@@ -1284,11 +1284,11 @@ function doTapSlash(auto = false) {
   if (hits) { if (!mashing) playEnemyHitSound(); adds = adds.filter(ad => ad.hp > 0); updateHPUI(); updateStatsUI(); }
 }
 // 自キャラの攻撃（切り払い・武器スキル）で敵に攻撃力×mult のダメージ。命中したら true
-function playerHitEnemyBy(en, pl, mult, color, knock, from) {
+function playerHitEnemyBy(en, pl, mult, color, knock, from, noDash) { // noDash：自動スキルにはダッシュ・溜めを掛けない
   if (!en || en.hp <= 0 || en.isDying) return false;
   if (!playerAttackHits(en)) { spawnMissText(en); return false; }
   const m = mult * bossWeakHit(en, from); // 隙の3倍は rollCrit の中でかかる。弱点に当たると大ダメージ
-  const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * dashDmgMult(pl))), en);
+  const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * (noDash || (from && WEAPONS[from.id]) ? 1 : dashDmgMult(pl)))), en);
   en.hp -= dmg; trackDamage(dmg);
   spawnHitParticles(en.x, en.y, color || '#ffe08a');
   spawnAttackDamageText(en, dmg, crit, '#fff4b8', en.isAdd ? 6 : undefined);
@@ -1324,11 +1324,11 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
     ctx.restore();
   }
 }
-// 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると威力・数・範囲が増える
+// 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると倍率（自キャラ攻撃力×倍率）が上がる
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
 const DOVE_ACCEL = 1.07, DOVE_SPEED_MAX = 16; // 鳩：時間とともに ×1.07 ずつ加速（上限あり）
 const AXE_SPEED = 2.4; // 斧の飛ぶ速さ（放物線の形は同じ）
-const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（数・範囲はLv5で頭打ち、威力は伸び続ける）
+const WEAPON_MAX_LV = 9999; // スキル画面でLv上げできる（範囲はLv5で頭打ち、倍率は伸び続ける）
 const WEAPON_SHAPE_LV = 5;
 const WEAPONS = {
   boomerang: { icon: '🪃', name: 'ブーメラン', desc: '弧を描いて飛び、手元に戻ってくる', cd: 110 },
@@ -1364,7 +1364,11 @@ function autoEquipWeapon(id) { const eq = getEquippedWeapons(); if (!eq.includes
 // 自動スキル（元サブウェポン）の個数は、スキルガチャでダブったときだけ1つ増える（Lvアップでは増えない。最大5つ。転生でリセット）
 const WEAPON_COUNT_MAX = 5;
 function weaponCount(id) { if (!game.weaponDup) game.weaponDup = {}; return Math.min(WEAPON_COUNT_MAX, 1 + (game.weaponDup[id] || 0)); }
-function weaponDmg(base, lv) { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return base * (1 + 0.3 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('weapon'); } // サブウェポン進化も掛かる // 10Lvごとに飛躍・100Lvごとに超飛躍
+// 自動スキルの倍率：Lv1は0.1から0.1ずつ上がる。10倍に届いたら0.05ずつ、以降10倍ごとに上がり幅が半分になる
+function weaponMult(lv) { lv = Math.max(1, lv || 1); let m = 0.1, step = 0.1, left = lv - 1;
+  while (left > 0) { const cap = Math.floor(m / 10 + 1e-9) * 10 + 10, need = Math.max(1, Math.ceil((cap - m) / step - 1e-9)), n = Math.min(left, need); m += n * step; left -= n; if (left > 0 && m >= cap - 1e-9) step /= 2; }
+  return Math.round(m * 10000) / 10000; }
+function weaponDmg(base, lv) { return base * weaponMult(lv) * getEvoRate('weapon'); } // サブウェポン進化も掛かる
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
 // ボスを倒した・リタイヤしたときに、まだ持っていないサブウェポンが1つ手に入る（Lvは上げない。強化はスキル画面で）
 function grantRandomWeapon(reason) {
@@ -1386,14 +1390,14 @@ function weaponAimAngle(pl, spread) {
 function fireWeapon(id, lv, pl) {
   const n = weaponCount(id), W = WEAPONS[id];
   if (id === 'boomerang') {
-    for (let i = 0; i < n; i++) weaponProj.push({ id, x: pl.x, y: pl.y, ang: weaponAimAngle(pl, (i - (n - 1) / 2) * 0.7), t: 0, life: 70, side: i % 2 ? -1 : 1, r: 9, dmg: weaponDmg(0.7, lv), hit: new Set() });
+    for (let i = 0; i < n; i++) weaponProj.push({ id, x: pl.x, y: pl.y, ang: weaponAimAngle(pl, (i - (n - 1) / 2) * 0.7), t: 0, life: 70, side: i % 2 ? -1 : 1, r: 9, dmg: weaponDmg(1, lv), hit: new Set() });
     playTone(500, 0.12, 'triangle', 0.05, 900);
   } else if (id === 'cross') {
     const en = nearestOf(pl, weaponFoes()), dir = en ? (en.x >= pl.x ? 1 : -1) : ((pl.faceDir || 1) > 0 ? 1 : -1); // 投げるのは真横だけ
-    for (let i = 0; i < n; i++) { const a = dir > 0 ? 0 : Math.PI; weaponProj.push({ id, x: pl.x, y: pl.y + (i - (n - 1) / 2) * 22, vx: Math.cos(a) * 7.5, vy: Math.sin(a) * 7.5, ax: -Math.cos(a) * 0.17, ay: -Math.sin(a) * 0.17, t: 0, life: 150, r: 11, dmg: weaponDmg(0.9, lv), hit: new Set(), turned: false }); }
+    for (let i = 0; i < n; i++) { const a = dir > 0 ? 0 : Math.PI; weaponProj.push({ id, x: pl.x, y: pl.y + (i - (n - 1) / 2) * 22, vx: Math.cos(a) * 7.5, vy: Math.sin(a) * 7.5, ax: -Math.cos(a) * 0.17, ay: -Math.sin(a) * 0.17, t: 0, life: 150, r: 11, dmg: weaponDmg(1, lv), hit: new Set(), turned: false }); }
     playTone(900, 0.1, 'square', 0.04, 1300);
   } else if (id === 'axe') {
-    for (let i = 0; i < n; i++) { const dir = (i % 2 ? -1 : 1) * ((pl.faceDir || 1) > 0 ? 1 : -1); weaponProj.push({ id, x: pl.x, y: pl.y, vx: dir * (1.6 + i * 0.9) * AXE_SPEED, vy: (-7.5 - i * 0.6) * AXE_SPEED, t: 0, life: Math.round(120 / AXE_SPEED), r: 17, dmg: weaponDmg(1.3, lv), hit: new Set() }); }
+    for (let i = 0; i < n; i++) { const dir = (i % 2 ? -1 : 1) * ((pl.faceDir || 1) > 0 ? 1 : -1); weaponProj.push({ id, x: pl.x, y: pl.y, vx: dir * (1.6 + i * 0.9) * AXE_SPEED, vy: (-7.5 - i * 0.6) * AXE_SPEED, t: 0, life: Math.round(120 / AXE_SPEED), r: 17, dmg: weaponDmg(1, lv), hit: new Set() }); }
     playTone(220, 0.12, 'sawtooth', 0.05, 160);
   } else if (id === 'holyWater') {
     const dir = (pl.faceDir || 1) > 0 ? 1 : -1; // 敵は狙わず、向いている方へ決まった放物線で投げる（数が増えると少しずつ遠くへ）
@@ -1403,10 +1407,10 @@ function fireWeapon(id, lv, pl) {
     }
     playHolyWaterThrow();
   } else if (id === 'knife') {
-    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(0.55, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
+    for (let i = 0; i < n; i++) { const a = weaponAimAngle(pl, (i - (n - 1) / 2) * 0.16); weaponProj.push({ id, x: pl.x, y: pl.y, vx: Math.cos(a) * 13, vy: Math.sin(a) * 13, t: 0, life: 45, r: 6, dmg: weaponDmg(1, lv), pierce: Math.floor(lv / 3), hit: new Set() }); }
     playTone(1500, 0.05, 'triangle', 0.04, 2200);
   } else if (id === 'dove') {
-    for (let i = 0; i < n + (lv >= 4 ? 1 : 0); i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 1.6, vy: Math.sin(a) * 1.6, t: 0, life: 110, r: 9, dmg: weaponDmg(0.5, lv), hit: new Set(), pierce: 0 }); }
+    for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2; weaponProj.push({ id, x: pl.x, y: pl.y - 6, vx: Math.cos(a) * 1.6, vy: Math.sin(a) * 1.6, t: 0, life: 110, r: 9, dmg: weaponDmg(1, lv), hit: new Set(), pierce: 0 }); }
     [1400, 1800].forEach((f, i) => thump(f, f * 1.15, 0.06, 0.03, 'triangle', i * 0.07)); // パタパタ
   } else if (id === 'thunder') {
     const foes = weaponFoes().sort(() => Math.random() - 0.5);
@@ -1414,7 +1418,7 @@ function fireWeapon(id, lv, pl) {
       const en = foes[i], rr = arena.radius * 0.8 * Math.sqrt(Math.random()), aa = Math.random() * Math.PI * 2;
       const x = en && Math.random() < 0.75 ? en.x : arena.x + Math.cos(aa) * rr, y = en && Math.random() < 0.75 ? en.y : arena.y + Math.sin(aa) * rr;
       const R = 24 + Math.min(lv, WEAPON_SHAPE_LV) * 3;
-      for (const f of weaponFoes()) if (Math.hypot(f.x - x, f.y - y) < R + f.radius) playerHitEnemyBy(f, pl, weaponDmg(1.5, lv), '#fff27a');
+      for (const f of weaponFoes()) if (Math.hypot(f.x - x, f.y - y) < R + f.radius) playerHitEnemyBy(f, pl, weaponDmg(1, lv), '#fff27a', 0, null, true);
       weaponFx.push({ kind: 'bolt', x, y, R, start: Date.now(), seed: Math.random() * 1000 });
     }
     playThunderStrike();
@@ -1463,16 +1467,17 @@ function updateWeapons(pl, speedMult) {
         playTone(1800, 0.05, 'triangle', 0.04, 2400); updateStatsUI();
       }
     } else if (p.id === 'dove') { // 一番近い敵へ向きを変えながら飛ぶ
-      const tg = p.t > 8 && nearestOf(p, foes.filter(f => f.hp > 0));
+      const tg = p.t > 16 && nearestOf(p, foes.filter(f => f.hp > 0)); // 狙い始めが遅く、曲がりも鈍いので外れやすい
       const sp = Math.min(DOVE_SPEED_MAX, 1.6 * Math.pow(DOVE_ACCEL, p.t)); // ミサイルのように加速度的に速くなる
       const cur = Math.atan2(p.vy, p.vx);
       let a = cur;
       if (tg) {
         const want = Math.atan2(tg.y - p.y, tg.x - p.x);
         let d = want - cur; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-        const turn = 0.16 * Math.max(0.35, 1 - sp / DOVE_SPEED_MAX); // 速くなるほど曲がりにくい
+        const turn = 0.085 * Math.max(0.25, 1 - sp / DOVE_SPEED_MAX); // 速くなるほど曲がりにくい
         a = cur + Math.max(-turn, Math.min(turn, d)) * speedMult;
       }
+      a += (Math.random() - 0.5) * 0.18 * speedMult; // ふらふら飛ぶ
       p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
       if (sp > 5 && Math.random() < 0.7 * speedMult) particles.push({ x: p.x - p.vx * 0.8, y: p.y - p.vy * 0.8, vx: -p.vx * 0.08 + (Math.random() - 0.5), vy: -p.vy * 0.08 + (Math.random() - 0.5), life: 0.6, color: sp > 10 ? 'rgba(255,220,140,0.9)' : 'rgba(255,255,255,0.85)', decay: 0.06 }); // 噴射の軌跡
       p.x += p.vx * speedMult; p.y += p.vy * speedMult;
@@ -1483,7 +1488,7 @@ function updateWeapons(pl, speedMult) {
       if (k >= 1) { // 割れて燃える
         p.life = 0;
         weaponFx.push({ kind: 'fire', x: p.tx, y: p.ty, R: 26 + p.lv * 4, until: 70 + Math.min(p.lv, 5) * 6, // 燃える時間は短め（約1.2〜1.7秒）
-          t: 0, tick: 0, dmg: weaponDmg(0.25, p.lv), start: Date.now() });
+          t: 0, tick: 0, dmg: weaponDmg(1, p.lv), start: Date.now() });
         playHolyWaterBreak();
       }
     }
@@ -1493,7 +1498,7 @@ function updateWeapons(pl, speedMult) {
   for (const f of weaponFx) {
     if (f.kind !== 'fire') continue;
     f.t += speedMult; f.tick -= speedMult;
-    if (f.tick <= 0) { f.tick = 12; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43')) hits++; } }
+    if (f.tick <= 0) { f.tick = 12; for (const en of foes) if (en.hp > 0 && Math.hypot(en.x - f.x, en.y - f.y) < f.R + en.radius * 0.5) { if (playerHitEnemyBy(en, pl, f.dmg, '#ff9f43', 0, null, true)) hits++; } }
   }
   weaponFx = weaponFx.filter(f => f.kind === 'fire' ? f.t < f.until : Date.now() - f.start < (f.kind === 'bolt' ? BOLT_MS : 350));
   // 回転シールド
@@ -1507,7 +1512,7 @@ function updateWeapons(pl, speedMult) {
         if (en.hp <= 0 || Math.hypot(en.x - sx, en.y - sy) > 12 + en.radius) continue;
         if (en.shieldHitAt && Date.now() - en.shieldHitAt < 450) continue;
         en.shieldHitAt = Date.now();
-        if (playerHitEnemyBy(en, pl, weaponDmg(0.4, slv), '#c7ecff', 2.2)) { hits++; playEnemyBarrierBlockSound(); }
+        if (playerHitEnemyBy(en, pl, weaponDmg(1, slv), '#c7ecff', 2.2, null, true)) { hits++; playEnemyBarrierBlockSound(); }
       }
       for (const sh of enemyShots) if (sh.life > 0 && Math.hypot(sh.x - sx, sh.y - sy) < 16) { sh.life = 0; spawnHitParticles(sx, sy, '#c7ecff'); playEvadeSound(); }
     }
@@ -1939,7 +1944,7 @@ function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中
   return '';
 }
 function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一言
-  const k = HEAL_SKILLS.includes(id) ? '回復力' : '威力';
+  const k = HEAL_SKILLS.includes(id) ? '回復力' : '倍率';
   if (id === 'skillDeath') return '即死率 +1%（例外あり）';
   if (id === 'skillAtkUp') return `攻撃力UP ×${fmtAtkUp(atkUpMult(slv))}`;
   if (id === 'skillCoinStrike') return `コイン盗み ${+coinStealSecs(slv).toFixed(2)}秒`;
