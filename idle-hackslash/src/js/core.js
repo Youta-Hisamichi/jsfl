@@ -256,7 +256,7 @@ tabBar.addEventListener('click', event => {
 
 const REWARD_AD_GEMS = 5;
 const REWARD_AD_COOLDOWN = 5 * 60 * 1000;
-const REWARD_AD_DURATION = 3 * 1000; // テスト用の仮の動画の長さ
+const REWARD_AD_DURATION = 2 * 1000; // テスト用の仮の動画の長さ
 const rewardAdModal = document.getElementById('rewardAdModal');
 const rewardAdCount = document.getElementById('rewardAdCount');
 const rewardAdProgress = document.getElementById('rewardAdProgress');
