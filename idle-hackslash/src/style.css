@@ -5127,3 +5127,7 @@ body:not(.hp-safe) .chest-tray { top: 62px; }
 .tower-boost b { font-size: 1.15rem; font-weight: 900; color: #ffe27a; text-shadow: 0 0 2px #000, 0 1px 0 #000, 0 0 6px rgba(255,180,60,0.8); }
 .tower-boost small { font-size: 0.68rem; opacity: 0.9; }
 @keyframes towerBoostPop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+/* 挑戦状突破の報酬ダイアログ：シェアを目立たせて誘導 */
+.fgr-share-lead { margin-top: 10px; text-align: center; font-weight: 900; font-size: 0.85rem; color: #ffe27a; text-shadow: 0 1px 0 #000, 0 0 4px #000; }
+.fgr-panel .fgr-share { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: 6px 0 10px; padding: 10px !important; font-size: 1.05rem !important; font-weight: 900; color: #fff !important; text-shadow: 0 1px 2px rgba(0,0,0,0.6); background: linear-gradient(180deg, #ff8ad8, #8a5cff) !important; border: 2px solid #fff !important; border-radius: 14px !important; animation: fgrSharePulse 0.9s ease-in-out infinite alternate; }
+@keyframes fgrSharePulse { from { transform: scale(1); box-shadow: 0 0 0 rgba(255,138,216,0); } to { transform: scale(1.04); box-shadow: 0 0 14px rgba(255,138,216,0.8); } }

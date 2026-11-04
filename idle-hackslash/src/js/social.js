@@ -188,11 +188,11 @@ function showFeaGachaResult(title, sub, got, share) {
   document.querySelectorAll('.fgr-ov').forEach(o => o.remove());
   const ov = document.createElement('div'); ov.className = 'modal-overlay show fgr-ov'; ov.style.zIndex = 84;
   const cards = ['mythic', 'legendary'].filter(r => got[r]).map((r, i) => `<div class="cl-card" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.15}s">${lootStackHtml(`<img class="ico-img" src="assets/img/icons/feather_r${CHEST_FEATHER_ICON_N[r]}.webp" alt="">`, got[r], i * 0.15)}<div class="cl-name">進化の${feaName(r)}</div><div class="cl-desc">進化1回で1枚使い、倍率×${FEA_MULT[r]}</div><div class="cl-trans">所持 <b>${feaCount(r)}枚</b></div></div>`).join('');
-  ov.innerHTML = `<div class="modal-panel chest-panel fgr-panel"><div class="fgr-title">${title}</div><div class="fgr-sub">${sub}</div><div class="chest-loot-grid">${cards}</div><button class="modal-close-btn fgr-ok">閉じる</button>${share ? '<button class="modal-shop-btn fgr-share">📤 突破をシェアする</button>' : ''}</div>`;
+  ov.innerHTML = `<div class="modal-panel chest-panel fgr-panel"><div class="fgr-title">${title}</div><div class="fgr-sub">${sub}</div><div class="chest-loot-grid">${cards}</div>${share ? '<div class="fgr-share-lead">📣 フレンドに突破を知らせよう！</div><button class="modal-shop-btn fgr-share">📤 突破をシェアする</button>' : ''}<button class="modal-close-btn fgr-ok">閉じる</button></div>`; // シェアはこのダイアログで誘導する（ゲーム画面のシェアボタンは出さない）
   document.body.appendChild(ov);
   if (typeof playGachaSound === 'function') playGachaSound(got.mythic ? 'mythic' : 'legendary');
   ov.querySelectorAll('.cl-cnt').forEach(el => { const n = +el.dataset.n; el.textContent = '×' + n; });
-  ov.querySelector('.fgr-ok').onclick = () => { ov.remove(); if (share) offerShareMoment(share.title, share.text); };
+  ov.querySelector('.fgr-ok').onclick = () => ov.remove();
   const sb = ov.querySelector('.fgr-share'); if (sb) sb.onclick = () => { ov.remove(); shareMoment = { title: share.title, text: share.text }; openShare('moment'); };
 }
 function friendBeatLeftToday() { return game.friendBeatDay === todayKey() ? Math.max(0, FRIEND_BEAT_DAILY - (game.friendBeatN || 0)) : FRIEND_BEAT_DAILY; }
