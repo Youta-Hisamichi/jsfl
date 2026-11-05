@@ -130,7 +130,7 @@ function step() {
       if (enemyIsHit && !playerAttackHits(e, rushingNow)) { // 助走をつけた体当たり（タックル）は接近戦より当たりやすい
         spawnMissText(e);
       } else if (enemyIsHit) {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
@@ -166,7 +166,7 @@ function step() {
     } else {
       if (!playerAttackHits(e, rushingNow)) spawnMissText(e); // 体当たり（タックル）は接近戦より当たりやすい
       else {
-        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a) * bossWeakHit(e, a))), e);
+        const { dmg, crit } = rollCrit(Math.max(1, Math.round(a.atk * comboMult * tapDmgMult * dashDmgMult(a))), e);
         e.hp -= dmg;
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');

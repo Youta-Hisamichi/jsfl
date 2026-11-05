@@ -1248,50 +1248,34 @@ const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通っ
 const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
-// 反射板の数値：2・3・5・8・16（大きい数値ほど稀。ボス階は大きめが出やすい）。
-// 射出したタックルで当てると反射板が高速で跳ね回り、敵に当たると「攻撃力×10」に記号と数値を計算した大ダメージ。当たるたびに記号と数値が変わる
-const BOUNCE_OBJ_MULTS = [[2, 45], [3, 25], [5, 15], [8, 9], [16, 6]], BOUNCE_OBJ_MULTS_BOSS = [[2, 20], [3, 25], [5, 23], [8, 18], [16, 14]]; // 初期値（×1.5・÷1.5はなし）
-const BOUNCE_OBJ_MAX = 100; // 跳ね返るたびに数値が1ずつ大きくなる（×は+1、÷は-1）。最大100
-const BOUNCE_OBJ_PLUS = 0.6, BOUNCE_MULT_CAP = 4096;
-// 反射オブジェクトは4種類：＋（足す）・－（引く）・×（掛ける）・÷（割る）。＋と×は青（得）、－と÷は赤（損）
-const BOUNCE_OPS_GOOD = ['+', '×'], BOUNCE_OPS_BAD = ['-', '÷'];
-function rollBounceMult(want) { // want: 'good' / 'bad'（省略でランダム）。o.bop と数値を返す
+// 反射板の数値：×2〜×16（掛け算だけ）。置いたときは2・3・5・8・16から選ぶ（大きい数値ほど稀。ボス階は大きめが出やすい）。
+// 射出したタックルで当てると反射板が高速で跳ね回り、反射するたびに数値が1ずつ増える（×16の次は×2に戻る）。
+// 敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」
+const BOUNCE_OBJ_MULTS = [[2, 45], [3, 25], [5, 15], [8, 9], [16, 6]], BOUNCE_OBJ_MULTS_BOSS = [[2, 20], [3, 25], [5, 23], [8, 18], [16, 14]];
+const BOUNCE_OBJ_MIN = 2, BOUNCE_OBJ_MAX = 16;
+function rollBounceMult() {
   const tbl = game.stage % 10 === 0 ? BOUNCE_OBJ_MULTS_BOSS : BOUNCE_OBJ_MULTS; let r = Math.random() * tbl.reduce((t, x) => t + x[1], 0), m = 2;
   for (const [v, w] of tbl) { if ((r -= w) < 0) { m = v; break; } }
-  const good = want ? want === 'good' : Math.random() < BOUNCE_OBJ_PLUS, ops = good ? BOUNCE_OPS_GOOD : BOUNCE_OPS_BAD;
-  return { op: ops[Math.floor(Math.random() * 2)], v: m };
+  return m;
 }
-function setBounceOp(o, want) { const b = rollBounceMult(want); o.bop = b.op; o.bm = BOUNCE_OPS_GOOD.includes(b.op) ? b.v : -b.v; }
-function obstacleMult(o) { // 正＝得（＋・×）、負＝損（－・÷）。絶対値が数値
+function setBounceOp(o) { o.bop = '×'; o.bm = rollBounceMult(); }
+function stepBounceValue(o) { o.bm = o.bm >= BOUNCE_OBJ_MAX ? BOUNCE_OBJ_MIN : o.bm + 1; o.bmFlash = Date.now(); } // 反射するたびに+1、最大の次は最小に戻る
+function obstacleMult(o) { // 反射板の数値（掛け算）
   if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射板だけ（ステージに1つ）
-  if (o.bm === undefined || !o.bop) { if (o.bm !== undefined && !o.bop) o.bop = o.bm > 0 ? '×' : '÷'; else setBounceOp(o); }
+  if (!(o.bm >= BOUNCE_OBJ_MIN) || o.bop !== '×') setBounceOp(o);
   return o.bm;
 }
-function applyBounceOp(t, o) { const v = Math.abs(o.bm); return o.bop === '+' ? t + v : o.bop === '-' ? Math.max(0.1, t - v) : o.bop === '×' ? t * v : t / v; } // 記号どおりに計算（引き算は0.1より下にしない）
-function bounceMultLabel(v, o) { return `${(o && o.bop) || (v > 0 ? '×' : '÷')}${Math.abs(v)}`; }
-function fmtBounceTotal(t) { return `×${+t.toFixed(t >= 10 ? 0 : 2)}`; }
+function bounceMultLabel(v) { return `×${Math.abs(v)}`; }
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
-// 反射の音：プラスは「キラリン↑」と上がる明るい音（大きい倍率ほど高く華やか）、マイナスは「ボヨ〜ン↓」と下がるしょんぼり音
-function playBounceMultSound(v) {
-  if (typeof playTone !== 'function') return;
-  const a = Math.abs(v), lvl = [1.5, 2, 3, 5, 8, 16].indexOf(a);
-  if (v > 0) {
-    const base = 880 * Math.pow(2, lvl / 6), notes = [1, 1.26, 1.5, 2].slice(0, 2 + Math.min(2, Math.floor(lvl / 2)));
-    if (typeof thump === 'function') thump(420, 900, 0.06, 0.12, 'triangle');
-    notes.forEach((r, i) => setTimeout(() => playTone(base * r, 0.09, 'square', 0.045), i * 45));
-    setTimeout(() => playTone(base * 2, 0.25 + lvl * 0.04, 'sine', 0.05, base * 2.5), notes.length * 45); // キラーンと余韻
-  } else {
-    const base = 520 / Math.pow(2, lvl / 6);
-    if (typeof thump === 'function') { thump(base, base * 0.45, 0.28 + lvl * 0.03, 0.22, 'sawtooth'); thump(120, 60, 0.18, 0.2, 'sine', 0.05); }
-    playTone(base * 0.8, 0.3 + lvl * 0.03, 'triangle', 0.05, base * 0.35); // ボヨ〜ンと下がる
-  }
-}
-function applyBounceObjMult(ball, o) { // 反射板は自キャラの強さを変えない。射出したタックルで当てると、すごい速さで弾け飛ぶ（敵に当てると数値に応じた大ダメージ）
+function fullNumOr(n) { return typeof formatCoinNumber === 'function' ? formatCoinNumber(n) : String(n); }
+function applyBounceObjMult(ball, o) { // 反射板は自キャラの強さを変えない。射出したタックルで当てると、すごい速さで弾け飛ぶ（敵に当てると、当てたときのダメージ×数値）
   const v = obstacleMult(o); if (!v) return;
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now;
   if (!tackleShotNow()) return;
   const sp = Math.hypot(o.mvx || 0, o.mvy || 0) || 1; o.mvx = (o.mvx || 0) / sp * REFLECT_LAUNCH; o.mvy = (o.mvy || 0) / sp * REFLECT_LAUNCH; o.hitMap = new Map(); o.flyAt = now;
+  o.launched = true; o.launchMult = dashDmgMult(ball); // 反射板に当てたときの自キャラのダメージ（溜め・ダッシュ込み）を覚えておく。これに数値を掛ける
+  spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * o.launchMult))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
 }
 function dashDmgMult(ball) {
@@ -1441,12 +1425,13 @@ function setupObstacles(dropDebug) {
 { const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); try { ensureOneBounce(); } catch (e) {} }; }
 function ensureOneBounce() {
   const refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
-  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); return; }
-  if (refl.length === 1) return;
+  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); keep.r = reflectorRadius(); return; }
+  if (refl.length === 1) { refl[0].r = reflectorRadius(); return; }
   const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) return;
   const o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') return;
-  o.debug = false; o.r = arena.radius * 0.095;
+  o.debug = false; o.r = reflectorRadius();
 }
+function reflectorRadius() { return arenaHalf() * 0.11; } // 反射板はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
 function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
@@ -1593,10 +1578,10 @@ function tickMovingObstacles(speedMult) {
   }
 }
 function stepMovingObstacle(o, speedMult, pl) {
-  const refl = o.kind === 'reflector', rest = refl ? 1 : 0.8;
+  const refl = o.kind === 'reflector' && o.launched, rest = refl ? 1 : 0.8;
   o.x += o.mvx * speedMult; o.y += o.mvy * speedMult;
   const f = Math.pow(refl ? REFLECT_FRICTION : OBS_FRICTION, speedMult); o.mvx *= f; o.mvy *= f;
-  if (Math.hypot(o.mvx, o.mvy) < 0.25) { o.mvx = o.mvy = 0; return; } // 止まったらその場に残る
+  if (Math.hypot(o.mvx, o.mvy) < 0.25) { o.mvx = o.mvy = 0; o.launched = false; return; } // 止まったらその場に残る
   let wall = false;
   // 壁で跳ね返る（反射板は勢いを落とさない）
   if (ARENA_RECT) {
@@ -1607,14 +1592,14 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dx = o.x - arena.x, dy = o.y - arena.y, d = Math.hypot(dx, dy) || 1, lim = arena.radius - o.r;
     if (d > lim) { const nx = dx / d, ny = dy / d, dot = o.mvx * nx + o.mvy * ny; o.x = arena.x + nx * lim; o.y = arena.y + ny * lim; if (dot > 0) { o.mvx -= 2 * dot * nx * (refl ? 1 : 0.9); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.9); wall = true; } }
   }
-  if (wall && refl && Math.hypot(o.mvx, o.mvy) > 6 && typeof playTone === 'function') { const now = Date.now(); if (now - (o.wallTickAt || 0) > 70) { o.wallTickAt = now; playTone(1300 + Math.random() * 500, 0.04, 'square', 0.025); } } // カンカンと跳ね回る
+  if (wall && refl) reflectorBounced(o); // 壁で反射するたびに数値+1
   // ほかの障害物にぶつかったら跳ね返る（動かない物は押し返すだけ）
   for (const q of obstacles) {
     if (q === o || q.broken || FLOOR_OBSTACLES.has(q.kind)) continue;
     const dx = o.x - q.x, dy = o.y - q.y, d = Math.hypot(dx, dy) || 1, min = o.r + q.r;
     if (d >= min) continue;
     const nx = dx / d, ny = dy / d; o.x = q.x + nx * min; o.y = q.y + ny * min;
-    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); }
+    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); }
   }
   const sp = Math.hypot(o.mvx, o.mvy);
   if (!pl || sp < OBS_HIT_MIN_SPEED) return;
@@ -1623,13 +1608,13 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy) || 1;
     if (d >= o.r + e.radius) continue;
     const nx = dx / d, ny = dy / d;
-    if (refl) { // 反射板：敵に当たると数値に応じた大ダメージ。敵から跳ね返って、また飛んでいく。当たるたびに記号と数値が変わる
+    if (refl) { // 反射板：敵に当たると「当てたときのダメージ×数値」。敵から跳ね返って、また飛んでいく（これも反射なので数値+1）
       if (!o.hitMap) o.hitMap = new Map();
       if (now - (o.hitMap.get(e) || 0) < REFLECT_REHIT_MS) continue; o.hitMap.set(e, now);
       reflectorSmash(o, e, pl);
       o.x = e.x - nx * (o.r + e.radius + 1); o.y = e.y - ny * (o.r + e.radius + 1);
       const dot = o.mvx * nx + o.mvy * ny; if (dot > 0) { o.mvx -= 2 * dot * nx; o.mvy -= 2 * dot * ny; }
-      e.vx = (e.vx || 0) + nx * 3; e.vy = (e.vy || 0) + ny * 3;
+      e.vx = (e.vx || 0) + nx * 3; e.vy = (e.vy || 0) + ny * 3; reflectorBounced(o);
       continue;
     }
     if (o.hitSet && o.hitSet.has(e)) continue;
@@ -1640,19 +1625,22 @@ function stepMovingObstacle(o, speedMult, pl) {
     if (typeof thump === 'function') thump(260, 120, 0.1, 0.25, 'square');
   }
 }
-// 反射板の大ダメージ：自キャラの攻撃力 × 10 に、反射板の記号と数値を計算（＋16なら×26、×16なら×160、÷は控えめ）
-const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280, REFLECT_DMG_BASE = 10;
+// 反射板のダメージ：反射板に当てたときの自キャラのダメージ × 今の数値
+const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
+function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
+  stepBounceValue(o);
+  const now = Date.now(); if (typeof playTone === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; playTone(700 * Math.pow(2, (o.bm - BOUNCE_OBJ_MIN) / 12), 0.05, 'square', 0.03); }
+}
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
-  const good = v > 0, mult = Math.max(0.5, applyBounceOp(REFLECT_DMG_BASE, o)), label = bounceMultLabel(v, o), col = good ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS;
-  const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log10(mult) / Math.log10(160)); // 0〜1：ダメージの大きさ
-  playerHitEnemyBy(e, pl, mult, col, 2.2, o, true);
-  reflectBlasts.push({ x, y, t: Date.now(), col, power, label: `${label}！`, sub: `${+mult.toFixed(mult >= 10 ? 0 : 1)}倍ダメージ`, rot: Math.random() * Math.PI });
+  const good = true, col = BOUNCE_COL_PLUS, label = bounceMultLabel(v);
+  const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
+  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v, col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp);
+  reflectBlasts.push({ x, y, t: Date.now(), col, power, label: `${label}！`, sub: dmg ? `${fullNumOr(Math.round(dmg))} ダメージ` : '', rot: Math.random() * Math.PI });
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();
   playReflectSmash(good, power);
-  setBounceOp(o); o.bmFlash = Date.now(); // 敵に当たるたびに記号と数値が変わる（ポヨンと弾む）
 }
 function playReflectSmash(good, power) { // ドカーン＋キラーン（＋と×は明るく上がる、－と÷は重く下がる）
   if (typeof thump === 'function') { thump(160, 40, 0.35 + power * 0.3, 0.35 + power * 0.25, 'sawtooth'); thump(90, 30, 0.5, 0.4, 'sine', 0.02); }
@@ -1857,7 +1845,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
   for (const o of obstacles) {
     if (o.bmPending && !o.broken) { // 跳ね返ってから約2秒：後半は点滅して、新しい倍率に
       if (!o.bmBlinkAt && now - (o.bmPendAt || now) >= BOUNCE_CHANGE_MS - BOUNCE_BLINK_MS) o.bmBlinkAt = now;
-      if (o.bmBlinkAt && now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { setBounceOp(o); o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
+      if (o.bmBlinkAt && now - o.bmBlinkAt >= BOUNCE_BLINK_MS) { o.bmPending = false; o.bmBlinkAt = 0; o.bmFlash = now; if (typeof playTone === 'function') playTone(1100, 0.06, 'triangle', 0.04, 1500); }
     }
     const fade = o.bmBlinkAt ? Math.min(1, (now - o.bmBlinkAt) / BOUNCE_BLINK_MS) : 0; // 変わる直前に薄くなる
     const v = obstacleMult(o); if (!v || o.broken || o.dead || (o.tansu && o.used)) continue; // 空になって消えていくタンスは倍率を出さない
@@ -1873,7 +1861,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
     ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
     ctx.font = `900 ${fs}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-    const t = bounceMultLabel(v, o); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS); ctx.fillText(t, o.x, o.y);
+    const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS); ctx.fillText(t, o.x, o.y);
   }
   ctx.globalAlpha = 1;
   drawReflectBlasts(now);

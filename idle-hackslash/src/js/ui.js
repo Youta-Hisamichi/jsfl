@@ -49,7 +49,6 @@ function draw() {
     drawBall(ball);
   }
 
-  drawBossWeakPoints();
   drawHomingMissiles();
   drawPoisonEffects();
   drawParalyzeEffects();

@@ -1273,7 +1273,7 @@ function tickAutoPull() {
   }
   if (Math.random() < AUTO_AIM_REFLECT_RATE) { // ときどき反射物（プラスの倍率の大きいもの）を狙う
     const pl = balls.find(isMainPlayerBall), cands = typeof obstacleMult === 'function' ? obstacles.filter(o => { const v = obstacleMult(o); return v && v > 0 && !o.broken; }) : [];
-    if (pl && cands.length) { cands.sort((a, b) => applyBounceOp(1, b) - applyBounceOp(1, a) || Math.hypot(a.x - pl.x, a.y - pl.y) - Math.hypot(b.x - pl.x, b.y - pl.y)); const o = cands[0]; ang = Math.atan2(o.y - pl.y, o.x - pl.x); target = o; }
+    if (pl && cands.length) { cands.sort((a, b) => obstacleMult(b) - obstacleMult(a) || Math.hypot(a.x - pl.x, a.y - pl.y) - Math.hypot(b.x - pl.x, b.y - pl.y)); const o = cands[0]; ang = Math.atan2(o.y - pl.y, o.x - pl.x); target = o; }
   }
   autoAim = { ang, target, lv: 0.45 + Math.random() * 0.55, start: now }; // すぐには飛ばず、矢印を伸ばして狙ってから発射
   thump(320, 760, 0.14, 0.04, 'triangle');
@@ -1319,7 +1319,7 @@ function doTapSlash(auto = false) {
 function playerHitEnemyBy(en, pl, mult, color, knock, from, noDash) { // noDash：自動スキルにはダッシュ・溜めを掛けない
   if (!en || en.hp <= 0 || en.isDying) return false;
   if (!playerAttackHits(en)) { spawnMissText(en); return false; }
-  const m = mult * bossWeakHit(en, from); // 隙の3倍は rollCrit の中でかかる。弱点に当たると大ダメージ
+  const m = mult; // 隙の3倍は rollCrit の中でかかる
   const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * (noDash || (from && WEAPONS[from.id]) ? 1 : dashDmgMult(pl)))), en);
   en.hp -= dmg; trackDamage(dmg);
   spawnHitParticles(en.x, en.y, color || '#ffe08a');
