@@ -1066,6 +1066,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射板の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'refl16Keep' || action === 'reflStart2') { // 反射板のアイテムの所持を切り替える
     game[action] = !game[action]; const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
     showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射板の粘り' : '反射の初期値上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); updateReflDebugBtns(); return; }

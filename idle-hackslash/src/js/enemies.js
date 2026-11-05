@@ -1250,18 +1250,19 @@ const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
 // 反射板の数値：×1〜×16（掛け算だけ）。×1から始まり、射出したタックルで当てると反射板が高速で跳ね回り、
-// 反射するたびに数値が1ずつ増える（×16の次は×1に戻る）。敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」。
+// 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」。
 // 反射板（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
-const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16;
+const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
+function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
-function setBounceOp(o) { o.bop = '×'; const ok = game.refl && game.refl.bm >= reflMin() && game.refl.bm <= BOUNCE_OBJ_MAX; o.bm = ok ? game.refl.bm : reflMin(); o.held16 = !!(ok && game.refl.held); }
+function setBounceOp(o) { o.bop = '×'; const ok = game.refl && game.refl.bm >= reflMin() && game.refl.bm <= reflMax(); o.bm = ok ? game.refl.bm : reflMin(); o.held16 = !!(ok && game.refl.held); }
 function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
   if (!o || o.kind !== 'reflector') return;
   game.refl = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
 }
-function stepBounceValue(o) { // 反射するたびに+1。×16の次は×1（初期値上昇なら×2）に戻る。ショップの「反射板の粘り」があれば、×16のまま1回だけ反射できる
-  if (o.bm >= BOUNCE_OBJ_MAX) {
-    if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, '🌈 粘り！ ×16のまま', '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
+function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射板の粘り」があれば、×16のまま1回だけ反射できる
+  if (o.bm >= reflMax()) {
+    if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 粘り！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
     else { o.held16 = false; o.bm = reflMin(); }
   } else { o.held16 = false; o.bm++; }
   o.bmFlash = Date.now(); saveReflector(o);
@@ -1436,7 +1437,12 @@ function setupObstacles(dropDebug) {
   }
 }
 // 数値付きの反射オブジェクト（反射板）は、どのステージにも1つだけ置く
-{ const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); try { ensureOneBounce(); } catch (e) {} }; }
+{ const orig = setupObstacles; setupObstacles = function () {
+  const old = obstacles.find(o => o.kind === 'reflector' && !o.broken), mv = old && (old.mvx || old.mvy) ? { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map(), held16: old.held16 } : null; // 飛んでいる反射板は、ボス戦などの次のステージでもそのまま飛び続ける
+  if (old) saveReflector(old);
+  orig.apply(this, arguments);
+  try { ensureOneBounce(); if (mv) { const o = obstacles.find(x => x.kind === 'reflector' && !x.broken); if (o) Object.assign(o, mv); } } catch (e) {}
+}; }
 function ensureOneBounce() {
   let refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
   if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); refl = [keep]; }
