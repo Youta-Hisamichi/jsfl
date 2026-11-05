@@ -1463,7 +1463,8 @@ function ensureOneBounce() {
 }
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射板はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
-function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+let reflCheckAt = 0;
+function tickObstacles() { if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (!obstacles.some(o => o.kind === 'reflector' && !o.broken)) { try { ensureOneBounce(); } catch (e) {} } } /* 反射板がなくなっていたら置き直す（いつもステージに1つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
@@ -1707,7 +1708,7 @@ function obstacleBounce(ball) {
     if (FLOOR_OBSTACLES.has(o.kind)) { obstacleFloorEffect(o, ball, now); continue; }
     const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy) || 1, min = o.r + ball.radius * 0.8;
     if (d >= min) continue;
-    if (ball.isGiant && !ball.isPlayer) { smashObstacle(o); continue; } // 激デカボスは障害物を壊して突き進む
+    if (ball.isGiant && !ball.isPlayer) { if (o.kind === 'reflector') { const k = Math.max(10, Math.hypot(o.mvx || 0, o.mvy || 0)); o.mvx = -dx / d * k; o.mvy = -dy / d * k; o.x = ball.x - dx / d * (min + 1); o.y = ball.y - dy / d * (min + 1); continue; } smashObstacle(o); continue; } // 激デカボスは障害物を壊して突き進む（反射板だけは壊れずに弾き飛ばされる）
     const nx = dx / d, ny = dy / d;
     ball.x = o.x + nx * min; ball.y = o.y + ny * min;
     const dot = ball.vx * nx + ball.vy * ny;
