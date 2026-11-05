@@ -2094,7 +2094,7 @@ function drawBall(ball) {
     ctx.restore();
   }
 
-  if (isMainPlayerBall(ball) && phase === 'battle') { // 溜めのオーラ：溜まるほど明るく大きく、最大で脈打つ
+  if (isMainPlayerBall(ball) && !ball.isTrail && phase === 'battle') { // 溜めのオーラ：溜まるほど明るく大きく、最大で脈打つ
     const w = heroWaitMult(ball), k = (w - 1) / (HERO_WAIT_MAX - 1);
     if (k > 0.05) {
       const full = w >= HERO_WAIT_MAX, pulse = full ? 0.75 + Math.sin(Date.now() / 90) * 0.25 : 1;
@@ -2103,10 +2103,13 @@ function drawBall(ball) {
     }
     { // 溜めの秒数（前の攻撃からのカウントアップ）と最大
       const maxS = (HERO_WAIT_MAX - 1) * heroWaitRateMs() / 1000, sec = Math.min(maxS, (w - 1) * heroWaitRateMs() / 1000), full = w >= HERO_WAIT_MAX;
+      const fullFor = (Date.now() - (ball.lastAtkAt || 0)) / 1000 - maxS; // 満タンになってからの秒数
       const txt = full ? `MAX ×${HERO_WAIT_MAX}` : `${sec.toFixed(1)} / ${+maxS.toFixed(1)}秒`, y = ball.y - ball.radius * 2.6 - 6;
-      ctx.save(); ctx.font = `900 ${full ? 11 : 10}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (!full || fullFor < HERO_WAIT_MAX_SHOW_S) { // 「MAX ×3」は満タンになった直後だけ出して消す（満タンのあいだは赤い輪が脈打つ）
+      ctx.save(); ctx.globalAlpha = full ? Math.min(1, (HERO_WAIT_MAX_SHOW_S - fullFor) / 0.4) : 1; ctx.lineJoin = 'round'; ctx.font = `900 ${full ? 11 : 10}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(txt, ball.x, y);
       ctx.fillStyle = full ? '#ff7b8a' : '#ffd08a'; ctx.fillText(txt, ball.x, y); ctx.restore();
+      }
     }
   }
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {

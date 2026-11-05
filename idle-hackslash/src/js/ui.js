@@ -1,4 +1,5 @@
 function draw() {
+  ctx.lineJoin = 'round'; ctx.miterLimit = 2; // 文字の縁取りの角（MやVの先）がトゲのように飛び出さないように
   cloneCounter.textContent = `分身 ${balls.filter(ball => ball.isClone).length} / ${getCloneLimit()}`;
   wrap.classList.toggle('boss-mode', balls.some(ball => ball.isBoss));
   document.body.classList.toggle('hp-safe', !isPlayerHpShown()); // 雑魚戦は画面下の自分のHPも隠す

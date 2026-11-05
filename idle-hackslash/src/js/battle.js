@@ -758,7 +758,7 @@ function drawRushTrail() {
   for (let i = 0; i < rushTrail.length; i += 5) { // 残像（うっすら透ける・控えめ）
     const p = rushTrail[i], k = 1 - (now - p.t) / RUSH_TRAIL_MS;
     ctx.globalAlpha = 0.16 * k;
-    drawBall({ ...pl, x: p.x, y: p.y, hitFlash: 0 });
+    drawBall({ ...pl, x: p.x, y: p.y, hitFlash: 0, isTrail: true }); // 残像には溜めの輪・文字を描かない
   }
   ctx.globalAlpha = 1;
   if (rushingNow) { // スピード線
