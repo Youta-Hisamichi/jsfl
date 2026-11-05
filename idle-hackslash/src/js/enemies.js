@@ -1263,7 +1263,7 @@ function rollBounceMult(want) { // want: 'good' / 'bad'（省略でランダム�
 }
 function setBounceOp(o, want) { const b = rollBounceMult(want); o.bop = b.op; o.bm = BOUNCE_OPS_GOOD.includes(b.op) ? b.v : -b.v; }
 function obstacleMult(o) { // 正＝得（＋・×）、負＝損（－・÷）。絶対値が数値
-  if (!o || FLOOR_OBSTACLES.has(o.kind) || (o.kind === 'qbox' && !o.tansu)) return null; // 宝箱（パンドラの箱）には倍率なし（タンスにはある）
+  if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射板だけ（ステージに1つ）
   if (o.bm === undefined || !o.bop) { if (o.bm !== undefined && !o.bop) o.bop = o.bm > 0 ? '×' : '÷'; else setBounceOp(o); }
   return o.bm;
 }
@@ -1443,19 +1443,15 @@ function setupObstacles(dropDebug) {
     obstacles.push(o);
   }
 }
-// どのステージにも、得（＋・×）と損（－・÷）の反射オブジェクトを両方置く
-{ const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); try { ensureBounceBoth(); } catch (e) {} }; }
-function ensureBounceBoth() {
-  for (const want of ['good', 'bad']) {
-    const refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
-    refl.forEach(o => obstacleMult(o));
-    if (refl.some(o => want === 'good' ? o.bm > 0 : o.bm < 0)) continue;
-    const other = refl.filter(o => want === 'good' ? o.bm < 0 : o.bm > 0);
-    if (other.length >= 2) { setBounceOp(other[0], want); continue; } // 片方が2つ以上あれば1つを入れ替える
-    const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) continue;
-    const o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') continue;
-    o.debug = false; o.r = arena.radius * 0.095; setBounceOp(o, want);
-  }
+// 数値付きの反射オブジェクト（反射板）は、どのステージにも1つだけ置く
+{ const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); try { ensureOneBounce(); } catch (e) {} }; }
+function ensureOneBounce() {
+  const refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
+  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); return; }
+  if (refl.length === 1) return;
+  const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) return;
+  const o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') return;
+  o.debug = false; o.r = arena.radius * 0.095;
 }
 let obstacleHalf = 0;
 function tickObstacles() { if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
