@@ -1199,7 +1199,7 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
 // 雷の杖の音：5パターンから選べる（デバッグの「⚡ 雷の音」で試聴して選ぶ。game.thunderSfx に保存）
-const THUNDER_SFX = { A: '今の音（ピシッ＋ドーン＋シャーン）', B: '出だしやわらか（フワッとふくらむドーン＋シャーン）', C: 'ゴロゴロ→ピシャーン（雷鳴のあとに落ちる）', D: '低めのバシャーン（高音ひかえめ）', E: '軽いピシャーン（前の高い音）' };
+const THUNDER_SFX = { F: 'もらった雷の音を早回し（1.6倍速・0.76秒）', A: '今の音（ピシッ＋ドーン＋シャーン）', B: '出だしやわらか（フワッとふくらむドーン＋シャーン）', C: 'ゴロゴロ→ピシャーン（雷鳴のあとに落ちる）', D: '低めのバシャーン（高音ひかえめ）', E: '軽いピシャーン（前の高い音）' };
 function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // 立ち上がりをゆっくりにした音（出だしの圧を弱める）
   const ac = audioCtx, t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type;
   o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
@@ -1211,10 +1211,19 @@ function thunderShine(delay = 0.02, a = 1) { // 「シャーン」と響く澄�
   filteredNoise(delay, 0.5, 0.18 * a, 4200, 1.6, 'bandpass');
   for (const [f, d, g] of [[2637, 0.55, 0.03], [3951, 0.4, 0.019], [5274, 0.28, 0.012]]) softTone('sine', f, f * 0.97, d, g * a, 0.012, delay);
 }
+// F：もらった雷の録音を1.6倍速にして短くしたもの（assets/audio/thunder.mp3）。読み込めていなければ合成音Bで代わりに鳴らす
+let thunderBuf = null, thunderLoading = false;
+function loadThunderSfx() {
+  if (thunderBuf) return Promise.resolve(thunderBuf);
+  if (thunderLoading || !audioCtx) return thunderLoading || Promise.resolve(null);
+  thunderLoading = fetch('assets/audio/thunder.mp3').then(r => r.arrayBuffer()).then(b => audioCtx.decodeAudioData(b)).then(buf => (thunderBuf = buf)).catch(() => { thunderLoading = false; return null; });
+  return thunderLoading;
+}
 function playThunderStrike(kind) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (!kind && now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
-  const k = kind || game.thunderSfx || 'B';
+  let k = kind || game.thunderSfx || 'F';
+  if (k === 'F') { loadThunderSfx(); if (thunderBuf) { const src = audioCtx.createBufferSource(), g = audioCtx.createGain(); src.buffer = thunderBuf; g.gain.value = (game.sfxVolume ?? 0.7) * 0.9; src.connect(g); g.connect(audioCtx.destination); src.start(); return; } k = 'B'; }
   if (k === 'A') { // 今の音
     filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass');
     softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();
