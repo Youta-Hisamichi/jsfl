@@ -1068,7 +1068,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'anniv') { showAnnivList(); return; }
   if (action === 'refl16Keep' || action === 'reflStart2') { // 反射板のアイテムの所持を切り替える
     game[action] = !game[action]; const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
-    showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射板の粘り' : '反射の初期倍率上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); return; }
+    showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射板の粘り' : '反射の初期値上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'chestItems') { // 宝箱で出る使いきりアイテムを1つずつ
     for (const k in CHEST_ITEMS) gainItem(k, 1);
     saveGame(); if (typeof renderBagList === 'function') renderBagList(); if (typeof updateLifeGlassBtn === 'function') updateLifeGlassBtn();
@@ -4055,3 +4055,12 @@ function showRebirthRulesDebug() {
   ov.querySelector('.fd-x').addEventListener('click', () => ov.remove());
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
 }
+
+// デバッグの反射板アイテムのボタンに、いまON（所持）かOFFかを出す
+function updateReflDebugBtns() {
+  for (const [k, label] of [['refl16Keep', '🌈 反射板の粘り'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
+    const on = !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${on ? 'ON（所持）' : 'OFF'}</b>`;
+    document.querySelectorAll(`[data-debug="${k}"]`).forEach(b => { if (b.innerHTML !== h) b.innerHTML = h; }); // 「最近使った」の写しも
+  }
+}
+setInterval(() => { try { updateReflDebugBtns(); } catch (e) {} }, 1000); updateReflDebugBtns();
