@@ -570,42 +570,15 @@ const COIN_IMG = new Image(); COIN_IMG.src = COIN_IMG_SRC; // ゲーム画面の
 function xi(key, cls = 'ico-img') { return ICON_IMAGES[key] ? `<img class="${cls}" src="${ICON_IMAGES[key]}" alt="">` : ''; }
 function ico(obj) { return obj && obj.img ? `<img class="ico-img${obj.imgCls ? ' ' + obj.imgCls : ''}" src="${obj.img}" alt="">` : (obj ? obj.icon : ''); }
 const ARTIFACT_ALL = [
-  { id: 'heart',  icon: '🗡️', name: '闘志の剣・小',   desc: '攻撃力 +5%', rarity: 'common' },
-  { id: 'swordM', icon: '🗡️', name: '闘志の剣・中',   desc: '攻撃力 +30%', rarity: 'rare' },
-  { id: 'swordL', icon: '🗡️', name: '闘志の剣・大',   desc: '攻撃力 +150%', rarity: 'epic' },
-  { id: 'ring',   icon: '💰', name: '黄金の指輪',     desc: 'コイン獲得 +30%', rarity: 'common' },
-  { id: 'book',   icon: '📖', name: '賢者の書',       desc: '攻撃力 +10%・最大HP +10%', rarity: 'common' },
-  { id: 'armor',  icon: '🛡️', name: '鉄壁の鎧',       desc: '最大HP +25%', rarity: 'common' },
   { id: 'evoFeather', icon: '🪽', name: '進化の羽', desc: '進化の素材。進化1回につき1枚使い、倍率が上がる（N羽×1.2・R羽×1.5・SR羽×2・SSR羽×3・UR羽×5）', rarity: 'common' },
-  { id: 'compass', icon: '🧭', name: '反射のコンパス', desc: '壁反射でコインを獲得（重複で増加）', rarity: 'rare' },
-  { id: 'calendar', icon: '📅', name: '忠誠のカレンダー', desc: 'ログインボーナス +40%', rarity: 'rare' },
-  { id: 'gauntlet', icon: '👊', name: '闘魂のガントレット', desc: 'メテオダメージ +60%', rarity: 'epic' },
-  { id: 'hourglass', icon: '⏳', name: '刹那の砂時計', desc: 'メテオの待機時間 -20%（最大3個）', rarity: 'epic' },
-  { id: 'turbo', icon: '🚀', name: '加速のブースター', desc: '加速中のダメージ +40%（最大3個）', rarity: 'epic' },
-  { id: 'eye', icon: '🎯', name: '鷹の眼', desc: 'クリティカル率 +8%（最大6個）', rarity: 'legendary' },
-  { id: 'fang', icon: '💥', name: '会心の牙', desc: 'クリティカルダメージ +80%（最大6個）', rarity: 'legendary' },
-  { id: 'lens', icon: '🔭', name: '千里眼のレンズ', desc: '命中率 +3%（最大5個）', rarity: 'rare' },
-  { id: 'feather', icon: '🪶', name: '風切りの羽', desc: '回避率 +3%（最大5個）', rarity: 'rare' },
-  { id: 'crest', icon: '👑', name: '覇王の紋章', desc: 'ボスへのダメージ +40%（最大4個）', rarity: 'epic' },
-  { id: 'gauntletCounter', icon: '🔄', name: '反撃の籠手', desc: 'カウンター率 +15%（最大4個）', rarity: 'epic' },
-  { id: 'banner', icon: '🚩', name: '絆の軍旗', desc: '仲間の攻撃力 +40%（最大5個）', rarity: 'epic' },
-  { id: 'amulet', icon: '🧿', name: '守護の護符', desc: '仲間の最大HP +40%（最大5個）', rarity: 'epic' },
-  { id: 'pinchMask', icon: '👺', name: '背水の仮面', desc: 'HP30%以下のとき攻撃力 +60%（最大3個）', rarity: 'epic' },
-  { id: 'rebirthOrb', icon: '🔮', name: '輪廻の宝珠', desc: '転生時にもらえるジェム +2（最大5個）', rarity: 'rare' },
-  { id: 'pierceHoof', icon: '🐂', name: '吹っ飛ばしの蹄鉄', desc: '体当たりで敵をさらに遠くへ吹っ飛ばす（1個ごとに+25%・最大3個）', rarity: 'epic' },
-  { id: 'swordX', icon: '⚔️', name: '闘志の剣・極', desc: '攻撃力 +400%', rarity: 'legendary' },
-  { id: 'aegis', icon: '🛡️', name: '不壊の大盾', desc: '最大HP +400%', rarity: 'legendary' },
-  { id: 'ragnarok', icon: '🌟', name: '神剣ラグナロク', desc: '攻撃力 +1500%', rarity: 'mythic' },
-  { id: 'yggdrasil', icon: '🌳', name: '世界樹の雫', desc: '最大HP +1500%・コイン獲得 +300%', rarity: 'mythic' },
-  { id: 'starCrown', icon: '👑', name: '星々の王冠', desc: '攻撃力・最大HP +800%・クリティカル率 +15%', rarity: 'mythic' },
   { id: 'forbiddenSword', icon: '🗡️', name: '禁断の剣', desc: 'ボス戦の開始時に、ボスのHPを1個につき1%削る（最大50個）', rarity: 'mythic' },
   { id: 'forbiddenKnife', icon: '🔪', name: '禁断のナイフ', desc: '雑魚が現れたとき、そのHPを1個につき1%削る（最大50個）', rarity: 'legendary' },
   { id: 'forbiddenWatch', icon: '⏱️', name: '禁断の懐中時計', desc: 'ボス戦の制限時間が1個につき1秒のびる（最大30個）', rarity: 'legendary' },
   { id: 'rareRing', icon: '💍', name: 'レアリング', desc: '★4以上のレアドロップ率2倍', rarity: 'mythic' },
 ];
 const EARLY_REBIRTH_COUNT = 5; // この回数目までの転生報酬は攻撃力・HP系の遺物のみ
-const EARLY_REBIRTH_ARTIFACTS = ['heart', 'book', 'armor']; // 闘志の剣・小・賢者の書・鉄壁の鎧
-const ARTIFACT_STACK_LIMIT = { rareRing: 1, forbiddenSword: 50, forbiddenKnife: 50, forbiddenWatch: 30, pierceHoof: 3, hourglass: 3, turbo: 3, eye: 6, fang: 6, lens: 5, feather: 5, crest: 4, gauntletCounter: 4, horn: 5, banner: 5, amulet: 5, pinchMask: 3, rebirthOrb: 5 };
+const EARLY_REBIRTH_ARTIFACTS = []; // 古い遺物は削除済み
+const ARTIFACT_STACK_LIMIT = { rareRing: 1, forbiddenSword: 50, forbiddenKnife: 50, forbiddenWatch: 30 };
 const ARTIFACT_BY_ID = {};
 ARTIFACT_ALL.forEach(a => ARTIFACT_BY_ID[a.id] = a);
 const ARTIFACT_SHOWN = ['evoFeather', 'forbiddenSword', 'forbiddenKnife', 'forbiddenWatch', 'rareRing'];
@@ -990,10 +963,7 @@ const REBIRTH_SHOP_CATEGORIES = [ // タブのアイコンは強化ページと�
   { id: 'companion', label: `${xi('x_up_companion')} 仲間` },
 ];
 const ARTIFACT_CATEGORY = {
-  forbiddenSword: 'attack', forbiddenKnife: 'attack', forbiddenWatch: 'attack', rareRing: 'economy', heart: 'attack', swordM: 'attack', swordL: 'attack', gauntlet: 'attack', hourglass: 'attack', turbo: 'attack', eye: 'attack', fang: 'attack', lens: 'attack', crest: 'attack', horn: 'attack', pinchMask: 'attack', gauntletCounter: 'attack',
-  book: 'defense', armor: 'defense', feather: 'defense',
-  ring: 'economy', compass: 'economy', calendar: 'economy', rebirthOrb: 'economy', evoFeather: 'economy',
-  banner: 'companion', amulet: 'companion', pierceHoof: 'attack',
+  forbiddenSword: 'attack', forbiddenKnife: 'attack', forbiddenWatch: 'attack', rareRing: 'economy', evoFeather: 'economy',
 };
 function getRebirthItemCategory(item) {
   if (item.category) return item.category;
@@ -1007,12 +977,7 @@ function renderSubTabs(el, cats, current, onPick) {
 }
 const ARTIFACT_CURRENT = {
   forbiddenSword: n => `ボス戦開始時 ボスHP -${n}%`, forbiddenKnife: n => `雑魚の出現時 HP -${n}%`, forbiddenWatch: n => `ボス戦の制限時間 +${n}秒`, rareRing: n => `★4以上のレアドロップ率 ${n ? 2 : 1}倍`,
-  pierceHoof: n => `吹っ飛ばし +${n*25}%`,
-  heart: n => `攻撃力 +${5 * n}%`, swordM: n => `攻撃力 +${30 * n}%`, swordL: n => `攻撃力 +${100 * n}%`, ring: n => `コイン +${30 * n}%`, book: n => `攻撃力 +${10 * n}%・HP +${10 * n}%`, armor: n => `HP +${25 * n}%`,
-  compass: n => `反射コイン ×${n}`, calendar: n => `ログボ +${40 * n}%`, gauntlet: n => `メテオ +${35 * n}%`, hourglass: n => `待機 -${15 * n}%`,
-  evoFeather: n => `進化の素材 ${n}枚`, turbo: n => `加速中 +${25 * n}%`, eye: n => `会心率 +${5 * n}%`, fang: n => `会心ダメ +${50 * n}%`, lens: n => `命中 +${3 * n}%`,
-  feather: n => `回避 +${3 * n}%`, crest: n => `ボス +${25 * n}%`, gauntletCounter: n => `カウンター +${10 * n}%`, horn: n => `タックル +${30 * n}%`,
-  banner: n => `仲間攻撃 +${25 * n}%`, amulet: n => `仲間HP +${25 * n}%`, pinchMask: n => `背水 +${40 * n}%`, rebirthOrb: n => `転生ジェム +${2 * n}`,
+  evoFeather: n => `進化の素材 ${n}枚`,
 };
 function artifactTextFor(id, count) { // 指定した所持数のときの効果の文
   const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
@@ -1275,38 +1240,7 @@ function isTowerUnlocked() { return (game.reincarnations || 0) > 0 || (game.best
 const SPEED_MULT_CAP = 1.6;
 function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }
 function applyArtifactBonuses(b) {
-  for (const id in game.ownedArtifacts) { // 所持している遺物はすべて有効
-    if (!ARTIFACT_BY_ID[id] || !isArtifactShown(id)) continue; // 隠している遺物は効果なし
-    const count = game.ownedArtifacts[id] || 0;
-    const cap = ARTIFACT_STACK_LIMIT[id] ? Math.min(count, ARTIFACT_STACK_LIMIT[id]) : count;
-    if (id === 'heart') b.atkMult += 0.05 * count;     // 闘志の剣（小・中・大）
-    if (id === 'swordM') b.atkMult += 0.3 * count;
-    if (id === 'swordL') b.atkMult += 1.5 * count;
-    if (id === 'swordX') b.atkMult += 4 * count;
-    if (id === 'aegis') b.hpMult += 4 * count;
-    if (id === 'ragnarok') b.atkMult += 15 * count;
-    if (id === 'yggdrasil') { b.hpMult += 15 * count; b.coinMult += 3 * count; }
-    if (id === 'starCrown') { b.atkMult += 8 * count; b.hpMult += 8 * count; b.critChance += 0.15 * count; }
-    if (id === 'ring') b.coinMult += 0.3 * count;
-    if (id === 'book') { b.atkMult += 0.1 * count; b.hpMult += 0.1 * count; }
-    if (id === 'armor') b.hpMult += 0.25 * count;
-    if (id === 'compass') b.bounceCoinCount = count;
-    if (id === 'calendar') b.loginBonusMult += 0.4 * count;
-    if (id === 'gauntlet') b.specialDmgMult += 0.6 * count;
-    if (id === 'hourglass') b.specialCooldownMult -= 0.2 * cap;
-    if (id === 'turbo') b.accelDmgMult += 0.4 * cap;
-    if (id === 'eye') b.critChance += 0.08 * cap;
-    if (id === 'fang') b.critMultBonus += 0.8 * cap;
-    if (id === 'lens') b.accuracy += 0.03 * cap;
-    if (id === 'feather') b.evasion += 0.03 * cap;
-    if (id === 'crest') b.bossDmg += 0.4 * cap;
-    if (id === 'gauntletCounter') b.counter += 0.15 * cap;
-    if (id === 'horn') b.tackleMult += 0.30 * cap;
-    if (id === 'banner') b.companionAtkMult += 0.4 * cap;
-    if (id === 'amulet') b.companionHpMult += 0.4 * cap;
-    if (id === 'pinchMask') b.pinchAtk += 0.6 * cap;
-    if (id === 'rebirthOrb') b.rebirthGems += 2 * cap;
-  }
+  // 古い遺物（攻撃力・HP・会心などを上げるもの）は削除済み。今ある遺物（禁断シリーズ・レアリング・進化の羽）は、それぞれの場所で効果を計算する
   return b;
 }
 let bonusTraceOn = false; // デバッグの計算式表示用：倍率がどこでどれだけ変わったかを記録する

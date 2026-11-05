@@ -2316,6 +2316,7 @@ const onEvoPanelClick = event => {
     }, null, { starRoulette: true }); // 結果の前にレア星ルーレット
 };
 document.getElementById('evoPanel').addEventListener('click', onEvoPanelClick);
+document.getElementById('evoGoWrap')?.addEventListener('click', onEvoPanelClick);
 document.getElementById('evoKindsPanel').addEventListener('click', onEvoPanelClick); // 進化項目の一覧（動画ボタンの下）
 let evoBusy = false;
 // 進化ガチャの結果：レア度ごとの1枚絵（背景の枠・剣・プレート）に数字を重ねる
@@ -3469,6 +3470,7 @@ if (!game.compLockV3) { game.compLocked = {}; game.compLockV2 = game.compLockV3 
 if (game.bgmBook && !game.bgmMig30) { delete game.bgmBook.battle30; game.bgmMig30 = true; } // 削除した旧「戦闘30」の登録を消して、新しい戦闘30を未登録に戻す
 if (game.ownedArtifacts) delete game.ownedArtifacts.boots;
 if (game.ownedArtifacts) delete game.ownedArtifacts.clover; // 幸運のクローバーは廃止
+if (game.ownedArtifacts) for (const id of Object.keys(game.ownedArtifacts)) if (!ARTIFACT_BY_ID[id]) delete game.ownedArtifacts[id]; // 削除した古い遺物はセーブからも消す
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
 if (!game.slotUnified) { game.skillSlots = Math.min(SKILL_SLOT_MAX, (game.skillSlots || 1) + (game.weaponSlots || 1)); game.slotUnified = true; } // スキルとサブウェポンの枠を1つにまとめる（今までの枠の合計）
 if (game.evoPickUnlocked) game.evoPickUnlocked = false; // 「進化の指定書」は廃止（本番データではないので補填はしない）
