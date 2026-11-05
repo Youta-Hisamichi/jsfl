@@ -879,6 +879,11 @@ function canCompanionRevive(id) { // 階を進むたびに1つ減らし、0に�
 }
 function bossFail(reason, silent) {
   const bossStage = game.stage;
+  { const bo = balls.find(b => b.isBoss && !b.isPlayer); if (bo && bo.maxHp > 0) { // ボスのHPを最大でどれだけ削れたかを覚える（進行ゲージのボスをタップすると見られる）
+    const dmg = Math.max(0, Math.min(bo.maxHp, bo.maxHp - Math.max(0, bo.hp))), r = game.bossBestDmg;
+    if (!r || r.stage !== bossStage) game.bossBestDmg = { stage: bossStage, dmg, maxHp: bo.maxHp, tries: 1 };
+    else { r.tries = (r.tries || 1) + 1; if (dmg / bo.maxHp > r.dmg / r.maxHp) { r.dmg = dmg; r.maxHp = bo.maxHp; } }
+  } }
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
   bossTimerFor = null;

@@ -217,7 +217,8 @@ function showEnemyInfo(e, stage, extra) { // ステージ進捗バーの上に�
 // ---- 進行ゲージのゴールのボスをタップすると、その階のボスの名前・強さ・属性を下見できる ----
 document.getElementById('stageBossMark')?.addEventListener('click', () => {
   const bs = Math.ceil(Math.max(1, game.stage) / 10) * 10, em = getStageBossEmoji(bs), st = getEnemyStats(bs);
-  showEnemyInfo({ isBoss: true, emoji: em, hp: st.hp, maxHp: st.hp, milestone: st.milestone }, bs, `<br>ATK ${formatCoinNumber(st.atk)}　ステージ${formatStageNumber(bs)}のボス`);
+  const r = game.bossBestDmg, best = r && r.stage === bs && r.maxHp > 0 ? `<br><b class="eip-best">これまでに削った最大HP ${formatCoinNumber(Math.round(r.dmg))}（${Math.floor(r.dmg / r.maxHp * 1000) / 10}%）</b>　挑戦${r.tries || 1}回` : ''; // リタイヤ・敗北したボスは、最大でどれだけ削れたかも出す
+  showEnemyInfo({ isBoss: true, emoji: em, hp: st.hp, maxHp: st.hp, milestone: st.milestone }, bs, `<br>ATK ${formatCoinNumber(st.atk)}　ステージ${formatStageNumber(bs)}のボス${best}`);
   playTone(660, 0.06, 'triangle', 0.04, 880);
 });
 

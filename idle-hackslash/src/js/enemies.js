@@ -1258,7 +1258,13 @@ function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場�
   if (!o || o.kind !== 'reflector') return;
   game.refl = { bm: o.bm, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
 }
-function stepBounceValue(o) { o.bm = o.bm >= BOUNCE_OBJ_MAX ? BOUNCE_OBJ_MIN : o.bm + 1; o.bmFlash = Date.now(); saveReflector(o); } // 反射するたびに+1、最大の次は×1に戻る
+function stepBounceValue(o) { // 反射するたびに+1、最大の次は×1に戻る（ショップの「反射板の粘り」があれば×16がもう1回だけ残る）
+  if (o.bm >= BOUNCE_OBJ_MAX) {
+    if (game.refl16Keep && !o.held16) { o.held16 = true; o.bmFlash = Date.now(); saveReflector(o); return; }
+    o.held16 = false; o.bm = BOUNCE_OBJ_MIN;
+  } else o.bm++;
+  o.bmFlash = Date.now(); saveReflector(o);
+}
 function obstacleMult(o) { // 反射板の数値（掛け算）
   if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射板だけ（ステージに1つ）
   if (!(o.bm >= BOUNCE_OBJ_MIN) || o.bop !== '×') setBounceOp(o);

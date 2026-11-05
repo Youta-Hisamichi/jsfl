@@ -2069,6 +2069,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .enemy-info-pop.show { opacity: 1; }
 .enemy-info-pop .eip-name { font-weight: 900; font-size: 0.84rem; color: #ffd76b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .enemy-info-pop .eip-name small { margin-left: 8px; font-size: 0.7rem; color: #e8e8f0; font-weight: 700; }
+.enemy-info-pop .eip-best { color: #ff9f6b; font-weight: 900; }
 .enemy-info-pop .eip-row { white-space: nowrap; overflow: hidden; }
 .enemy-info-pop .eip-good { color: #ffe14f; }
 .enemy-info-pop .eip-bad { color: #9aa6c8; }
