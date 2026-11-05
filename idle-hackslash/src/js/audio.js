@@ -1205,41 +1205,43 @@ function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // �
   let last = o; if (hpFreq) { const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hpFreq; o.connect(f); last = f; }
   last.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
 }
-function playReflChain(n, max) { // 反射板の連鎖音：低めの「ポン」から始まり、反射するたびに1音ずつ高く・明るくなる（コンボがつながる気持ちよさ）
+function playReflChain(n, max) { // 反射板の連鎖音：「ピュイン↑」と駆け上がる連鎖の音。反射するたびに音が上がり、残響も長く・華やかに
   if (!audioCtx || isBattleSfxMuted()) return;
-  const semi = (Math.max(1, n) - 1) * 2, f = 330 * Math.pow(2, semi / 12), lv = Math.min(1, (n - 1) / 15), v = 0.04 + 0.025 * lv; // ×1はミ（330Hz）、1つごとに全音上がる
-  softTone('square', f * 1.06, f, 0.09, v, 0.003, 0, 200); softTone('triangle', f * 2.12, f * 2, 0.12, v * 0.7, 0.003); // ポンッ（はじける）
-  softTone('sine', f * 2, f * 2, 0.28 + 0.2 * lv, v * 0.9, 0.006, 0.03); softTone('sine', f * 3, f * 3, 0.2 + 0.15 * lv, v * 0.45, 0.006, 0.03); // キラン（響き）
-  if (n >= 5) softTone('triangle', f * 2.5, f * 2.5, 0.22, v * 0.6, 0.006, 0.06); // 5連鎖から和音が厚く
-  if (n >= 9) { filteredNoise(0.05, 0.22, 0.06 + 0.05 * lv, 7000, 1.2, 'highpass'); softTone('sine', f * 4, f * 4, 0.3, v * 0.4, 0.01, 0.1); } // 9連鎖からシャララ
-  if (n >= max) [0, 4, 7, 12].forEach((s, j) => softTone('square', 660 * Math.pow(2, s / 12), 660 * Math.pow(2, s / 12), 0.12, 0.04, 0.004, 0.14 + j * 0.06, 300)); // 最大値はファンファーレ
+  const steps = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24, 26], i = Math.max(0, Math.min(steps.length - 1, n - 1));
+  const f = 392 * Math.pow(2, steps[i] / 12), lv = Math.min(1, (n - 1) / 15), v = 0.045 + 0.02 * lv; // ×1はソ（392Hz）から、ドレミの音階で上がる
+  const bus = echoBus(0.09 + 0.03 * lv, 0.22 + 0.15 * lv, 0.35 + 0.2 * lv);
+  busTone(bus, 'square', f * 0.75, f * 1.5, 0, 0.1, v * 0.55, 0.003); // ピュイン↑（下からしゃくり上げる）
+  busTone(bus, 'triangle', f * 1.5, f * 1.5, 0.06, 0.25 + 0.15 * lv, v, 0.004); busTone(bus, 'sine', f * 3, f * 3, 0.07, 0.2 + 0.15 * lv, v * 0.45, 0.004); // ポーン（決まりの音）
+  if (n >= 5) busTone(bus, 'triangle', f * 1.89, f * 1.89, 0.09, 0.25, v * 0.5, 0.004); // 5連鎖から和音が厚く
+  if (n >= 9) { filteredNoise(0.06, 0.25, 0.05 + 0.05 * lv, 7000, 1.2, 'highpass'); busTone(bus, 'sine', f * 4, f * 4, 0.1, 0.3, v * 0.35, 0.01); } // 9連鎖からシャララ
+  if (n >= max) [0, 4, 7, 12].forEach((s, j) => busTone(bus, 'square', 784 * Math.pow(2, s / 12), 784 * Math.pow(2, s / 12), 0.16 + j * 0.06, 0.12, 0.035, 0.004)); // 最大値はファンファーレ
 }
 function playReflReset() { // 反射板が×1に戻ったとき：「シュゥン…」と下がって、ポフッと落ちる
   if (!audioCtx || isBattleSfxMuted()) return;
   softTone('triangle', 1200, 180, 0.38, 0.06, 0.01); softTone('square', 600, 90, 0.3, 0.025, 0.01, 0.02, 200);
   filteredNoise(0.3, 0.12, 0.12, 500, 0.8, 'lowpass'); softTone('sine', 160, 80, 0.15, 0.08, 0.005, 0.3);
 }
-function playThunderStrike() { // 雷の杖：金属のタライが落ちたような「ガゴォーン…」（低めの金属の鳴り＋エコー。小さく1回跳ねる）
+function echoBus(delay = 0.14, feedback = 0.3, wetAmt = 0.45, lpFreq = 3500) { // 短いエコーをかける入れ物（ここにつないだ音は少し響いて返ってくる）
+  const ac = audioCtx, bus = ac.createGain(), dl = ac.createDelay(1), fb = ac.createGain(), wet = ac.createGain(), lp = ac.createBiquadFilter();
+  dl.delayTime.value = delay; fb.gain.value = feedback; wet.gain.value = wetAmt; lp.type = 'lowpass'; lp.frequency.value = lpFreq;
+  bus.connect(ac.destination); bus.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(ac.destination);
+  setTimeout(() => { try { bus.disconnect(); fb.disconnect(); wet.disconnect(); } catch (e) {} }, 2500);
+  return bus;
+}
+function busTone(bus, type, f0, f1, t, dur, gain, attack = 0.004) { // エコーの入れ物に音を1つ鳴らす（t：何秒後か）
+  const ac = audioCtx, t0 = ac.currentTime + t, o = ac.createOscillator(), g = ac.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + Math.min(dur, 0.12));
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain * game.sfxVolume, t0 + attack); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(bus); o.start(t0); o.stop(t0 + dur + 0.03);
+}
+function playThunderStrike() { // 雷の杖：魔法の打撃音「シュィン…バシィン✨」（光が集まって、魔力の一撃がはじけ、キラキラ残る）
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
-  const ac = audioCtx, t0 = ac.currentTime, v = game.sfxVolume;
-  const bus = ac.createGain(), dl = ac.createDelay(1), fb = ac.createGain(), wet = ac.createGain(), lp = ac.createBiquadFilter(); // エコー：0.17秒ごとに響きが返ってくる
-  dl.delayTime.value = 0.17; fb.gain.value = 0.38; wet.gain.value = 0.55; lp.type = 'lowpass'; lp.frequency.value = 2200;
-  bus.connect(ac.destination); bus.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(ac.destination);
-  setTimeout(() => { try { bus.disconnect(); fb.disconnect(); wet.disconnect(); } catch (e) {} }, 3000);
-  const hit = (dt, a) => { // 1回ぶつかる音：「ガッ」と打つ音＋ずれた倍音が「ゴワァン」と鳴る（タライの金属の響き）
-    const nb = ac.createBufferSource(), n = Math.floor(ac.sampleRate * 0.06), buf = ac.createBuffer(1, n, ac.sampleRate), x = buf.getChannelData(0);
-    for (let k = 0; k < n; k++) x[k] = (Math.random() * 2 - 1) * (1 - k / n);
-    const bp = ac.createBiquadFilter(), ng = ac.createGain(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.9; ng.gain.value = 0.22 * a * v;
-    nb.buffer = buf; nb.connect(bp); bp.connect(ng); ng.connect(bus); nb.start(t0 + dt);
-    for (const [r, d, g] of [[1, 1.1, 0.075], [1.59, 0.85, 0.05], [2.14, 0.7, 0.042], [2.65, 0.55, 0.032], [3.42, 0.4, 0.024], [4.1, 0.3, 0.016]]) {
-      const o = ac.createOscillator(), gg = ac.createGain(), f = 250 * r; o.type = r === 1 ? 'triangle' : 'sine';
-      o.frequency.setValueAtTime(f * 1.01, t0 + dt); o.frequency.exponentialRampToValueAtTime(f * 0.99, t0 + dt + d); // 少しうなる
-      gg.gain.setValueAtTime(0.0001, t0 + dt); gg.gain.exponentialRampToValueAtTime(g * a * v, t0 + dt + 0.004); gg.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + d);
-      o.connect(gg); gg.connect(bus); o.start(t0 + dt); o.stop(t0 + dt + d + 0.05);
-    }
-  };
-  hit(0, 1); hit(0.16, 0.45); // ガゴォーン…（小さくもう1回跳ねる）
+  const bus = echoBus(0.12, 0.28, 0.4);
+  noiseSweep(0.09, 900, 4500, 'bandpass', 2.5, 0.12); // シュィン（魔力が集まる）
+  busTone(bus, 'triangle', 700, 280, 0.08, 0.18, 0.09); busTone(bus, 'sine', 140, 70, 0.08, 0.16, 0.12); // バシッ（芯のある一撃）
+  filteredNoise(0.08, 0.06, 0.16, 2500, 0.9, 'bandpass');
+  [[1318.5, 0.5], [1975.5, 0.42], [2637, 0.35], [3951, 0.25]].forEach(([f, d], k) => busTone(bus, 'sine', f * 1.01, f, 0.09 + k * 0.012, d, 0.035 - k * 0.006, 0.003)); // ィン✨（光がはじける和音）
 }
 function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える
   if (!audioCtx || isBattleSfxMuted()) return;
