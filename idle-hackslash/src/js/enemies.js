@@ -1263,6 +1263,14 @@ function obstacleMult(o) { // 反射板の数値（掛け算）
   if (!(o.bm >= BOUNCE_OBJ_MIN) || o.bop !== '×') setBounceOp(o);
   return o.bm;
 }
+// 反射板の色：×1 白 → 黄 → 緑 → 青 → 赤 → 紫（×15）→ ×16 虹色。1つずつ少しずつ色が変わる（青から赤へは混ぜると紫になるので、色を1つずつ決めておく）
+const REFL_COLORS = [null, [245, 245, 245], [255, 240, 170], [255, 222, 50], [215, 225, 40], [120, 210, 60], [50, 190, 80], [30, 180, 150], [60, 160, 255], [40, 105, 240], [35, 65, 205], [255, 95, 60], [235, 40, 50], [205, 30, 95], [170, 50, 205], [125, 40, 230]];
+function mixRGB(a, b, t) { return a.map((x, i) => x + (b[i] - x) * t); }
+function rgbHex(c) { return '#' + c.map(x => Math.round(x).toString(16).padStart(2, '0')).join(''); }
+function reflectorRGB(v, now) {
+  if (v >= BOUNCE_OBJ_MAX) { const h = ((now || Date.now()) / 6) % 360, f = n => { const k = (n + h / 30) % 12; return 255 * (0.5 - 0.5 * Math.max(-1, Math.min(k - 3, 9 - k, 1))); }; return [f(0), f(8), f(4)]; } // 虹色：色がぐるぐる回る
+  return REFL_COLORS[Math.max(1, Math.min(REFL_COLORS.length - 1, Math.round(v)))];
+}
 function bounceMultLabel(v) { return `×${Math.abs(v)}`; }
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
@@ -1642,7 +1650,7 @@ function reflectorBounced(o) { // 反射するたびに数値+1（音も数値�
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
-  const good = true, col = BOUNCE_COL_PLUS, label = bounceMultLabel(v);
+  const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
   const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v, col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp);
   reflectBlasts.push({ x, y, t: Date.now(), col, power, label: `${label}！`, sub: dmg ? `${fullNumOr(Math.round(dmg))} ダメージ` : '', rot: Math.random() * Math.PI });
@@ -1859,12 +1867,17 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
     const v = obstacleMult(o); if (!v || o.broken || o.dead || (o.tansu && o.used)) continue; // 空になって消えていくタンスは倍率を出さない
     ctx.globalAlpha = 1;
     const plus = v > 0, big = Math.abs(v) >= 8, pt = o.bmFlash ? (now - o.bmFlash) / BOUNCE_POYON_MS : 1, pop = (pt < 1 ? 1 + 0.28 * Math.sin(pt * Math.PI * 2.5) * (1 - pt) : 1) * (1 - 0.12 * fade); // 変わった直後はポヨンと弾む
-    if (o.kind === 'reflector') { // 反射板：青（プラス）か赤（マイナス）に光る円盤
-      const R = o.r * pop, g = ctx.createRadialGradient(o.x - R * 0.3, o.y - R * 0.35, R * 0.1, o.x, o.y, R);
-      g.addColorStop(0, plus ? '#d6f0ff' : '#ffd6da'); g.addColorStop(0.55, plus ? '#3d8dff' : '#ff3b4f'); g.addColorStop(1, plus ? '#123a8a' : '#7a0f1c');
-      ctx.shadowColor = plus ? 'rgba(80,170,255,0.9)' : 'rgba(255,70,90,0.9)'; ctx.shadowBlur = big ? 22 : 12;
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
-      ctx.lineWidth = 3; ctx.strokeStyle = big ? '#ffe45c' : 'rgba(255,255,255,0.9)'; ctx.stroke();
+    if (o.kind === 'reflector') { // 反射板：数値が大きくなるほど 白→黄→緑→青→赤→紫→虹色 と色が変わる円盤
+      const R = o.r * pop, c = reflectorRGB(v, now), rgb = k => `rgb(${k.map(Math.round).join(',')})`, g = ctx.createRadialGradient(o.x - R * 0.3, o.y - R * 0.35, R * 0.1, o.x, o.y, R);
+      g.addColorStop(0, rgb(mixRGB(c, [255, 255, 255], 0.75))); g.addColorStop(0.55, rgb(c)); g.addColorStop(1, rgb(mixRGB(c, [0, 0, 0], 0.55)));
+      ctx.shadowColor = `rgba(${c.map(Math.round).join(',')},0.9)`; ctx.shadowBlur = 10 + 14 * (v - BOUNCE_OBJ_MIN) / (BOUNCE_OBJ_MAX - BOUNCE_OBJ_MIN);
+      let fill = g;
+      if (v >= BOUNCE_OBJ_MAX && ctx.createConicGradient) { fill = ctx.createConicGradient(now / 500, o.x, o.y); for (let i = 0; i <= 6; i++) fill.addColorStop(i / 6, `hsl(${i * 60},95%,58%)`); } // 虹色の円盤（回る）
+      ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(o.x, o.y, R, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+      if (v >= BOUNCE_OBJ_MAX) { const sh = ctx.createRadialGradient(o.x - R * 0.3, o.y - R * 0.35, R * 0.05, o.x, o.y, R); sh.addColorStop(0, 'rgba(255,255,255,0.8)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.3)'); ctx.fillStyle = sh; ctx.fill(); } // 丸く見えるように光と影を重ねる
+      if (v >= BOUNCE_OBJ_MAX) { // 虹色：縁が7色にぐるぐる回る
+        ctx.lineWidth = 4; for (let i = 0; i < 12; i++) { const a0 = now / 400 + i * Math.PI / 6; ctx.strokeStyle = `hsl(${i * 30},100%,60%)`; ctx.beginPath(); ctx.arc(o.x, o.y, R, a0, a0 + Math.PI / 6 + 0.05); ctx.stroke(); }
+      } else { ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.stroke(); }
     }
     ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
