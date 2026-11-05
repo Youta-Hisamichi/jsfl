@@ -1292,8 +1292,9 @@ function applyBounceObjMult(ball, o) {
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now; // 当たり続けて何度もたまらないように
   if (!tackleShotNow()) return; // 数値が変わるのも、倍率がたまるのも、射出したタックルのときだけ
   ball.bounceMult = Math.max(1 / BOUNCE_MULT_CAP, Math.min(BOUNCE_MULT_CAP, applyBounceOp(ball.bounceMult || 1, o))); // 記号どおりに倍率を計算
-  o.bm = v > 0 ? Math.min(BOUNCE_OBJ_MAX, v + 1) : Math.max(-BOUNCE_OBJ_MAX, v - 1); o.bmFlash = now; // 跳ね返るたびに数値が1大きくなる（最大100）。ポヨンと弾んで変わる
-  spawnDamageText(o.x, o.y - o.r - 16, bounceMultLabel(v, o), v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
+  const label = bounceMultLabel(v, o);
+  setBounceOp(o); o.bmFlash = now; // ぶつかるたびに記号と数値が新しく変わる。ポヨンと弾んで変わる
+  spawnDamageText(o.x, o.y - o.r - 16, label, v > 0 ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS, 0.03, true);
   playBounceMultSound(v);
 }
 function dashDmgMult(ball) {
