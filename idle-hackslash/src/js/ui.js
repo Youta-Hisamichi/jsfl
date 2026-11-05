@@ -765,6 +765,10 @@ function noteDebugUse(action) {
   try { const l = dbgRecentList().filter(a => a !== action); l.unshift(action); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify(l.slice(0, DBG_RECENT_MAX))); } catch (e) {}
   setTimeout(renderDebugRecent, 0);
 }
+// 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
+const DBG_NEW = ['meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
+  if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
 debugRow.addEventListener('click', event => {
   const button = event.target.closest('[data-debug]');
