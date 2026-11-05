@@ -1248,18 +1248,16 @@ const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通っ
 const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
 function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
-// 反射板の数値：×2〜×16（掛け算だけ）。置いたときは2・3・5・8・16から選ぶ（大きい数値ほど稀。ボス階は大きめが出やすい）。
-// 射出したタックルで当てると反射板が高速で跳ね回り、反射するたびに数値が1ずつ増える（×16の次は×2に戻る）。
-// 敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」
-const BOUNCE_OBJ_MULTS = [[2, 45], [3, 25], [5, 15], [8, 9], [16, 6]], BOUNCE_OBJ_MULTS_BOSS = [[2, 20], [3, 25], [5, 23], [8, 18], [16, 14]];
-const BOUNCE_OBJ_MIN = 2, BOUNCE_OBJ_MAX = 16;
-function rollBounceMult() {
-  const tbl = game.stage % 10 === 0 ? BOUNCE_OBJ_MULTS_BOSS : BOUNCE_OBJ_MULTS; let r = Math.random() * tbl.reduce((t, x) => t + x[1], 0), m = 2;
-  for (const [v, w] of tbl) { if ((r -= w) < 0) { m = v; break; } }
-  return m;
+// 反射板の数値：×1〜×16（掛け算だけ）。×1から始まり、射出したタックルで当てると反射板が高速で跳ね回り、
+// 反射するたびに数値が1ずつ増える（×16の次は×1に戻る）。敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」。
+// 反射板（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
+const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16;
+function setBounceOp(o) { o.bop = '×'; o.bm = (game.refl && game.refl.bm >= BOUNCE_OBJ_MIN && game.refl.bm <= BOUNCE_OBJ_MAX) ? game.refl.bm : BOUNCE_OBJ_MIN; }
+function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
+  if (!o || o.kind !== 'reflector') return;
+  game.refl = { bm: o.bm, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
 }
-function setBounceOp(o) { o.bop = '×'; o.bm = rollBounceMult(); }
-function stepBounceValue(o) { o.bm = o.bm >= BOUNCE_OBJ_MAX ? BOUNCE_OBJ_MIN : o.bm + 1; o.bmFlash = Date.now(); } // 反射するたびに+1、最大の次は最小に戻る
+function stepBounceValue(o) { o.bm = o.bm >= BOUNCE_OBJ_MAX ? BOUNCE_OBJ_MIN : o.bm + 1; o.bmFlash = Date.now(); saveReflector(o); } // 反射するたびに+1、最大の次は×1に戻る
 function obstacleMult(o) { // 反射板の数値（掛け算）
   if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射板だけ（ステージに1つ）
   if (!(o.bm >= BOUNCE_OBJ_MIN) || o.bop !== '×') setBounceOp(o);
@@ -1424,12 +1422,22 @@ function setupObstacles(dropDebug) {
 // 数値付きの反射オブジェクト（反射板）は、どのステージにも1つだけ置く
 { const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); try { ensureOneBounce(); } catch (e) {} }; }
 function ensureOneBounce() {
-  const refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
-  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); keep.r = reflectorRadius(); return; }
-  if (refl.length === 1) { refl[0].r = reflectorRadius(); return; }
-  const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) return;
-  const o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') return;
-  o.debug = false; o.r = reflectorRadius();
+  let refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
+  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); refl = [keep]; }
+  let o = refl[0];
+  if (!o) {
+    const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) return;
+    o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') return;
+    o.debug = false;
+  }
+  o.r = reflectorRadius(); o.mvx = o.mvy = 0; o.launched = false;
+  setBounceOp(o); // 前のステージの数値を持ち越す（はじめは×1）
+  const c = game.refl; // 前のステージの場所に置く（ほかの障害物と重なるときは、新しい場所のまま）
+  if (c && isFinite(c.fx) && isFinite(c.fy)) {
+    const x = arena.x + Math.max(-0.85, Math.min(0.85, c.fx)) * arenaHalf(), y = arena.y + Math.max(-0.85, Math.min(0.85, c.fy)) * arenaHalfY();
+    if (!obstacles.some(q => q !== o && !q.broken && Math.hypot(q.x - x, q.y - y) < q.r + o.r + 6)) { o.x = x; o.y = y; }
+  }
+  saveReflector(o);
 }
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射板はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
@@ -1581,7 +1589,7 @@ function stepMovingObstacle(o, speedMult, pl) {
   const refl = o.kind === 'reflector' && o.launched, rest = refl ? 1 : 0.8;
   o.x += o.mvx * speedMult; o.y += o.mvy * speedMult;
   const f = Math.pow(refl ? REFLECT_FRICTION : OBS_FRICTION, speedMult); o.mvx *= f; o.mvy *= f;
-  if (Math.hypot(o.mvx, o.mvy) < 0.25) { o.mvx = o.mvy = 0; o.launched = false; return; } // 止まったらその場に残る
+  if (Math.hypot(o.mvx, o.mvy) < 0.25) { o.mvx = o.mvy = 0; o.launched = false; saveReflector(o); return; } // 止まったらその場に残る（反射板は場所を覚える）
   let wall = false;
   // 壁で跳ね返る（反射板は勢いを落とさない）
   if (ARENA_RECT) {
