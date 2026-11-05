@@ -1644,7 +1644,7 @@ function stepMovingObstacle(o, speedMult, pl) {
       reflectorSmash(o, e, pl);
       o.x = e.x - nx * (o.r + e.radius + 1); o.y = e.y - ny * (o.r + e.radius + 1);
       const dot = o.mvx * nx + o.mvy * ny; if (dot > 0) { o.mvx -= 2 * dot * nx; o.mvy -= 2 * dot * ny; }
-      e.vx = (e.vx || 0) + nx * 3; e.vy = (e.vy || 0) + ny * 3; reflectorBounced(o);
+      if (!e.isDying && e.hp > 0) { const k = (e.isBoss ? 0.35 : 1) * Math.max(18, Math.hypot(o.mvx, o.mvy)); e.kbx = nx * k; e.kby = ny * k; startKnockFly(e); } reflectorBounced(o); // 反射板に当たった敵も大きく吹っ飛ぶ
       continue;
     }
     if (o.hitSet && o.hitSet.has(e)) continue;
@@ -2042,8 +2042,41 @@ function applyHitKnock(ball, nx, ny) {
   const k = HIT_KNOCK_SPEED * (ball.isBoss ? 0.4 : ball.isPlayer && !isMainPlayerBall(ball) ? 0.7 : 1);
   ball.kbx = nx * k; ball.kby = ny * k;
 }
+// ===== 吹っ飛び：タックル・反射板で飛ばされた敵は、壁・障害物・ほかの敵にぶつかると「激突ダメージ」（ぶつけられた敵も飛ぶ） =====
+const KNOCK_FLY_DECAY = 0.94, KNOCK_FLY_MS = 1600, CRASH_MIN_SPEED = 4, CRASH_DMG_MULT = 0.6, CRASH_SPEED_REF = 20; // 激突ダメージ＝自キャラの攻撃力×0.6×（速さ÷20）
+function startKnockFly(en, from) { if (!en || en.isPlayer) return; en.kbFly = { until: Date.now() + KNOCK_FLY_MS, hit: new Set(), wallAt: 0 }; }
+function knockFlying(b) { return b.kbFly && Date.now() < b.kbFly.until && Math.hypot(b.kbx || 0, b.kby || 0) >= CRASH_MIN_SPEED; }
+function crashHit(en, sp, x, y, what) { // 激突ダメージ（必ず当たる。クリティカルはあり）
+  const pl = balls.find(isMainPlayerBall); if (!pl || !en || en.hp <= 0 || en.isDying) return;
+  const m = CRASH_DMG_MULT * Math.min(2, sp / CRASH_SPEED_REF);
+  const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m)), en);
+  en.hp -= dmg; trackDamage(dmg);
+  for (let i = 0; i < 2; i++) spawnHitParticles(x, y, i ? '#ffd27a' : '#ffffff');
+  spawnAttackDamageText(en, dmg, crit, '#ffcf8a', en.isAdd ? 6 : undefined);
+  spawnDamageText(x, y - 20, `💥 ${what}激突！`, '#ffb35c', 0.03);
+  if (typeof thump === 'function') { thump(150, 50, 0.16, 0.3, 'square'); thump(70, 35, 0.2, 0.25, 'sine', 0.01); }
+  if (typeof playNoiseBurst === 'function') playNoiseBurst(0.08, 0.12);
+  if (sp >= CRASH_SPEED_REF && typeof shakeScreenLight === 'function') shakeScreenLight();
+  if (en.isAdd) { if (typeof focusHpEnemy === 'function') focusHpEnemy(en); if (en.hp <= 0) { recordBestiaryKill(en); spawnExpGems(en.x, en.y, 4); const c = Math.max(1, Math.round(stageCoinRaw() * (0.2 + Math.random() * 0.3))); game.coins += c; spawnDamageText(en.x, en.y, '+' + formatCoinNumber(c) + ' 🟡', '#ffd76b'); } }
+  else { onPlayerHitEnemy(en, dmg); if (en.hp <= 0) triggerEnemyDefeat(en, pl.x, pl.y); }
+}
+function knockFlyCollide(ball, kbx0, kby0, wall) { // 吹っ飛び中にぶつかったら激突ダメージ
+  const sp = Math.hypot(kbx0, kby0), f = ball.kbFly, now = Date.now();
+  const turned = Math.sign(kbx0) !== Math.sign(ball.kbx) || Math.sign(kby0) !== Math.sign(ball.kby); // 壁・障害物で跳ね返った
+  if ((wall || turned) && now - f.wallAt > 180) { f.wallAt = now; crashHit(ball, sp, ball.x, ball.y, wall ? '壁に' : ''); ball.kbx *= 0.75; ball.kby *= 0.75; }
+  for (const o of [...balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0), ...adds.filter(a => a.hp > 0)]) { // ほかの敵にぶつかる：両方にダメージ、ぶつけられた敵も飛ぶ
+    if (o === ball || f.hit.has(o)) continue;
+    const dx = o.x - ball.x, dy = o.y - ball.y, d = Math.hypot(dx, dy) || 1;
+    if (d >= o.radius + ball.radius) continue;
+    f.hit.add(o); const nx = dx / d, ny = dy / d, mx = (ball.x + o.x) / 2, my = (ball.y + o.y) / 2;
+    crashHit(o, sp, mx, my, '敵に'); crashHit(ball, sp * 0.7, mx, my, '');
+    if (!o.isDying && o.hp > 0) { const k = sp * 0.75 * (o.isBoss ? 0.35 : 1); o.kbx = nx * k; o.kby = ny * k; if (!o.kbFly || now > o.kbFly.until) { startKnockFly(o); o.kbFly.hit.add(ball); } } // 玉突き
+    ball.kbx *= 0.5; ball.kby *= 0.5;
+  }
+}
 function moveHitKnock(ball, speedMult) {
   if (!ball.kbx && !ball.kby) return;
+  const fly = knockFlying(ball), kbx0 = ball.kbx, kby0 = ball.kby;
   ball.x += ball.kbx * speedMult; ball.y += ball.kby * speedMult;
   obstacleBounce(ball);
   const w = arenaWallHit(ball);
@@ -2052,7 +2085,8 @@ function moveHitKnock(ball, speedMult) {
     const dot = ball.kbx * nx + ball.kby * ny;
     if (dot > 0) { ball.kbx -= 2 * dot * nx; ball.kby -= 2 * dot * ny; }
   }
-  const f = Math.pow(HIT_KNOCK_DECAY, speedMult);
+  if (fly) knockFlyCollide(ball, kbx0, kby0, !!w);
+  const f = Math.pow(fly ? KNOCK_FLY_DECAY : HIT_KNOCK_DECAY, speedMult);
   ball.kbx *= f; ball.kby *= f;
   if (Math.hypot(ball.kbx, ball.kby) < 0.15) ball.kbx = ball.kby = 0;
 }

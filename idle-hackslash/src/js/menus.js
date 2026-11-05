@@ -1700,13 +1700,13 @@ const RUN_BUFFS = {
 function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
 function getRushDmgMult() { return rushingNow && holdRush ? pullMashMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
 function getRushPierce() { return 0; } // 体当たりは貫通しない（敵を吹っ飛ばす）
-const RUSH_KNOCK_SPEED = 16; // 体当たりで敵を吹っ飛ばす初速（貫きの蹄鉄1個ごとに+25%）
+const RUSH_KNOCK_SPEED = 24; // 体当たりで敵を吹っ飛ばす初速（貫きの蹄鉄1個ごとに+25%）。吹っ飛んだ敵は壁・障害物・ほかの敵にぶつかると激突ダメージ
 function rushKnockFly(en, from) {
   if (!en || en.isDying) return;
   const dx = en.x - from.x, dy = en.y - from.y, d = Math.hypot(dx, dy) || 1;
   const k = RUSH_KNOCK_SPEED * (1 + 0.25 * Math.min(3, (isArtifactShown('pierceHoof') && game.ownedArtifacts && game.ownedArtifacts.pierceHoof) || 0)) * (en.isBoss ? 0.35 : 1);
   if (Math.hypot(en.kbx || 0, en.kby || 0) >= k * 0.8) return; // 同じ当たりで重ねがけしない
-  en.kbx = dx / d * k; en.kby = dy / d * k;
+  en.kbx = dx / d * k; en.kby = dy / d * k; startKnockFly(en, from);
 }
 // 乱舞：連打でゲージを溜め、満タンになるとゲージが尽きるまで敵から敵へ高速で斬りかかる（跳ね返らず・反撃を受けない）
 const RAMPAGE_PER_TAP = 0.12, RAMPAGE_DECAY = 0.006, RAMPAGE_FRAMES = 300, RAMPAGE_DMG = 1.5;
