@@ -758,7 +758,7 @@ function overHealMult(n = overHealCount()) { return Math.min(OVERHEAL_CAP, 1 + O
 function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
-SHOP_ITEMS.refl16 = { icon: '🌈', name: '反射板の粘り', desc: '反射板が×16まで上がるようになる（持っていないと×15の次は×1に戻る）。×16の次の反射で×1に戻る（転生しても残る）', cost: 5, unlockKey: 'refl16Keep' };
+SHOP_ITEMS.refl16 = { icon: '🌈', name: '反射板の粘り', desc: '反射板が×16になったら、次に反射しても×1に戻らず、×16のままもう1回反射できる（転生しても残る）', cost: 5, unlockKey: 'refl16Keep' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
