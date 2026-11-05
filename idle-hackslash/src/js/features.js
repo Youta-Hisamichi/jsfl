@@ -848,9 +848,10 @@ document.getElementById('newsBtn').addEventListener('click', openNews);
 updateNewsDot();
 
 // ===== 仲間ページ：倒れている仲間をコインですぐ全員復活 =====
-function reviveAllCost() { const ids = downCompanionIds(); return Math.max(10, Math.round(stageCoinRaw() * 15 * ids.reduce((s, id) => s + ((game.compDeaths || {})[id] || 1), 0))); } // 今のステージの稼ぎ×倒れた回数ぶん
+function reviveAllCost() { return downCompanionIds().reduce((t, id) => t + reviveOneCost(id), 0); } // 倒れている仲間それぞれの復活料金の合計
 function downCompanionIds() { const cp = game.companions; return Object.keys(COMPANIONS).filter(id => cp.recruited[id] && cp.alive[id] === false); }
-function reviveOneCost(id) { return Math.max(10, Math.round(stageCoinRaw() * 15 * ((game.compDeaths || {})[id] || 1))); } // 1人ぶん（全員復活と同じ単価）
+const REVIVE_COST_MULT = 10; // 復活料金：その仲間のHP Lvアップ費用の10倍
+function reviveOneCost(id) { return Math.max(10, Math.round(getCompanionLevelCost(id, 'hp') * REVIVE_COST_MULT)); }
 function reviveAllCompanions(ev, only) {
   const ids = only ? [only] : downCompanionIds(); if (!ids.length) return;
   const cost = only ? reviveOneCost(only) : reviveAllCost();
