@@ -1219,11 +1219,34 @@ function loadThunderSfx() {
   thunderLoading = fetch('assets/audio/thunder.mp3').then(r => r.arrayBuffer()).then(b => audioCtx.decodeAudioData(b)).then(buf => (thunderBuf = buf)).catch(() => { thunderLoading = false; return null; });
   return thunderLoading;
 }
+function playMetalRing(base = 1650, a = 1) { // 鋭い金属音：打った瞬間の「チッ」＋ずれた倍音（金属の鳴り）が「キィィン」と残る
+  if (!audioCtx || isBattleSfxMuted()) return;
+  filteredNoise(0, 0.025, 0.3 * a, 8000, 0.8, 'highpass');
+  for (const [r, d, g] of [[1, 0.55, 0.05], [2.32, 0.42, 0.035], [3.9, 0.3, 0.028], [5.43, 0.22, 0.02], [7.1, 0.15, 0.014]]) softTone(r < 2 ? 'triangle' : 'sine', base * r, base * r * 0.995, d, g * a, 0.002);
+}
+function playReflChain(n, max) { // 反射板の連鎖音：パズルの連鎖のように、数値が上がるほど高く・華やかに（上の音階を駆け上がる）
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const STEPS = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36], i = Math.max(0, Math.min(STEPS.length - 1, n - 1)), f = 523.25 * Math.pow(2, STEPS[i] / 12), lv = Math.min(1, (n - 1) / 15), v = 0.035 + 0.03 * lv;
+  softTone('square', f, f, 0.07, v, 0.004, 0, 300); softTone('square', f * 1.5, f * 1.5, 0.08, v * 0.8, 0.004, 0.045, 300); // ピロッ
+  softTone('sine', f * 2, f * 2, 0.3 + 0.2 * lv, v * 1.1, 0.006, 0.05); // キラーンと響く
+  if (n >= 5) softTone('triangle', f * 2.52, f * 2.52, 0.25, v * 0.7, 0.006, 0.09); // 5連鎖から和音が厚くなる
+  if (n >= 9) { filteredNoise(0.06, 0.25, 0.08 + 0.06 * lv, 7000, 1.2, 'highpass'); softTone('sine', f * 3, f * 3, 0.35, v * 0.6, 0.01, 0.12); } // 9連鎖からシャララと光る
+  if (n >= max) [0, 4, 7, 12].forEach((s, j) => softTone('square', 1046.5 * Math.pow(2, s / 12), 1046.5 * Math.pow(2, s / 12), 0.12, 0.04, 0.004, 0.14 + j * 0.06, 300)); // 最大値はファンファーレ
+}
+function playReflReset() { // 反射板が×1に戻ったとき：「シュゥン…」と下がって、ポフッと落ちる
+  if (!audioCtx || isBattleSfxMuted()) return;
+  softTone('triangle', 1200, 180, 0.38, 0.06, 0.01); softTone('square', 600, 90, 0.3, 0.025, 0.01, 0.02, 200);
+  filteredNoise(0.3, 0.12, 0.12, 500, 0.8, 'lowpass'); softTone('sine', 160, 80, 0.15, 0.08, 0.005, 0.3);
+}
 function playThunderStrike(kind) {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (!kind && now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
   let k = kind || game.thunderSfx || 'F';
-  if (k === 'F') { loadThunderSfx(); if (thunderBuf) { const src = audioCtx.createBufferSource(), g = audioCtx.createGain(); src.buffer = thunderBuf; g.gain.value = (game.sfxVolume ?? 0.7) * 0.9; src.connect(g); g.connect(audioCtx.destination); src.start(); return; } k = 'B'; }
+  if (k === 'F') { loadThunderSfx(); if (thunderBuf) { // 録音を高めに削って鋭くし、金属を打ったような「キィン」を重ねる
+      const ac = audioCtx, src = ac.createBufferSource(), g = ac.createGain(), hp = ac.createBiquadFilter(), pk = ac.createBiquadFilter();
+      src.buffer = thunderBuf; hp.type = 'highpass'; hp.frequency.value = 450; pk.type = 'peaking'; pk.frequency.value = 3200; pk.Q.value = 1.4; pk.gain.value = 7;
+      g.gain.value = (game.sfxVolume ?? 0.7) * 0.85; src.connect(hp); hp.connect(pk); pk.connect(g); g.connect(ac.destination); src.start();
+      playMetalRing(); return; } k = 'B'; }
   if (k === 'A') { // 今の音
     filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass');
     softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();

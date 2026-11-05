@@ -1663,8 +1663,8 @@ function stepMovingObstacle(o, speedMult, pl) {
 // 反射板のダメージ：反射板に当てたときの自キャラのダメージ × 今の数値
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
-  stepBounceValue(o);
-  const now = Date.now(); if (typeof playTone === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; playTone(700 * Math.pow(2, (o.bm - BOUNCE_OBJ_MIN) / 12), 0.05, 'square', 0.03); }
+  const before = o.bm; stepBounceValue(o);
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else playReflChain(o.bm, reflMax()); } // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
