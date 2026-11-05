@@ -738,19 +738,19 @@ function nextUpgradeLeap(level) {
 function newUpgradeLevels() { const o = {}; for (const id in UPGRADES) o[id] = 0; return o; }
 function getUpgradeLevelCap(id) { return UPGRADES[id].max || Infinity; }
 const SHOP_ITEMS = {
-  sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 2倍', cost: 8 },
-  shield: { icon: '🛡️', name: '月の盾', desc: '最大HP 2倍', cost: 8 },
-  meteor: { icon: '<span class="ico-flipv">☄️</span>', name: 'メテオブースト', desc: 'メテオダメージ 2倍', cost: 12 }, // 絵文字のほうき星は上向きなので上下反転して落ちてくる向きに
-  fairy: { icon: '🧚', name: 'コインの妖精', desc: 'コイン獲得 2倍', cost: 10 },
+  sword: { icon: '🗡️', name: '流星剣', desc: '攻撃力 2倍', cost: 5 },
+  shield: { icon: '🛡️', name: '月の盾', desc: '最大HP 2倍', cost: 5 },
+  meteor: { icon: '<span class="ico-flipv">☄️</span>', name: 'メテオブースト', desc: 'メテオダメージ 2倍', cost: 5 }, // 絵文字のほうき星は上向きなので上下反転して落ちてくる向きに
+  fairy: { icon: '🧚', name: 'コインの妖精', desc: 'コイン獲得 2倍', cost: 5 },
   summoner: { icon: '🪄', name: '召喚の指輪', desc: '分身上限 +2', cost: 10 },
 };
-// 何度でも買える倍率アイテム：1回目で2倍、そのあと1回ごとに+1倍（3倍・4倍…）。値段は買うたびに2倍（8→16→32…）
+// 何度でも買える倍率アイテム：1回目で2倍、そのあと1回ごとに+1倍（3倍・4倍…）。値段は💎5から、💎10まで倍、そのあとは+10ずつ（5→10→20→30…）
 const SHOP_MULTI_ITEMS = { sword: '攻撃力', shield: '最大HP', meteor: 'メテオダメージ', fairy: 'コイン獲得' };
 function shopBuyCount(id) { const v = game.shopOwned && game.shopOwned[id]; return v === true ? 1 : (+v || 0); } // 昔のセーブは true＝1回
 function shopMultiRate(id) { return 1 + shopBuyCount(id); } // 0回なら1倍
 const TACKLE_PIERCE_MS_PER_LV = 100;
 function getTacklePierceMs() { return (game.tacklePierceLv || 0) * TACKLE_PIERCE_MS_PER_LV; }
-SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upPctUnlocked' };
+SHOP_ITEMS.upPct = { icon: '📈', name: '10%LvUPボタン', desc: '所持コイン10%ぶん、一気にLvUPできるボタンを解放', cost: 5, unlockKey: 'upPctUnlocked' };
 // 回復限界突破：回復スキル・リジェネスキル・回復ポーションで最大HPを超えて回復できる（何個でも買える・1個ごとに上限+0.5倍、最大10倍）
 const OVERHEAL_STEP = 0.5, OVERHEAL_CAP = 10, OVERHEAL_MAX_BUYS = 18, HEAL_SKILL_RATIO = 0.5, HEAL_SKILLS = ['skillHeal', 'skillRegen']; // 1個で最大HPの1.5倍、2個で2倍…最大10倍
 function overHealCount() { if (game.overHealUnlocked && !game.overHealBuys) { game.overHealBuys = 2; delete game.overHealUnlocked; } return Math.min(OVERHEAL_MAX_BUYS, game.overHealBuys || 0); } // 前の1回買い切り（2倍）は2個ぶんとして引き継ぐ
@@ -758,7 +758,7 @@ function overHealMult(n = overHealCount()) { return Math.min(OVERHEAL_CAP, 1 + O
 function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
-SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 15, unlockKey: 'upMaxUnlocked' };
+SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
 const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
@@ -785,15 +785,15 @@ function simpleChoice(o) { // 軽い2択ダイアログ
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   playTone(880, 0.08, 'triangle', 0.08);
 }
-SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 1, consumableKey: 'potions', bundle: 3 };
-SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキルポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 1, consumableKey: 'redPotions', bundle: 3 };
+SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 2, consumableKey: 'potions', bundle: 3 };
+SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキルポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 2, consumableKey: 'redPotions', bundle: 3 };
 // ピックアップ採用券はショップから外した（持っている券は今までどおり使える）
 SHOP_ITEMS.partySlot = { hideInShop: true, icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生でリセット）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
 SHOP_ITEMS.skillSlot = { hideInShop: true, icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える（転生でリセット）', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
 SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える（転生でリセット）', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
-SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 10, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+10（10→20→30…100）
-SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 50, unlockKey: 'forbiddenSwordBought' };
+SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 5, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
+SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 5, unlockKey: 'forbiddenSwordBought' };
 SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
 // 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎1、OFFは💎2。攻撃力・HPははじめからON（OFFにもできる）、命中は進化3回目で自動でON（OFFにできない）
 const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
@@ -807,10 +807,10 @@ const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
 });
 SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp', name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎1・OFF 💎2）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // 命中ははじめからON
 // 宝箱の予感：SR以上の宝箱は、これを買うまでドロップしない
-[['epic', 'SR', 20, 'x_chest4'], ['legendary', 'SSR', 40, 'x_chest6'], ['mythic', 'UR', 80, 'x_chest7']].forEach(([r, label, cost, icon]) => {
+[['epic', 'SR', 5, 'x_chest4'], ['legendary', 'SSR', 5, 'x_chest6'], ['mythic', 'UR', 5, 'x_chest7']].forEach(([r, label, cost, icon]) => {
   SHOP_ITEMS['chestOmen_' + r] = { icon: '🎁', img: `assets/img/icons/omen_${r}.webp` /* 吹き出しの上に宝箱（宝箱そのものと見分けやすく） */, imgCls: 'omen-ico', name: `${label}宝箱の予感`, desc: `${label}の宝箱がドロップするようになる（転生しても残る）`, cost, unlockKey: 'chestOmen_' + r };
 });
-SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/fea_bundle.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 10, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎10→30→90…と3倍ずつ高くなる
+SHOP_ITEMS.feaUse = { icon: '🪶', img: 'assets/img/icons/fea_bundle.webp', name: '羽の束ね紐', desc: '進化1回で使える進化の羽が1枚増える（転生しても残る）', cost: 5, costGrowth: 3, stackKey: 'feaUseBuys', maxStack: FEA_USE_SHOP_MAX, shopCount: true }; // 💎5→15→45…と3倍ずつ高くなる
 SHOP_ITEMS.rareRing = { icon: '💍', img: 'assets/img/icons/art_rareRing.webp', name: 'レアリング（★5遺物）', desc: '★4以上のレアドロップ率2倍', cost: 50, unlockKey: 'rareRingBought' };
 // 進化の羽の交換：1つ下のレア度の羽100枚で、1つ上の羽を1枚（URだけ💎5も）。何枚でも・まとめて交換もできる
 const FEA_TRADE_NEED = 100;
@@ -821,8 +821,8 @@ function feaTradeCost(id) { const it = SHOP_ITEMS[id]; return { fea: FEA_TRADE_N
 function feaTradeMax(id) { const it = SHOP_ITEMS[id], c = feaTradeCost(id); let n = Math.floor(feaCount(it.feaFrom) / c.fea); if (c.coins) n = Math.min(n, Math.floor(game.coins / c.coins)); if (c.gems) n = Math.min(n, Math.floor(game.gems / c.gems)); return Math.max(0, n); } // まとめて何枚交換できるか
 function canFeaTrade(id) { const it = SHOP_ITEMS[id], c = feaTradeCost(id); return feaCount(it.feaFrom) >= c.fea && game.coins >= c.coins && game.gems >= c.gems; }
 const POTION_HEAL_RATIO = 0.45;
-// ★4のコイン：💎1で、SSRの宝箱のコイン（ザコ77体ぶん）。10分に1回だけ買える
-const COIN4_GEMS = 1, COIN4_COOLDOWN_MS = 10 * 60 * 1000;
+// ★4のコイン：💎5で、SSRの宝箱のコイン（ザコ77体ぶん）。10分に1回だけ買える
+const COIN4_GEMS = 5, COIN4_COOLDOWN_MS = 10 * 60 * 1000;
 function coin4WaitMs() { return Math.max(0, (game.coin4At || 0) + COIN4_COOLDOWN_MS - Date.now()); }
 function fmtWaitMs(ms) { const t = Math.ceil(ms / 1000); return `${Math.floor(t / 60)}分${t % 60}秒`; }
 SHOP_ITEMS.coin4 = { icon: '🪙', img: 'assets/img/icons/chest_coin_legendary.webp', name: '★4のコイン', cost: COIN4_GEMS, coinPack: 'legendary', noNote: true };
