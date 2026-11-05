@@ -5169,3 +5169,27 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 /* デバッグ「最近使った」の外すボタン */
 .dbg-recent { position: relative; }
 .dbg-rm { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #c0392b; color: #fff; font-style: normal; font-size: 13px; line-height: 18px; text-align: center; font-weight: 900; box-shadow: 0 1px 3px rgba(0,0,0,0.5); cursor: pointer; z-index: 2; }
+
+/* ===== 管理画面（アクセスログ） ===== */
+.adm-ov { position: fixed; inset: 0; z-index: 20000; display: none; background: rgba(6,10,24,0.92); }
+.adm-ov.show { display: flex; align-items: stretch; justify-content: center; }
+.adm-panel { width: min(100vw, 900px); height: 100dvh; display: flex; flex-direction: column; background: #f4f6fb; color: #1b2140; font-size: 13px; }
+.adm-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #1b2140; color: #fff; }
+.adm-head b { font-size: 16px; } .adm-sub { font-size: 11px; opacity: 0.75; flex: 1; }
+.adm-btn { border: 1px solid #c9d1e8; background: #fff; color: #1b2140; border-radius: 6px; padding: 5px 10px; font-weight: 700; font-size: 12px; }
+.adm-close { background: #e9ecf5; }
+.adm-body { flex: 1; overflow-y: auto; padding: 12px; }
+.adm-note { padding: 14px; color: #4a5272; background: #fff; border-radius: 8px; margin: 6px 0; line-height: 1.5; }
+.adm-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.adm-card { background: #fff; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.adm-card-l { font-size: 11px; color: #6a7292; } .adm-card-v { font-size: 22px; font-weight: 900; color: #1b2140; }
+.adm-h { margin: 16px 0 6px; font-weight: 900; font-size: 13px; color: #1b2140; }
+.adm-chart { display: flex; align-items: flex-end; gap: 4px; height: 130px; background: #fff; border-radius: 8px; padding: 8px 8px 4px; }
+.adm-col { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; min-width: 0; }
+.adm-bar { width: 70%; min-height: 1px; background: #4f7cff; border-radius: 3px 3px 0 0; }
+.adm-col-n { font-size: 10px; color: #4a5272; } .adm-col-l { font-size: 9px; color: #6a7292; white-space: nowrap; }
+.adm-scroll { overflow-x: auto; background: #fff; border-radius: 8px; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.adm-table th, .adm-table td { padding: 6px 8px; border-bottom: 1px solid #e6e9f2; text-align: left; white-space: nowrap; }
+.adm-table th { background: #eef1f8; color: #4a5272; font-weight: 700; position: sticky; top: 0; }
+@media (max-width: 520px) { .adm-cards { grid-template-columns: repeat(2, 1fr); } }
