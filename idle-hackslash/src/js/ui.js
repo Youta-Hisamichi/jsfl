@@ -1238,7 +1238,7 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
     const w = coin4WaitMs(); if (w) { showTapError(`あと ${fmtWaitMs(w)}で買えます`, event.clientX, event.clientY); return; }
     if (game.gems < COIN4_GEMS) { promptGemShortage(COIN4_GEMS); return; }
     game.gems -= COIN4_GEMS; game.coin4At = Date.now();
-    const c = Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * (CHEST_COIN_MULT[item.coinPack] || 77))); game.coins += c;
+    const c = coin4Amount(); game.coins += c;
     showShopPurchaseFx(chestCoinIco(item.coinPack) || COIN_ICO, item.name, `+${formatCoinNumber(c)} コイン`); playRegisterSound();
     updateStatsUI(); renderShopList(); saveGame(); return;
   }
