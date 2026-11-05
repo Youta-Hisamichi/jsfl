@@ -1087,6 +1087,7 @@ debugRow.addEventListener('click', event => {
     h += '<div class="dl-h">手動スキル</div>';
     for (const [id, sk] of Object.entries(SKILL_GACHA_SKILLS)) {
       const own = !!(game.shopOwned && game.shopOwned[id]), lv = own ? getSkillLevel(id) : 1, pw = powAt(lv), tag = `${sk.icon} ${sk.name} ${own ? 'Lv' + lv : '（未所持・Lv1で計算）'}`;
+      if (id === 'skillSpecial') { const m = meteorMult(lv); h += row(tag, `≈ ${F(atk * m)}`, `自キャラ攻撃力 ${F(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))}`); continue; }
       if (DMG[id]) { const k = DMG[id][1](); h += row(tag, `≈ ${F(atk * k * pw)}`, `自キャラ攻撃力 ${F(atk)} × ${id === 'skillSpecial' ? `${METEOR_ATK_MULT} × メテオ強化・進化 ${M(k / METEOR_ATK_MULT)}` : DMG[id][2]} × 倍率 ${M(pw)}`); continue; }
       if (id === 'skillCompRush') { h += row(tag, '仲間ごと', `仲間の攻撃力 × ${COMP_RUSH_DMG_MULT} × 1.15 × 倍率 ${M(pw)}（1体ずつ突撃）`); continue; }
       if (id === 'skillHeal') { h += row(tag, `+${F(getPlayerMaxHP() * HEAL_SKILL_RATIO * pw)} HP`, `最大HP × ${HEAL_SKILL_RATIO} × 回復力 ${M(pw)}（傷ついた仲間も同じ割合で回復）`); continue; }
@@ -2643,9 +2644,7 @@ specialBtn.addEventListener('click', event => {
   if (Date.now() - lastSpecialAt < getSpecialCooldown()) { tryGemResetSkill('special', event, () => { lastSpecialAt = Date.now() - SPECIAL_COOLDOWN; }, updateSpecialButton); return; }
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
-  const b = computeBonuses();
-  const multiplier = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * skillPower('skillSpecial');
-  const damage = Math.round(getPlayerAtk() * METEOR_ATK_MULT * multiplier); // 攻撃力の10倍から（メテオ倍率・スキル威力で上がる）
+  const damage = Math.round(getPlayerAtk() * meteorMult()); // 自キャラ攻撃力 ×（10＋スキルLv）× メテオブースト × スキル進化
   lastSpecialAt = Date.now();
   meteors.push({
     x: arena.x + (Math.random() - 0.5) * arena.radius,
@@ -4003,7 +4002,7 @@ function showFormulaDebug() {
   for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
     if (!game.shopOwned[id]) continue;
     const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);
-    if (id === 'skillSpecial') { const m = shopMultiRate('meteor') * b.specialMult * b.specialDmgMult * pw; line(`${name} Lv${lv}`, `攻撃力 × ${METEOR_ATK_MULT} × メテオ倍率 ${M(m)}`, `スキル倍率 ${M(pw)}`); continue; }
+    if (id === 'skillSpecial') { line(`${name} Lv${lv}`, `攻撃力 ×（10＋${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))} = ${M(meteorMult(lv))}`); continue; }
     if (SK[id]) { const k = SK[id][1](); line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)} = ${F(pa * k * pw)}`); continue; }
     line(`${name} Lv${lv}`, `スキル倍率 ${M(pw)}`, 'ダメージ以外の効果');
   }
