@@ -1253,21 +1253,21 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射するたびに数値が1ずつ増える（×16の次は×1に戻る）。敵に当たると「反射板に当てたときの自キャラのダメージ × 今の数値」。
 // 反射板（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16;
-function setBounceOp(o) { o.bop = '×'; o.bm = (game.refl && game.refl.bm >= BOUNCE_OBJ_MIN && game.refl.bm <= BOUNCE_OBJ_MAX) ? game.refl.bm : BOUNCE_OBJ_MIN; }
+function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期倍率上昇」を持っていると×2から
+function setBounceOp(o) { o.bop = '×'; o.bm = (game.refl && game.refl.bm >= reflMin() && game.refl.bm <= BOUNCE_OBJ_MAX) ? game.refl.bm : reflMin(); }
 function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
   if (!o || o.kind !== 'reflector') return;
   game.refl = { bm: o.bm, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
 }
-function stepBounceValue(o) { // 反射するたびに+1、最大の次は×1に戻る（ショップの「反射板の粘り」があれば×16がもう1回だけ残る）
-  if (o.bm >= BOUNCE_OBJ_MAX) {
-    if (game.refl16Keep && !o.held16) { o.held16 = true; o.bmFlash = Date.now(); saveReflector(o); return; }
-    o.held16 = false; o.bm = BOUNCE_OBJ_MIN;
-  } else o.bm++;
+function stepBounceValue(o) { // 反射するたびに+1。×15の次は×1（初期倍率上昇なら×2）に戻る。ショップの「反射板の粘り」があれば×16になり、その次の反射で戻る
+  if (o.bm >= BOUNCE_OBJ_MAX) o.bm = reflMin();
+  else if (o.bm >= BOUNCE_OBJ_MAX - 1 && !game.refl16Keep) { o.bm = reflMin(); spawnDamageText(o.x, o.y - o.r - 16, `×${BOUNCE_OBJ_MAX}は「反射板の粘り」で → ×${o.bm}`, '#d8d8e0', 0.03); } // 粘りなしは×16に届かずに戻る
+  else o.bm++;
   o.bmFlash = Date.now(); saveReflector(o);
 }
 function obstacleMult(o) { // 反射板の数値（掛け算）
   if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射板だけ（ステージに1つ）
-  if (!(o.bm >= BOUNCE_OBJ_MIN) || o.bop !== '×') setBounceOp(o);
+  if (!(o.bm >= reflMin()) || o.bop !== '×') setBounceOp(o);
   return o.bm;
 }
 // 反射板の色：×1 白 → 黄 → 緑 → 青 → 赤 → 紫（×15）→ ×16 虹色。1つずつ少しずつ色が変わる（青から赤へは混ぜると紫になるので、色を1つずつ決めておく）

@@ -1066,6 +1066,9 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'refl16Keep' || action === 'reflStart2') { // 反射板のアイテムの所持を切り替える
+    game[action] = !game[action]; const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
+    showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射板の粘り' : '反射の初期倍率上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); return; }
   if (action === 'chestItems') { // 宝箱で出る使いきりアイテムを1つずつ
     for (const k in CHEST_ITEMS) gainItem(k, 1);
     saveGame(); if (typeof renderBagList === 'function') renderBagList(); if (typeof updateLifeGlassBtn === 'function') updateLifeGlassBtn();
