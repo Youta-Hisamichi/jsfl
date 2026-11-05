@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1070,6 +1070,24 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'compList') { // 全仲間の概要（レア度・能力・特技・いまの強さ）
+    const ids = Object.keys(COMPANIONS).sort((a, b) => RARITY_INFO[COMPANIONS[b].rarity].stars - RARITY_INFO[COMPANIONS[a].rarity].stars);
+    const F = v => formatCoinNumber(Math.round(v));
+    const rows = ids.map(id => { const c = COMPANIONS[id], r = RARITY_INFO[c.rarity], has = game.companions && game.companions.recruited && game.companions.recruited[id];
+      let st = ''; try { st = `攻撃 ${F(getCompanionAtk(id))}・HP ${F(getCompanionMaxHP(id))}`; } catch (e) {}
+      return `<div class="dl-r"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}</small></div>`; }).join('');
+    simpleChoice({ icon: '🐾', title: `全仲間の概要（${ids.length}人）`, text: `<div class="dbg-list">${rows}</div>`, sub: '強さ＝10/100 × Lv倍率 × レア度の基本倍率 × 転生倍率 × 強化（いまのLvで計算）', yes: '閉じる', no: false }); return; }
+  if (action === 'evoFormula') { // 進化のしくみ・計算式・いまの進化率
+    const M = v => '×' + (v >= 1e6 ? formatCoinNumber(v) : +v.toFixed(v >= 100 ? 0 : 3));
+    const EFF = { atk: '自キャラ攻撃力 × 進化率', hp: '自キャラ最大HP × 進化率', acc: 'ボスの回避力 ÷ 進化率（回避力を上回ればそれ以上は効果なし）', para: 'ボスのマヒ力 ÷ 進化率（上回ればそれ以上は効果なし）',
+      bossDmg: 'ボスへのダメージ × 進化率', compAtk: '仲間の攻撃力 × 進化率', compHp: '仲間の最大HP × 進化率', counter: `反撃ダメージ（攻撃力×${COUNTER_DMG_MULT}）× 進化率。反撃率は${Math.round(EVO_COUNTER_BASE * 100)}%で固定`,
+      rebirth: '転生でもらうジェム・進化の羽 × 進化率', skill: '手動スキル・自動スキル・メテオのダメージ × 進化率', weapon: '反射板を敵に当てたダメージ × 進化率', melee: '助走なしの体当たり × 進化率',
+      tackle: 'タックル（助走あり）× 進化率', combo: 'コンボの上がり幅（1回+8%）× 進化率', crit: 'クリティカルのダメージ × 進化率', tower: '試練の塔のボスへのダメージ × 進化率（ボス特攻とも重なる）',
+      pinch: `HP${Math.round(PINCH_HP_RATIO * 100)}%以下のとき攻撃力 × 進化率`, zako: 'ボス以外へのダメージ × 進化率' };
+    const odds = evoOdds(1, null);
+    const tiers = EVO_TIERS.map((t, i) => `<div class="dl-r"><b style="color:${RARITY_INFO[t.rarity].color}">${RARITY_INFO[t.rarity].label}　+${Math.round((t.mult - 1) * 100)}%</b><small>出る確率 ${(odds[i] * 100).toFixed(1)}%</small></div>`).join('');
+    const kinds = EVO_KINDS.map(k => `<div class="dl-r"><b>${EVO_KIND_ICON[k]} ${EVO_KIND_NAME[k]}　${M(getEvoRate(k))}${isEvoKindOpen(k) ? '　<span style="color:#7ee787">ON</span>' : '　<span style="color:#9aa0b4">OFF</span>'}</b><small>${EFF[k] || ''}</small></div>`).join('');
+    simpleChoice({ icon: '🧬', title: '進化の概要と計算式', text: `<div class="dbg-list"><div class="dl-h">1回の進化</div><div class="dl-r"><b>ONの項目からランダムに1つ</b><small>進化率 ← 進化率 ×（1 ＋ 上がる割合 × ジェム数 × 羽の倍率 × 羽の枚数）<br>ジェムは1〜${EVO_MAX_GEMS}個、羽は N×1.2・R×1.5・SR×2・SSR×3・UR×5（枚数は羽の束ね紐で最大${1 + FEA_USE_SHOP_MAX}枚）<br>例：SSR（+15%）をジェム10個・UR羽1枚で引くと ×（1＋0.15×10×5）＝×8.5</small></div>${tiers}<div class="dl-h">項目といまの進化率（上限 ×1e150）</div>${kinds}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'meteorResist') { forcedMeteorResist = !forcedMeteorResist; showNotice(`DEBUG: 次に出るボスをメテオ耐性に${forcedMeteorResist ? 'する（ON）' : 'しない（OFF）'}`); return; }
   if (action === 'allSkills') { // スキル（手動・自動）を全部持って装備する
     game.shopOwned = game.shopOwned || {}; for (const id in SKILL_GACHA_SKILLS) game.shopOwned[id] = true;

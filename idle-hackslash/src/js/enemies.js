@@ -1649,7 +1649,7 @@ function stepMovingObstacle(o, speedMult, pl) {
       reflectorSmash(o, e, pl);
       o.x = e.x - nx * (o.r + e.radius + 1); o.y = e.y - ny * (o.r + e.radius + 1);
       const dot = o.mvx * nx + o.mvy * ny; if (dot > 0) { o.mvx -= 2 * dot * nx; o.mvy -= 2 * dot * ny; }
-      if (!e.isDying && e.hp > 0) { const k = (e.isBoss ? 0.35 : 1) * Math.max(18, Math.hypot(o.mvx, o.mvy)); e.kbx = nx * k; e.kby = ny * k; startKnockFly(e); } reflectorBounced(o); // 反射板に当たった敵も大きく吹っ飛ぶ
+      if (!e.isDying && e.hp > 0) { const vn = Math.max(14, Math.hypot(o.mvx, o.mvy) * 1.05, o.mvx * nx + o.mvy * ny) * (e.isBoss ? 0.35 : 1); e.kbx = nx * vn; e.kby = ny * vn; startKnockFly(e); } // ビリヤードのように、当たった向きへ反射板の勢いのまま飛ばす reflectorBounced(o); // 反射板に当たった敵も大きく吹っ飛ぶ
       continue;
     }
     if (o.hitSet && o.hitSet.has(e)) continue;
@@ -2048,7 +2048,7 @@ function applyHitKnock(ball, nx, ny) {
   ball.kbx = nx * k; ball.kby = ny * k;
 }
 // ===== 吹っ飛び：タックル・反射板で飛ばされた敵は、壁・障害物・ほかの敵にぶつかると「激突ダメージ」（ぶつけられた敵も飛ぶ） =====
-const KNOCK_FLY_DECAY = 0.94, KNOCK_FLY_MS = 1600, CRASH_MIN_SPEED = 4, CRASH_DMG_MULT = 0.6, CRASH_SPEED_REF = 20; // 激突ダメージ＝自キャラの攻撃力×0.6×（速さ÷20）
+const KNOCK_FLY_DECAY = 0.965, KNOCK_FLY_MS = 2600, CRASH_MIN_SPEED = 4, CRASH_DMG_MULT = 0.6, CRASH_SPEED_REF = 20; // 激突ダメージ＝自キャラの攻撃力×0.6×（速さ÷20）
 function startKnockFly(en, from) { if (!en || en.isPlayer) return; en.kbFly = { until: Date.now() + KNOCK_FLY_MS, hit: new Set(), wallAt: 0 }; }
 function knockFlying(b) { return b.kbFly && Date.now() < b.kbFly.until && Math.hypot(b.kbx || 0, b.kby || 0) >= CRASH_MIN_SPEED; }
 function crashHit(en, sp, x, y, what) { // 激突ダメージ（必ず当たる。クリティカルはあり）
@@ -2073,10 +2073,16 @@ function knockFlyCollide(ball, kbx0, kby0, wall) { // 吹っ飛び中にぶつ�
     if (o === ball || f.hit.has(o)) continue;
     const dx = o.x - ball.x, dy = o.y - ball.y, d = Math.hypot(dx, dy) || 1;
     if (d >= o.radius + ball.radius) continue;
-    f.hit.add(o); const nx = dx / d, ny = dy / d, mx = (ball.x + o.x) / 2, my = (ball.y + o.y) / 2;
+    const nx = dx / d, ny = dy / d, mx = (ball.x + o.x) / 2, my = (ball.y + o.y) / 2;
+    // ビリヤード：ぶつかった向きの速さを2つの玉でやり取りする（ボスは重い）。当たった敵も飛んで、さらに次の敵へ
+    const m1 = ball.isBoss ? 4 : 1, m2 = o.isBoss ? 4 : 1, v1 = (ball.kbx || 0) * nx + (ball.kby || 0) * ny, v2 = (o.kbx || 0) * nx + (o.kby || 0) * ny;
+    if (v1 - v2 <= 0) continue; // 離れていく途中
+    f.hit.add(o);
+    const J = (1 + 0.9) * (v1 - v2) / (1 / m1 + 1 / m2);
+    ball.kbx = (ball.kbx || 0) - J / m1 * nx; ball.kby = (ball.kby || 0) - J / m1 * ny;
+    if (!o.isDying && o.hp > 0) { o.kbx = (o.kbx || 0) + J / m2 * nx; o.kby = (o.kby || 0) + J / m2 * ny; if (!o.kbFly || now > o.kbFly.until) startKnockFly(o); o.kbFly.hit.add(ball); }
+    const ov = ball.radius + o.radius - d; if (ov > 0) { ball.x -= nx * ov * m2 / (m1 + m2); ball.y -= ny * ov * m2 / (m1 + m2); o.x += nx * ov * m1 / (m1 + m2); o.y += ny * ov * m1 / (m1 + m2); } // 重なりをほどく
     crashHit(o, sp, mx, my, '敵に'); crashHit(ball, sp * 0.7, mx, my, '');
-    if (!o.isDying && o.hp > 0) { const k = sp * 0.75 * (o.isBoss ? 0.35 : 1); o.kbx = nx * k; o.kby = ny * k; if (!o.kbFly || now > o.kbFly.until) { startKnockFly(o); o.kbFly.hit.add(ball); } } // 玉突き
-    ball.kbx *= 0.5; ball.kby *= 0.5;
   }
 }
 function moveHitKnock(ball, speedMult) {

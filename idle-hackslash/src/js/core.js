@@ -801,7 +801,7 @@ function coin4WaitMs() { return Math.max(0, (game.coin4At || 0) + COIN4_COOLDOWN
 function fmtWaitMs(ms) { const t = Math.ceil(ms / 1000); return `${Math.floor(t / 60)}分${t % 60}秒`; }
 SHOP_ITEMS.coin4 = { icon: '🪙', img: 'assets/img/icons/chest_coin_legendary.webp', name: '★4のコイン', cost: COIN4_GEMS, coinPack: 'legendary', noNote: true };
 function coin4Amount() { return Math.max(1, Math.round(stageCoinRaw() * computeBonuses().coinMult * ((typeof CHEST_COIN_MULT !== 'undefined' && CHEST_COIN_MULT.legendary) || 77))); } // いまのステージで★4のコインを買うともらえる額
-Object.defineProperty(SHOP_ITEMS.coin4, 'desc', { get() { const w = coin4WaitMs(); let amt = ''; try { amt = `<b class="coin4-amt">いま買うと ${COIN_ICO}${formatCoinNumber(coin4Amount())}</b><br>`; } catch (e) {} return amt + 'SSRの宝箱のコイン（ザコ77体ぶん）がもらえる。10分に1回だけ買える' + (w ? `（あと ${fmtWaitMs(w)}）` : '（いま買えます）'); }, enumerable: true });
+Object.defineProperty(SHOP_ITEMS.coin4, 'desc', { get() { const w = coin4WaitMs(); let amt = ''; try { amt = `<br><b class="coin4-amt">いま買うと ${COIN_ICO}${formatCoinNumber(coin4Amount())} もらえる</b>`; } catch (e) {} return 'SSRの宝箱のコイン（ザコ77体ぶん）がもらえる。10分に1回だけ買える' + (w ? `（あと ${fmtWaitMs(w)}）` : '（いま買えます）') + amt; }, enumerable: true }); // もらえる額は最後の行
 function isShopItemOwned(id) {
   const item = SHOP_ITEMS[id];
   if (item.toggleKind) return !!item.toggleFixed; // ON/OFFの品は何度でも切り替えられる（攻撃力・HPは固定）
