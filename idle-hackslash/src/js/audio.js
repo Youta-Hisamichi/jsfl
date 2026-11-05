@@ -1198,8 +1198,6 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
-// 雷の杖の音：5パターンから選べる（デバッグの「⚡ 雷の音」で試聴して選ぶ。game.thunderSfx に保存）
-const THUNDER_SFX = { F: 'もらった雷の音を早回し（1.6倍速・0.76秒）', A: '今の音（ピシッ＋ドーン＋シャーン）', B: '出だしやわらか（フワッとふくらむドーン＋シャーン）', C: 'ゴロゴロ→ピシャーン（雷鳴のあとに落ちる）', D: '低めのバシャーン（高音ひかえめ）', E: '軽いピシャーン（前の高い音）' };
 function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // 立ち上がりをゆっくりにした音（出だしの圧を弱める）
   const ac = audioCtx, t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type;
   o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
@@ -1207,61 +1205,12 @@ function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // �
   let last = o; if (hpFreq) { const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hpFreq; o.connect(f); last = f; }
   last.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
 }
-function thunderShine(delay = 0.02, a = 1) { // 「シャーン」と響く澄んだ余韻
-  filteredNoise(delay, 0.5, 0.18 * a, 4200, 1.6, 'bandpass');
-  for (const [f, d, g] of [[2637, 0.55, 0.03], [3951, 0.4, 0.019], [5274, 0.28, 0.012]]) softTone('sine', f, f * 0.97, d, g * a, 0.012, delay);
-}
-// F：もらった雷の録音を1.6倍速にして短くしたもの（assets/audio/thunder.mp3）。読み込めていなければ合成音Bで代わりに鳴らす
-let thunderBuf = null, thunderLoading = false;
-function loadThunderSfx() {
-  if (thunderBuf) return Promise.resolve(thunderBuf);
-  if (thunderLoading || !audioCtx) return thunderLoading || Promise.resolve(null);
-  thunderLoading = fetch('assets/audio/thunder.mp3').then(r => r.arrayBuffer()).then(b => audioCtx.decodeAudioData(b)).then(buf => (thunderBuf = buf)).catch(() => { thunderLoading = false; return null; });
-  return thunderLoading;
-}
-function playMetalRing(base = 1650, a = 1) { // 鋭い金属音：打った瞬間の「チッ」＋ずれた倍音（金属の鳴り）が「キィィン」と残る
+function playThunderStrike() { // 雷の杖：うるさくない高めの「ピシャコーン！」（ピッ → シャッ → コーン と澄んで響く。低い音・強い出だしはなし）
   if (!audioCtx || isBattleSfxMuted()) return;
-  filteredNoise(0, 0.025, 0.3 * a, 8000, 0.8, 'highpass');
-  for (const [r, d, g] of [[1, 0.55, 0.05], [2.32, 0.42, 0.035], [3.9, 0.3, 0.028], [5.43, 0.22, 0.02], [7.1, 0.15, 0.014]]) softTone(r < 2 ? 'triangle' : 'sine', base * r, base * r * 0.995, d, g * a, 0.002);
-}
-function playReflChain(n, max) { // 反射板の連鎖音：パズルの連鎖のように、数値が上がるほど高く・華やかに（上の音階を駆け上がる）
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const STEPS = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31, 33, 36], i = Math.max(0, Math.min(STEPS.length - 1, n - 1)), f = 523.25 * Math.pow(2, STEPS[i] / 12), lv = Math.min(1, (n - 1) / 15), v = 0.035 + 0.03 * lv;
-  softTone('square', f, f, 0.07, v, 0.004, 0, 300); softTone('square', f * 1.5, f * 1.5, 0.08, v * 0.8, 0.004, 0.045, 300); // ピロッ
-  softTone('sine', f * 2, f * 2, 0.3 + 0.2 * lv, v * 1.1, 0.006, 0.05); // キラーンと響く
-  if (n >= 5) softTone('triangle', f * 2.52, f * 2.52, 0.25, v * 0.7, 0.006, 0.09); // 5連鎖から和音が厚くなる
-  if (n >= 9) { filteredNoise(0.06, 0.25, 0.08 + 0.06 * lv, 7000, 1.2, 'highpass'); softTone('sine', f * 3, f * 3, 0.35, v * 0.6, 0.01, 0.12); } // 9連鎖からシャララと光る
-  if (n >= max) [0, 4, 7, 12].forEach((s, j) => softTone('square', 1046.5 * Math.pow(2, s / 12), 1046.5 * Math.pow(2, s / 12), 0.12, 0.04, 0.004, 0.14 + j * 0.06, 300)); // 最大値はファンファーレ
-}
-function playReflReset() { // 反射板が×1に戻ったとき：「シュゥン…」と下がって、ポフッと落ちる
-  if (!audioCtx || isBattleSfxMuted()) return;
-  softTone('triangle', 1200, 180, 0.38, 0.06, 0.01); softTone('square', 600, 90, 0.3, 0.025, 0.01, 0.02, 200);
-  filteredNoise(0.3, 0.12, 0.12, 500, 0.8, 'lowpass'); softTone('sine', 160, 80, 0.15, 0.08, 0.005, 0.3);
-}
-function playThunderStrike(kind) {
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const now = Date.now(); if (!kind && now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
-  let k = kind || game.thunderSfx || 'F';
-  if (k === 'F') { loadThunderSfx(); if (thunderBuf) { // 録音を高めに削って鋭くし、金属を打ったような「キィン」を重ねる
-      const ac = audioCtx, src = ac.createBufferSource(), g = ac.createGain(), hp = ac.createBiquadFilter(), pk = ac.createBiquadFilter();
-      src.buffer = thunderBuf; hp.type = 'highpass'; hp.frequency.value = 450; pk.type = 'peaking'; pk.frequency.value = 3200; pk.Q.value = 1.4; pk.gain.value = 7;
-      g.gain.value = (game.sfxVolume ?? 0.7) * 0.85; src.connect(hp); hp.connect(pk); pk.connect(g); g.connect(ac.destination); src.start();
-      playMetalRing(); return; } k = 'B'; }
-  if (k === 'A') { // 今の音
-    filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass');
-    softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();
-  } else if (k === 'B') { // 出だしやわらか：鋭い「ピシッ」をなくし、ドーンを0.05秒かけてふくらませる
-    softTone('sawtooth', 170, 40, 0.6, 0.28, 0.05); softTone('sine', 90, 32, 0.75, 0.32, 0.06, 0.01);
-    filteredNoise(0.03, 0.6, 0.22, 380, 0.8, 'lowpass'); softTone('sawtooth', 3200, 1200, 0.14, 0.035, 0.03, 0.02, 1200); thunderShine(0.04, 0.9);
-  } else if (k === 'C') { // ゴロゴロ→ピシャーン
-    filteredNoise(0, 0.32, 0.16, 260, 0.9, 'lowpass'); softTone('sine', 70, 45, 0.35, 0.18, 0.1);
-    filteredNoise(0.26, 0.03, 0.25, 6500, 0.7, 'highpass'); softTone('sawtooth', 150, 38, 0.5, 0.3, 0.02, 0.26); softTone('sawtooth', 3600, 1300, 0.1, 0.04, 0.008, 0.26, 1200); thunderShine(0.28);
-  } else if (k === 'D') { // 低めのバシャーン：高い余韻を弱く、真ん中の「バシャッ」を主役に
-    filteredNoise(0, 0.25, 0.3, 1600, 0.9, 'bandpass'); softTone('sawtooth', 160, 36, 0.6, 0.32, 0.025); softTone('sine', 85, 30, 0.8, 0.34, 0.03, 0.01);
-    filteredNoise(0.02, 0.7, 0.28, 320, 0.8, 'lowpass'); thunderShine(0.03, 0.45);
-  } else { // E：軽いピシャーン（低音なし）
-    filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();
-  }
+  const now = Date.now(); if (now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
+  softTone('triangle', 2600, 3400, 0.04, 0.035, 0.004); // ピッ
+  filteredNoise(0.025, 0.11, 0.07, 6500, 1.1, 'bandpass'); // シャッ
+  for (const [f, d, g] of [[1318.5, 0.5, 0.05], [2637, 0.32, 0.022], [3956, 0.2, 0.01]]) softTone('triangle', f, f * 0.995, d, g, 0.006, 0.09); // コーン（澄んだ高い響き）
 }
 function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える
   if (!audioCtx || isBattleSfxMuted()) return;
