@@ -1393,7 +1393,26 @@ function playSnesSlash(i, rate) { // rate：再生の高さ（指定なしは少
 }
 const ATTACK_SOUNDS = SNES_SLASHES.map((_, i) => () => playSnesSlash(i));
 let lastAttackSound = -1;
-function playPlayerAttackSound() { if (rushingNow) playRushHitSound(); else playEnemyHitSound(); } // 自キャラの攻撃：体当たりは打撃音、接近戦は斬撃音
+function playPlayerAttackSound() { playBodyHitSound(rushingNow); } // 体で敵にぶつかったら、いつも「バシッ・ドスッ」とぶつけた打撃音（タックル中はもっと重く）
+// 体当たりのヒット音：パシッと弾ける高い打撃（アタック）＋ドスッと重い胴の音＋芯のゴツッ。重いほど低く長く
+let lastBodyHitAt = 0;
+function playBodyHitSound(heavy) {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const now = performance.now(); if (now - lastBodyHitAt < 45) return; lastBodyHitAt = now; // 同時に鳴りすぎない
+  const t0 = audioCtx.currentTime, v = game.sfxVolume ?? 0.7, pitch = 0.92 + Math.random() * 0.16;
+  // パシッ：短いノイズを高めのバンドパスで（ぶつかった瞬間の弾け）
+  const len = Math.floor(audioCtx.sampleRate * 0.05), buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const n = audioCtx.createBufferSource(); n.buffer = buf;
+  const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = (heavy ? 1600 : 2200) * pitch; bp.Q.value = 0.9;
+  const g = audioCtx.createGain(); g.gain.setValueAtTime((heavy ? 0.75 : 0.6) * v, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+  n.connect(bp); bp.connect(g); g.connect(audioCtx.destination); n.start(t0);
+  // ドスッ：低い胴の音（ピッチが一気に落ちる）
+  thump((heavy ? 150 : 200) * pitch, heavy ? 38 : 60, heavy ? 0.3 : 0.18, heavy ? 0.7 : 0.5);
+  // ゴツッ：硬い芯
+  thump((heavy ? 110 : 160) * pitch, 70, 0.06, heavy ? 0.28 : 0.2, 'square');
+  if (heavy) playRushHitSound(); // タックルは前の重い「ドゴッ」も重ねる
+}
 function playEnemyHitSound() {
   let i = Math.floor(Math.random() * ATTACK_SOUNDS.length);
   if (i === lastAttackSound) i = (i + 1) % ATTACK_SOUNDS.length; // 同じ音が続かないように
