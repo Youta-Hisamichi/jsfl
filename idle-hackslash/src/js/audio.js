@@ -1198,23 +1198,37 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
-function playThunderStrike() { // 雷の杖：重い「ピシャーン！ドーン」（鋭い「ピシッ」＋低い衝撃と雷鳴 → 下がる電撃 →「シャーン」と響く余韻）
+// 雷の杖の音：5パターンから選べる（デバッグの「⚡ 雷の音」で試聴して選ぶ。game.thunderSfx に保存）
+const THUNDER_SFX = { A: '今の音（ピシッ＋ドーン＋シャーン）', B: '出だしやわらか（フワッとふくらむドーン＋シャーン）', C: 'ゴロゴロ→ピシャーン（雷鳴のあとに落ちる）', D: '低めのバシャーン（高音ひかえめ）', E: '軽いピシャーン（前の高い音）' };
+function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // 立ち上がりをゆっくりにした音（出だしの圧を弱める）
+  const ac = audioCtx, t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain * game.sfxVolume, t0 + attack); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  let last = o; if (hpFreq) { const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hpFreq; o.connect(f); last = f; }
+  last.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
+}
+function thunderShine(delay = 0.02, a = 1) { // 「シャーン」と響く澄んだ余韻
+  filteredNoise(delay, 0.5, 0.18 * a, 4200, 1.6, 'bandpass');
+  for (const [f, d, g] of [[2637, 0.55, 0.03], [3951, 0.4, 0.019], [5274, 0.28, 0.012]]) softTone('sine', f, f * 0.97, d, g * a, 0.012, delay);
+}
+function playThunderStrike(kind) {
   if (!audioCtx || isBattleSfxMuted()) return;
-  const now = Date.now(); if (now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
-  const ac = audioCtx, t0 = ac.currentTime, v = game.sfxVolume;
-  filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); // 「ピシッ」と割れる瞬間
-  thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); // 重さ：ドーンと落ちる低い衝撃
-  filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass'); // ゴロゴロと残る雷鳴
-  { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sawtooth'; // 「ピッ」と光って下がる電撃
-    o.frequency.setValueAtTime(4200, t0); o.frequency.exponentialRampToValueAtTime(1400, t0 + 0.09);
-    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.06 * v, t0 + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.11);
-    const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1200;
-    o.connect(hp); hp.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + 0.13); }
-  filteredNoise(0.02, 0.5, 0.2, 4200, 1.6, 'bandpass'); // 「シャーン」と響く
-  for (const [f, d, a] of [[2637, 0.55, 0.035], [3951, 0.4, 0.022], [5274, 0.28, 0.014]]) { // 澄んだ金属っぽい余韻（高い音を3つ重ねる）
-    const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(f, t0 + 0.02); o.frequency.exponentialRampToValueAtTime(f * 0.97, t0 + d);
-    g.gain.setValueAtTime(0.0001, t0 + 0.02); g.gain.exponentialRampToValueAtTime(a * v, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
-    o.connect(g); g.connect(ac.destination); o.start(t0 + 0.02); o.stop(t0 + d + 0.02);
+  const now = Date.now(); if (!kind && now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
+  const k = kind || game.thunderSfx || 'B';
+  if (k === 'A') { // 今の音
+    filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass');
+    softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();
+  } else if (k === 'B') { // 出だしやわらか：鋭い「ピシッ」をなくし、ドーンを0.05秒かけてふくらませる
+    softTone('sawtooth', 170, 40, 0.6, 0.28, 0.05); softTone('sine', 90, 32, 0.75, 0.32, 0.06, 0.01);
+    filteredNoise(0.03, 0.6, 0.22, 380, 0.8, 'lowpass'); softTone('sawtooth', 3200, 1200, 0.14, 0.035, 0.03, 0.02, 1200); thunderShine(0.04, 0.9);
+  } else if (k === 'C') { // ゴロゴロ→ピシャーン
+    filteredNoise(0, 0.32, 0.16, 260, 0.9, 'lowpass'); softTone('sine', 70, 45, 0.35, 0.18, 0.1);
+    filteredNoise(0.26, 0.03, 0.25, 6500, 0.7, 'highpass'); softTone('sawtooth', 150, 38, 0.5, 0.3, 0.02, 0.26); softTone('sawtooth', 3600, 1300, 0.1, 0.04, 0.008, 0.26, 1200); thunderShine(0.28);
+  } else if (k === 'D') { // 低めのバシャーン：高い余韻を弱く、真ん中の「バシャッ」を主役に
+    filteredNoise(0, 0.25, 0.3, 1600, 0.9, 'bandpass'); softTone('sawtooth', 160, 36, 0.6, 0.32, 0.025); softTone('sine', 85, 30, 0.8, 0.34, 0.03, 0.01);
+    filteredNoise(0.02, 0.7, 0.28, 320, 0.8, 'lowpass'); thunderShine(0.03, 0.45);
+  } else { // E：軽いピシャーン（低音なし）
+    filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); softTone('sawtooth', 4200, 1400, 0.11, 0.06, 0.004, 0, 1200); thunderShine();
   }
 }
 function playHolyWaterBreak() { // 聖水：ガラス瓶がパリンと割れて、ボワッと炎が燃え上がり、パチパチ燃える

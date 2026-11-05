@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['thunder:A', 'thunder:B', 'thunder:C', 'thunder:D', 'thunder:E', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1070,6 +1070,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action.startsWith('thunder:')) { const k = action.slice(8); game.thunderSfx = k; try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} playThunderStrike(k); showNotice(`DEBUG: 雷の杖の音を ${k}「${THUNDER_SFX[k]}」にしました`); saveGame(); return; }
   if (action === 'compList') { // 全仲間の概要（レア度・能力・特技・いまの強さ）
     const ids = Object.keys(COMPANIONS).sort((a, b) => RARITY_INFO[COMPANIONS[b].rarity].stars - RARITY_INFO[COMPANIONS[a].rarity].stars);
     const F = v => formatCoinNumber(Math.round(v));
