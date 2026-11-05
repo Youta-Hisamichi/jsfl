@@ -584,6 +584,7 @@ function drawEnemyTraitEffects() {
 }
 
 // 攻撃予兆：敵が足元に赤い予告エリア（扇・円・直線）を出してから攻撃する。範囲の外へ動けば回避でき、攻撃後の隙は大ダメージのチャンス
+const TG_LINE_WIND = 22, TG_LINE_DASH = 19; // 突進の予告は約0.37秒、突進の速さ
 const TG_WIND = 32, TG_STUN = 50, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙は約0.8秒（短め）、その間はどの攻撃もダメージ3倍
 const TG_KINDS = ['fan', 'circle', 'line'];
 const TG_JUMP_CHANCE = 0.3, TG_JUMP_WIND = 58, TG_JUMP_H = 150; // ボスのジャンプアタック：確率・溜め（空中にいる時間）・飛び上がる高さ
@@ -652,7 +653,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
     else if (kind === 'rain') { t.drops = makeRainDrops(e, a); t.wind = t.drops[t.drops.length - 1].land + 4; }
     else if (kind === 'jump') { t.x = a.x; t.y = a.y; t.sx = e.x; t.sy = e.y; t.r = Math.max(60, e.radius * 1.5); t.wind = TG_JUMP_WIND + (e.isGiant ? 10 : 0); }
     else if (kind === 'fan') { t.r = (e.radius + 80) * big; t.half = 0.62; }
-    else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; }
+    else { t.len = Math.min(arena.radius * 1.6, dist + 70); t.w = Math.max(30, e.radius * ENEMY_SPRITE_SCALE * 0.6) * big; t.wind = TG_LINE_WIND; } // 突進：赤いラインが一瞬で出て、すぐ突っ込んでくる（見てから避けられる短さ）
     t.wasIn = tgInside(t, a.x, a.y, a.radius);
     e.tg = t; e.traitState = 'tg'; e.traitFreeze = true;
     spawnDamageText(e.x, e.y - e.radius - 22, kind === 'rain' ? '上から降ってくるぞ！' : kind === 'jump' ? 'ジャンプアタック！' : isBig ? '大技！' : '！', '#ff4d4d', 0.02, true);
@@ -703,7 +704,7 @@ function updateEnemyTelegraph(a, e, speedMult) {
   if (tg.kind === 'rain') e.tgFx = null; else e.tgFx = { kind: tg.kind === 'jump' ? 'circle' : tg.kind, x: tg.x, y: tg.y, r: tg.r, ang: tg.ang, half: tg.half, len: tg.len, w: tg.w, at: Date.now() };
   if (tg.kind === 'line') {
     e.traitState = 'tgDash'; e.traitFreeze = false; e.dashing = true; e.tgBig = tg.big;
-    const sp = 13; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
+    const sp = TG_LINE_DASH; e.vx = Math.cos(tg.ang) * sp; e.vy = Math.sin(tg.ang) * sp; e.tgTimer = tg.len / sp;
   } else if (tg.big) { // 大技の後だけ隙ができる
     e.traitState = 'tgStun'; e.tgTimer = TG_STUN; e.traitFreeze = true;
   } else { e.traitState = null; e.traitFreeze = false; }
@@ -734,7 +735,7 @@ function drawRainTelegraph(tg) { // 落下地点の赤い円（落ちる直前�
   }
   ctx.restore();
 }
-function kind_followTarget(tg) { return tg.kind !== 'circle' && tg.kind !== 'jump' && tg.t < tg.wind * 0.45; } // 扇・突進は溜めの前半だけ狙いを合わせる
+function kind_followTarget(tg) { return tg.kind === 'fan' && tg.t < tg.wind * 0.45; } // 扇は溜めの前半だけ狙いを合わせる。突進のラインは出た瞬間に向きが決まる（横に動けば避けられる）
 function isTelegraphStunned(e) { return !!e && e.traitState === 'tgStun'; }
 function tgPath(tg, ex, ey) {
   ctx.beginPath();
@@ -854,7 +855,7 @@ function drawEnemyTelegraphs() {
       }
       ctx.save();
       tgPath(tg, ex, ey);
-      ctx.fillStyle = `rgba(255,40,40,${0.12 + 0.1 * p})`; ctx.fill();
+      ctx.fillStyle = tg.kind === 'line' ? 'rgba(255,40,40,0.3)' : `rgba(255,40,40,${0.12 + 0.1 * p})`; ctx.fill(); // 突進のラインは出た瞬間からはっきり
       ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,70,70,${0.55 + 0.4 * Math.abs(Math.sin(now / (p > 0.7 ? 45 : 90)))})`; ctx.stroke();
       ctx.clip(); // 内側から満ちていくゲージで発動タイミングを見せる
       ctx.fillStyle = 'rgba(255,60,40,0.35)';
