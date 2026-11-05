@@ -333,13 +333,14 @@ function step() {
       meteor.x += (mdx / distance) * meteor.speed * speedMult;
       meteor.y += (mdy / distance) * meteor.speed * speedMult;
       if (distance < meteor.radius + e.radius) {
-        const meteorDmg = Math.max(1, Math.round(meteor.damage * bossDamageMult(e)));
+        const meteorDmg = Math.max(1, Math.round(meteor.damage * bossDamageMult(e) * (e.meteorResist ? METEOR_RESIST_MULT : 1))); // メテオ耐性のボスは1/10
         e.hp -= meteorDmg;
         trackDamage(meteorDmg);
         meteor.hit = true;
         spawnHitParticles(e.x, e.y, '#ffbc5c'); spawnHitParticles(e.x, e.y, '#ff5a1f');
         meteorBlasts.push({ x: e.x, y: e.y + e.radius * 0.3, r: Math.max(meteor.radius, e.radius), start: Date.now() }); shakeScreen(); // 大爆発
-        spawnDamageText(e.x, e.y - e.radius - 16, 'METEOR ' + formatCoinNumber(meteorDmg), '#ffd76b');
+        spawnDamageText(e.x, e.y - e.radius - 16, (e.meteorResist ? '☄️ 耐性… METEOR ' : 'METEOR ') + formatCoinNumber(meteorDmg), e.meteorResist ? '#b8c0d0' : '#ffd76b');
+        if (e.meteorResist) { for (let i = 0; i < 6; i++) spawnHitParticles(e.x, e.y - e.radius * 0.5, i % 2 ? '#dfe6f5' : '#8fa0c0'); if (typeof thump === 'function') { thump(1400, 900, 0.08, 0.12, 'square'); thump(300, 200, 0.12, 0.1, 'triangle'); } } // カキーンと弾かれる
         playMeteorImpactSound();
         updateHPUI();
         if (e.hp <= 0) { triggerEnemyDefeat(e, meteor.x, meteor.y); battleEnded = true; break; }
@@ -445,6 +446,7 @@ function renderEnemyTraitBadge(en, trait) {
   if (en && !en.isDying && phase !== 'gameover') {
     if (en.isBoss) tags.push(['👑 ボス', 'warn']); // 「ステージ○○の主」などの肩書きは特徴には出さない
     if (en.isGiant) tags.push(['⬆️ 激デカ', 'warn']);
+    if (en.meteorResist) tags.push(['☄️ メテオ耐性（1/10）', 'warn']);
     if (isMetalEnemy(en)) tags.push(['🪨 硬い（ダメージ減）', '']);
     if (trait) tags.push([`${ENEMY_TRAIT_ICONS[trait] || '✨'} ${ENEMY_TRAIT_LABELS[trait] || ENEMY_TRAIT_LABELS_EXTRA[trait] || trait}`, MAGIC_TRAITS[trait] || trait === 'charge' || trait === 'deathMagic' || trait === 'berserk' ? 'warn' : '']);
     if (en.berserk) tags.push(['🔥 発狂中！防御ダウン', 'warn']);

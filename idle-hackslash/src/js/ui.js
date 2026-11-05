@@ -1066,6 +1066,7 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'meteorResist') { forcedMeteorResist = !forcedMeteorResist; showNotice(`DEBUG: 次に出るボスをメテオ耐性に${forcedMeteorResist ? 'する（ON）' : 'しない（OFF）'}`); return; }
   if (action === 'allSkills') { // スキル（手動・自動）を全部持って装備する
     game.shopOwned = game.shopOwned || {}; for (const id in SKILL_GACHA_SKILLS) game.shopOwned[id] = true;
     game.skillSlots = SKILL_SLOT_MAX; if (!game.weapons) game.weapons = {}; for (const k in WEAPONS) if (!getWeaponLv(k)) game.weapons[k] = 1;
@@ -1135,7 +1136,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'npcLines') { // 各ページの上の案内役のセリフ
     simpleChoice({ icon: '💬', title: '各ページの案内役のセリフ', text: `<div class="dbg-list">${Object.values(SHOPKEEPERS).map(k => `<div class="dl-h">${k.name}</div>${k.lines.map(t => `<div class="dl-r">・${t}</div>`).join('')}`).join('')}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'traitList') { // ゲーム画面右上に出る敵の特徴
-    const fixed = [['👑 ボス', 'ボス戦'], ['⬆️ 激デカ', '激デカボス'], ['🪨 硬い（ダメージ減）', 'メタル系'], ['🔥 発狂中！防御ダウン', 'HPが減って発狂した'], ['🏃 しつこく追ってくる', '追いかけてくる敵'], ['⚡ 爆速で追ってくる！', 'とんでもない速さで主人公を追いかける敵（ステージ8から・ザコ5%／ボス12%）']];
+    const fixed = [['👑 ボス', 'ボス戦'], ['⬆️ 激デカ', '激デカボス'], ['☄️ メテオ耐性（1/10）', 'メテオのダメージが1/10になるボス（ステージ30から・ボスの約4体に1体。進行ゲージのボスをタップすると下見できる）'], ['🪨 硬い（ダメージ減）', 'メタル系'], ['🔥 発狂中！防御ダウン', 'HPが減って発狂した'], ['🏃 しつこく追ってくる', '追いかけてくる敵'], ['⚡ 爆速で追ってくる！', 'とんでもない速さで主人公を追いかける敵（ステージ8から・ザコ5%／ボス12%）']];
     const tr = Object.keys(ENEMY_TRAIT_LABELS).map(k => [`${ENEMY_TRAIT_ICONS[k] || '✨'} ${ENEMY_TRAIT_LABELS[k]}`, (typeof ENEMY_TRAIT_DESCS !== 'undefined' && ENEMY_TRAIT_DESCS[k]) || '']);
     simpleChoice({ icon: '👾', title: '敵の特徴一覧', text: `<div class="dbg-list">${[...fixed, ...tr].map(([n, d]) => `<div class="dl-r"><b>${n}</b>${d ? `<small>${d}</small>` : ''}</div>`).join('')}</div>`, yes: '閉じる', no: false }); return; }
   if (action === 'friendCode') { openFriendCodeDebug(); return; }

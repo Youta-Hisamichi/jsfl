@@ -1805,6 +1805,7 @@ const GIANT_BOSS_RADIUS = 60;
 const GIANT_BOSS_HP_MULT = 3;
 const GIANT_BOSS_ATK_MULT = 1.4;
 const GIANT_BOSS_REWARD_MULT = 3; // 撃破コイン・ジェムの倍率
+let forcedMeteorResist = false; // デバッグ：次のボスをメテオ耐性に
 let forcedGiantBoss = false;      // デバッグ：次のボスを激デカに
 const TACKLE_TRADE_CHANCE = 0.4;
 const TACKLE_TRADE_DMG_MULT = 1.5; // 相打ち時に自機が受けるダメージ（ボスの攻撃力比）

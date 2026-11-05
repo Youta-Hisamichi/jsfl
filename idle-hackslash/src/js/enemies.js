@@ -465,6 +465,7 @@ function makeBall(isPlayer) {
     }
     const isGiant = es.isBoss && !game.skipChallenge && (forcedGiantBoss || game.stage % GIANT_BOSS_EVERY === 0);
     forcedGiantBoss = false;
+    const meteorRes = es.isBoss && (forcedMeteorResist || isMeteorResistStage(game.stage)); if (es.isBoss) forcedMeteorResist = false;
     if (isGiant) { es.hp = Math.round(es.hp * GIANT_BOSS_HP_MULT); es.atk = Math.round(es.atk * GIANT_BOSS_ATK_MULT); }
     if (forcedEnemyKey && !es.isBoss) {
       const [kind, val] = forcedEnemyKey.split(':');
@@ -480,7 +481,7 @@ function makeBall(isPlayer) {
       isPlayer: false,
       ...farSpawnPoint(0.72),
       vx: Math.cos(angle) * 3.2, vy: Math.sin(angle) * 3.2,
-      maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant,
+      maxHp: es.hp, hp: es.hp, atk: es.atk, isBoss: es.isBoss, isGiant, meteorResist: meteorRes,
       blitz, chaser: blitz || (es.isBoss && !game.skipChallenge && Math.random() < CHASER_CHANCE), // ときどき、ひたすら主人公を追ってくるボス（爆速の敵も追いかける）
       sizeMul, radius: Math.round((isGiant ? GIANT_BOSS_RADIUS : es.isBoss ? BOSS_RADIUS : 16 * sizeMul) * (es.milestone && !game.skipChallenge ? Math.min(es.milestone.radius, isGiant ? 1.1 : 2) : 1)), milestone: es.milestone,
       color: es.isBoss ? '#ba6cff' : style.color,
@@ -1310,6 +1311,9 @@ const ZONE_OBSTACLE_BIAS = [ // 草原・森・砂漠・街道・夜の町・雪
   { slime: 10, crate: 14, tree: 14, bush: 12, hay: 6 }, { slime: 8, spike: 10, rock: 22, tree: 22, bush: 10, stump: 9 }, { bomb: 9, dash: 9, tree: 10, pot: 8 }, { crate: 14, barrel: 12, dash: 9, tree: 10, pillar: 6, stump: 6 }, { bomb: 9, portal: 7, pillar: 10, pot: 8 },
   { ice: 16, crystal: 6, tree: 14 }, { barrel: 14, crate: 14, qbox: 12, pot: 14, hay: 7, pillar: 6 }, { barrel: 16, crate: 12, pot: 6 }, { crystal: 9, techBox: 6, spike: 10, pillar: 18, ruin: 12, tree: 5 }, { portal: 9, techBox: 7, crystal: 8, pillar: 12, ruin: 7 },
 ];
+// メテオ耐性のボス：ステージ30から、ボスの約4体に1体。メテオのダメージが1/10になる（ステージで決まるので、進行ゲージのボスをタップすると下見できる）
+const METEOR_RESIST_FROM = 30, METEOR_RESIST_CHANCE = 0.25, METEOR_RESIST_MULT = 0.1;
+function isMeteorResistStage(s) { return s >= METEOR_RESIST_FROM && s % 10 === 0 && (x => x - Math.floor(x))(Math.sin(s * 12.9898 + 78.233) * 43758.5453) < METEOR_RESIST_CHANCE; }
 function stageRand(seed) { let x = seed * 9301 + 49297; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
 // ふだんのステージの反射物は、反射板（倍率つき）と、ツボ・タンス・宝箱（パンドラの箱）だけにした
 const OBSTACLE_WEIGHTS_NOW = { reflector: 70, pot: 12, tansu: 8, qbox: 10 };
