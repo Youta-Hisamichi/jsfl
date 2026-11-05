@@ -1664,7 +1664,7 @@ function stepMovingObstacle(o, speedMult, pl) {
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else playReflChain(o.bm, reflMax()); } // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
