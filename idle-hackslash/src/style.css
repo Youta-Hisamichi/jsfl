@@ -654,7 +654,7 @@ body.gcel-shake-4 .tab-page.active, body.gcel-shake-4 .gcel-center { animation-i
 .battle-notice { position: fixed; top: 54px; left: 50%; transform: translateX(-50%); z-index: 55; min-width: 60%; max-width: 90%; padding: 7px 10px; border-radius: 999px; text-align: center; background: rgba(8,11,18,0.85); color: #7ee787; font-size: 0.75rem; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity .2s; }
 .battle-notice.show { opacity: 1; }
 .battle-notice.error { color: #ff9aa5; border: 1px solid #ff5c6c; }
-.battle-notice.at-tap { transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
+.battle-notice.at-tap { z-index: 10000; transform: translate(-50%, -100%); min-width: auto; max-width: 78%; }
 .clone-counter { position: absolute; right: 2%; top: 2%; z-index: 2; color: #b9e0ff; background: rgba(8,11,18,.75); border: 1px solid rgba(134,197,255,.55); padding: 4px 8px; border-radius: 999px; font-size: .65rem; font-weight: 800; pointer-events: none; }
 .boss-warning {
   position: absolute; top: 40%; left: 0; right: 0; transform: translateY(-50%) scaleY(0.2);
@@ -2069,6 +2069,7 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .enemy-info-pop.show { opacity: 1; }
 .enemy-info-pop .eip-name { font-weight: 900; font-size: 0.84rem; color: #ffd76b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .enemy-info-pop .eip-name small { margin-left: 8px; font-size: 0.7rem; color: #e8e8f0; font-weight: 700; }
+.dbg-inline { display: contents; }
 .dbg-state { padding: 0 5px; border-radius: 4px; font-weight: 900; }
 .dbg-state.on { background: #2fbf5a; color: #fff; }
 .dbg-state.off { background: #555; color: #ddd; }

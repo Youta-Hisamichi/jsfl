@@ -135,8 +135,8 @@ function renderSupergemShopList() {
   }).join('');
 }
 const EVO_KINDS = ['atk', 'hp', 'acc', 'para', 'bossDmg', 'compAtk', 'compHp', 'counter', 'rebirth', 'skill', 'weapon', 'melee', 'tackle', 'combo', 'crit', 'tower', 'pinch', 'zako']; // 進化できる項目（ショップの「進化の指定書」を買うまではランダム）
-const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊', rebirth: '🌀', skill: '✨', weapon: '🪃', melee: '🗡️', tackle: '🐗', combo: '🔗', crit: '💥', tower: '🏰', pinch: '😤', zako: '👊' };
-const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率', skill: 'スキル', weapon: 'サブウェポン', melee: '近接攻撃', tackle: 'タックル', combo: 'コンボ', crit: 'クリティカル', tower: '試練の塔', pinch: 'ピンチ補正', zako: 'ザコ特攻' };
+const EVO_KIND_ICON = { atk: '⚔️', hp: '❤️', acc: '🎯', para: '⚡', bossDmg: '👑', compAtk: '🐾', compHp: '💚', counter: '🥊', rebirth: '🌀', skill: '✨', weapon: '🪞', melee: '🗡️', tackle: '🐗', combo: '🔗', crit: '💥', tower: '🏰', pinch: '😤', zako: '👊' };
+const EVO_KIND_NAME = { atk: '攻撃力', hp: 'HP', acc: '命中', para: 'マヒ耐性', bossDmg: 'ボス特攻', compAtk: '仲間攻撃力', compHp: '仲間HP', counter: 'カウンター', rebirth: '転生効率', skill: 'スキル', weapon: '反射オブジェクト', melee: '近接攻撃', tackle: 'タックル', combo: 'コンボ', crit: 'クリティカル', tower: '試練の塔', pinch: 'ピンチ補正', zako: 'ザコ特攻' };
 const EVO_KIND_LABEL = Object.fromEntries(EVO_KINDS.map(k => [k, EVO_KIND_ICON[k] + ' ' + EVO_KIND_NAME[k]]));
 function isEvoPickUnlocked() { return false; } // 進化の項目はいつもランダム（「進化の指定書」は廃止）
 const EVO_MIN_ON = 2; // 進化の項目はいつも2つ以上ON（以後ずっとON）
@@ -1405,7 +1405,7 @@ function weaponCount(id) { if (!game.weaponDup) game.weaponDup = {}; return Math
 function weaponMult(lv) { lv = Math.max(1, lv || 1); let m = 0.1, step = 0.1, left = lv - 1;
   while (left > 0) { const cap = Math.floor(m / 10 + 1e-9) * 10 + 10, need = Math.max(1, Math.ceil((cap - m) / step - 1e-9)), n = Math.min(left, need); m += n * step; left -= n; if (left > 0 && m >= cap - 1e-9) step /= 2; }
   return Math.round(m * 10000) / 10000; }
-function weaponDmg(base, lv) { return base * weaponMult(lv) * getEvoRate('weapon'); } // サブウェポン進化も掛かる
+function weaponDmg(base, lv) { return base * weaponMult(lv) * getEvoRate('skill'); } // 自動スキルにもスキル進化が掛かる（進化の「weapon」は反射オブジェクトになった）
 function getWeaponBuyCost(id) { const lv = getWeaponLv(id); return coinPrice(Math.round(400 * Math.pow(2.5, Math.min(lv, 10)) * (lv > 10 ? Math.pow(lv - 9, 2) : 1))); }
 // ボスを倒した・リタイヤしたときに、まだ持っていないサブウェポンが1つ手に入る（Lvは上げない。強化はスキル画面で）
 function grantRandomWeapon(reason) {
@@ -1957,9 +1957,9 @@ const SACRIFICE_DMG_MULT = 8;    // 攻撃力の8倍ダメージ
 let lastSacrificeAt = Date.now() - SACRIFICE_COOLDOWN;
 const PINCH_HP_RATIO = 0.3;      // 背水：HPがこの割合以下で発動
 const SKILL_DEATH_COOLDOWN = SKILL_MIN_CD;
-// 即死魔法：ザコ50%・ボス3%、Lv1つごとに+1%（最大100%）。同じ敵には1回だけ（ボスはコンテニューするたびに+1回）
+// 即死魔法：ザコ50%・ボス2%、Lv1つごとに+1%（最大100%）。同じ敵には1回だけ（ボスはコンテニューするたびに+1回）
 // ボスはステージ1000から即死耐性（100ステージごとに+1%）があり、即死率から引かれる。ステージ100万からのボスは何Lvでも最大1%
-const DEATH_CHANCE = 0.5, DEATH_CHANCE_BOSS = 0.03, DEATH_PER_LV = 0.01, DEATH_RESIST_FROM = 1000, DEATH_RESIST_PER_STAGE = 0.0001, DEATH_BOSS_CAP_STAGE = 1e6, DEATH_BOSS_CAP = 0.01;
+const DEATH_CHANCE = 0.5, DEATH_CHANCE_BOSS = 0.02, DEATH_PER_LV = 0.01, DEATH_RESIST_FROM = 1000, DEATH_RESIST_PER_STAGE = 0.0001, DEATH_BOSS_CAP_STAGE = 1e6, DEATH_BOSS_CAP = 0.01;
 function deathStage() { return (game.skipChallenge && game.skipChallenge.target) || game.stage; }
 function deathBaseChance(boss, lv) { lv = lv || (game.shopOwned.skillDeath ? getSkillLevel('skillDeath') : 1); return Math.min(1, (boss ? DEATH_CHANCE_BOSS : DEATH_CHANCE) + DEATH_PER_LV * (lv - 1)); }
 function bossDeathResist(stage = deathStage()) { return Math.max(0, (stage - DEATH_RESIST_FROM) * DEATH_RESIST_PER_STAGE); }

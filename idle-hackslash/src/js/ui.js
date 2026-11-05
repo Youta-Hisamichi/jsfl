@@ -1066,6 +1066,20 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'allSkills') { // スキル（手動・自動）を全部持って装備する
+    game.shopOwned = game.shopOwned || {}; for (const id in SKILL_GACHA_SKILLS) game.shopOwned[id] = true;
+    game.skillSlots = SKILL_SLOT_MAX; if (!game.weapons) game.weapons = {}; for (const k in WEAPONS) if (!getWeaponLv(k)) game.weapons[k] = 1;
+    equipAllOwnedSkills(); updateSkillButtonVisibility(); if (typeof renderCoinShopList === 'function') renderCoinShopList(); updateDebugSkillBtns(); saveGame();
+    showNotice('DEBUG: スキルと自動スキルを全部出して装備しました'); return; }
+  if (action.startsWith('wpn:')) { // 自動スキルを1つずつON/OFF
+    const k = action.slice(4); if (!game.weapons) game.weapons = {}; game.dbgWpnLv = game.dbgWpnLv || {};
+    if (getWeaponLv(k)) { game.dbgWpnLv[k] = getWeaponLv(k); game.weapons[k] = 0; game.equippedWeapons = getEquippedWeapons().filter(x => x !== k); }
+    else { game.weapons[k] = game.dbgWpnLv[k] || 1; equipAllOwnedSkills(); }
+    if (typeof renderCoinShopList === 'function') renderCoinShopList(); updateDebugSkillBtns(); saveGame();
+    showNotice(`DEBUG: ${WEAPONS[k].name}を${getWeaponLv(k) ? 'ON（Lv' + getWeaponLv(k) + '）' : 'OFF'}にしました`); return; }
+  if (action === 'mysteryList') { // 謎魔法の効果と出る確率
+    const tot = MYSTERY_EFFECTS.reduce((t, e) => t + e.w, 0);
+    simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
   if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射板の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'refl16Keep' || action === 'reflStart2') { // 反射板のアイテムの所持を切り替える
     game[action] = !game[action]; const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
@@ -1094,7 +1108,7 @@ debugRow.addEventListener('click', event => {
       const p = typeof skillParamHtml === 'function' ? skillParamHtml(id, lv, true) : '';
       h += row(tag, '', p || sk.desc);
     }
-    h += `<div class="dl-h">自動スキルの倍率（Lvで上がる）</div>${row('1ヒット', '自キャラ攻撃力 × 倍率', 'ダッシュ・溜めは掛からない。会心は掛かる')}${row('倍率', 'Lv1 ×0.1、Lvごとに +0.1', '×10 から +0.05、以降 ×10 ごとに上がり幅が半分・自動スキル進化 ' + M(getEvoRate('weapon')))}`;
+    h += `<div class="dl-h">自動スキルの倍率（Lvで上がる）</div>${row('1ヒット', '自キャラ攻撃力 × 倍率', 'ダッシュ・溜めは掛からない。会心は掛かる')}${row('倍率', 'Lv1 ×0.1、Lvごとに +0.1', '×10 から +0.05、以降 ×10 ごとに上がり幅が半分・スキル進化 ' + M(getEvoRate('skill')))}`;
     h += row('倍率の例', [1, 10, 50, 100, 200, 300, 700, 1000].map(l => `Lv${l} ×${+weaponMult(l).toFixed(2)}`).join('　'));
     h += row('待機', 'Lvごとに -6%（Lv5まで）');
     h += '<div class="dl-h">自動スキル</div>';
@@ -4066,3 +4080,11 @@ function updateReflDebugBtns() {
   }
 }
 setInterval(() => { try { updateReflDebugBtns(); } catch (e) {} }, 1000); updateReflDebugBtns();
+
+// デバッグ：自動スキルを1つずつON/OFFするボタン（いまの状態つき）
+function updateDebugSkillBtns() {
+  const box = document.getElementById('dbgWeaponBtns'); if (!box || typeof WEAPONS === 'undefined') return;
+  const h = Object.entries(WEAPONS).map(([k, W]) => { const lv = getWeaponLv(k); return `<button data-debug="wpn:${k}">${W.icon} ${W.name}：<b class="dbg-state ${lv ? 'on' : 'off'}">${lv ? 'ON Lv' + lv : 'OFF'}</b></button>`; }).join('');
+  if (box.dataset.html !== h) { box.innerHTML = h; box.dataset.html = h; }
+}
+setInterval(() => { try { updateDebugSkillBtns(); } catch (e) {} }, 1000); try { updateDebugSkillBtns(); } catch (e) {}

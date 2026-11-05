@@ -1667,7 +1667,7 @@ function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
-  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v, col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp);
+  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); // 進化「反射オブジェクト」も掛かる const dmg = Math.max(0, hp0 - e.hp);
   reflectBlasts.push({ x, y, t: Date.now(), col, power, label: `${label}！`, sub: dmg ? `${fullNumOr(Math.round(dmg))} ダメージ` : '', rot: Math.random() * Math.PI });
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();
