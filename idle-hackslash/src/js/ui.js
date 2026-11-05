@@ -750,15 +750,15 @@ const DEBUG_ACTION_LABELS = {
   clearSubs: 'DEBUG: サブスク（紋章）を解除しました',
   rewardAdReset: 'DEBUG: リワード動画の待ち時間をリセットしました',
 };
-// 使ったデバッグ項目は、次から一番上の「🕘 最近使った」に並べる（新しい順・最大8個。この端末に記録）
-const DBG_RECENT_KEY = 'dbgRecent', DBG_RECENT_MAX = 8;
+// 使ったデバッグ項目は、次から一番上の「🕘 最近使った」に並べる（新しい順・最大20個。この端末に記録。×で外せる）
+const DBG_RECENT_KEY = 'dbgRecent', DBG_RECENT_MAX = 20;
 function dbgRecentList() { try { return JSON.parse(localStorage.getItem(DBG_RECENT_KEY) || '[]').filter(a => typeof a === 'string'); } catch (e) { return []; } }
 function renderDebugRecent() {
   debugRow.querySelectorAll('.dbg-recent').forEach(e => e.remove());
   const list = dbgRecentList().map(a => debugRow.querySelector(`[data-debug="${CSS.escape(a)}"]:not(.dbg-recent)`)).filter(Boolean);
   if (!list.length) return;
   const head = document.createElement('div'); head.className = 'debug-cat dbg-recent'; head.textContent = '🕘 最近使った';
-  const frag = [head, ...list.map(b => { const c = b.cloneNode(true); c.classList.add('dbg-recent'); c.removeAttribute('id'); return c; })];
+  const frag = [head, ...list.map(b => { const c = b.cloneNode(true); c.classList.add('dbg-recent'); c.removeAttribute('id'); const x = document.createElement('i'); x.className = 'dbg-rm'; x.textContent = '×'; x.title = '最近使ったから外す'; c.appendChild(x); return c; })];
   debugRow.prepend(...frag);
 }
 function noteDebugUse(action) {
@@ -770,6 +770,13 @@ const DBG_NEW = ['thunder:F', 'thunder:A', 'thunder:B', 'thunder:C', 'thunder:D'
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
+debugRow.addEventListener('click', event => { // 「最近使った」の × ：その項目を一覧から外す（ボタンの動作はしない）
+  const rm = event.target.closest('.dbg-rm'); if (!rm) return;
+  event.stopImmediatePropagation(); event.preventDefault();
+  const a = rm.closest('[data-debug]') && rm.closest('[data-debug]').dataset.debug;
+  try { localStorage.setItem(DBG_RECENT_KEY, JSON.stringify(dbgRecentList().filter(x => x !== a))); } catch (e) {}
+  renderDebugRecent();
+}, true);
 debugRow.addEventListener('click', event => {
   const button = event.target.closest('[data-debug]');
   if (!button) return;
@@ -4100,7 +4107,7 @@ function showRebirthRulesDebug() {
 function updateReflDebugBtns() {
   for (const [k, label] of [['refl16Keep', '🌈 反射板の粘り'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
     const on = !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${on ? 'ON（所持）' : 'OFF'}</b>`;
-    document.querySelectorAll(`[data-debug="${k}"]`).forEach(b => { if (b.innerHTML !== h) b.innerHTML = h; }); // 「最近使った」の写しも
+    document.querySelectorAll(`[data-debug="${k}"]`).forEach(b => { const hh = b.classList.contains('dbg-recent') ? h + '<i class="dbg-rm" title="最近使ったから外す">×</i>' : h; if (b.innerHTML !== hh) b.innerHTML = hh; }); // 「最近使った」の写しも
   }
 }
 setInterval(() => { try { updateReflDebugBtns(); } catch (e) {} }, 1000); updateReflDebugBtns();
