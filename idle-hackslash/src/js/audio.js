@@ -1198,11 +1198,13 @@ function filteredNoise(delay, dur, gainAmt, freq, q = 1, type = 'bandpass') {
   src.connect(f); f.connect(g); g.connect(audioCtx.destination);
   src.start(t0); src.stop(t0 + dur + 0.02);
 }
-function playThunderStrike() { // 雷の杖：高くて澄んだ「ピシャーン！」（鋭い「ピシッ」→ 下がる電撃 →「シャーン」と響く余韻。重低音なし）
+function playThunderStrike() { // 雷の杖：重い「ピシャーン！ドーン」（鋭い「ピシッ」＋低い衝撃と雷鳴 → 下がる電撃 →「シャーン」と響く余韻）
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = Date.now(); if (now - (playThunderStrike.last || 0) < 150) return; playThunderStrike.last = now; // 何本落ちても重ねすぎない
   const ac = audioCtx, t0 = ac.currentTime, v = game.sfxVolume;
   filteredNoise(0, 0.035, 0.42, 7000, 0.7, 'highpass'); // 「ピシッ」と割れる瞬間
+  thump(180, 38, 0.55, 0.42, 'sawtooth'); thump(95, 30, 0.7, 0.4, 'sine', 0.01); // 重さ：ドーンと落ちる低い衝撃
+  filteredNoise(0.01, 0.6, 0.3, 380, 0.8, 'lowpass'); // ゴロゴロと残る雷鳴
   { const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sawtooth'; // 「ピッ」と光って下がる電撃
     o.frequency.setValueAtTime(4200, t0); o.frequency.exponentialRampToValueAtTime(1400, t0 + 0.09);
     g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.06 * v, t0 + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.11);
