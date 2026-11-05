@@ -127,7 +127,7 @@ document.getElementById('dbgCompBtn')?.addEventListener('click', openCompDebug);
 
 // デバッグ：転生報酬（ジェム・羽）の目安。いまの永続ボーナスと転生効率の進化で計算
 function openRebirthEstimate() {
-  const bonus = computeBonuses().rebirthGems || 0, rate = getEvoRate('rebirth');
+  const bonus = computeBonuses().rebirthGems || 0, rate = 1; // 転生効率の進化はジェム・羽を増やさない（転生ボーナスを強める）
   const dg = s => String(Math.max(1, Math.floor(s))).length, gemsAt = s => Math.round((dg(s) + bonus) * rate), feaAt = s => Math.round(dg(s) * dg(s) * rate);
   const stages = [...new Set([game.stage || 1, 10, 30, 50, 100, 200, 300, 500, 1000, 3000, 10000, 100000, 1000000])].sort((a, b) => a - b);
   const exp = n => FEA_RARITIES.map(r => { const v = n * REBIRTH_FEA_RATES[r] / 100; return v >= 1 ? Math.round(v) : v ? v.toFixed(1) : 0; });
@@ -241,8 +241,8 @@ function compBreakdownHtml(id) {
   const rb = compRarityBase(id), insp = compInspire(), extra = dragon ? getCompanionAtk(id) - getCompanionBaseAtk(id) : 0;
   const r2 = (l, v, cls) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${cls || ''}">${v}</b></div>`;
   let h = `<div class="pb-comp"><div class="pb-sub">${c.name}${n > 1 ? ' ×' + n : ''}（${RARITY_INFO[c.rarity].label}：同じLvの自キャラの${M(rb)}）</div>`;
-  h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('もとの攻撃力', '10') + r2(`強化Lv（攻撃力Lv${lv + 1}）<small>${lvMultFormula(lv)}</small>`, M(upgradeLvMult(lv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (rebirthPowerMult() !== 1 ? r2(`転生ボーナス（転生${game.reincarnations}回）`, M(rebirthPowerMult()), 'up') : '') + (insp !== 1 ? r2('踊り子・王様の応援', M(insp), 'up') : '') + (b.companionAtkMult !== 1 ? r2('仲間の攻撃力の倍率（進化・遺物など）', `+${pctUp(b.companionAtkMult)}%（${M(b.companionAtkMult)}）`, 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(extra)) : '');
-  h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('もとの最大HP', '100') + r2(`強化Lv（HP Lv${hlv + 1}）<small>${lvMultFormula(hlv)}</small>`, M(upgradeLvMult(hlv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (rebirthPowerMult() !== 1 ? r2(`転生ボーナス（転生${game.reincarnations}回）`, M(rebirthPowerMult()), 'up') : '') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（進化・遺物など）', `+${pctUp(b.companionHpMult)}%（${M(b.companionHpMult)}）`, 'up') : '');
+  h += `<div class="pb-base">⚔️ 攻撃力 <b>${F(getCompanionAtk(id))}</b></div>` + r2('もとの攻撃力', '10') + r2(`強化Lv（攻撃力Lv${lv + 1}）<small>Lv^0.8（飛躍なし）</small>`, M(compLvMult(lv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (rebirthPowerMult() !== 1 ? r2(`転生ボーナス（転生${game.reincarnations}回）`, M(rebirthPowerMult()), 'up') : '') + (insp !== 1 ? r2('踊り子・王様の応援', M(insp), 'up') : '') + (b.companionAtkMult !== 1 ? r2('仲間の攻撃力の倍率（進化・遺物など）', `+${pctUp(b.companionAtkMult)}%（${M(b.companionAtkMult)}）`, 'up') : '') + (dragon ? r2('＋ ほかの仲間の攻撃力の合計（竜）', '＋' + F(extra)) : '');
+  h += `<div class="pb-base">❤️ 最大HP <b>${F(getCompanionMaxHP(id))}</b></div>` + r2('もとの最大HP', '100') + r2(`強化Lv（HP Lv${hlv + 1}）<small>Lv^0.8（飛躍なし）</small>`, M(compLvMult(hlv)), 'up') + r2(`レア度（${RARITY_INFO[c.rarity].label}）`, M(rb), rb >= 1 ? 'up' : 'dn') + (rebirthPowerMult() !== 1 ? r2(`転生ボーナス（転生${game.reincarnations}回）`, M(rebirthPowerMult()), 'up') : '') + (golem ? r2('ゴーレム', M(GOLEM_HP_MULT), 'up') : '') + (b.companionHpMult !== 1 ? r2('仲間の最大HPの倍率（進化・遺物など）', `+${pctUp(b.companionHpMult)}%（${M(b.companionHpMult)}）`, 'up') : '');
   return h + '</div>';
 }
 function playerBreakdownHtml() { // 自キャラの強さの内訳（仲間ページのボタンを押すと、その場に開く）

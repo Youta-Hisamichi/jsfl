@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1077,6 +1077,9 @@ debugRow.addEventListener('click', event => {
     return;
   }
   if (action === 'anniv') { showAnnivList(); return; }
+  if (action === 'evoUnlockAll') { const all = Object.keys(EVO_UNLOCK_RARITY).every(isEvoKindUnlocked); game.evoUnlocked = {}; if (!all) for (const k in EVO_UNLOCK_RARITY) unlockEvoKind(k); else for (const k in EVO_UNLOCK_RARITY) game['evoKindOpen_' + k] = false; renderEvolutionList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: 宝箱で解放する進化項目を全部${all ? '未解放（OFF）' : '解放'}にしました`); return; }
+  if (action.startsWith('evoUnlock:')) { const k = action.slice(10); game.evoUnlocked = game.evoUnlocked || {}; if (isEvoKindUnlocked(k)) { delete game.evoUnlocked[k]; game['evoKindOpen_' + k] = false; } else unlockEvoKind(k); renderEvolutionList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: 進化項目「${EVO_KIND_NAME[k]}」を${isEvoKindUnlocked(k) ? '解放' : '未解放'}にしました`); return; }
+  if (action.startsWith('wcnt')) { const [, k, d] = action.split(':'); if (!k) { showNotice('DEBUG: 下の各自動スキルの ＋／− で個数を変えられます'); return; } game.weaponDup = game.weaponDup || {}; game.weaponDup[k] = Math.max(0, Math.min(WEAPON_COUNT_MAX - 1, (game.weaponDup[k] || 0) + (+d))); if (typeof renderCoinShopList === 'function') renderCoinShopList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: ${WEAPONS[k].name}の個数 ×${weaponCount(k)}`); return; }
   if (action === 'compList') { // 全仲間の概要（レア度・能力・特技・いまの強さ）
     const ids = Object.keys(COMPANIONS).sort((a, b) => RARITY_INFO[COMPANIONS[b].rarity].stars - RARITY_INFO[COMPANIONS[a].rarity].stars);
     const F = v => formatCoinNumber(Math.round(v));
@@ -1087,8 +1090,8 @@ debugRow.addEventListener('click', event => {
   if (action === 'evoFormula') { // 進化のしくみ・計算式・いまの進化率
     const M = v => '×' + (v >= 1e6 ? formatCoinNumber(v) : +v.toFixed(v >= 100 ? 0 : 3));
     const EFF = { atk: '自キャラ攻撃力 × 進化率', hp: '自キャラ最大HP × 進化率', acc: 'ボスの回避力 ÷ 進化率（回避力を上回ればそれ以上は効果なし）', para: 'ボスのマヒ力 ÷ 進化率（上回ればそれ以上は効果なし）',
-      bossDmg: 'ボスへのダメージ × 進化率', compAtk: '仲間の攻撃力 × 進化率', compHp: '仲間の最大HP × 進化率', counter: `反撃ダメージ（攻撃力×${COUNTER_DMG_MULT}）× 進化率。反撃率は${Math.round(EVO_COUNTER_BASE * 100)}%で固定`,
-      rebirth: '転生でもらうジェム・進化の羽 × 進化率', skill: '手動スキル・自動スキル・メテオのダメージ × 進化率', weapon: '反射板を敵に当てたダメージ × 進化率', melee: '助走なしの体当たり × 進化率',
+      bossDmg: 'ボスへのダメージ × 進化率', compAtk: '仲間の攻撃力 × 進化率', compHp: '仲間の最大HP × 進化率', counter: `反撃ダメージ（攻撃力×${COUNTER_DMG_MULT}）× 進化率。反撃率は10%＋進化率が10倍ごとに+20%（最大90%、いま${Math.round(evoCounterChance() * 100)}%）`,
+      rebirth: '転生ボーナス ＝ 1 ＋ 転生回数 × 進化率（ジェム・羽は増えない）', skill: '手動スキル・自動スキル・メテオのダメージ × 進化率', weapon: '反射板を敵に当てたダメージ × 進化率', melee: '助走なしの体当たり × 進化率',
       tackle: 'タックル（助走あり）× 進化率', combo: 'コンボの上がり幅（1回+8%）× 進化率', crit: 'クリティカルのダメージ × 進化率', tower: '試練の塔のボスへのダメージ × 進化率（ボス特攻とも重なる）',
       pinch: `HP${Math.round(PINCH_HP_RATIO * 100)}%以下のとき攻撃力 × 進化率`, zako: 'ボス以外へのダメージ × 進化率' };
     const odds = evoOdds(1, null);
@@ -1121,13 +1124,13 @@ debugRow.addEventListener('click', event => {
   if (action === 'blitzEnemy') { forceBlitzNext = true; showNotice('DEBUG: 次に出る敵が「爆速」になります'); return; }
   if (action === 'skillFormula') { // 全スキル（手動スキル・自動スキル）の計算式といまの数字。持っていないものは Lv1 で計算
     const atk = getPlayerAtk(), b = computeBonuses(), F = v => formatCoinNumber(Math.round(v)), M = v => '×' + (+v.toFixed(3));
-    const powAt = lv => { const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100; return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); };
+    const powAt = lv => 1 + 0.1 * (lv - 1);
     const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${v}${n ? `<small>${n}</small>` : ''}</div>`;
     const DMG = { skillSpecial: ['メテオ（1発）', () => METEOR_ATK_MULT * shopMultiRate('meteor') * b.specialMult * b.specialDmgMult, ''],
       skillPoison: ['毒（1スタック・1回）', () => POISON_DMG_MULT, POISON_DMG_MULT], skillParalyze: ['麻痺の雷（1発）', () => PARALYZE_DMG_MULT, PARALYZE_DMG_MULT],
       skillBlast: ['大爆発（敵1体）', () => BLAST_DMG_MULT, BLAST_DMG_MULT] };
     let h = `<div class="dbg-list"><div class="dl-h">基本</div>${row('自キャラ攻撃力', F(atk))}${row('最大HP', F(getPlayerMaxHP()))}
-      <div class="dl-h">手動スキルの倍率（Lvで上がる）</div>${row('倍率', 'Lv1 ×1、Lvごとに +0.1', '10Lvごとに ×1.5（飛躍）・100Lvごとに ×3（超飛躍）・スキル進化 ' + M(getEvoRate('skill')))}${row('待機', '最低5分', 'Lvで短くなるが5分より短くはならない')}`;
+      <div class="dl-h">手動スキルの倍率（Lvで上がる）</div>${row('倍率', 'Lv1 ×1、Lvごとに +0.1', '10Lv・100Lvごとの飛躍はなし')}${row('待機', '最低5分', 'Lvで短くなるが5分より短くはならない')}`;
     h += '<div class="dl-h">手動スキル</div>';
     for (const [id, sk] of Object.entries(SKILL_GACHA_SKILLS)) {
       const own = !!(game.shopOwned && game.shopOwned[id]), lv = own ? getSkillLevel(id) : 1, pw = powAt(lv), tag = `${sk.icon} ${sk.name} ${own ? 'Lv' + lv : '（未所持・Lv1で計算）'}`;
@@ -1278,6 +1281,7 @@ shopList.addEventListener('click', event => {
 function buyShopItem(id, event) { // ショップの品を買う（進化ページの項目タップからも使う）
   const item = SHOP_ITEMS[id];
   if (item.toggleFixed) { showTapError('いつもONです（OFFにできません）', event.clientX, event.clientY); return; }
+  if (item.toggleKind && !isEvoKindUnlocked(item.toggleKind)) { showTapError(`🔒 ${RARITY_INFO[EVO_UNLOCK_RARITY[item.toggleKind]].label}以上の宝箱で解放`, event.clientX, event.clientY); return; }
   if (item.toggleKind && isEvoKindOpen(item.toggleKind) && openEvoKinds().length <= EVO_MIN_ON) { showTapError(`ONの項目は${EVO_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   if (item.coinPack) { // ★4のコイン（10分に1回）
     const w = coin4WaitMs(); if (w) { showTapError(`あと ${fmtWaitMs(w)}で買えます`, event.clientX, event.clientY); return; }
@@ -3518,6 +3522,7 @@ if (game.ownedArtifacts) for (const id of Object.keys(game.ownedArtifacts)) if (
 if (Array.isArray(game.rebirthChests)) game.rebirthChests = game.rebirthChests.map(id => isArtifactShown(id) ? id : 'evoFeather'); // 隠している遺物入りの宝箱は進化の羽に
 if (!game.slotUnified) { game.skillSlots = Math.min(SKILL_SLOT_MAX, (game.skillSlots || 1) + (game.weaponSlots || 1)); game.slotUnified = true; } // スキルとサブウェポンの枠を1つにまとめる（今までの枠の合計）
 if (game.evoPickUnlocked) game.evoPickUnlocked = false; // 「進化の指定書」は廃止（本番データではないので補填はしない）
+for (const k in EVO_UNLOCK_RARITY) if (game['evoKindOpen_' + k]) unlockEvoKind(k); // すでにONにしていた項目は解放済みにする
 if (game.evoKindOpen_counter && !game.evoKindBought_counter) game.evoKindBought_counter = true; // すでにカウンターを買っていた人は反撃が続く
 if (!game.feaMig5) { feaStock().common = feaCount('common') + Math.max(0, Math.floor((game.ownedArtifacts && game.ownedArtifacts.evoFeather) || 0)); game.feaMig5 = true; syncFeaTotal(); } // 進化の羽を5種類にしたとき、持っていた羽はN羽に
 ['melee', 'rush', 'compAtk'].forEach(id => { if (game.upgrades) delete game.upgrades[id]; }); // 削除した強化項目は古いセーブからも外す
@@ -4040,8 +4045,8 @@ function showFormulaDebug() {
   for (const id of Object.keys(COMPANIONS)) {
     const n = getCompanionCount(id); if (!n) continue;
     const c = COMPANIONS[id], lv = game.companions.level[id] || 0, hlv = typeof compHpLv === 'function' ? compHpLv(id) : lv, rb = compRarityBase(id);
-    line(`${c.name || id} ×${n}`, `攻 10 × ${M(upgradeLvMult(lv))} × ${rb} × ${rebirthPowerMult()} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}`,
-      `HP 100 × ${M(upgradeLvMult(hlv))} × ${rb} × ${rebirthPowerMult()} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
+    line(`${c.name || id} ×${n}`, `攻 10 × ${M(compLvMult(lv))} × ${rb} × ${rebirthPowerMult()} × ${+inspire.toFixed(2)} × ${M(b.companionAtkMult)} = ${F(getCompanionBaseAtk(id))}`,
+      `HP 100 × ${M(compLvMult(hlv))} × ${rb} × ${rebirthPowerMult()} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
   }
   sec('スキル（ダメージ = 自キャラ攻撃力 × 倍率）');
   const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };
@@ -4114,7 +4119,8 @@ setInterval(() => { try { updateReflDebugBtns(); } catch (e) {} }, 1000); update
 // デバッグ：自動スキルを1つずつON/OFFするボタン（いまの状態つき）
 function updateDebugSkillBtns() {
   const box = document.getElementById('dbgWeaponBtns'); if (!box || typeof WEAPONS === 'undefined') return;
-  const h = Object.entries(WEAPONS).map(([k, W]) => { const lv = getWeaponLv(k); return `<button data-debug="wpn:${k}">${W.icon} ${W.name}：<b class="dbg-state ${lv ? 'on' : 'off'}">${lv ? 'ON Lv' + lv : 'OFF'}</b></button>`; }).join('');
+  const h = Object.entries(WEAPONS).map(([k, W]) => { const lv = getWeaponLv(k); return `<button data-debug="wpn:${k}">${W.icon} ${W.name}：<b class="dbg-state ${lv ? 'on' : 'off'}">${lv ? 'ON Lv' + lv : 'OFF'}</b></button><button data-debug="wcnt:${k}:-1">${W.icon} 個数 −</button><button data-debug="wcnt:${k}:1">${W.icon} 個数 ＋（いま×${weaponCount(k)}）</button>`; }).join('')
+    + `<button data-debug="evoUnlockAll">🔓 宝箱で解放する進化項目を全部 解放／未解放</button>` + Object.keys(EVO_UNLOCK_RARITY).map(k => `<button data-debug="evoUnlock:${k}">🔓 進化「${EVO_KIND_NAME[k]}」（${RARITY_INFO[EVO_UNLOCK_RARITY[k]].label}宝箱）：<b class="dbg-state ${isEvoKindUnlocked(k) ? 'on' : 'off'}">${isEvoKindUnlocked(k) ? '解放' : '未解放'}</b></button>`).join('');
   if (box.dataset.html !== h) { box.innerHTML = h; box.dataset.html = h; }
 }
 setInterval(() => { try { updateDebugSkillBtns(); } catch (e) {} }, 1000); try { updateDebugSkillBtns(); } catch (e) {}

@@ -763,19 +763,20 @@ function getCompanionAwaken(id) { return (game.companions.awaken && game.compani
 function getCompanionPower(id) { return 1; } // （覚醒・絆レベルはなくした）
 // 仲間の強さ：自キャラの「もとの強さ」（攻撃力10・最大HP100に強化Lvの倍率を掛けたもの）を、仲間自身のLvで計算して、レア度の倍率を掛ける
 // （自キャラの今の攻撃力・HPは使わない。進化・ショップなど自キャラだけの強化は仲間に乗らない）
+function compLvMult(level) { level = Math.max(0, Number(level) || 0); return Math.pow(level + 1, UPGRADE_POW); } // 仲間の強化Lv：Lv^0.8（10Lv・100Lvごとの飛躍はなし）
 const COMP_RARITY_BASE = { common: 0.3, rare: 0.5, epic: 1, legendary: 2, mythic: 4 }; // N 3割・R 半分・SR 同じ・SSR 2倍・UR 4倍
 function compRarityBase(id) { return COMP_RARITY_BASE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0.3; }
 function getCompanionMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
-  return Math.max(1, Math.round(100 * upgradeLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
+  return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
 }
 function compInspire() { return 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); } // 踊り子（1人ごと+10%）・王様の号令（+30%）
 function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
   const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」・進化「絆の欠片」
-  return Math.max(1, Math.round(10 * upgradeLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
+  return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
 }
 function getCompanionAtk(id) {
   if (compKind(id) !== 'dragon') return getCompanionBaseAtk(id);
@@ -1661,6 +1662,7 @@ function stepMovingObstacle(o, speedMult, pl) {
   }
 }
 // 反射板のダメージ：反射板に当てたときの自キャラのダメージ × 今の数値
+const REFLECT_HIT_RATE = 3; // 反射板の命中率はタックルの3倍（上限100%）
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
@@ -1671,7 +1673,12 @@ function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
-  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); // 進化「反射オブジェクト」も掛かる const dmg = Math.max(0, hp0 - e.hp);
+  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射オブジェクト」も掛かる */
+  if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
+    hitStopFrames = Math.max(hitStopFrames || 0, 4 + Math.round(power * 4)); e.stunnedUntil = Math.max(e.stunnedUntil || 0, Date.now() + 250);
+    spawnDamageText(e.x, e.y - e.radius - 30, 'HIT!', '#ffffff', 0.025, true);
+    for (let i = 0; i < 3; i++) spawnHitParticles(e.x, e.y, i % 2 ? '#ffffff' : col);
+  }
   reflectBlasts.push({ x, y, t: Date.now(), col, power, label: `${label}！`, sub: dmg ? `${fullNumOr(Math.round(dmg))} ダメージ` : '', rot: Math.random() * Math.PI });
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();

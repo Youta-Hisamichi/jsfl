@@ -636,7 +636,16 @@ const EVO_TIERS = [ // 1回の進化で上がる割合：N +1%・R +3%・SR +7%�
 ];
 const EVO_COUNTER_BASE = 0.1; // 進化項目「カウンター」の反撃率
 const EVO_MIN_GEMS = 1, EVO_MAX_GEMS = 10, EVO_RATE_CAP = 1e150; // ジェム1個から引ける。一度に使えるのは10個まで
-function getEvoRate(kind) { const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
+// 進化項目から外したもの（タックル・コンボ・スキル・試練の塔）：倍率はいつも×1（セーブに残った値も使わない）
+const EVO_REMOVED = new Set(['tackle', 'combo', 'skill', 'tower']);
+// SR以上の宝箱で解放する進化項目（解放するまでONにできない）
+const EVO_UNLOCK_BY_CHEST = { mythic: ['bossDmg'], legendary: ['compAtk', 'compHp', 'melee', 'zako'], epic: ['para', 'counter', 'weapon', 'pinch'] };
+const EVO_UNLOCK_RARITY = Object.fromEntries(Object.entries(EVO_UNLOCK_BY_CHEST).flatMap(([r, ks]) => ks.map(k => [k, r])));
+function isEvoKindUnlocked(k) { return !EVO_UNLOCK_RARITY[k] || !!(game.evoUnlocked && game.evoUnlocked[k]); }
+function unlockEvoKind(k) { game.evoUnlocked = game.evoUnlocked || {}; game.evoUnlocked[k] = true; }
+// 進化「カウンター」の反撃率：10%から、進化率が10倍になるごとに+20%（最大90%）
+function evoCounterChance() { return Math.min(0.9, EVO_COUNTER_BASE + 0.2 * Math.log10(getEvoRate('counter'))); }
+function getEvoRate(kind) { if (EVO_REMOVED.has(kind)) return 1; const v = Number(game.evoRate && game.evoRate[kind]) || 1; return Math.max(1, Math.min(EVO_RATE_CAP, v)); }
 function getEvoBoost() { return 1; } // 旧仕様（進化の羽で効果アップ）は廃止
 function evoLuck(gems, feathers) { return 0; } // 確率は固定（捧げた数は倍率に掛かる）
 // 進化の羽：N・R・SR・SSR・URの5種類（同じレア度の宝箱から出る）。進化1回につき1枚、使う羽（または使わない）を選べる
@@ -773,10 +782,10 @@ SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbidd
 const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
- ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生でもらえるジェムと進化の羽が増える', 'x_reborn'],
- ['skill', '✨', 'スキル', 'スキルのダメージが上がる', 'sk_skillSpecial'], ['weapon', '🪞', '反射オブジェクト', '反射板を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
- ['tackle', '🐗', 'タックル', '助走をつけた体当たりのダメージが上がる', 'up_rush'], ['combo', '🔗', 'コンボ', 'コンボで上がるダメージの割合が増える', 'g_chain'], ['crit', '💥', 'クリティカル', 'クリティカルのダメージが上がる', 'g_critical'],
- ['tower', '🏰', '試練の塔', '試練の塔のボスへのダメージが上がる', 'x_tower'], ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
+ ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる。進化で反撃率（最大90%）とダメージが上がる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生ボーナス（1回ごとの攻撃力・HPの上がり幅）が強くなる', 'x_reborn'],
+ ['weapon', '🪞', '反射オブジェクト', '反射板を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
+ ['crit', '💥', 'クリティカル', 'クリティカルのダメージが上がる', 'g_critical'],
+ ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { hideInShop: true, /* 進化ページの下から切り替える（ショップには並べない） */ icon, img: `assets/img/ui/evo2/icon_${k}.webp`, /* 進化の結果と同じ絵 */ name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };
 });
 SHOP_ITEMS.evoKind_acc = { hideInShop: true, icon: '🎯', img: 'assets/img/ui/evo2/icon_acc.webp', name: '進化項目：命中', desc: 'ボスの回避を打ち消す。ONにすると進化のランダムに入る（ON 💎1・OFF 💎2）', cost: EVO_TOGGLE_ON_COST, toggleKind: 'acc' }; // 命中ははじめからON
@@ -852,7 +861,7 @@ function meteorMult(lv) { return (METEOR_ATK_MULT + meteorLv(lv)) * shopMultiRat
 function skillPower(id) {
   const lv = game.shopOwned && game.shopOwned[id] ? getSkillLevel(id) : 1;
   const n100 = Math.floor(lv / 100), n10 = Math.floor(lv / 10) - n100;
-  return (1 + 0.1 * (lv - 1)) * Math.pow(1.5, n10) * Math.pow(3, n100) * getEvoRate('skill'); // スキル進化も掛かる
+  return 1 + 0.1 * (lv - 1); // Lvごとに+0.1倍（10Lv・100Lvごとの飛躍はなし）
 }
 const SKILL_GACHA_MIN_COST = 100; // スキルガチャの値段は最低100コイン（ONにしたときの半額は、この値段からさらに半分にする）
 // スキルガチャ：1周回（転生まで）5回まで。💎1で+5回（最大10回）。上限は転生でリセット。値段はコインだけ
@@ -1231,7 +1240,7 @@ const game = {
 
 // 転生Lv：転生前に進んだ階が深いほど多く上がる（10ステージごとに+1、最低+1）。1Lvごとに攻撃力・最大HP +3%
 const REBIRTH_LV_BONUS = 0.03; // 旧方式（足し算）。今は使わず、転生回数の掛け算にした
-function rebirthPowerMult() { return 1 + (game.reincarnations || 0); } // 転生の効果：1回で2倍・2回で3倍・3回で4倍（攻撃力・最大HPに掛け算）
+function rebirthPowerMult() { return 1 + (game.reincarnations || 0) * getEvoRate('rebirth'); } // 転生の効果：1回で2倍・2回で3倍・3回で4倍（攻撃力・最大HPに掛け算）。進化「転生効率」で1回あたりの上がり幅が進化率倍に
 function getRebirthLvGain(stage) { return 1 + Math.floor(Math.max(0, stage - 1) / 10); }
 const REBORN_UNLOCK_STAGE = 101, TOWER_UNLOCK_STAGE = 51; // 転生したことがなければ、転生・試練の塔はこのステージに着いてから
 function canShowReborn() { return (game.stage >= 3 || !!game.dbgRebornAlways) && isRebornUnlocked(); } // デバッグの「転生ボタン常時表示」ならステージに関係なく出す
@@ -1304,7 +1313,7 @@ function computeBonuses() {
   snap('転生回数の倍率');
   b.atkMult *= getEvoRate('atk'); b.hpMult *= getEvoRate('hp'); // 進化率は最後に掛け算
   b.companionAtkMult *= getEvoRate('compAtk'); b.companionHpMult *= getEvoRate('compHp'); // 仲間攻撃力・仲間HP進化
-  if (game.evoKindBought_counter) b.counter += EVO_COUNTER_BASE; // 進化項目「カウンター」をはじめてONにすると反撃するようになる（ダメージは進化で上がる。OFFにしても残る）
+  if (game.evoKindBought_counter) b.counter += evoCounterChance(); // 進化項目「カウンター」をはじめてONにすると反撃するようになる（ダメージは進化で上がる。OFFにしても残る）
   snap('進化');
   b.atkMult *= shopMultiRate('sword'); b.hpMult *= shopMultiRate('shield'); b.coinMult *= shopMultiRate('fairy'); // ショップ：流星剣・月の盾・コインの妖精（買った回数＋1倍・掛け算）
   snap('ショップ（流星剣・月の盾）');
