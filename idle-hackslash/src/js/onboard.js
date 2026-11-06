@@ -59,6 +59,7 @@ const BEGINNER_MISSIONS = [
   { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 1, hint: '仲間ページの招集ガチャ（初回無料）' },
   { elem: true, text: '「属性ダメージ良好！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
   { text: 'スキルガチャを引く', get: () => game.skillGachaPulls || 0, goal: 1, gems: 1 },
+  { text: '最大反射の反射板を敵に当てる', get: () => game.obFlags && game.obFlags.reflMax ? 1 : 0, goal: 1, gems: 1, hint: 'タックルで反射板を飛ばし、最大値になってから敵に当てよう' },
   { text: '宝箱を開ける', get: () => game.obFlags && game.obFlags.chest ? 1 : 0, goal: 1, gems: 1, hint: '木箱や柱を壊すと出ることも' },
   { text: 'ステージ10のボスを倒す', get: () => game.bestStage || 1, goal: 11, gems: 1 },
   { text: '最大HPをLv5まで強化する', get: () => upLv('hp'), goal: 5, gems: 1 },

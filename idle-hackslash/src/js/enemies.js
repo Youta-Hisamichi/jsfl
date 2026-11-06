@@ -1666,7 +1666,7 @@ const REFLECT_HIT_RATE = 3; // 反射板の命中率はタックルの3倍（上
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
@@ -1674,6 +1674,7 @@ function reflectorSmash(o, e, pl) {
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
   const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射オブジェクト」も掛かる */
+  if (dmg > 0 && v >= reflMax()) { if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：最大反射を敵に当てる
   if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
     hitStopFrames = Math.max(hitStopFrames || 0, 4 + Math.round(power * 4)); e.stunnedUntil = Math.max(e.stunnedUntil || 0, Date.now() + 250);
     spawnDamageText(e.x, e.y - e.radius - 30, 'HIT!', '#ffffff', 0.025, true);

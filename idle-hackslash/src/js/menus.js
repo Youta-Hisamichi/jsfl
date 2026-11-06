@@ -483,6 +483,8 @@ const COMP_SUMMON_LOADING_MS = 1000;
 let compSummonReveal = null; // ロード中の結果をすぐ出す関数
 const GACHA_REROLL_GEMS = 1; // ガチャの結果をジェムで引き直す値段（仲間・スキル・サブウェポン共通）
 let lastCompGacha = null; // 引き直し用：直前の召喚の前の状態
+// 仲間ガチャのステージボーナス：今の周回のステージが100以上で+1人、1000以上で+2人、1万以上で+3人…（1回で来る仲間が増える＝ダブりも増える）
+function compGachaStageBonus(stage = game.stage) { return Math.max(0, String(Math.max(1, Math.floor(stage || 1))).length - 2); }
 function runCompanionGacha(count, cost, event, isReroll = false) {
   if (compSummoning) { if (compSummonReveal) compSummonReveal(); return; } // ロード中にもう一度押したら結果をすぐ表示
   if (!isReroll) {
@@ -496,7 +498,9 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
-  for (let i = 0; i < count; i++) results.push(grantCompanion(pickCompanionId()));
+  const extra = compGachaStageBonus(); // ステージが進んだ周回ほど、1回で多く仲間が来る
+  for (let i = 0; i < count + extra; i++) results.push(grantCompanion(pickCompanionId()));
+  if (extra && !isReroll) setTimeout(() => showNotice(`🎉 ステージ${formatStageNumber(game.stage)}到達ボーナス：仲間が +${extra}人 来た！`), 300);
   snap.refund = 0; // （覚醒MAXのコイン返しはなくなった）
   lastCompGacha = { snap, count };
   refreshPlayerBallStats(false);
@@ -510,7 +514,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     compSummoning = false;
     compSummonReveal = null;
     if (activeTabCache !== 'companion') { box.style.display = 'none'; renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
-    showCompanionGachaResult(box, results, count, bestRarity);
+    showCompanionGachaResult(box, results, results.length, bestRarity); // ステージボーナスで増えた分も並べる
     box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
     renderCompanionList();
   };
@@ -552,7 +556,7 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
   };
   box.innerHTML = count === 1
     ? `<div class="gr-icon gr-pop" data-cg-info="${results[0].id}">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
-    : `<div class="gr-title gr-pop">🐾 仲間10連招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
+    : `<div class="gr-title gr-pop">🐾 仲間${count}人の招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
   { const cb = document.getElementById('compGachaCloseBtn'), row = document.createElement('div'); row.className = 'gr-btn-row'; cb.before(row); row.insertAdjacentHTML('beforeend', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>`); cb.classList.add('gr-ok-btn'); row.appendChild(cb); row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } // 演出スキップの誤タップを防ぐため、引き直しと閉じるは左右に離して並べる
   document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });

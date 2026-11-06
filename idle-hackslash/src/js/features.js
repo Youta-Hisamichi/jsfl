@@ -452,12 +452,14 @@ const QUESTS = {
     { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 1 },
     { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 1 },
     { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 1 },
+    { key: 'reflMax', text: '最大反射の反射板を敵に1回当てる', goal: 1, gems: 1 },
   ],
   weekly: [
     { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 3 },
     { key: 'boss', text: 'ボスを300体倒す', goal: 300, gems: 3 },
     { key: 'evo', text: '進化ガチャを30回引く', goal: 30, gems: 3 },
     { key: 'login', text: '5日ログインする', goal: 5, gems: 3 },
+    { key: 'reflMax', text: '最大反射の反射板を敵に10回当てる', goal: 10, gems: 3 },
   ],
 };
 function weekKey(d = new Date()) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
@@ -940,6 +942,17 @@ const EPIC_ENEMY = {
   bossWin: ['理想に殉じたか…愚かな', '覚えておけ。力なき正義は無力だ'],
 };
 for (const k in EPIC_HERO) if (CHUUNI[k]) CHUUNI[k].push(...EPIC_HERO[k]);
+CHUUNI.bossKill.push('あの世で詫びるがいい！'); CHUUNI.idle.push('秩序が国を荒廃させるというのか‥'); // 追加のセリフ
+// 反射板が最大値になったら、仲間「今だ！パワーを反射玉に！」→ 自キャラ「最大反射を叩きつけろ！」→ 別の仲間「いいですとも！」
+let reflMaxTalkAt = 0;
+function reflMaxTalk() {
+  const now = Date.now(); if (now - reflMaxTalkAt < 20000) return; reflMaxTalkAt = now; // うるさくならないよう20秒に1回
+  const comps = balls.filter(b => b.isCompanion && !b.isClone && b.hp > 0), pl = balls.find(isMainPlayerBall);
+  const c1 = comps[Math.floor(Math.random() * comps.length)], rest = comps.filter(b => b !== c1), c2 = rest[Math.floor(Math.random() * rest.length)] || c1;
+  if (c1) companionSay(c1, '今だ！パワーを反射玉に！', 2000);
+  if (pl) setTimeout(() => companionSay(pl, '最大反射を叩きつけろ！', 2000), c1 ? 900 : 0);
+  if (c2) setTimeout(() => companionSay(c2, 'いいですとも！', 2000), 1800);
+}
 const EPIC_SKIP = ['dog', 'cat', 'penguin', 'hamster', 'bunny', 'golem', 'dragon', 'bahamut']; // 動物や話さないキャラにはまぜない
 for (const id in COMP_TALK) if (!EPIC_SKIP.includes(id)) for (const k of ['i', 'k']) if (COMP_TALK[id][k]) COMP_TALK[id][k].push(...EPIC_COMP[k].filter(() => Math.random() < 0.5)); // 仲間ごとに半分ずつ混ぜて口ぐせを分ける
 for (const k in EPIC_ENEMY) if (ENEMY_SAY[k]) ENEMY_SAY[k].push(...EPIC_ENEMY[k]);
