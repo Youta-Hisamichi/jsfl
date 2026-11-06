@@ -176,7 +176,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
-      <div class="debug-cat">🛠 管理</div><button data-debug="adminConsole">🛠 管理画面（アクセスログ）</button>
+      <div class="debug-cat">🛠 管理</div><button data-debug="adminConsole">🛠 管理画面（アクセスログ）</button><button data-debug="notifySchedule">🔔 通知の予定（いま閉じたら）</button>
       <div class="debug-cat">📚 一覧</div><button data-debug="compList">🐾 全仲間の概要</button><button data-debug="evoFormula">🧬 進化の概要と計算式</button>
       <div class="debug-cat">🧪 スキル</div><button data-debug="allSkills">🧪 スキル・自動スキルを全部出す</button><button data-debug="mysteryList">❓ 謎魔法の一覧</button><button data-debug="meteorResist">☄️ 次のボスをメテオ耐性に（ON/OFF）</button><span id="dbgWeaponBtns" class="dbg-inline"></span>
       <div class="debug-cat">🌈 反射板</div><button data-debug="refl16Keep">🌈 反射板の粘り 所持ON/OFF</button><button data-debug="reflMaxUp">🔮 反射倍率上昇の秘宝 +1</button><button data-debug="reflMaxDown">🔮 秘宝 -1</button><button data-debug="reflStart2">⏫ 反射の初期値上昇 所持ON/OFF</button>
@@ -686,6 +686,10 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <label><span data-i18n="vibrationLabel">📳 振動（対応スマホのみ）</span></label>
       <button class="modal-shop-btn lang-btn" id="vibrationBtn"><span class="msb-name" id="vibrationState">ON</span></button>
     </div>
+    <div class="settings-row">
+      <label><span>🔔 通知（ログボ・貯まったコインなど／スマホアプリ版）</span></label>
+      <button class="modal-shop-btn lang-btn" id="notifyBtn"><span class="msb-name" id="notifyState">ON</span></button>
+    </div>
     <div class="settings-btn-row">
       <button class="modal-shop-btn" id="howToPlayBtn"><span class="msb-name" data-i18n="howToPlayBtn">📖 遊び方</span></button>
       <button class="modal-shop-btn" id="contactBtn"><span class="msb-name" data-i18n="contactBtn">✉️ お問い合わせ</span></button>
@@ -772,6 +776,7 @@ window.__imgUrl=one;})();</script>
 <script src="js/market.js"></script>
 <script src="js/compensate.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/notify.js"></script>
 
 <script>if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }</script>
 </body>
