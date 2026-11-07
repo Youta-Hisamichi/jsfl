@@ -203,15 +203,20 @@ function renderRebirthShopList() {
 
 // 仲間の強化は自キャラと同じく「攻撃力」と「HP」を別々に上げる（level＝攻撃力、hpLv＝HP）
 const COMP_UP_COST_RATE = 0.5; // 2つに分けたので1回の値段は半分（両方上げると前と同じ）
-// ===== キャラ進化：持っている仲間がダブると、その仲間の初期Lv（攻撃力かHPのどちらか）が+1。転生しても残る（最大 初期Lv1000） =====
-const COMP_EVO_MAX = 999; // 初期Lv1000 ＝ +999
-function compEvo(id) { const e = (game.compEvo || {})[id]; return { atk: (e && e.atk) || 0, hp: (e && e.hp) || 0 }; }
-function compEvolve(id) { // 攻撃力かHPのどちらかを+1（今の周回のLvにもすぐ+1）。上がった内容の文を返す
-  const e = compEvo(id), ks = ['atk', 'hp'].filter(k => e[k] < COMP_EVO_MAX); if (!ks.length) return '進化MAX';
-  const k = ks[Math.floor(Math.random() * ks.length)]; e[k]++;
+// ===== キャラ進化：持っている仲間がダブると、その仲間の初期Lv（攻撃力かHPのどちらか）が上がる。転生しても残る =====
+// レア度が高いほどダブりにくいので、1回で上がる量を多くし、上限も高くする（Nがダブりの多さでURを追い越さないように）
+const COMP_EVO_MAX = 999; // 自キャラの進化の上限（初期Lv1000 ＝ +999）
+const COMP_EVO_STEP = { common: 1, rare: 2, epic: 5, legendary: 10, mythic: 20 }; // ダブり1回で上がる初期Lv
+const COMP_EVO_CAP = { common: 99, rare: 199, epic: 399, legendary: 699, mythic: 999 }; // 上限（初期Lv100・200・400・700・1000）
+function compEvoStep(id) { return COMP_EVO_STEP[COMPANIONS[id] && COMPANIONS[id].rarity] || 1; }
+function compEvoCap(id) { return COMP_EVO_CAP[COMPANIONS[id] && COMPANIONS[id].rarity] || 99; }
+function compEvo(id) { const e = (game.compEvo || {})[id], cap = compEvoCap(id); return { atk: Math.min(cap, (e && e.atk) || 0), hp: Math.min(cap, (e && e.hp) || 0) }; }
+function compEvolve(id) { // 攻撃力かHPのどちらかを上げる（今の周回のLvにもすぐ足す）。上がった内容の文を返す
+  const cap = compEvoCap(id), e = compEvo(id), ks = ['atk', 'hp'].filter(k => e[k] < cap); if (!ks.length) return `進化MAX（初期Lv${cap + 1}）`;
+  const k = ks[Math.floor(Math.random() * ks.length)], before = e[k], add = Math.min(compEvoStep(id), cap - before); e[k] = before + add;
   if (!game.compEvo) game.compEvo = {}; game.compEvo[id] = e;
-  setCompUpLv(id, k, compUpLv(id, k) + 1);
-  return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}の初期Lv ${e[k]} → ${e[k] + 1}`;
+  setCompUpLv(id, k, compUpLv(id, k) + add);
+  return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ HP'}の初期Lv ${before + 1} → ${e[k] + 1}${e[k] >= cap ? '（MAX）' : ''}`;
 }
 function applyCompEvoLevels() { for (const id in (game.compEvo || {})) { const e = compEvo(id); if (e.atk) game.companions.level[id] = Math.max(game.companions.level[id] || 0, e.atk); if (e.hp) setCompUpLv(id, 'hp', Math.max(compHpLv(id), e.hp)); } } // 転生直後：進化した分を初期Lvに
 // 自キャラの進化：宝箱から自キャラが出ると、自キャラの攻撃力かHPの初期Lvが+1（転生しても残る・最大 初期Lv1000）
@@ -224,7 +229,7 @@ function heroEvolve() {
   return `${k === 'atk' ? '⚔️ 攻撃力' : '❤️ 最大HP'}の初期Lv ${e[k]} → ${e[k] + 1}`;
 }
 function applyHeroEvoLevels() { const e = heroEvo(); for (const k of ['atk', 'hp']) if (e[k]) game.upgrades[k] = Math.max(game.upgrades[k] || 0, e[k]); }
-function compEvoChip(id) { const e = compEvo(id); return e.atk || e.hp ? `<span class="cc-chip cc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; }
+function compEvoChip(id) { const e = compEvo(id), cap = compEvoCap(id); return e.atk || e.hp ? `<span class="cc-chip cc-evo">🧬 進化 ⚔️+${e.atk}${e.atk >= cap ? 'MAX' : ''} ❤️+${e.hp}${e.hp >= cap ? 'MAX' : ''}</span>` : ''; }
 function compBookHtml() { // パーティにいない仲間：手に入れたことがあれば色つき、まだなら影と？？？
   const ord = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 }, book = game.companionBook || {};
   const ids = Object.keys(COMPANIONS).filter(id => !game.companions.recruited[id]).sort((a, b) => (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
