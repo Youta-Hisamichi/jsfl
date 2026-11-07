@@ -1084,12 +1084,12 @@ debugRow.addEventListener('click', event => {
   if (action === 'notifySchedule') { showNotifySchedule(); return; }
   if (action === 'adminConsole') { openAdminConsole(); return; }
   if (action === 'compList') { // 全仲間の概要（レア度・能力・特技・いまの強さ）
-    const ids = Object.keys(COMPANIONS).sort((a, b) => RARITY_INFO[COMPANIONS[b].rarity].stars - RARITY_INFO[COMPANIONS[a].rarity].stars);
+    const ids = Object.keys(COMPANIONS).sort((a, b) => RARITY_INFO[COMPANIONS[a].rarity].stars - RARITY_INFO[COMPANIONS[b].rarity].stars); // N から UR の順
     const F = v => formatCoinNumber(Math.round(v));
     const rows = ids.map(id => { const c = COMPANIONS[id], r = RARITY_INFO[c.rarity], has = game.companions && game.companions.recruited && game.companions.recruited[id];
       let st = ''; try { st = `攻撃 ${F(getCompanionAtk(id))}・HP ${F(getCompanionMaxHP(id))}`; } catch (e) {}
       return `<div class="dfp-card" data-r="${c.rarity}" data-has="${has ? 1 : 0}" style="--rc:${r.color}"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}</small></div>`; }).join('');
-    const chips = ['all', 'mythic', 'legendary', 'epic', 'rare', 'common', 'has'].map(k => `<button class="dfp-chip${k === 'all' ? ' on' : ''}" data-dfp-f="${k}">${k === 'all' ? 'ぜんぶ' : k === 'has' ? '所持' : RARITY_INFO[k].label}</button>`).join('');
+    const chips = ['all', 'common', 'rare', 'epic', 'legendary', 'mythic', 'has'].map(k => `<button class="dfp-chip${k === 'all' ? ' on' : ''}" data-dfp-f="${k}">${k === 'all' ? 'ぜんぶ' : k === 'has' ? '所持' : RARITY_INFO[k].label}</button>`).join('');
     openDbgFullPage('🐾 全仲間の概要', `${ids.length}人・強さ＝Lv倍率 × レア度の基本倍率 × 転生倍率 × 強化（いまのLvで計算）`, `<div class="dfp-chips">${chips}</div><div class="dfp-grid">${rows}</div>`, body => {
       body.addEventListener('click', e => { const b = e.target.closest('[data-dfp-f]'); if (!b) return; const f = b.dataset.dfpF;
         body.querySelectorAll('.dfp-chip').forEach(x => x.classList.toggle('on', x === b));
