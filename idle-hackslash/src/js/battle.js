@@ -1212,14 +1212,18 @@ function updateCompanionAbilities() {
         playTone(880, 0.12, 'sine', 0.1, 1320);
       }
     }
-    if (compKind(comp.companionId) === 'angel') {
+    if (compKind(comp.companionId) === 'angel') { /* ミカエルン */
       if (!comp.nextAbilityAt) comp.nextAbilityAt = now + 10000;
       if (now >= comp.nextAbilityAt) {
         comp.nextAbilityAt = now + 10000;
+        const canRevive = !(comp.nextReviveAt > now); // 全員復活は30秒に1回（HP30%で）。回復は10秒ごと
+        let revived = 0;
         for (const ally of balls) {
           if (!ally.isPlayer || ally.isClone) continue;
           if (ally.isCompanion && ally.hp <= 0) {
-            ally.hp = Math.max(1, Math.round(ally.maxHp * 0.5));
+            if (!canRevive) continue;
+            revived++;
+            ally.hp = Math.max(1, Math.round(ally.maxHp * ANGEL_REVIVE_RATIO));
             game.companions.alive[ally.companionId] = true;
             game.companions.hp[ally.companionId] = ally.hp;
             spawnDamageText(ally.x, ally.y - ally.radius - 14, '✨ 復活', '#fff0a0');
@@ -1228,7 +1232,8 @@ function updateCompanionAbilities() {
           }
           spawnHitParticles(ally.x, ally.y, '#fff0a0');
         }
-        spawnDamageText(comp.x, comp.y - comp.radius - 16, '👼 祝福', '#fff0a0', 0.02);
+        if (revived) comp.nextReviveAt = now + ANGEL_REVIVE_MS;
+        spawnDamageText(comp.x, comp.y - comp.radius - 16, revived ? `👼 祝福・${revived}人復活` : '👼 祝福', '#fff0a0', 0.02);
         playHealSound();
         updateHPUI();
       }
@@ -1945,11 +1950,18 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
   if (pool.some(a => a.rarity === rarity)) pool = pool.filter(a => a.rarity === rarity);
   pool.forEach(a => rows.push([chestArtIco(a, rarity), a.id === 'evoFeather' ? `進化の${feaName(rarity)}` : a.name, P(rest * ac / pool.length), '']));
   const SPEC = { seed: [`<img class="ico-img" src="${SEEDS.atk.img}" alt="">`, `パワーの種 か HPの種 ×${SEED_CHEST_COUNT[rarity] || 1}`, 'どちらかは半々'], tie: ['<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', '羽の束ね紐', '9個持っていると出ない'], evoUnlock: ['🧬', '進化項目の解放', `まだ解放していない ${(EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)).map(k => EVO_KIND_NAME[k]).join('・') || 'なし'} のどれか`], reflMaxUp: ['🔮', '反射倍率上昇の秘宝', `反射板の最大値+1（×8から、8個で×16。いま×${reflMax()}）`], reflStart: ['⏫', '反射の初期値上昇', '反射板が×2から始まる（1個だけ。持っていると出ない）'], overheal: ['💖', '回復限界突破', `回復の上限+0.5倍（最大${OVERHEAL_CAP}倍で出なくなる）`], potion: ['🧪', '回復ポーション', '3個以上持っていると出ない'], redPotion: ['<i class="ico-redpot"></i>', 'スキルポーション', '3個以上持っていると出ない'], ...(typeof CHEST_ITEMS !== 'undefined' ? Object.fromEntries(Object.entries(CHEST_ITEMS).map(([k, I]) => ['item:' + k, [I.img ? `<img class="ico-img" src="${I.img}" alt="">` : I.icon, I.name, I.desc]])) : {}), comp: ['🐾', '仲間（図鑑に登録・ダブりでキャラ進化）', rarity === 'mythic' ? 'SR以上だけ' : 'R以上だけ'], hero: [`<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '自キャラ（進化して初期Lv+1）', ''] };
+  for (const k in GRACE_ITEMS) { const [lo, hi] = graceChestRange(k, rarity) || [0, 0]; SPEC['grace:' + k] = [`<span class="chest-emoji">${GRACE_ITEMS[k].icon}</span>`, `${GRACE_ITEMS[k].name} ×${lo}〜${hi}`, `${GRACE_ITEMS[k].desc}（1個ごと）・いま${formatCoinNumber(graceItemCount(k))}／${formatCoinNumber(GRACE_ITEMS[k].max)}個`]; }
+  SPEC.skillUnlock = ['<span class="chest-emoji">🔓</span>', 'スキルの解放', `まだ解放していないスキルが1つ、ガチャに出せるようになる（転生しても残る・のこり${lockedSkillIds().length}個）`];
   specs.forEach(([k, p]) => rows.push([SPEC[k][0], SPEC[k][1], P(p), SPEC[k][2]]));
   const ex = [];
   const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
   simpleChoice({ icon: xi(CHEST_ICON[rarity]) || '🎁', title: `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱で出るもの</span>`, text: `<div class="co-list"><div class="co-h">どれか1つ</div>${rows.map(row).join('')}${ex.length ? `<div class="co-h">さらに、いっしょに入っていることがある</div>${ex.map(row).join('')}` : ''}</div>`, yes: '閉じる', no: false });
 }
+// 恩恵・絆のアイテム：SSRの宝箱は勇者の絆・勇者の恩恵、URの宝箱はそれに加えてURの恩恵・SSRの恩恵。1回で何個か入っている
+const GRACE_CHEST_CHANCE = { legendary: { heroBond: 0.06, heroGrace: 0.06 }, mythic: { urGrace: 0.06, ssrGrace: 0.06, heroBond: 0.05, heroGrace: 0.05 } };
+const GRACE_CHEST_N = { legendary: { heroBond: [3, 8], heroGrace: [3, 8] }, mythic: { urGrace: [5, 15], ssrGrace: [5, 15], heroBond: [8, 20], heroGrace: [8, 20] } };
+function graceChestRange(k, rarity) { return GRACE_CHEST_N[rarity] && GRACE_CHEST_N[rarity][k]; }
+const SKILL_UNLOCK_CHANCE = { legendary: 0.04, mythic: 0.05 };
 const EVO_UNLOCK_CHANCE = { epic: 0.03, legendary: 0.03, mythic: 0.04 }; // 進化項目の解放が出る確率（SR・SSR 3%、UR 4%）
 const REFL_START_CHANCE = { legendary: 0.004, mythic: 0.01 }; // SSR 0.4%・UR 1%
 const REFL_MAX_UP_CHANCE = 0.003; // URの宝箱だけ 0.3%（反射倍率上昇の秘宝：最大値+1、8個まで）
@@ -1962,6 +1974,8 @@ function chestSpecials(rarity) { // コイン・羽以外の中身と、その�
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
   if (rarity === 'mythic' && (game.reflMaxUp || 0) < REFL_MAX_UP_CAP) o.push(['reflMaxUp', REFL_MAX_UP_CHANCE]); // 反射倍率上昇の秘宝
   { const ks = (EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)); if (ks.length) o.push(['evoUnlock', EVO_UNLOCK_CHANCE[rarity]]); } // 進化項目の解放（SR以上・まだ解放していない項目があるとき）
+  for (const k in GRACE_ITEMS) if (GRACE_CHEST_CHANCE[rarity] && GRACE_CHEST_CHANCE[rarity][k] && graceItemCount(k) < GRACE_ITEMS[k].max) o.push(['grace:' + k, GRACE_CHEST_CHANCE[rarity][k]]); // 恩恵・絆のアイテム（SSR・URの宝箱）
+  if (SKILL_UNLOCK_CHANCE[rarity] && lockedSkillIds().length) o.push(['skillUnlock', SKILL_UNLOCK_CHANCE[rarity]]); // スキルの解放（SSR・URの宝箱）
   if (!game.reflStart2 && REFL_START_CHANCE[rarity]) o.push(['reflStart', REFL_START_CHANCE[rarity]]); // 反射の初期値上昇（1個だけ・めったに出ない）
   if (typeof CHEST_ITEM_DROP !== 'undefined') for (const [k, p] of (CHEST_ITEM_DROP[rarity] || [])) o.push(['item:' + k, p]); // 使いきりアイテム（ガチャ券・招き猫・身代わり人形・Lv倍増券・帰還ボーナス券）
   return o;
@@ -2130,6 +2144,7 @@ function showChestResult(rarity, loot, mult) {
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button><button class="modal-shop-btn" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`; document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity);
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
+const ANGEL_REVIVE_MS = 30000, ANGEL_REVIVE_RATIO = 0.3; // ミカエルンの全員復活：30秒に1回・HP30%で
 const CHEST_POTION_RARITIES = ['epic', 'legendary', 'mythic'], CHEST_POTION_CHANCE = 0.05, CHEST_POTION_MAX_HELD = 3; // 宝箱のおまけの回復ポーション
 const CHEST_FEA_TIE_CHANCE = 0.05, CHEST_OVERHEAL_CHANCE = 0.03; // ★5の宝箱に羽の束ね紐が入っている確率
 function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
@@ -2143,6 +2158,8 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   else if (sp === 'hero') loot = chestHeroLoot();
   else if (sp === 'tie') { game.feaUseBuys = (game.feaUseBuys || 0) + 1; if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'tie', n: 1, icon: '<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', main: '羽の束ね紐', cardDesc: `進化1回で使える羽 ${getFeaUseMax()}枚に`, color: '#ffd76b', sub: `進化1回で使える羽が ${getFeaUseMax()}枚に` }; }
   else if (sp === 'evoUnlock') { const ks = (EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)), k = ks[Math.floor(Math.random() * ks.length)]; unlockEvoKind(k); if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'evoUnlock', n: 1, icon: `<img class="ico-img" src="assets/img/ui/evo2/icon_${k}.webp" alt="">`, main: `進化項目「${EVO_KIND_NAME[k]}」解放`, cardDesc: '進化ページでONにすると、進化のランダムに入る', color: '#7fe8ff', sub: `進化項目「${EVO_KIND_NAME[k]}」が解放された！（進化ページでONにできる）` }; }
+  else if (sp && sp.startsWith('grace:')) { const k = sp.slice(6), G = GRACE_ITEMS[k], [lo, hi] = graceChestRange(k, rarity), n = gainGraceItem(k, (lo + Math.floor(Math.random() * (hi - lo + 1))) * mult); refreshPlayerBallStats(false); loot = { misc: sp, n, icon: `<span class="chest-emoji">${G.icon}</span>`, main: `${G.name} ×${n}`, cardName: G.name, cardDesc: `${G.desc}／1個・所持 ${formatCoinNumber(graceItemCount(k))}個`, color: '#ffd76b', sub: `${G.desc}（1個ごと）。所持 ${formatCoinNumber(graceItemCount(k))}／${formatCoinNumber(G.max)}個（転生しても残る）` }; }
+  else if (sp === 'skillUnlock') { const id = unlockRandomSkill(), I = skillToggleInfo(id); loot = { misc: 'skillUnlock', n: 1, icon: '<span class="chest-emoji">🔓</span>', main: `スキル解放：${I.name}`, cardName: 'スキルの解放', cardDesc: `${I.name}がガチャに出せるようになった`, color: '#b48cff', sub: `「${I.name}」${I.auto ? '（自動スキル）' : ''}をスキルガチャに出せるようになった（スキルページでONにできる・転生しても残る）` }; }
   else if (sp === 'reflMaxUp') { game.reflMaxUp = Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + 1); loot = { misc: 'reflMaxUp', n: 1, icon: '<span class="chest-emoji">🔮</span>', main: '反射倍率上昇の秘宝', cardDesc: `反射板の最大値が×${reflMax()}になった`, color: '#ff8adf', sub: `反射板の最大値 +1 → ×${reflMax()}（${game.reflMaxUp}/${REFL_MAX_UP_CAP}個）` }; }
   else if (sp === 'reflStart') { game.reflStart2 = true; { const o = obstacles.find(x => x.kind === 'reflector'); if (o && o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); } } loot = { misc: 'reflStart', n: 1, icon: '<span class="chest-emoji">⏫</span>', main: '反射の初期値上昇', cardDesc: '反射板が×1ではなく×2から始まる（×1に戻るところも×2に）', color: '#7fe8ff', sub: '反射板の初期倍率が×2になった！（1個だけのレアアイテム）' }; }
   else if (sp === 'overheal') { game.overHealBuys = overHealCount() + 1; loot = { misc: 'overheal', n: 1, icon: '<span class="chest-emoji">💖</span>', main: '回復限界突破', cardDesc: `最大HPの${overHealMult()}倍まで回復できる`, color: '#ff8adf', sub: `回復の上限が最大HPの${overHealMult()}倍に` }; }

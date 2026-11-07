@@ -243,7 +243,7 @@ function step() {
         if (playerAttackHits(e)) {
           const cid = compKind(comp.companionId); // 能力の種類で判定（職業ごとに使い回す）
           let hitMult = 1, hitLabel = '';
-          if (cid === 'lancer' && e.isBoss) hitMult = 1.5;
+          /* 槍兵のボス1.5倍は bossDamageMult でパーティ全員に掛かる */
           if (cid === 'samurai' && Math.random() < 0.25) { hitMult = 3; hitLabel = '居合・一閃！'; }
           const { dmg, crit } = rollCrit(Math.max(1, Math.round(comp.atk * comboMult * hitMult * dashDmgMult(comp) * (comp.launchUntil > Date.now() ? ALLY_LAUNCH_DMG_MULT : 1))), e, cid === 'sprite' ? SPRITE_CRIT_BONUS : 0);
           if (hitLabel) spawnDamageText(e.x, e.y - e.radius - 30, hitLabel, COMPANION_COLORS[cid], 0.02);
@@ -1106,8 +1106,9 @@ function completeReincarnation() {
   const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
   game.gems += rebirthGemGain; game.reincarnations++;
   game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
-  const compGacha = rollRebirthCompanion(compGachaStage); // 転生の仲間ガチャ：1人もらえる（進んだステージが高いほど高レアが出やすい）
-  game.compOn = rollCompOn(compGacha && compGacha.id); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
+  const compGacha = null; // 転生の仲間ガチャは「SSR以上の宝箱」に変わった（仲間・進化の解放・スキルの解放・恩恵などが出る）
+  const rbChests = rollRebirthChests(compGachaStage); { const hc = getHeldChests(); for (const r in rbChests) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + rbChests[r]); }
+  game.compOn = rollCompOn(null); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
   applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
   if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ else { if (!game.companionBook) game.companionBook = {}; game.companionBook[compGacha.id] = true; } }
@@ -1119,7 +1120,7 @@ function completeReincarnation() {
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot, compGacha); // 転生ボーナスはダイアログで（OKを押すまで消えない）
+  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot, compGacha, rbChests, compGachaStage); // 転生ボーナスはダイアログで（OKを押すまで消えない）
   renderChestTray();
   if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
@@ -2498,6 +2499,10 @@ function rebirthCompRates(stage) {
   for (const k in REBIRTH_COMP_RATES_LO) r[k] = REBIRTH_COMP_RATES_LO[k] + (REBIRTH_COMP_RATES_HI[k] - REBIRTH_COMP_RATES_LO[k]) * t;
   return r;
 }
+// 転生でもらうSSR以上の宝箱：数はステージの桁数−1（最低1個：100で2個・1000で3個…）。URになる確率は進んだステージが高いほど上がる（10%→25%）
+function rebirthRewardChestN(stage) { return Math.max(1, String(Math.max(1, Math.floor(stage))).length - 1); }
+function rebirthUrChance(stage) { const r = rebirthCompRates(stage); return r.mythic / (r.mythic + r.legendary); }
+function rollRebirthChests(stage) { const o = { legendary: 0, mythic: 0 }, n = rebirthRewardChestN(stage), p = rebirthUrChance(stage); for (let i = 0; i < n; i++) o[Math.random() < p ? 'mythic' : 'legendary']++; return o; }
 function rollRebirthCompanion(stage) {
   const pool = compPoolIds(); if (!pool.length) return null;
   const rates = rebirthCompRates(stage), avail = RARITY_ORDER.filter(r => pool.some(id => COMPANIONS[id].rarity === r)); // まだ出せないレア度は抽選から外す
@@ -2507,7 +2512,7 @@ function rollRebirthCompanion(stage) {
   return { id: ids[Math.floor(Math.random() * ids.length)], stage };
 }
 function rebirthCompRatesText(stage) { /* まだ出せないレア度を除いて100%に直して見せる */ const r = rebirthCompRates(stage), pool = compPoolIds(), av = RARITY_ORDER.filter(k => pool.some(id => COMPANIONS[id].rarity === k)).reverse(), tot = av.reduce((t, k) => t + r[k], 0) || 1, f = v => v >= 10 ? Math.round(v) : +v.toFixed(1); return av.map(k => `${RARITY_INFO[k].label} ${f(r[k] / tot * 100)}%`).join('・'); }
-function showRebirthRewardDialog(gems, feathers, got, compGacha) {
+function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbStage) {
   got = got || { common: feathers };
   const list = FEA_RARITIES.slice().reverse().filter(r => got[r]), best = list[0] || 'common';
   document.querySelectorAll('.rbd-ov').forEach(e => e.remove());
@@ -2517,6 +2522,7 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha) {
     ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h"><img class="rbd-h-ico" src="assets/img/icons/sk_skillSpecial.webp" alt=""> 次のスキル</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
     ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る3人）</div><div class="rbd-sk-row">${game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join('')}</div></div>` : ''}
     ${compGacha ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🐾 仲間ガチャ<small>（ステージ${formatStageNumber(compGacha.stage)}まで進んだ分レア率UP）</small></div><div class="rbd-sk-row"><div class="rbd-sk rbd-cg" data-rbd-comp="${compGacha.id}" style="--rc:${RARITY_INFO[COMPANIONS[compGacha.id].rarity].color}"><span class="rbd-sk-ico rbd-cg-q">❓</span></div></div></div>` : ''}
+    ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row">${['mythic', 'legendary'].filter(r => rbChests[r]).map(r => `<div class="rbd-sk" style="--rc:${RARITY_INFO[r].color}"><span class="rbd-sk-ico">${xi(CHEST_ICON[r]) || '🎁'}</span><span class="rbd-stars">${rarityStarsImg(r)}</span><span>${RARITY_INFO[r].label}の宝箱 ×${rbChests[r]}</span></div>`).join('')}</div><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・恩恵が出る）</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音

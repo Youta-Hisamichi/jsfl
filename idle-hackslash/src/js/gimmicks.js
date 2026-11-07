@@ -519,7 +519,7 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
 }; }
 // 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
 // ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
-const CHEST_COMP_CHANCE = { legendary: 0.05, mythic: 0.15 };
+const CHEST_COMP_CHANCE = { legendary: 0.15, mythic: 0.15 }; // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
 const CHEST_COMP_EXCLUDE = { legendary: ['common'], mythic: ['common', 'rare'] }; // ★4はNを出さない、★5はNとRを出さない
 function rollChestCompanion(rarity) {
   const ex = CHEST_COMP_EXCLUDE[rarity] || [], pool = compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); if (!pool.length) return null;

@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1081,6 +1081,14 @@ debugRow.addEventListener('click', event => {
   if (action.startsWith('evoUnlock:')) { const k = action.slice(10); game.evoUnlocked = game.evoUnlocked || {}; if (isEvoKindUnlocked(k)) { delete game.evoUnlocked[k]; game['evoKindOpen_' + k] = false; } else unlockEvoKind(k); renderEvolutionList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: 進化項目「${EVO_KIND_NAME[k]}」を${isEvoKindUnlocked(k) ? '解放' : '未解放'}にしました`); return; }
   if (action.startsWith('wcnt')) { const [, k, d] = action.split(':'); if (!k) { showNotice('DEBUG: 下の各自動スキルの ＋／− で個数を変えられます'); return; } game.weaponDup = game.weaponDup || {}; game.weaponDup[k] = Math.max(0, Math.min(WEAPON_COUNT_MAX - 1, (game.weaponDup[k] || 0) + (+d))); if (typeof renderCoinShopList === 'function') renderCoinShopList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: ${WEAPONS[k].name}の個数 ×${weaponCount(k)}`); return; }
   if (action === 'clockInfo') { showClockInfo(); return; }
+  if (action === 'graceAdd') { for (const k in GRACE_ITEMS) gainGraceItem(k, 100); refreshPlayerBallStats(false); updateStatsUI(); saveGame(); showNotice('DEBUG: 恩恵・絆のアイテムを100個ずつ追加 ' + Object.keys(GRACE_ITEMS).map(k => `${GRACE_ITEMS[k].icon}${graceItemCount(k)}`).join(' ')); return; }
+  if (action === 'skillUnlockAll') { const all = !lockedSkillIds().length; game.skillUnlocked = {}; if (!all) skillToggleIds().forEach(k => { game.skillUnlocked[k] = true; }); else SKILL_UNLOCK_DEFAULT.forEach(k => { game.skillUnlocked[k] = true; }); renderSkillToggleList(); saveGame(); showNotice(all ? 'DEBUG: スキルの解放を最初の6つに戻しました' : 'DEBUG: スキルを全部解放しました'); return; }
+  if (action === 'rbChest') { const st = Math.max(game.stage, game.bestStage || 1), o = rollRebirthChests(st), hc = getHeldChests(); for (const r in o) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + o[r]); renderChestTray(); saveGame(); showNotice(`DEBUG: 転生の宝箱（ステージ${formatStageNumber(st)}）SSR×${o.legendary}・UR×${o.mythic}`); return; }
+  if (action === 'bondInfo') { // 絆・恩恵の一覧
+    const F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`, inParty = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0);
+    const rows = [`<div class="dfp-card"><b>🦸 自キャラ</b><small>絆率 ${P(heroBondRate())}（勇者の絆 ${graceItemCount('heroBond')}個）・恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${graceItemCount('heroGrace')}個）<br>攻撃力 ${F(heroOwnAtk())} ＋ 絆 ${F(compShare('atk'))} ＝ ${F(getPlayerAtk())}<br>HP ${F(heroOwnMaxHP())} ＋ 絆 ${F(compShare('hp'))} ＝ ${F(getPlayerMaxHP())}</small></div>`,
+      ...inParty.map(id => { const c = COMPANIONS[id], r = RARITY_INFO[c.rarity]; return `<div class="dfp-card" style="--rc:${r.color}"><b><span style="color:${r.color}">${r.label}</span> ${c.icon} ${c.name}${getCompanionCount(id) > 1 ? ` ×${getCompanionCount(id)}` : ''}</b><small>絆率 ${P(compBondRate(id))}・恩恵率 ${P(compGraceRate(id))}<br>攻撃力 ${F(getCompanionAtkOwn(id))} ＋ 絆 ${F(compBondAdd(id, 'atk'))} ＝ ${F(getCompanionAtk(id))}<br>HP ${F(compOwnMaxHP(id))} ＋ 絆 ${F(compBondAdd(id, 'hp'))} ＝ ${F(getCompanionMaxHP(id))}</small></div>`; })];
+    openDbgFullPage('🤝 絆・恩恵の一覧', `仲間全員に掛かる恩恵 ×${+partyGraceMult().toFixed(3)}（1＋自キャラ＋パーティの仲間の恩恵率）・URの恩恵 ${graceItemCount('urGrace')}個・SSRの恩恵 ${graceItemCount('ssrGrace')}個`, `<div class="dfp-grid">${rows.join('')}</div>${inParty.length ? '' : '<p>パーティに仲間がいません</p>'}`); return; }
   if (action === 'notifySchedule') { showNotifySchedule(); return; }
   if (action === 'adminConsole') { openAdminConsole(); return; }
   if (action === 'compList') { // 全仲間の概要（レア度・能力・特技・いまの強さ）
@@ -1088,7 +1096,7 @@ debugRow.addEventListener('click', event => {
     const F = v => formatCoinNumber(Math.round(v));
     const rows = ids.map(id => { const c = COMPANIONS[id], r = RARITY_INFO[c.rarity], has = game.companions && game.companions.recruited && game.companions.recruited[id];
       let st = ''; try { st = `攻撃 ${F(getCompanionAtk(id))}・HP ${F(getCompanionMaxHP(id))}`; } catch (e) {}
-      return `<div class="dfp-card" data-r="${c.rarity}" data-has="${has ? 1 : 0}" style="--rc:${r.color}"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}　キャラ進化 +${compEvoStep(id)}/回（上限Lv${compEvoCap(id) + 1}）</small></div>`; }).join('');
+      return `<div class="dfp-card" data-r="${c.rarity}" data-has="${has ? 1 : 0}" style="--rc:${r.color}"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}　キャラ進化 +${compEvoStep(id)}/回（上限Lv${compEvoCap(id) + 1}）<br>絆率 ${Math.round(compBondRate(id) * 100)}%・恩恵率 ${+(compGraceRate(id) * 100).toFixed(1)}%</small></div>`; }).join('');
     const chips = ['all', 'common', 'rare', 'epic', 'legendary', 'mythic', 'has'].map(k => `<button class="dfp-chip${k === 'all' ? ' on' : ''}" data-dfp-f="${k}">${k === 'all' ? 'ぜんぶ' : k === 'has' ? '所持' : RARITY_INFO[k].label}</button>`).join('');
     openDbgFullPage('🐾 全仲間の概要', `${ids.length}人・強さ＝Lv倍率 × レア度の基本倍率 × 転生倍率 × 強化（いまのLvで計算）`, `<div class="dfp-chips">${chips}</div><div class="dfp-grid">${rows}</div>`, body => {
       body.addEventListener('click', e => { const b = e.target.closest('[data-dfp-f]'); if (!b) return; const f = b.dataset.dfpF;
@@ -1803,6 +1811,7 @@ document.getElementById('skillToggleList')?.addEventListener('click', event => {
   if (event.target.closest('[data-sk-toggle]') && !skillGachaLeft() && skillGachaLimit() >= SKILL_GACHA_MAX_PULLS) { showTapError('ガチャ上限なのでON/OFFできません\n転生してください', event.clientX, event.clientY); return; } // もう引けないのでON/OFFは無意味
   const b = event.target.closest('[data-sk-toggle]'); if (!b) return;
   const id = b.dataset.skToggle, { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
+  if (!isSkillUnlocked(id)) { showTapError('まだ解放していません\nSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えます', event.clientX, event.clientY); return; }
   if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
   const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
   if (game.gems < cost) { promptGemShortage(cost); return; }

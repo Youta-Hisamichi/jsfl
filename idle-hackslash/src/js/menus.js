@@ -68,15 +68,24 @@ function meteorFormulaHtml(lv, maxed) { // スキルページのメテオ：自�
     + `<span class="sk-formula">自キャラ攻撃力 ${formatCoinNumber(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${N(boost)} × 進化 ${N(evo)}<br>= <b>${formatCoinNumber(atk * total)}</b></span>`;
 }
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
-function rollSkillOn() { const a = skillToggleIds(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_REBIRTH_ON); }
+// スキルの解放：解放したスキル（自動スキルも）だけがONにでき、ガチャに出る。解放はSSR・URの宝箱（転生でもらえる）から。転生しても残る
+const SKILL_UNLOCK_DEFAULT = ['skillSpecial', 'skillHeal', 'skillAccel', 'skillAtkUp', 'w:axe', 'w:knife'];
+function isSkillUnlocked(id) {
+  if (!game.skillUnlocked) { game.skillUnlocked = {}; SKILL_UNLOCK_DEFAULT.forEach(k => { game.skillUnlocked[k] = true; }); (Array.isArray(game.skillOn) ? game.skillOn : []).forEach(k => { game.skillUnlocked[k] = true; }); for (const k in SKILL_GACHA_SKILLS) if (game.shopOwned && game.shopOwned[k]) game.skillUnlocked[k] = true; for (const k in (game.weapons || {})) if (game.weapons[k]) game.skillUnlocked['w:' + k] = true; } // 前からのセーブは、ONのもの・持っているものを解放ずみに
+  return !!game.skillUnlocked[id];
+}
+function lockedSkillIds() { return skillToggleIds().filter(id => !isSkillUnlocked(id)); }
+function unlockRandomSkill() { const ks = lockedSkillIds(); if (!ks.length) return null; const id = ks[Math.floor(Math.random() * ks.length)]; game.skillUnlocked[id] = true; if (typeof renderSkillToggleList === 'function') renderSkillToggleList(); return id; }
+function rollSkillOn() { const a = skillToggleIds().filter(isSkillUnlocked); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_REBIRTH_ON); }
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
-function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id); }
+function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id) && isSkillUnlocked(id); }
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
 function renderSkillToggleList() {
   const el = document.getElementById('skillToggleList'); if (!el) return;
-  const ids = skillToggleIds().sort((a, b) => isSkillItemOn(b) - isSkillItemOn(a)), onN = ids.filter(isSkillItemOn).length;
+  const ids = skillToggleIds().sort((a, b) => (isSkillItemOn(b) - isSkillItemOn(a)) || (isSkillUnlocked(b) - isSkillUnlocked(a))), onN = ids.filter(isSkillItemOn).length;
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
     const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id), cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
+    if (!isSkillUnlocked(id)) return `<button class="skt-item off skt-locked" data-sk-toggle="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span></button>`;
     return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
@@ -335,7 +344,8 @@ function openCompInfo(id) {
   ov.classList.add('show');
 }
 const myCharBoxEl = document.getElementById('myCharBox'), autoUpBtnEl = document.getElementById('autoUpgradeBtn'); // 一覧を描き直しても同じ要素を使い回す（ボタンの処理が付いている）
-function renderCompanionList() {
+function renderCompanionList() { return withBondCache(renderCompanionListNow); }
+function renderCompanionListNow() {
   if (typeof renderPowerBreakInline === "function") renderPowerBreakInline(); // 開いている自キャラの強さの内訳も数値を更新
   try { renderCompToggleList(); } catch (e) {}
   renderMyCharCard();
@@ -578,29 +588,28 @@ document.getElementById('compGachaBtn').addEventListener('click', event => { if 
   new MutationObserver(() => ov.classList.toggle('show', box.style.display !== 'none')).observe(box, { attributes: true, attributeFilter: ['style'] });
 });
 
-// パーティの仲間の強さ（攻撃力・HPの合計）の一部を自キャラに上乗せする
-const COMP_SHARE_RATE = 0.10;
+// 自キャラの絆：パーティの仲間の強さ（恩恵のあと・絆を足す前の攻撃力・HPの合計）の「絆率」（はじめ20%・勇者の絆1個ごとに+1%）を自キャラに上乗せする
+const COMP_SHARE_RATE = 0.20; // （表示用の古い名前。実際は heroBondRate()）
 let compShareGuard = false;
-function compShare(kind) { // kind: 'atk' | 'hp'。仲間の値は自キャラの値をもとに計算されるので、その計算中は上乗せしない（ぐるぐる回らないように）
+function compShare(kind) { // kind: 'atk' | 'hp'
   if (compShareGuard || !game.companions) return 0;
   compShareGuard = true;
-  let sum = 0;
-  try { for (const id of Object.keys(COMPANIONS)) { const n = getCompanionCount(id); if (n > 0) sum += n * (kind === 'atk' ? getCompanionAtk(id) : getCompanionMaxHP(id)); } }
+  try { const P = bondPool(); return P.building ? 0 : P[kind] * heroBondRate(); }
   finally { compShareGuard = false; }
-  return sum * COMP_SHARE_RATE;
 }
-function getPlayerAtk() {
+function heroOwnAtk() { // 自キャラ自身の攻撃力（絆を足す前）。王様・吟遊詩人・踊り子の「仲間全員の攻撃力UP」は自キャラにも掛かる
   const b = computeBonuses();
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = Date.now() < atkUpEndAt ? atkUpMult() : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
-  return safeNum(Math.max(1, Math.round(base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) + compShare('atk')))); // 仲間の攻撃力の10%も上乗せ
+  return safeNum(Math.max(1, base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) * (typeof compInspire === 'function' ? compInspire() : 1)));
 }
-function getPlayerMaxHP() {
+function heroOwnMaxHP() {
   const b = computeBonuses();
-  const base = 100;
-  return safeNum(Math.max(1, Math.round(base * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult() + compShare('hp')))); // 仲間のHPの10%も上乗せ
+  return safeNum(Math.max(1, 100 * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult()));
 }
+function getPlayerAtk() { return safeNum(Math.max(1, Math.round(heroOwnAtk() + compShare('atk')))); } // 自キャラ＋絆（仲間の攻撃力の合計×絆率）
+function getPlayerMaxHP() { return safeNum(Math.max(1, Math.round(heroOwnMaxHP() + compShare('hp')))); } // 自キャラ＋絆（仲間のHPの合計×絆率）
 const EARLY_PLAYER_HP_MIN_RATE = 0.4;
 function getEarlyPlayerHpRate(stage) {
   if (stage >= EARLY_HP_UNTIL_STAGE) return 1;

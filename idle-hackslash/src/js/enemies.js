@@ -766,19 +766,63 @@ function getCompanionPower(id) { return 1; } // （覚醒・絆レベルはな�
 function compLvMult(level) { level = Math.max(0, Number(level) || 0); return Math.pow(level + 1, UPGRADE_POW); } // 仲間の強化Lv：Lv^0.8（10Lv・100Lvごとの飛躍はなし）
 const COMP_RARITY_BASE = { common: 0.3, rare: 0.5, epic: 1, legendary: 2, mythic: 4 }; // N 3割・R 半分・SR 同じ・SSR 2倍・UR 4倍
 function compRarityBase(id) { return COMP_RARITY_BASE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0.3; }
-function getCompanionMaxHP(id) {
+// ===== 恩恵と絆 =====
+// 恩恵：パーティにいる仲間（と自キャラ）は、それぞれ「恩恵率」ぶん仲間全員の攻撃力・HPを強める（同じ仲間が何体いても1人ぶん）
+//   ・UR の恩恵率は「URの恩恵」1個ごとに+3%（最大1万個）、SSR は「SSRの恩恵」1個ごとに+1%（最大5000個）、自キャラは「勇者の恩恵」1個ごとに+1%（最大3万個）
+// 絆：仲間は「絆率」ぶん、ほかの仲間全員と自キャラの攻撃力・HP（恩恵で強めたあとの値）を自分の力にする。自キャラは仲間全員の力を取り込む
+//   ・自キャラの絆率は「勇者の絆」1個ごとに+1%（最大3万個）
+const GRACE_RATE = { common: 0, rare: 0.01, epic: 0.05, legendary: 0.10, mythic: 0.25 }, HERO_GRACE_BASE = 0.10;
+const BOND_RATE = { common: 0, rare: 0.03, epic: 0.10, legendary: 0.30, mythic: 1.0 }, HERO_BOND_BASE = 0.20;
+const GRACE_ITEMS = { // 宝箱から出る、恩恵・絆を上げるアイテム（転生しても残る）
+  urGrace:   { name: 'URの恩恵',   icon: '🌈', per: 0.03, max: 10000, desc: 'URの仲間の恩恵率 +3%' },
+  ssrGrace:  { name: 'SSRの恩恵',  icon: '🌟', per: 0.01, max: 5000,  desc: 'SSRの仲間の恩恵率 +1%' },
+  heroBond:  { name: '勇者の絆',   icon: '🤝', per: 0.01, max: 30000, desc: '自キャラの絆率 +1%' },
+  heroGrace: { name: '勇者の恩恵', icon: '👑', per: 0.01, max: 30000, desc: '自キャラの恩恵率 +1%' },
+};
+function graceItemCount(k) { return Math.max(0, Math.min(GRACE_ITEMS[k].max, Math.floor((game.graceItems && game.graceItems[k]) || 0))); }
+function gainGraceItem(k, n) { if (!game.graceItems) game.graceItems = {}; const before = graceItemCount(k); game.graceItems[k] = Math.min(GRACE_ITEMS[k].max, before + n); return game.graceItems[k] - before; }
+function compGraceRate(id) { const r = COMPANIONS[id] && COMPANIONS[id].rarity; return (GRACE_RATE[r] || 0) + (r === 'mythic' ? GRACE_ITEMS.urGrace.per * graceItemCount('urGrace') : r === 'legendary' ? GRACE_ITEMS.ssrGrace.per * graceItemCount('ssrGrace') : 0); }
+function heroGraceRate() { return HERO_GRACE_BASE + GRACE_ITEMS.heroGrace.per * graceItemCount('heroGrace'); }
+function compBondRate(id) { return BOND_RATE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0; }
+function heroBondRate() { return HERO_BOND_BASE + GRACE_ITEMS.heroBond.per * graceItemCount('heroBond'); }
+function partyGraceMult() { // 仲間全員に掛かる恩恵の倍率 ＝ 1 ＋ 自キャラの恩恵率 ＋ パーティにいる仲間の恩恵率の合計
+  let t = 1 + heroGraceRate();
+  if (game.companions) for (const id in COMPANIONS) if (getCompanionCount(id) > 0) t += compGraceRate(id);
+  return t;
+}
+// 絆の計算に使う「恩恵のあとの、絆を足す前の」仲間の力の合計（同じ処理の中では使い回す）
+let bondPoolCache = null, bondBuilding = false;
+function bondPool() {
+  if (bondPoolCache) return bondPoolCache;
+  if (bondBuilding) return { own: {}, atk: 0, hp: 0, building: true };
+  const own = {}; let atk = 0, hp = 0; bondBuilding = true; // 計算中に呼ばれても回らないように
+  try { for (const id of Object.keys(COMPANIONS)) { const n = getCompanionCount(id); if (n <= 0) continue; const a = getCompanionAtkOwn(id), h = compOwnMaxHP(id); own[id] = { n, atk: a, hp: h }; atk += n * a; hp += n * h; } }
+  finally { bondBuilding = false; }
+  const P = { own, atk, hp }; bondPoolCache = bondCacheDepth > 0 ? P : null; // まとめて計算するとき（withBondCache の中）だけ使い回す
+  return P;
+}
+let bondCacheDepth = 0;
+function withBondCache(fn) { bondCacheDepth++; try { return fn(); } finally { if (--bondCacheDepth === 0) bondPoolCache = null; } }
+function compBondAdd(id, kind) { // その仲間が絆で取り込む量
+  const rate = compBondRate(id); if (!rate) return 0;
+  const P = bondPool(); if (P.building) return 0;
+  const me = P.own[id], others = P[kind] - (me ? me.n * me[kind] : 0);
+  return rate * (others + (kind === 'atk' ? heroOwnAtk() : heroOwnMaxHP()));
+}
+function compOwnMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
-  return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
+  return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
 }
+function getCompanionMaxHP(id) { if (!COMPANIONS[id]) return 0; return safeNum(Math.max(1, Math.round(compOwnMaxHP(id) + compBondAdd(id, 'hp')))); } // 自分のHP＋絆で取り込んだHP
 function compInspire() { return 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); } // 踊り子（1人ごと+10%）・王様の号令（+30%）
 function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
   const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」・進化「絆の欠片」
-  return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost)); // 転生ボーナスも自キャラと同じだけ掛かる
+  return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
 }
-function getCompanionAtk(id) {
+function getCompanionAtkOwn(id) { // 恩恵のあと・絆を足す前の攻撃力（バハムートは仲間全員の分を合わせる）
   if (compKind(id) !== 'dragon') return getCompanionBaseAtk(id);
   let total = getCompanionBaseAtk(id);
   for (const other of COMPANION_IDS) {
@@ -786,6 +830,7 @@ function getCompanionAtk(id) {
   }
   return total;
 }
+function getCompanionAtk(id) { return safeNum(Math.max(1, Math.round(getCompanionAtkOwn(id) + compBondAdd(id, 'atk')))); } // 自分の攻撃力＋絆で取り込んだ攻撃力
 
 function makeCompanionBall(id) {
   const c = COMPANIONS[id];
@@ -825,7 +870,8 @@ function syncCompanionBalls(id) {
 function spawnBattleBalls() {
   return [makeBall(true), makeBall(false), ...makeCompanionBalls()];
 }
-function refreshCompanionBalls() {
+function refreshCompanionBalls() { return withBondCache(refreshCompanionBallsNow); }
+function refreshCompanionBallsNow() {
   for (const ball of balls) {
     if (!ball.isCompanion) continue;
     ball.atk = getCompanionBallAtk(ball.companionId);
@@ -837,7 +883,8 @@ function refreshCompanionBalls() {
   }
 }
 
-function refreshPlayerBallStats(healFull) {
+function refreshPlayerBallStats(healFull) { return withBondCache(() => refreshPlayerBallStatsNow(healFull)); }
+function refreshPlayerBallStatsNow(healFull) {
   const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
   if (!p) return;
   const newMax = getPlayerMaxHP();
@@ -865,12 +912,14 @@ function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, 
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
-function bossDamageMult(target) { return (target && target.isBoss ? (1 + computeBonuses().bossDmg) * getEvoRate('bossDmg') * (game.skipChallenge ? getEvoRate('tower') : 1) : target && !target.isPlayer ? getEvoRate('zako') : 1) * (target && target.berserk ? BERSERK_DMG_TAKEN : 1) * (isTelegraphStunned(target) ? TG_STUN_DMG : 1); } // ボス特攻・発狂中の防御ダウン
+const LANCER_BOSS_MULT = 1.5; // 槍兵・騎兵がパーティにいると、自キャラも仲間全員もボスへのダメージ1.5倍（何人いても1.5倍）
+function partyLancerMult() { return game.companions && COMPANION_IDS.some(id => compKind(id) === 'lancer' && getCompanionCount(id) > 0) ? LANCER_BOSS_MULT : 1; }
+function bossDamageMult(target) { return (target && target.isBoss ? (1 + computeBonuses().bossDmg) * getEvoRate('bossDmg') * partyLancerMult() * (game.skipChallenge ? getEvoRate('tower') : 1) : target && !target.isPlayer ? getEvoRate('zako') : 1) * (target && target.berserk ? BERSERK_DMG_TAKEN : 1) * (isTelegraphStunned(target) ? TG_STUN_DMG : 1); } // ボス特攻・発狂中の防御ダウン
 function rollCrit(dmg, target, extraCritChance = 0) {
   dmg = Math.max(1, Math.round(dmg * bossDamageMult(target)));
   const b = computeBonuses();
-  const crit = Math.random() < CRIT_CHANCE + b.critChance + extraCritChance;
-  return { dmg: crit ? Math.round(dmg * (CRIT_MULT + b.critMultBonus) * getEvoRate('crit')) : dmg, crit }; // クリティカル進化も掛かる
+  const chance = CRIT_CHANCE + b.critChance + extraCritChance, crit = Math.random() < chance;
+  return { dmg: crit ? Math.round(dmg * (CRIT_MULT + b.critMultBonus) * getEvoRate('crit') * overflowDmgMult(chance - 1)) : dmg, crit }; // クリティカル進化も掛かる。100%を超えた発生率はクリティカルのダメージに換算
 }
 const ENEMY_CRIT_CHANCE = 0.05; // 発生率 5%
 const BOSS_CRIT_CHANCE = 0.15;  // ボスの発生率 15%
