@@ -1088,8 +1088,13 @@ debugRow.addEventListener('click', event => {
     const F = v => formatCoinNumber(Math.round(v));
     const rows = ids.map(id => { const c = COMPANIONS[id], r = RARITY_INFO[c.rarity], has = game.companions && game.companions.recruited && game.companions.recruited[id];
       let st = ''; try { st = `攻撃 ${F(getCompanionAtk(id))}・HP ${F(getCompanionMaxHP(id))}`; } catch (e) {}
-      return `<div class="dl-r"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}</small></div>`; }).join('');
-    simpleChoice({ icon: '🐾', title: `全仲間の概要（${ids.length}人）`, text: `<div class="dbg-list">${rows}</div>`, sub: '強さ＝10/100 × Lv倍率 × レア度の基本倍率 × 転生倍率 × 強化（いまのLvで計算）', yes: '閉じる', no: false }); return; }
+      return `<div class="dfp-card" data-r="${c.rarity}" data-has="${has ? 1 : 0}" style="--rc:${r.color}"><b><span style="color:${r.color}">${rarityStars(c.rarity)} ${r.label}</span> ${c.icon} ${c.name}${has ? '　<span style="color:#7ee787">所持</span>' : ''}</b><small>${c.desc}（基本 +${Math.round(c.baseBonus * 100)}%・Lvごと +${Math.round(c.perLevel * 100)}%）${c.trait ? '<br>' + c.trait : ''}<br>いまの強さ：${st}　基本倍率 ×${compRarityBase(id)}</small></div>`; }).join('');
+    const chips = ['all', 'mythic', 'legendary', 'epic', 'rare', 'common', 'has'].map(k => `<button class="dfp-chip${k === 'all' ? ' on' : ''}" data-dfp-f="${k}">${k === 'all' ? 'ぜんぶ' : k === 'has' ? '所持' : RARITY_INFO[k].label}</button>`).join('');
+    openDbgFullPage('🐾 全仲間の概要', `${ids.length}人・強さ＝Lv倍率 × レア度の基本倍率 × 転生倍率 × 強化（いまのLvで計算）`, `<div class="dfp-chips">${chips}</div><div class="dfp-grid">${rows}</div>`, body => {
+      body.addEventListener('click', e => { const b = e.target.closest('[data-dfp-f]'); if (!b) return; const f = b.dataset.dfpF;
+        body.querySelectorAll('.dfp-chip').forEach(x => x.classList.toggle('on', x === b));
+        body.querySelectorAll('.dfp-card').forEach(c => { c.hidden = !(f === 'all' || (f === 'has' ? c.dataset.has === '1' : c.dataset.r === f)); }); });
+    }); return; }
   if (action === 'evoFormula') { // 進化のしくみ・計算式・いまの進化率
     const M = v => '×' + (v >= 1e6 ? formatCoinNumber(v) : +v.toFixed(v >= 100 ? 0 : 3));
     const EFF = { atk: '自キャラ攻撃力 × 進化率', hp: '自キャラ最大HP × 進化率', acc: 'ボスの回避力 ÷ 進化率（回避力を上回ればそれ以上は効果なし）', para: 'ボスのマヒ力 ÷ 進化率（上回ればそれ以上は効果なし）',
@@ -4126,3 +4131,13 @@ function updateDebugSkillBtns() {
   if (box.dataset.html !== h) { box.innerHTML = h; box.dataset.html = h; }
 }
 setInterval(() => { try { updateDebugSkillBtns(); } catch (e) {} }, 1000); try { updateDebugSkillBtns(); } catch (e) {}
+
+// デバッグ：ページ全体に出す一覧（閉じるボタンつき）
+function openDbgFullPage(title, sub, html, setup) {
+  let ov = document.getElementById('dbgFullPage');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'dbgFullPage'; ov.className = 'dfp-ov'; document.body.appendChild(ov); }
+  ov.innerHTML = `<div class="dfp-panel"><div class="dfp-head"><b></b><span class="dfp-sub"></span><button class="dfp-close" type="button">✕ 閉じる</button></div><div class="dfp-body">${html}</div></div>`;
+  ov.querySelector('.dfp-head b').textContent = title; ov.querySelector('.dfp-sub').textContent = sub || '';
+  ov.querySelector('.dfp-close').onclick = () => ov.classList.remove('show');
+  ov.classList.add('show'); if (setup) setup(ov.querySelector('.dfp-body'));
+}
