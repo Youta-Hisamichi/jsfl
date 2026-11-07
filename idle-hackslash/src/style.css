@@ -4486,6 +4486,16 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .tab-page[data-tab="gacha"] .evo-rates .evo-rate.on span, .tab-page[data-tab="gacha"] .evo-rates .evo-rate.on b { color: #fff !important; text-shadow: 0 0 2px #001a55, 0 1px 2px #001a55; }
 /* まだ進化できない項目（ショップで追加） */
 .tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-locked { filter: grayscale(0.85) brightness(0.7); }
+/* OFFの項目：色を少し抜いて、右上に「OFF」の札 */
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-locked:not(.evo-sealed) { filter: saturate(0.3) brightness(0.82); }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-locked:not(.evo-sealed)::after { content: 'OFF'; position: absolute; top: 3px; right: 5px; z-index: 2; font-size: 0.5rem; font-weight: 900; letter-spacing: 0.05em; color: #fff; background: #6b7488; border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; padding: 0 3px; line-height: 1.35; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-locked:not(.evo-sealed) b { color: #d8dce6; }
+/* まだ取っていない項目：暗い影の絵にして、どの宝箱で開くかをレア度の色で目立たせる */
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-sealed { filter: none; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-sealed::before { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(8,8,22,0.62); border-radius: 6px; pointer-events: none; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-sealed .evo-k-ico { filter: brightness(0) drop-shadow(0 0 1px rgba(255,255,255,0.55)); opacity: 0.85; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-sealed span { color: #9ea3b8 !important; }
+.tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-sealed b { color: var(--rc, #ffe08a) !important; text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 6px var(--rc, #000) !important; }
 .tab-page[data-tab="gacha"] .evo-rates .evo-rate.evo-locked b { font-size: 1rem; }
 
 .tab-page[data-tab="gacha"] .evo-rates .evo-rate.on { background: url(assets/img/ui/evo/rate_on.webp) center / contain no-repeat !important; animation: evoOnGlow 1.4s ease-in-out infinite; }
