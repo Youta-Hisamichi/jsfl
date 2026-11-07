@@ -1546,6 +1546,10 @@ function fitLoginSlotNum() { // 桁が多いときは枠からはみ出さない
   if (el.scrollWidth > max && max > 0) el.style.fontSize = Math.max(0.6, max / el.scrollWidth) + 'em';
 }
 if (typeof loginSlotNum !== 'undefined' && loginSlotNum) new MutationObserver(fitLoginSlotNum).observe(loginSlotNum, { childList: true, characterData: true, subtree: true });
+function runReturnCheck() { // 帰還ボーナス：離れていた時間は信用できる時計で測る（時計を巻き戻すと0・進めても止まる）
+  const away = game.lastSeenAt ? Math.max(0, trustNow() - game.lastSeenAt) : 0;
+  returnCheckPending = false; checkLoginBonus(away); game.lastSeenAt = trustNow();
+}
 function checkLoginBonus(awayMs) {
   if (!(awayMs >= RETURN_MIN_MS) || loginBonusModal.classList.contains('show')) return;
   const tier = getReturnTier(awayMs);
@@ -1571,7 +1575,7 @@ function checkLoginBonus(awayMs) {
   game.coins += idleCoins;
   game.totalKills += idleKills;
   if (idleChests) renderChestTray();
-  game.lastSeenAt = Date.now();
+  game.lastSeenAt = trustNow();
   game.coins += bonusCoins;
   const stockArt = a => { if (!Array.isArray(game.rebirthChests)) game.rebirthChests = []; game.rebirthChests.push(a.id); }; // 遺物は開けずに宝箱として左下へ（中身は開けるまで秘密）
   if (chestArtifact) hcIdle[chestArtifact.rarity] = (hcIdle[chestArtifact.rarity] || 0) + 1; // ★付きの宝箱として左下へ
@@ -1776,12 +1780,13 @@ setInterval(() => {
   lastPlayTickAt = now;
   if (document.hidden || delta > 5000) return;
   game.playTimeMs = (game.playTimeMs || 0) + delta;
-  game.lastSeenAt = now; // 最後に遊んでいた時刻（帰還ボーナス用）
+  if (!returnCheckPending) game.lastSeenAt = trustNow(); // 最後に遊んでいた時刻（帰還ボーナス用・端末の時計ではなく信用できる時計）
 }, 1000);
 document.addEventListener('visibilitychange', () => {
   lastPlayTickAt = Date.now();
-  if (document.hidden) { game.lastSeenAt = Date.now(); saveGame(); }
-  else { checkLoginBonus(game.lastSeenAt ? Date.now() - game.lastSeenAt : 0); game.lastSeenAt = Date.now(); }
+  if (document.hidden) { if (!returnCheckPending) game.lastSeenAt = trustNow(); saveGame(); }
+  else tcReady(runReturnCheck); // サーバーの時刻を確かめてから帰還ボーナス
+
 });
 
 const RECORD_BADGE_INTERVAL_MS = 2500;

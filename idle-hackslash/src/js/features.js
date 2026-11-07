@@ -362,12 +362,13 @@ const LOGIN7 = [
   { label: '💎4', give: () => { game.gems += 4; return '💎4'; } },
   { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic', true); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
 ];
-function todayKey(d = new Date()) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
-function checkDailyLogin() {
-  const today = todayKey(); if (game.login7Date === today) return;
-  const y = new Date(); y.setDate(y.getDate() - 1);
-  game.login7Day = game.login7Date === todayKey(y) ? ((game.login7Day || 0) % 7) + 1 : 1; // 連続していなければ1日目から
-  game.login7Date = today;
+function todayKey(d = new Date(trustNow())) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
+function checkDailyLogin() { // 日付は信用できる時計で決める。前にもらった日より「後の日」になったときだけ配る（巻き戻し・時差の行き来で何度ももらえない）
+  const now = trustNow(), today = todayKey(new Date(now)), num = dayNumOf(now);
+  const last = game.login7Num != null ? game.login7Num : dayNumFromKey(game.login7Date);
+  if (game.login7Date === today || (last != null && num <= last)) return;
+  game.login7Day = last === num - 1 ? ((game.login7Day || 0) % 7) + 1 : 1; // 連続していなければ1日目から
+  game.login7Date = today; game.login7Num = num;
   const day = game.login7Day, got = LOGIN7[day - 1].give();
   saveGame(); updateStatsUI();
   setTimeout(() => showLogin7(day, got), 1200);
@@ -462,7 +463,7 @@ const QUESTS = {
     { key: 'reflMax', text: '最大反射の反射板を敵に10回当てる', goal: 10, gems: 3 },
   ],
 };
-function weekKey(d = new Date()) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
+function weekKey(d = new Date(trustNow())) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
 function questState() {
   const q = game.quests || (game.quests = {}), dk = todayKey(), wk = weekKey();
   if (!q.daily || q.daily.key !== dk) { q.daily = { key: dk, prog: {}, claimed: {} }; if (q.weekly && q.weekly.key === wk) q.weekly.prog.login = (q.weekly.prog.login || 0) + 1; }
@@ -604,7 +605,7 @@ function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
 { const orig = failSkipChallenge; failSkipChallenge = function () { if (!(game.skipChallenge && game.skipChallenge.lost)) heroDownSay('down'); return orig.apply(this, arguments); }; }
 { const orig = startEnemyEscape; startEnemyEscape = function (e) { orig(e); setTimeout(() => heroChuuni('escape'), 900); }; }
 { const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
-checkDailyLogin(); questState();
+tcReady(checkDailyLogin); questState(); // 7日ログインはサーバーの時刻を確かめてから
 
 // ===== 仲間の詳細（プロフィール・組み合わせ）とパーティの組み合わせ一覧 =====
 function compExtraHtml(id) {
