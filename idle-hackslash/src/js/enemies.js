@@ -1306,10 +1306,15 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
 function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
-function setBounceOp(o) { o.bop = '×'; const ok = game.refl && game.refl.bm >= reflMin() && game.refl.bm <= reflMax(); o.bm = ok ? game.refl.bm : reflMin(); o.held16 = !!(ok && game.refl.held); }
+// ショップの「反射玉を2つに」（💎100）を持っていると、反射板が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
+function reflCount() { return game.reflTwo ? 2 : 1; }
+function reflState(i) { return i ? game.reflB : game.refl; }
+function reflectors() { return obstacles.filter(o => o.kind === 'reflector' && !o.broken); }
+function setBounceOp(o) { o.bop = '×'; const st = reflState(o.ri || 0), ok = st && st.bm >= reflMin() && st.bm <= reflMax(); o.bm = ok ? st.bm : reflMin(); o.held16 = !!(ok && st.held); }
 function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
   if (!o || o.kind !== 'reflector') return;
-  game.refl = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
+  const st = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
+  if (o.ri) game.reflB = st; else game.refl = st;
 }
 function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射板の粘り」があれば、×16のまま1回だけ反射できる
   if (o.bm >= reflMax()) {
@@ -1492,23 +1497,26 @@ function setupObstacles(dropDebug) {
 }
 // 数値付きの反射オブジェクト（反射板）は、どのステージにも1つだけ置く
 { const orig = setupObstacles; setupObstacles = function () {
-  const old = obstacles.find(o => o.kind === 'reflector' && !o.broken), mv = old && (old.mvx || old.mvy) ? { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map(), held16: old.held16 } : null; // 飛んでいる反射板は、ボス戦などの次のステージでもそのまま飛び続ける
-  if (old) saveReflector(old);
+  const mvs = {}; // 飛んでいる反射板は、ボス戦などの次のステージでもそのまま飛び続ける
+  for (const old of reflectors()) { saveReflector(old); if (old.mvx || old.mvy) mvs[old.ri || 0] = { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map(), held16: old.held16 }; }
   orig.apply(this, arguments);
-  try { ensureOneBounce(); if (mv) { const o = obstacles.find(x => x.kind === 'reflector' && !x.broken); if (o) Object.assign(o, mv); } } catch (e) {}
+  try { ensureOneBounce(); for (const o of reflectors()) if (mvs[o.ri || 0]) Object.assign(o, mvs[o.ri || 0]); } catch (e) {}
 }; }
-function ensureOneBounce() {
-  let refl = obstacles.filter(o => o.kind === 'reflector' && !o.broken);
-  if (refl.length > 1) { const keep = refl[0]; obstacles = obstacles.filter(o => o.kind !== 'reflector' || o === keep); refl = [keep]; }
-  let o = refl[0];
+function ensureOneBounce() { // 反射板をいつも決まった数（ふつう1つ・アイテムで2つ）にそろえる
+  const n = reflCount(), seen = new Set();
+  obstacles = obstacles.filter(o => { if (o.kind !== 'reflector' || o.broken) return true; const i = o.ri || 0; if (i >= n || seen.has(i)) return false; seen.add(i); return true; });
+  for (let i = 0; i < n; i++) if (!seen.has(i)) placeReflector(i);
+}
+function placeReflector(ri) {
+  let o = null;
   if (!o) {
     const n0 = obstacles.length; if (!debugSpawnObstacle('reflector')) return;
     o = obstacles[obstacles.length - 1]; if (obstacles.length === n0 || o.kind !== 'reflector') return;
     o.debug = false;
   }
-  o.r = reflectorRadius(); o.mvx = o.mvy = 0; o.launched = false;
+  o.ri = ri; o.r = reflectorRadius(); o.mvx = o.mvy = 0; o.launched = false;
   setBounceOp(o); // 前のステージの数値を持ち越す（はじめは×1）
-  const c = game.refl; // 前のステージの場所に置く（ほかの障害物と重なるときは、新しい場所のまま）
+  const c = reflState(ri); // 前のステージの場所に置く（ほかの障害物と重なるときは、新しい場所のまま）
   if (c && isFinite(c.fx) && isFinite(c.fy)) {
     const x = arena.x + Math.max(-0.85, Math.min(0.85, c.fx)) * arenaHalf(), y = arena.y + Math.max(-0.85, Math.min(0.85, c.fy)) * arenaHalfY();
     if (!obstacles.some(q => q !== o && !q.broken && Math.hypot(q.x - x, q.y - y) < q.r + o.r + 6)) { o.x = x; o.y = y; }
@@ -1518,7 +1526,7 @@ function ensureOneBounce() {
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射板はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
 let reflCheckAt = 0;
-function tickObstacles() { if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (!obstacles.some(o => o.kind === 'reflector' && !o.broken)) { try { ensureOneBounce(); } catch (e) {} } } /* 反射板がなくなっていたら置き直す（いつもステージに1つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+function tickObstacles() { if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射板がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
