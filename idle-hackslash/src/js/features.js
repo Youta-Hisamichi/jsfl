@@ -823,7 +823,7 @@ const BOSS_SAY = {
 // ===== お知らせ（右上のボタン → 一覧のページ）。新しいお知らせがあると赤い点 =====
 // gift: { gems: 5, feathers: { rare: 1 }, coins, redPotions, potions } を付けると、そのお知らせに「受け取る」ボタンが出る（1人1回。until: '2026-12-31' で期限）
 const NEWS = [ // 新しいものを上に。id は増やしていく
-  { id: 8, date: '2026/10/16', tag: '新機能', title: 'お知らせページができました', body: '右上の📢ボタンから、アップデートやイベントの情報を見られるようになりました。' },
+  { id: 8, date: '2026/10/16', tag: '新機能', title: 'お知らせページができました', body: '右上の📢ボタンから、アップデートやイベントの情報を見られるようになりました。記念に💎1をプレゼント！', gift: { gems: 1 } },
 ];
 function newsGiftReady(n) { return n.gift && !((game.compGot || {})['news-' + n.id]) && !(n.until && new Date() > new Date(n.until + 'T23:59:59')); }
 function newsUnread() { return (NEWS.length && NEWS[0].id > (game.newsSeen || 0)) || NEWS.some(newsGiftReady); } // 受け取っていないプレゼントがあっても赤い点
