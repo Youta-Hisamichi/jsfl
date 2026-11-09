@@ -519,7 +519,8 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
 }; }
 // 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
 // ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
-const CHEST_COMP_CHANCE = { common: 0.001, rare: 0.001, epic: 0.001, legendary: 0.15, mythic: 0.15 }; // N・Rの宝箱からもまれに（0.1%）。Nの仲間もダブってキャラ進化できるように // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
+const CHEST_COMP_CHANCE = { common: 0.01, rare: 0.01, epic: 0.01, legendary: 0.15, mythic: 0.15 }; // N・R・SRの宝箱は1%
+const CHEST_COMP_UP = { common: 'rare', rare: 'epic', epic: 'legendary' }, CHEST_COMP_UP_CHANCE = { common: 0.001, rare: 0.001, epic: 0.001 }; // さらに0.1%で、1つ上のレア度の仲間 // N・Rの宝箱からもまれに（0.1%）。Nの仲間もダブってキャラ進化できるように // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
 const CHEST_COMP_EXCLUDE = { common: ['rare', 'epic', 'legendary', 'mythic'], rare: ['epic', 'legendary', 'mythic'], epic: ['common', 'rare', 'legendary', 'mythic'], legendary: ['common'], mythic: ['common', 'rare'] }; // Nの宝箱はNだけ・Rの宝箱はNとRだけ、★4はNを出さない、★5はNとRを出さない
 function chestCompRangeText(rarity) { const ok = RARITY_ORDER.filter(r => !(CHEST_COMP_EXCLUDE[rarity] || []).includes(r)).map(r => RARITY_INFO[r].label); return ok.length === 1 ? `${ok[0]}だけ` : ok[0] === 'N' ? `${ok[ok.length - 1]}まで` : `${ok[0]}以上だけ`; }
 function rollChestCompanion(rarity) {
@@ -528,10 +529,11 @@ function rollChestCompanion(rarity) {
   for (const id of pool) { if ((x -= COMPANIONS[id].weight) < 0) return id; }
   return pool[pool.length - 1];
 }
+function chestCompUpPool(rarity) { const up = CHEST_COMP_UP[rarity]; return up ? compPoolIds().filter(id => COMPANIONS[id].rarity === up) : []; }
 function chestCompPool(rarity) { const ex = CHEST_COMP_EXCLUDE[rarity] || []; return compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); }
 let chestCompRenderT = 0;
-function chestCompLoot(rarity) { // 宝箱の中身「仲間」：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化
-  const id = rollChestCompanion(rarity); if (!id) return null;
+function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化（up＝1つ上のレア度の仲間）
+  let id; if (up) { const pool = chestCompUpPool(rarity); id = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null; } else id = rollChestCompanion(rarity); if (!id) return null;
   const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '';
   if (!dup) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
   const t = dup ? `ダブり → キャラ進化！ ${evo}` : 'NEW！ 図鑑に登録';
