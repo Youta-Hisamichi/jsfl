@@ -767,7 +767,7 @@ function compLvMult(level) { level = Math.max(0, Number(level) || 0); return Mat
 const COMP_RARITY_BASE = { common: 0.3, rare: 0.5, epic: 1, legendary: 2, mythic: 4 }; // N 3割・R 半分・SR 同じ・SSR 2倍・UR 4倍
 function compRarityBase(id) { return COMP_RARITY_BASE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0.3; }
 // ===== 恩恵と絆 =====
-// 恩恵：パーティにいる仲間（と自キャラ）は、それぞれ「恩恵率」ぶん仲間全員の攻撃力・HPを強める（同じ仲間が何体いても1人ぶん）
+// 恩恵：パーティにいる仲間（と自キャラ）は、それぞれ「恩恵率」ぶん全員（勇者と仲間）の攻撃力・HPを強める（同じ仲間が何体いても1人ぶん）
 //   ・UR の恩恵率は「URの恩恵」1個ごとに+3%（最大1万個）、SSR は「SSRの恩恵」1個ごとに+1%（最大5000個）、自キャラは「勇者の恩恵」1個ごとに+1%（最大3万個）
 // 絆：仲間は「絆率」ぶん、ほかの仲間全員と自キャラの攻撃力・HP（恩恵で強めたあとの値）を自分の力にする。自キャラは仲間全員の力を取り込む
 //   ・自キャラの絆率は「勇者の絆」1個ごとに+1%（最大3万個）

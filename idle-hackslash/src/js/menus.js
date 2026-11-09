@@ -339,7 +339,7 @@ function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラ
   if (inParty) { const aO = getCompanionAtkOwn(id), aB = compBondAdd(id, 'atk'), hO = compOwnMaxHP(id), hB = compBondAdd(id, 'hp');
     chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋絆 ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋絆 ${F(hB)}）` : ''}`); }
   return `<div class="cc-chips">${chips.map(t => `<span class="cc-chip">${t}</span>`).join('')}</div>`
-    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】仲間全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
+    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
@@ -350,7 +350,7 @@ function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形
     `🤝 絆率 ${P(heroBondRate())}（勇者の絆 ${F(graceItemCount('heroBond'))}個）`, `👑 恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${F(graceItemCount('heroGrace'))}個）`,
     `🧬 進化 初期Lv ⚔️+${ev.atk} ❤️+${ev.hp}`, `🌌 転生 ${game.reincarnations || 0}回（攻撃力・HP ×${+rebirthPowerMult().toFixed(2)}）`];
   return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span>${ELEMENTS_ON && id ? elemBadge(COMPANION_ELEMENT[id]) : ''}</div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
-    + `<div class="cc-trait">${heroTypeHtml(id)}</div><div class="cc-trait">【絆】仲間全員の攻撃力・HPの${P(heroBondRate())}を自分の力にする。【恩恵】仲間全員の攻撃力・HPを${P(heroGraceRate())}強める</div>`
+    + `<div class="cc-trait">${heroTypeHtml(id)}</div><div class="cc-trait">【絆】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
     + `<div class="cp-info-lock">攻撃力・HPは下の強化で上がります。宝箱から自キャラが出ると進化して初期Lvが上がります</div></div>`;
 }
 function openHeroInfo() { openCompInfo(null, heroInfoHtml()); }
@@ -625,11 +625,11 @@ function heroOwnAtk() { // 自キャラ自身の攻撃力（絆を足す前）�
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = Date.now() < atkUpEndAt ? atkUpMult() : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
-  return safeNum(Math.max(1, base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) * (typeof compInspire === 'function' ? compInspire() : 1)));
+  return safeNum(Math.max(1, base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) * (typeof compInspire === 'function' ? compInspire() : 1) * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 恩恵は勇者にも掛かる
 }
 function heroOwnMaxHP() {
   const b = computeBonuses();
-  return safeNum(Math.max(1, 100 * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult()));
+  return safeNum(Math.max(1, 100 * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult() * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 恩恵は勇者にも掛かる
 }
 function getPlayerAtk() { return safeNum(Math.max(1, Math.round(heroOwnAtk() + compShare('atk')))); } // 自キャラ＋絆（仲間の攻撃力の合計×絆率）
 function getPlayerMaxHP() { return safeNum(Math.max(1, Math.round(heroOwnMaxHP() + compShare('hp')))); } // 自キャラ＋絆（仲間のHPの合計×絆率）
