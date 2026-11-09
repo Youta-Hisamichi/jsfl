@@ -163,7 +163,7 @@ function popGimmickItem(it) {
   else if (it.kind === 'star') { playCoinChime(5); playTone(1800, 0.15, 'triangle', 0.05, 2600); for (let i = 0; i < 4; i++) spawnHitParticles(it.x, it.y, '#fff3a0'); gimmickGiveCoins(it.x, it.y, 0.4, '🌠'); }
   else if (it.kind === 'coin') { playCoinChime(Math.floor(Math.random() * 6)); gimmickGiveCoins(it.x, it.y, 0.1, ''); }
   else if (it.kind === 'firefly') { playTone(2000, 0.08, 'sine', 0.04, 2600); spawnHitParticles(it.x, it.y, '#d6ff7a'); gimmickGiveCoins(it.x, it.y, 0.2, '✨'); }
-  else if (it.kind === 'snowman') { playNoiseBurst(0.2, 0.25); for (let i = 0; i < 6; i++) spawnHitParticles(it.x + gRand(-10, 10), it.y + gRand(-10, 10), '#ffffff'); gimmickGiveCoins(it.x, it.y, 0.6, '⛄'); }
+  else if (it.kind === 'snowman') { if (typeof playSnowmanBreak === 'function') playSnowmanBreak(); else playNoiseBurst(0.2, 0.25); for (let i = 0; i < 6; i++) spawnHitParticles(it.x + gRand(-10, 10), it.y + gRand(-10, 10), '#ffffff'); gimmickGiveCoins(it.x, it.y, 0.6, '⛄'); }
 }
 function gimmickStrike(f) { // 雷・落石：その場所にいる敵に大ダメージ
   const R = 34, thunder = f.kind === 'warn';

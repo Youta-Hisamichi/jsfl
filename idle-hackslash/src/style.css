@@ -5284,3 +5284,7 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .xfer-msg { min-height: 1.2em; color: #7ee787; font-weight: 700; }
 .xfer-msg.bad, .xfer-warn { color: #ff8a8a; }
 .xfer-note { font-size: 0.72rem; color: #aab3d6 !important; margin-top: 8px !important; }
+/* ステージ進捗：周りの枠（台の絵）をなくし、ゲージの溝だけ見せる */
+.exp-wrap { background: none !important; }
+.exp-wrap .exp-track { background: rgba(6,10,24,0.75) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.8), 0 0 0 1px rgba(160,190,255,0.35) !important; }
+.exp-wrap .stage-floor small, .exp-wrap .stage-floor > span, .exp-wrap .stage-boss-txt { text-shadow: 0 0 3px #000, 0 1px 2px #000, 0 0 6px rgba(0,0,0,0.8) !important; }

@@ -1691,6 +1691,7 @@ function tickMovingObstacles(speedMult) {
     for (let i = 0; i < n && (o.mvx || o.mvy); i++) stepMovingObstacle(o, speedMult / n, pl);
   }
 }
+const GIMMICK_SOLID_R = { snowman: 20 }; // 反射玉・押された障害物が跳ね返るステージの置き物（当たりの半径）
 function stepMovingObstacle(o, speedMult, pl) {
   const refl = o.kind === 'reflector' && o.launched, rest = refl ? 1 : 0.8;
   o.x += o.mvx * speedMult; o.y += o.mvy * speedMult;
@@ -1714,6 +1715,18 @@ function stepMovingObstacle(o, speedMult, pl) {
     if (d >= min) continue;
     const nx = dx / d, ny = dy / d; o.x = q.x + nx * min; o.y = q.y + ny * min;
     const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); }
+  }
+  if (typeof gm !== 'undefined' && gm && Array.isArray(gm.items)) for (const it of gm.items) { // ステージの置き物（雪だるまなど）でも跳ね返る
+    const R = !it.dead && GIMMICK_SOLID_R[it.kind]; if (!R) continue;
+    const dx = o.x - it.x, dy = o.y - it.y, d = Math.hypot(dx, dy) || 1, min = o.r + R; if (d >= min) continue;
+    const nx = dx / d, ny = dy / d; o.x = it.x + nx * min; o.y = it.y + ny * min;
+    const dot = o.mvx * nx + o.mvy * ny; if (dot >= 0) continue;
+    o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8);
+    if (refl) reflectorBounced(o);
+    if (it.kind === 'snowman' && Math.hypot(o.mvx, o.mvy) > OBS_HIT_MIN_SPEED && !(it.reflCool > Date.now())) { // 勢いよく当たると雪だるまも削れる
+      it.reflCool = Date.now() + 400; it.hp--; it.shake = Date.now(); spawnHitParticles(it.x, it.y, '#ffffff'); if (typeof playTone === 'function') playTone(500, 0.06, 'square', 0.05, 300);
+      if (it.hp <= 0 && typeof popGimmickItem === 'function') popGimmickItem(it);
+    }
   }
   const sp = Math.hypot(o.mvx, o.mvy);
   if (!pl || sp < OBS_HIT_MIN_SPEED) return;

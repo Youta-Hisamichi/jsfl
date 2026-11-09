@@ -1865,3 +1865,20 @@ const BOSS_ENEMY_NAMES = { '🎁': 'キングミミック', '🌩️': '雷獣�
 let bgmTouchAt = 0;
 ['touchstart', 'touchmove', 'wheel', 'scroll'].forEach(ev => document.addEventListener(ev, () => { bgmTouchAt = Date.now(); }, { capture: true, passive: true }));
 function bgmAhead() { return Date.now() - bgmTouchAt < 4000 || document.querySelector('.dfp-ov.show, .adm-ov.show') ? 1.5 : 0.3; }
+// 雪だるまが壊れた音：「ザクッ」と雪を崩す音＋「ポフッ」と落ちる低い音＋キラキラの鈴（オリジナル）
+function playSnowmanBreak() {
+  if (!audioCtx || isBattleSfxMuted()) return;
+  const t0 = audioCtx.currentTime, v = game.sfxVolume, out = audioCtx.createGain(); out.gain.value = v; out.connect(audioCtx.destination);
+  const noise = (t, dur, f, q, g, type = 'bandpass') => { // 雪のザクザク（ノイズを帯域で絞る）
+    const n = Math.max(1, Math.floor(audioCtx.sampleRate * dur)), buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.6) * (Math.random() < 0.35 ? 1 : 0.4); // ざらざらした粒
+    const s = audioCtx.createBufferSource(), fl = audioCtx.createBiquadFilter(), gn = audioCtx.createGain();
+    s.buffer = buf; fl.type = type; fl.frequency.setValueAtTime(f, t); fl.Q.value = q; gn.gain.setValueAtTime(g, t); gn.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(fl); fl.connect(gn); gn.connect(out); s.start(t); s.stop(t + dur + 0.02);
+  };
+  noise(t0, 0.16, 2600, 0.9, 0.5); noise(t0 + 0.05, 0.22, 1500, 0.8, 0.42); noise(t0 + 0.12, 0.3, 900, 0.7, 0.3); // ザク・ザクッ
+  { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(190, t0 + 0.06); o.frequency.exponentialRampToValueAtTime(70, t0 + 0.3); // ポフッ
+    g.gain.setValueAtTime(0.0001, t0 + 0.06); g.gain.exponentialRampToValueAtTime(0.38, t0 + 0.08); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.34); o.connect(g); g.connect(out); o.start(t0 + 0.06); o.stop(t0 + 0.36); }
+  [2093, 2637, 3136, 2794].forEach((f, i) => { const t = t0 + 0.2 + i * 0.06, o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'triangle'; o.frequency.value = f; // キラキラ
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.37); });
+}
