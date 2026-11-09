@@ -1311,14 +1311,17 @@ function saveGame() {
   if (suppressAutoSave) return;
   try {
     const data = { game, lastSpecialAt, lastAccelAt, accelEndAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, savedAt: Date.now() };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data, (k, v) => typeof v === 'number' && !isFinite(v) && !Number.isNaN(v) ? (v > 0 ? Number.MAX_VALUE : -Number.MAX_VALUE) : v)); // 桁あふれで無限大になっても、保存で0（null）に化けないように
+    const json = JSON.stringify(data, (k, v) => typeof v === 'number' && !isFinite(v) && !Number.isNaN(v) ? (v > 0 ? Number.MAX_VALUE : -Number.MAX_VALUE) : v); // 桁あふれで無限大になっても、保存で0（null）に化けない
+    localStorage.setItem(SAVE_KEY, json);
+    if (Date.now() - lastSaveBackupAt > 10 * 60 * 1000 && (game.bestStage || 1) > 1) { lastSaveBackupAt = Date.now(); localStorage.setItem(SAVE_BACKUP_KEY, json); } // 10分おきに控えも残す（本体が壊れたときに使う）ように
   } catch (err) { /* 保存できない環境では無視 */ }
 }
+const SAVE_BACKUP_KEY = SAVE_KEY + '-backup'; let lastSaveBackupAt = 0;
 function loadGame() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
+    let raw = localStorage.getItem(SAVE_KEY), data = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch (e) { data = null; }
+    if (!data || !data.game) { try { const b = localStorage.getItem(SAVE_BACKUP_KEY); data = b ? JSON.parse(b) : null; } catch (e) { data = null; } } // 本体が無い・壊れているときは控えから
     if (!data || !data.game) return false;
     Object.assign(game, data.game);
     if (data.game.rebirthLv == null) game.rebirthLv = game.reincarnations || 0; // 転生Lvが無い昔のセーブ：これまでの転生1回につきLv1

@@ -18,8 +18,10 @@ async function adminInit() {
     const ref = adminDb.doc('players/' + adminUid), snap = await ref.get(), old = snap.exists ? snap.data() : {};
     const visits = Array.isArray(old.visits) ? old.visits.slice(-(ADMIN_VISITS_KEEP - 1)) : [];
     const s = adminSnapshot(); visits.push({ at: Date.now(), dev: adminDevice(), stage: s.stage });
-    const body = { ...s, firstAt: old.firstAt || Date.now(), lastAt: Date.now(), count: (old.count || 0) + 1, visits };
+    const body = { ...old, ...s, firstAt: old.firstAt || Date.now(), lastAt: Date.now(), count: (old.count || 0) + 1, visits }; // セーブの控え（save など）も消さずに残す
+    cloudSave = old.save ? { raw: old.save, at: old.saveAt || 0, best: old.saveBest || 1, reb: old.saveReb || 0, stage: old.saveStage || 1 } : null;
     await ref.set(body); adminLastSaved = JSON.stringify(s);
+    if (cloudSave && cloudAhead()) offerCloudRestore(); else cloudBackupOk = true;
   } catch (e) { adminUid = null; } // 書けない人（閲覧だけ など）は記録しない
 }
 async function adminSaveProgress() { // 進み具合が変わったときだけ、10分おきにまとめて書く
@@ -27,6 +29,25 @@ async function adminSaveProgress() { // 進み具合が変わったときだけ�
   const s = adminSnapshot(), j = JSON.stringify(s); if (j === adminLastSaved) return;
   try { await adminDb.doc('players/' + adminUid).update({ ...s, lastAt: Date.now() }); adminLastSaved = j; } catch (e) {}
 }
+// ===== セーブの控え（クラウド） =====
+// 端末のセーブ（localStorage）は、ブラウザやアプリの都合で消えることがある。サインインして遊んでいる人は、
+// 自分の記録（players/<id>）にセーブの写しを3分おき・閉じるときに残し、端末のセーブが消えて最初からになっていたら復活を聞く
+let cloudSave = null, cloudBackupOk = false, cloudLastRaw = null;
+function cloudAhead() { return cloudSave && ((cloudSave.reb || 0) > (game.reincarnations || 0) || (cloudSave.best || 1) > (game.bestStage || 1)); } // クラウドの控えのほうが進んでいる
+function offerCloudRestore() {
+  const d = new Date(cloudSave.at), p = n => String(n).padStart(2, '0');
+  simpleChoice({ icon: '☁️', title: 'セーブの控えが見つかりました', text: `この端末のセーブより進んだ控えがあります。<br><b>自己ベスト ステージ${formatStageNumber(cloudSave.best)}・転生${cloudSave.reb}回</b><br><small>${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())} に保存</small>`, sub: '復活すると、いまの端末の進み具合はこの控えで上書きされます', yes: '控えから復活する', no: 'いまのまま続ける',
+    onYes: () => { try { window.__noSave = true; localStorage.setItem(SAVE_KEY, cloudSave.raw); } catch (e) {} location.reload(); },
+    onNo: () => { cloudBackupOk = true; } });
+}
+async function cloudBackup() {
+  if (!adminDb || !adminUid || !cloudBackupOk || window.__noSave) return; // 復活するか聞いている間は、進んだ控えを上書きしない
+  let raw; try { saveGame(); raw = localStorage.getItem(SAVE_KEY); } catch (e) { return; }
+  if (!raw || raw === cloudLastRaw || raw.length > 240000) return;
+  try { await adminDb.doc('players/' + adminUid).update({ save: raw, saveAt: Date.now(), saveBest: Math.floor(game.bestStage || 1), saveReb: game.reincarnations || 0, saveStage: Math.floor(game.stage || 1) }); cloudLastRaw = raw; } catch (e) {}
+}
+setInterval(cloudBackup, 3 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cloudBackup(); });
 setTimeout(() => { adminInit(); }, 4000);
 setInterval(adminSaveProgress, 10 * 60 * 1000);
 
