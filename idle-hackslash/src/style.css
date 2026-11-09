@@ -5314,3 +5314,5 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 /* ステージバー右端の「ボスまで 1/10」：正方形の角丸の枠で囲う */
 .stage-side-txt { box-sizing: border-box; width: 46px; height: 46px; flex: 0 0 auto; gap: 1px; padding: 2px 0; border-radius: 9px; background: rgba(6,10,24,0.72); border: 1px solid rgba(160,190,255,0.55); box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.35); }
 .stage-side-txt #stageToBoss { font-size: 0.58rem; letter-spacing: -0.02em; }
+/* ステージ進捗バーのボスアイコンを大きく */
+.exp-wrap .stage-mark-boss { width: 11.5cqw !important; height: 11.5cqw !important; }
