@@ -1306,7 +1306,7 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
 function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
-// ショップの「反射玉を2つに」（💎100）を持っていると、反射板が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
+// ショップの「ダブル反射玉」（💎100）を持っていると、反射板が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
 function reflCount() { return game.reflTwo ? 2 : 1; }
 function reflState(i) { return i ? game.reflB : game.refl; }
 function reflectors() { return obstacles.filter(o => o.kind === 'reflector' && !o.broken); }
