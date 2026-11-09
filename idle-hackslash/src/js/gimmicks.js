@@ -373,7 +373,7 @@ function gmMakeObstacle(key, p, rnd) {
 function gmSpotFree(p, r) { return !obstacles.some(o => Math.hypot(o.x - p.x, o.y - p.y) < o.r + r + 6) && ![...balls, ...adds].some(b => Math.hypot(b.x - p.x, b.y - p.y) < (b.radius || 14) + r + 10); }
 function fillGimmickObstacles(key) {
   const F = GM_FILL[key]; if (!F) return;
-  obstacles = obstacles.filter(o => o.debug || o.gm === key || o.kind === 'reflector'); // ほかの障害物はどけて、この遊びに集中（反射板は残す）
+  obstacles = obstacles.filter(o => o.debug || o.gm === key || o.kind === 'reflector'); // ほかの障害物はどけて、この遊びに集中（反射玉は残す）
   const rnd = stageRand(game.stage * 7 + 1), spots = gmFillSpots().sort(() => rnd() - 0.5), r = arena.radius * F.size;
   for (const p of spots) { if (obstacles.filter(o => o.gm === key).length >= F.n) break; if (gmSpotFree(p, r)) obstacles.push(gmMakeObstacle(key, p, rnd)); }
 }

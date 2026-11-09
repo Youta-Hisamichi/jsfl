@@ -1107,7 +1107,7 @@ debugRow.addEventListener('click', event => {
     const M = v => '×' + (v >= 1e6 ? formatCoinNumber(v) : +v.toFixed(v >= 100 ? 0 : 3));
     const EFF = { atk: '自キャラ攻撃力 × 進化率', hp: '自キャラ最大HP × 進化率', acc: 'ボスの回避力 ÷ 進化率（回避力を上回ればそれ以上は効果なし）', para: 'ボスのマヒ力 ÷ 進化率（上回ればそれ以上は効果なし）',
       bossDmg: 'ボスへのダメージ × 進化率', compAtk: '仲間の攻撃力 × 進化率', compHp: '仲間の最大HP × 進化率', counter: `反撃ダメージ（攻撃力×${COUNTER_DMG_MULT}）× 進化率。反撃率は10%＋進化率が10倍ごとに+20%（最大90%、いま${Math.round(evoCounterChance() * 100)}%）`,
-      rebirth: '転生ボーナス ＝ 1 ＋ 転生回数 × 進化率（ジェム・羽は増えない）', skill: '手動スキル・自動スキル・メテオのダメージ × 進化率', weapon: '反射板を敵に当てたダメージ × 進化率', melee: '助走なしの体当たり × 進化率',
+      rebirth: '転生ボーナス ＝ 1 ＋ 転生回数 × 進化率（ジェム・羽は増えない）', skill: '手動スキル・自動スキル・メテオのダメージ × 進化率', weapon: '反射玉を敵に当てたダメージ × 進化率', melee: '助走なしの体当たり × 進化率',
       tackle: 'タックル（助走あり）× 進化率', combo: 'コンボの上がり幅（1回+8%）× 進化率', crit: 'クリティカルのダメージ × 進化率', tower: '試練の塔のボスへのダメージ × 進化率（ボス特攻とも重なる）',
       pinch: `HP${Math.round(PINCH_HP_RATIO * 100)}%以下のとき攻撃力 × 進化率`, zako: 'ボス以外へのダメージ × 進化率' };
     const odds = evoOdds(1, null);
@@ -1129,9 +1129,9 @@ debugRow.addEventListener('click', event => {
   if (action === 'mysteryList') { // 謎魔法の効果と出る確率
     const tot = MYSTERY_EFFECTS.reduce((t, e) => t + e.w, 0);
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
-  if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射板の最大値 ×${reflMax()}`); saveGame(); return; }
+  if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
-  if (action === 'refl16Keep' || action === 'reflStart2') { // 反射板のアイテムの所持を切り替える
+  if (action === 'refl16Keep' || action === 'reflStart2') { // 反射玉のアイテムの所持を切り替える
     game[action] = !game[action]; for (const o of reflectors()) if (o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
     showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射MAX維持' : '反射の初期値上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'chestItems') { // 宝箱で出る使いきりアイテムを1つずつ
@@ -4124,7 +4124,7 @@ function showRebirthRulesDebug() {
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
 }
 
-// デバッグの反射板アイテムのボタンに、いまON（所持）かOFFかを出す
+// デバッグの反射玉アイテムのボタンに、いまON（所持）かOFFかを出す
 function updateReflDebugBtns() {
   for (const [k, label] of [['reflTwo', '🪞 ダブル反射玉'], ['refl16Keep', '🌈 反射MAX維持'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
     const on = !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${on ? 'ON（所持）' : 'OFF'}</b>`;

@@ -1364,7 +1364,7 @@ function doTapSlash(auto = false) {
 // 自キャラの攻撃（切り払い・武器スキル）で敵に攻撃力×mult のダメージ。命中したら true
 function playerHitEnemyBy(en, pl, mult, color, knock, from, noDash) { // noDash：自動スキルにはダッシュ・溜めを掛けない
   if (!en || en.hp <= 0 || en.isDying) return false;
-  if (from && from.kind === 'reflector' ? !(game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge) && Math.random() >= Math.min(1, REFLECT_HIT_RATE * playerHitChance(en, true)) : !playerAttackHits(en)) { spawnMissText(en); return false; } // 反射板はタックルの3倍当たりやすい
+  if (from && from.kind === 'reflector' ? !(game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge) && Math.random() >= Math.min(1, REFLECT_HIT_RATE * playerHitChance(en, true)) : !playerAttackHits(en)) { spawnMissText(en); return false; } // 反射玉はタックルの3倍当たりやすい
   const m = mult; // 隙の3倍は rollCrit の中でかかる
   const { dmg, crit } = rollCrit(Math.max(1, Math.round(pl.atk * m * (noDash || (from && WEAPONS[from.id]) ? 1 : dashDmgMult(pl)))), en);
   en.hp -= dmg; trackDamage(dmg);

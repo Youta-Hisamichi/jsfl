@@ -453,14 +453,14 @@ const QUESTS = {
     { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 1 },
     { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 1 },
     { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 1 },
-    { key: 'reflMax', text: '×8以上の反射板を敵に1回当てる', goal: 1, gems: 1 },
+    { key: 'reflMax', text: '×8以上の反射玉を敵に1回当てる', goal: 1, gems: 1 },
   ],
   weekly: [
     { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 3 },
     { key: 'boss', text: 'ボスを300体倒す', goal: 300, gems: 3 },
     { key: 'evo', text: '進化ガチャを30回引く', goal: 30, gems: 3 },
     { key: 'login', text: '5日ログインする', goal: 5, gems: 3 },
-    { key: 'reflMax', text: '×8以上の反射板を敵に10回当てる', goal: 10, gems: 3 },
+    { key: 'reflMax', text: '×8以上の反射玉を敵に10回当てる', goal: 10, gems: 3 },
   ],
 };
 function weekKey(d = new Date(trustNow())) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
@@ -944,7 +944,7 @@ const EPIC_ENEMY = {
 };
 for (const k in EPIC_HERO) if (CHUUNI[k]) CHUUNI[k].push(...EPIC_HERO[k]);
 CHUUNI.bossKill.push('あの世で詫びるがいい！'); CHUUNI.idle.push('秩序が国を荒廃させるというのか‥'); // 追加のセリフ
-// 反射板が最大値になったら、仲間「今だ！パワーを反射玉に！」→ 自キャラ「最大反射を叩きつけろ！」→ 別の仲間「いいですとも！」
+// 反射玉が最大値になったら、仲間「今だ！パワーを反射玉に！」→ 自キャラ「最大反射を叩きつけろ！」→ 別の仲間「いいですとも！」
 let reflMaxTalkAt = 0;
 function reflMaxTalk() {
   const now = Date.now(); if (now - reflMaxTalkAt < 20000) return; reflMaxTalkAt = now; // うるさくならないよう20秒に1回

@@ -741,7 +741,7 @@ function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
 SHOP_ITEMS.refl16 = { icon: '🌈', name: '反射MAX維持', desc: '反射玉が最大値（はじめは×8）になったら、次に反射しても戻らず、最大値のままもう1回反射できる（転生しても残る）', cost: 5, unlockKey: 'refl16Keep' };
-SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉（反射板）がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
+SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
@@ -784,7 +784,7 @@ const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
  ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる。進化で反撃率（最大90%）とダメージが上がる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生ボーナス（1回ごとの攻撃力・HPの上がり幅）が強くなる', 'x_reborn'],
- ['weapon', '🪞', '反射オブジェクト', '反射板を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
+ ['weapon', '🪞', '反射オブジェクト', '反射玉を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
  ['crit', '💥', 'クリティカル', 'クリティカルのダメージが上がる', 'g_critical'],
  ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { hideInShop: true, /* 進化ページの下から切り替える（ショップには並べない） */ icon, img: `assets/img/ui/evo2/icon_${k}.webp`, /* 進化の結果と同じ絵 */ name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };

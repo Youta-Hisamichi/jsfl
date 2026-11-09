@@ -1205,7 +1205,7 @@ function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // �
   let last = o; if (hpFreq) { const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hpFreq; o.connect(f); last = f; }
   last.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
 }
-function playReflChain(n, max) { // 反射板の連鎖音：低めの「ドゥイン↑」から始まり、反射するたびに音階で上がる。低い支えの音で存在感を出す
+function playReflChain(n, max) { // 反射玉の連鎖音：低めの「ドゥイン↑」から始まり、反射するたびに音階で上がる。低い支えの音で存在感を出す
   if (!audioCtx || isBattleSfxMuted()) return;
   const steps = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24, 26], i = Math.max(0, Math.min(steps.length - 1, n - 1));
   const f = 196 * Math.pow(2, steps[i] / 12), lv = Math.min(1, (n - 1) / 15), v = 0.051 + 0.021 * lv; // ×1はソ（196Hz・前より1オクターブ低い）から（音量は控えめ）
@@ -1216,7 +1216,7 @@ function playReflChain(n, max) { // 反射板の連鎖音：低めの「ドゥ�
   if (n >= 5) busTone(bus, 'triangle', f * 3.78, f * 3.78, 0.09, 0.25, v * 0.45, 0.004); // 5連鎖から和音が厚く
   if (n >= 9) { filteredNoise(0.06, 0.25, 0.05 + 0.05 * lv, 7000, 1.2, 'highpass'); busTone(bus, 'sine', f * 6, f * 6, 0.1, 0.3, v * 0.3, 0.01); } // 9連鎖からシャララ
 }
-function playReflMaxUp() { // 反射板が最大値になった瞬間：パワーアップ音「ギュイィーン↑ キュピーン✨」
+function playReflMaxUp() { // 反射玉が最大値になった瞬間：パワーアップ音「ギュイィーン↑ キュピーン✨」
   if (!audioCtx || isBattleSfxMuted()) return;
   const ac = audioCtx, t0 = ac.currentTime, v = game.sfxVolume, bus = echoBus(0.12, 0.35, 0.45, 4000);
   { const o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain(); // ギュイィーン↑（震えながら上がる）
@@ -1229,7 +1229,7 @@ function playReflMaxUp() { // 反射板が最大値になった瞬間：パワ�
   [1046.5, 1318.5, 1568, 2093].forEach((f, j) => busTone(bus, 'triangle', f, f, 0.45, 0.7 - j * 0.08, 0.04, 0.006)); // キュピーン（光る和音）
   filteredNoise(0.45, 0.5, 0.08, 8000, 1, 'highpass'); // シャラーン
 }
-function playReflReset() { // 反射板が×1に戻ったとき：「シュゥン…」と下がって、ポフッと落ちる
+function playReflReset() { // 反射玉が×1に戻ったとき：「シュゥン…」と下がって、ポフッと落ちる
   if (!audioCtx || isBattleSfxMuted()) return;
   softTone('triangle', 1200, 180, 0.38, 0.06, 0.01); softTone('square', 600, 90, 0.3, 0.025, 0.01, 0.02, 200);
   filteredNoise(0.3, 0.12, 0.12, 500, 0.8, 'lowpass'); softTone('sine', 160, 80, 0.15, 0.08, 0.005, 0.3);
