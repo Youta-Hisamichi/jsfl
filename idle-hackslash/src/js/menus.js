@@ -330,7 +330,16 @@ let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
   const status = isCompLocked(id) ? '📜 採用前：ショップの「仲間」タブの採用ガチャで出ると、仲間招集に出ます' : '🐾 仲間招集で入手できます';
-  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
+  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${compBondInfoHtml(id)}${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
+}
+function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラの概要と同じ書き方）
+  const P = v => `${+(v * 100).toFixed(1)}%`, F = v => formatCoinNumber(Math.round(v)), r = COMPANIONS[id].rarity, inParty = getCompanionCount(id) > 0;
+  const item = r === 'mythic' ? `（URの恩恵 ${F(graceItemCount('urGrace'))}個）` : r === 'legendary' ? `（SSRの恩恵 ${F(graceItemCount('ssrGrace'))}個）` : '';
+  const chips = [`🤝 絆率 ${P(compBondRate(id))}`, `👑 恩恵率 ${P(compGraceRate(id))}${item}`];
+  if (inParty) { const aO = getCompanionAtkOwn(id), aB = compBondAdd(id, 'atk'), hO = compOwnMaxHP(id), hB = compBondAdd(id, 'hp');
+    chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋絆 ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋絆 ${F(hB)}）` : ''}`); }
+  return `<div class="cc-chips">${chips.map(t => `<span class="cc-chip">${t}</span>`).join('')}</div>`
+    + `<div class="cc-trait">【絆】ほかの仲間全員と自キャラの攻撃力・HPの${P(compBondRate(id))}を自分の力にする。【恩恵】パーティにいると、仲間全員の攻撃力・HPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;

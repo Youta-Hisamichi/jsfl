@@ -5220,3 +5220,8 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .dfp-card b { font-size: 13px; } .dfp-card small { font-size: 11px; color: #b8c0de; }
 .rbd-note { font-size: 0.68rem; color: #fff; opacity: 0.85; margin-top: 4px; text-shadow: 0 1px 2px #000; }
 .skt-item.skt-locked { filter: grayscale(0.9) brightness(0.75); }
+
+/* 概要の窓（自キャラ・仲間）：上の小さな札の文字を大きく */
+.ci-panel .cp-info .cc-chip { font-size: 0.78rem; padding: 3px 10px; line-height: 1.35; }
+.ci-panel .cp-info .cc-chips { gap: 5px; }
+.ci-panel .cp-info-head span { font-size: 0.74rem; }
