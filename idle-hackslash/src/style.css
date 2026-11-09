@@ -5297,3 +5297,13 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 #topHeader .th-item.coin > #debugToggleBtn { font-size: 0 !important; width: 22px !important; height: 22px; padding: 0 !important; justify-content: center; margin-right: -4px !important; } /* 文字は出さず歯車だけ（コインの数を広く見せる） */
 #topHeader .th-item.coin > #debugToggleBtn .bb-gear { width: 14px !important; height: 14px; }
 #topHeader .th-item.coin > #debugToggleBtn.open { border-color: #ffd76b !important; box-shadow: 0 0 6px rgba(255,215,107,0.7); }
+/* ステージ進捗：ステージ数はゲージの上に横並びで（「ステージ 12」）。空いた左側までゲージを伸ばす */
+.exp-wrap .stage-floor { left: 4cqw !important; width: auto !important; top: 0.4cqw !important; transform: none !important; flex-direction: row !important; align-items: baseline !important; gap: 1.2cqw; }
+.exp-wrap .stage-floor small { font-size: 3cqw !important; color: #dfe6ff !important; }
+.exp-wrap .stage-floor > span { font-size: 4.2cqw !important; }
+.exp-wrap .stage-floor b { font-size: 5cqw !important; }
+.exp-wrap .stage-gauge-row { left: 4cqw !important; width: 92cqw !important; }
+.exp-wrap .stage-boss-txt { left: 4cqw !important; width: 92cqw !important; }
+.exp-wrap .stage-mark-player { width: 9.5cqw !important; height: 9.5cqw !important; }
+.exp-wrap .stage-boss-txt { text-align: right !important; } /* 自動再戦ボタンは右寄せ（左のステージ数と重ならない） */
+.exp-wrap .stage-boss-txt { width: 82cqw !important; } /* ボスのアイコンにかからないよう、手前で止める */
