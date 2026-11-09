@@ -5225,3 +5225,21 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .ci-panel .cp-info .cc-chip { font-size: 0.78rem; padding: 3px 10px; line-height: 1.35; }
 .ci-panel .cp-info .cc-chips { gap: 5px; }
 .ci-panel .cp-info-head span { font-size: 0.74rem; }
+
+/* 全部の宝箱で出るもの：小さいボタンと一覧ページ */
+.aco-btn { display: block; margin: 6px auto 0; padding: 4px 12px; font-size: 0.72rem; font-weight: 800; color: #fff; background: rgba(40,48,90,0.85); border: 1px solid rgba(255,255,255,0.45); border-radius: 999px; }
+.aco-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.aco-card .aco-h { display: flex; align-items: center; gap: 6px; font-size: 15px; }
+.aco-card .aco-h .ico-img, .aco-card .aco-h img { width: 32px; height: 32px; object-fit: contain; }
+.aco-card .co-list { color: #e9ecf8; }
+.aco-card .co-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.aco-card .co-row b { margin-left: auto; color: #ffd76b; }
+.aco-card .co-name small { display: block; font-size: 10px; color: #aab3d6; }
+.aco-card .co-ico { width: 26px; text-align: center; flex: none; }
+.aco-card .co-ico img { width: 24px; height: 24px; object-fit: contain; }
+.aco-card .co-h { font-size: 11px; color: #aab3d6; margin: 4px 0; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button.aco-btn { top: calc(100% + 54px); left: 50%; width: auto; height: auto; transform: translateX(-50%); padding: 5px 14px !important; border-radius: 999px !important; background: rgba(12,18,40,0.92) !important; border: 1px solid rgba(255,255,255,0.5) !important; color: #fff; font-size: 0.74rem; font-weight: 800; white-space: nowrap; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button.aco-btn:active { transform: translateX(-50%) scale(0.96); }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button.aco-btn { font-size: 0.74rem !important; color: #fff !important; line-height: 1.4 !important; text-indent: 0 !important; }
+.aco-card .co-ico .chest-emoji { font-size: 20px !important; line-height: 1; display: inline-block; width: 24px; height: 24px; overflow: hidden; }
+.aco-btn.aco-inline { display: inline-block; margin: 0 0 0 8px; padding: 2px 10px; font-size: 0.68rem; vertical-align: middle; }

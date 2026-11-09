@@ -1941,7 +1941,7 @@ function playChestFanfare() { // 宝箱の中身を数え終わったときの�
   [[523, 0, 0.09], [523, 0.11, 0.09], [523, 0.22, 0.09], [698, 0.33, 0.28], [784, 0.66, 0.14], [880, 0.82, 0.14], [988, 0.98, 0.14], [1047, 1.14, 0.55]].forEach(([f, at, len]) => setTimeout(() => { playTone(f, len, 'square', 0.07); playTone(f / 2, len, 'triangle', 0.06); if (len > 0.3) playTone(f * 1.25, len, 'square', 0.035); }, at * 1000));
 }
 function chestCoinIco(rarity) { return rarity && rarity !== 'common' ? `<img class="ico-img chest-coin-ico" src="assets/img/icons/chest_coin_${rarity}.webp" alt="">` : ''; } // ★2〜★5の宝箱のコインは、レア度ごとのコインの山の絵
-function showChestOdds(rarity) { // そのレア度の宝箱から何がどれくらい出るか（いまの設定値から計算）
+function showChestOdds(rarity, asHtml) { // そのレア度の宝箱から何がどれくらい出るか（いまの設定値から計算）
   const P = v => (Math.round(v * 1000) / 10) + '%', info = RARITY_INFO[rarity], ac = CHEST_ARTIFACT_CHANCE[rarity] || 0, rows = [];
   const specs = chestSpecials(rarity), rest = Math.max(0, 1 - specs.reduce((t, [, p]) => t + p, 0)); // 特別なもの以外の残りをコインと羽で分ける
   if (ac < 1) rows.push([chestCoinIco(rarity) || COIN_ICO, chestCoinName(rarity), P(rest * (1 - ac)), `ザコ${CHEST_COIN_MULT[rarity]}体ぶん`]); // コインが出ない宝箱（UR）は出さない
@@ -1955,9 +1955,18 @@ function showChestOdds(rarity) { // そのレア度の宝箱から何がどれ�
   specs.forEach(([k, p]) => rows.push([SPEC[k][0], SPEC[k][1], P(p), SPEC[k][2]]));
   const ex = [];
   const row = r => `<div class="co-row"><span class="co-ico">${r[0]}</span><span class="co-name">${r[1]}${r[3] ? `<small>${r[3]}</small>` : ''}</span><b>${r[2]}</b></div>`;
+  if (asHtml) return `<div class="co-list"><div class="co-h">どれか1つ</div>${rows.map(row).join('')}</div>`;
   simpleChoice({ icon: xi(CHEST_ICON[rarity]) || '🎁', title: `<span style="color:${info.color}">${rarityStars(rarity)} ${info.label}の宝箱で出るもの</span>`, text: `<div class="co-list"><div class="co-h">どれか1つ</div>${rows.map(row).join('')}${ex.length ? `<div class="co-h">さらに、いっしょに入っていることがある</div>${ex.map(row).join('')}` : ''}</div>`, yes: '閉じる', no: false });
 }
 // 恩恵・絆のアイテム：SSRの宝箱は勇者の絆・勇者の恩恵、URの宝箱はそれに加えてURの恩恵・SSRの恩恵。1回で何個か入っている
+// 全部の宝箱（N〜UR）で出るものを1ページで見る（宝箱の画面・転生の画面の小さいボタンから）
+function showAllChestOdds() {
+  const secs = CHEST_RARITIES.slice().reverse().map(r => { const I = RARITY_INFO[r]; return `<div class="dfp-card aco-card" style="--rc:${I.color}"><b class="aco-h">${xi(CHEST_ICON[r]) || '🎁'}<span style="color:${I.color}">${rarityStars(r)} ${I.label}の宝箱</span></b>${showChestOdds(r, true)}</div>`; }).join('');
+  openDbgFullPage('🎁 宝箱で出るもの（全部）', '1つの宝箱からは、どれか1つが出ます。確率はいまの状態（解放ずみ・持っている数など）で計算しています', `<div class="dfp-grid aco-grid">${secs}</div>`);
+}
+const ALL_CHEST_BTN = '<button class="aco-btn" type="button" data-all-chest>📚 全部の宝箱で出るもの</button>';
+document.addEventListener('click', e => { if (e.target.closest('[data-all-chest]')) { e.stopPropagation(); showAllChestOdds(); } }, true);
+{ const box = document.getElementById('chestModalBtns'); if (box) { const add = () => { if (box.childElementCount && !box.querySelector('[data-all-chest]')) box.insertAdjacentHTML('beforeend', ALL_CHEST_BTN); }; new MutationObserver(add).observe(box, { childList: true }); add(); } } // 宝箱の画面のボタンを描き直すたびに足す
 const GRACE_CHEST_CHANCE = { legendary: { heroBond: 0.06, heroGrace: 0.06 }, mythic: { urGrace: 0.06, ssrGrace: 0.06, heroBond: 0.05, heroGrace: 0.05 } };
 const GRACE_CHEST_N = { legendary: { heroBond: [3, 8], heroGrace: [3, 8] }, mythic: { urGrace: [5, 15], ssrGrace: [5, 15], heroBond: [8, 20], heroGrace: [8, 20] } };
 function graceChestRange(k, rarity) { return GRACE_CHEST_N[rarity] && GRACE_CHEST_N[rarity][k]; }
