@@ -5261,3 +5261,8 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .fbg-list li { font-size: 3.5cqw; font-weight: 800; color: #fff; line-height: 1.15; white-space: nowrap; text-shadow: 0 1px 2px #000; }
 .fbg-list li::before { content: '◆'; color: #5fb4ff; margin-right: 0.55em; font-size: 0.85em; text-shadow: 0 0 4px rgba(95,180,255,0.8); }
 .fbg-list li b { color: #ffd84a; font-weight: 900; }
+/* 転生画面：ジェムで宝箱をもう1個 */
+.rbd-buy-chest { display: block; margin: 8px auto 2px; padding: 7px 16px; border-radius: 999px; border: 2px solid #e8c46a; background: linear-gradient(180deg, #3a2a6a, #1d1640); color: #ffe9a8; font-size: 0.82rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.rbd-buy-chest small { font-size: 0.78em; opacity: 0.85; }
+.rbd-buy-chest.is-disabled, .rbd-buy-chest:disabled { filter: grayscale(0.7) brightness(0.8); }
+.rbd-buy-chest:active { transform: scale(0.96); }
