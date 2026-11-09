@@ -33,11 +33,13 @@ function xferApply(raw) { // このセーブに置きかえて読み込み直す
 function openTransferDialog() {
   let ov = document.getElementById('xferOv');
   if (!ov) { ov = document.createElement('div'); ov.id = 'xferOv'; ov.className = 'xfer-ov'; document.body.appendChild(ov); }
-  const signed = !!(typeof adminDb !== 'undefined' && adminDb && adminUid);
+  const P = typeof cloudProvider === 'function' ? cloudProvider() : null, signed = !!P, fb = P && P.kind === 'firebase';
   ov.innerHTML = `<div class="xfer-panel"><div class="xfer-h"><b>📱 機種変更（引き継ぎ）</b><button class="xfer-x" data-x="close">✕</button></div>
     <div class="xfer-now">この端末：${xferSummary(localStorage.getItem(SAVE_KEY) || '{}') || '—'}</div>
     <section><h3>☁️ クラウド（同じアカウントの端末どうし）</h3>
-      <p>前の端末で「クラウドに保存」→ 新しい端末で同じ claude.ai のアカウントで開いて「クラウドから読み込む」。${signed ? '' : '<br><b class="xfer-warn">いまはサインインしていないか、記録できない権限なので使えません。下の引き継ぎコードを使ってください。</b>'}</p>
+      ${fb ? `<p>${P.linked ? `✅ <b>${P.linkedName}</b> でログイン中。新しい端末でも同じアカウントでログインすると、自動で引き継げます。` : '🔸 いまは<b>名前なしのログイン</b>です（この端末でだけ使える）。機種変更する前に、下のボタンで Google か Apple のアカウントにひも付けてください。新しい端末でも同じアカウントでログインすると、セーブを読み込めます。'}</p>
+      <div class="xfer-row"><button data-x="linkGoogle">${P.linked && P.provider === 'google.com' ? '✅ Google' : 'G Googleでログイン'}</button><button data-x="linkApple">${P.linked && P.provider === 'apple.com' ? '✅ Apple' : ' Appleでログイン'}</button></div>`
+      : `<p>前の端末で「クラウドに保存」→ 新しい端末で同じ claude.ai のアカウントで開いて「クラウドから読み込む」。${signed ? '' : '<br><b class="xfer-warn">いまはクラウドを使えません（ログインしていない）。下の引き継ぎコードを使ってください。</b>'}</p>`}
       <div class="xfer-row"><button data-x="cloudSave" ${signed ? '' : 'disabled'}>☁️ クラウドに保存</button><button data-x="cloudLoad" ${signed ? '' : 'disabled'}>☁️ クラウドから読み込む</button></div>
       <div class="xfer-msg" data-msg="cloud"></div></section>
     <section><h3>🔑 引き継ぎコード（アカウントが違ってもOK）</h3>
@@ -55,10 +57,16 @@ function openTransferDialog() {
     const b = e.target.closest('[data-x]'); if (!b) { if (e.target === ov) ov.classList.remove('show'); return; }
     const x = b.dataset.x;
     if (x === 'close') ov.classList.remove('show');
+    else if (x === 'linkGoogle' || x === 'linkApple') {
+      if (P.linked) { msg('cloud', `${P.linkedName} でログイン中です`); return; }
+      msg('cloud', 'ログイン中…');
+      try { const r = await P.link(x === 'linkGoogle' ? 'google.com' : 'apple.com'); if (r && r.switched && r.doc) { msg('cloud', '前に使っていたアカウントでログインしました'); if (r.doc.save) confirmApply(r.doc.save, 'クラウド'); } else { msg('cloud', '✅ ひも付けました。新しい端末でも同じアカウントでログインしてください'); cloudLastRaw = null; await cloudBackup(); } setTimeout(openTransferDialog, 1200); }
+      catch (er) { msg('cloud', 'ログインできませんでした（' + (er && (er.code || er.message) || 'error') + '）', true); }
+    }
     else if (x === 'cloudSave') { msg('cloud', '保存中…'); cloudBackupOk = true; cloudLastRaw = null; await cloudBackup(); msg('cloud', cloudLastRaw ? `✅ クラウドに保存しました（${new Date().toLocaleString('ja-JP')}）` : '保存できませんでした。少し待ってもう一度押してください', !cloudLastRaw); }
     else if (x === 'cloudLoad') {
       msg('cloud', '読み込み中…');
-      try { const snap = await adminDb.doc('players/' + adminUid).get(), d = snap.exists ? snap.data() : null;
+      try { const d = await P.load();
         if (!d || !d.save) { msg('cloud', 'クラウドに保存されたセーブがありません', true); return; }
         msg('cloud', `見つかりました（${new Date(d.saveAt || 0).toLocaleString('ja-JP')} に保存）`); confirmApply(d.save, 'クラウド');
       } catch (er) { msg('cloud', '読み込めませんでした（' + (er && er.code || 'error') + '）', true); }

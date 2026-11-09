@@ -19,11 +19,8 @@ async function adminInit() {
     const visits = Array.isArray(old.visits) ? old.visits.slice(-(ADMIN_VISITS_KEEP - 1)) : [];
     const s = adminSnapshot(); visits.push({ at: Date.now(), dev: adminDevice(), stage: s.stage });
     const body = { ...old, ...s, firstAt: old.firstAt || Date.now(), lastAt: Date.now(), count: (old.count || 0) + 1, visits }; // セーブの控え（save など）も消さずに残す
-    cloudSave = old.save ? { raw: old.save, at: old.saveAt || 0, best: old.saveBest || 1, reb: old.saveReb || 0, stage: old.saveStage || 1 } : null;
     await ref.set(body); adminLastSaved = JSON.stringify(s);
-    let wasReset = false; try { wasReset = !!localStorage.getItem(SAVE_RESET_FLAG); localStorage.removeItem(SAVE_RESET_FLAG); } catch (e) {}
-    if (wasReset) { cloudSave = null; cloudBackupOk = true; try { await ref.update({ save: null, saveAt: Date.now(), saveBest: 1, saveReb: 0, saveStage: 1 }); } catch (e) {} } // ゲームリセットした直後は、クラウドの控えも消す（復活を聞かない）
-    else if (cloudSave && cloudAhead()) offerCloudRestore(); else cloudBackupOk = true;
+    if (!window.fbCloud || !fbCloud.uid) await cloudStartupCheck(old); // Firebase（リリース版）が使えるときは、そちらでセーブの控えを扱う
   } catch (e) { adminUid = null; } // 書けない人（閲覧だけ など）は記録しない
 }
 async function adminSaveProgress() { // 進み具合が変わったときだけ、10分おきにまとめて書く
@@ -35,6 +32,19 @@ async function adminSaveProgress() { // 進み具合が変わったときだけ�
 // 端末のセーブ（localStorage）は、ブラウザやアプリの都合で消えることがある。サインインして遊んでいる人は、
 // 自分の記録（players/<id>）にセーブの写しを3分おき・閉じるときに残し、端末のセーブが消えて最初からになっていたら復活を聞く
 let cloudSave = null, cloudBackupOk = false, cloudLastRaw = null;
+// セーブの控えを置く場所（どちらか）：リリース版は Firebase（js/firebase-sync.js）、claude.ai のアーティファクトでは共有データベース
+function cloudProvider() {
+  if (window.fbCloud && fbCloud.uid) return fbCloud;
+  if (adminDb && adminUid) return { kind: 'claude', save: d => adminDb.doc('players/' + adminUid).update(d), load: async () => { const s = await adminDb.doc('players/' + adminUid).get(); return s.exists ? s.data() : null; } };
+  return null;
+}
+const CLOUD_CLEAR = () => ({ save: null, saveAt: Date.now(), saveBest: 1, saveReb: 0, saveStage: 1 });
+async function cloudStartupCheck(doc) { // 起動時：ゲームリセットの直後なら控えを消す。端末より進んだ控えがあれば復活を聞く
+  cloudSave = doc && doc.save ? { raw: doc.save, at: doc.saveAt || 0, best: doc.saveBest || 1, reb: doc.saveReb || 0, stage: doc.saveStage || 1 } : null;
+  let wasReset = false; try { wasReset = !!localStorage.getItem(SAVE_RESET_FLAG); localStorage.removeItem(SAVE_RESET_FLAG); } catch (e) {}
+  if (wasReset) { cloudSave = null; cloudBackupOk = true; try { const P = cloudProvider(); if (P) await P.save(CLOUD_CLEAR()); } catch (e) {} }
+  else if (cloudSave && cloudAhead()) offerCloudRestore(); else cloudBackupOk = true;
+}
 function cloudAhead() { return cloudSave && ((cloudSave.reb || 0) > (game.reincarnations || 0) || (cloudSave.best || 1) > (game.bestStage || 1)); } // クラウドの控えのほうが進んでいる
 function offerCloudRestore() {
   const d = new Date(cloudSave.at), p = n => String(n).padStart(2, '0');
@@ -43,10 +53,10 @@ function offerCloudRestore() {
     onNo: () => { cloudBackupOk = true; } });
 }
 async function cloudBackup() {
-  if (!adminDb || !adminUid || !cloudBackupOk || window.__noSave) return; // 復活するか聞いている間は、進んだ控えを上書きしない
+  const P = cloudProvider(); if (!P || !cloudBackupOk || window.__noSave) return; // 復活するか聞いている間は、進んだ控えを上書きしない
   let raw; try { saveGame(); raw = localStorage.getItem(SAVE_KEY); } catch (e) { return; }
   if (!raw || raw === cloudLastRaw || raw.length > 240000) return;
-  try { await adminDb.doc('players/' + adminUid).update({ save: raw, saveAt: Date.now(), saveBest: Math.floor(game.bestStage || 1), saveReb: game.reincarnations || 0, saveStage: Math.floor(game.stage || 1) }); cloudLastRaw = raw; } catch (e) {}
+  try { await P.save({ save: raw, saveAt: Date.now(), saveBest: Math.floor(game.bestStage || 1), saveReb: game.reincarnations || 0, saveStage: Math.floor(game.stage || 1) }); cloudLastRaw = raw; } catch (e) {}
 }
 setInterval(cloudBackup, 3 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (document.hidden) cloudBackup(); });
