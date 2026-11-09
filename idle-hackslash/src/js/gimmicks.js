@@ -416,7 +416,7 @@ let gmRegrowT = 0;
 }; }
 
 // タンス：ぶつかるたびに引き出しを1段ずつ開けて、中身を見つける（RPGの「タンスを調べた！」）
-const TANSU_JUNK = ['古びたくつしたを見つけた…', 'ホコリが舞った…', 'なにもなかった…', 'ヘソクリのメモ「残念でした」', 'ぬいぐるみがこっちを見ている…'];
+const TANSU_JUNK = ['はずれ… 古びたくつしただった', 'はずれ… ホコリが舞っただけ', 'はずれ… なにもなかった', 'はずれ… ヘソクリのメモ「残念でした」', 'はずれ… ぬいぐるみがこっちを見ている'];
 function openTansu(o) {
   if (o.used || Date.now() - (o.popAt || 0) < 250) return;
   o.multi = (o.multi || 3) - 1; o.popAt = Date.now(); o.opened = true; gm.broke = (gm.broke || 0) + 1;
