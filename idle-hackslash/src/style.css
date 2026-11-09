@@ -5243,3 +5243,4 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button.aco-btn { font-size: 0.74rem !important; color: #fff !important; line-height: 1.4 !important; text-indent: 0 !important; }
 .aco-card .co-ico .chest-emoji { font-size: 20px !important; line-height: 1; display: inline-block; width: 24px; height: 24px; overflow: hidden; }
 .aco-btn.aco-inline { display: inline-block; margin: 0 0 0 8px; padding: 2px 10px; font-size: 0.68rem; vertical-align: middle; }
+.aco-card .co-list { max-height: none !important; overflow: visible !important; } /* 全部の宝箱のページ：宝箱ごとにスクロールさせない（ページ全体でスクロール） */

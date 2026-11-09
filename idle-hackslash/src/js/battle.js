@@ -1961,7 +1961,7 @@ function showChestOdds(rarity, asHtml) { // そのレア度の宝箱から何が
 // 恩恵・絆のアイテム：SSRの宝箱は勇者の絆・勇者の恩恵、URの宝箱はそれに加えてURの恩恵・SSRの恩恵。1回で何個か入っている
 // 全部の宝箱（N〜UR）で出るものを1ページで見る（宝箱の画面・転生の画面の小さいボタンから）
 function showAllChestOdds() {
-  const secs = CHEST_RARITIES.slice().reverse().map(r => { const I = RARITY_INFO[r]; return `<div class="dfp-card aco-card" style="--rc:${I.color}"><b class="aco-h">${xi(CHEST_ICON[r]) || '🎁'}<span style="color:${I.color}">${rarityStars(r)} ${I.label}の宝箱</span></b>${showChestOdds(r, true)}</div>`; }).join('');
+  const secs = CHEST_RARITIES.slice().map(r => { const I = RARITY_INFO[r]; return `<div class="dfp-card aco-card" style="--rc:${I.color}"><b class="aco-h">${xi(CHEST_ICON[r]) || '🎁'}<span style="color:${I.color}">${rarityStars(r)} ${I.label}の宝箱</span></b>${showChestOdds(r, true)}</div>`; }).join('');
   openDbgFullPage('🎁 宝箱で出るもの（全部）', '1つの宝箱からは、どれか1つが出ます。確率はいまの状態（解放ずみ・持っている数など）で計算しています', `<div class="dfp-grid aco-grid">${secs}</div>`);
 }
 const ALL_CHEST_BTN = '<button class="aco-btn" type="button" data-all-chest>📚 全部の宝箱で出るもの</button>';
