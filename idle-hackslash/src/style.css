@@ -5255,3 +5255,9 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 /* ログインボーナスの「GET!」：文字の縁取り（text-stroke）はスマホで文字の内側の線まで描かれて寄木のように見えるので、影で縁取る */
 .lb7-claim-txt { -webkit-text-stroke: 0 !important; color: #fff6d8 !important; letter-spacing: 0.04em;
   text-shadow: 2px 0 0 #c0580a, -2px 0 0 #c0580a, 0 2px 0 #c0580a, 0 -2px 0 #c0580a, 1.5px 1.5px 0 #c0580a, -1.5px 1.5px 0 #c0580a, 1.5px -1.5px 0 #c0580a, -1.5px -1.5px 0 #c0580a, 0 5px 0 #7a2c00, 0 0 20px rgba(255,180,60,0.9) !important; }
+/* 初ボス撃破のお祝い：ジェムの使い道（絵の箇条書きの場所に重ねる） */
+.fbg-panel { container-type: inline-size; }
+.fbg-list { position: absolute; left: 15.5%; top: 60.8%; width: 70%; height: 18%; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; justify-content: space-around; pointer-events: none; }
+.fbg-list li { font-size: 3.5cqw; font-weight: 800; color: #fff; line-height: 1.15; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+.fbg-list li::before { content: '◆'; color: #5fb4ff; margin-right: 0.55em; font-size: 0.85em; text-shadow: 0 0 4px rgba(95,180,255,0.8); }
+.fbg-list li b { color: #ffd84a; font-weight: 900; }

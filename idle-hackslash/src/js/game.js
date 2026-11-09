@@ -1065,9 +1065,10 @@ function checkDigitGems() {
     setTimeout(() => { if (typeof showRunBanner === 'function') showRunBanner(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！`, `自己ベストの桁が上がった！ +💎${g}`); else showNotice(`🎉 ステージ${th.toLocaleString('ja-JP')} 初クリア！ +💎${g}`); }, 1200);
   }
 }
+const FIRST_BOSS_GEM_USES = [['ショップ', 'で魅力的なアイテムを買う'], ['進化', 'で攻撃力・HPなどを伸ばす'], ['ガチャ', 'の結果を引き直す'], ['試練の塔', 'で好きなステージに挑む']]; // 初ボス撃破のお祝い：ジェムの使い道
 function showFirstBossGift() { // 初めてステージ10のボスを倒したときのお祝い
   const ov = document.createElement('div'); ov.className = 'cl-overlay show first-boss-gift';
-  ov.innerHTML = `<div class="fbg-panel"><img class="fbg-art" src="assets/img/ui/firstBossGift.webp" alt="初ボス撃破おめでとう！ ジェムを1個プレゼント！"><button class="cl-close fbg-ok" aria-label="ありがとう！"></button></div>`; // 見本の絵をそのまま使い、ボタンだけ重ねる
+  ov.innerHTML = `<div class="fbg-panel"><img class="fbg-art" src="assets/img/ui/firstBossGift.webp" alt="初ボス撃破おめでとう！ ジェムを1個プレゼント！"><ul class="fbg-list">${FIRST_BOSS_GEM_USES.map(([k, t]) => `<li><b>${k}</b>${t}</li>`).join('')}</ul><button class="cl-close fbg-ok" aria-label="ありがとう！"></button></div>`; // 見本の絵の箇条書きは消してあり、ここで重ねる // 見本の絵をそのまま使い、ボタンだけ重ねる
   document.body.appendChild(ov);
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove(); });
   playRegisterSound(); updateStatsUI(); saveGame();
