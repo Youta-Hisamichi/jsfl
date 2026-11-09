@@ -21,7 +21,9 @@ async function adminInit() {
     const body = { ...old, ...s, firstAt: old.firstAt || Date.now(), lastAt: Date.now(), count: (old.count || 0) + 1, visits }; // セーブの控え（save など）も消さずに残す
     cloudSave = old.save ? { raw: old.save, at: old.saveAt || 0, best: old.saveBest || 1, reb: old.saveReb || 0, stage: old.saveStage || 1 } : null;
     await ref.set(body); adminLastSaved = JSON.stringify(s);
-    if (cloudSave && cloudAhead()) offerCloudRestore(); else cloudBackupOk = true;
+    let wasReset = false; try { wasReset = !!localStorage.getItem(SAVE_RESET_FLAG); localStorage.removeItem(SAVE_RESET_FLAG); } catch (e) {}
+    if (wasReset) { cloudSave = null; cloudBackupOk = true; try { await ref.update({ save: null, saveAt: Date.now(), saveBest: 1, saveReb: 0, saveStage: 1 }); } catch (e) {} } // ゲームリセットした直後は、クラウドの控えも消す（復活を聞かない）
+    else if (cloudSave && cloudAhead()) offerCloudRestore(); else cloudBackupOk = true;
   } catch (e) { adminUid = null; } // 書けない人（閲覧だけ など）は記録しない
 }
 async function adminSaveProgress() { // 進み具合が変わったときだけ、10分おきにまとめて書く

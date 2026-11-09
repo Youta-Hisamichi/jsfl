@@ -1316,7 +1316,7 @@ function saveGame() {
     if (Date.now() - lastSaveBackupAt > 10 * 60 * 1000 && (game.bestStage || 1) > 1) { lastSaveBackupAt = Date.now(); localStorage.setItem(SAVE_BACKUP_KEY, json); } // 10分おきに控えも残す（本体が壊れたときに使う）ように
   } catch (err) { /* 保存できない環境では無視 */ }
 }
-const SAVE_BACKUP_KEY = SAVE_KEY + '-backup'; let lastSaveBackupAt = 0;
+const SAVE_BACKUP_KEY = SAVE_KEY + '-backup', SAVE_RESET_FLAG = SAVE_KEY + '-reset'; let lastSaveBackupAt = 0;
 function loadGame() {
   try {
     let raw = localStorage.getItem(SAVE_KEY), data = null;
@@ -1415,8 +1415,8 @@ function handleDebugSlotClick(event) {
   renderDebugSlots();
 }
 
-function clearSave() {
-  try { localStorage.removeItem(SAVE_KEY); } catch (err) { /* 無視 */ }
+function clearSave() { // リセット：本体も控えも消し、クラウドの控えから復活を聞かないよう印を残す
+  try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_BACKUP_KEY); localStorage.setItem(SAVE_RESET_FLAG, String(Date.now())); } catch (err) { /* 無視 */ }
 }
 
 // 帰還ボーナス：10分以上離れて戻ると引ける。離れていた時間が長いほど報酬・レア度・サプライズ宝箱の確率が上がる
