@@ -411,11 +411,15 @@ function focusHpEnemy(enemy) {
   if (!isSwarmStage(game.stage) && !(main && main.isDying && enemy.isSplit)) return;
   if (hpFocusEnemy !== enemy) { hpFocusEnemy = enemy; updateHPUI(); }
 }
+// 味方（自キャラ・仲間）のHPゲージは、残りが少ないほど実際より短く見せる（ゲージ＝残りHPの割合の1.5乗）。
+// 「残りわずか」に見えてからが長く持つ：実際の30%で16%、20%で9%、10%で3%に見える（0でなければ最低1.5%は残す）
+const HP_GAUGE_POW = 1.5, HP_GAUGE_MIN = 0.015;
+function hpGaugeRatio(r) { return !(r > 0) ? 0 : r >= 1 ? r : Math.max(HP_GAUGE_MIN, Math.pow(r, HP_GAUGE_POW)); }
 function updateHPUI() {
   const p = balls.find(b => b.isPlayer && !b.isClone && !b.isCompanion);
   const en = getHpDisplayEnemy();
   if (!p || !en) return;
-  playerHPFill.style.width = Math.min(100, Math.max(0, p.hp / p.maxHp * 100)) + '%';
+  playerHPFill.style.width = Math.min(100, hpGaugeRatio(p.hp / p.maxHp) * 100) + '%';
   playerHPFill.classList.toggle('over-heal', p.hp > p.maxHp); // 回復限界突破で上限を超えているとき
   const hpRatio = p.hp / p.maxHp;
   document.body.classList.toggle('player-pinch', p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
@@ -2164,7 +2168,7 @@ function drawBall(ball) {
     ctx.strokeRect(barX, barY, barWidth, barHeight);
     const hpRate = ball.hp / ball.maxHp; // 自キャラは緑（突進ゲージの水色と区別）、残り少ないと黄→赤
     ctx.fillStyle = ball.isPlayer ? (hpRate <= 0.25 ? '#ff5c5c' : hpRate <= 0.5 ? '#ffd24f' : '#5fd47a') : (ball.isBoss ? '#d39cff' : '#ff7b87');
-    ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+    ctx.fillRect(barX, barY, barWidth * (ball.isPlayer ? Math.min(1, hpGaugeRatio(ball.hp / ball.maxHp)) : Math.max(0, ball.hp / ball.maxHp)), barHeight);
 
   }
 
@@ -2184,7 +2188,7 @@ function drawBall(ball) {
     } else {
       ctx.fillStyle = COMPANION_COLORS[ball.companionId] || '#ffffff';
     }
-    ctx.fillRect(barX, barY, barWidth * Math.max(0, ball.hp / ball.maxHp), barHeight);
+    ctx.fillRect(barX, barY, barWidth * Math.min(1, hpGaugeRatio(ball.hp / ball.maxHp)), barHeight);
   }
   ctx.restore(); // 震えtranslate用
 }
