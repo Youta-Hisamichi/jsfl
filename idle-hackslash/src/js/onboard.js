@@ -1,6 +1,6 @@
 // 序盤の導線：ページ（タブ）を少しずつ解放・初心者ミッション・ボスに負けたときの次の目安
 // ---- ページの段階的な解放 ----
-const TAB_UNLOCK_STAGE = { companion: 2, coinshop: 8, gacha: 11, records: 14, gemshop: 17, ranking: 20 }; // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
+const TAB_UNLOCK_STAGE = { companion: 6, coinshop: 14, gacha: 20, records: 25, gemshop: 30, ranking: 35 }; // 反射玉で進みが速くなったので、前（2・8・11・14・17・20）より遅く // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
 const TAB_UNLOCK_INFO = {
   records: '目標を達成すると進化の羽がもらえます',
   companion: '自キャラの攻撃力・HPを強化！ 仲間の招集もここで（初回無料）',
