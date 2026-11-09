@@ -339,7 +339,7 @@ function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラ
   if (inParty) { const aO = getCompanionAtkOwn(id), aB = compBondAdd(id, 'atk'), hO = compOwnMaxHP(id), hB = compBondAdd(id, 'hp');
     chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋絆 ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋絆 ${F(hB)}）` : ''}`); }
   return `<div class="cc-chips">${chips.map(t => `<span class="cc-chip">${t}</span>`).join('')}</div>`
-    + `<div class="cc-trait">【絆】仲間の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】仲間の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
+    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】仲間全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
