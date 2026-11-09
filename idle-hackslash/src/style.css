@@ -5288,3 +5288,12 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .exp-wrap { background: none !important; }
 .exp-wrap .exp-track { background: rgba(6,10,24,0.75) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.8), 0 0 0 1px rgba(160,190,255,0.35) !important; }
 .exp-wrap .stage-floor small, .exp-wrap .stage-floor > span, .exp-wrap .stage-boss-txt { text-shadow: 0 0 3px #000, 0 1px 2px #000, 0 0 6px rgba(0,0,0,0.8) !important; }
+/* デバッグボタン：ヘッダーのコイン欄の右端に入れる */
+#topHeader .th-item.coin { position: relative; }
+#topHeader .th-item.coin > #debugToggleBtn { position: static !important; margin: 0 0 0 auto !important; transform: none !important; display: flex !important; align-items: center; gap: 2px; flex: 0 0 auto; padding: 2px 7px !important; height: 20px; font-size: 0.58rem !important; font-weight: 800; color: #fff !important; background: rgba(10,14,30,0.85) !important; border: 1px solid rgba(255,255,255,0.45) !important; border-radius: 999px !important; aspect-ratio: auto !important; width: auto !important; z-index: 2; white-space: nowrap; }
+#topHeader .th-item.coin > #debugToggleBtn .bb-gear { width: 11px !important; height: 11px; margin: 0 !important; }
+#topHeader .th-item.coin #headerCoins { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: clip; }
+#topHeader .th-item.coin > #debugToggleBtn { padding: 1px 5px !important; height: 18px; font-size: 0.52rem !important; gap: 1px; }
+#topHeader .th-item.coin > #debugToggleBtn { font-size: 0 !important; width: 22px !important; height: 22px; padding: 0 !important; justify-content: center; margin-right: -4px !important; } /* 文字は出さず歯車だけ（コインの数を広く見せる） */
+#topHeader .th-item.coin > #debugToggleBtn .bb-gear { width: 14px !important; height: 14px; }
+#topHeader .th-item.coin > #debugToggleBtn.open { border-color: #ffd76b !important; box-shadow: 0 0 6px rgba(255,215,107,0.7); }
