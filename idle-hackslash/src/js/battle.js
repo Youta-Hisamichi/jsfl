@@ -1416,7 +1416,7 @@ function handleDebugSlotClick(event) {
 }
 
 function clearSave() { // リセット：本体も控えも消し、クラウドの控えから復活を聞かないよう印を残す
-  try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_BACKUP_KEY); localStorage.setItem(SAVE_RESET_FLAG, String(Date.now())); } catch (err) { /* 無視 */ }
+  try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_BACKUP_KEY); localStorage.removeItem(DAILY_LEDGER_KEY); localStorage.setItem(SAVE_RESET_FLAG, String(Date.now())); } catch (err) { /* 無視 */ }
 }
 
 // 帰還ボーナス：10分以上離れて戻ると引ける。離れていた時間が長いほど報酬・レア度・サプライズ宝箱の確率が上がる
@@ -1511,8 +1511,27 @@ function showBossWarning() {
   setTimeout(() => bossWarning.classList.remove('show'), BOSS_WARNING_MS);
 }
 
+// 本日のクリア数（ランキング）は、セーブとは別に「この端末で実際にクリアした数」を日付ごとに記録する。
+// セーブをロードし直したり（クラウド・引き継ぎコード・控え）、書き換えたりしても増えない・減らない。日付は信用できる時計で決める
+const DAILY_LEDGER_KEY = 'circle-battle-idle-daily-ledger', DAILY_LEDGER_KEEP_DAYS = 40;
+function rankTodayKey() { return dateKey(new Date(typeof trustNow === 'function' ? trustNow() : Date.now())); }
+function readDailyLedger() { try { return JSON.parse(localStorage.getItem(DAILY_LEDGER_KEY) || 'null'); } catch (e) { return null; } }
+function dailyLedger() {
+  let L = readDailyLedger();
+  if (!L || typeof L !== 'object' || !L.days) { // この端末で初めて：いまのセーブの記録を一度だけ写す（そのあとはセーブと切り離す）
+    L = { days: { ...(game.dailyClearHistory || {}) } }; if (game.dailyClearDate) L.days[game.dailyClearDate] = Math.max(L.days[game.dailyClearDate] || 0, game.dailyClears || 0);
+    writeDailyLedger(L);
+  }
+  return L;
+}
+function writeDailyLedger(L) { const ks = Object.keys(L.days).sort(); while (ks.length > DAILY_LEDGER_KEEP_DAYS) delete L.days[ks.shift()]; try { localStorage.setItem(DAILY_LEDGER_KEY, JSON.stringify(L)); } catch (e) {} }
+function countDailyClear() { // ステージをクリアしたときに呼ぶ
+  ensureDailyClearReset();
+  const L = dailyLedger(), k = rankTodayKey(); L.days[k] = (L.days[k] || 0) + 1; writeDailyLedger(L);
+  game.dailyClears = L.days[k]; // 画面の表示用にセーブ側もそろえる
+}
 function ensureDailyClearReset() {
-  const today = dateKey(new Date());
+  const today = rankTodayKey();
   if (game.dailyClearDate !== today) {
     if (!game.dailyClearHistory) game.dailyClearHistory = {};
     if (game.dailyClearDate) game.dailyClearHistory[game.dailyClearDate] = game.dailyClears;
@@ -1520,11 +1539,8 @@ function ensureDailyClearReset() {
     game.dailyClears = 0;
   }
 }
-function getDailyClearsForDate(key) {
-  const today = dateKey(new Date());
-  if (key === today) return game.dailyClears;
-  if (game.dailyClearHistory && game.dailyClearHistory[key] != null) return game.dailyClearHistory[key];
-  return 0;
+function getDailyClearsForDate(key) { // ランキングに出す数は、端末の記録から（セーブの値は使わない）
+  const L = dailyLedger(); return L.days[key] || 0;
 }
 
 const LOGIN_RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'];

@@ -818,7 +818,7 @@ const SERVICE_START_DATE_KEY = '2026-06-01'; // サービス開始日（これ�
 let rankingDateOffset = 0; // 0=本日, -1=前日, ...
 
 function getRankingDateKey() {
-  const d = new Date();
+  const d = new Date(typeof trustNow === 'function' ? trustNow() : Date.now());
   d.setDate(d.getDate() + rankingDateOffset);
   return dateKey(d);
 }
@@ -841,7 +841,7 @@ function renderRanking() {
   rankDateNav.style.display = isDaily ? 'flex' : 'none';
   ensureDailyClearReset();
 
-  const todayKey = dateKey(new Date());
+  const todayKey = rankTodayKey();
   const selectedKey = getRankingDateKey();
   const atServiceStart = daysBetweenKeys(SERVICE_START_DATE_KEY, selectedKey) <= 0;
   const atToday = rankingDateOffset >= 0;

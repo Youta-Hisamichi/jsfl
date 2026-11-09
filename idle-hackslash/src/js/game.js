@@ -554,8 +554,7 @@ function onStageClear(passed) {
   game.totalKills++;
   if (typeof featureOnKill === 'function') featureOnKill(isBossStage);
   checkPowerUp(isBossStage);
-  ensureDailyClearReset();
-  game.dailyClears++;
+  countDailyClear(); // 本日のクリア数（セーブとは別に端末で記録）
   resetCombo();
   advanceStage(false, isBossStage);
 }

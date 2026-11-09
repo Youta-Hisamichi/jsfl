@@ -2,12 +2,14 @@
 // 設定の「📱 機種変更（引き継ぎ）」から開く。2つの方法がある
 //   ・クラウド：同じ claude.ai のアカウントでサインインしていれば、前の端末で「クラウドに保存」→ 新しい端末で「クラウドから読み込む」
 //   ・引き継ぎコード：セーブを縮めた文字列にして写す（アカウントが違っても使える）。前の端末でコピー → 新しい端末で貼り付け
-const XFER_PREFIX_Z = 'MH1-', XFER_PREFIX_RAW = 'MH0-';
+const XFER_PREFIX_Z = 'MH3-', XFER_PREFIX_RAW = 'MH2-'; // 3・2：書き換え防止のしるし付き（前の 1・0 は受け付けない）
+const XFER_SALT = 'mugen-hansha-xfer-v1';
+function xferSum(raw) { let h = 0x811c9dc5; const t = XFER_SALT + raw + XFER_SALT; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); } // セーブの中身から作るしるし（中身を書き換えると合わなくなる）
 function xferB64(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 function xferUnB64(t) { t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; const s = atob(t), b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
 async function xferPipe(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
 async function makeTransferCode() {
-  saveGame(); const raw = localStorage.getItem(SAVE_KEY) || '', bytes = new TextEncoder().encode(raw);
+  saveGame(); const raw0 = localStorage.getItem(SAVE_KEY) || '', raw = xferSum(raw0) + '.' + raw0, bytes = new TextEncoder().encode(raw);
   if (typeof CompressionStream === 'function') { try { return XFER_PREFIX_Z + xferB64(await xferPipe(bytes, new CompressionStream('deflate'))); } catch (e) {} }
   return XFER_PREFIX_RAW + xferB64(bytes);
 }
@@ -18,6 +20,8 @@ async function readTransferCode(code) { // コード → セーブの文字列�
     if (code.startsWith(XFER_PREFIX_Z)) raw = new TextDecoder().decode(await xferPipe(xferUnB64(code.slice(4)), new DecompressionStream('deflate')));
     else if (code.startsWith(XFER_PREFIX_RAW)) raw = new TextDecoder().decode(xferUnB64(code.slice(4)));
     else return null;
+    const dot = raw.indexOf('.'); if (dot < 1) return null; const sum = raw.slice(0, dot); raw = raw.slice(dot + 1);
+    if (xferSum(raw) !== sum) return null; // 書き換えられたコードは受け付けない
     const d = JSON.parse(raw); return d && d.game ? raw : null;
   } catch (e) { return null; }
 }
