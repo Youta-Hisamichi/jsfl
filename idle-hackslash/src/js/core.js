@@ -1395,11 +1395,16 @@ function renderUpgradeList() { // 自キャラの強化（仲間カードの強�
   upgradeList.innerHTML = Object.entries(UPGRADES).filter(([id]) => UPGRADE_SHOWN.includes(id)).map(row).join('');
 }
 var shopSortOrder = null;
+const SHOP_KEEP_TOGETHER = [['upPct', 'upMax']]; // ショップで隣に並べる品（10%LvUP と MAXLvUP）
 const SHOP_ITEM_ART = { reborn: 'reborn', upPct: 'pct', upMax: 'upmax', sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'auto', potion: 'bluepot', redPotion: 'redpot', partySlot: 'party', skillSlot: 'book', weaponSlot: 'axe', summoner: 'emblem' }; // ショップの絵のアイコン
 function renderShopList() {
   const ids = Object.keys(SHOP_ITEMS).filter(id => (CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)) && !SHOP_ITEMS[id].hideInShop); // 枠を増やす品は各ページのボタンから（転生でリセットされるのでショップには並べない）
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });
-  if (!shopSortOrder) shopSortOrder = [...ids].sort((x, y) => sold[x] - sold[y]); // 買い切ったアイテムは下へ（ショップを開いたときに並べ替える）
+  if (!shopSortOrder) { // 買い切ったアイテムは下へ（ショップを開いたときに並べ替える）。いっしょに並べる品（LvUPボタン2つ）は離さない
+    const grp = id => SHOP_KEEP_TOGETHER.find(g => g.includes(id)), gSold = id => { const g = grp(id); return g ? g.filter(k => ids.includes(k)).every(k => sold[k]) : sold[id]; };
+    shopSortOrder = [...ids].sort((x, y) => gSold(x) - gSold(y));
+    for (const g of SHOP_KEEP_TOGETHER) { const ks = g.filter(k => shopSortOrder.includes(k)); if (ks.length < 2) continue; const at = Math.min(...ks.map(k => shopSortOrder.indexOf(k))); shopSortOrder = shopSortOrder.filter(k => !ks.includes(k)); shopSortOrder.splice(at, 0, ...ks); }
+  }
   ids.sort((x, y) => shopSortOrder.indexOf(x) - shopSortOrder.indexOf(y));
   { const ri = ids.indexOf('reborn'); if (ri > 0) ids.unshift(ids.splice(ri, 1)[0]); } // 転生はいつも一番上
   shopList.innerHTML = ids.map(id => {
