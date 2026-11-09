@@ -519,8 +519,8 @@ function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `$
 }; }
 // 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
 // ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
-const CHEST_COMP_CHANCE = { common: 0.001, rare: 0.001, legendary: 0.15, mythic: 0.15 }; // N・Rの宝箱からもまれに（0.1%）。Nの仲間もダブってキャラ進化できるように // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
-const CHEST_COMP_EXCLUDE = { common: ['rare', 'epic', 'legendary', 'mythic'], rare: ['epic', 'legendary', 'mythic'], legendary: ['common'], mythic: ['common', 'rare'] }; // Nの宝箱はNだけ・Rの宝箱はNとRだけ、★4はNを出さない、★5はNとRを出さない
+const CHEST_COMP_CHANCE = { common: 0.001, rare: 0.001, epic: 0.001, legendary: 0.15, mythic: 0.15 }; // N・Rの宝箱からもまれに（0.1%）。Nの仲間もダブってキャラ進化できるように // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
+const CHEST_COMP_EXCLUDE = { common: ['rare', 'epic', 'legendary', 'mythic'], rare: ['epic', 'legendary', 'mythic'], epic: ['common', 'rare', 'legendary', 'mythic'], legendary: ['common'], mythic: ['common', 'rare'] }; // Nの宝箱はNだけ・Rの宝箱はNとRだけ、★4はNを出さない、★5はNとRを出さない
 function chestCompRangeText(rarity) { const ok = RARITY_ORDER.filter(r => !(CHEST_COMP_EXCLUDE[rarity] || []).includes(r)).map(r => RARITY_INFO[r].label); return ok.length === 1 ? `${ok[0]}だけ` : ok[0] === 'N' ? `${ok[ok.length - 1]}まで` : `${ok[0]}以上だけ`; }
 function rollChestCompanion(rarity) {
   const ex = CHEST_COMP_EXCLUDE[rarity] || [], pool = compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); if (!pool.length) return null;
