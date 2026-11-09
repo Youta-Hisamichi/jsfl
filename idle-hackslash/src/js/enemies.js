@@ -1316,9 +1316,9 @@ function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場�
   const st = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
   if (o.ri) game.reflB = st; else game.refl = st;
 }
-function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射板の粘り」があれば、×16のまま1回だけ反射できる
+function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射玉維持」があれば、×16のまま1回だけ反射できる
   if (o.bm >= reflMax()) {
-    if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 粘り！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
+    if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
     else { o.held16 = false; o.bm = reflMin(); }
   } else { o.held16 = false; o.bm++; }
   o.bmFlash = Date.now(); saveReflector(o);
