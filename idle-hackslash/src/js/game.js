@@ -1980,6 +1980,17 @@ function drawFacingSprite(img, ball, key, cx, cy, sz) {
   ctx.imageSmoothingEnabled = true;
 }
 function isMainPlayerBall(ball) { return ball.isPlayer && !ball.isClone && !ball.isCompanion; }
+// 光る丸（ぼかしの光つき）の絵を、色・光の色・大きさごとに一度だけ作る（処理落ち対策）
+const glowDiscCache = new Map();
+function glowDiscSprite(color, glow, r) {
+  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, rr = Math.max(1, Math.round(r)), key = `${color}|${glow}|${rr}|${dpr}`;
+  let s = glowDiscCache.get(key); if (s) return s;
+  if (glowDiscCache.size > 200) glowDiscCache.clear();
+  const size = (rr + 18) * 2, cv = document.createElement('canvas'); cv.width = cv.height = Math.ceil(size * dpr);
+  const g = cv.getContext('2d'); g.scale(dpr, dpr); g.shadowColor = glow || 'transparent'; g.shadowBlur = 14; g.fillStyle = color || '#fff';
+  g.beginPath(); g.arc(size / 2, size / 2, rr, 0, Math.PI * 2); g.fill();
+  s = { cv, size: size * r / rr }; glowDiscCache.set(key, s); return s;
+}
 function drawBall(ball) {
   const enemySprite = ball.isPlayer ? null : getEnemySpriteImg(ball);
   const shape = enemySprite ? 'emoji' : ball.shape;
@@ -2049,6 +2060,10 @@ function drawBall(ball) {
     ctx.strokeStyle = ball.color;
     ctx.lineWidth = 1.5;
     ctx.stroke();
+  } else if (ball.isPlayer || !['diamond', 'square', 'star', 'spike'].includes(shape)) { // 丸：光る丸は絵にして使い回す（毎フレームのぼかしは重いので）
+    const a0 = (ball.isCompanion && COMPANION_SPRITES[ball.companionId]) || isMainPlayerBall(ball) ? 0.35 : 1; // ドット絵のキャラは丸を薄くして絵を見やすく
+    const g = glowDiscSprite(ball.color, ball.glow, ball.radius), S = g.size;
+    ctx.shadowBlur = 0; ctx.globalAlpha = a0; ctx.drawImage(g.cv, ball.x - S / 2, ball.y - S / 2, S, S);
   } else {
     ctx.fillStyle = ball.color;
     if ((ball.isCompanion && COMPANION_SPRITES[ball.companionId]) || isMainPlayerBall(ball)) ctx.globalAlpha = 0.35; // ドット絵のキャラは丸を薄くして絵を見やすく
