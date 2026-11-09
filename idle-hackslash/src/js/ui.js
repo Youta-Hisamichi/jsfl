@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1080,6 +1080,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'evoUnlockAll') { const all = Object.keys(EVO_UNLOCK_RARITY).every(isEvoKindUnlocked); game.evoUnlocked = {}; if (!all) for (const k in EVO_UNLOCK_RARITY) unlockEvoKind(k); else for (const k in EVO_UNLOCK_RARITY) game['evoKindOpen_' + k] = false; renderEvolutionList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: 宝箱で解放する進化項目を全部${all ? '未解放（OFF）' : '解放'}にしました`); return; }
   if (action.startsWith('evoUnlock:')) { const k = action.slice(10); game.evoUnlocked = game.evoUnlocked || {}; if (isEvoKindUnlocked(k)) { delete game.evoUnlocked[k]; game['evoKindOpen_' + k] = false; } else unlockEvoKind(k); renderEvolutionList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: 進化項目「${EVO_KIND_NAME[k]}」を${isEvoKindUnlocked(k) ? '解放' : '未解放'}にしました`); return; }
   if (action.startsWith('wcnt')) { const [, k, d] = action.split(':'); if (!k) { showNotice('DEBUG: 下の各自動スキルの ＋／− で個数を変えられます'); return; } game.weaponDup = game.weaponDup || {}; game.weaponDup[k] = Math.max(0, Math.min(WEAPON_COUNT_MAX - 1, (game.weaponDup[k] || 0) + (+d))); if (typeof renderCoinShopList === 'function') renderCoinShopList(); updateDebugSkillBtns(); saveGame(); showNotice(`DEBUG: ${WEAPONS[k].name}の個数 ×${weaponCount(k)}`); return; }
+  if (action === 'firstBossGift') { showFirstBossGift(); return; } // 見た目の確認だけ（ジェムは増えない）
   if (action === 'clockInfo') { showClockInfo(); return; }
   if (action === 'graceAdd') { for (const k in GRACE_ITEMS) gainGraceItem(k, 100); refreshPlayerBallStats(false); updateStatsUI(); saveGame(); showNotice('DEBUG: 恩恵・絆のアイテムを100個ずつ追加 ' + Object.keys(GRACE_ITEMS).map(k => `${GRACE_ITEMS[k].icon}${graceItemCount(k)}`).join(' ')); return; }
   if (action === 'skillUnlockAll') { const all = !lockedSkillIds().length; game.skillUnlocked = {}; if (!all) skillToggleIds().forEach(k => { game.skillUnlocked[k] = true; }); else SKILL_UNLOCK_DEFAULT.forEach(k => { game.skillUnlocked[k] = true; }); renderSkillToggleList(); saveGame(); showNotice(all ? 'DEBUG: スキルの解放を最初の6つに戻しました' : 'DEBUG: スキルを全部解放しました'); return; }
