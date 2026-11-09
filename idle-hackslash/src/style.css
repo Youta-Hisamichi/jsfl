@@ -5266,3 +5266,21 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .rbd-buy-chest small { font-size: 0.78em; opacity: 0.85; }
 .rbd-buy-chest.is-disabled, .rbd-buy-chest:disabled { filter: grayscale(0.7) brightness(0.8); }
 .rbd-buy-chest:active { transform: scale(0.96); }
+
+/* 機種変更（引き継ぎ） */
+.xfer-ov { position: fixed; inset: 0; z-index: 75; display: none; align-items: center; justify-content: center; background: rgba(4,6,18,0.8); padding: 12px; }
+.xfer-ov.show { display: flex; }
+.xfer-panel { width: min(100%, 440px); max-height: 92dvh; overflow-y: auto; background: #141a36; border: 2px solid #e8c46a; border-radius: 14px; padding: 12px 14px; color: #e9ecf8; font-size: 0.8rem; }
+.xfer-h { display: flex; align-items: center; justify-content: space-between; font-size: 1rem; margin-bottom: 6px; }
+.xfer-x { background: none; border: 0; color: #fff; font-size: 1.1rem; }
+.xfer-now { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 6px 8px; margin-bottom: 8px; }
+.xfer-panel section { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 8px; margin-top: 8px; }
+.xfer-panel h3 { margin: 0 0 4px; font-size: 0.9rem; color: #ffd76b; }
+.xfer-panel p { margin: 0 0 6px; line-height: 1.5; color: #c8cfe8; }
+.xfer-row { display: flex; gap: 8px; margin: 6px 0; }
+.xfer-row button { flex: 1; padding: 8px 6px; border-radius: 10px; border: 1px solid #5a668f; background: #2a3358; color: #fff; font-weight: 800; font-size: 0.8rem; }
+.xfer-row button:disabled { opacity: 0.45; }
+.xfer-panel textarea { width: 100%; box-sizing: border-box; height: 64px; margin: 4px 0; border-radius: 8px; border: 1px solid #5a668f; background: #0c1022; color: #e9ecf8; font-size: 0.7rem; font-family: monospace; word-break: break-all; }
+.xfer-msg { min-height: 1.2em; color: #7ee787; font-weight: 700; }
+.xfer-msg.bad, .xfer-warn { color: #ff8a8a; }
+.xfer-note { font-size: 0.72rem; color: #aab3d6 !important; margin-top: 8px !important; }

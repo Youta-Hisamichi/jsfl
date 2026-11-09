@@ -1064,7 +1064,7 @@ debugRow.addEventListener('click', event => {
     startBgm('boss');
   }
   if (action === 'saveReset') { // セーブを消して読み込み直す（進化など、すべてが最初の状態に戻る）。押す前に確認
-    simpleChoice({ icon: '🗑️', title: 'ゲームリセット', text: 'セーブを消して、最初からやり直しますか？<br>（進化・ジェム・仲間など、すべて最初の状態に戻ります）', yes: 'リセットする', no: 'やめる', onYes: () => { window.__noSave = true; clearSave(); location.reload(); } });
+    simpleChoice({ icon: '🗑️', title: 'ゲームリセット', text: 'セーブを消して、最初からやり直しますか？<br>（進化・ジェム・仲間など、すべて最初の状態に戻ります）', yes: 'リセットする', no: 'やめる', onYes: async () => { window.__noSave = true; clearSave(); try { if (typeof adminDb !== 'undefined' && adminDb && adminUid) await Promise.race([adminDb.doc('players/' + adminUid).update({ save: null, saveAt: Date.now(), saveBest: 1, saveReb: 0, saveStage: 1 }), new Promise(r => setTimeout(r, 3000))]); } catch (e) {} location.reload(); } }); // クラウドの控えもその場で消す（読み込み直したあとにも、念のためもう一度消す）
     return;
   }
   if (action === 'opening') { playOpening(); return; }
