@@ -1966,7 +1966,12 @@ function showAllChestOdds() {
 }
 const ALL_CHEST_BTN = '<button class="aco-btn" type="button" data-all-chest>📚 全部の宝箱で出るもの</button>';
 document.addEventListener('click', e => { if (e.target.closest('[data-all-chest]')) { e.stopPropagation(); showAllChestOdds(); } }, true);
-{ const box = document.getElementById('chestModalBtns'); if (box) { const add = () => { if (box.childElementCount && !box.querySelector('[data-all-chest]')) box.insertAdjacentHTML('beforeend', ALL_CHEST_BTN); }; new MutationObserver(add).observe(box, { childList: true }); add(); } } // 宝箱の画面のボタンを描き直すたびに足す
+{ const box = document.getElementById('chestModalBtns'); if (box) { const add = () => { // 宝箱の画面のボタンを描き直すたびに、「○○の宝箱で出るもの」の横に並べて足す
+    if (!box.childElementCount || box.querySelector('[data-all-chest]')) return;
+    const odds = box.querySelector('#chestOddsBtn'), row = document.createElement('div'); row.className = 'aco-row';
+    if (odds) { odds.replaceWith(row); row.appendChild(odds); } else box.appendChild(row);
+    row.insertAdjacentHTML('beforeend', ALL_CHEST_BTN);
+  }; new MutationObserver(add).observe(box, { childList: true }); add(); } }
 const GRACE_CHEST_CHANCE = { legendary: { heroBond: 0.06, heroGrace: 0.06 }, mythic: { urGrace: 0.06, ssrGrace: 0.06, heroBond: 0.05, heroGrace: 0.05 } };
 const GRACE_CHEST_N = { legendary: { heroBond: [3, 8], heroGrace: [3, 8] }, mythic: { urGrace: [5, 15], ssrGrace: [5, 15], heroBond: [8, 20], heroGrace: [8, 20] } };
 function graceChestRange(k, rarity) { return GRACE_CHEST_N[rarity] && GRACE_CHEST_N[rarity][k]; }
