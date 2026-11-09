@@ -332,7 +332,20 @@ function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで�
   const status = isCompLocked(id) ? '📜 採用前：ショップの「仲間」タブの採用ガチャで出ると、仲間招集に出ます' : '🐾 仲間招集で入手できます';
   return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
 }
-function openCompInfo(id) {
+function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
+  const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
+  const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ev = heroEvo();
+  const atkOwn = heroOwnAtk(), hpOwn = heroOwnMaxHP(), atkB = compShare('atk'), hpB = compShare('hp');
+  const chips = [`⚔️ 攻撃力 ${F(atkOwn + atkB)}${atkB >= 1 ? `（自分 ${F(atkOwn)}＋絆 ${F(atkB)}）` : ''}`, `❤️ 最大HP ${F(hpOwn + hpB)}${hpB >= 1 ? `（自分 ${F(hpOwn)}＋絆 ${F(hpB)}）` : ''}`,
+    `⚔️ 攻撃力 Lv.${formatCoinNumber((game.upgrades.atk || 0) + 1)}`, `❤️ 最大HP Lv.${formatCoinNumber((game.upgrades.hp || 0) + 1)}`,
+    `🤝 絆率 ${P(heroBondRate())}（勇者の絆 ${F(graceItemCount('heroBond'))}個）`, `👑 恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${F(graceItemCount('heroGrace'))}個）`,
+    `🧬 進化 初期Lv ⚔️+${ev.atk} ❤️+${ev.hp}`, `🌌 転生 ${game.reincarnations || 0}回（攻撃力・HP ×${+rebirthPowerMult().toFixed(2)}）`];
+  return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span>${ELEMENTS_ON && id ? elemBadge(COMPANION_ELEMENT[id]) : ''}</div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
+    + `<div class="cc-trait">${heroTypeHtml(id)}</div><div class="cc-trait">【絆】仲間全員の攻撃力・HPの${P(heroBondRate())}を自分の力にする。【恩恵】仲間全員の攻撃力・HPを${P(heroGraceRate())}強める</div>`
+    + `<div class="cp-info-lock">攻撃力・HPは下の強化で上がります。宝箱から自キャラが出ると進化して初期Lvが上がります</div></div>`;
+}
+function openHeroInfo() { openCompInfo(null, heroInfoHtml()); }
+function openCompInfo(id, html) {
   let ov = document.getElementById('compInfoOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'compInfoOverlay'; ov.className = 'cl-overlay ci-overlay';
@@ -340,9 +353,10 @@ function openCompInfo(id) {
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cl-close')) ov.classList.remove('show'); });
   }
-  ov.querySelector('.ci-body').innerHTML = compInfoHtml(id);
+  ov.querySelector('.ci-body').innerHTML = html || compInfoHtml(id);
   ov.classList.add('show');
 }
+document.getElementById('myCharCard')?.addEventListener('click', () => { openHeroInfo(); if (typeof playTone === 'function') playTone(660, 0.05, 'triangle', 0.04, 880); }); // 自キャラをタップすると概要
 const myCharBoxEl = document.getElementById('myCharBox'), autoUpBtnEl = document.getElementById('autoUpgradeBtn'); // 一覧を描き直しても同じ要素を使い回す（ボタンの処理が付いている）
 function renderCompanionList() { return withBondCache(renderCompanionListNow); }
 function renderCompanionListNow() {
