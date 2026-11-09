@@ -5307,11 +5307,10 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .exp-wrap .stage-mark-player { width: 9.5cqw !important; height: 9.5cqw !important; }
 .exp-wrap .stage-boss-txt { text-align: right !important; } /* 自動再戦ボタンは右寄せ（左のステージ数と重ならない） */
 .exp-wrap .stage-boss-txt { width: 82cqw !important; } /* ボスのアイコンにかからないよう、手前で止める */
-/* 宝箱で出るもの：「どれか1つ」は真ん中に。1つ上のレア度の仲間は、仲間のアイコンに星を重ねて色を濃く */
+/* 宝箱で出るもの：「どれか1つ」は真ん中に。1つ上のレア度の仲間は、仲間のアイコンの色を濃く */
 .co-list .co-h { text-align: center !important; }
 .co-upico { position: relative; display: inline-block; line-height: 0; }
 .co-upico > :first-child { filter: saturate(2.2) brightness(1.08) drop-shadow(0 0 3px rgba(255,215,90,0.9)); }
-.co-upico > b { position: absolute; right: -4px; top: -5px; font-size: 13px; line-height: 1; color: #ffd84a; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 6px rgba(255,200,60,0.9); font-style: normal; }
 /* ステージバー右端の「ボスまで 1/10」：正方形の角丸の枠で囲う */
 .stage-side-txt { box-sizing: border-box; width: 46px; height: 46px; flex: 0 0 auto; gap: 1px; padding: 2px 0; border-radius: 9px; background: rgba(6,10,24,0.72); border: 1px solid rgba(160,190,255,0.55); box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.35); }
 .stage-side-txt #stageToBoss { font-size: 0.58rem; letter-spacing: -0.02em; }
