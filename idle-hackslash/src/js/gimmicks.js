@@ -138,7 +138,7 @@ function tickGimmick(sp) {
     else if (it.kind === 'star') { it.life -= 0.0028 * sp; if (it.life <= 0) it.dead = true; else if (touch(it, 12)) popGimmickItem(it); }
     else if (it.kind === 'coin') { if (it.y < it.landY) it.y += it.vy * sp; else it.ground = (it.ground || 0) + sp; it.spin += 0.15 * sp; if (it.ground > 360) it.dead = true; else if (touch(it, 9)) popGimmickItem(it); }
     else if (it.kind === 'firefly') { it.ph += 0.05 * sp; it.x += (it.vx + Math.sin(it.ph * 0.7) * 0.4) * sp; it.y += (it.vy + Math.cos(it.ph * 0.5) * 0.4) * sp; if (it.x < A.l + 10 || it.x > A.r - 10) it.vx *= -1; if (it.y < A.t + 10 || it.y > A.b - 10) it.vy *= -1; it.x = Math.max(A.l + 10, Math.min(A.r - 10, it.x)); it.y = Math.max(A.t + 10, Math.min(A.b - 10, it.y)); if (touch(it, 8)) popGimmickItem(it); }
-    else if (it.kind === 'snowman') { snowmanMove(it, sp, A); if (!it.cool || it.cool < gm.t) { const b = touch(it, 14); if (b) { it.cool = gm.t + 30; it.hp--; it.shake = now; snowmanPush(it, b); playTone(500, 0.06, 'square', 0.05, 300); spawnHitParticles(it.x, it.y, '#ffffff'); if (it.hp <= 0) popGimmickItem(it); } } }
+    else if (it.kind === 'snowman') { snowmanMove(it, sp, A); if (!it.cool || it.cool < gm.t) { const b = touch(it, 14); if (b) { it.cool = gm.t + 30; it.hp--; it.shake = now; /* 雪だるまは当たっても動かさない（揺れるだけ） */ playTone(500, 0.06, 'square', 0.05, 300); spawnHitParticles(it.x, it.y, '#ffffff'); if (it.hp <= 0) popGimmickItem(it); } } }
   }
   gm.items = gm.items.filter(i => !i.dead);
   // 演出
