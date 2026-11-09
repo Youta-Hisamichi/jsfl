@@ -1691,7 +1691,7 @@ function tickMovingObstacles(speedMult) {
     for (let i = 0; i < n && (o.mvx || o.mvy); i++) stepMovingObstacle(o, speedMult / n, pl);
   }
 }
-const GIMMICK_SOLID_R = { snowman: 20 }; // 反射玉・押された障害物が跳ね返るステージの置き物（当たりの半径）
+const GIMMICK_SOLID_R = { snowman: 20, chicken: 13 }; // 反射玉・押された障害物が跳ね返るステージの置き物（当たりの半径）
 function stepMovingObstacle(o, speedMult, pl) {
   const refl = o.kind === 'reflector' && o.launched, rest = refl ? 1 : 0.8;
   o.x += o.mvx * speedMult; o.y += o.mvy * speedMult;
@@ -1723,6 +1723,10 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dot = o.mvx * nx + o.mvy * ny; if (dot >= 0) continue;
     o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8);
     if (refl) reflectorBounced(o);
+    if (it.kind === 'chicken' && !(it.reflCool > Date.now())) { // ニワトリ：はね飛ばされて逃げる（捕まえるのは自キャラだけ）
+      it.reflCool = Date.now() + 300; it.vx = -nx; it.vy = -ny; it.turnAt = (gm.t || 0) + 90; it.x -= nx * 6; it.y -= ny * 6;
+      spawnHitParticles(it.x, it.y, '#ffffff'); if (typeof playTone === 'function') { playTone(1250, 0.05, 'square', 0.045, 1700); setTimeout(() => playTone(1500, 0.06, 'square', 0.04, 1000), 60); } // コケッ
+    }
     if (it.kind === 'snowman' && Math.hypot(o.mvx, o.mvy) > OBS_HIT_MIN_SPEED && !(it.reflCool > Date.now())) { // 勢いよく当たると雪だるまも削れる
       it.reflCool = Date.now() + 400; it.hp--; it.shake = Date.now(); spawnHitParticles(it.x, it.y, '#ffffff'); if (typeof playTone === 'function') playTone(500, 0.06, 'square', 0.05, 300);
       if (it.hp <= 0 && typeof popGimmickItem === 'function') popGimmickItem(it);
