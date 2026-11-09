@@ -453,14 +453,14 @@ const QUESTS = {
     { key: 'boss', text: 'ボスを2体倒す', goal: 2, gems: 1 },
     { key: 'gacha', text: 'ガチャを3回引く', goal: 3, gems: 1 },
     { key: 'ad', text: '動画を1回見る（紋章特典もOK）', goal: 1, gems: 1 },
-    { key: 'reflMax', text: '最大反射の反射板を敵に1回当てる', goal: 1, gems: 1 },
+    { key: 'reflMax', text: '×8以上の反射板を敵に1回当てる', goal: 1, gems: 1 },
   ],
   weekly: [
     { key: 'kill', text: '敵を1000体倒す', goal: 1000, gems: 3 },
     { key: 'boss', text: 'ボスを300体倒す', goal: 300, gems: 3 },
     { key: 'evo', text: '進化ガチャを30回引く', goal: 30, gems: 3 },
     { key: 'login', text: '5日ログインする', goal: 5, gems: 3 },
-    { key: 'reflMax', text: '最大反射の反射板を敵に10回当てる', goal: 10, gems: 3 },
+    { key: 'reflMax', text: '×8以上の反射板を敵に10回当てる', goal: 10, gems: 3 },
   ],
 };
 function weekKey(d = new Date(trustNow())) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return todayKey(t); } // 月曜はじまり
