@@ -1133,7 +1133,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (!REFL_UNLIMITED && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
   if (action === 'reflFormula') { showReflFormula(); return; }
-  if (action === 'reflStep1') { game.reflStepBuys = (reflStepCount() + 1) % (REFL_STEP_MAX + 1); showNotice(`DEBUG: 反射上昇アップを${game.reflStepBuys}個（反射ごとに +${reflStep()}）にしました`); saveGame(); updateReflDebugBtns(); return; } // 0→1→…→10→0個
+  if (action === 'reflStep1') { game.reflStepBuys = (reflStepCount() + 1) % (REFL_STEP_MAX + 1); showNotice(`DEBUG: 反射上昇アップを${game.reflStepBuys}個（反射ごとに +${reflStep()}）にしました`); saveGame(); updateReflDebugBtns(); return; } // 0→1→…→5→0個
   if (action === 'reflTackle') { game.reflTackleBuys = (reflTackleCount() + 1) % (REFL_TACKLE_MAX + 1); showNotice(`DEBUG: タックル反射ブーストを${game.reflTackleBuys}個（×${reflTackleMult()}）にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'reflStart2') { // 反射玉のアイテムの所持を切り替える
     game[action] = !game[action]; for (const o of reflectors()) if (o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
