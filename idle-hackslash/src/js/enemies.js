@@ -1325,7 +1325,7 @@ function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場�
 function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射MAX維持」があれば、×16のまま1回だけ反射できる
   if (REFL_UNLIMITED) { o.held16 = false; o.bm++; o.bmFlash = Date.now(); saveReflector(o); return; } // お試し：上限なし
   if (o.bm >= reflMax()) {
-    if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
+    if (reflKeepCount() && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
     else { o.held16 = false; o.bm = reflMin(); }
   } else { o.held16 = false; o.bm++; }
   o.bmFlash = Date.now(); saveReflector(o);
@@ -1554,7 +1554,8 @@ function placeReflector(ri) {
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射玉はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
 let reflCheckAt = 0;
-function tickObstacles() { { const rr = reflectorRadius(); for (const o of obstacles) if (o.kind === 'reflector' && !o.broken && o.r !== rr) o.r = rr; } /* 反射玉の大きさは毎回そろえる（配置の都合や画面の大きさが変わって、大きいまま・小さいままにならないように） */ if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+function reflKeepEnd(o) { o.keepUntil = 0; if (o.bm > reflMin()) { o.bm = reflMin(); o.held16 = false; o.bmFlash = Date.now(); saveReflector(o); if (typeof playReflReset === 'function') playReflReset(); } }
+function tickObstacles() { { const now = Date.now(); for (const o of obstacles) if (o.kind === 'reflector' && o.keepUntil && now >= o.keepUntil) reflKeepEnd(o); } /* 反射MAX維持の時間が切れたら×1へ */ { const rr = reflectorRadius(); for (const o of obstacles) if (o.kind === 'reflector' && !o.broken && o.r !== rr) o.r = rr; } /* 反射玉の大きさは毎回そろえる（配置の都合や画面の大きさが変わって、大きいまま・小さいままにならないように） */ if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
@@ -1787,7 +1788,11 @@ function reflectorSmash(o, e, pl) {
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();
   playReflectSmash(good, power);
-  if (REFL_UNLIMITED && o.bm > reflMin()) { o.bm = reflMin(); o.held16 = false; o.bmFlash = Date.now(); saveReflector(o); } // お試し：敵に当たったら×1に戻る
+  if (REFL_UNLIMITED && o.bm > reflMin()) { // お試し：敵に当たったら×1に戻る。反射MAX維持があれば、1個につき1秒そのまま保ってから戻す
+    const k = reflKeepCount(), now = Date.now();
+    if (!k) reflKeepEnd(o);
+    else if (!o.keepUntil) { o.keepUntil = now + k * REFL_KEEP_MS; spawnDamageText(o.x, o.y - o.r - 16, `🌈 MAX維持 ${k}秒！ ×${o.bm}`, '#ffe45c', 0.03, true); }
+  }
 }
 function playReflectSmash(good, power) { // ドカーン＋キラーン（＋と×は明るく上がる、－と÷は重く下がる）
   if (typeof thump === 'function') { thump(160, 40, 0.35 + power * 0.3, 0.35 + power * 0.25, 'sawtooth'); thump(90, 30, 0.5, 0.4, 'sine', 0.02); }
