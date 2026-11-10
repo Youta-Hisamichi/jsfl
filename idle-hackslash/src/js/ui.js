@@ -2712,7 +2712,7 @@ specialBtn.addEventListener('click', event => {
   if (Date.now() - lastSpecialAt < getSpecialCooldown()) { tryGemResetSkill('special', event, () => { lastSpecialAt = Date.now() - SPECIAL_COOLDOWN; }, updateSpecialButton); return; }
   const enemy = balls.find(ball => !ball.isPlayer);
   if (!enemy) return;
-  const damage = Math.round(getPlayerAtk() * meteorMult()); // 自キャラ攻撃力 ×（10＋スキルLv）× メテオブースト × スキル進化
+  const damage = Math.round(getPlayerAtk() * meteorMult() * reflSkillText(arena.x, arena.y - 40)); // 自キャラ攻撃力 ×（10＋スキルLv）× メテオブースト × スキル進化 × 反射玉の上乗せ
   lastSpecialAt = Date.now();
   meteors.push({
     x: arena.x + (Math.random() - 0.5) * arena.radius,
@@ -3005,9 +3005,9 @@ blastBtn.addEventListener('click', event => {
   blastFx = { start: Date.now() };
   shakeScreen(); hitStopFrames = Math.max(hitStopFrames, 6);
   thump(70, 22, 0.9, 1); thump(140, 40, 0.6, 0.6, 'sawtooth'); noiseSweep(1.1, 4000, 60, 'lowpass', 1, 0.9); playNoiseBurst(0.6, 0.4);
-  let hitCount = 0;
+  let hitCount = 0; const reflUp = reflSkillText(arena.x, arena.y - 40); // 反射玉の上乗せ
   for (const en of targets()) {
-    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * BLAST_DMG_MULT * skillPower('skillBlast'))), en);
+    const { dmg, crit } = rollCrit(Math.max(1, Math.round(player.atk * BLAST_DMG_MULT * skillPower('skillBlast') * reflUp)), en);
     en.hp -= dmg; trackDamage(dmg); hitCount++;
     spawnAttackDamageText(en, dmg, crit, '#ff6b3d', en.isAdd ? 6 : undefined);
     for (let k = 0; k < 3; k++) spawnHitParticles(en.x + (Math.random() - 0.5) * en.radius, en.y + (Math.random() - 0.5) * en.radius, k % 2 ? '#ffd76b' : '#ff6b3d');
