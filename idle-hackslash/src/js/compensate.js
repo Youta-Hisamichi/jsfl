@@ -86,6 +86,7 @@ function showAnnivList() { // デバッグ用：設定してある記念日の�
 // 設定に「補填コードを入力」
 { const ob = document.getElementById('openingBtn') || document.getElementById('creditsBtn');
   if (ob) { ob.insertAdjacentHTML('afterend', '<button class="modal-shop-btn" id="compCodeBtn"><span class="msb-name">🎁 補填コードを入力</span></button>');
+    { const cd = document.getElementById('cloudDeleteBtn'); if (cd) document.getElementById('compCodeBtn').after(cd); } // 「クラウドのデータ削除」は補填コードのすぐ下
     document.getElementById('compCodeBtn').addEventListener('click', () => {
       const v = (prompt('補填コードを入力してください') || '').trim().toUpperCase(); if (!v) return;
       const c = COMPENSATIONS.find(x => x.code && x.code.toUpperCase() === v);
