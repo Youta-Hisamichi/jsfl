@@ -2531,26 +2531,28 @@ function rollRebirthCompanion(stage) {
   return { id: ids[Math.floor(Math.random() * ids.length)], stage };
 }
 function rebirthCompRatesText(stage) { /* まだ出せないレア度を除いて100%に直して見せる */ const r = rebirthCompRates(stage), pool = compPoolIds(), av = RARITY_ORDER.filter(k => pool.some(id => COMPANIONS[id].rarity === k)).reverse(), tot = av.reduce((t, k) => t + r[k], 0) || 1, f = v => v >= 10 ? Math.round(v) : +v.toFixed(1); return av.map(k => `${RARITY_INFO[k].label} ${f(r[k] / tot * 100)}%`).join('・'); }
-// 転生の宝箱：ジェムを払うと、同じ確率でSSR以上の宝箱をもう1個（1回の転生で3個まで。値段は 💎5 → 10 → 15）
-const RB_EXTRA_CHEST_GEMS = [5, 10, 15];
+// 転生の宝箱：ジェムを払うと、同じ確率で同じ数の宝箱をもう一度（宝箱2倍・1回の転生で1回だけ）。値段は宝箱1個につき💎5
+const RB_EXTRA_CHEST_GEM_EACH = 5;
 function rbdChestRowHtml(c) { return ['mythic', 'legendary'].filter(r => c[r]).map(r => `<div class="rbd-sk" style="--rc:${RARITY_INFO[r].color}"><span class="rbd-sk-ico">${xi(CHEST_ICON[r]) || '🎁'}</span><span class="rbd-stars">${rarityStarsImg(r)}</span><span>${RARITY_INFO[r].label}の宝箱 ×${c[r]}</span></div>`).join(''); }
 function setupRebirthExtraChest(ov, rbChests, rbStage) {
   const btn = ov.querySelector('.rbd-buy-chest'); if (!btn) return;
-  let bought = 0;
+  const n = rebirthRewardChestN(rbStage); let bought = false;
   const sync = () => {
-    if (bought >= RB_EXTRA_CHEST_GEMS.length) { btn.disabled = true; btn.innerHTML = `🎁 追加はここまで（${RB_EXTRA_CHEST_GEMS.length}個）`; return; }
-    const cost = gemPrice(RB_EXTRA_CHEST_GEMS[bought]); btn.classList.toggle('is-disabled', game.gems < cost);
-    btn.innerHTML = `<span data-xi="x_gem">💎</span>${cost} で宝箱をもう1個 <small>（あと${RB_EXTRA_CHEST_GEMS.length - bought}回）</small>`;
+    if (bought) { btn.disabled = true; btn.innerHTML = '🎁 宝箱2倍にしました'; return; }
+    const cost = gemPrice(RB_EXTRA_CHEST_GEM_EACH * n); btn.classList.toggle('is-disabled', game.gems < cost);
+    btn.innerHTML = `<span data-xi="x_gem">💎</span>${cost} で宝箱2倍 <small>（もう${n}個）</small>`;
   };
   btn.addEventListener('click', ev => {
-    ev.stopPropagation(); if (bought >= RB_EXTRA_CHEST_GEMS.length) return;
-    const cost = gemPrice(RB_EXTRA_CHEST_GEMS[bought]);
+    ev.stopPropagation(); if (bought) return;
+    const cost = gemPrice(RB_EXTRA_CHEST_GEM_EACH * n);
     if (game.gems < cost) { showTapError(`ジェムが ${cost - Math.floor(game.gems)} 個足りません`, ev.clientX, ev.clientY); return; } // ジェム不足の画面は転生画面の後ろに隠れるので、その場で知らせる
-    game.gems -= cost; bought++;
-    const r = Math.random() < rebirthUrChance(rbStage) ? 'mythic' : 'legendary', hc = getHeldChests();
-    hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + 1); rbChests[r] = (rbChests[r] || 0) + 1;
+    game.gems -= cost; bought = true;
+    const add = rollRebirthChests(rbStage), hc = getHeldChests(); // もらった宝箱と同じ数・同じ確率でもう一度
+    for (const r of ['legendary', 'mythic']) if (add[r]) { hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + add[r]); rbChests[r] = (rbChests[r] || 0) + add[r]; }
     ov.querySelector('.rbd-chest-row').innerHTML = rbdChestRowHtml(rbChests);
-    if (typeof playGachaSound === 'function') playGachaSound(r); if (typeof showNotice === 'function') showNotice(`🎁 ${RARITY_INFO[r].label}の宝箱をもう1個手に入れた！`);
+    const best = add.mythic ? 'mythic' : 'legendary';
+    if (typeof playGachaSound === 'function') playGachaSound(best);
+    if (typeof showNotice === 'function') showNotice(`🎁 宝箱2倍！ ${['mythic', 'legendary'].filter(r => add[r]).map(r => `${RARITY_INFO[r].label}×${add[r]}`).join('・')} をもう一度手に入れた！`);
     renderChestTray(); updateStatsUI(); saveGame(); sync();
   });
   sync();

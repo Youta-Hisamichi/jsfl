@@ -521,8 +521,7 @@ const COMP_SUMMON_LOADING_MS = 1000;
 let compSummonReveal = null; // ロード中の結果をすぐ出す関数
 const GACHA_REROLL_GEMS = 1; // ガチャの結果をジェムで引き直す値段（仲間・スキル・サブウェポン共通）
 let lastCompGacha = null; // 引き直し用：直前の召喚の前の状態
-// 仲間ガチャのステージボーナス：今の周回のステージが100以上で+1人、1000以上で+2人、1万以上で+3人…（1回で来る仲間が増える＝ダブりも増える）
-function compGachaStageBonus(stage = game.stage) { return Math.max(0, String(Math.max(1, Math.floor(stage || 1))).length - 2); }
+function compGachaStageBonus() { return 0; } // 招集ガチャは1回1人で固定（ステージで増やすのは、転生の宝箱の数のほう）
 function runCompanionGacha(count, cost, event, isReroll = false) {
   if (compSummoning) { if (compSummonReveal) compSummonReveal(); return; } // ロード中にもう一度押したら結果をすぐ表示
   if (!isReroll) {
@@ -536,7 +535,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
-  const extra = compGachaStageBonus(); // ステージが進んだ周回ほど、1回で多く仲間が来る
+  const extra = compGachaStageBonus(); // いまは0（1回1人）
   for (let i = 0; i < count + extra; i++) results.push(grantCompanion(pickCompanionId()));
   if (extra && !isReroll) setTimeout(() => showNotice(`🎉 ステージ${formatStageNumber(game.stage)}到達ボーナス：仲間が +${extra}人 来た！`), 300);
   snap.refund = 0; // （覚醒MAXのコイン返しはなくなった）
