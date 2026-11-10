@@ -10,7 +10,7 @@ function adminSnapshot() { // 進み具合（数字だけ）
   return { stage: Math.floor(game.stage || 1), best: Math.floor(game.bestStage || 1), reb: game.reincarnations || 0, gems: Math.floor(game.gems || 0), coins: Math.floor(Math.min(1e300, game.coins || 0)), ver: typeof GAME_VERSION !== 'undefined' ? GAME_VERSION : '' };
 }
 async function adminInit() {
-  if (!window.claude || typeof window.claude.use !== 'function') return;
+  if (!window.claude || typeof window.claude.use !== 'function' || cloudOff()) return;
   try { adminDb = await window.claude.use('db'); adminUser = await window.claude.use('user'); } catch (e) { return; }
   if (!adminDb || !adminUser) return;
   adminUid = await adminUser.id(); if (!adminUid) return;
@@ -32,10 +32,12 @@ async function adminSaveProgress() { // 進み具合が変わったときだけ�
 // 端末のセーブ（localStorage）は、ブラウザやアプリの都合で消えることがある。サインインして遊んでいる人は、
 // 自分の記録（players/<id>）にセーブの写しを3分おき・閉じるときに残し、端末のセーブが消えて最初からになっていたら復活を聞く
 let cloudSave = null, cloudBackupOk = false, cloudLastRaw = null;
+const CLOUD_OFF_KEY = 'circle-battle-idle-cloud-off'; // 「クラウドのデータとアカウントを削除」をしたら立てる。立っている間はクラウドに何も置かない（機種変更の画面で再開できる）
+function cloudOff() { try { return !!localStorage.getItem(CLOUD_OFF_KEY); } catch (e) { return false; } }
 // セーブの控えを置く場所（どちらか）：リリース版は Firebase（js/firebase-sync.js）、claude.ai のアーティファクトでは共有データベース
 function cloudProvider() {
   if (window.fbCloud && fbCloud.uid) return fbCloud;
-  if (adminDb && adminUid) return { kind: 'claude', save: d => adminDb.doc('players/' + adminUid).update(d), load: async () => { const s = await adminDb.doc('players/' + adminUid).get(); return s.exists ? s.data() : null; } };
+  if (adminDb && adminUid) return { kind: 'claude', remove: async () => { await adminDb.doc('players/' + adminUid).delete(); adminUid = null; }, save: d => adminDb.doc('players/' + adminUid).update(d), load: async () => { const s = await adminDb.doc('players/' + adminUid).get(); return s.exists ? s.data() : null; } };
   return null;
 }
 const CLOUD_CLEAR = () => ({ save: null, saveAt: Date.now(), saveBest: 1, saveReb: 0, saveStage: 1 });
@@ -53,7 +55,7 @@ function offerCloudRestore() {
     onNo: () => { cloudBackupOk = true; } });
 }
 async function cloudBackup() {
-  const P = cloudProvider(); if (!P || !cloudBackupOk || window.__noSave) return; // 復活するか聞いている間は、進んだ控えを上書きしない
+  const P = cloudProvider(); if (!P || !cloudBackupOk || window.__noSave || cloudOff()) return; // 復活するか聞いている間は、進んだ控えを上書きしない
   let raw; try { saveGame(); raw = localStorage.getItem(SAVE_KEY); } catch (e) { return; }
   if (!raw || raw === cloudLastRaw || raw.length > 240000) return;
   try { await P.save({ save: raw, saveAt: Date.now(), saveBest: Math.floor(game.bestStage || 1), saveReb: game.reincarnations || 0, saveStage: Math.floor(game.stage || 1) }); cloudLastRaw = raw; } catch (e) {}

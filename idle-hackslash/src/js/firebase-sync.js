@@ -14,7 +14,7 @@ function fbEnabled() {
 }
 function fbLoadScript(src) { return new Promise((ok, ng) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => ng(new Error('load ' + src)); document.head.appendChild(s); }); }
 async function fbInit() {
-  if (!fbEnabled()) return;
+  if (!fbEnabled() || (typeof cloudOff === 'function' && cloudOff())) return; // 削除したあとは、名前なしのログインもしない
   try { for (const src of FB_SDK) await fbLoadScript(src); } catch (e) { console.warn('Firebase を読み込めません', e); return; }
   const fb = window.firebase; if (!fb) return;
   const app = fb.apps.length ? fb.app() : fb.initializeApp(FIREBASE_CONFIG), auth = fb.auth(app), db = fb.firestore(app);
@@ -24,6 +24,20 @@ async function fbInit() {
   window.fbCloud = {
     kind: 'firebase', uid: null, linked: false, provider: null, linkedName: '',
     save: d => ref().set(d, { merge: true }),
+    async remove() { // クラウドの控え（users/<uid>）と、ログインの記録（アカウント）を消す
+      const cur = auth.currentUser; if (!cur) throw new Error('not signed in');
+      await ref().delete();
+      try { await cur.delete(); }
+      catch (e) {
+        if (!(e && e.code === 'auth/requires-recent-login')) throw e;
+        const pid = fbCloud.provider, N = native(); // ひも付けてから時間がたつと、消す前にもう一度ログインが要る
+        if (N) { const r = pid === 'apple.com' ? await N.signInWithApple({ skipNativeAuth: true }) : await N.signInWithGoogle({ skipNativeAuth: true });
+          await cur.reauthenticateWithCredential(pid === 'apple.com' ? new fb.auth.OAuthProvider('apple.com').credential({ idToken: r.credential.idToken, rawNonce: r.credential.nonce }) : fb.auth.GoogleAuthProvider.credential(r.credential.idToken)); }
+        else await cur.reauthenticateWithPopup(pid === 'apple.com' ? new fb.auth.OAuthProvider('apple.com') : new fb.auth.GoogleAuthProvider());
+        await cur.delete();
+      }
+      window.fbCloud = null;
+    },
     load: async () => { const s = await ref().get(); return s.exists ? s.data() : null; },
     async link(providerId) { // 名前なしログインを Google / Apple にひも付ける。そのアカウントが別の端末で使われていたら、そちらに切りかえる
       const cur = auth.currentUser; if (!cur) throw new Error('not signed in');
@@ -50,7 +64,7 @@ async function fbInit() {
     fbCloud.provider = pd ? pd.providerId : null; fbCloud.linkedName = (pd && (pd.email || pd.displayName)) || u.email || u.displayName || (pd ? pd.providerId : '');
   }
   auth.onAuthStateChanged(async u => {
-    if (!u) { try { await auth.signInAnonymously(); } catch (e) { console.warn('匿名ログインできません', e); } return; }
+    if (!u) { if (typeof cloudOff === 'function' && cloudOff()) return; try { await auth.signInAnonymously(); } catch (e) { console.warn('匿名ログインできません', e); } return; }
     setUser(u);
     if (checked) return; checked = true;
     try { await cloudStartupCheck(await fbCloud.load()); } catch (e) { cloudBackupOk = true; } // 端末より進んだ控えがあれば復活を聞く

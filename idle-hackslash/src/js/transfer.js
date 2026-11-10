@@ -37,11 +37,12 @@ function openTransferDialog() {
   ov.innerHTML = `<div class="xfer-panel"><div class="xfer-h"><b>📱 機種変更（引き継ぎ）</b><button class="xfer-x" data-x="close">✕</button></div>
     <div class="xfer-now">この端末：${xferSummary(localStorage.getItem(SAVE_KEY) || '{}') || '—'}</div>
     <section><h3>☁️ クラウド（同じアカウントの端末どうし）</h3>
-      ${fb ? `<p>${P.linked ? `✅ <b>${P.linkedName}</b> でログイン中。新しい端末でも同じアカウントでログインすると、自動で引き継げます。` : '🔸 いまは<b>名前なしのログイン</b>です（この端末でだけ使える）。機種変更する前に、下のボタンで Google か Apple のアカウントにひも付けてください。新しい端末でも同じアカウントでログインすると、セーブを読み込めます。'}</p>
+      ${cloudOff() ? `<p>🗑 クラウドのデータとアカウントを削除したため、いまはクラウドを使っていません（セーブはこの端末の中だけにあります）。</p>
+      <div class="xfer-row"><button data-x="cloudResume">☁️ クラウドを使う（再開）</button></div></section>` : `${fb ? `<p>${P.linked ? `✅ <b>${P.linkedName}</b> でログイン中。新しい端末でも同じアカウントでログインすると、自動で引き継げます。` : '🔸 いまは<b>名前なしのログイン</b>です（この端末でだけ使える）。機種変更する前に、下のボタンで Google か Apple のアカウントにひも付けてください。新しい端末でも同じアカウントでログインすると、セーブを読み込めます。'}</p>
       <div class="xfer-row"><button data-x="linkGoogle">${P.linked && P.provider === 'google.com' ? '✅ Google' : 'G Googleでログイン'}</button><button data-x="linkApple">${P.linked && P.provider === 'apple.com' ? '✅ Apple' : ' Appleでログイン'}</button></div>`
       : `<p>前の端末で「クラウドに保存」→ 新しい端末で同じ claude.ai のアカウントで開いて「クラウドから読み込む」。${signed ? '' : '<br><b class="xfer-warn">いまはクラウドを使えません（ログインしていない）。下の引き継ぎコードを使ってください。</b>'}</p>`}
       <div class="xfer-row"><button data-x="cloudSave" ${signed ? '' : 'disabled'}>☁️ クラウドに保存</button><button data-x="cloudLoad" ${signed ? '' : 'disabled'}>☁️ クラウドから読み込む</button></div>
-      <div class="xfer-msg" data-msg="cloud"></div></section>
+      <div class="xfer-msg" data-msg="cloud"></div></section>`}
     <section><h3>🔑 引き継ぎコード（アカウントが違ってもOK）</h3>
       <p>前の端末で「コードを作る」→ コピーして、新しい端末の下の欄に貼り付けて「このコードで引き継ぐ」。</p>
       <div class="xfer-row"><button data-x="make">🔑 コードを作る</button><button data-x="copy" disabled>📋 コピー</button></div>
@@ -57,6 +58,7 @@ function openTransferDialog() {
     const b = e.target.closest('[data-x]'); if (!b) { if (e.target === ov) ov.classList.remove('show'); return; }
     const x = b.dataset.x;
     if (x === 'close') ov.classList.remove('show');
+    else if (x === 'cloudResume') { try { localStorage.removeItem(CLOUD_OFF_KEY); } catch (er) {} saveGame(); location.reload(); }
     else if (x === 'linkGoogle' || x === 'linkApple') {
       if (P.linked) { msg('cloud', `${P.linkedName} でログイン中です`); return; }
       msg('cloud', 'ログイン中…');
@@ -77,3 +79,24 @@ function openTransferDialog() {
   };
 }
 document.getElementById('transferBtn')?.addEventListener('click', () => { openTransferDialog(); if (typeof playTone === 'function') playTone(880, 0.06, 'triangle', 0.05); });
+// ===== クラウドのデータとアカウントを削除（設定のボタン） =====
+// クラウドの控え（セーブの写し）と、ログインの記録（名前なしのID・ひも付けた Google / Apple）を消す。端末の中のセーブはそのまま残る。
+// 消したあとは、クラウドに何も置かない（CLOUD_OFF_KEY）。機種変更の画面の「クラウドを使う（再開）」で、新しいIDで再開できる
+async function deleteCloudData() {
+  const P = typeof cloudProvider === 'function' ? cloudProvider() : null;
+  const done = t => simpleChoice({ icon: '🗑', title: t, text: 'この端末の中のセーブは、そのまま残っています。', sub: 'もう一度クラウドを使うときは、設定の「📱 機種変更」から再開できます', yes: '閉じる', no: false });
+  if (cloudOff() && !P) { done('クラウドのデータは削除済みです'); return; }
+  if (!P || !P.remove) { simpleChoice({ icon: '⚠️', title: 'いまはクラウドにつながっていません', text: 'ネットにつながっているか確かめて、少し待ってからもう一度押してください。', yes: '閉じる', no: false }); return; }
+  try { localStorage.setItem(CLOUD_OFF_KEY, '1'); } catch (e) {} // 先に止める（消した直後に、新しい名前なしログインと控えを作らないように）
+  try { await P.remove(); cloudLastRaw = null; done('クラウドのデータとアカウントを削除しました'); }
+  catch (e) {
+    try { localStorage.removeItem(CLOUD_OFF_KEY); } catch (e2) {}
+    simpleChoice({ icon: '⚠️', title: '削除できませんでした', text: `（${(e && (e.code || e.message)) || 'error'}）<br>ネットにつながっているか確かめて、もう一度お試しください。`, yes: '閉じる', no: false });
+  }
+}
+document.getElementById('cloudDeleteBtn')?.addEventListener('click', () => {
+  if (typeof playTone === 'function') playTone(660, 0.06, 'triangle', 0.05);
+  const P = typeof cloudProvider === 'function' ? cloudProvider() : null, who = P && P.linked ? `（${P.linkedName} とのひも付けも消えます）` : '';
+  simpleChoice({ icon: '🗑', title: 'クラウドのデータとアカウントを削除しますか？', text: `クラウドに置いてあるセーブの控えと、ログインの記録を消します${who}。<br><b>消したものは元に戻せません。</b>機種変更でクラウドから読み込むこともできなくなります。`,
+    sub: 'この端末の中のセーブは消えません（引き続き遊べます）', yes: '削除する', no: 'やめる', onYes: deleteCloudData });
+});
