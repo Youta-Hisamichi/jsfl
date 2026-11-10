@@ -1365,6 +1365,17 @@ function reflectorSprite(v, r) {
   } else { g2.lineWidth = 3; g2.strokeStyle = 'rgba(255,255,255,0.9)'; g2.stroke(); }
   s = { cv, size }; reflSpriteCache.set(key, s); return s;
 }
+function drawReflLabel(t, x, y, fs, maxW, col) { // 反射玉の数字：けたが多いほど小さく、小数点から下はさらに小さく。玉の幅からはみ出さない
+  const m = /^(×\d+)(\.\d+)?$/.exec(t) || [t, t, ''], main = m[1], frac = m[2] || '', digits = main.length - 1;
+  let f = fs * (digits >= 5 ? 0.6 : digits === 4 ? 0.7 : digits === 3 ? 0.84 : 1), ff = f * 0.62;
+  ctx.font = `900 ${f}px sans-serif`; let w1 = ctx.measureText(main).width; ctx.font = `900 ${ff}px sans-serif`; let w2 = frac ? ctx.measureText(frac).width : 0;
+  const k = Math.min(1, maxW * 0.92 / Math.max(1, w1 + w2)); f *= k; ff *= k; w1 *= k; w2 *= k; // まだはみ出すなら全体を縮める
+  const x0 = x - (w1 + w2) / 2, base = y + f * 0.36;
+  ctx.save(); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.9)'; ctx.fillStyle = col;
+  ctx.font = `900 ${f}px sans-serif`; ctx.lineWidth = Math.max(3, 5 * f / fs); ctx.strokeText(main, x0, base); ctx.fillText(main, x0, base);
+  if (frac) { ctx.font = `900 ${ff}px sans-serif`; ctx.lineWidth = Math.max(2.5, 4 * ff / fs); ctx.strokeText(frac, x0 + w1, base); ctx.fillText(frac, x0 + w1, base); }
+  ctx.restore();
+}
 function bounceMultLabel(v) { v = Math.abs(v); return `×${v >= 1000 ? Math.floor(v) : +v.toFixed(2)}`; } // 端数は小数2けたまで（×1.5・×12.75）
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
@@ -1376,8 +1387,8 @@ function applyBounceObjMult(ball, o) { // 反射玉は自キャラの強さを�
   const sp = Math.hypot(o.mvx || 0, o.mvy || 0) || 1; o.mvx = (o.mvx || 0) / sp * REFLECT_LAUNCH; o.mvy = (o.mvy || 0) / sp * REFLECT_LAUNCH; o.hitMap = new Map(); o.flyAt = now;
   o.launched = true; o.launchMult = dashDmgMult(ball); // 反射玉に当てたときの自キャラのダメージ（溜め・ダッシュ込み）を覚えておく。これに数値を掛ける
   spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * o.launchMult))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
-  if (reflTackleMult() > 1) { // ショップの「タックル反射ブースト」：タックルで叩くと、反射玉の倍率が×1.25（2個で×1.5）
-    const b0 = o.bm, up = reflRound(b0 * reflTackleMult()); o.bm = REFL_UNLIMITED ? up : Math.min(reflMax(), up);
+  if (reflTackleMult() > 1) { // ショップの「タックル反射ブースト」：タックルで叩くと、反射玉の倍率が×1.25（2個で×1.5）。結果は四捨五入して整数に
+    const b0 = o.bm, up = Math.round(b0 * reflTackleMult()); o.bm = REFL_UNLIMITED ? up : Math.min(reflMax(), up); // 体当たりで上げた倍率は、小数にせず四捨五入
     if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ${bounceMultLabel(b0)} → ${bounceMultLabel(o.bm)}`, '#ffe45c', 0.03, true); }
   }
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
@@ -2028,7 +2039,8 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
     ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
     ctx.font = `900 ${fs}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-    const t = bounceMultLabel(v); ctx.strokeText(t, o.x, o.y); ctx.fillStyle = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS); ctx.fillText(t, o.x, o.y);
+    const t = bounceMultLabel(v), col = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS);
+    if (o.kind === 'reflector') drawReflLabel(t, o.x, o.y, fs, o.r * 2 * pop, col); else { ctx.strokeText(t, o.x, o.y); ctx.fillStyle = col; ctx.fillText(t, o.x, o.y); }
   }
   ctx.globalAlpha = 1;
   drawReflectBlasts(now);
