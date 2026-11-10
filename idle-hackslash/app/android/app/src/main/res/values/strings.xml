@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">無限反射</string>
+    <string name="title_activity_main">放置系ハクスラ無限反射</string>
+    <string name="package_name">com.hisashiapp.mugenhansya</string>
+    <string name="custom_url_scheme">com.hisashiapp.mugenhansya</string>
+</resources>

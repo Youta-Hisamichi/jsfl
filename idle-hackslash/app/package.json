@@ -1,0 +1,16 @@
+{
+  "name": "mugenhansya-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "放置系ハクスラ無限反射の Android アプリ（Capacitor）。ゲーム本体は ../dist",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}

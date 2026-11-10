@@ -103,7 +103,10 @@ function setDebugOpen(open) {
   try { localStorage.setItem('circle-battle-idle-debug-open', open ? '1' : '0'); } catch (err) { /* 保存できなくても動作は続ける */ }
 }
 debugToggleBtn.addEventListener('click', () => setDebugOpen(document.getElementById('debugPanel').style.display === 'none'));
-try { if (localStorage.getItem('circle-battle-idle-debug-open') === '1') setDebugOpen(true); } catch (err) { /* 読めなければ閉じたまま */ }
+// ストアに出すアプリ（Capacitor の中で動いているとき）は、デバッグのボタンを隠す（開発で使うときは localStorage に mh-dev を入れる）
+const IS_STORE_APP = (() => { try { return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()); } catch (e) { return false; } })();
+if (IS_STORE_APP) { let dev = false; try { dev = !!localStorage.getItem('mh-dev'); } catch (e) {} if (!dev) { debugToggleBtn.style.setProperty('display', 'none', 'important'); document.getElementById('debugPanel').style.display = 'none'; } }
+try { if (localStorage.getItem('circle-battle-idle-debug-open') === '1' && debugToggleBtn.style.display !== 'none') setDebugOpen(true); } catch (err) { /* 読めなければ閉じたまま（ストア版でデバッグを隠しているときも開かない） */ }
 
 const tabBar = document.getElementById('tabBar');
 const tabPages = document.querySelectorAll('.tab-page');
