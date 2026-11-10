@@ -161,8 +161,14 @@ const META_COMP = [
   () => `もう${(game.totalKills || 0).toLocaleString('ja-JP')}体倒したんだって。数えてる人すごい。`,
 ];
 function metaLine(list, last) { const pool = list.map(t => typeof t === 'function' ? t() : t).filter(t => t !== last); return pool[Math.floor(Math.random() * pool.length)]; }
+const COFFIN_TALK = ['へんじがない　ただのしかばねのようだ'], COFFIN_TALK_RATE = 0.3; // 棺桶のセリフ（倒れている仲間がいるとき、ひとりごとの3割はこちら）
 function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとりごと / 'k' 撃破）
   const now = Date.now(); if (!force && now - compTalkAt < 3000) return;
+  if (kind === 'i' && Math.random() < COFFIN_TALK_RATE) { // 棺桶（倒れている仲間）がひとこと
+    const cs = balls.filter(b => b.isCompanion && b.hp <= 0 && !b.isClone && !speech.some(s => s.ball === b));
+    const c = cs[Math.floor(Math.random() * cs.length)];
+    if (c) { const t = COFFIN_TALK[Math.floor(Math.random() * COFFIN_TALK.length)]; compTalkLast = t; compTalkAt = now; companionSay(c, t, 1800 + t.length * 70); return; }
+  }
   const list = balls.filter(b => b.isCompanion && b.hp > 0 && !speech.some(s => s.ball === b));
   const b = list[Math.floor(Math.random() * list.length)]; if (!b) return;
   const T = COMP_TALK[b.companionId], P = COMP_PROFILE[b.companionId];
