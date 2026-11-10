@@ -242,6 +242,11 @@ function avoidSpeechUI(x, y, w, h) { // UIと重なっていたら、上か下�
   }
   return { x, y };
 }
+const SPEECH_COL = { // 吹き出しの色（地・縁・文字）
+  hero: { bg: 'rgba(255,243,200,0.78)', line: 'rgba(200,140,30,0.95)', text: '#3a2405' }, // 勇者：クリーム色の地に金の縁
+  comp: { bg: 'rgba(222,242,255,0.78)', line: 'rgba(40,140,215,0.9)', text: '#0d2a45' }, // 仲間：水色がかった白に水色の縁
+  enemy: { bg: 'rgba(40,12,20,0.6)', line: 'rgba(255,90,110,0.85)', text: '#ffe3e8' }, // 敵：暗い赤に桃色の縁
+};
 function drawSpeech() {
   if (Date.now() - speechUIAt > 700) { speechUIAt = Date.now(); try { refreshSpeechUIRects(); } catch (e) {} }
   if (!speech.length) return;
@@ -266,10 +271,11 @@ function drawSpeech() {
     { const p1 = avoidSpeechUI(x, y, w, h); x = p1.x; y = p1.y; }
     placed.push({ x, y, w, h });
     const en = !b.isPlayer, tailX = Math.max(x + 8, Math.min(x + w - 8, b.x)), tailUp = b.y > y + h / 2;
-    ctx.fillStyle = en ? 'rgba(40,12,20,0.6)' : 'rgba(255,255,255,0.6)'; ctx.strokeStyle = en ? 'rgba(255,90,110,0.85)' : 'rgba(60,40,10,0.55)'; ctx.lineWidth = 1.4;
+    const SC = en ? SPEECH_COL.enemy : (b.isCompanion ? SPEECH_COL.comp : SPEECH_COL.hero); // 吹き出しの色：勇者・仲間・敵で分ける
+    ctx.fillStyle = SC.bg; ctx.strokeStyle = SC.line; ctx.lineWidth = 1.4;
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, 8); else ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
     ctx.beginPath(); if (tailUp) { ctx.moveTo(tailX - 5, y + h); ctx.lineTo(b.x, Math.min(b.y - r, y + h + 9)); ctx.lineTo(tailX + 5, y + h); } else { ctx.moveTo(tailX - 5, y); ctx.lineTo(b.x, Math.max(b.y + r, y - 9)); ctx.lineTo(tailX + 5, y); } ctx.fill();
-    ctx.fillStyle = en ? '#ffe3e8' : '#2a1a06'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = SC.text; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 4 + lh * i + lh / 2));
     ctx.restore();
   }

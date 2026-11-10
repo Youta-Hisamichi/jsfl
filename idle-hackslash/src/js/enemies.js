@@ -1771,6 +1771,7 @@ function reflectorSmash(o, e, pl) {
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
   const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射オブジェクト」も掛かる */
+  if (dmg > 0 && v > (game.reflBestMult || 0)) game.reflBestMult = v; // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
   if (dmg > 0 && v >= REFL_MAX_BASE) { if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：×8（パワーアップ前の最大値）以上の反射玉を敵に当てる。秘宝で最大値が上がっても条件は×8のまま
   if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
     hitStopFrames = Math.max(hitStopFrames || 0, 4 + Math.round(power * 4)); e.stunnedUntil = Math.max(e.stunnedUntil || 0, Date.now() + 250);

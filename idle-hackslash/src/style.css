@@ -5316,3 +5316,6 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .stage-side-txt #stageToBoss { font-size: 0.58rem; letter-spacing: -0.02em; }
 /* ステージ進捗バーのボスアイコンを大きく */
 .exp-wrap .stage-mark-boss { width: 11.5cqw !important; height: 11.5cqw !important; }
+/* ランキング「MAX反射倍率」のタブ（7つ並ぶので、高さも7等分に合わせる） */
+.rank-tab-btn[data-rank-mode="refl"] { --ti: url(assets/img/ui/rk/i_refl.webp); --tl: url(assets/img/ui/rk/l_refl.webp); }
+.tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull, .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull.active { height: calc((min(100vw, 480px) - 48px) / 7 * 1.05) !important; }
