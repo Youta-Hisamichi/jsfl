@@ -1207,7 +1207,7 @@ function softTone(type, f0, f1, dur, gain, attack, delay = 0, hpFreq = 0) { // �
 }
 function playReflChain(n, max) { // 反射玉の連鎖音：低めの「ドゥイン↑」から始まり、反射するたびに音階で上がる。低い支えの音で存在感を出す
   if (!audioCtx || isBattleSfxMuted()) return;
-  const steps = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24, 26], i = Math.max(0, Math.min(steps.length - 1, n - 1));
+  const steps = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24, 26], i = Math.max(0, n - 1) % steps.length; // 上がりきったら（×16の次は）また一番下の音からくり返す（音の厚みは高いまま）
   const f = 196 * Math.pow(2, steps[i] / 12), lv = Math.min(1, (n - 1) / 15), v = 0.051 + 0.021 * lv; // ×1はソ（196Hz・前より1オクターブ低い）から（音量は控えめ）
   const bus = echoBus(0.1 + 0.03 * lv, 0.25 + 0.15 * lv, 0.4 + 0.2 * lv, 2600);
   busTone(bus, 'sawtooth', f * 0.75, f * 1.5, 0, 0.12, v * 0.5, 0.004); // ドゥイン↑（下からしゃくり上げる）
