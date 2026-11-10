@@ -1727,7 +1727,7 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dx = o.x - q.x, dy = o.y - q.y, d = Math.hypot(dx, dy) || 1, min = o.r + q.r;
     if (d >= min) continue;
     const nx = dx / d, ny = dy / d; o.x = q.x + nx * min; o.y = q.y + ny * min;
-    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); }
+    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); if (refl && q.kind === 'reflector') reflectorStruck(q, o); }
   }
   if (typeof gm !== 'undefined' && gm && Array.isArray(gm.items)) for (const it of gm.items) { // ステージの置き物（雪だるまなど）でも跳ね返る
     const R = !it.dead && GIMMICK_SOLID_R[it.kind]; if (!R) continue;
@@ -1772,6 +1772,11 @@ function stepMovingObstacle(o, speedMult, pl) {
 // 反射玉のダメージ：反射玉に当てたときの自キャラのダメージ × 今の数値
 const REFLECT_HIT_RATE = 3; // 反射玉の命中率はタックルの3倍（上限100%）
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
+function reflectorStruck(q, o) { // ダブル反射玉：飛んでいる反射玉が、もう1つの反射玉にぶつかったら、ぶつけられた方も反射したことにして飛ばす（倍率+・敵に当たる）
+  const now = Date.now(); if (q.struckAt && now - q.struckAt < 120) return; q.struckAt = now; // 重なっている間に何度も数えない
+  if (!q.launched) { q.launched = true; q.launchMult = o.launchMult || 1; q.hitMap = new Map(); q.flyAt = now; }
+  reflectorBounced(q);
+}
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
   const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(Math.round((o.bm - reflMin()) / reflStep()) + 1, reflMax()); /* 音は反射した回数で上がる */ if (!REFL_UNLIMITED && o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
@@ -2600,7 +2605,7 @@ function showReflFormula() {
   let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 叩いたときの力（溜め×ダッシュ×専用技）× 反射玉の倍率 × 進化「反射オブジェクト」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）</small></div>`;
   x += '<div class="dl-h">いまの数字</div>' + row('自キャラ攻撃力', F(atk)) + row('溜め（いま叩いたら）', M(wait), `最大 ×${HERO_WAIT_MAX}・叩くと使い切る`) + row('ダッシュパネル', M(dash), `通ると3秒 ×${DASH_DMG_MULT}`) + row('進化「反射オブジェクト」', M(evo));
   x += row('ボスへの倍率', M(boss), tgt ? (tgt.isBoss ? 'いまのボスに対して' : 'いまの敵に対して') : '敵がいない') + row('クリティカル', `${Math.round(critC * 100)}%で ${M(critM)}`) + row('当たる確率', hit == null ? '-' : `${Math.round(hit * 100)}%`, `タックルの${REFLECT_HIT_RATE}倍（30階までは必ず当たる）`);
-  x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`, game.reflStep1 ? '反射上昇+1 あり' : '反射上昇+1 で +1') + row('タックルで叩くと', M(reflTackleMult()), `タックル反射ブースト ${reflTackleCount()}個`) + row('上限', REFL_UNLIMITED ? 'なし（お試し）' : bounceMultLabel(reflMax())) + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
+  x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`, `反射上昇アップ ${reflStepCount()}個（1個ごとに +0.1）`) + row('タックルで叩くと', M(reflTackleMult()), `タックル反射ブースト ${reflTackleCount()}個`) + row('上限', REFL_UNLIMITED ? 'なし（お試し）' : bounceMultLabel(reflMax())) + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
   for (const o of reflectors()) {
     const v = obstacleMult(o) || 1, lm = o.launched ? (o.launchMult || 1) : wait * dash, d = atk * lm * v * evo * boss;
     x += row(`反射玉${reflectors().length > 1 ? (o.ri || 0) + 1 : ''} ${bounceMultLabel(v)}`, `≈ ${F(d)}`, `${F(atk)} × ${M(lm)}${o.launched ? '（叩いたときの力）' : '（いま叩いたら）'} × ${bounceMultLabel(v)} × ${M(evo)} × ${M(boss)}　クリティカルなら ≈ ${F(d * critM)}`);
