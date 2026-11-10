@@ -1304,6 +1304,7 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射玉に当てたときの自キャラのダメージ × 今の数値」。
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
+const REFL_TACKLE_UP = 1.5; // お試し：自分のタックルで反射玉を叩くと、倍率が1.5倍になる（1 にすると元どおり）
 const REFL_UNLIMITED = true; // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
 function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
@@ -1375,6 +1376,10 @@ function applyBounceObjMult(ball, o) { // 反射玉は自キャラの強さを�
   const sp = Math.hypot(o.mvx || 0, o.mvy || 0) || 1; o.mvx = (o.mvx || 0) / sp * REFLECT_LAUNCH; o.mvy = (o.mvy || 0) / sp * REFLECT_LAUNCH; o.hitMap = new Map(); o.flyAt = now;
   o.launched = true; o.launchMult = dashDmgMult(ball); // 反射玉に当てたときの自キャラのダメージ（溜め・ダッシュ込み）を覚えておく。これに数値を掛ける
   spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * o.launchMult))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
+  if (REFL_TACKLE_UP > 1) { // お試し：タックルで叩くと、反射玉の倍率が1.5倍（端数は四捨五入・最低+1）
+    const b0 = o.bm, up = Math.max(b0 + 1, Math.round(b0 * REFL_TACKLE_UP)); o.bm = REFL_UNLIMITED ? up : Math.min(reflMax(), up);
+    if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ×${b0} → ×${o.bm}`, '#ffe45c', 0.03, true); }
+  }
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
 }
 function dashDmgMult(ball) {
@@ -1791,7 +1796,7 @@ function reflectorSmash(o, e, pl) {
   if (REFL_UNLIMITED && o.bm > reflMin()) { // お試し：敵に当たったら×1に戻る。反射MAX維持があれば、1個につき1秒そのまま保ってから戻す
     const k = reflKeepCount(), now = Date.now();
     if (!k) reflKeepEnd(o);
-    else if (!o.keepUntil) { o.keepUntil = now + k * REFL_KEEP_MS; spawnDamageText(o.x, o.y - o.r - 16, `🌈 MAX維持 ${k}秒！ ×${o.bm}`, '#ffe45c', 0.03, true); }
+    else if (!o.keepUntil) { o.keepUntil = now + k * REFL_KEEP_MS; spawnDamageText(o.x, o.y - o.r - 16, `🌈 MAX維持 ${reflKeepSecText(k)}秒！ ×${o.bm}`, '#ffe45c', 0.03, true); }
   }
 }
 function playReflectSmash(good, power) { // ドカーン＋キラーン（＋と×は明るく上がる、－と÷は重く下がる）
