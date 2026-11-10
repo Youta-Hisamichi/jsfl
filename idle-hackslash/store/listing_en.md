@@ -41,3 +41,8 @@ Compete in daily clears, best stage, max reflection multiplier and more.
 
 * Free to play. Video ads may be shown.
 * The game text is currently mainly in Japanese.
+
+## Graphics (folder: en/)
+- App icon: en/icon_512.png (same as Japanese — no text)
+- Feature graphic: en/feature_1024x500_en.png
+- Phone screenshots: en/screenshot_1–4_*_en.jpg (1080×1920, English captions; the game screens themselves are in Japanese)
