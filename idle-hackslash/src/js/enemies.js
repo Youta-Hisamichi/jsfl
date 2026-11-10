@@ -1304,19 +1304,21 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射玉に当てたときの自キャラのダメージ × 今の数値」。
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
+const REFL_UNLIMITED = true; // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
 function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
 // ショップの「ダブル反射玉」（💎100）を持っていると、反射玉が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
 function reflCount() { return game.reflTwo ? 2 : 1; }
 function reflState(i) { return i ? game.reflB : game.refl; }
 function reflectors() { return obstacles.filter(o => o.kind === 'reflector' && !o.broken); }
-function setBounceOp(o) { o.bop = '×'; const st = reflState(o.ri || 0), ok = st && st.bm >= reflMin() && st.bm <= reflMax(); o.bm = ok ? st.bm : reflMin(); o.held16 = !!(ok && st.held); }
+function setBounceOp(o) { o.bop = '×'; const st = reflState(o.ri || 0), ok = st && st.bm >= reflMin() && (REFL_UNLIMITED || st.bm <= reflMax()); o.bm = ok ? st.bm : reflMin(); o.held16 = !!(ok && st.held); }
 function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
   if (!o || o.kind !== 'reflector') return;
   const st = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
   if (o.ri) game.reflB = st; else game.refl = st;
 }
 function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射MAX維持」があれば、×16のまま1回だけ反射できる
+  if (REFL_UNLIMITED) { o.held16 = false; o.bm++; o.bmFlash = Date.now(); saveReflector(o); return; } // お試し：上限なし
   if (o.bm >= reflMax()) {
     if (game.refl16Keep && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
     else { o.held16 = false; o.bm = reflMin(); }
@@ -1761,7 +1763,7 @@ const REFLECT_HIT_RATE = 3; // 反射玉の命中率はタックルの3倍（上
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (!REFL_UNLIMITED && o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
@@ -1779,6 +1781,7 @@ function reflectorSmash(o, e, pl) {
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();
   playReflectSmash(good, power);
+  if (REFL_UNLIMITED && o.bm > reflMin()) { o.bm = reflMin(); o.held16 = false; o.bmFlash = Date.now(); saveReflector(o); } // お試し：敵に当たったら×1に戻る
 }
 function playReflectSmash(good, power) { // ドカーン＋キラーン（＋と×は明るく上がる、－と÷は重く下がる）
   if (typeof thump === 'function') { thump(160, 40, 0.35 + power * 0.3, 0.35 + power * 0.25, 'sawtooth'); thump(90, 30, 0.5, 0.4, 'sine', 0.02); }

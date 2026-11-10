@@ -1130,7 +1130,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'mysteryList') { // 謎魔法の効果と出る確率
     const tot = MYSTERY_EFFECTS.reduce((t, e) => t + e.w, 0);
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
-  if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
+  if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (!REFL_UNLIMITED && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
   if (action === 'refl16Keep' || action === 'reflStart2') { // 反射玉のアイテムの所持を切り替える
     game[action] = !game[action]; for (const o of reflectors()) if (o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
