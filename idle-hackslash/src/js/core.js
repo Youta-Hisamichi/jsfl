@@ -754,7 +754,9 @@ const REFL_TACKLE_MAX = 2, REFL_TACKLE_STEP = 0.25;
 function reflTackleCount() { return Math.min(REFL_TACKLE_MAX, game.reflTackleBuys || 0); }
 function reflTackleMult() { return 1 + REFL_TACKLE_STEP * reflTackleCount(); }
 SHOP_ITEMS.reflTackle = { icon: '💥', name: 'タックル反射ブースト', desc: `自分のタックルで反射玉を叩くと、反射玉の倍率が上がる。1個で×1.25・2個で×1.5（最大${REFL_TACKLE_MAX}個・転生しても残る）`, cost: 10, stackKey: 'reflTackleBuys', maxStack: REFL_TACKLE_MAX, shopCount: true }; // 💎10→20
-SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
+// ダブル反射玉は、いったんショップから外す（買っていた人には💎100を返して1つに戻す：reflTwoRefund。デバッグでは今までどおり切り替えられる）
+// SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
+function reflTwoRefund() { if (!game.reflTwo || game.refl2Refunded) { game.refl2Refunded = true; return; } game.refl2Refunded = true; game.reflTwo = false; game.gems = (game.gems || 0) + 100; try { ensureOneBounce(); } catch (e) {} saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); setTimeout(() => { if (typeof showNotice === 'function') showNotice('🪞 ダブル反射玉はいったんお休みになりました。払った 💎100 をお返しします'); }, 2500); }
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };

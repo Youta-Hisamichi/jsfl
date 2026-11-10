@@ -3639,7 +3639,7 @@ updateCompRushButton();
 updateNovaButton();
 currentLang = game.language || 'ja';
 applyLanguage(currentLang);
-try { reflKeepRefund(); } catch (e) {} // 削除した「反射MAX維持」のジェムを返す
+try { reflKeepRefund(); } catch (e) {} try { reflTwoRefund(); } catch (e) {} // 削除した「反射MAX維持」のジェムを返す
 tcReady(runReturnCheck); // 起動時の帰還ボーナス（サーバーの時刻を確かめてから）
 if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開
 loop();
