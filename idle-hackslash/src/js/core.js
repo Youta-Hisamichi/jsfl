@@ -743,12 +743,12 @@ SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp'
 // 反射MAX維持は削除（買っていた人には、払ったジェムを返す：reflKeepRefund）
 const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
 function reflKeepRefund() { const n = Math.min(3, game.reflKeepBuys || 0) || (game.refl16Keep ? 1 : 0); if (!n) return; const back = 5 * n * (n + 1) / 2; game.gems = (game.gems || 0) + back; delete game.reflKeepBuys; delete game.refl16Keep; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); if (typeof showNotice === 'function') showNotice(`🌈 反射MAX維持はなくなりました。払った 💎${back} をお返しします`); }
-// 反射玉の上がり方：反射するたびに +0.1。ショップの「反射上昇アップ」1個ごとに +0.1（最大10個で +1.1）
-const REFL_STEP_BASE = 0.1, REFL_STEP_UP = 0.1, REFL_STEP_MAX = 10;
+// 反射玉の上がり方：反射するたびに +0.5。ショップの「反射上昇アップ」1個ごとに +0.1（最大10個で +1.5）
+const REFL_STEP_BASE = 0.5, REFL_STEP_UP = 0.1, REFL_STEP_MAX = 10;
 function reflStepCount() { if (game.reflStep1) { delete game.reflStep1; game.gems = (game.gems || 0) + 30; setTimeout(() => { if (typeof showNotice === 'function') showNotice('⏫ 反射上昇+1 は「反射上昇アップ」に変わりました。払った 💎30 をお返しします'); if (typeof updateStatsUI === 'function') updateStatsUI(); }, 1500); } return Math.min(REFL_STEP_MAX, game.reflStepBuys || 0); } // 前の「反射上昇+1」（1回買い切り）は、払ったジェムを返す
 function reflStep() { return reflRound(REFL_STEP_BASE + REFL_STEP_UP * reflStepCount()); }
 function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 などの端数が、計算のずれで 0.30000…4 にならないように
-SHOP_ITEMS.reflStep1 = { icon: '⏫', name: '反射上昇アップ', desc: `反射玉が反射するたびに上がる倍率が、1個につき +0.1（はじめは +0.1、最大${REFL_STEP_MAX}個で +${reflRound(REFL_STEP_BASE + REFL_STEP_UP * REFL_STEP_MAX)}・転生しても残る）`, cost: 5, stackKey: 'reflStepBuys', maxStack: REFL_STEP_MAX, shopCount: true }; // 💎5→10→15…50
+SHOP_ITEMS.reflStep1 = { icon: '⏫', name: '反射上昇アップ', desc: `反射玉が反射するたびに上がる倍率が、1個につき +0.1（はじめは +${REFL_STEP_BASE}、最大${REFL_STEP_MAX}個で +${reflRound(REFL_STEP_BASE + REFL_STEP_UP * REFL_STEP_MAX)}・転生しても残る）`, cost: 5, stackKey: 'reflStepBuys', maxStack: REFL_STEP_MAX, shopCount: true }; // 💎5→10→15…50
 // タックル反射ブースト：自分のタックルで反射玉を叩くと、倍率が1個につき+25%（1個で×1.25・2個で×1.5）。持っていなければ×1（変わらない）
 const REFL_TACKLE_MAX = 2, REFL_TACKLE_STEP = 0.25;
 function reflTackleCount() { return Math.min(REFL_TACKLE_MAX, game.reflTackleBuys || 0); }
