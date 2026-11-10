@@ -10,6 +10,9 @@ html, body { height: 100%; margin: 0; background: #070918; }
 body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-system, sans-serif; }
 #bootLoading { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: radial-gradient(circle at 50% 40%, #2a2f4a, #0c0e16 70%); color: #fff; transition: opacity 0.4s; }
 #bootLoading.done { opacity: 0; pointer-events: none; }
+#bootLoading .bl-stuck { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 4px; padding: 10px 14px; border-radius: 12px; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,215,107,0.6); color: #fff; font-size: 0.82rem; font-weight: 800; text-align: center; }
+#bootLoading .bl-stuck button { padding: 9px 22px; border: 2px solid #ffd76b; border-radius: 999px; background: linear-gradient(180deg, #2a8ae8, #0c4fa8); color: #fff; font-size: 0.95rem; font-weight: 900; cursor: pointer; }
+#bootLoading .bl-stuck small { color: #c8d0ea; font-size: 0.7rem; font-weight: 700; }
 #bootLoading .bl-run { position: relative; width: 150px; height: 84px; overflow: hidden; }
 #bootLoading .bl-run img { position: absolute; left: 43px; bottom: 10px; width: 64px; height: 64px; image-rendering: pixelated; animation: blRun 0.32s ease-in-out infinite; }
 #bootLoading .bl-ground { position: absolute; left: 0; right: 0; bottom: 6px; height: 4px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.45) 0 14px, transparent 14px 26px); animation: blGround 0.4s linear infinite; }
@@ -51,6 +54,25 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   window.__blSet = function (v) { shown = Math.max(shown, Math.min(100, v)); if (bar) bar.style.width = shown + '%'; if (pct) pct.textContent = Math.floor(shown) + '%'; };
   document.addEventListener('load', function (e) { if (e.target && e.target.tagName === 'SCRIPT' && e.target.src) { done++; var total = document.scripts.length || 1; window.__blSet(Math.min(95, done / Math.max(done + 1, total - 1) * 95)); } }, true);
   window.__blSet(3);
+  // 読み込みが止まったとき（通信が途切れた・古い保存ファイルが邪魔をしている など）：12秒進まなければ「読み込み直す」ボタンを出す
+  var lastAt = Date.now(), lastV = 0, stuckShown = false;
+  function blStuck(why) {
+    if (stuckShown || shown >= 100) return; stuckShown = true;
+    var box = document.createElement('div'); box.className = 'bl-stuck';
+    box.innerHTML = '<div>' + why + '</div><button type="button">🔄 読み込み直す</button><small>セーブデータは消えません</small>';
+    box.querySelector('button').onclick = function () { // 端末に保存した古いファイル（オフライン用）を消してから、最初から読み直す
+      this.disabled = true; this.textContent = '読み込み直しています…';
+      var jobs = [];
+      try { if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })); } catch (e) {}
+      try { if (window.caches && caches.keys) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); })); } catch (e) {}
+      Promise.all(jobs).catch(function () {}).then(function () { location.reload(); });
+      setTimeout(function () { location.reload(); }, 4000);
+    };
+    var host = document.getElementById('bootLoading'); if (host) host.appendChild(box);
+  }
+  var setOrig = window.__blSet; window.__blSet = function (v) { if (v > lastV) { lastV = v; lastAt = Date.now(); } setOrig(v); };
+  window.__blStuckTimer = setInterval(function () { if (shown >= 100) { clearInterval(window.__blStuckTimer); return; } if (Date.now() - lastAt > 12000) blStuck('読み込みが止まっているようです（' + Math.floor(shown) + '%）'); }, 2000);
+  document.addEventListener('error', function (e) { if (e.target && e.target.tagName === 'SCRIPT' && e.target.src) blStuck('ゲームのファイルを読み込めませんでした（通信を確かめてください）'); }, true);
 })();</script>
 <canvas id="flyoutCanvas" class="flyout-canvas"></canvas>
 
