@@ -1554,7 +1554,7 @@ function placeReflector(ri) {
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射玉はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
 let reflCheckAt = 0;
-function tickObstacles() { if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+function tickObstacles() { { const rr = reflectorRadius(); for (const o of obstacles) if (o.kind === 'reflector' && !o.broken && o.r !== rr) o.r = rr; } /* 反射玉の大きさは毎回そろえる（配置の都合や画面の大きさが変わって、大きいまま・小さいままにならないように） */ if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
