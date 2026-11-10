@@ -31,7 +31,7 @@ function renderSkillGacha() {
     const equipBtn = !owned || PASSIVE_SKILLS.includes(id) ? '' : on ? '<span class="sk-equip on">✓ 装備中</span>' : !isSkillItemOn(id) ? '<span class="sk-equip off">OFF中</span>' : eq.length < slots ? `<button class="sk-equip" data-skill-equip="${id}">装備する</button>` : '<span class="sk-equip off">枠なし</span>'; // 転生まで外せない・入れ替え不可
     const nowP = skillPower(id), nextP = (() => { const o = game.skillLevels[id]; game.skillLevels[id] = lv + 1; const v = skillPower(id); game.skillLevels[id] = o; return v; })();
     const est = formatCoinNumber(getPlayerAtk() * nowP * (id === 'skillSpecial' ? meteorMult() / nowP : 1));
-    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${id === 'skillSpecial' ? '' : `${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 自キャラ攻撃力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>`}${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${overHealOn() ? `（限界突破 最大HPの${overHealMult()}倍まで）` : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : (id === 'skillSpecial' ? meteorFormulaHtml(lv, maxed) : `目安 ≈ ${est}（自キャラ攻撃力×倍率）`)}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
+    return `<div data-card-id="${id}" class="sk-card wp-card ${owned ? '' : 'locked'} ${on ? 'equipped' : ''}"><div class="sk-top"><span class="sk-info-ico" data-sk-info="${id}">${ico(sk)}</span><div><div class="sk-name">${sk.name}</div><div class="sk-lv">${owned ? `<b class="sk-lvp">${maxed ? 'Lv MAX' : 'Lv' + lv}</b>` : '未解放'}</div></div></div><div class="sk-desc">${sk.desc}${POWER_SKILLS.includes(id) ? `<span class="sk-stat">${id === 'skillSpecial' || id === 'skillBlast' ? '' : `${HEAL_SKILLS.includes(id) ? '💗 回復力' : '⚔️ 自キャラ攻撃力'} ×${+nowP.toFixed(2)}${maxed ? '' : ` → <b>×${+nextP.toFixed(2)}</b>`}　⏱️ 待機 5分<br>`}${id === 'skillHeal' ? `回復量 ≈ 最大HPの${Math.round(HEAL_SKILL_RATIO * nowP * 100)}%${overHealOn() ? `（限界突破 最大HPの${overHealMult()}倍まで）` : ''}` : HEAL_SKILLS.includes(id) ? '回復力が高いほど多く回復' : (id === 'skillSpecial' ? meteorFormulaHtml(lv, maxed) : id === 'skillBlast' ? blastFormulaHtml(lv, maxed) : `目安 ≈ ${est}（自キャラ攻撃力×倍率）`)}</span>` : `<span class="sk-stat">${skillParamHtml(id, lv)}${id === 'skillDeath' && !maxed ? `<br>次のLv：ザコ ${pct1(deathChance(false, deathStage(), lv + 1))}／ボス ${pct1(deathChance(true, deathStage(), lv + 1))}（例外あり）` : ''}　⏱️ 待機 5分</span>`}</div><div class="sk-btns">${owned && !maxed ? skUpBtns('skill', id, cost) : ''}${on ? '' : equipBtn}</div></div>`;
   }).join('')) || (Object.keys(WEAPONS).some(getWeaponLv) ? '' : '<div class="sk-empty">まだスキルがありません。上のガチャで手に入れよう</div>'); // 取得したスキルだけ並べる
   if (lvList && lvList.dataset.html !== lvHtml) { lvList.innerHTML = lvHtml; lvList.dataset.html = lvHtml; }
   const wList = document.getElementById('weaponList'); // サブウェポン：装備枠に入れたものだけ自動で発動
@@ -62,10 +62,16 @@ const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキ�
 // スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎2。ONは3つより少なくできない。切り替えは転生でリセット）
 // 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
 const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 5, SKILL_MIN_ON = 2, SKILL_REBIRTH_ON = 3; // ONは2つより少なくできない。転生のときは3つ選ぶ
-function meteorFormulaHtml(lv, maxed) { // スキルページのメテオ：自キャラ攻撃力 ×（10＋スキルLv）× メテオブースト × 進化
-  const N = v => +v.toFixed(v >= 100 ? 0 : 2), boost = shopMultiRate('meteor'), evo = getEvoRate('skill'), total = meteorMult(lv), atk = getPlayerAtk();
-  return `☄️ 倍率 <b>×${N(total)}</b>${maxed ? '' : ` → <b>×${N(meteorMult(lv + 1))}</b>`}　⏱️ 待機 5分<br>`
-    + `<span class="sk-formula">自キャラ攻撃力 ${formatCoinNumber(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${N(boost)} × 進化 ${N(evo)}<br>= <b>${formatCoinNumber(atk * total)}</b></span>`;
+function reflSkillInfo() { const v = typeof reflNowMult === 'function' ? reflNowMult() : 1, m = typeof reflSkillMult === 'function' ? reflSkillMult() : 1; return { v, m, txt: `反射玉 ${+m.toFixed(2)}（いま${typeof bounceMultLabel === 'function' ? bounceMultLabel(v) : '×' + v}）` }; } // メテオ・大爆発に上乗せする反射玉の力
+function meteorFormulaHtml(lv, maxed) { // スキルページのメテオ：自キャラ攻撃力 ×（10＋スキルLv）× メテオブースト × 進化 × 反射玉
+  const N = v => +v.toFixed(v >= 100 ? 0 : 2), boost = shopMultiRate('meteor'), evo = getEvoRate('skill'), total = meteorMult(lv), atk = getPlayerAtk(), R = reflSkillInfo();
+  return `☄️ 倍率 <b>×${N(total * R.m)}</b>${maxed ? '' : ` → <b>×${N(meteorMult(lv + 1) * R.m)}</b>`}　⏱️ 待機 5分<br>`
+    + `<span class="sk-formula">自キャラ攻撃力 ${formatCoinNumber(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${N(boost)} × 進化 ${N(evo)} × ${R.txt}<br>= <b>${formatCoinNumber(atk * total * R.m)}</b></span>`;
+}
+function blastFormulaHtml(lv, maxed) { // スキルページの大爆発：自キャラ攻撃力 × 15 × スキル威力 × 反射玉（敵1体ずつ）
+  const N = v => +v.toFixed(v >= 100 ? 0 : 2), p = skillPower('skillBlast'), pn = 1 + 0.1 * lv, atk = getPlayerAtk(), R = reflSkillInfo(), total = BLAST_DMG_MULT * p * R.m;
+  return `💣 倍率 <b>×${N(total)}</b>${maxed ? '' : ` → <b>×${N(BLAST_DMG_MULT * pn * R.m)}</b>`}　⏱️ 待機 5分<br>`
+    + `<span class="sk-formula">自キャラ攻撃力 ${formatCoinNumber(atk)} × ${BLAST_DMG_MULT} × スキル威力 ${N(p)} × ${R.txt}<br>= <b>${formatCoinNumber(atk * total)}</b>（敵1体ずつ）</span>`;
 }
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
 // スキルの解放：解放したスキル（自動スキルも）だけがONにでき、ガチャに出る。解放はSSR・URの宝箱（転生でもらえる）から。転生しても残る

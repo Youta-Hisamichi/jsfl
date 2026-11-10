@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>放置系ハクスラ無限反射</title>
+<meta name="description" content="反射するたびに威力が上がる「反射玉」で敵をなぎ倒す、放置系ハクスラRPG。仲間を集め、転生をくり返して、どこまでも強くなろう。">
+<style>
+  :root { --bg: #0c0e1f; --bg2: #161a3a; --fg: #eef1ff; --sub: #a9b2d6; --gold: #ffd76b; --line: rgba(160,190,255,0.25); --accent: #64e8ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0%, #2a2f6a 0%, var(--bg2) 40%, var(--bg) 100%); background-color: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.8; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 16px 56px; }
+  header { text-align: center; }
+  .hero { width: 96px; height: 96px; image-rendering: pixelated; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
+  h1 { margin: 8px 0 0; font-size: clamp(1.9rem, 7vw, 2.8rem); line-height: 1.25; letter-spacing: 0.06em; background: linear-gradient(90deg, #ffd76b, #ff9ec4, #7fd6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tag { margin: 12px auto 0; max-width: 560px; color: var(--sub); font-size: 1rem; }
+  .shots { display: flex; gap: 14px; justify-content: center; margin: 32px 0 8px; overflow-x: auto; padding-bottom: 6px; }
+  .shots figure { margin: 0; flex: 0 0 auto; width: min(31%, 240px); min-width: 150px; text-align: center; }
+  .shots img { display: block; width: 100%; height: auto; border-radius: 16px; border: 2px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+  .shots figcaption { margin-top: 6px; color: var(--sub); font-size: 0.82rem; font-weight: 700; }
+  h2 { margin: 40px 0 12px; font-size: 1.2rem; color: var(--gold); }
+  .feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .feats li { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); }
+  .feats b { display: block; color: var(--accent); margin-bottom: 2px; }
+  .feats span { color: var(--sub); font-size: 0.92rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 44px; }
+  .links a { display: inline-block; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); text-decoration: none; font-weight: 800; }
+  .links a:hover { background: rgba(255,215,107,0.12); }
+  footer { margin-top: 28px; text-align: center; color: var(--sub); font-size: 0.82rem; }
+  footer a { color: var(--sub); }
+  @media (max-width: 520px) { .shots { justify-content: flex-start; } .shots figure { width: 62vw; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <img class="hero" src="img/hero.webp" alt="">
+  <h1>放置系ハクスラ<br>無限反射</h1>
+  <p class="tag">反射するたびに威力が上がる「反射玉」で、敵をまとめてなぎ倒す。<br>放っておいても冒険が進む、放置系ハクスラRPG。</p>
+</header>
+
+<div class="shots">
+  <figure><img src="img/shot_battle.webp" alt="戦闘の画面。反射玉が×12まで上がっている" width="585" height="1266" loading="lazy"><figcaption>反射玉で一網打尽</figcaption></figure>
+  <figure><img src="img/shot_companion.webp" alt="仲間の画面" width="585" height="1266" loading="lazy"><figcaption>仲間を集めて強くなる</figcaption></figure>
+  <figure><img src="img/shot_ranking.webp" alt="ランキングの画面" width="585" height="1266" loading="lazy"><figcaption>ランキングで腕を競う</figcaption></figure>
+</div>
+
+<h2>ゲームの特徴</h2>
+<ul class="feats">
+  <li><b>🔮 跳ね返るほど強くなる反射玉</b><span>タックルで打ち出した反射玉は、壁に当たるたびに倍率アップ。溜めた一撃で敵をまとめて吹き飛ばそう。</span></li>
+  <li><b>⏳ 放置でも冒険が進む</b><span>アプリを閉じている間も勇者は戦い続け、戻ってくるとコインがたまっている。</span></li>
+  <li><b>🐾 個性豊かな仲間たち</b><span>N〜URの仲間を招集して育成。仲間どうしの「絆」と「恩恵」でパーティ全体が強くなる。</span></li>
+  <li><b>🌌 転生して、もっと先へ</b><span>行き詰まったら転生。ずっと残るボーナスと宝箱を手に、さらに奥のステージを目指そう。</span></li>
+  <li><b>🗼 試練の塔とボス</b><span>ステージの節目には強力なボス。腕試しの試練の塔にも挑戦できる。</span></li>
+  <li><b>🏆 ランキング</b><span>ベストステージやMAX反射倍率など、いろいろな記録で上位を目指そう。</span></li>
+</ul>
+
+<nav class="links">
+  <a href="privacy/">プライバシーポリシー</a>
+  <a href="terms/">利用規約</a>
+  <a href="mailto:hisashi.app@gmail.com">お問い合わせ</a>
+</nav>
+
+<footer>© 2026 HisashiApp</footer>
+</main>
+</body>
+</html>

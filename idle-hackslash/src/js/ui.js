@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['reflStep1', 'reflTackle', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['reflFormula', 'reflStep1', 'reflTackle', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1132,6 +1132,7 @@ debugRow.addEventListener('click', event => {
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
   if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (!REFL_UNLIMITED && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
+  if (action === 'reflFormula') { showReflFormula(); return; }
   if (action === 'reflStep1') { game.reflStep1 = !game.reflStep1; showNotice(`DEBUG: 反射上昇+1を${game.reflStep1 ? '所持（反射ごとに+1）' : '未所持（反射ごとに+0.5）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'reflTackle') { game.reflTackleBuys = (reflTackleCount() + 1) % (REFL_TACKLE_MAX + 1); showNotice(`DEBUG: タックル反射ブーストを${game.reflTackleBuys}個（×${reflTackleMult()}）にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'reflStart2') { // 反射玉のアイテムの所持を切り替える
@@ -1154,8 +1155,9 @@ debugRow.addEventListener('click', event => {
     h += '<div class="dl-h">手動スキル</div>';
     for (const [id, sk] of Object.entries(SKILL_GACHA_SKILLS)) {
       const own = !!(game.shopOwned && game.shopOwned[id]), lv = own ? getSkillLevel(id) : 1, pw = powAt(lv), tag = `${sk.icon} ${sk.name} ${own ? 'Lv' + lv : '（未所持・Lv1で計算）'}`;
-      if (id === 'skillSpecial') { const m = meteorMult(lv); h += row(tag, `≈ ${F(atk * m)}`, `自キャラ攻撃力 ${F(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))}`); continue; }
-      if (DMG[id]) { const k = DMG[id][1](); h += row(tag, `≈ ${F(atk * k * pw)}`, `自キャラ攻撃力 ${F(atk)} × ${id === 'skillSpecial' ? `${METEOR_ATK_MULT} × メテオ強化・進化 ${M(k / METEOR_ATK_MULT)}` : DMG[id][2]} × 倍率 ${M(pw)}`); continue; }
+      const RS = reflSkillInfo(), rTag = ` × ${RS.txt}`; // メテオ・大爆発は反射玉の力も上乗せ
+      if (id === 'skillSpecial') { const m = meteorMult(lv); h += row(tag, `≈ ${F(atk * m * RS.m)}`, `自キャラ攻撃力 ${F(atk)} ×（10＋スキルLv ${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))}${rTag}`); continue; }
+      if (DMG[id]) { const k = DMG[id][1](), rm = id === 'skillBlast' ? RS.m : 1; h += row(tag, `≈ ${F(atk * k * pw * rm)}`, `自キャラ攻撃力 ${F(atk)} × ${DMG[id][2]} × 倍率 ${M(pw)}${id === 'skillBlast' ? rTag : ''}`); continue; }
       if (id === 'skillCompRush') { h += row(tag, '仲間ごと', `仲間の攻撃力 × ${COMP_RUSH_DMG_MULT} × 1.15 × 倍率 ${M(pw)}（1体ずつ突撃）`); continue; }
       if (id === 'skillHeal') { h += row(tag, `+${F(getPlayerMaxHP() * HEAL_SKILL_RATIO * pw)} HP`, `最大HP × ${HEAL_SKILL_RATIO} × 回復力 ${M(pw)}（傷ついた仲間も同じ割合で回復）`); continue; }
       const p = typeof skillParamHtml === 'function' ? skillParamHtml(id, lv, true) : '';
@@ -4074,8 +4076,9 @@ function showFormulaDebug() {
   for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
     if (!game.shopOwned[id]) continue;
     const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);
-    if (id === 'skillSpecial') { line(`${name} Lv${lv}`, `攻撃力 ×（10＋${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))} = ${M(meteorMult(lv))}`); continue; }
-    if (SK[id]) { const k = SK[id][1](); line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)} = ${F(pa * k * pw)}`); continue; }
+    const RS = reflSkillInfo();
+    if (id === 'skillSpecial') { line(`${name} Lv${lv}`, `攻撃力 ×（10＋${lv}）× メテオブースト ${M(shopMultiRate('meteor'))} × 進化 ${M(getEvoRate('skill'))} × ${RS.txt} = ${M(meteorMult(lv) * RS.m)}`); continue; }
+    if (SK[id]) { const k = SK[id][1](), rm = id === 'skillBlast' ? RS.m : 1; line(`${SK[id][0]} Lv${lv}`, `${F(pa)} × ${k} × ${M(pw)}${id === 'skillBlast' ? ` × ${RS.txt}` : ''} = ${F(pa * k * pw * rm)}`); continue; }
     line(`${name} Lv${lv}`, `スキル倍率 ${M(pw)}`, 'ダメージ以外の効果');
   }
   sec('自動スキル（1ヒット = 自キャラ攻撃力 × 倍率。ダッシュ・溜めは掛からない）');
