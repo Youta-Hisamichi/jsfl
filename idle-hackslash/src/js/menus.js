@@ -810,7 +810,7 @@ const RANK_MODES = {
   coins: { title: 'MAXコイン', mine: () => Math.floor(game.bestCoins || 0), rival: (r, i) => Math.round(Math.pow(10, 2.5 + r.stageScore / 26) * (0.5 + rivalSeed(i, 11))), fmt: v => `${formatCoinNumber(v)} 枚` },
   kills: { title: 'MAXキル数', mine: () => Math.floor(game.totalKills || 0), rival: (r, i) => Math.round(r.stageScore * 40 * (0.6 + rivalSeed(i, 23) * 0.9)), fmt: v => `${formatCoinNumber(v)} 体` },
   evo: { title: 'MAX一撃進化', mine: () => game.evoBestMult || 0, rival: (r, i) => { const m = 1.1 * Math.pow(10, Math.pow(rivalSeed(i, 53), 1.8) * 2.2) * (0.8 + rivalSeed(i, 61) * 0.5); return m < 10 ? Math.round(m * 10) / 10 : Math.round(m); }, fmt: v => v ? `×${fmtEvoRate(v)}` : '記録なし' }, // 1回の進化ガチャで何倍進化したかの最高
-  refl: { title: 'MAX反射倍率', mine: () => Math.floor(game.reflBestMult || 0), rival: (r, i) => Math.max(2, Math.round((3 + r.stageScore / 5) * (0.5 + rivalSeed(i, 71)))), fmt: v => v ? `×${formatCoinNumber(v)}` : '記録なし' }, // 敵に当てた反射玉の倍率の最高
+  refl: { title: 'MAX反射倍率', mine: () => game.reflBestMult || 0, rival: (r, i) => Math.max(2, Math.round((3 + r.stageScore / 5) * (0.5 + rivalSeed(i, 71)))), fmt: v => v ? bounceMultLabel(v) : '記録なし' }, // 敵に当てた反射玉の倍率の最高
   dps: { title: 'MAX DPS', mine: () => Math.floor(game.maxDps || 0), rival: (r, i) => Math.round(Math.pow(10, 1.6 + r.stageScore / 30) * (0.5 + rivalSeed(i, 37))), fmt: v => `${formatCoinNumber(v)} DPS` },
 };
 let lastRankInfo = null;

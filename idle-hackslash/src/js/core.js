@@ -740,11 +740,19 @@ function overHealMult(n = overHealCount()) { return Math.min(OVERHEAL_CAP, 1 + O
 function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
-// 反射MAX維持：反射玉が敵に当たっても、上がった倍率を1個につき0.5秒そのまま保つ（最大3個・1.5秒）。前の1回買い切り（refl16Keep）は1個ぶんとして引き継ぐ
-const REFL_KEEP_MAX = 3, REFL_KEEP_MS = 500;
-function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); } // 1個→0.5・2個→1・3個→1.5
-function reflKeepCount() { if (game.refl16Keep && !game.reflKeepBuys) { game.reflKeepBuys = 1; delete game.refl16Keep; } return Math.min(REFL_KEEP_MAX, game.reflKeepBuys || 0); }
-SHOP_ITEMS.refl16 = { icon: '🌈', img: 'assets/img/icons/shop_refl16.webp', name: '反射MAX維持', desc: `反射玉が敵に当たっても、上がった倍率を1個につき0.5秒そのまま保つ（その間に当たった敵にも同じ倍率）。最大${REFL_KEEP_MAX}個・${reflKeepSecText(REFL_KEEP_MAX)}秒（転生しても残る）`, cost: 5, stackKey: 'reflKeepBuys', maxStack: REFL_KEEP_MAX, shopCount: true }; // 💎5→10→15
+// 反射MAX維持は削除（買っていた人には、払ったジェムを返す：reflKeepRefund）
+const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
+function reflKeepRefund() { const n = Math.min(3, game.reflKeepBuys || 0) || (game.refl16Keep ? 1 : 0); if (!n) return; const back = 5 * n * (n + 1) / 2; game.gems = (game.gems || 0) + back; delete game.reflKeepBuys; delete game.refl16Keep; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); if (typeof showNotice === 'function') showNotice(`🌈 反射MAX維持はなくなりました。払った 💎${back} をお返しします`); }
+// 反射玉の上がり方：反射するたびに +0.5（ショップの「反射上昇+1」で +1）
+const REFL_STEP_BASE = 0.5;
+function reflStep() { return game.reflStep1 ? 1 : REFL_STEP_BASE; }
+function reflRound(v) { return Math.round(v * 100) / 100; } // 0.5・1.25 などの端数が、計算のずれで 1.2499… にならないように
+SHOP_ITEMS.reflStep1 = { icon: '⏫', name: '反射上昇+1', desc: '反射玉が反射するたびに上がる倍率が、+0.5 から +1 になる（転生しても残る）', cost: 30, unlockKey: 'reflStep1' };
+// タックル反射ブースト：自分のタックルで反射玉を叩くと、倍率が1個につき+25%（1個で×1.25・2個で×1.5）。持っていなければ×1（変わらない）
+const REFL_TACKLE_MAX = 2, REFL_TACKLE_STEP = 0.25;
+function reflTackleCount() { return Math.min(REFL_TACKLE_MAX, game.reflTackleBuys || 0); }
+function reflTackleMult() { return 1 + REFL_TACKLE_STEP * reflTackleCount(); }
+SHOP_ITEMS.reflTackle = { icon: '💥', name: 'タックル反射ブースト', desc: `自分のタックルで反射玉を叩くと、反射玉の倍率が上がる。1個で×1.25・2個で×1.5（最大${REFL_TACKLE_MAX}個・転生しても残る）`, cost: 10, stackKey: 'reflTackleBuys', maxStack: REFL_TACKLE_MAX, shopCount: true }; // 💎10→20
 SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み

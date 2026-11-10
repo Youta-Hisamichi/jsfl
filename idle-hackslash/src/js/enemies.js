@@ -1304,7 +1304,6 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射玉に当てたときの自キャラのダメージ × 今の数値」。
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
-const REFL_TACKLE_UP = 1.5; // お試し：自分のタックルで反射玉を叩くと、倍率が1.5倍になる（1 にすると元どおり）
 const REFL_UNLIMITED = true; // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
 function reflMax() { return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); }
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
@@ -1324,11 +1323,11 @@ function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場�
   if (o.ri) game.reflB = st; else game.refl = st;
 }
 function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射MAX維持」があれば、×16のまま1回だけ反射できる
-  if (REFL_UNLIMITED) { o.held16 = false; o.bm++; o.bmFlash = Date.now(); saveReflector(o); return; } // お試し：上限なし
+  if (REFL_UNLIMITED) { o.held16 = false; o.bm = reflRound(o.bm + reflStep()); o.bmFlash = Date.now(); saveReflector(o); return; } // お試し：上限なし。反射するたびに +0.5（反射上昇+1 で +1）
   if (o.bm >= reflMax()) {
     if (reflKeepCount() && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
     else { o.held16 = false; o.bm = reflMin(); }
-  } else { o.held16 = false; o.bm++; }
+  } else { o.held16 = false; o.bm = Math.min(reflMax(), reflRound(o.bm + reflStep())); }
   o.bmFlash = Date.now(); saveReflector(o);
 }
 function obstacleMult(o) { // 反射玉の数値（掛け算）
@@ -1347,7 +1346,8 @@ function reflectorRGB(v, now) {
 // 反射玉の円盤の絵（光・影・縁・まわりの光）。数値と大きさごとに、画面外のキャンバスに一度だけ描いておく
 const reflSpriteCache = new Map();
 function reflectorSprite(v, r) {
-  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, key = `${v >= BOUNCE_OBJ_MAX ? 'max' : v}|${Math.round(r)}|${dpr}`;
+  v = v >= BOUNCE_OBJ_MAX ? v : Math.max(BOUNCE_OBJ_MIN, Math.round(v)); // 端数（×1.5 など）は近い整数の色で描く
+  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, key = `${v >= BOUNCE_OBJ_MAX ? 'max' : Math.round(v)}|${Math.round(r)}|${dpr}`;
   let s = reflSpriteCache.get(key); if (s) return s;
   if (reflSpriteCache.size > 64) reflSpriteCache.clear();
   const glow = 10 + 14 * (Math.min(v, BOUNCE_OBJ_MAX) - BOUNCE_OBJ_MIN) / (BOUNCE_OBJ_MAX - BOUNCE_OBJ_MIN), size = (r + glow + 6) * 2;
@@ -1365,7 +1365,7 @@ function reflectorSprite(v, r) {
   } else { g2.lineWidth = 3; g2.strokeStyle = 'rgba(255,255,255,0.9)'; g2.stroke(); }
   s = { cv, size }; reflSpriteCache.set(key, s); return s;
 }
-function bounceMultLabel(v) { return `×${Math.abs(v)}`; }
+function bounceMultLabel(v) { v = Math.abs(v); return `×${v >= 1000 ? Math.floor(v) : +v.toFixed(2)}`; } // 端数は小数2けたまで（×1.5・×12.75）
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
 function fullNumOr(n) { return typeof formatCoinNumber === 'function' ? formatCoinNumber(n) : String(n); }
@@ -1376,9 +1376,9 @@ function applyBounceObjMult(ball, o) { // 反射玉は自キャラの強さを�
   const sp = Math.hypot(o.mvx || 0, o.mvy || 0) || 1; o.mvx = (o.mvx || 0) / sp * REFLECT_LAUNCH; o.mvy = (o.mvy || 0) / sp * REFLECT_LAUNCH; o.hitMap = new Map(); o.flyAt = now;
   o.launched = true; o.launchMult = dashDmgMult(ball); // 反射玉に当てたときの自キャラのダメージ（溜め・ダッシュ込み）を覚えておく。これに数値を掛ける
   spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * o.launchMult))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
-  if (REFL_TACKLE_UP > 1) { // お試し：タックルで叩くと、反射玉の倍率が1.5倍（端数は四捨五入・最低+1）
-    const b0 = o.bm, up = Math.max(b0 + 1, Math.round(b0 * REFL_TACKLE_UP)); o.bm = REFL_UNLIMITED ? up : Math.min(reflMax(), up);
-    if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ×${b0} → ×${o.bm}`, '#ffe45c', 0.03, true); }
+  if (reflTackleMult() > 1) { // ショップの「タックル反射ブースト」：タックルで叩くと、反射玉の倍率が×1.25（2個で×1.5）
+    const b0 = o.bm, up = reflRound(b0 * reflTackleMult()); o.bm = REFL_UNLIMITED ? up : Math.min(reflMax(), up);
+    if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ${bounceMultLabel(b0)} → ${bounceMultLabel(o.bm)}`, '#ffe45c', 0.03, true); }
   }
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
 }
@@ -1774,7 +1774,7 @@ const REFLECT_HIT_RATE = 3; // 反射玉の命中率はタックルの3倍（上
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; stepBounceValue(o);
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.bm, reflMax()); if (!REFL_UNLIMITED && o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(Math.round((o.bm - reflMin()) / reflStep()) + 1, reflMax()); /* 音は反射した回数で上がる */ if (!REFL_UNLIMITED && o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {

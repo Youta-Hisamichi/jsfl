@@ -766,7 +766,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'refl16Keep', 'reflStart2'];
+const DBG_NEW = ['reflStep1', 'reflTackle', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1132,10 +1132,11 @@ debugRow.addEventListener('click', event => {
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
   if (action === 'reflMaxUp' || action === 'reflMaxDown') { game.reflMaxUp = Math.max(0, Math.min(REFL_MAX_UP_CAP, (game.reflMaxUp || 0) + (action === 'reflMaxUp' ? 1 : -1))); for (const o of reflectors()) if (!REFL_UNLIMITED && o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射倍率上昇の秘宝 ${game.reflMaxUp}/${REFL_MAX_UP_CAP}個 → 反射玉の最大値 ×${reflMax()}`); saveGame(); return; }
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
-  if (action === 'refl16Keep') { game.reflKeepBuys = (reflKeepCount() + 1) % (REFL_KEEP_MAX + 1); delete game.refl16Keep; showNotice(`DEBUG: 反射MAX維持を${game.reflKeepBuys}個（${reflKeepSecText(game.reflKeepBuys)}秒）にしました`); saveGame(); updateReflDebugBtns(); return; } // 0→1→2→3→0個
+  if (action === 'reflStep1') { game.reflStep1 = !game.reflStep1; showNotice(`DEBUG: 反射上昇+1を${game.reflStep1 ? '所持（反射ごとに+1）' : '未所持（反射ごとに+0.5）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
+  if (action === 'reflTackle') { game.reflTackleBuys = (reflTackleCount() + 1) % (REFL_TACKLE_MAX + 1); showNotice(`DEBUG: タックル反射ブーストを${game.reflTackleBuys}個（×${reflTackleMult()}）にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'reflStart2') { // 反射玉のアイテムの所持を切り替える
     game[action] = !game[action]; for (const o of reflectors()) if (o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); }
-    showNotice(`DEBUG: ${action === 'refl16Keep' ? '反射MAX維持' : '反射の初期値上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
+    showNotice(`DEBUG: ${'反射の初期値上昇'}を${game[action] ? '所持（ON）' : '未所持（OFF）'}にしました`); saveGame(); updateReflDebugBtns(); return; }
   if (action === 'chestItems') { // 宝箱で出る使いきりアイテムを1つずつ
     for (const k in CHEST_ITEMS) gainItem(k, 1);
     saveGame(); if (typeof renderBagList === 'function') renderBagList(); if (typeof updateLifeGlassBtn === 'function') updateLifeGlassBtn();
@@ -3636,6 +3637,7 @@ updateCompRushButton();
 updateNovaButton();
 currentLang = game.language || 'ja';
 applyLanguage(currentLang);
+try { reflKeepRefund(); } catch (e) {} // 削除した「反射MAX維持」のジェムを返す
 tcReady(runReturnCheck); // 起動時の帰還ボーナス（サーバーの時刻を確かめてから）
 if (game.skipChallenge && game.skipChallenge.lost) failSkipChallenge(); // 敗北後の確認中に閉じた場合は確認から再開
 loop();
@@ -4128,8 +4130,8 @@ function showRebirthRulesDebug() {
 
 // デバッグの反射玉アイテムのボタンに、いまON（所持）かOFFかを出す
 function updateReflDebugBtns() {
-  for (const [k, label] of [['reflTwo', '🪞 ダブル反射玉'], ['refl16Keep', '🌈 反射MAX維持'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
-    const kc = k === 'refl16Keep' ? reflKeepCount() : 0, on = k === 'refl16Keep' ? kc > 0 : !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${k === 'refl16Keep' ? (kc ? `${kc}個（${reflKeepSecText(kc)}秒）` : 'OFF') : on ? 'ON（所持）' : 'OFF'}</b>`;
+  for (const [k, label] of [['reflTwo', '🪞 ダブル反射玉'], ['reflStep1', '⏫ 反射上昇+1'], ['reflTackle', '💥 タックル反射ブースト'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
+    const kc = k === 'reflTackle' ? reflTackleCount() : 0, on = k === 'reflTackle' ? kc > 0 : !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${k === 'reflTackle' ? (kc ? `${kc}個（×${reflTackleMult()}）` : 'OFF') : on ? 'ON（所持）' : 'OFF'}</b>`;
     document.querySelectorAll(`[data-debug="${k}"]`).forEach(b => { const hh = b.classList.contains('dbg-recent') ? h + '<i class="dbg-rm" title="最近使ったから外す">×</i>' : h; if (b.innerHTML !== hh) b.innerHTML = hh; }); // 「最近使った」の写しも
   }
 }
