@@ -1790,8 +1790,8 @@ function reflectorStruck(q, o) { // ダブル反射玉：飛んでいる反射�
   reflectorBounced(q);
 }
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
-  const before = o.bm; stepBounceValue(o);
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(Math.round((o.bm - reflMin()) / reflStep()) + 1, reflMax()); /* 音は反射した回数で上がる */ if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const before = o.bm; if (!(o.chainN > 0) || o.bm <= reflMin()) o.chainN = Math.max(0, Math.round((o.bm - reflMin()) / reflStep())); stepBounceValue(o); o.chainN = o.bm < before ? 0 : o.chainN + 1; // 連鎖の数：反射するたびに+1（上限で倍率が止まっても数える）。×1に戻ったら数え直す
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.chainN, reflMax()); /* 音は反射した回数で上がる（上限に届いて倍率が止まっても、音は上がり続けてくり返す） */ if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
