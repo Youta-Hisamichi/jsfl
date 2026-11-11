@@ -20,6 +20,11 @@
 - 署名の鍵（mugenhansya-upload.jks）とパスワードは**リポジトリに入れない**（公開リポジトリ）。ユーザーが保管している。組み立てるときは鍵を受け取り、`app/android/keystore.properties`（gitignore 済み）に置く。
 - 出すたびに `app/android/app/build.gradle` の versionCode を1つ上げ、`src/js/core.js` の GAME_VERSION（設定の「Ver.」表示）も上げる。アプリの versionName は GAME_VERSION から自動で読む。
 
+## iPhone アプリ（idle-hackslash/app/ios/）
+- 同じ Capacitor のプロジェクト。Bundle ID は **com.hisashiapp.mugenhansya**。iPhone のみ・縦画面のみ。組み立てはユーザーの Mac の Xcode（この環境ではできない）。
+- Mac では `cd idle-hackslash/app && npm install && npx cap sync ios` → `npx cap open ios`。版は Xcode の MARKETING_VERSION（GAME_VERSION と同じにする）と、出すたびに上げる CURRENT_PROJECT_VERSION。
+- AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（いまは Google のテスト用）。
+
 - デバッグにボタンを足すときは、デバッグパネルの**一番上**に足す。
 - 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」にも出す（`DBG_NEW`（src/js/ui.js）の先頭に action 名を足す）。
 

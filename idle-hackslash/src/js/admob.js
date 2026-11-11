@@ -4,13 +4,19 @@
 // ・本番の ID。自分の端末で試すときは、AdMob の「設定 → テストデバイス」に端末を登録してテスト広告にする（自分で本番の広告を見たり押したりしない）
 // ・テスト用に戻すとき：広告ユニットを ca-app-pub-3940256099942544/5224354917、ADMOB_TESTING を true に
 // ・アプリ ID（ca-app-pub-…~…）は app/android/app/src/main/res/values/strings.xml の admob_app_id
-const ADMOB_REWARDED_ID = 'ca-app-pub-3193231960637976/9776778979'; // 本番のリワード広告ユニット（動画報酬）
-const ADMOB_TESTING = false;
+// 機種ごとの広告ユニット。iPhone は AdMob に iOS のアプリを登録するまで、Google のテスト用（ADMOB_TESTING も true）
+const ADMOB_IDS = {
+  android: { rewarded: 'ca-app-pub-3193231960637976/9776778979', testing: false }, // 本番（動画報酬）
+  ios: { rewarded: 'ca-app-pub-3940256099942544/1712485313', testing: true }, // テスト用。AdMob で iOS のアプリを作ったら本番の ID に替え、testing を false に
+};
+const ADMOB_PLATFORM = (() => { try { return window.Capacitor && typeof window.Capacitor.getPlatform === 'function' ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
+const ADMOB_REWARDED_ID = (ADMOB_IDS[ADMOB_PLATFORM] || ADMOB_IDS.android).rewarded;
+const ADMOB_TESTING = (ADMOB_IDS[ADMOB_PLATFORM] || ADMOB_IDS.android).testing;
 function admobPlugin() { try { const C = window.Capacitor; return C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() && C.Plugins && C.Plugins.AdMob ? C.Plugins.AdMob : null; } catch (e) { return null; } }
 let admobReady = null, admobPreloaded = false, admobBusy = false;
 function admobInit() {
   const A = admobPlugin(); if (!A) return Promise.resolve(false);
-  if (!admobReady) admobReady = A.initialize({ initializeForTesting: ADMOB_TESTING }).then(() => true, e => { console.warn('AdMob を初期化できません', e); admobReady = null; return false; });
+  if (!admobReady) admobReady = (async () => { if (ADMOB_PLATFORM === 'ios') { try { const t = await A.trackingAuthorizationStatus(); if (t && t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) {} } })().then(() => A.initialize({ initializeForTesting: ADMOB_TESTING })).then(() => true, e => { console.warn('AdMob を初期化できません', e); admobReady = null; return false; });
   return admobReady;
 }
 async function admobPrepare() { // 次の広告を先に読み込んでおく（押してから待たせない）
@@ -35,7 +41,7 @@ async function admobShowRewarded(done) {
 }
 setTimeout(() => { if (admobPlugin()) admobPrepare(); }, 3000);
 // デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）
-const ADMOB_TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
+const ADMOB_TEST_REWARDED_ID = ADMOB_PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/1712485313' : 'ca-app-pub-3940256099942544/5224354917'; // Google のテスト用（機種ごと）
 async function admobDebugTest() {
   const A = admobPlugin(), row = (k, v) => `<div class="dl-r"><b>${k}</b>　${v}</div>`;
   const info = () => `<div class="dbg-list">${row('アプリの中', A ? 'はい（AdMob の部品あり）' : 'いいえ（ブラウザ・アーティファクト：仮の動画）')}${row('本番の広告ユニット', ADMOB_REWARDED_ID)}${row('本番でテスト設定', ADMOB_TESTING ? 'ON' : 'OFF')}${row('初期化', admobReady ? '済み' : 'まだ')}${row('本番の広告の読み込み', admobPreloaded ? '済み' : 'まだ')}</div>`;
