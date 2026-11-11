@@ -571,6 +571,19 @@ document.addEventListener('keydown', ev => {
   setUserPaused(!userPaused); // どのページでも止められる
 });
 document.getElementById('pauseBadge').addEventListener('click', () => setUserPaused(false));
+// スマホでアプリを裏に回したとき（画面を消した・ホームに戻った・ほかのアプリに切り替えた）は、BGM と効果音を止める。戻ったら再開
+function bgAudio(hidden) {
+  if (typeof audioCtx === 'undefined' || !audioCtx) return;
+  try {
+    if (hidden) { if (audioCtx.state === 'running') audioCtx.suspend(); return; }
+    const adOn = (typeof rewardAdModal !== 'undefined' && rewardAdModal.classList.contains('show')) || (typeof admobBusy !== 'undefined' && admobBusy);
+    if (!userPaused && !adOn && audioCtx.state === 'suspended') audioCtx.resume(); // 自分で一時停止中・動画の最中は止めたまま
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => bgAudio(document.hidden));
+document.addEventListener('pause', () => bgAudio(true)); // スマホアプリ（Capacitor）が裏に回ったとき
+document.addEventListener('resume', () => bgAudio(false));
+window.addEventListener('pagehide', () => bgAudio(true));
 new MutationObserver(() => { if (audioCtx && !userPaused) { if (rewardAdModal.classList.contains('show')) audioCtx.suspend(); else audioCtx.resume(); } }).observe(rewardAdModal, { attributes: true, attributeFilter: ['class'] }); // リワード動画の再生中はゲームも音も止める
 
 function fullReset() {
