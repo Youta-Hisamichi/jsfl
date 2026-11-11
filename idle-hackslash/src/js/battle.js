@@ -2261,8 +2261,8 @@ function resizeCanvas() {
   const oldSize = size, oldY = arena.y;
   size = newSize;
   sizeH = Math.round(size * (ARENA_RECT ? arenaAspect : 1)); // 四角のときは縦に長くできる
-  canvas.width = size * dpr;
-  canvas.height = sizeH * dpr;
+  const cw = Math.round(size * dpr), ch = Math.round(sizeH * dpr), changed = canvas.width !== cw || canvas.height !== ch;
+  if (changed) { canvas.width = cw; canvas.height = ch; } // 大きさが同じなら作り直さない（作り直すと中身が消え、次に描くまで画面が黒くチカっとする）
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   arena.x = size / 2;
   arena.y = sizeH / 2;
@@ -2279,6 +2279,7 @@ function resizeCanvas() {
     balls.forEach(scalePos); adds.forEach(scalePos); meteors.forEach(scalePos); particles.forEach(scalePos); damageTexts.forEach(scalePos);
     homingMissiles.forEach(m => { scalePos(m); m.trail.forEach(scalePos); });
   }
+  if (changed && typeof draw === 'function') { try { draw(); } catch (e) {} } // 作り直したら、その場で描き直す（消えたままの1コマを見せない）
 }
 
 function ensureAudio() {
