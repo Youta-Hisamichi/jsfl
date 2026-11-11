@@ -285,7 +285,10 @@ function updateRewardAdButtons() {
     }
   });
 }
-function playRewardedVideo(onComplete, rewardText) { // rewardText：この動画で何がもらえるか（省略時はジェム）
+function playRewardedVideo(onComplete, rewardText, asked) { // rewardText：この動画で何がもらえるか（省略時はジェム）
+  if (!asked && typeof admobNeedsAsk === 'function' && typeof admobPlugin === 'function' && admobPlugin()) { // iPhone：はじめての動画の前に、トラッキングの許可を説明してから聞く
+    admobNeedsAsk().then(need => { if (need) admobAskTracking(() => playRewardedVideo(onComplete, rewardText, true)); else playRewardedVideo(onComplete, rewardText, true); }); return;
+  }
   const startedAt = Date.now();
   document.getElementById('rewardAdText').innerHTML = `最後まで視聴すると${rewardText || ` 💎${REWARD_AD_GEMS} を獲得できます`}`;
   rewardAdClaimBtn.style.display = 'none';
@@ -513,7 +516,7 @@ privacyBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
-const GAME_VERSION = '1.0.13'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+const GAME_VERSION = '1.0.14'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
 { let n = 0, at = 0; document.getElementById('settingsGameVersion').addEventListener('click', () => { // ストア版：バージョンの文字を7回続けて押すと、デバッグのボタンを出す／隠す（開発用）

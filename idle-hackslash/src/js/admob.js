@@ -16,7 +16,7 @@ function admobPlugin() { try { const C = window.Capacitor; return C && typeof C.
 let admobReady = null, admobPreloaded = false, admobBusy = false;
 function admobInit() {
   const A = admobPlugin(); if (!A) return Promise.resolve(false);
-  if (!admobReady) admobReady = (async () => { if (ADMOB_PLATFORM === 'ios') { try { const t = await A.trackingAuthorizationStatus(); if (t && t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) {} } })().then(() => A.initialize({ initializeForTesting: ADMOB_TESTING })).then(() => true, e => { console.warn('AdMob を初期化できません', e); admobReady = null; return false; });
+  if (!admobReady) admobReady = A.initialize({ initializeForTesting: ADMOB_TESTING }).then(() => true, e => { console.warn('AdMob を初期化できません', e); admobReady = null; return false; }); // トラッキングの許可は、ここでは聞かない（起動直後やオープニング中に急に出さない）
   return admobReady;
 }
 async function admobPrepare() { // 次の広告を先に読み込んでおく（押してから待たせない）
@@ -24,6 +24,17 @@ async function admobPrepare() { // 次の広告を先に読み込んでおく（
   if (!(await admobInit())) return false;
   try { await A.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID, isTesting: ADMOB_TESTING }); admobPreloaded = true; } catch (e) { admobPreloaded = false; }
   return admobPreloaded;
+}
+// iPhone のトラッキングの許可：はじめて動画のボタンを押したときに、先にゲームの画面で理由を説明してから、iPhone の許可の画面を出す（1回だけ）
+let admobAttState = null;
+async function admobNeedsAsk() {
+  const A = admobPlugin(); if (!A || ADMOB_PLATFORM !== 'ios' || game.attAsked) return false;
+  try { const t = await A.trackingAuthorizationStatus(); admobAttState = t && t.status; return admobAttState === 'notDetermined'; } catch (e) { return false; }
+}
+function admobAskTracking(next) {
+  const A = admobPlugin(); game.attAsked = true; saveGame();
+  simpleChoice({ icon: '📺', title: '動画広告について', text: 'このゲームは、動画広告で無料で遊べるようにしています。<br>このあと iPhone から「トラッキングの許可」をたずねる画面が出ます。<br><b>許可すると</b>、あなたに合った広告が出やすくなります。<br><b>許可しなくても</b>、ゲームも動画の報酬も、すべて同じように使えます。', sub: 'あとから iPhone の「設定 → プライバシーとセキュリティ → トラッキング」で変えられます', yes: '次へ', no: false,
+    onYes: async () => { try { await A.requestTrackingAuthorization(); } catch (e) {} if (next) next(); } });
 }
 // 本物のリワード広告を流す。done(true)：最後まで見て報酬あり／done(false, 理由)：途中で閉じた・読み込めなかった
 async function admobShowRewarded(done) {

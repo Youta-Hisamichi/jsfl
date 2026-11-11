@@ -582,7 +582,7 @@ function drawBossBuffIcon() { if (bossAdBuffOn() && typeof arenaHalfY === 'funct
 // ===== 既存処理へのフック =====
 { const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); applyTowerBuff(); }, BOSS_WARNING_MS + 600); }; }
 { const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pool[Math.floor(Math.random() * pool.length)], 2600); } } }; }
-{ const orig = playRewardedVideo; playRewardedVideo = function (done, txt) { return orig(() => { questTick('ad'); done(); }, txt); }; }
+{ const orig = playRewardedVideo; playRewardedVideo = function (done, txt, asked) { return orig(asked ? done : () => { questTick('ad'); done(); }, txt, asked); }; } // asked（iPhone のトラッキング説明のあとの呼び直し）はそのまま渡す（渡さないと説明→呼び直しがくり返して止まる）
 { const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
   orig(box, results, count, best); questTick('gacha', count);
   const r = results.find(x => RARITY_ORDER.indexOf(COMPANIONS[x.id].rarity) >= RARITY_ORDER.indexOf('legendary')); if (r) rareCutIn(r.id);
