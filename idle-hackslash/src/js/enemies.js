@@ -1305,8 +1305,8 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
 const REFL_UNLIMITED = true; // 反射するたびに上がり（上限 reflMax で止まる）、敵に当たったら×1に戻る
-const REFL_CAP_BASE = 10; // 反射玉の倍率の上限：はじめは×10 // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
-function reflMax() { if (REFL_UNLIMITED) return REFL_CAP_BASE + reflCapCount() + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0); return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×10から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
+const REFL_CAP_BASE = 100; // 反射玉の倍率の上限：はじめは×100 // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
+function reflMax() { if (REFL_UNLIMITED) return REFL_CAP_BASE + reflCapCount() + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0); return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×100から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
 const REFL_SKILL_A = 0.2, REFL_SKILL_B = Math.log(5) / Math.log(9); // 1 + 0.2 ×（倍率−1）^0.73
 function reflNowMult() { return Math.max(1, ...reflectors().map(o => obstacleMult(o) || 1)); } // 反射玉が2つなら大きいほう
