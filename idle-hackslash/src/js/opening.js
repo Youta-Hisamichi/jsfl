@@ -65,12 +65,12 @@ function playOpening(onEnd) {
 }
 // 曲：オープニング中は壮大なスタッフロールの曲
 { const orig = refreshBgm; refreshBgm = function () { if (openingOn && typeof playBgmTrack === 'function' && audioCtx) { playBgmTrack('battle31'); return; } return orig.apply(this, arguments); }; }
-// 初めて遊ぶとき（まだ何も進めていない）に自動で流す
+// 初めて遊ぶとき（まだ何も進めていない）に自動で流す。すべてのスクリプトを読み終えた直後に始め、起動ローダー（いちばん手前）の下で待たせる
 setTimeout(() => {
   if (game.openingSeen) return;
   if ((game.bestStage || 1) > 1 || (game.reincarnations || 0) > 0) { game.openingSeen = true; return; } // 既存のセーブには出さない
   playOpening(() => setTimeout(() => openFinalGoal(true), 400)); // オープニングのあと最終目標を見せる（キャラエディットは廃止）
-}, 900);
+}, 0); // 起動ローダーが消える前に流し始める（スマホでローダーが先に消えて、ゲーム画面が一瞬見えないように）
 // 設定画面のスタッフロールの下に「オープニングを見る」
 { const cb = document.getElementById('creditsBtn');
   if (cb) { cb.insertAdjacentHTML('afterend', '<button class="modal-shop-btn" id="openingBtn"><span class="msb-name">📖 オープニングを見る</span></button>');
