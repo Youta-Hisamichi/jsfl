@@ -821,7 +821,7 @@ const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],
  ['para', '⚡', 'マヒ耐性', 'ボスのマヒ攻撃を防ぐ', 'sk_skillParalyze'], ['compAtk', '🐾', '仲間攻撃力', '仲間の攻撃力が上がる', 'up_cAtk'], ['compHp', '💚', '仲間HP', '仲間の最大HPが上がる', 'up_cHp'],
  ['bossDmg', '👑', 'ボス特攻', 'ボスへのダメージが上がる', 'art_crest'], ['counter', '🥊', 'カウンター', 'はじめてONにすると10%で反撃するようになる。進化で反撃率（最大90%）とダメージが上がる', 'g_counter'], ['rebirth', '🌀', '転生効率', '転生ボーナス（1回ごとの攻撃力・HPの上がり幅）が強くなる', 'x_reborn'],
- ['weapon', '🪞', '反射オブジェクト', '反射玉を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
+ ['weapon', '🪞', '反射玉', '反射玉を敵に当てたときのダメージが上がる', 'x_attack'], ['melee', '🗡️', '近接攻撃', '助走なしでぶつかったときのダメージが上がる', 'g_power'],
  ['crit', '💥', 'クリティカル', 'クリティカルのダメージが上がる', 'g_critical'],
  ['pinch', '😤', 'ピンチ補正', 'HPが少ないときの攻撃力が上がる', 'g_pinch'], ['zako', '👊', 'ザコ特攻', 'ボス以外の敵へのダメージが上がる', 'g_slayer']].forEach(([k, icon, name, eff, img, fixed]) => {
   SHOP_ITEMS['evoKind_' + k] = { hideInShop: true, /* 進化ページの下から切り替える（ショップには並べない） */ icon, img: `assets/img/ui/evo2/icon_${k}.webp`, /* 進化の結果と同じ絵 */ name: `進化項目：${name}`, desc: fixed ? `${eff}。いつもONでOFFにできない` : `${eff}。ONにすると進化のランダムに入る（ON 💎${EVO_TOGGLE_ON_COST}・OFF 💎${EVO_TOGGLE_OFF_COST}）`, cost: EVO_TOGGLE_ON_COST, toggleKind: k, toggleFixed: !!fixed };

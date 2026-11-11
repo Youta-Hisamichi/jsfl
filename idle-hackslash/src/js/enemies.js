@@ -1540,7 +1540,7 @@ function setupObstacles(dropDebug) {
     obstacles.push(o);
   }
 }
-// 数値付きの反射オブジェクト（反射玉）は、どのステージにも1つだけ置く
+// 数値付きの反射玉は、どのステージにも1つだけ置く
 { const orig = setupObstacles; setupObstacles = function () {
   const mvs = {}; // 飛んでいる反射玉は、ボス戦などの次のステージでもそのまま飛び続ける
   for (const old of reflectors()) { saveReflector(old); if (old.mvx || old.mvy) mvs[old.ri || 0] = { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map(), held16: old.held16 }; }
@@ -1798,7 +1798,7 @@ function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
-  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射オブジェクト」も掛かる */
+  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射玉」も掛かる */
   if (dmg > 0 && v > (game.reflBestMult || 0)) game.reflBestMult = v; // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
   if (dmg > 0 && v >= REFL_MAX_BASE) { if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：×8（パワーアップ前の最大値）以上の反射玉を敵に当てる。秘宝で最大値が上がっても条件は×8のまま
   if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
@@ -1877,7 +1877,7 @@ function obstacleBounce(ball) {
       }
     }
     if (o.kind === 'qbox' && !o.used && (isMainPlayerBall(ball) || (o.gm && ball.isPlayer && !(ball.isCompanion && ball.hp <= 0)))) { openQBox(o); continue; } // パンドラの箱：自キャラが当たると中身が飛び出す
-    if (dot < -0.6 && isMainPlayerBall(ball)) { game.totalBounces = (game.totalBounces || 0) + 1; applyBounceObjMult(ball, o); } // 障害物での反射も数える。反射オブジェクトの倍率でダメージが増減
+    if (dot < -0.6 && isMainPlayerBall(ball)) { game.totalBounces = (game.totalBounces || 0) + 1; applyBounceObjMult(ball, o); } // 障害物での反射も数える。反射玉の倍率でダメージが増減
     if (o.kind === 'bumper' || o.kind === 'slime') { // バンパー（オーブ）：勢いを増して弾き返す。スライムはぷにっと少しだけ
       const sp = Math.hypot(ball.vx, ball.vy) || 1, boost = o.kind === 'slime' ? Math.min(11, Math.max(sp * 1.1, 4.5)) : Math.min(14, Math.max(sp * 1.3, 6));
       ball.vx = ball.vx / sp * boost; ball.vy = ball.vy / sp * boost;
@@ -2615,8 +2615,8 @@ function showReflFormula() {
   const hit = tgt ? (game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge ? 1 : Math.min(1, REFLECT_HIT_RATE * playerHitChance(tgt, true))) : null;
   const wait = h ? heroWaitMult(h) : 1, dash = h && h.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
   const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${v}${n ? `<small>${n}</small>` : ''}</div>`;
-  let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 叩いたときの力（溜め×ダッシュ×専用技）× 反射玉の倍率 × 進化「反射オブジェクト」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）</small></div>`;
-  x += '<div class="dl-h">いまの数字</div>' + row('自キャラ攻撃力', F(atk)) + row('溜め（いま叩いたら）', M(wait), `最大 ×${HERO_WAIT_MAX}・叩くと使い切る`) + row('ダッシュパネル', M(dash), `通ると3秒 ×${DASH_DMG_MULT}`) + row('進化「反射オブジェクト」', M(evo));
+  let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 叩いたときの力（溜め×ダッシュ×専用技）× 反射玉の倍率 × 進化「反射玉」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）</small></div>`;
+  x += '<div class="dl-h">いまの数字</div>' + row('自キャラ攻撃力', F(atk)) + row('溜め（いま叩いたら）', M(wait), `最大 ×${HERO_WAIT_MAX}・叩くと使い切る`) + row('ダッシュパネル', M(dash), `通ると3秒 ×${DASH_DMG_MULT}`) + row('進化「反射玉」', M(evo));
   x += row('ボスへの倍率', M(boss), tgt ? (tgt.isBoss ? 'いまのボスに対して' : 'いまの敵に対して') : '敵がいない') + row('クリティカル', `${Math.round(critC * 100)}%で ${M(critM)}`) + row('当たる確率', hit == null ? '-' : `${Math.round(hit * 100)}%`, `タックルの${REFLECT_HIT_RATE}倍（30階までは必ず当たる）`);
   x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`, `反射上昇アップ ${reflStepCount()}個（1個ごとに +0.1）`) + row('タックルで叩くと', M(reflTackleMult()), `タックル反射ブースト ${reflTackleCount()}個`) + row('上限', bounceMultLabel(reflMax()), `はじめ ×${REFL_CAP_BASE}＋反射MAXアップ ${reflCapCount()}個＋秘宝 ${Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)}個`) + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
   for (const o of reflectors()) {
