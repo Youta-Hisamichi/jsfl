@@ -5319,3 +5319,5 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 /* ランキング「MAX反射倍率」のタブ（7つ並ぶので、高さも7等分に合わせる） */
 .rank-tab-btn[data-rank-mode="refl"] { --ti: url(assets/img/ui/rk/i_refl.webp); --tl: url(assets/img/ui/rk/l_refl.webp); }
 .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull, .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull.active { height: calc((min(100vw, 480px) - 48px) / 7 * 1.05) !important; }
+/* タブレット・横長の画面：下のタブは、上のヘッダー・ゲーム画面と同じ幅（最大560px）の中に並べる（横いっぱいに広げると巨大化するため）。帯の背景は横いっぱいのまま */
+.tab-bar { padding-left: max(6px, env(safe-area-inset-left, 0px), calc((100vw - 560px) / 2)) !important; padding-right: max(6px, env(safe-area-inset-right, 0px), calc((100vw - 560px) / 2)) !important; }
