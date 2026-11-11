@@ -23,7 +23,7 @@
 ## iPhone アプリ（idle-hackslash/app/ios/）
 - 同じ Capacitor のプロジェクト。Bundle ID は **com.hisashiapp.mugenhansya**。iPhone のみ・縦画面のみ。組み立てはユーザーの Mac の Xcode（この環境ではできない）。
 - Mac では `cd idle-hackslash/app && npm install && npx cap sync ios` → `npx cap open ios`。版は Xcode の MARKETING_VERSION（GAME_VERSION と同じにする）と、出すたびに上げる CURRENT_PROJECT_VERSION。
-- AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（いまは Google のテスト用）。
+- AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（本番の ID）。
 
 - デバッグにボタンを足すときは、デバッグパネルの**一番上**に足す。
 - 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」にも出す（`DBG_NEW`（src/js/ui.js）の先頭に action 名を足す）。

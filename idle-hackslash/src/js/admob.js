@@ -4,10 +4,10 @@
 // ・本番の ID。自分の端末で試すときは、AdMob の「設定 → テストデバイス」に端末を登録してテスト広告にする（自分で本番の広告を見たり押したりしない）
 // ・テスト用に戻すとき：広告ユニットを ca-app-pub-3940256099942544/5224354917、ADMOB_TESTING を true に
 // ・アプリ ID（ca-app-pub-…~…）は app/android/app/src/main/res/values/strings.xml の admob_app_id
-// 機種ごとの広告ユニット。iPhone は AdMob に iOS のアプリを登録するまで、Google のテスト用（ADMOB_TESTING も true）
+// 機種ごとの広告ユニット（本番）
 const ADMOB_IDS = {
   android: { rewarded: 'ca-app-pub-3193231960637976/9776778979', testing: false }, // 本番（動画報酬）
-  ios: { rewarded: 'ca-app-pub-3940256099942544/1712485313', testing: true }, // テスト用。AdMob で iOS のアプリを作ったら本番の ID に替え、testing を false に
+  ios: { rewarded: 'ca-app-pub-3193231960637976/5661595525', testing: false }, // 本番（iOS の動画報酬）
 };
 const ADMOB_PLATFORM = (() => { try { return window.Capacitor && typeof window.Capacitor.getPlatform === 'function' ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
 const ADMOB_REWARDED_ID = (ADMOB_IDS[ADMOB_PLATFORM] || ADMOB_IDS.android).rewarded;
