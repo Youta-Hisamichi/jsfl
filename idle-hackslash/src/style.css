@@ -5328,3 +5328,8 @@ body.hp-safe .arena-wrap .ob-mission { top: 6px !important; border-radius: 10px 
    縁取りを先に描いて上から字を塗る（paint-order）ことで、字の中の線を隠す。ミッションの「+1 GET!」は縁取りをやめて影で縁取る */
 body, body * { paint-order: stroke fill; }
 .gem-get-pop { -webkit-text-stroke: 0 !important; text-shadow: 1px 1px 0 #063a66, -1px -1px 0 #063a66, 1px -1px 0 #063a66, -1px 1px 0 #063a66, 0 0 3px #000, 0 0 12px rgba(100,220,255,0.95) !important; }
+/* タブ解放のお知らせ・はじめのミッションの枠は半透明に（下のゲーム画面が透けて見えるように）。文字は縁取りで読みやすく */
+.ob-unlock { background: linear-gradient(180deg, rgba(60,40,10,0.6), rgba(25,18,8,0.6)) !important; backdrop-filter: none; }
+.ob-mission, .arena-wrap .ob-mission { background: rgba(10,12,28,0.4) !important; }
+.ob-unlock, .ob-mission { text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 4px rgba(0,0,0,0.8); }
+.ob-mission .obm-claim { text-shadow: none; }
