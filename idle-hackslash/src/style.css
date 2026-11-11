@@ -5321,3 +5321,6 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull, .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull.active { height: calc((min(100vw, 480px) - 48px) / 7 * 1.05) !important; }
 /* タブレット・横長の画面：下のタブは、上のヘッダー・ゲーム画面と同じ幅（最大560px）の中に並べる（横いっぱいに広げると巨大化するため）。帯の背景は横いっぱいのまま */
 .tab-bar { padding-left: max(6px, env(safe-area-inset-left, 0px), calc((100vw - 560px) / 2)) !important; padding-right: max(6px, env(safe-area-inset-right, 0px), calc((100vw - 560px) / 2)) !important; }
+/* はじめのミッションの枠：ゲーム画面の枠線の内側に収める（上の目標の帯にはみ出さない）。光も下向きにして、上にあふれないように */
+body.hp-safe .arena-wrap .ob-mission { top: 6px !important; border-radius: 10px !important; }
+.arena-wrap .ob-mission.done { box-shadow: 0 5px 12px -2px rgba(255,215,107,0.7) !important; }
