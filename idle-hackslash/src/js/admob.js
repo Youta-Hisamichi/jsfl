@@ -1,10 +1,11 @@
 // ===== AdMob（スマホアプリ版の動画広告） =====
 // ストアのアプリ（Capacitor の中）では、playRewardedVideo の仮の動画のかわりに、AdMob のリワード広告を流す。
 // claude.ai のアーティファクト・ブラウザでは、いままでどおり仮の動画（このファイルは何もしない）。
-// ・いまは Google のテスト用の ID（本物の広告は出ない・収益にもならない）。本番では AdMob で作った ID に差し替え、ADMOB_TESTING を false にする
+// ・本番の ID。自分の端末で試すときは、AdMob の「設定 → テストデバイス」に端末を登録してテスト広告にする（自分で本番の広告を見たり押したりしない）
+// ・テスト用に戻すとき：広告ユニットを ca-app-pub-3940256099942544/5224354917、ADMOB_TESTING を true に
 // ・アプリ ID（ca-app-pub-…~…）は app/android/app/src/main/res/values/strings.xml の admob_app_id
-const ADMOB_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917'; // テスト用のリワード広告ユニット
-const ADMOB_TESTING = true;
+const ADMOB_REWARDED_ID = 'ca-app-pub-3193231960637976/9776778979'; // 本番のリワード広告ユニット（動画報酬）
+const ADMOB_TESTING = false;
 function admobPlugin() { try { const C = window.Capacitor; return C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() && C.Plugins && C.Plugins.AdMob ? C.Plugins.AdMob : null; } catch (e) { return null; } }
 let admobReady = null, admobPreloaded = false, admobBusy = false;
 function admobInit() {

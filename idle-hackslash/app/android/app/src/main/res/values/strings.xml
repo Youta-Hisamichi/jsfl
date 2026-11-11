@@ -4,6 +4,6 @@
     <string name="title_activity_main">放置系ハクスラ無限反射</string>
     <string name="package_name">com.hisashiapp.mugenhansya</string>
     <string name="custom_url_scheme">com.hisashiapp.mugenhansya</string>
-    <!-- AdMob のアプリ ID。いまは Google のテスト用。本番では AdMob で作ったアプリ ID（ca-app-pub-…~…）に差し替える -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!-- AdMob のアプリ ID（本番）。テスト用は ca-app-pub-3940256099942544~3347511713 -->
+    <string name="admob_app_id">ca-app-pub-3193231960637976~4636132934</string>
 </resources>
