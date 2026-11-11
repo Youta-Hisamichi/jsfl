@@ -33,4 +33,25 @@ async function admobShowRewarded(done) {
     const item = await A.showRewardVideoAd(); if (item) rewarded = true;
   } catch (e) { finish(false, 'show'); }
 }
-setTimeout(() => { if (admobPlugin()) admobPrepare(); }, 3000); // 起動して少ししたら1本読み込んでおく
+setTimeout(() => { if (admobPlugin()) admobPrepare(); }, 3000);
+// デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）
+const ADMOB_TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
+async function admobDebugTest() {
+  const A = admobPlugin(), row = (k, v) => `<div class="dl-r"><b>${k}</b>　${v}</div>`;
+  const info = () => `<div class="dbg-list">${row('アプリの中', A ? 'はい（AdMob の部品あり）' : 'いいえ（ブラウザ・アーティファクト：仮の動画）')}${row('本番の広告ユニット', ADMOB_REWARDED_ID)}${row('本番でテスト設定', ADMOB_TESTING ? 'ON' : 'OFF')}${row('初期化', admobReady ? '済み' : 'まだ')}${row('本番の広告の読み込み', admobPreloaded ? '済み' : 'まだ')}</div>`;
+  if (!A) { simpleChoice({ icon: '🎬', title: 'リワード動画のテスト', text: info(), sub: 'アプリ（Android）の中で押すと、テスト用の広告を流します', yes: '閉じる', no: false }); return; }
+  if (admobBusy) { showNotice('🎬 広告を表示中です'); return; }
+  showNotice('🎬 テスト用の広告を読み込み中…');
+  if (!(await admobInit())) { simpleChoice({ icon: '⚠️', title: 'AdMob を初期化できません', text: info(), yes: '閉じる', no: false }); return; }
+  admobBusy = true; let rewarded = false; const hs = [], t0 = Date.now();
+  const end = (title, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(admobPrepare, 1500);
+    simpleChoice({ icon: rewarded ? '✅' : '⚠️', title, text: info() + `<div class="dbg-list">${row('結果', why)}${row('かかった時間', ((Date.now() - t0) / 1000).toFixed(1) + '秒')}</div>`, sub: 'テスト用の広告なので、報酬（ジェム）は配りません', yes: '閉じる', no: false }); };
+  try {
+    hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; }));
+    hs.push(await A.addListener('onRewardedVideoAdDismissed', () => end(rewarded ? '最後まで見られました' : '途中で閉じました', rewarded ? '報酬の合図あり（本番なら報酬を渡す）' : '報酬の合図なし')));
+    hs.push(await A.addListener('onRewardedVideoAdFailedToShow', e => end('広告を表示できません', JSON.stringify(e || {}))));
+    try { await A.prepareRewardVideoAd({ adId: ADMOB_TEST_REWARDED_ID, isTesting: true }); } catch (e) { end('広告を読み込めません', JSON.stringify(e && (e.message || e.code) || e)); return; }
+    try { if (audioCtx && audioCtx.state === 'running') audioCtx.suspend(); } catch (e) {}
+    const item = await A.showRewardVideoAd(); if (item) rewarded = true;
+  } catch (e) { end('広告を表示できません', String(e && e.message || e)); }
+} // 起動して少ししたら1本読み込んでおく

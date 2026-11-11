@@ -514,6 +514,11 @@ const GAME_TITLE = '放置系ハクスラ無限反射';
 const GAME_VERSION = '1.0.0';
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
+{ let n = 0, at = 0; document.getElementById('settingsGameVersion').addEventListener('click', () => { // ストア版：バージョンの文字を7回続けて押すと、デバッグのボタンを出す／隠す（開発用）
+  if (!IS_STORE_APP) return; const now = Date.now(); n = now - at < 1500 ? n + 1 : 1; at = now; if (n < 7) return; n = 0;
+  let on = false; try { on = !localStorage.getItem('mh-dev'); if (on) localStorage.setItem('mh-dev', '1'); else localStorage.removeItem('mh-dev'); } catch (e) {}
+  if (on) debugToggleBtn.style.removeProperty('display'); else { debugToggleBtn.style.setProperty('display', 'none', 'important'); setDebugOpen(false); }
+  showNotice(on ? '🛠 デバッグのボタンを出しました' : '🛠 デバッグのボタンを隠しました'); }); }
 const CREDITS = [
   ['企画・ゲームデザイン', DEVELOPER_NAME],
   ['プログラム', DEVELOPER_NAME],

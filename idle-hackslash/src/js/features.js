@@ -243,9 +243,9 @@ function avoidSpeechUI(x, y, w, h) { // UIと重なっていたら、上か下�
   return { x, y };
 }
 const SPEECH_COL = { // 吹き出しの色（地・縁・文字）
-  hero: { bg: 'rgba(255,243,200,0.78)', line: 'rgba(200,140,30,0.95)', text: '#3a2405' }, // 勇者：クリーム色の地に金の縁
-  comp: { bg: 'rgba(222,242,255,0.78)', line: 'rgba(40,140,215,0.9)', text: '#0d2a45' }, // 仲間：水色がかった白に水色の縁
-  enemy: { bg: 'rgba(40,12,20,0.6)', line: 'rgba(255,90,110,0.85)', text: '#ffe3e8' }, // 敵：暗い赤に桃色の縁
+  hero: { bg: 'rgba(255,243,200,0.55)', line: 'rgba(200,140,30,0.75)', text: '#3a2405' }, // 勇者：クリーム色の地に金の縁
+  comp: { bg: 'rgba(222,242,255,0.55)', line: 'rgba(40,140,215,0.7)', text: '#0d2a45' }, // 仲間：水色がかった白に水色の縁
+  enemy: { bg: 'rgba(40,12,20,0.5)', line: 'rgba(255,90,110,0.7)', text: '#ffe3e8' }, // 敵：暗い赤に桃色の縁
 };
 function drawSpeech() {
   if (Date.now() - speechUIAt > 700) { speechUIAt = Date.now(); try { refreshSpeechUIRects(); } catch (e) {} }
