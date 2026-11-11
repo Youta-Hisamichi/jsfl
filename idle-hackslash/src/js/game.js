@@ -1432,7 +1432,7 @@ function startSkipChallenge(challenge) {
   const { target, cost, currency } = challenge;
   payTower(challenge);
   game.towerBgmNext = ((game.towerBgmNext || 0) + 1) % TOWER_BOSS_SONGS.length;
-  game.skipChallenge = { origin: game.stage, target, cost, currency: currency || 'gem', bgm: game.towerBgmNext };
+  game.skipChallenge = { origin: game.stage, target, cost, currency: currency || 'gem', bgm: game.towerBgmNext }; game.seen = game.seen || {}; game.seen.tower = 1; // 試練の塔に挑んだ印
   game.stage = target;
   playTowerStepsSound();
   meteors = []; adds = []; clearEnemyTraitObjects();

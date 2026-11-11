@@ -175,7 +175,8 @@ function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとり�
   let pool = T ? T[kind] : null;
   if (kind === 'i' && P) pool = [...(pool || []), P.say[0]]; // 登場ゼリフもまぜる
   if (!pool || !pool.length) return;
-  pool = pool.filter(t => t !== compTalkLast); const t = kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pool[Math.floor(Math.random() * pool.length)];
+  pool = pool.filter(t => t !== compTalkLast); const nd = kind === 'i' ? nudgeLine('comp', compTalkLast) : null; // まだ使っていない機能をそれとなく教える
+  const t = nd || (kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pool[Math.floor(Math.random() * pool.length)]);
   compTalkLast = t; compTalkAt = now;
   companionSay(b, t, 1800 + t.length * 70);
 }
@@ -199,7 +200,8 @@ function heroChuuni(kind, force) {
   const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
   const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
   const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
-  const t = kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pool[Math.floor(Math.random() * pool.length)];
+  const nd = kind === 'idle' ? nudgeLine('hero', chuuniLast) : null; // まだ使っていない機能をそれとなく教える
+  const t = nd || (kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pool[Math.floor(Math.random() * pool.length)]);
   chuuniLast = t; chuuniAt = now;
   companionSay(hero, t, 1800 + t.length * 70);
 }
@@ -296,7 +298,7 @@ let enemySayAt = 0;
 function enemySay(b, kind, force) {
   if (!b || b.isDying || b.isPlayer) return;
   const now = Date.now(); if (!force && now - enemySayAt < 3500) return;
-  const pool = enemyLinePool(b, kind), t = pool[Math.floor(Math.random() * pool.length)]; // 敵の傾向（高貴／モンスター）に合うセリフだけ
+  const pool = enemyLinePool(b, kind), t = (kind === 'idle' && nudgeLine('enemy', '')) || pool[Math.floor(Math.random() * pool.length)]; // 敵の傾向（高貴／モンスター）に合うセリフだけ
   enemySayAt = now; companionSay(b, t, 1800 + t.length * 80);
 }
 setInterval(() => {
@@ -1015,7 +1017,7 @@ const WIND_COMP = {
   k: ['許して…でも、通してもらうわ', 'これで…静かになった'],
 };
 const WIND_ENEMY = {
-  idle: ['ここは我らの森だ…出ていけ', 'ヒトの匂い…また焼きに来たのか', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ'],
+  idle: ['ここは我らの森だ…出ていけ', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ'],
   boss: ['群れを傷つけたのは、お前たちか', 'この怒りは、千年の森の怒りだ', '風の谷の者よ…何をしに来た'],
   bossLow: ['怒りが…静まっていく…', 'お前は…なぜ泣いている…'],
 };
@@ -1259,7 +1261,7 @@ const ENEMY_LINE_TONE = {
     '…惜しいな。貴様のような者が我が配下にいれば', '本気で来い。でなければ、ここで終わるぞ', 'この手応え…貴様、何者だ？', '私が押されているだと…？', '面白い…私の想定を超えてくるとはな', 'これほどの用兵…一度、エナドリを酌み交わしたかった',
     '見事だ…だが、まだ幕は下りぬ…！', 'これが…時代の流れというものか…', '我が野望…ここで潰えるか…', 'ここで退くのは…恥ではない…次があるならな…', '若い力に…押し切られるとはな…', '私の負けか…いや、時代が私を見捨てたのだ…', '私は…少し、急ぎすぎたのかもしれん…', '夢の続きは…貴様に預けよう…', '我を倒しても…世界は変わらぬ…', '見事だ…その輝き、認めてやる…',
     '理想に殉じたか…愚かな', '覚えておけ。力なき正義は無力だ', '勝利とは、こういうものだ', '卿もなかなかやるが、歴史を動かすのは私だ', 'その程度か勇者よ'],
-  monster: ['イヤッ！イヤッ！', 'お前やりますねスギィ！', 'やりますねぇ！', '助けて！失神する！', 'グルル…', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', 'オレ、強い', 'いたいのはイヤ…', 'ここは我らの森だ…出ていけ', 'ヒトの匂い…また焼きに来たのか', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ', 'オニイ・・チャン', 'シテ‥コロシテ‥', 'ニンゲン　カエレ‥', 'ニンゲン　クウ\nチカラ　テニイレル', 'かゆ‥うま‥', '今日はニンゲンの厄日だねェ',
+  monster: ['イヤッ！イヤッ！', 'お前やりますねスギィ！', 'やりますねぇ！', '助けて！失神する！', 'グルル…', 'キシャー！', 'うまそうな勇者だ…', 'なわばりに入るな！', 'ケケケ…', 'オレ、強い', 'いたいのはイヤ…', 'ここは我らの森だ…出ていけ', '大地を汚す者に、帰る道はない', '…森の奥へは、行かせぬ', 'オニイ・・チャン', 'シテ‥コロシテ‥', 'ニンゲン　カエレ‥', 'ニンゲン　クウ\nチカラ　テニイレル', 'かゆ‥うま‥', '今日はニンゲンの厄日だねェ',
     'ヘッヘッ！ オイラと契約しないか？', 'オマエ…ウマソウナ魂ダナ', 'ジェムを置いていけば、見逃してやるよ。ケケケ', '契約の印は、もう刻まれてるぜ', 'ニンゲンの欲望は、いつも甘い味がする', 'ヤダアアアァーッ！！', 'いい声で鳴けよオォーッ！',
     'ぷるぷる…', 'ぼく悪いスライムじゃ…ないかも', 'ぷにっ', 'とろけちゃう〜', 'ふん、虫ケラが', '群れを傷つけたのは、お前たちか', 'この怒りは、千年の森の怒りだ', '不完全な命が、完全な我に挑むか', '再生が…追いつかないだと？', 'ぐおおお…！', '怒りが…静まっていく…', '石が…砕ける…我の、命が…', '完全な存在に…なれなかったか…', 'フハハハ！弱すぎる！'],
 };
@@ -1395,3 +1397,55 @@ ENEMY_SAY.die.push('壁に…跳ね返されて…', 'あの玉…さっきよ�
 META_COMP.push('反射玉、壁で跳ねるたびに強くなるんだって。ぶつけ方が大事だね', '寝てる間も戦ってるの、ちょっとブラックじゃない？', '転生しても、絆は残るんだよ',
   '宝箱、SSR以上だと何が出るかドキドキするよね', '羽がたまったら、進化しに行こうよ', 'わたしたちの力、勇者にも分けてるんだからね',
   '試練の塔、いつか一緒に登ろうね', 'ランキング、上の人たちってどうなってるの…？', '溜めてから撃つと、反射玉がすごいことになるよ');
+
+// ===== まだ使っていない機能を、勇者・仲間・敵がそれとなく教えるセリフ（使ったら出なくなる） =====
+// game.seen：使った・開いた印。タブを開いた（tab_○○）、戦績の各ページ（rec_○○）、ショップで買った（shopBuy）、試練の塔（tower）、スキルガチャ（skillGacha）
+const NUDGE_RATE = 0.3; // ひとりごとのうち、この割合で教えるセリフにする
+function seenOf(k) { return !!(game.seen && game.seen[k]); }
+if (!game.seen) { game.seen = {}; if ((game.reincarnations || 0) > 0 || (game.bestStage || 1) >= 100) for (const k of ['tab_records', 'tab_ranking', 'rec_mission', 'rec_bestiary', 'rec_bgm', 'rec_stats', 'shopBuy', 'tower', 'skillGacha']) game.seen[k] = 1; } // 印を付ける前から遊んでいたセーブ（転生済み・ステージ100以上）は、全部見たことにする
+const NUDGES = [
+  { ok: () => isTabUnlocked('companion') && !(typeof anyCompanion === 'function' && anyCompanion()),
+    hero: ['一人旅も悪くない…だが、仲間がいれば世界は変わる', '「仲間」の扉の向こうで、誰かが招集を待っている気がする…'],
+    comp: [],
+    enemy: ['あいつ、ずっと一人だな…仲間を呼ばれたらヤバかった', '仲間を呼ぶ「招集」とかいうの、知らないのかアイツ…'] },
+  { ok: () => isTabUnlocked('coinshop') && !(game.skillGachaPulls > 0) && !seenOf('skillGacha'),
+    hero: ['新たな技を覚えれば…もっと楽に勝てるはずだ', 'スキルの書がコインで手に入るらしい…試してみるか'],
+    comp: ['勇者さん、スキルガチャって引いてみた？　メテオとか、すごいらしいよ', 'コインがたまってるなら、スキルを覚えに行こうよ'],
+    enemy: ['あいつ、技も使わずに殴ってくるだけだぞ…', 'スキルとかいうのを覚えられたら、俺たち終わりだな'] },
+  { ok: () => isTabUnlocked('gacha') && !(game.evoCount > 0),
+    hero: ['ジェムと羽…これを使えば、我は進化できる…？', '「進化」…その言葉が、胸の奥で疼く'],
+    comp: ['ジェムがあるなら、進化してみたら？　ずっと強くなるよ', '進化の羽、使わないで持ってるだけ？　もったいないよ'],
+    enemy: ['あいつ、まだ一度も進化してねぇな…今のうちだ！', '進化される前に、なんとかしねぇと…'] },
+  { ok: () => isTabUnlocked('gemshop') && !seenOf('shopBuy'),
+    hero: ['ショップの品揃え…一度、覗いてみる価値はある', 'ジェムは貯めるだけでは輝かぬ…使ってこそだ'],
+    comp: ['ショップに便利なものが色々あるみたい。一回見てみない？', 'ジェム、ショップで使ってみようよ。反射玉が強くなる品もあるって'],
+    enemy: ['ショップで何も買わずに来るとは、なめられたもんだ…', 'あの勇者、装備をほとんど買ってねぇぞ'] },
+  { ok: () => (game.bestStage || 1) >= 10 && !seenOf('tower') && !(game.bestTowerJump > 0),
+    hero: ['左上の塔が…我を呼んでいる。試練の塔、か…', '塔を登りきれば、一気に先へ進めると聞く'],
+    comp: ['左上の「試練の塔」、挑戦してみない？　うまくいけば何ステージも飛べるよ', '塔のボス、強いけど…勝てば一気に進めるんだって'],
+    enemy: ['塔に登られたら、俺たちの出番がなくなる…', 'あいつ、まだ塔に気づいてないみたいだな…'] },
+  { ok: () => isTabUnlocked('records') && !seenOf('tab_records'),
+    hero: ['これまでの戦いの記録…「戦績」に刻まれているはずだ', '我が歩みを、一度振り返るのも悪くない'],
+    comp: ['「戦績」のページ、見たことある？　いろんな記録が残ってるよ', '戦績のミッション、達成するとジェムがもらえるんだって'],
+    enemy: ['あいつ、自分の記録を一度も見てねぇのか…'] },
+  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_mission'),
+    hero: ['ミッション…果たせば報酬が待っている', '戦績の奥の「ミッション」を確かめねば'],
+    comp: ['戦績の「ミッション」、受け取れる報酬がたまってるかも！'], enemy: [] },
+  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_bestiary'),
+    hero: ['倒した敵の記録…「敵図鑑」に残っているはずだ'],
+    comp: ['敵図鑑、見てみた？　倒した敵がちゃんと載ってるよ'],
+    enemy: ['俺のこと、図鑑にちゃんと載ってんのかな…'] },
+  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_bgm'),
+    hero: ['この旋律…「BGM図鑑」で、いつでも聴けるらしい'],
+    comp: ['BGM図鑑で、好きな曲を選んで聴けるんだって。知ってた？'], enemy: [] },
+  { ok: () => isTabUnlocked('ranking') && !seenOf('tab_ranking'),
+    hero: ['世界には、我より強い者がいる…ランキングで確かめねば', '我が名は、ランキングの何位にあるのだろうか…'],
+    comp: ['ランキング、のぞいてみようよ。上には上がいるみたい！', '勇者さんって、ランキングだと何位くらいなんだろう？'],
+    enemy: ['ランキングの上の連中は、こんなもんじゃないらしいぜ', 'お前、自分の順位も知らねぇのか？'] },
+];
+function nudgeLine(who, last) {
+  if (Math.random() >= NUDGE_RATE) return null;
+  let list = []; try { for (const n of NUDGES) if (n.ok()) list.push(...(n[who] || [])); } catch (e) { return null; }
+  list = list.filter(t => t !== last); if (!list.length) return null;
+  return list[Math.floor(Math.random() * list.length)];
+}

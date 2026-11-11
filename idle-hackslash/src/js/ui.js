@@ -1365,7 +1365,7 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
       onYes: () => { shopBuyConfirmed = true; try { buyShopItem(id, event); } finally { shopBuyConfirmed = false; } } });
     return;
   }
-  game.gems -= gcost;
+  game.gems -= gcost; game.seen = game.seen || {}; game.seen.shopBuy = 1; // ショップで買った印
   let line = item.desc;
   if (item.slot) { item.slot.buy(); line = `${item.slot.label}が ${item.slot.cur()}${item.slot.unit} になった！`; }
   else if (item.toggleKind) { const k = item.toggleKind, on = !isEvoKindOpen(k); game['evoKindOpen_' + k] = on; if (on && k === 'counter') game.evoKindBought_counter = true; line = on ? `「${EVO_KIND_NAME[k]}」が進化のランダムに入った！（ON）` : `「${EVO_KIND_NAME[k]}」を進化のランダムから外した（OFF）`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
@@ -1806,7 +1806,7 @@ function skillGachaPull(event, isReroll) {
   if (!isReroll) {
     const cost = getSkillGachaCost();
     if (game.coins < cost) { showTapError(`コインが ${formatCoinNumber(cost - Math.floor(game.coins))} 枚不足しています`, event.clientX, event.clientY); return; }
-    spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1;
+    spendCoins(cost); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1; game.seen = game.seen || {}; game.seen.skillGacha = 1;
   }
   const snap = { owned: Object.keys(SKILL_GACHA_SKILLS).filter(k => game.shopOwned[k]), levels: { ...(game.skillLevels || {}) }, eq: getEquippedSkills().slice() }; // 引き直し用
   const id = gachaPick(pool), sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
@@ -3910,6 +3910,7 @@ setInterval(() => {
     secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
     if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
     try { localStorage.setItem('recTab', key); } catch (e) {}
+    if (getActiveTab() === 'records') { game.seen = game.seen || {}; game.seen['rec_' + key] = 1; } // 戦績の各ページを開いた印
     if (key !== 'bgm' && typeof bgmBookPreview !== 'undefined' && bgmBookPreview) { bgmBookPreview = null; renderBgmBook(); } // 図鑑の試聴は、上のタブを切り替えたら止めて戦績の曲に戻す
     if (typeof refreshBgm === 'function') refreshBgm(); // BGM図鑑だけ専用の曲
   };

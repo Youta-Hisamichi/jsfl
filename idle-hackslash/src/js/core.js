@@ -232,6 +232,8 @@ function switchTab(name) {
   if (name !== 'game' && typeof gameOverBgm !== 'undefined' && (gameOverBgm || (phase === 'paused' && deathFx))) return;
   if (name !== 'game' && typeof suspendGameOverForTab === 'function') suspendGameOverForTab(); // ゲームオーバー画面は他のページに持ち出さない
   activeTabCache = name;
+  game.seen = game.seen || {}; game.seen['tab_' + name] = 1; // 開いたページの印（まだ見ていない機能をセリフで教えるのに使う）
+  if (name === 'records') { const at = document.querySelector('[data-rec-tab].active'); if (at) game.seen['rec_' + at.dataset.recTab] = 1; } // 戦績を開いたときに出ているページも見た印
   if (name !== 'companion') { const cgr = document.getElementById('compGachaResult'); if (cgr) cgr.style.display = 'none'; } // 仲間ガチャの結果はページを離れたら閉じる
   document.body.classList.toggle('floor-bg', name === 'game'); // 床タイルの背景はゲーム画面だけ
   if (typeof userPaused !== 'undefined' && userPaused && typeof audioCtx !== 'undefined' && audioCtx) { if (name === 'game') audioCtx.suspend(); else audioCtx.resume(); } // 一時停止は保ったまま、他のページでは音だけ鳴らす
@@ -511,7 +513,7 @@ privacyBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
-const GAME_VERSION = '1.0.12'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+const GAME_VERSION = '1.0.13'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
 { let n = 0, at = 0; document.getElementById('settingsGameVersion').addEventListener('click', () => { // ストア版：バージョンの文字を7回続けて押すと、デバッグのボタンを出す／隠す（開発用）
