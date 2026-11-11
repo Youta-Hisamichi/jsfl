@@ -767,6 +767,10 @@ function reflStepCount() { if (game.reflStep1) { delete game.reflStep1; game.gem
 function reflStep() { return reflRound(REFL_STEP_BASE + REFL_STEP_UP * reflStepCount()); }
 function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 などの端数が、計算のずれで 0.30000…4 にならないように
 SHOP_ITEMS.reflStep1 = { icon: '⏫', name: '反射上昇アップ', desc: `反射玉が反射するたびに上がる倍率が、1個につき +0.1（はじめは +${REFL_STEP_BASE}、最大${REFL_STEP_MAX}個で +${reflRound(REFL_STEP_BASE + REFL_STEP_UP * REFL_STEP_MAX)}・転生しても残る）`, cost: 5, stackKey: 'reflStepBuys', maxStack: REFL_STEP_MAX, shopCount: true }; // 💎5→10→15→20→25
+// 反射MAXアップ：反射玉の倍率の上限（はじめ×10）が1個ごとに+1。💎1で何回でも買える（値段は上がらない）
+const REFL_CAP_MAX_BUYS = 990;
+function reflCapCount() { return Math.min(REFL_CAP_MAX_BUYS, game.reflCapBuys || 0); }
+SHOP_ITEMS.reflCap = { icon: '🔝', name: '反射MAXアップ', desc: '反射玉の倍率の上限が +1（はじめは×10）。💎1で何回でも買える（転生しても残る）', cost: 1, costGrowth: 1, stackKey: 'reflCapBuys', maxStack: REFL_CAP_MAX_BUYS, shopCount: true };
 // タックル反射ブースト：自分のタックルで反射玉を叩くと、倍率が1個につき+25%（1個で×1.25・2個で×1.5）。持っていなければ×1（変わらない）
 const REFL_TACKLE_MAX = 2, REFL_TACKLE_STEP = 0.25;
 function reflTackleCount() { return Math.min(REFL_TACKLE_MAX, game.reflTackleBuys || 0); }
