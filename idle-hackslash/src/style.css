@@ -5324,3 +5324,7 @@ body:not(.hp-safe) .arena-wrap .ob-mission { top: 40px !important; border-radius
 /* はじめのミッションの枠：ゲーム画面の枠線の内側に収める（上の目標の帯にはみ出さない）。光も下向きにして、上にあふれないように */
 body.hp-safe .arena-wrap .ob-mission { top: 6px !important; border-radius: 10px !important; }
 .arena-wrap .ob-mission.done { box-shadow: 0 5px 12px -2px rgba(255,215,107,0.7) !important; }
+/* 文字の縁取り（-webkit-text-stroke）は、スマホ（Android）では字の中の線の重なりまで描かれ、積み木のように割れて見える。
+   縁取りを先に描いて上から字を塗る（paint-order）ことで、字の中の線を隠す。ミッションの「+1 GET!」は縁取りをやめて影で縁取る */
+body, body * { paint-order: stroke fill; }
+.gem-get-pop { -webkit-text-stroke: 0 !important; text-shadow: 1px 1px 0 #063a66, -1px -1px 0 #063a66, 1px -1px 0 #063a66, -1px 1px 0 #063a66, 0 0 3px #000, 0 0 12px rgba(100,220,255,0.95) !important; }
