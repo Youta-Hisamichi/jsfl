@@ -2303,12 +2303,11 @@ const FLOOR_TILES = { // 床タイル
   sea: 'assets/img/floors/sea.webp',
   brick: 'assets/img/floors/brick.webp',
   dungeon2: 'assets/img/floors/dungeon2.webp',
-  other: 'assets/img/floors/other.webp',
   mystic: 'assets/img/floors/mystic.webp',
   dungeon: 'assets/img/floors/dungeon.webp'
 };
 const FLOOR_NORMAL = ['lawn', 'dirt', 'desert', 'mossStone', 'town', 'snow', 'market', 'woodFloor', 'ruins', 'tower']; // 通常ステージの床（エリア＝10ステージごとに次へ）
-const FLOOR_BOSS = ['redCarpet', 'dryCrack', 'panel', 'blueTile', 'wasteland', 'brick', 'sea', 'dungeon2', 'mystic', 'dungeon', 'other']; // ボスステージの床
+const FLOOR_BOSS = ['redCarpet', 'dryCrack', 'panel', 'blueTile', 'wasteland', 'brick', 'sea', 'dungeon2', 'mystic', 'dungeon']; // ボスステージの床（穴だらけの洞窟の床「other」は気持ち悪いと指摘があり削除。戻さない）
 const FLOOR_TILE_PX = 42;
 const FLOOR_SPAN = Object.fromEntries(Object.keys(FLOOR_TILES).map(k => [k, 8])); // 床の画像は8×8枚のタイルを並べたもの（地形・床タイル集から作成）
 const floorImgs = {};
