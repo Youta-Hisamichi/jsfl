@@ -248,6 +248,7 @@ const SPEECH_COL = { // 吹き出しの色（地・縁・文字）
   enemy: { bg: 'rgba(40,12,20,0.5)', line: 'rgba(255,90,110,0.7)', text: '#ffe3e8' }, // 敵：暗い赤に桃色の縁
 };
 function drawSpeech() {
+  if (game.speechOff) { if (speech.length) speech = []; return; } // 設定でセリフをOFFにしているときは吹き出しを出さない
   if (Date.now() - speechUIAt > 700) { speechUIAt = Date.now(); try { refreshSpeechUIRects(); } catch (e) {} }
   if (!speech.length) return;
   const now = Date.now();
@@ -1371,3 +1372,10 @@ function enemyLinePool(b, kind) { // その敵に合うセリフだけ（未分�
   const pool = all.filter(t => { const lt = enemyLineTone(t); return lt === 'any' || lt === tone; });
   return pool.length ? pool : all;
 }
+
+// 設定の「💬 セリフ ON/OFF」：OFFにすると、勇者・仲間・敵の吹き出しを出さない（game.speechOff）
+{ const btn = document.getElementById('speechToggleBtn');
+  const sync = () => { if (!btn) return; const nm = btn.querySelector('.msb-name'); if (nm) nm.textContent = `${btn.querySelector('.st-ico') ? '' : '💬 '}セリフ：${game.speechOff ? 'OFF' : 'ON'}`; btn.classList.toggle('is-off', !!game.speechOff); }; // 設定ページの飾り付け（opening.js）で中身が作り直されるので、名前の欄だけ書き換える
+  setTimeout(sync, 0);
+  if (btn) btn.addEventListener('click', () => { game.speechOff = !game.speechOff; if (game.speechOff) speech = []; sync(); saveGame(); if (typeof playTone === 'function') playTone(game.speechOff ? 520 : 880, 0.06, 'triangle', 0.05); showNotice(game.speechOff ? '💬 セリフをOFFにしました' : '💬 セリフをONにしました'); });
+  sync(); }

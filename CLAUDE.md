@@ -18,7 +18,7 @@
 - Capacitor 8。パッケージ名は **com.hisashiapp.mugenhansya**（変更不可）。ゲームは `../dist` を `npx cap sync android` で取り込む。
 - 組み立て：Android SDK（/opt/android-sdk、なければ dl.google.com から入れる）→ `cd idle-hackslash/app/android && ./gradlew --max-workers=1 bundleRelease`（Maven の429が出たら少し待って再実行）。
 - 署名の鍵（mugenhansya-upload.jks）とパスワードは**リポジトリに入れない**（公開リポジトリ）。ユーザーが保管している。組み立てるときは鍵を受け取り、`app/android/keystore.properties`（gitignore 済み）に置く。
-- 出すたびに `app/android/app/build.gradle` の versionCode を1つ上げる。
+- 出すたびに `app/android/app/build.gradle` の versionCode を1つ上げ、`src/js/core.js` の GAME_VERSION（設定の「Ver.」表示）も上げる。アプリの versionName は GAME_VERSION から自動で読む。
 
 - デバッグにボタンを足すときは、デバッグパネルの**一番上**に足す。
 - 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」にも出す（`DBG_NEW`（src/js/ui.js）の先頭に action 名を足す）。
