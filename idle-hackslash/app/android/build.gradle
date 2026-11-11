@@ -4,6 +4,7 @@ buildscript {
     
     repositories {
         google()
+        maven { url 'https://maven-central.storage-download.googleapis.com/maven2/' } // Maven Central の写し（本家が混んで429を返すときの予備）
         mavenCentral()
     }
     dependencies {
@@ -20,6 +21,7 @@ apply from: "variables.gradle"
 allprojects {
     repositories {
         google()
+        maven { url 'https://maven-central.storage-download.googleapis.com/maven2/' } // Maven Central の写し（本家が混んで429を返すときの予備）
         mavenCentral()
     }
 }

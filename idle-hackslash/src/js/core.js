@@ -291,6 +291,16 @@ function playRewardedVideo(onComplete, rewardText) { // rewardText：この動�
   rewardAdProgress.style.width = '0%';
   rewardAdModal.classList.add('show');
   clearInterval(rewardAdTimer);
+  if (typeof admobPlugin === 'function' && admobPlugin()) { // スマホアプリ版：本物の動画広告（js/admob.js）
+    rewardAdCount.textContent = '動画を読み込み中…';
+    admobShowRewarded((ok, why) => {
+      if (!rewardAdModal.classList.contains('show')) return; // 待っている間に閉じた
+      if (ok) { rewardAdProgress.style.width = '100%'; rewardAdCount.textContent = '視聴完了！'; onComplete(); return; }
+      rewardAdProgress.style.width = '0%';
+      rewardAdCount.textContent = why === 'closed' ? '最後まで見なかったので、報酬はありません' : '動画を読み込めませんでした。少し待ってから、もう一度お試しください';
+    });
+    return;
+  }
   const tick = () => {
     const elapsed = Date.now() - startedAt;
     rewardAdProgress.style.width = Math.min(100, elapsed / REWARD_AD_DURATION * 100) + '%';
