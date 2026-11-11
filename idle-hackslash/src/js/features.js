@@ -857,7 +857,7 @@ function openNews() {
     });
   }
   const seen = game.newsSeen || 0;
-  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span><div class="news-h">${n.title}</div>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div>${n.gift ? `<div class="news-gift"><span>🎁 ${compRewardText(n.gift)}</span>${newsGiftReady(n) ? `<button data-news-gift="${n.id}">受け取る</button>` : (game.compGot || {})['news-' + n.id] ? '<i>受け取り済み</i>' : '<i>期限切れ</i>'}</div>` : ''}</div>`).join('');
+  ov.querySelector('.news-list').innerHTML = NEWS.map((n, i) => `<div class="news-item ${i < 2 ? 'open' : ''}"><div class="news-head"><span class="news-tag t-${n.tag}">${n.tag}</span><div class="news-h">${n.title}</div>${n.id > seen ? '<b class="news-new">NEW</b>' : ''}<span class="news-date">${n.date}</span></div><div class="news-body">${n.body.replace(/\n/g, '<br>')}</div>${n.gift ? `<div class="news-gift"><span>${compRewardText(n.gift)}</span>${newsGiftReady(n) ? `<button data-news-gift="${n.id}">受け取る</button>` : (game.compGot || {})['news-' + n.id] ? '<i>受け取り済み</i>' : '<i>期限切れ</i>'}</div>` : ''}</div>`).join('');
   ov.classList.add('show');
   game.newsSeen = NEWS[0].id; updateNewsDot(); saveGame();
   if (typeof playTone === 'function') playTone(1047, 0.06, 'square', 0.04);
@@ -1403,7 +1403,16 @@ META_COMP.push('反射玉、壁で跳ねるたびに強くなるんだって。�
 const NUDGE_RATE = 0.3; // ひとりごとのうち、この割合で教えるセリフにする
 function seenOf(k) { return !!(game.seen && game.seen[k]); }
 if (!game.seen) { game.seen = {}; if ((game.reincarnations || 0) > 0 || (game.bestStage || 1) >= 100) for (const k of ['tab_records', 'tab_ranking', 'rec_mission', 'rec_bestiary', 'rec_bgm', 'rec_stats', 'shopBuy', 'tower', 'skillGacha']) game.seen[k] = 1; } // 印を付ける前から遊んでいたセーブ（転生済み・ステージ100以上）は、全部見たことにする
+if (!game.seen.bossRetry && ((game.reincarnations || 0) > 0 || (game.bestStage || 1) >= 300)) game.seen.bossRetry = 1; // 転生済み・ステージ300以上なら、ボス再戦はもう知っているものとする
 const NUDGES = [
+  { ok: () => game.bossLoop && (game.bossLoopClears || 0) >= 2 && !seenOf('bossRetry'), // ボスに負けてしばらくループしても、再戦ボタンを押したことがない
+    hero: ['鍛え直した…今ならあのボスに届くかもしれない。「👑 ボス再戦」で挑み直せるはずだ', 'いつまでもここで足踏みはしていられない…「ボス再戦」、押してみるか'],
+    comp: ['ねえ、「👑 ボス再戦」のボタンでいつでもボスに挑み直せるよ', 'そろそろリベンジしてみない？ 「ボス再戦」を押せばすぐだよ'],
+    enemy: ['あのボス様に負けたくせに、まだ再戦ボタンも押してないのか…', '「ボス再戦」が怖いのか？ フフ…押せばいつでも来られるのにな'] },
+  { ok: () => (game.reincarnations || 0) === 0 && isRebornUnlocked() && (game.bossLoseStreak || 0) >= 3, // 転生したことがなく、ボスに続けて負けている
+    hero: ['壁にぶつかったら、一度生まれ変わるのも手…なのかもしれない', '転生すれば、ずっと残る力が手に入るらしい…焦らず考えよう'],
+    comp: ['無理しなくていいよ。「転生」すれば強くなってやり直せるんだって', '行き詰まったら転生もありだよ。積み上げた分はちゃんと残るから'],
+    enemy: ['そのボスはまだ早いんじゃないか…生まれ変わって出直してきな', '転生ってやつをすれば、もっと強くなれるらしいぞ…教えてやらんがな'] },
   { ok: () => isTabUnlocked('companion') && !(typeof anyCompanion === 'function' && anyCompanion()),
     hero: ['一人旅も悪くない…だが、仲間がいれば世界は変わる', '「仲間」の扉の向こうで、誰かが招集を待っている気がする…'],
     comp: [],

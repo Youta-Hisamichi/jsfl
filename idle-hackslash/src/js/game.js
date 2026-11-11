@@ -546,6 +546,7 @@ function onStageClear(passed) {
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
+  if (isBossStage && defeated) game.bossLoseStreak = 0; // ボスに勝ったら連敗数を戻す（転生をすすめるセリフ用）
   if (isBossStage && defeated && defeated.bestHit > 0) { // ボスを一撃か3秒以内で倒せたら、試練の塔でどこまで行けそうかをそっと伝える
     const secs = Math.max(0.3, (Date.now() - (defeated.firstHitAt || Date.now())) / 1000), oneHit = (defeated.hitsTaken || 0) <= 1;
     if (oneHit || secs <= TOWER_HINT_FAST_SEC) setTimeout(() => hintTowerStage(Math.max(oneHit ? defeated.bestHit : 0, (defeated.maxHp || 0) / secs)), 2600); // 3秒以内なら「1秒あたりに削れる量」を一撃ぶんとして見る
@@ -889,6 +890,7 @@ function bossFail(reason, silent) {
     if (!r || r.stage !== bossStage) game.bossBestDmg = { stage: bossStage, dmg, maxHp: bo.maxHp, tries: 1 };
     else { r.tries = (r.tries || 1) + 1; if (dmg / bo.maxHp > r.dmg / r.maxHp) { r.dmg = dmg; r.maxHp = bo.maxHp; } }
   } }
+  game.bossLoseStreak = (game.bossLoseStreak || 0) + 1; // ボスに続けて負けた回数（転生をすすめるセリフ用）
   game.bossLoop = bossStage; game.bossLoopClears = 0; game.stage = Math.max(1, bossStage - 1);
   homingMissiles = []; meteors = []; adds = []; clearEnemyTraitObjects(); resetCombo();
   bossTimerFor = null;
@@ -1522,7 +1524,7 @@ function giveUpSkipChallenge() {
   updateHPUI();
   saveGame();
 }
-document.getElementById('bossRetryBtn').addEventListener('click', () => retryBoss());
+document.getElementById('bossRetryBtn').addEventListener('click', () => { (game.seen = game.seen || {}).bossRetry = 1; retryBoss(); });
 document.getElementById('autoBossBtn').addEventListener('click', () => { game.autoBossRetry = game.autoBossRetry === false; updateBossRetryBtn(); saveGame(); });
 stageSkipBtn.addEventListener('click', event => {
   if (!isTowerUnlocked()) { showTapError(`🔒 ステージ${TOWER_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
