@@ -5341,3 +5341,5 @@ body, body * { paint-order: stroke fill; }
 body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一時停止ボタン」がOFFのときは出さない */
 /* ステージ進捗ゲージの「まだ進んでいない部分」は黒ではなく、落ち着いた灰青色（進んだ部分の青と見分けやすく） */
 .exp-wrap .exp-track { background: linear-gradient(180deg, #8792b0, #5f6a88) !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.45), 0 0 0 1px rgba(200,215,255,0.45) !important; }
+/* ボス撃破（ステージクリア）の光：バトル画面は四角いので、丸く（楕円に）切り取らず、画面いっぱいに光らせる */
+.boss-clear-fx { border-radius: 0 !important; }
