@@ -297,16 +297,16 @@ function drawGimmickFx(f, now) {
   else if (f.kind === 'flake') { ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.s * 0.5, 0, Math.PI * 2); ctx.fill(); }
   else if (f.kind === 'streak') { ctx.strokeStyle = `rgba(230,255,230,${0.35 * f.life})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.x - Math.cos(gm.wind) * f.len, f.y - Math.sin(gm.wind) * f.len); ctx.stroke(); if (Math.random() < 0.02) { ctx.fillStyle = '#7ccf5a'; ctx.beginPath(); ctx.ellipse(f.x, f.y, 4, 2, gm.wind, 0, Math.PI * 2); ctx.fill(); } }
 }
-function drawGimmickLabel(key, A, now) { // 左下にイベント名、開始時は中央に大きく告知
+function drawGimmickLabel(key, A, now) { // 右上にイベント名、開始時は中央に大きく告知
   const G = GIMMICKS[key];
   ctx.save();
   ctx.font = 'bold 11px sans-serif'; ctx.textBaseline = 'middle';
   const label = `${G.icon} ${G.name}${G.coin > 1 ? ' コイン×' + G.coin : ''}${GM_FILL[key] ? `　×${gm.broke || 0}` : ''}`, w = ctx.measureText(label).width + 14;
-  let ly = A.b - 26; // 左下のミッション枠が出ているときは、その上に出して重ねない
-  const mis = document.getElementById('obMission');
-  if (mis && mis.style.display !== 'none' && mis.offsetHeight) ly = Math.min(ly, mis.getBoundingClientRect().top - canvas.getBoundingClientRect().top - 24);
-  ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(A.l + 6, ly, w, 20, 10) : ctx.rect(A.l + 6, ly, w, 20); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, A.l + 13, ly + 10);
+  const lx = A.r - 6 - w; let ly = A.t + 6; // 右上にイベント名
+  const sh = document.getElementById('momentShareBtn'); // 右上に「この瞬間をシェア」が出ている間は、その下に出して重ねない
+  if (sh && sh.offsetHeight && getComputedStyle(sh).display !== 'none' && getComputedStyle(sh).opacity !== '0') ly = Math.max(ly, sh.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top + 4);
+  ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly, w, 20, 10) : ctx.rect(lx, ly, w, 20); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, lx + 7, ly + 10);
   const t = (now - gm.bannerAt) / 2600;
   if (gm.bannerAt && t < 1) {
     const inT = Math.min(1, t * 6), outA = t > 0.8 ? (1 - t) / 0.2 : 1, y = arena.y + A.h * 0.22; // 中央の「ステージN」や上の解放告知と重ならない位置
