@@ -1312,7 +1312,8 @@ const REFL_SKILL_A = 0.2, REFL_SKILL_B = Math.log(5) / Math.log(9); // 1 + 0.2 �
 function reflNowMult() { return Math.max(1, ...reflectors().map(o => obstacleMult(o) || 1)); } // 反射玉が2つなら大きいほう
 function reflSkillMult() { const v = reflNowMult(); return v <= 1 ? 1 : 1 + REFL_SKILL_A * Math.pow(v - 1, REFL_SKILL_B); }
 function reflSkillText(x, y) { const v = reflNowMult(), m = reflSkillMult(); if (m > 1.001) spawnDamageText(x, y, `🔮 反射玉×${v} → 威力×${m < 10 ? m.toFixed(1) : Math.round(m)}`, '#8fd0ff', 0.025, true); return m; }
-function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
+const REFL_START_BASE = 2; // 反射玉の倍率の初期値（×1 → ×2 に引き上げ）
+function reflMin() { return REFL_START_BASE + (game.reflStart2 ? 1 : 0); } // 宝箱の「反射の初期値上昇」を持っていると、さらに+1（×3から）
 // ショップの「ダブル反射玉」（💎100）を持っていると、反射玉が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
 function reflCount() { return game.reflTwo ? 2 : 1; }
 function reflState(i) { return i ? game.reflB : game.refl; }
