@@ -26,6 +26,9 @@
   .links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 44px; }
   .links a { display: inline-block; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); text-decoration: none; font-weight: 800; }
   .links a:hover { background: rgba(255,215,107,0.12); }
+  .links.sns { margin-top: 14px; }
+  .links.sns a { border-color: var(--accent); color: var(--accent); }
+  .links.sns a:hover { background: rgba(100,232,255,0.12); }
   footer { margin-top: 28px; text-align: center; color: var(--sub); font-size: 0.82rem; }
   footer a { color: var(--sub); }
   @media (max-width: 520px) { .shots { justify-content: flex-start; } .shots figure { width: 62vw; } }
@@ -59,6 +62,10 @@
   <a href="privacy/">プライバシーポリシー</a>
   <a href="terms/">利用規約</a>
   <a href="mailto:hisashi.app@gmail.com">お問い合わせ</a>
+</nav>
+<nav class="links sns">
+  <a href="https://x.com/Hisashi_vc" target="_blank" rel="noopener">𝕏（開発者）</a>
+  <a href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener">▶ YouTube</a>
 </nav>
 
 <footer>© 2026 HisashiApp</footer>
