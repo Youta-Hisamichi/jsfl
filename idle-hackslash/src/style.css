@@ -5339,3 +5339,5 @@ body, body * { paint-order: stroke fill; }
 .exp-wrap .stage-gauge-row { width: 87cqw !important; } /* ゲージの右端がゴールのボスの後ろに隠れる長さにする */
 .exp-wrap .stage-mark-boss { left: 98% !important; } /* ゴールのボスを少し左へ（右にゲージがはみ出さない位置） */
 body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一時停止ボタン」がOFFのときは出さない */
+/* ステージ進捗ゲージの「まだ進んでいない部分」は黒ではなく、落ち着いた灰青色（進んだ部分の青と見分けやすく） */
+.exp-wrap .exp-track { background: linear-gradient(180deg, #8792b0, #5f6a88) !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.45), 0 0 0 1px rgba(200,215,255,0.45) !important; }
