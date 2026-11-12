@@ -636,6 +636,10 @@ function useLifeGlass(ev) {
 function playLifeGlassSound() { // 時計の「チク・タク・チク・タク」（最後のボーンはなし）
   const tick = (hi, at) => setTimeout(() => { playTone(hi ? 2400 : 1700, 0.03, 'square', 0.09); thump(hi ? 900 : 650, hi ? 500 : 380, 0.05, 0.35, 'triangle'); if (typeof playNoiseBurst === 'function') playNoiseBurst(0.02, 0.12); }, at);
   for (let i = 0; i < 6; i++) tick(i % 2 === 0, i * 280); // チク・タク ×3
+  const at = 6 * 280 + 60; // 時計のあとに、時間が満ちる回復の音（明るい和音が駆け上がり、キラキラがこぼれる）
+  [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.32, 'triangle', 0.09), at + i * 65));
+  setTimeout(() => { playTone(1046.5, 0.9, 'sine', 0.06, 1568); playTone(1318.5, 0.9, 'sine', 0.04, 1975.5); }, at + 330);
+  [2093, 2637, 3136, 3520, 2637, 3136].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.04), at + 380 + i * 70));
 }
 function updateLifeGlassBtn() {
   const row = document.getElementById('skillRow'); if (!row) return;
