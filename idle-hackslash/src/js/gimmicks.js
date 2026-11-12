@@ -189,7 +189,7 @@ function drawGimmick() {
   if (key === 'night') drawGimmickDark(A, 'rgba(4,6,28,0.62)', 70);
   if (key === 'gold') { for (let i = 0; i < 14; i++) { const t = now / 900 + i * 1.7, x = A.l + ((i * 97 + now / 40) % A.w), y = A.t + ((i * 61 + Math.sin(t) * 40 + A.h) % A.h); ctx.globalAlpha = 0.4 + 0.4 * Math.sin(t * 3); ctx.fillStyle = '#ffe36b'; gStar(x, y, 4); } ctx.globalAlpha = 1; }
   if (key === 'treasure' && gm.spot && !gm.treasureDone) { const s = 11 + Math.sin(now / 200) * 2; ctx.strokeStyle = 'rgba(200,30,30,0.85)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(gm.spot.x - s, gm.spot.y - s); ctx.lineTo(gm.spot.x + s, gm.spot.y + s); ctx.moveTo(gm.spot.x + s, gm.spot.y - s); ctx.lineTo(gm.spot.x - s, gm.spot.y + s); ctx.stroke(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(now / 150); ctx.fillStyle = '#fff6b0'; gStar(gm.spot.x + 12, gm.spot.y - 12, 3); ctx.globalAlpha = 1; }
-  if (key === 'slime') { ctx.globalAlpha = 0.14 + 0.05 * Math.sin(now / 300); ctx.fillStyle = '#5be07a'; fillArenaRect(); ctx.globalAlpha = 1; }
+  // ぷるぷる床：床全体に色を重ねて明滅させるのはやめた（黄色くチカチカして見えるため）
   if (key === 'haste') { ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2; for (let i = 0; i < 10; i++) { const y = A.t + ((i * 83 + now / 3) % A.h), x = A.l + ((i * 151) % A.w); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 40); ctx.stroke(); } }
   if (key === 'thunder' || key === 'rocks') { // 雨
     if (key === 'thunder') { ctx.strokeStyle = 'rgba(170,190,230,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); for (let i = 0; i < 40; i++) { const x = A.l + ((i * 53 + now / 6) % A.w), y = A.t + ((i * 97 + now / 1.6) % A.h); ctx.moveTo(x, y); ctx.lineTo(x - 4, y + 12); } ctx.stroke(); }
