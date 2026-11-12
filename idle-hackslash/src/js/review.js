@@ -44,9 +44,25 @@ function openReviewAsk(force) {
   ov.querySelector('.rv-no').onclick = () => { // 不満はレビューに行かず、ご意見として受け止める
     game.review.nextAt = Date.now() + 30 * 864e5;
     ov.querySelector('.rv-panel').innerHTML = `<div class="rv-title">ご意見ありがとう</div><div class="rv-text">どこが不満でしたか？ 今後の改善に使わせてください。</div><textarea class="rv-fb" placeholder="自由に書いてください"></textarea><button class="modal-close-btn rv-send">送る</button>`;
-    ov.querySelector('.rv-send').onclick = () => { const t = ov.querySelector('.rv-fb').value.trim(); if (t) { game.review.feedback = (game.review.feedback || []).concat(t).slice(-5); } close(); showNotice('📝 ご意見ありがとうございました', false, 2500); };
+    ov.querySelector('.rv-send').onclick = () => { const t = ov.querySelector('.rv-fb').value.trim(); if (t) { game.review.feedback = (game.review.feedback || []).concat(t).slice(-5); queueFeedback(t); } close(); showNotice('📝 ご意見ありがとうございました', false, 2500); };
   };
 }
+// ご意見は Firebase の feedback に送る。つながっていない（オフライン・ログイン前）ときは、ためておいて、あとで送る
+function queueFeedback(text) {
+  const plat = (() => { try { return window.Capacitor && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
+  game.review.fbQueue = (game.review.fbQueue || []).concat({ text: String(text).slice(0, 1000), ver: GAME_VERSION, platform: plat, stage: game.stage || 1, best: game.bestStage || 1, reb: game.reincarnations || 0, sentAt: Date.now() }).slice(-10);
+  saveGame(); flushFeedback();
+}
+let feedbackSending = false;
+async function flushFeedback() {
+  const q = game.review && game.review.fbQueue; if (!q || !q.length || feedbackSending) return;
+  if (!(window.fbCloud && fbCloud.uid && fbCloud.sendFeedback)) return;
+  feedbackSending = true;
+  try { while (game.review.fbQueue.length) { await fbCloud.sendFeedback(game.review.fbQueue[0]); game.review.fbQueue.shift(); saveGame(); } }
+  catch (e) { console.warn('ご意見を送れませんでした（あとでもう一度送ります）', e); }
+  feedbackSending = false;
+}
+setInterval(flushFeedback, 60000); setTimeout(flushFeedback, 15000);
 // プレイした日を記録
 { const k = todayKey(); if (!game.playDays) game.playDays = {}; game.playDays[k] = 1; }
 // 嬉しい瞬間につなぐ

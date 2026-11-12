@@ -24,6 +24,7 @@ async function fbInit() {
   window.fbCloud = {
     kind: 'firebase', uid: null, linked: false, provider: null, linkedName: '',
     save: d => ref().set(d, { merge: true }),
+    sendFeedback: d => db.collection('feedback').add({ ...d, uid: fbCloud.uid, at: fb.firestore.FieldValue.serverTimestamp() }), // 評価ダイアログの「ご意見」を feedback に1件ずつ置く（書くだけ。読めるのは Firebase コンソールから）
     async remove() { // クラウドの控え（users/<uid>）と、ログインの記録（アカウント）を消す
       const cur = auth.currentUser; if (!cur) throw new Error('not signed in');
       await ref().delete();

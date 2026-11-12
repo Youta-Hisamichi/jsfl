@@ -9,6 +9,17 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['save', 'saveAt', 'saveBest', 'saveReb', 'saveStage'])
         && (request.resource.data.save == null || (request.resource.data.save is string && request.resource.data.save.size() < 240000));
     }
+    // feedback/<自動ID>：評価ダイアログの「ちょっと不満がある」で送られたご意見。書くだけ（追加のみ）で、アプリからは誰も読めない。Firebase コンソールで見る
+    match /feedback/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['text', 'ver', 'platform', 'stage', 'best', 'reb', 'sentAt', 'uid', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 20
+        && request.resource.data.platform is string && request.resource.data.platform.size() <= 10
+        && request.resource.data.stage is number && request.resource.data.best is number && request.resource.data.reb is number
+        && request.resource.data.sentAt is number && request.resource.data.at == request.time;
+    }
     match /{document=**} {
       allow read, write: if false; // それ以外は誰も読み書きできない
     }
