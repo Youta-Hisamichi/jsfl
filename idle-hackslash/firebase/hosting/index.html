@@ -27,8 +27,12 @@
   .links a { display: inline-block; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); text-decoration: none; font-weight: 800; }
   .links a:hover { background: rgba(255,215,107,0.12); }
   .links.sns { margin-top: 14px; }
-  .links.sns a { border-color: var(--accent); color: var(--accent); }
-  .links.sns a:hover { background: rgba(100,232,255,0.12); }
+  .links.sns a { display: inline-flex; align-items: center; gap: 8px; color: #fff; }
+  .links.sns svg { width: 20px; height: 20px; flex: none; }
+  .links.sns a.x { background: #000; border-color: #555; }
+  .links.sns a.x:hover { background: #222; }
+  .links.sns a.yt { background: #ff0000; border-color: #ff0000; }
+  .links.sns a.yt:hover { background: #d90000; }
   footer { margin-top: 28px; text-align: center; color: var(--sub); font-size: 0.82rem; }
   footer a { color: var(--sub); }
   @media (max-width: 520px) { .shots { justify-content: flex-start; } .shots figure { width: 62vw; } }
@@ -64,8 +68,8 @@
   <a href="mailto:hisashi.app@gmail.com">お問い合わせ</a>
 </nav>
 <nav class="links sns">
-  <a href="https://x.com/Hisashi_vc" target="_blank" rel="noopener">𝕏（開発者）</a>
-  <a href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener">▶ YouTube</a>
+  <a class="x" href="https://x.com/Hisashi_vc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>開発者のX</a>
+  <a class="yt" href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#fff"/><path fill="#ff0000" d="M11 5.5v9l8-4.5z"/></svg>YouTube</a>
 </nav>
 
 <footer>© 2026 HisashiApp</footer>
