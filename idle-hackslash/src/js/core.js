@@ -820,7 +820,7 @@ SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェ�
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
 SHOP_ITEMS.forbiddenKnife = { icon: '🔪', img: 'assets/img/icons/art_forbiddenKnife.webp', name: '禁断のナイフ（★4遺物）', desc: 'ザコのHP-1%', cost: 5, stackKey: 'forbiddenKnifeBuys', maxStack: 10, noNote: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
 SHOP_ITEMS.forbiddenSword = { icon: '🗡️', img: 'assets/img/icons/art_forbiddenSword.webp', name: '禁断の剣（★5遺物）', desc: 'ボスのHP-1%', cost: 5, unlockKey: 'forbiddenSwordBought' };
-SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 5, stackKey: 'forbiddenWatchBuys', maxStack: 10, shopCount: true }; // ショップで10個まで。値段は買うたびに+5（5→10→15…50）
+SHOP_ITEMS.forbiddenWatch = { icon: '⏱️', img: 'assets/img/icons/art_forbiddenWatch.webp', name: '禁断の懐中時計（★4遺物）', desc: 'ボス戦の制限時間+1秒', cost: 3, costGrowth: 1, stackKey: 'forbiddenWatchBuys', maxStack: 30, shopCount: true }; // ショップで30個まで。値段はずっと💎3
 // 進化項目のON/OFF：ONにした項目だけが進化のランダムに入る。ONは💎1、OFFは💎2。攻撃力・HPははじめからON（OFFにもできる）、命中は進化3回目で自動でON（OFFにできない）
 const EVO_TOGGLE_ON_COST = 1, EVO_TOGGLE_OFF_COST = 2;
 [['atk', '⚔️', '攻撃力', '自キャラの攻撃力が上がる', 'up_atk'], ['hp', '❤️', 'HP', '自キャラの最大HPが上がる', 'up_hp'],

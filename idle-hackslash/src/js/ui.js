@@ -1374,7 +1374,7 @@ function buyShopItem(id, event) { // ショップの品を買う（進化ペー�
   else if (item.stackKey) game[item.stackKey] = (game[item.stackKey] || 0) + 1;
   else if (SHOP_MULTI_ITEMS[id]) { game.shopOwned[id] = shopBuyCount(id) + 1; line = `${SHOP_MULTI_ITEMS[id]}が ${shopMultiRate(id)}倍 になった！`; }
   else if (item.unlockKey) game[item.unlockKey] = true; else game.shopOwned[id] = true;
-  if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/10）`; renderArtifactList(); }
+  if (id === 'forbiddenWatch') { gainArtifact('forbiddenWatch'); line = `禁断の懐中時計を手に入れた！（ボス戦の制限時間 +${Math.min(ARTIFACT_STACK_LIMIT.forbiddenWatch, game.ownedArtifacts.forbiddenWatch)}秒・ショップ ${game.forbiddenWatchBuys}/30）`; renderArtifactList(); }
   if (id === 'forbiddenKnife') { gainArtifact('forbiddenKnife'); line = `禁断のナイフを手に入れた！（ザコ敵のHP -${Math.min(ARTIFACT_STACK_LIMIT.forbiddenKnife, game.ownedArtifacts.forbiddenKnife)}%・ショップ ${game.forbiddenKnifeBuys}/10）`; renderArtifactList(); }
   if (id.startsWith('chestOmen_')) line = `${SHOP_ITEMS[id].name.replace('の予感', '')}がドロップするようになった！`;
   if (id === 'feaUse') { line = `進化1回で使える羽が ${getFeaUseMax()}枚 になった！`; if (typeof renderEvolutionList === 'function') renderEvolutionList(); }
