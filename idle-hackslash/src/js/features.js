@@ -1381,6 +1381,12 @@ function enemyLinePool(b, kind) { // その敵に合うセリフだけ（未分�
   setTimeout(sync, 0);
   if (btn) btn.addEventListener('click', () => { game.speechOff = !game.speechOff; if (game.speechOff) speech = []; sync(); saveGame(); if (typeof playTone === 'function') playTone(game.speechOff ? 520 : 880, 0.06, 'triangle', 0.05); showNotice(game.speechOff ? '💬 セリフをOFFにしました' : '💬 セリフをONにしました'); });
   sync(); }
+// 設定の「一時停止ボタン」：バトル画面右下の⏸を出すかどうか（はじめはOFF＝出さない）
+{ const btn = document.getElementById('pauseBtnToggle');
+  const sync = () => { document.body.classList.toggle('no-pause-btn', !game.pauseBtnOn); if (!btn) return; const nm = btn.querySelector('.msb-name'); if (nm) nm.textContent = `${btn.querySelector('.st-ico') ? '' : '⏸ '}一時停止ボタン：${game.pauseBtnOn ? 'ON' : 'OFF'}`; btn.classList.toggle('is-off', !game.pauseBtnOn); const ic = btn.querySelector('.st-ico'); if (ic && !ic.querySelector('img')) ic.innerHTML = '<img src="assets/img/ui/pause_btn.webp" alt="">'; }; // 設定ページの飾り付けのあとは、項目アイコンをバトル画面の⏸ボタンの絵にする
+  setTimeout(sync, 0); setTimeout(sync, 1500);
+  if (btn) btn.addEventListener('click', () => { game.pauseBtnOn = !game.pauseBtnOn; if (!game.pauseBtnOn && typeof userPaused !== 'undefined' && userPaused && typeof setUserPaused === 'function') setUserPaused(false); sync(); saveGame(); if (typeof playTone === 'function') playTone(game.pauseBtnOn ? 880 : 520, 0.06, 'triangle', 0.05); showNotice(game.pauseBtnOn ? '⏸ 一時停止ボタンを出しました（バトル画面の右下）' : '⏸ 一時停止ボタンをしまいました'); });
+  sync(); }
 // ===== ゲームの仕組みをほのめかすセリフ（反射玉・放置・転生・仲間・進化・宝箱・塔・ランキングなど） =====
 CHUUNI.idle.push('跳ね返るたびに、力は積み重なる…それが我が理（ことわり）', '壁は敵ではない。力を倍にする味方だ', '眠っている間も、我が剣は振るわれ続ける',
   '終わりは始まりにすぎぬ…何度でも、より強く生まれ変わる', '羽を集めよ…進化の扉は、それで開く', '宝箱の奥に、まだ見ぬ仲間の気配がする',

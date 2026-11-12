@@ -5338,3 +5338,4 @@ body, body * { paint-order: stroke fill; }
 .stage-bar-row { margin-left: -7px !important; margin-right: -6px !important; }
 .exp-wrap .stage-gauge-row { width: 87cqw !important; } /* ゲージの右端がゴールのボスの後ろに隠れる長さにする */
 .exp-wrap .stage-mark-boss { left: 98% !important; } /* ゴールのボスを少し左へ（右にゲージがはみ出さない位置） */
+body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一時停止ボタン」がOFFのときは出さない */
