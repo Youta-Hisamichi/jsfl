@@ -1377,6 +1377,7 @@ function drawReflLabel(t, x, y, fs, maxW, col) { // 反射玉の数字：けた�
   if (frac) { ctx.font = `900 ${ff}px sans-serif`; ctx.lineWidth = Math.max(2.5, 4 * ff / fs); ctx.strokeText(frac, x0 + w1, base); ctx.fillText(frac, x0 + w1, base); }
   ctx.restore();
 }
+function reflShowMult(v) { return v * getEvoRate('weapon'); } // 反射玉に出す数字：勇者の攻撃力の何倍が出るか（反射玉の倍率 × 進化「反射玉」）
 function bounceMultLabel(v) { v = Math.abs(v); return `×${v >= 1000 ? Math.floor(v) : +v.toFixed(2)}`; } // 端数は小数2けたまで（×1.5・×12.75）
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
@@ -1386,12 +1387,11 @@ function applyBounceObjMult(ball, o) { // 反射玉は自キャラの強さを�
   const now = Date.now(); if (o.bmHitAt && now - o.bmHitAt < 250) return; o.bmHitAt = now;
   if (!tackleShotNow()) return;
   const sp = Math.hypot(o.mvx || 0, o.mvy || 0) || 1; o.mvx = (o.mvx || 0) / sp * REFLECT_LAUNCH; o.mvy = (o.mvy || 0) / sp * REFLECT_LAUNCH; o.hitMap = new Map(); o.flyAt = now;
-  o.launched = true; o.launchMult = dashDmgMult(ball); // 反射玉に当てたときの自キャラのダメージ（溜め・ダッシュ込み）を覚えておく。これに数値を掛ける
-  spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * o.launchMult))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
-  if (reflTackleMult() > 1) { // ショップの「タックル反射ブースト」：タックルで叩くと、反射玉の倍率が×1.25（2個で×1.5）。結果は四捨五入して整数に
-    const b0 = o.bm, up = Math.round(b0 * reflTackleMult()); o.bm = Math.min(reflMax(), up); // 体当たりで上げた倍率は、小数にせず四捨五入（上限まで）
-    if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ${bounceMultLabel(b0)} → ${bounceMultLabel(o.bm)}`, '#ffe45c', 0.03, true); }
-  }
+  o.launched = true; const lm = dashDmgMult(ball); o.launchMult = 1; // 叩いた力（溜め・ダッシュ込みで、攻撃力の何倍か）は、倍率に足す（当たったときに二重には掛けない）
+  spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * lm))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
+  const b0 = o.bm; o.bm = Math.min(reflMax(), reflRound(b0 + lm));
+  if (reflTackleMult() > 1) o.bm = Math.min(reflMax(), Math.round(o.bm * reflTackleMult())); // ショップの「タックル反射ブースト」：さらに×1.25（2個で×1.5）。結果は四捨五入して整数に
+  if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ${bounceMultLabel(reflShowMult(b0))} → ${bounceMultLabel(reflShowMult(o.bm))}`, '#ffe45c', 0.03, true); }
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
 }
 function dashDmgMult(ball) {
@@ -1764,7 +1764,7 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy) || 1;
     if (d >= o.r + e.radius) continue;
     const nx = dx / d, ny = dy / d;
-    if (refl) { // 反射玉：敵に当たると「当てたときのダメージ×数値」。敵から跳ね返って、また飛んでいく（これも反射なので数値+1）
+    if (refl) { // 反射玉：敵に当たると「攻撃力×数値」（叩いた力はタックルのときに数値へ足してある）。敵から跳ね返って、また飛んでいく（これも反射なので数値+1）
       if (!o.hitMap) o.hitMap = new Map();
       if (now - (o.hitMap.get(e) || 0) < REFLECT_REHIT_MS) continue; o.hitMap.set(e, now);
       reflectorSmash(o, e, pl);
@@ -1796,7 +1796,7 @@ function reflectorBounced(o) { // 反射するたびに数値+1（音も数値�
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
-  const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(v);
+  const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(reflShowMult(v));
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
   const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射玉」も掛かる */
   if (dmg > 0 && v > (game.reflBestMult || 0)) game.reflBestMult = v; // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
@@ -2040,7 +2040,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
     ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
     ctx.font = `900 ${fs}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-    const t = bounceMultLabel(v), col = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS);
+    const t = bounceMultLabel(o.kind === 'reflector' ? reflShowMult(v) : v), col = o.kind === 'reflector' ? '#ffffff' : (plus ? BOUNCE_COL_PLUS : BOUNCE_COL_MINUS);
     if (o.kind === 'reflector') drawReflLabel(t, o.x, o.y, fs, o.r * 2 * pop, col); else { ctx.strokeText(t, o.x, o.y); ctx.fillStyle = col; ctx.fillText(t, o.x, o.y); }
   }
   ctx.globalAlpha = 1;
@@ -2615,13 +2615,13 @@ function showReflFormula() {
   const hit = tgt ? (game.stage <= NO_MISS_UNTIL_STAGE && !game.skipChallenge ? 1 : Math.min(1, REFLECT_HIT_RATE * playerHitChance(tgt, true))) : null;
   const wait = h ? heroWaitMult(h) : 1, dash = h && h.dashPowerUntil > Date.now() ? DASH_DMG_MULT : 1;
   const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${v}${n ? `<small>${n}</small>` : ''}</div>`;
-  let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 叩いたときの力（溜め×ダッシュ×専用技）× 反射玉の倍率 × 進化「反射玉」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）</small></div>`;
+  let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 反射玉の倍率 × 進化「反射玉」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）。タックルで叩くと、叩いた力（溜め×ダッシュ×専用技）を反射玉の倍率に足す。玉に出る数字は「反射玉の倍率 × 進化『反射玉』」＝攻撃力の何倍か</small></div>`;
   x += '<div class="dl-h">いまの数字</div>' + row('自キャラ攻撃力', F(atk)) + row('溜め（いま叩いたら）', M(wait), `最大 ×${HERO_WAIT_MAX}・叩くと使い切る`) + row('ダッシュパネル', M(dash), `通ると3秒 ×${DASH_DMG_MULT}`) + row('進化「反射玉」', M(evo));
   x += row('ボスへの倍率', M(boss), tgt ? (tgt.isBoss ? 'いまのボスに対して' : 'いまの敵に対して') : '敵がいない') + row('クリティカル', `${Math.round(critC * 100)}%で ${M(critM)}`) + row('当たる確率', hit == null ? '-' : `${Math.round(hit * 100)}%`, `タックルの${REFLECT_HIT_RATE}倍（30階までは必ず当たる）`);
   x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`, `反射上昇アップ ${reflStepCount()}個（1個ごとに +0.1）`) + row('タックルで叩くと', M(reflTackleMult()), `タックル反射ブースト ${reflTackleCount()}個`) + row('上限', bounceMultLabel(reflMax()), `はじめ ×${REFL_CAP_BASE}＋反射MAXアップ ${reflCapCount()}個＋秘宝 ${Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)}個`) + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
   for (const o of reflectors()) {
-    const v = obstacleMult(o) || 1, lm = o.launched ? (o.launchMult || 1) : wait * dash, d = atk * lm * v * evo * boss;
-    x += row(`反射玉${reflectors().length > 1 ? (o.ri || 0) + 1 : ''} ${bounceMultLabel(v)}`, `≈ ${F(d)}`, `${F(atk)} × ${M(lm)}${o.launched ? '（叩いたときの力）' : '（いま叩いたら）'} × ${bounceMultLabel(v)} × ${M(evo)} × ${M(boss)}　クリティカルなら ≈ ${F(d * critM)}`);
+    const v0 = obstacleMult(o) || 1, add = o.launched ? 0 : wait * dash, v = Math.min(reflMax(), v0 + add), lm = 1, d = atk * lm * v * evo * boss;
+    x += row(`反射玉${reflectors().length > 1 ? (o.ri || 0) + 1 : ''} 表示 ${bounceMultLabel(v0 * evo)}`, `≈ ${F(d)}`, `${F(atk)} × ${bounceMultLabel(v)}${o.launched ? '（飛んでいる今の倍率）' : `（いま叩いたら ${bounceMultLabel(v0)} ＋ 叩く力 ${M(add)}）`} × ${M(evo)} × ${M(boss)}　クリティカルなら ≈ ${F(d * critM)}`);
   }
   x += row('メテオ・大爆発への上乗せ', M(reflSkillMult()), `いまの反射玉 ${bounceMultLabel(reflNowMult())}（×2→×1.2・×10→×2）`) + '</div>';
   simpleChoice({ icon: '🔮', title: '反射玉のダメージ式', text: x, yes: '閉じる', no: false });
