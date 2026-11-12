@@ -766,8 +766,8 @@ SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp'
 // 反射MAX維持は削除（買っていた人には、払ったジェムを返す：reflKeepRefund）
 const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
 function reflKeepRefund() { const n = Math.min(3, game.reflKeepBuys || 0) || (game.refl16Keep ? 1 : 0); if (!n) return; const back = 5 * n * (n + 1) / 2; game.gems = (game.gems || 0) + back; delete game.reflKeepBuys; delete game.refl16Keep; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); if (typeof showNotice === 'function') showNotice(`🌈 反射MAX維持はなくなりました。払った 💎${back} をお返しします`); }
-// 反射玉の上がり方：反射するたびに +0.5。ショップの「反射上昇アップ」1個ごとに +0.1（最大5個で +1.0）
-const REFL_STEP_BASE = 0.5, REFL_STEP_UP = 0.1, REFL_STEP_MAX = 5;
+// 反射玉の上がり方：反射するたびに +1。ショップの「反射上昇アップ」1個ごとに +0.1（最大5個で +1.5）
+const REFL_STEP_BASE = 1, REFL_STEP_UP = 0.1, REFL_STEP_MAX = 5;
 function reflStepCount() { if (game.reflStep1) { delete game.reflStep1; game.gems = (game.gems || 0) + 30; setTimeout(() => { if (typeof showNotice === 'function') showNotice('⏫ 反射上昇+1 は「反射上昇アップ」に変わりました。払った 💎30 をお返しします'); if (typeof updateStatsUI === 'function') updateStatsUI(); }, 1500); } if ((game.reflStepBuys || 0) > REFL_STEP_MAX) { let back = 0; for (let k = REFL_STEP_MAX; k < game.reflStepBuys; k++) back += 5 * (k + 1); game.reflStepBuys = REFL_STEP_MAX; game.gems = (game.gems || 0) + back; setTimeout(() => { if (typeof showNotice === 'function') showNotice(`⏫ 反射上昇アップは最大${REFL_STEP_MAX}個になりました。多い分の 💎${back} をお返しします`); if (typeof updateStatsUI === 'function') updateStatsUI(); }, 1500); } return Math.min(REFL_STEP_MAX, game.reflStepBuys || 0); } // 上限を10→5個にしたので、6個目からの分は返す // 前の「反射上昇+1」（1回買い切り）は、払ったジェムを返す
 function reflStep() { return reflRound(REFL_STEP_BASE + REFL_STEP_UP * reflStepCount()); }
 function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 などの端数が、計算のずれで 0.30000…4 にならないように
