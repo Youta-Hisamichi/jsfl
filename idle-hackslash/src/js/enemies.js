@@ -1305,7 +1305,7 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
 const REFL_UNLIMITED = true; // 反射するたびに上がり（上限 reflMax で止まる）、敵に当たったら×1に戻る
-const REFL_CAP_BASE = 100; // 反射玉の倍率の上限：はじめは×100 // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
+const REFL_CAP_BASE = 255; // 反射玉の倍率の上限：はじめは×255 // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
 function reflMax() { if (REFL_UNLIMITED) return REFL_CAP_BASE + reflCapCount() + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0); return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×100から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
 const REFL_SKILL_A = 0.2, REFL_SKILL_B = Math.log(5) / Math.log(9); // 1 + 0.2 ×（倍率−1）^0.73
@@ -1377,7 +1377,7 @@ function drawReflLabel(t, x, y, fs, maxW, col) { // 反射玉の数字：けた�
   if (frac) { ctx.font = `900 ${ff}px sans-serif`; ctx.lineWidth = Math.max(2.5, 4 * ff / fs); ctx.strokeText(frac, x0 + w1, base); ctx.fillText(frac, x0 + w1, base); }
   ctx.restore();
 }
-function reflShowMult(v) { return v * getEvoRate('weapon'); } // 反射玉に出す数字：勇者の攻撃力の何倍が出るか（反射玉の倍率 × 進化「反射玉」）
+function reflShowMult(v) { return Math.ceil(v * getEvoRate('weapon') - 1e-9); } // 反射玉に出す数字：勇者の攻撃力の何倍が出るか（反射玉の倍率 × 進化「反射玉」）。小数は出さず切り上げ（ダメージもこの数字で計算する））
 function bounceMultLabel(v) { v = Math.abs(v); return `×${v >= 1000 ? Math.floor(v) : +v.toFixed(2)}`; } // 端数は小数2けたまで（×1.5・×12.75）
 const BOUNCE_COL_PLUS = '#4fb8ff', BOUNCE_COL_MINUS = '#ff4f5e';
 function tackleShotNow() { return !!(holdRush && holdRush.shot && !holdRush.used && Date.now() < holdRush.until); } // 射出したタックルが飛んでいる間だけ（AUTOの射出も含む。歩いて触れたときは入らない）
@@ -1798,8 +1798,8 @@ function reflectorSmash(o, e, pl) {
   const v = obstacleMult(o); if (!v) return;
   const good = true, col = rgbHex(reflectorRGB(v, Date.now())), label = bounceMultLabel(reflShowMult(v));
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
-  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * v * getEvoRate('weapon'), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射玉」も掛かる */
-  if (dmg > 0 && v > (game.reflBestMult || 0)) game.reflBestMult = v; // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
+  const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * reflShowMult(v), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射玉」も掛かる */
+  if (dmg > 0 && Math.ceil(v) > (game.reflBestMult || 0)) game.reflBestMult = Math.ceil(v); // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
   if (dmg > 0 && v >= REFL_MAX_BASE) { if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：×8（パワーアップ前の最大値）以上の反射玉を敵に当てる。秘宝で最大値が上がっても条件は×8のまま
   if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
     hitStopFrames = Math.max(hitStopFrames || 0, 4 + Math.round(power * 4)); e.stunnedUntil = Math.max(e.stunnedUntil || 0, Date.now() + 250);
