@@ -423,14 +423,15 @@ function openTansu(o) {
   if (o.multi <= 0) { o.used = true; o.usedAt = Date.now(); }
   playTone(520, 0.05, 'square', 0.05, 380); setTimeout(() => playTone(700, 0.08, 'triangle', 0.06), 70); // ガラッ
   const x = o.x, y = o.y - o.r - 12, r = Math.random(), unit = Math.max(1, stageCoinRaw() * computeBonuses().coinMult);
-  let txt, col = '#ffd76b', chestRar = null;
+  let txt, col = '#ffd76b', chestRar = null, potionImg = false;
   if (r < 0.45) { const c = Math.round(unit * (0.3 + Math.random() * 0.5)); game.coins += c; spawnCoinDrop(x, o.y, c, 3); txt = `💰 ${formatCoinNumber(c)}コインを見つけた！`; playCoinChime(gm.broke % 13); }
-  else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '🧪 回復ポーションを見つけた！ HP回復'; col = '#7ee787'; }
+  else if (r < 0.58) { const pl = balls.find(isMainPlayerBall); if (pl) pl.hp = Math.min(pl.maxHp, pl.hp + Math.round(pl.maxHp * 0.2)); txt = '回復ポーションを見つけた！ HP回復'; col = '#7ee787'; potionImg = true; }
   else if (r < 0.65) { const fr = rollRecordFeather(); addFea(fr, 1); txt = `🪶 ${RARITY_INFO[fr].label}の進化の羽を見つけた！`; col = RARITY_INFO[fr].color; playCoinChime(10); }
   else if (r < 0.70) { const rar = rollChestRarity(2); dropTreasureChest(rar); txt = `${RARITY_INFO[rar].label}の宝箱を見つけた！`; col = RARITY_INFO[rar].color; chestRar = rar; }
   else if (r < 0.74) { game.redPotions = (game.redPotions || 0) + 1; if (typeof updateRedPotionButton === 'function') updateRedPotionButton(); txt = '🧪 スキルポーションを見つけた！'; col = '#ff8ad8'; }
   else { txt = TANSU_JUNK[Math.floor(Math.random() * TANSU_JUNK.length)]; col = '#c8c8d0'; }
   spawnDamageText(x, y, txt, col, 0.016, r < 0.74); if (chestRar) attachChestImg(chestRar);
+  if (potionImg) { const d = damageTexts[damageTexts.length - 1]; if (d && ICON_IMAGES.x_potion) { const im = new Image(); im.src = ICON_IMAGES.x_potion; d.img = im; } } // 回復ポーションは🧪ではなく、ゲームの回復ポーションの絵
   spawnHitParticles(x, o.y - o.r * 0.4, '#e8c080');
   if (gm.broke % 15 === 0) { const b = Math.round(unit * 6); game.coins += b; spawnCoinBurst(arena.x, arena.y - 20, b, 8); spawnDamageText(arena.x, arena.y - 44, `🗄️ タンス ${gm.broke}段！ ボーナス`, '#ffe36b', 0.012, true); }
   updateStatsUI();
