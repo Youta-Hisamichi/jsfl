@@ -539,6 +539,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     game.companionSummons = (game.companionSummons || 0) + count;
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
+  compGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止める（残響も）。結果が出たら元の曲へ
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
   const extra = compGachaStageBonus(); // いまは0（1回1人）
@@ -555,6 +556,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   const reveal = () => { // 進化ガチャと同じ召喚演出のあとで開封（引き直しも同じ）
     if (!compSummoning) return;
     compSummoning = false;
+    compGachaHush = false; refreshBgm(); // 結果が出たら曲を戻す
     compSummonReveal = null;
     if (activeTabCache !== 'companion') { box.style.display = 'none'; renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
     showCompanionGachaResult(box, results, results.length, bestRarity); // ステージボーナスで増えた分も並べる

@@ -1013,6 +1013,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   renderBgmBook();
 });
 let hireGachaBgmOn = false; // 採用ガチャの結果を出している間
+let compGachaHush = false; // 仲間の招集ガチャの演出中（押した瞬間から結果が出るまで曲を止める）
 let hireGachaHush = false;  // 採用ガチャのルーレット中（曲を止めてドキドキの効果音だけ）
 let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
@@ -1030,7 +1031,7 @@ function refreshBgm() {
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
   else if (skGachaBgmOn) type = 'hireget'; // スキル・サブウェポン・進化ガチャの結果も、採用ガチャと同じお祝いの曲
-  else if (hireGachaHush) type = 'silent'; // 採用ガチャのルーレット中
+  else if (hireGachaHush || compGachaHush) type = 'silent'; // 採用ガチャのルーレット中・招集ガチャの演出中
   else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show') || document.getElementById('shareModal')?.classList.contains('show')) type = 'battle31'; // シェア画面もスタッフロールの曲 // スタッフロール専用の曲（エースの飛翔）
