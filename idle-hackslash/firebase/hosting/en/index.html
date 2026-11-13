@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mugen Hansha: Idle Hack RPG</title>
+<meta name="description" content="Smash enemies with the Reflection Orb, which grows stronger with every bounce. An idle hack &amp; slash RPG: recruit companions, rebirth, and go ever further.">
+<style>
+  :root { --bg: #0c0e1f; --bg2: #161a3a; --fg: #eef1ff; --sub: #a9b2d6; --gold: #ffd76b; --line: rgba(160,190,255,0.25); --accent: #64e8ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0%, #2a2f6a 0%, var(--bg2) 40%, var(--bg) 100%); background-color: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.8; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 16px 56px; }
+  header { text-align: center; }
+  .hero { width: 96px; height: 96px; image-rendering: pixelated; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
+  h1 { margin: 8px 0 0; font-size: clamp(1.9rem, 7vw, 2.8rem); line-height: 1.25; letter-spacing: 0.06em; background: linear-gradient(90deg, #ffd76b, #ff9ec4, #7fd6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tag { margin: 12px auto 0; max-width: 560px; color: var(--sub); font-size: 1rem; }
+  .shots { display: flex; gap: 14px; justify-content: center; margin: 32px 0 8px; overflow-x: auto; padding-bottom: 6px; }
+  .shots figure { margin: 0; flex: 0 0 auto; width: min(31%, 240px); min-width: 150px; text-align: center; }
+  .shots img { display: block; width: 100%; height: auto; border-radius: 16px; border: 2px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+  .shots figcaption { margin-top: 6px; color: var(--sub); font-size: 0.82rem; font-weight: 700; }
+  h2 { margin: 40px 0 12px; font-size: 1.2rem; color: var(--gold); }
+  .feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .feats li { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); }
+  .feats b { display: block; color: var(--accent); margin-bottom: 2px; }
+  .feats span { color: var(--sub); font-size: 0.92rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 44px; }
+  .links a { display: inline-block; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); text-decoration: none; font-weight: 800; }
+  .links a:hover { background: rgba(255,215,107,0.12); }
+  .links.sns { margin-top: 14px; }
+  .links.sns a { display: inline-flex; align-items: center; gap: 8px; color: #fff; }
+  .links.sns svg { width: 20px; height: 20px; flex: none; }
+  .links.sns a.x { background: #000; border-color: #555; }
+  .links.sns a.x:hover { background: #222; }
+  .links.sns a.yt { background: #ff0000; border-color: #ff0000; }
+  .links.sns a.yt:hover { background: #d90000; }
+  footer { margin-top: 28px; text-align: center; color: var(--sub); font-size: 0.82rem; }
+  footer a { color: var(--sub); }
+  @media (max-width: 520px) { .shots { justify-content: flex-start; } .shots figure { width: 62vw; } }
+  .lang { position: absolute; top: 12px; right: 16px; font-size: 0.9rem; }
+  .lang a { padding: 4px 12px; border-radius: 999px; border: 1px solid currentColor; text-decoration: none; color: var(--gold, var(--accent)); font-weight: 700; }
+</style>
+</head>
+<body>
+<nav class="lang"><a href="../" hreflang="ja">日本語</a></nav>
+<main>
+<header>
+  <img class="hero" src="../img/hero.webp" alt="">
+  <h1>Mugen Hansha<br>Idle Hack RPG</h1>
+  <p class="tag">Send the Reflection Orb flying — it gets stronger with every bounce — and wipe out whole enemy hordes.<br>An idle hack &amp; slash RPG where the adventure keeps going even while you're away.</p>
+</header>
+
+<div class="shots">
+  <figure><img src="../img/shot_battle.webp" alt="Battle screen with the Reflection Orb at x12" width="585" height="1266" loading="lazy"><figcaption>Wipe them out with the orb</figcaption></figure>
+  <figure><img src="../img/shot_companion.webp" alt="Companion screen" width="585" height="1266" loading="lazy"><figcaption>Grow stronger with companions</figcaption></figure>
+  <figure><img src="../img/shot_ranking.webp" alt="Ranking screen" width="585" height="1266" loading="lazy"><figcaption>Compete in the rankings</figcaption></figure>
+</div>
+
+<h2>Features</h2>
+<ul class="feats">
+  <li><b>🔮 The more it bounces, the stronger it gets</b><span>Tackle the Reflection Orb and its multiplier rises with every bounce off a wall. Build it up, then blast the whole horde in one hit.</span></li>
+  <li><b>⏳ Progress even while idle</b><span>Your hero keeps fighting while the app is closed — come back to a pile of coins.</span></li>
+  <li><b>🐾 A colorful party</b><span>Summon and train companions from N to UR. Their "Bond" and "Grace" abilities power up the whole party.</span></li>
+  <li><b>🌌 Rebirth and go further</b><span>Stuck? Rebirth. Keep permanent bonuses and treasure chests, and push into deeper stages.</span></li>
+  <li><b>🗼 Bosses, stage events and the Tower of Trials</b><span>Mighty bosses at every milestone, surprise stage events like marching battle formations and moving gears, and the Tower of Trials to test your strength.</span></li>
+  <li><b>🏆 Rankings</b><span>Aim for the top in best stage, max reflection multiplier and more.</span></li>
+</ul>
+
+<nav class="links">
+  <a href="privacy/">Privacy Policy</a>
+  <a href="terms/">Terms of Use</a>
+  <a href="mailto:hisashi.app@gmail.com">Contact</a>
+</nav>
+<nav class="links sns">
+  <a class="x" href="https://x.com/Hisashi_vc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Developer on X</a>
+  <a class="yt" href="https://www.youtube.com/@hisaPonson?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#fff"/><path fill="#ff0000" d="M11 5.5v9l8-4.5z"/></svg>YouTube</a>
+</nav>
+<footer>© 2026 HisashiApp</footer>
+</main>
+</body>
+</html>
