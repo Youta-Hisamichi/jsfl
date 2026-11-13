@@ -6,7 +6,7 @@
 // ・アプリ ID（ca-app-pub-…~…）は app/android/app/src/main/res/values/strings.xml の admob_app_id
 // 機種ごとの広告ユニット（本番）
 const ADMOB_IDS = {
-  android: { rewarded: 'ca-app-pub-3193231960637976/9776778979', testing: false }, // 本番（動画報酬）
+  android: { rewarded: 'ca-app-pub-3193231960637976/2285083567', testing: false }, // 本番（動画報酬2：パートナーでの入札なし。旧 /9776778979 はメディエーション専用で使えなかった）
   ios: { rewarded: 'ca-app-pub-3193231960637976/5661595525', testing: false }, // 本番（iOS の動画報酬）
 };
 const ADMOB_PLATFORM = (() => { try { return window.Capacitor && typeof window.Capacitor.getPlatform === 'function' ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
