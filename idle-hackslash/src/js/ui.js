@@ -2087,6 +2087,7 @@ supergemShopList.addEventListener('click', event => {
   if (!button) return;
   const id = button.dataset.supergemShop;
   const item = SUPERGEM_SHOP_ITEMS[id];
+  if (typeof iapActive === 'function' && iapActive()) { iapBuyGems(id); return; } // ストアのアプリでは本物の購入（iap.js）
   if (game.superGems < item.cost) { showTapError('リアルマネーが足りません', event.clientX, event.clientY); return; }
   game.superGems -= item.cost;
   const gain = { small: 20, medium: 110, large: 605, huge: 1331 }[id] || 0;
@@ -2101,6 +2102,7 @@ function buySubscription(id, event) {
   const sub = SUBSCRIPTIONS[id];
   const active = getActiveSub();
   if (!isSubActive(id) && active && active.rank > sub.rank) { showTapError('上位の紋章が有効です', event.clientX, event.clientY); return; }
+  if (typeof iapActive === 'function' && iapActive()) { iapBuySub(id); return; } // ストアのアプリでは本物の購入（iap.js）
   if (game.superGems < sub.cost) { showTapError('リアルマネーが足りません', event.clientX, event.clientY); return; }
   game.superGems -= sub.cost;
   if (!game.subscriptions) game.subscriptions = {};
