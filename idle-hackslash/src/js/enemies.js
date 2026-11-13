@@ -2514,6 +2514,9 @@ function walkBall(ball, speedMult, b) {
       dvx = sw.dir * speed * 1.6;
       dvy = Math.cos(sw.ph) * speed * 2.2 + Math.max(-0.3, Math.min(0.3, (target.y - ball.y) * 0.003)) * speed;
       ball.sineMove = true; w.pause = 0;
+    } else if (style === 'formation' && ball.form && typeof formationSlot === 'function') { // 陣形：陣形ごと進みながら、自分の持ち場へ戻る（弾かれても隊列に戻る）
+      const s = formationSlot(ball), fx = s.x - ball.x, fy = s.y - ball.y, fd = Math.hypot(fx, fy) || 1, fix = Math.min(speed * 3.2, fd * 0.12);
+      dvx = s.vx + fx / fd * fix; dvy = s.vy + fy / fd * fix; w.pause = 0;
     } else if (style === 'encircle') { // 包囲：まっすぐ中心（主人公）へ、ゆっくり確実に迫る
       dvx = nx * speed * 0.75; dvy = ny * speed * 0.75; w.pause = 0;
     } else if (style === 'rush') { // 狙いを定めて→一直線に猛突進→勢い余って滑る、をくり返す
