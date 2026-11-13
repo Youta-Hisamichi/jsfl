@@ -302,7 +302,7 @@ function playRewardedVideo(onComplete, rewardText, asked) { // rewardText：こ�
       if (!rewardAdModal.classList.contains('show')) return; // 待っている間に閉じた
       if (ok) { rewardAdProgress.style.width = '100%'; rewardAdCount.textContent = '視聴完了！'; onComplete(); return; }
       rewardAdProgress.style.width = '0%';
-      rewardAdCount.textContent = why === 'closed' ? '最後まで見なかったので、報酬はありません' : '動画を読み込めませんでした。少し待ってから、もう一度お試しください';
+      rewardAdCount.textContent = why === 'closed' ? '最後まで見なかったので、報酬はありません' : '動画を読み込めませんでした。少し待ってから、もう一度お試しください' + (typeof admobErrorText === 'function' ? admobErrorText() : '');
     });
     return;
   }
@@ -516,7 +516,7 @@ privacyBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
-const GAME_VERSION = '1.0.19'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+const GAME_VERSION = '1.0.20'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
 { let n = 0, at = 0; document.getElementById('settingsGameVersion').addEventListener('click', () => { // ストア版：バージョンの文字を7回続けて押すと、デバッグのボタンを出す／隠す（開発用）

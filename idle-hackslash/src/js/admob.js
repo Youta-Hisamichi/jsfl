@@ -22,9 +22,22 @@ function admobInit() {
 async function admobPrepare() { // 次の広告を先に読み込んでおく（押してから待たせない）
   const A = admobPlugin(); if (!A || admobPreloaded) return admobPreloaded;
   if (!(await admobInit())) return false;
-  try { await A.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID, isTesting: ADMOB_TESTING }); admobPreloaded = true; } catch (e) { admobPreloaded = false; }
+  for (let i = 0; i < 2 && !admobPreloaded; i++) { // 読み込めなかったら、少し待って1回だけやり直す
+    if (i) await new Promise(r => setTimeout(r, 1500));
+    try { await A.prepareRewardVideoAd({ adId: ADMOB_REWARDED_ID, isTesting: ADMOB_TESTING }); admobPreloaded = true; admobLastError = null; }
+    catch (e) { admobPreloaded = false; admobLastError = admobErrorInfo(e); console.warn('AdMob の広告を読み込めません', e); }
+  }
   return admobPreloaded;
 }
+// 読み込めなかった理由（AdMob のエラー番号）。読み込めなかった画面に小さく出す
+let admobLastError = null;
+const ADMOB_ERROR_NAMES = { 0: '内部エラー', 1: 'リクエストが正しくない', 2: '通信エラー', 3: '広告の在庫なし', 8: 'アプリIDの設定ミス', 9: '在庫なし（メディエーション）' };
+function admobErrorInfo(e) {
+  const code = e && (e.code ?? (e.data && e.data.code)), msg = String((e && (e.message || e.errorMessage)) || e || '');
+  const m = code == null ? /code[^0-9]*(\d+)/i.exec(msg) : null, c = code != null ? Number(code) : m ? Number(m[1]) : null;
+  return { code: c, name: c != null && ADMOB_ERROR_NAMES[c] ? ADMOB_ERROR_NAMES[c] : '', msg: msg.slice(0, 120) };
+}
+function admobErrorText() { const e = admobLastError; if (!e) return ''; return `（エラー${e.code != null ? ' ' + e.code : ''}${e.name ? '：' + e.name : ''}）`; }
 // iPhone のトラッキングの許可：はじめて動画のボタンを押したときに、先にゲームの画面で理由を説明してから、iPhone の許可の画面を出す（1回だけ）
 let admobAttState = null;
 async function admobNeedsAsk() {
@@ -55,7 +68,7 @@ setTimeout(() => { if (admobPlugin()) admobPrepare(); }, 3000);
 const ADMOB_TEST_REWARDED_ID = ADMOB_PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/1712485313' : 'ca-app-pub-3940256099942544/5224354917'; // Google のテスト用（機種ごと）
 async function admobDebugTest() {
   const A = admobPlugin(), row = (k, v) => `<div class="dl-r"><b>${k}</b>　${v}</div>`;
-  const info = () => `<div class="dbg-list">${row('アプリの中', A ? 'はい（AdMob の部品あり）' : 'いいえ（ブラウザ・アーティファクト：仮の動画）')}${row('本番の広告ユニット', ADMOB_REWARDED_ID)}${row('本番でテスト設定', ADMOB_TESTING ? 'ON' : 'OFF')}${row('初期化', admobReady ? '済み' : 'まだ')}${row('本番の広告の読み込み', admobPreloaded ? '済み' : 'まだ')}</div>`;
+  const info = () => `<div class="dbg-list">${row('アプリの中', A ? 'はい（AdMob の部品あり）' : 'いいえ（ブラウザ・アーティファクト：仮の動画）')}${row('本番の広告ユニット', ADMOB_REWARDED_ID)}${row('本番でテスト設定', ADMOB_TESTING ? 'ON' : 'OFF')}${row('初期化', admobReady ? '済み' : 'まだ')}${row('本番の広告の読み込み', admobPreloaded ? '済み' : 'まだ')}${row('本番の最後のエラー', admobLastError ? `${admobErrorText()} ${admobLastError.msg}` : 'なし')}</div>`;
   if (!A) { simpleChoice({ icon: '🎬', title: 'リワード動画のテスト', text: info(), sub: 'アプリ（Android）の中で押すと、テスト用の広告を流します', yes: '閉じる', no: false }); return; }
   if (admobBusy) { showNotice('🎬 広告を表示中です'); return; }
   showNotice('🎬 テスト用の広告を読み込み中…');
