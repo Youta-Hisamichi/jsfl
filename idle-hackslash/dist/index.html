@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>/* タブレット（iPad など）：縦がスマホくらいになる幅で表示し、画面いっぱいに拡大する（細い縦長のまま左右が空かないように）。拡大は端末がするので、タップの位置はずれない */
-(function () { try { var w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height); if (w < 700) return; var vw = Math.max(560, Math.min(720, Math.round(w * 900 / h))); document.querySelector('meta[name=viewport]').setAttribute('content', 'width=' + vw + ', viewport-fit=cover'); document.documentElement.classList.add('is-tablet'); } catch (e) {} })();</script>
+(function () {
+  function fit() { try {
+    var sw = screen.width, sh = screen.height; if (Math.min(sw, sh) < 700) return; // スマホはそのまま
+    var land = window.matchMedia && matchMedia('(orientation: landscape)').matches;
+    if (land && sw < sh) { var t = sw; sw = sh; sh = t; } // 画面の幅・高さを今の向きにそろえる（iPhone・iPad は向きで入れかわらない）
+    if (!land && sw > sh) { var u = sw; sw = sh; sh = u; }
+    var vw = Math.max(560, Math.min(land ? sw : 720, Math.round(sw * 900 / sh))); // 縦がスマホくらい（約900）になる幅。横向きでは縮小しない
+    document.querySelector('meta[name=viewport]').setAttribute('content', 'width=' + vw + ', viewport-fit=cover');
+    document.documentElement.classList.add('is-tablet');
+  } catch (e) {} }
+  fit(); window.addEventListener('orientationchange', function () { setTimeout(fit, 200); }); // Android の大きいタブレットは横向きにもなる
+})();</script>
 <title>放置系ハクスラ無限反射</title>
 <style id="bootCss">/* 起動ローダーの見た目：本体のCSSより先に読み込み、開いた瞬間に表示する */
 * { box-sizing: border-box; }
