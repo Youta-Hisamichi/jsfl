@@ -94,12 +94,12 @@ function iapPill(btn, sku, perMonth, yen) { // ストアの値段が読めない
   el.querySelectorAll('[data-supergem-shop]').forEach(b => { const it = SUPERGEM_SHOP_ITEMS[b.dataset.supergemShop]; if (it) iapPill(b, null, false, it.cost); });
   el.querySelectorAll('[data-sub-shop]').forEach(b => { const s = SUBSCRIPTIONS[b.dataset.subShop]; if (s) iapPill(b, null, true, s.cost); });
 }; }
-// 課金ショップの下に：購入の復元・サブスクの管理・自動更新の説明（App Store の審査で必要）
+// 課金ショップの下に：自動更新の説明と規約のリンク（App Store の審査で必要）。「購入を復元」「サブスクの管理・解約」のボタンは設定ページ
 function iapFooterHtml() {
   if (!iapActive()) return '';
   const store = IAP_PLATFORM === 'ios' ? 'App Store' : 'Google Play';
-  return `<div class="iap-foot"><div class="iap-foot-btns"><button class="iap-btn" data-iap="restore">🔄 購入を復元</button><button class="iap-btn" data-iap="manage">⚙️ サブスクの管理・解約</button></div>
-    <p>紋章は1か月ごとに自動で更新されるサブスクリプションです。料金は購入の確定時に${store}のアカウントに請求され、期間が終わる24時間前までに解約しないかぎり、同じ料金で自動更新されます。解約は「サブスクの管理・解約」（${store}の設定）からいつでもできます。ジェムは買ったその場で届き、返品はできません。</p>
+  return `<div class="iap-foot">
+    <p>紋章は1か月ごとに自動で更新されるサブスクリプションです。料金は購入の確定時に${store}のアカウントに請求され、期間が終わる24時間前までに解約しないかぎり、同じ料金で自動更新されます。解約は、設定の「サブスクの管理・解約」（${store}の設定）からいつでもできます。機種変更などのときは、設定の「購入を復元」で戻せます。ジェムは買ったその場で届き、返品はできません。</p>
     <p><a href="${IAP_TERMS_URL}" target="_blank" rel="noopener">利用規約</a>　<a href="${IAP_PRIVACY_URL}" target="_blank" rel="noopener">プライバシーポリシー</a></p></div>`;
 }
 document.addEventListener('click', ev => {
@@ -109,6 +109,7 @@ document.addEventListener('click', ev => {
   if (b.dataset.iap === 'manage') P.manageSubscriptions().catch(() => showNotice('⚠️ ストアのサブスク管理を開けませんでした', true, 2500));
 });
 if (iapActive()) {
+  ['iapRestoreBtn', 'iapManageBtn'].forEach(id => { const b = document.getElementById(id); if (b) b.style.display = ''; }); // 設定ページの「購入を復元」「サブスクの管理・解約」（ストアのアプリだけ）
   setTimeout(() => { iapLoadPrices(); iapSyncSubs(false); }, 2500);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') iapSyncSubs(false); });
   // 課金ショップの表示：値段をストアのものに、ボタンは「リアルマネー」の残りに関係なく押せる
