@@ -21,7 +21,7 @@
 - 出すたびに `app/android/app/build.gradle` の versionCode を1つ上げ、`src/js/core.js` の GAME_VERSION（設定の「Ver.」表示）も上げる。アプリの versionName は GAME_VERSION から自動で読む。
 
 ## iPhone アプリ（idle-hackslash/app/ios/）
-- 同じ Capacitor のプロジェクト。Bundle ID は **com.hisashiapp.mugenhansya**。iPhone のみ・縦画面のみ。組み立てはユーザーの Mac の Xcode（この環境ではできない）。
+- 同じ Capacitor のプロジェクト。Bundle ID は **com.hisashiapp.mugenhansya**。iPhone と iPad（TARGETED_DEVICE_FAMILY "1,2"）・縦画面のみ（iPad は全画面）。タブレットでは index.html の先頭のスクリプトで viewport の幅を狭めて画面いっぱいに拡大する。ストア画像は store/ios（iPhone）・store/ipad（iPad 2064×2752）。組み立てはユーザーの Mac の Xcode（この環境ではできない）。
 - Mac では `cd idle-hackslash/app && npm install && npx cap sync ios` → `npx cap open ios`。版は Xcode の MARKETING_VERSION（GAME_VERSION と同じにする）と、出すたびに上げる CURRENT_PROJECT_VERSION。
 - AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（本番の ID）。
 
