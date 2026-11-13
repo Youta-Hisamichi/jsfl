@@ -81,10 +81,19 @@ async function iapBuySub(id) {
   } finally { iapBusy = false; }
 }
 // 課金ページのボタンは1枚絵で、値段（円）も絵に描いてある。ストアから値段が読めたら、絵の値段の札の上に同じ形の札を重ねて、その国の通貨の値段を出す
-function iapPill(btn, sku, perMonth) {
-  const p = iapPrices[sku]; if (!p || btn.querySelector('.iap-pill')) return;
+function iapPill(btn, sku, perMonth, yen) { // ストアの値段が読めないとき（ブラウザ版・読み込み前）は、円の値段の札を重ねる（絵の値段と、ストアで選べる値段がちがうことがあるため）
+  if (btn.querySelector('.iap-pill')) return;
+  const p = (sku && iapPrices[sku]) || (yen ? `${Number(yen).toLocaleString('ja-JP')}<small>円</small>` : ''); if (!p) return;
   btn.insertAdjacentHTML('beforeend', `<span class="iap-pill">${p}${perMonth ? '<small> / 月</small>' : ''}</span>`);
 }
+// 課金ページの値段の札は、ストアのアプリでもブラウザ版でも、いつも絵の上に重ねる
+{ const orig = renderSupergemShopList; renderSupergemShopList = function () {
+  orig.apply(this, arguments);
+  if (iapActive()) return; // ストアのアプリは下の書きかえで重ねる
+  const el = document.getElementById('supergemShopList'); if (!el) return;
+  el.querySelectorAll('[data-supergem-shop]').forEach(b => { const it = SUPERGEM_SHOP_ITEMS[b.dataset.supergemShop]; if (it) iapPill(b, null, false, it.cost); });
+  el.querySelectorAll('[data-sub-shop]').forEach(b => { const s = SUBSCRIPTIONS[b.dataset.subShop]; if (s) iapPill(b, null, true, s.cost); });
+}; }
 // 課金ショップの下に：購入の復元・サブスクの管理・自動更新の説明（App Store の審査で必要）
 function iapFooterHtml() {
   if (!iapActive()) return '';
@@ -106,11 +115,11 @@ if (iapActive()) {
   { const orig = renderSupergemShopList; renderSupergemShopList = function () {
     orig.apply(this, arguments);
     const el = typeof supergemShopList !== 'undefined' ? supergemShopList : document.getElementById('supergemShopList'); if (!el) return;
-    el.querySelectorAll('[data-supergem-shop]').forEach(b => { const id = b.dataset.supergemShop; b.classList.remove('is-disabled'); const pr = b.querySelector('.gb-price'); if (pr && IAP_GEMS[id]) pr.innerHTML = iapPriceText(IAP_GEMS[id].sku, SUPERGEM_SHOP_ITEMS[id].cost); iapPill(b, IAP_GEMS[id].sku); });
+    el.querySelectorAll('[data-supergem-shop]').forEach(b => { const id = b.dataset.supergemShop; b.classList.remove('is-disabled'); const pr = b.querySelector('.gb-price'); if (pr && IAP_GEMS[id]) pr.innerHTML = iapPriceText(IAP_GEMS[id].sku, SUPERGEM_SHOP_ITEMS[id].cost); iapPill(b, IAP_GEMS[id].sku, false, SUPERGEM_SHOP_ITEMS[id].cost); });
     el.querySelectorAll('[data-sub-shop]').forEach(b => {
       const id = b.dataset.subShop, active = getActiveSub(), covered = !isSubActive(id) && active && active.rank > SUBSCRIPTIONS[id].rank;
       b.classList.toggle('is-disabled', !!covered);
-      const pr = b.querySelector('.sub-price'); if (pr && IAP_SUBS[id]) { pr.innerHTML = iapPriceText(IAP_SUBS[id].sku, SUBSCRIPTIONS[id].cost, true); iapPill(b, IAP_SUBS[id].sku, true); }
+      const pr = b.querySelector('.sub-price'); if (pr && IAP_SUBS[id]) { pr.innerHTML = iapPriceText(IAP_SUBS[id].sku, SUBSCRIPTIONS[id].cost, true); iapPill(b, IAP_SUBS[id].sku, true, SUBSCRIPTIONS[id].cost); }
       const st = b.querySelector('.sub-status'); if (st) st.textContent = isSubActive(id) ? '✅ 加入中・タップで管理' : covered ? '上位の紋章で有効中' : '1か月ごとの自動更新';
     });
     el.insertAdjacentHTML('beforeend', iapFooterHtml());

@@ -918,7 +918,7 @@ const WEAPON_GACHA_BASE_COST = 40, WEAPON_GACHA_COST_GROWTH = 1.15; // サブウ
 function getWeaponGachaCost() { return coinPrice(Math.round(WEAPON_GACHA_BASE_COST * Math.pow(WEAPON_GACHA_COST_GROWTH, game.weaponGachaPulls || 0))); }
 function getSkillGachaPool() { return Object.keys(SKILL_GACHA_SKILLS).filter(id => getSkillLevel(id) < SKILL_MAX_LEVEL); }
 const SUPERGEM_SHOP_ITEMS = {
-  small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +20', cost: 198 },
+  small: { icon: '💎', name: 'ジェム小袋', desc: 'ジェム +20', cost: 200 },
   medium: { icon: '💎', name: 'ジェム中袋', desc: 'ジェム +110', cost: 980 },
   large: { icon: '💎', name: 'ジェム大袋', desc: 'ジェム +605', cost: 4800 },
   huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1331', cost: 9980 }
