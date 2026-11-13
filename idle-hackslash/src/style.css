@@ -5361,3 +5361,19 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 #supergemShopList .gb-t4 .iap-pill { left: 32.3%; width: 26.8%; top: 57%; height: 30%; background: linear-gradient(180deg, #ffd6f0, #ff8fd6 55%, #f060c0); border-color: #a02a78; color: #3a0a24; }
 #supergemShopList .sub-veteran .iap-pill { left: 33.5%; width: 32.7%; top: 68%; height: 23%; background: linear-gradient(180deg, #ffffff, #d6dde9 55%, #a9b4c8); border-color: #5b6578; color: #141a28; }
 #supergemShopList .sub-hero .iap-pill { left: 33.5%; width: 33.5%; top: 68%; height: 24.5%; }
+/* リワード動画の視聴完了：テレビの画面をお祝いの画面にかえる */
+#rewardAdModal .ad-done { display: none; }
+#rewardAdModal.is-done .reward-ad-screen > .ad-icon, #rewardAdModal.is-done .reward-ad-screen > .ad-count, #rewardAdModal.is-done .reward-ad-screen > .reward-ad-progress { display: none; }
+#rewardAdModal.is-done .reward-ad-screen { position: relative; overflow: hidden; background: radial-gradient(circle at 50% 45%, #3a2a6a 0%, #150f33 60%, #07051a 100%); }
+#rewardAdModal.is-done .ad-done { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: absolute; inset: 0; }
+#rewardAdModal .ad-done-rays { position: absolute; left: 50%; top: 50%; width: 260%; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(rgba(255,215,107,0.16) 0deg 8deg, transparent 8deg 24deg); animation: adDoneSpin 8s linear infinite; pointer-events: none; }
+@keyframes adDoneSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+#rewardAdModal .ad-done-title { position: relative; font-size: 1.5rem; font-weight: 900; color: #ffe27a; -webkit-text-stroke: 4px #3a1f00; paint-order: stroke fill; text-shadow: 0 0 12px rgba(255,200,80,0.8); animation: adDonePop 0.6s cubic-bezier(.34,1.56,.64,1) both; }
+#rewardAdModal .ad-done-reward { position: relative; display: flex; align-items: center; gap: 6px; font-size: 1.3rem; font-weight: 900; color: #fff; -webkit-text-stroke: 4px #10133a; paint-order: stroke fill; animation: adDonePop 0.6s 0.15s cubic-bezier(.34,1.56,.64,1) both; }
+#rewardAdModal .ad-done-reward .ad-done-gem, #rewardAdModal .ad-done-reward img { width: 2.6rem; height: 2.6rem; filter: drop-shadow(0 0 8px rgba(120,220,255,0.9)); }
+#rewardAdModal .ad-done-reward b { font-size: 1.7rem; color: #8fe8ff; }
+#rewardAdModal .ad-done-sub { position: relative; font-size: 0.78rem; font-weight: 800; color: #e6e9ff; text-shadow: 0 1px 3px #000; animation: adDonePop 0.6s 0.3s both; }
+@keyframes adDonePop { 0% { transform: scale(2.2); opacity: 0; } 60% { transform: scale(0.94); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+#rewardAdModal.is-done #rewardAdClaimBtn { display: flex !important; align-items: center; justify-content: center; gap: 4px; font-size: 1.05rem; animation: adDoneBtn 1s ease-in-out infinite alternate; }
+#rewardAdModal.is-done #rewardAdClaimBtn img { width: 1.4em; height: 1.4em; }
+@keyframes adDoneBtn { from { transform: scale(1); } to { transform: scale(1.04); filter: brightness(1.12); } }

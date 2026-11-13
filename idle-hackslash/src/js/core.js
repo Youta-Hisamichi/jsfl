@@ -293,6 +293,7 @@ function playRewardedVideo(onComplete, rewardText, asked) { // rewardText：こ�
   document.getElementById('rewardAdText').innerHTML = `最後まで視聴すると${rewardText || ` 💎${REWARD_AD_GEMS} を獲得できます`}`;
   rewardAdClaimBtn.style.display = 'none';
   rewardAdCloseBtn.style.display = 'flex';
+  rewardAdModal.classList.remove('is-done');
   rewardAdProgress.style.width = '0%';
   rewardAdModal.classList.add('show');
   clearInterval(rewardAdTimer);
@@ -326,10 +327,15 @@ document.addEventListener('click', event => {
   if (btn.closest('#gemShortModal') && getRewardAdRemaining() <= 0) { gemShortPending = null; gemShortModal.classList.remove('show'); } // ジェム不足のダイアログから動画へ
   if (getRewardAdRemaining() > 0) { showTapError('次の動画はまだ見られません', event.clientX, event.clientY); return; }
   if (isAdFree()) { rewardAdClaimBtn.click(); return; } // 紋章（サブスク）加入中は動画なしで即受け取り
-  playRewardedVideo(() => {
-    rewardAdClaimBtn.textContent = `💎${REWARD_AD_GEMS} を受け取る`;
+  playRewardedVideo(() => { // 視聴完了：お祝いの画面に切りかえて、受け取りボタンだけにする
+    clearInterval(rewardAdTimer);
+    document.getElementById('rewardAdDoneReward').innerHTML = `${xi('x_gem', 'ad-done-gem') || '💎'}<b>×${REWARD_AD_GEMS}</b> GET!`;
+    rewardAdModal.classList.add('is-done');
+    document.getElementById('rewardAdText').innerHTML = 'ごほうびを受け取ろう！';
+    rewardAdClaimBtn.innerHTML = `${xi('x_gem') || '💎'}${REWARD_AD_GEMS} を受け取る`;
     rewardAdClaimBtn.style.display = 'block';
     rewardAdCloseBtn.style.display = 'none'; // 視聴完了後は受け取りのみ
+    try { playTone(784, 0.12, 'triangle', 0.07, 1046); setTimeout(() => playTone(1318, 0.25, 'triangle', 0.06, 1568), 120); } catch (e) {}
   });
 });
 rewardAdClaimBtn.addEventListener('click', () => {
@@ -517,6 +523,7 @@ privacyBtn.addEventListener('click', () => {
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
 const GAME_VERSION = '1.0.21'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+{ const v = document.getElementById('blVer'); if (v) v.textContent = 'Ver. ' + GAME_VERSION; } // 起動画面の右下にも版を出す
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
 { let n = 0, at = 0; document.getElementById('settingsGameVersion').addEventListener('click', () => { // ストア版：バージョンの文字を7回続けて押すと、デバッグのボタンを出す／隠す（開発用）
