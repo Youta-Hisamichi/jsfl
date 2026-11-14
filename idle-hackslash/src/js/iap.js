@@ -50,36 +50,64 @@ function iapAfterChange() {
   try { updateStatsUI(); updateHPUI(); updateRewardAdButtons(); renderShopList(); renderSupergemShopList(); renderUpgradeList(); renderCoinShopList(); renderCompanionList(); } catch (e) {}
 }
 function iapCancelled(e) { const m = String((e && (e.code || e.message)) || e || ''); return (m === '1' || /cancel/i.test(m)) && !/network|unavailable/i.test(m); } // 自分でやめたときは何も言わない
+// 購入ボタンを押してからストアの画面が出るまで少し時間がかかるので、その間はローダーを出す（ストアの画面を閉じるまで出したまま）
+function iapLoader(on, text) {
+  let el = document.getElementById('iapLoader');
+  if (!on) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'iapLoader'; el.className = 'iap-loader'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="iapl-box"><div class="iapl-spin"></div><div class="iapl-text">${text || '購入の準備中…'}</div><div class="iapl-sub">ストアの画面が出るまで、そのままお待ちください</div></div>`;
+}
+// 購入完了のダイアログ：何を買って、ジェムがいくつからいくつになったか（または紋章がいつまで有効か）を見せる。自分で「OK」を押すまで閉じない
+function iapReceipt(o) {
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show iap-receipt-ov'; ov.style.zIndex = 96;
+  const gemIco = xi('x_gem', 'iapr-gem') || '💎';
+  const body = o.gems != null
+    ? `<div class="iapr-row"><span>所持ジェム</span><b class="iapr-change">${gemIco}<span class="iapr-before">${o.before.toLocaleString('ja-JP')}</span><i>→</i><span class="iapr-after">${o.before.toLocaleString('ja-JP')}</span></b></div><div class="iapr-plus">＋${o.gems.toLocaleString('ja-JP')}</div>`
+    : `<div class="iapr-row"><span>効果</span><b>${o.desc}</b></div><div class="iapr-row"><span>有効期限</span><b>${o.until}</b></div><div class="iapr-note">1か月ごとに自動で更新されます。解約は、設定の「サブスクの管理・解約」からいつでもできます。</div>`;
+  ov.innerHTML = `<div class="modal-panel iapr-panel"><div class="iapr-rays"></div><div class="iapr-icon">${o.icon || ''}</div><div class="iapr-title">購入が完了しました</div><div class="iapr-name">${o.name}</div>${body}<div class="iapr-small">購入の記録は ${IAP_PLATFORM === 'ios' ? 'App Store' : IAP_PLATFORM === 'android' ? 'Google Play' : 'ストア'} の購入履歴でも確認できます</div><button class="modal-close-btn iapr-ok">OK</button></div>`;
+  document.body.appendChild(ov);
+  if (o.gems != null) { // 所持ジェムの数を、前の数から増やしていく
+    const el = ov.querySelector('.iapr-after'), from = o.before, to = o.before + o.gems, t0 = performance.now(), dur = 900;
+    const tick = now => { const t = Math.min(1, (now - t0) / dur); el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - t, 3))).toLocaleString('ja-JP'); if (t < 1 && ov.isConnected) requestAnimationFrame(tick); else if (t >= 1) el.classList.add('done'); };
+    setTimeout(() => requestAnimationFrame(tick), 250);
+  }
+  try { playTone(1046, 0.1, 'triangle', 0.06, 1318); } catch (e) {}
+  ov.querySelector('.iapr-ok').addEventListener('click', () => { ov.remove(); try { playTone(760, 0.08, 'triangle', 0.05, 420); } catch (e) {} });
+}
+function iapGemReceipt(id, before, gems) { const it = SUPERGEM_SHOP_ITEMS[id] || {}; iapReceipt({ icon: xi('x_gb' + ({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1), 'iapr-bag') || '💎', name: it.name || 'ジェム', gems, before }); }
+function iapSubReceipt(id) { const s = SUBSCRIPTIONS[id], until = game.subscriptions && game.subscriptions[id]; const d = until ? new Date(until) : null; iapReceipt({ icon: xi(s.emblem, 'iapr-bag') || s.icon, name: s.name, desc: s.desc, until: d ? `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} まで` : '1か月' }); }
 async function iapBuyGems(id) {
   const P = iapPlugin(), it = IAP_GEMS[id]; if (!P || !it || iapBusy) return;
-  iapBusy = true; game.iapGranted = game.iapGranted || [];
+  iapBusy = true; game.iapGranted = game.iapGranted || []; iapLoader(true);
   try {
     const opt = { productIdentifier: it.sku, productType: 'inapp', quantity: 1, isConsumable: true }; if (IAP_PLATFORM === 'android' && iapOffers[it.sku]) opt.offerToken = iapOffers[it.sku]; // Google Play の新しい「購入オプション」の商品は、読み込んだ購入オプションをそのまま指定する
     const t = await P.purchaseProduct(opt);
     const tid = t && (t.transactionId || t.orderId || t.purchaseToken);
     if (tid && game.iapGranted.includes(tid)) return; // 同じ購入で2回は配らない
     if (tid) game.iapGranted = game.iapGranted.concat(tid).slice(-50);
+    iapLoader(false);
+    const before = Math.floor(game.gems);
     game.gems += it.gems; game.iapTotal = (game.iapTotal || 0) + 1; saveGame(); updateStatsUI();
-    celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, it.gems);
+    celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, it.gems, { onClose: () => iapGemReceipt(id, before, it.gems) });
   } catch (e) {
     if (!iapCancelled(e)) { console.warn('購入できませんでした', e); showNotice('⚠️ 購入できませんでした。時間をおいてもう一度お試しください', true, 3000); }
-  } finally { iapBusy = false; }
+  } finally { iapBusy = false; iapLoader(false); }
 }
 async function iapBuySub(id) {
   const P = iapPlugin(), it = IAP_SUBS[id]; if (!P || !it || iapBusy) return;
   if (isSubActive(id) && (game.iapSubSeen || {})[id]) { try { await P.manageSubscriptions(); } catch (e) {} return; } // 加入中なら、ストアのサブスク管理を開く（解約・変更はストアで）
-  iapBusy = true;
+  iapBusy = true; iapLoader(true);
   try {
     const t = await P.purchaseProduct({ productIdentifier: it.sku, productType: 'subs', planIdentifier: IAP_ANDROID_PLAN, quantity: 1 });
     game.subscriptions = game.subscriptions || {}; game.iapSubSeen = game.iapSubSeen || {};
     const exp = t && t.expirationDate ? Date.parse(t.expirationDate) : 0;
     game.subscriptions[id] = Math.max(Date.now() + IAP_SUB_GRACE_MS, exp || 0); game.iapSubSeen[id] = true;
-    iapAfterChange(); saveGame();
-    celebrateGemPurchase(id === 'hero' ? 4 : 3, 0, { title: id === 'hero' ? '勇者の証、授かる！' : '熟練者の証、授かる！', countText: `${SUBSCRIPTIONS[id].icon} ${SUBSCRIPTIONS[id].name}` });
+    iapAfterChange(); saveGame(); iapLoader(false);
+    celebrateGemPurchase(id === 'hero' ? 4 : 3, 0, { title: id === 'hero' ? '勇者の証、授かる！' : '熟練者の証、授かる！', countText: `${SUBSCRIPTIONS[id].icon} ${SUBSCRIPTIONS[id].name}`, onClose: () => iapSubReceipt(id) });
     setTimeout(() => iapSyncSubs(false), 4000); // ストアの正しい期限で上書き
   } catch (e) {
     if (!iapCancelled(e)) { console.warn('購入できませんでした', e); showNotice('⚠️ 購入できませんでした。時間をおいてもう一度お試しください', true, 3000); }
-  } finally { iapBusy = false; }
+  } finally { iapBusy = false; iapLoader(false); }
 }
 // 課金ページのボタンは1枚絵で、値段（円）も絵に描いてある。ストアから値段が読めたら、絵の値段の札の上に同じ形の札を重ねて、その国の通貨の値段を出す
 function iapPill(btn, sku, perMonth, yen) { // ストアの値段が読めないとき（ブラウザ版・読み込み前）は、円の値段の札を重ねる（絵の値段と、ストアで選べる値段がちがうことがあるため）

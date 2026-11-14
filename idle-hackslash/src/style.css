@@ -5377,3 +5377,30 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 #rewardAdModal.is-done #rewardAdClaimBtn { display: flex !important; align-items: center; justify-content: center; gap: 4px; font-size: 1.05rem; animation: adDoneBtn 1s ease-in-out infinite alternate; }
 #rewardAdModal.is-done #rewardAdClaimBtn img { width: 1.4em; height: 1.4em; }
 @keyframes adDoneBtn { from { transform: scale(1); } to { transform: scale(1.04); filter: brightness(1.12); } }
+/* 課金：ストアの画面が出るまでのローダー */
+.iap-loader { position: fixed; inset: 0; z-index: 95; display: flex; align-items: center; justify-content: center; background: rgba(4,6,18,0.62); }
+.iap-loader .iapl-box { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 26px; border-radius: 16px; background: linear-gradient(180deg, #1c2550, #0e1430); border: 2px solid #c9a24a; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+.iap-loader .iapl-spin { width: 44px; height: 44px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.18); border-top-color: #ffd76b; animation: iaplSpin 0.8s linear infinite; }
+@keyframes iaplSpin { to { transform: rotate(360deg); } }
+.iap-loader .iapl-text { color: #fff; font-weight: 900; font-size: 1rem; text-shadow: 0 1px 3px #000; }
+.iap-loader .iapl-sub { color: #c9d0ee; font-size: 0.72rem; font-weight: 700; }
+/* 課金：購入完了のダイアログ */
+.iapr-panel { position: relative; overflow: hidden; text-align: center; width: min(340px, 90vw); padding: 18px 18px 16px !important; }
+.iapr-rays { position: absolute; left: 50%; top: 70px; width: 520px; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(rgba(255,215,107,0.12) 0deg 8deg, transparent 8deg 24deg); animation: adDoneSpin 10s linear infinite; pointer-events: none; }
+.iapr-icon { position: relative; display: flex; justify-content: center; }
+.iapr-icon .iapr-bag, .iapr-icon img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
+.iapr-title { position: relative; margin-top: 6px; font-size: 1.3rem; font-weight: 900; color: #ffe27a; -webkit-text-stroke: 4px #3a1f00; paint-order: stroke fill; }
+.iapr-name { position: relative; margin: 2px 0 10px; font-size: 1rem; font-weight: 900; color: #fff; }
+.iapr-row { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; margin: 6px 0; border-radius: 10px; background: rgba(0,0,0,0.35); color: #dfe4ff; font-size: 0.85rem; font-weight: 800; text-align: left; }
+.iapr-row b { color: #fff; font-weight: 900; text-align: right; }
+.iapr-change { display: inline-flex; align-items: center; gap: 6px; font-size: 1.1rem; }
+.iapr-change .iapr-gem, .iapr-change img { width: 1.4em; height: 1.4em; }
+.iapr-change i { font-style: normal; color: #8fa0d8; }
+.iapr-change .iapr-before { color: #b9c2e6; }
+.iapr-change .iapr-after { color: #8fe8ff; font-size: 1.3rem; }
+.iapr-change .iapr-after.done { animation: adDonePop 0.5s cubic-bezier(.34,1.56,.64,1); }
+.iapr-plus { position: relative; margin-top: -2px; text-align: right; padding-right: 12px; color: #7ee787; font-weight: 900; font-size: 1rem; }
+.iapr-note { position: relative; margin-top: 6px; font-size: 0.72rem; color: #c9d0ee; line-height: 1.5; text-align: left; }
+.iapr-small { position: relative; margin: 10px 0 12px; font-size: 0.68rem; color: #9aa4cc; }
+.iapr-ok { position: relative; width: 100%; }
+.iapr-row > span { flex: 0 0 auto; white-space: nowrap; }

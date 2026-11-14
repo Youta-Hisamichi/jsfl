@@ -2102,9 +2102,10 @@ supergemShopList.addEventListener('click', event => {
   if (game.superGems < item.cost) { showTapError('リアルマネーが足りません', event.clientX, event.clientY); return; }
   game.superGems -= item.cost;
   const gain = { small: 20, medium: 110, large: 605, huge: 1331 }[id] || 0;
+  const before = Math.floor(game.gems);
   game.gems += gain;
   updateStatsUI();
-  celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, gain);
+  celebrateGemPurchase({ small: 1, medium: 2, large: 3, huge: 4 }[id] || 1, gain, { onClose: () => { if (typeof iapGemReceipt === 'function') iapGemReceipt(id, before, gain); } });
   saveGame();
 });
 
@@ -2125,7 +2126,7 @@ function buySubscription(id, event) {
   updateHPUI();
   updateRewardAdButtons();
   renderShopList(); renderSupergemShopList(); renderUpgradeList(); renderCoinShopList(); renderCompanionList();
-  celebrateGemPurchase(id === 'hero' ? 4 : 3, 0, { title: id === 'hero' ? '勇者の証、授かる！' : '熟練者の証、授かる！', countText: `${sub.icon} ${sub.name}` });
+  celebrateGemPurchase(id === 'hero' ? 4 : 3, 0, { title: id === 'hero' ? '勇者の証、授かる！' : '熟練者の証、授かる！', countText: `${sub.icon} ${sub.name}`, onClose: () => { if (typeof iapSubReceipt === 'function') iapSubReceipt(id); } });
   saveGame();
 }
 const GEM_CELEBRATE = {
@@ -2168,6 +2169,7 @@ function celebrateGemPurchase(tier, gain, opts = {}) {
     document.body.classList.remove('gcel-shake-2', 'gcel-shake-3', 'gcel-shake-4');
     ov.classList.add('closing');
     setTimeout(() => ov.remove(), 350);
+    if (typeof opts.onClose === 'function') setTimeout(opts.onClose, 200); // 演出のあとに出すもの（購入完了のダイアログなど）
   };
   setTimeout(() => ov.addEventListener('click', close), 600);
   setTimeout(close, cfg.ms);
