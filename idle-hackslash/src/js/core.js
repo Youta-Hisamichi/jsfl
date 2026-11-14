@@ -769,7 +769,7 @@ function overHealCount() { if (game.overHealUnlocked && !game.overHealBuys) { ga
 function overHealMult(n = overHealCount()) { return Math.min(OVERHEAL_CAP, 1 + OVERHEAL_STEP * n); }
 function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
-SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp', name: '回復限界突破', desc: `回復スキル・リジェネ・回復ポーションで、最大HPを超えて回復できる。1個ごとに上限+0.5倍（1個で1.5倍・2個で2倍…最大${OVERHEAL_CAP}倍）`, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
+SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp', name: '回復限界突破', get desc() { return `最大HPを超えて回復できる。+${OVERHEAL_STEP}倍。現在${+overHealMult().toFixed(1)}倍`; }, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
 // 反射MAX維持は削除（買っていた人には、払ったジェムを返す：reflKeepRefund）
 const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
 function reflKeepRefund() { const n = Math.min(3, game.reflKeepBuys || 0) || (game.refl16Keep ? 1 : 0); if (!n) return; const back = 5 * n * (n + 1) / 2; game.gems = (game.gems || 0) + back; delete game.reflKeepBuys; delete game.refl16Keep; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); if (typeof showNotice === 'function') showNotice(`🌈 反射MAX維持はなくなりました。払った 💎${back} をお返しします`); }
