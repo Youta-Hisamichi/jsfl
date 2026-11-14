@@ -522,7 +522,7 @@ privacyBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
-const GAME_VERSION = '1.0.25'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+const GAME_VERSION = '1.0.26'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
 { const v = document.getElementById('blVer'); if (v) v.textContent = 'Ver. ' + GAME_VERSION; } // 起動画面の右下にも版を出す
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
