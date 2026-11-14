@@ -18,6 +18,7 @@
 - Capacitor 8。パッケージ名は **com.hisashiapp.mugenhansya**（変更不可）。ゲームは `../dist` を `npx cap sync android` で取り込む。
 - 組み立て：Android SDK（/opt/android-sdk、なければ dl.google.com から入れる）→ `cd idle-hackslash/app/android && ./gradlew --max-workers=1 bundleRelease`（Maven の429が出たら少し待って再実行）。
 - 署名の鍵（mugenhansya-upload.jks）とパスワードは**リポジトリに入れない**（公開リポジトリ）。ユーザーが保管している。組み立てるときは鍵を受け取り、`app/android/keystore.properties`（gitignore 済み）に置く。
+- GitHub Actions でも組み立てられる：`.github/workflows/android-build.yml`（Actions →「Android ビルド」→ Run workflow。鍵は Secrets の ANDROID_KEYSTORE_BASE64・ANDROID_KEYSTORE_PASSWORD・ANDROID_KEY_ALIAS・ANDROID_KEY_PASSWORD）。デバッグの一番上の「📦 Android ビルド」でその画面を開く。
 - 出すたびに `app/android/app/build.gradle` の versionCode を1つ上げ、`src/js/core.js` の GAME_VERSION（設定の「Ver.」表示）も上げる。アプリの versionName は GAME_VERSION から自動で読む。
 
 ## iPhone アプリ（idle-hackslash/app/ios/）
