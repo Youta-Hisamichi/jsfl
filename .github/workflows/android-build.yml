@@ -1,0 +1,105 @@
+# 無限反射（idle-hackslash）の Android アプリを組み立てる。
+# GitHub の「Actions」→「Android ビルド」→「Run workflow」で動かす（スマホのブラウザからも押せる）。
+# 署名の鍵とパスワードは、リポジトリの Settings → Secrets and variables → Actions に登録したものを使う（リポジトリには入れない）。
+#   ANDROID_KEYSTORE_BASE64 … mugenhansya-upload.jks を base64 にした文字
+#   ANDROID_KEYSTORE_PASSWORD … 鍵のファイルのパスワード
+#   ANDROID_KEY_ALIAS … 鍵の名前（upload）
+#   ANDROID_KEY_PASSWORD … 鍵のパスワード
+# できた APK と AAB は、実行結果のページ下の「Artifacts」からダウンロードできる。
+name: Android ビルド
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'versionCode（空なら app/android/app/build.gradle のまま）'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: idle-hackslash/app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: idle-hackslash/app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: 部品を入れる
+        run: npm ci
+
+      - name: ゲーム（dist）をアプリに取り込む
+        run: npx cap sync android
+
+      - name: versionCode を入力の値にする（入力があるときだけ）
+        if: ${{ inputs.version_code != '' }}
+        env:
+          VC: ${{ inputs.version_code }}
+        run: |
+          case "$VC" in (*[!0-9]*|'') echo "versionCode は数字だけにしてください"; exit 1;; esac
+          sed -i -E "s/versionCode [0-9]+/versionCode $VC/" android/app/build.gradle
+          grep -n "versionCode" android/app/build.gradle
+
+      - name: 署名の鍵を置く
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ] || [ -z "$KS_PASS" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASS" ]; then
+            echo "::error::署名の鍵の Secrets（ANDROID_KEYSTORE_BASE64 など4つ）が登録されていません"; exit 1
+          fi
+          echo "$KS_B64" | base64 -d > android/app/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=$KS_PASS"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASS"
+          } > android/keystore.properties
+
+      - name: 組み立てる（APK と AAB）
+        working-directory: idle-hackslash/app/android
+        run: ./gradlew --no-daemon bundleRelease assembleRelease
+
+      - name: 名前をつけてまとめる
+        id: out
+        run: |
+          VN=$(grep -o '"versionName": *"[^"]*"' android/app/build/outputs/apk/release/output-metadata.json | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+          VC=$(grep -o '"versionCode": *[0-9]*' android/app/build/outputs/apk/release/output-metadata.json | head -1 | grep -o '[0-9]*$')
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk "out/mugenhansya-$VN.apk"
+          cp android/app/build/outputs/bundle/release/app-release.aab "out/mugenhansya-$VN.aab"
+          echo "name=mugenhansya-$VN-vc$VC" >> "$GITHUB_OUTPUT"
+          echo "### 無限反射 $VN（versionCode $VC）" >> "$GITHUB_STEP_SUMMARY"
+          ls -la out
+
+      - name: 鍵を消す
+        if: always()
+        run: rm -f android/app/release.jks android/keystore.properties
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.out.outputs.name }}
+          path: idle-hackslash/app/out/*
+          retention-days: 30
