@@ -1026,8 +1026,12 @@ function updateSkipBtnVisibility() {
   document.body.classList.toggle('gameover-lock', gameOverBgm);
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
 }
+function openingPending() { // 初めて遊ぶ人：オープニングが始まる前（スクリプトの読み込み中など）は、ふつうの戦闘の曲を流さない
+  try { return typeof game !== 'undefined' && !game.openingSeen && (game.bestStage || 1) <= 1 && !((game.reincarnations || 0) > 0) && !(typeof openingOn !== 'undefined' && openingOn); } catch (e) { return false; }
+}
 function refreshBgm() {
   if (!audioCtx) return;
+  if (openingPending()) { stopBgm(true); return; }
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
   else if (skGachaBgmOn) type = 'hireget'; // スキル・サブウェポン・進化ガチャの結果も、採用ガチャと同じお祝いの曲
