@@ -47,8 +47,17 @@ const HERO_SAY = ['いくぞ！', '負けない…！', 'やったぁ！', 'ま�
 
 // 吹き出し（キャンバスに描く）
 let speech = [];
+// 最近しゃべったセリフは、しばらく（SAY_RECENT_MS）同じものを選ばない（勇者・仲間・敵の全員で共通）
+const SAY_RECENT_MS = 5 * 60 * 1000, sayRecent = new Map(); // セリフ → 最後にしゃべった時刻
+function sayIsRecent(t) { const at = sayRecent.get(t); return at != null && Date.now() - at < SAY_RECENT_MS; }
+function pickFresh(pool) { // 最近しゃべっていないものから選ぶ。全部しゃべったばかりなら、いちばん前にしゃべったもの
+  if (!pool || !pool.length) return undefined;
+  const fresh = pool.filter(t => !sayIsRecent(t)); if (fresh.length) return fresh[Math.floor(Math.random() * fresh.length)];
+  return pool.reduce((a, b) => (sayRecent.get(a) || 0) <= (sayRecent.get(b) || 0) ? a : b);
+}
 function companionSay(ball, text, ms = 2400) {
   if (!ball || !text) return;
+  sayRecent.set(String(text), Date.now()); if (sayRecent.size > 400) { const now = Date.now(); for (const [k, at] of sayRecent) if (now - at >= SAY_RECENT_MS) sayRecent.delete(k); }
   speech = speech.filter(s => s.ball !== ball);
   speech.push({ ball, text, until: Date.now() + ms * 1.5 + 1200 }); // 読み切れるよう長めに表示
 }
@@ -160,7 +169,7 @@ const META_COMP = [
   'いいなあ、勇者は中二病セリフ専用枠があって。', '次の転生でも、また招集してね。', 'パーティ枠の都合で呼ばれた気がする…。',
   () => `もう${(game.totalKills || 0).toLocaleString('ja-JP')}体倒したんだって。数えてる人すごい。`,
 ];
-function metaLine(list, last) { const pool = list.map(t => typeof t === 'function' ? t() : t).filter(t => t !== last); return pool[Math.floor(Math.random() * pool.length)]; }
+function metaLine(list, last) { const pool = list.map(t => typeof t === 'function' ? t() : t).filter(t => t !== last); return pickFresh(pool); }
 const COFFIN_TALK = ['へんじがない　ただのしかばねのようだ'], COFFIN_TALK_RATE = 0.3; // 棺桶のセリフ（倒れている仲間がいるとき、ひとりごとの3割はこちら）
 function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとりごと / 'k' 撃破）
   const now = Date.now(); if (!force && now - compTalkAt < 3000) return;
@@ -176,7 +185,7 @@ function compTalk(kind, force) { // 仲間がひとこと（kind: 'i' ひとり�
   if (kind === 'i' && P) pool = [...(pool || []), P.say[0]]; // 登場ゼリフもまぜる
   if (!pool || !pool.length) return;
   pool = pool.filter(t => t !== compTalkLast); const nd = kind === 'i' ? nudgeLine('comp', compTalkLast) : null; // まだ使っていない機能をそれとなく教える
-  const t = nd || (kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pool[Math.floor(Math.random() * pool.length)]);
+  const t = nd || (kind === 'i' && Math.random() < META_RATE ? metaLine(META_COMP, compTalkLast) : pickFresh(pool));
   compTalkLast = t; compTalkAt = now;
   companionSay(b, t, 1800 + t.length * 70);
 }
@@ -201,7 +210,7 @@ function heroChuuni(kind, force) {
   const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
   const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
   const nd = kind === 'idle' ? nudgeLine('hero', chuuniLast) : null; // まだ使っていない機能をそれとなく教える
-  const t = nd || (kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pool[Math.floor(Math.random() * pool.length)]);
+  const t = nd || (kind === 'idle' && Math.random() < META_RATE ? metaLine(META_HERO, chuuniLast) : pickFresh(pool));
   chuuniLast = t; chuuniAt = now;
   companionSay(hero, t, 1800 + t.length * 70);
 }
@@ -298,7 +307,7 @@ let enemySayAt = 0;
 function enemySay(b, kind, force) {
   if (!b || b.isDying || b.isPlayer) return;
   const now = Date.now(); if (!force && now - enemySayAt < 3500) return;
-  const pool = enemyLinePool(b, kind), t = (kind === 'idle' && nudgeLine('enemy', '')) || pool[Math.floor(Math.random() * pool.length)]; // 敵の傾向（高貴／モンスター）に合うセリフだけ
+  const pool = enemyLinePool(b, kind), t = (kind === 'idle' && nudgeLine('enemy', '')) || pickFresh(pool); // 敵の傾向（高貴／モンスター）に合うセリフだけ
   enemySayAt = now; companionSay(b, t, 1800 + t.length * 80);
 }
 setInterval(() => {
@@ -581,7 +590,7 @@ function drawBossBuffIcon() { if (bossAdBuffOn() && typeof arenaHalfY === 'funct
 
 // ===== 既存処理へのフック =====
 { const orig = spawnBossWithWarning; spawnBossWithWarning = function () { orig.apply(this, arguments); setTimeout(() => { sayByEvent(1); applyTowerBuff(); }, BOSS_WARNING_MS + 600); }; }
-{ const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pool[Math.floor(Math.random() * pool.length)], 2600); } } }; }
+{ const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pickFresh(pool), 2600); } } }; }
 { const orig = playRewardedVideo; playRewardedVideo = function (done, txt, asked) { return orig(asked ? done : () => { questTick('ad'); done(); }, txt, asked); }; } // asked（iPhone のトラッキング説明のあとの呼び直し）はそのまま渡す（渡さないと説明→呼び直しがくり返して止まる）
 { const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
   orig(box, results, count, best); questTick('gacha', count);
@@ -613,8 +622,8 @@ setInterval(() => { if (Math.random() < 0.06 && phase === 'battle' && getActiveT
 function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
   const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
   const id = getHeroChar();
-  if (id) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(h, pool[Math.floor(Math.random() * pool.length)], 2600); }
-  else { const pool = CHUUNI[kind]; const t = pool[Math.floor(Math.random() * pool.length)]; chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600); }
+  if (id) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(h, pickFresh(pool), 2600); }
+  else { const pool = CHUUNI[kind]; const t = pickFresh(pool); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600); }
 }
 { const orig = bossDefeated; bossDefeated = function (reason) { heroDownSay(reason === 'time' ? 'timeout' : 'down'); return orig.apply(this, arguments); }; }
 { const orig = failSkipChallenge; failSkipChallenge = function () { if (!(game.skipChallenge && game.skipChallenge.lost)) heroDownSay('down'); return orig.apply(this, arguments); }; }
@@ -718,7 +727,7 @@ const HERO_BRAG = {
 { const orig = heroChuuni; heroChuuni = function (kind, force) {
   if ((kind === 'idle' || kind === 'kill') && !getHeroChar() && Math.random() < HERO_BRAG_RATE) {
     const hero = balls.find(b => isMainPlayerBall(b)), now = Date.now();
-    if (hero && (force || now - chuuniAt >= 3500)) { const pool = HERO_BRAG[kind].filter(t => t !== chuuniLast), t = pool[Math.floor(Math.random() * pool.length)]; chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70); return; }
+    if (hero && (force || now - chuuniAt >= 3500)) { const pool = HERO_BRAG[kind].filter(t => t !== chuuniLast), t = pickFresh(pool); chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70); return; }
   }
   return orig.apply(this, arguments);
 }; }
@@ -735,7 +744,7 @@ let kaijiAt = 0;
 function kaijiSay(kind) {
   const pl = balls.find(b => isMainPlayerBall(b)); if (!pl || pl.hp <= 0) return false;
   const now = Date.now(); if (now - kaijiAt < 5000 || Math.random() > KAIJI_RATE) return false;
-  const pool = KAIJI_SAY[kind] || KAIJI_SAY.idle, t = pool[Math.floor(Math.random() * pool.length)];
+  const pool = KAIJI_SAY[kind] || KAIJI_SAY.idle, t = pickFresh(pool);
   kaijiAt = now; if (typeof chuuniAt !== 'undefined') chuuniAt = now; companionSay(pl, t, 1800 + t.length * 80); return true;
 }
 { const orig = heroChuuni; heroChuuni = function (kind) { const k = kind === 'pinch2' ? 'pinch' : kind; if (KAIJI_SAY[k] && kaijiSay(k)) return; return orig.apply(this, arguments); }; }
@@ -1299,7 +1308,7 @@ ENEMY_LINE_TONE.monster.push('ゆるるさーん！', '俺は悪くねぇっ! ',
   const r = orig.apply(this, arguments);
   if (enemy && enemy.isDying && !enemy.saidDie && !enemy.isPlayer && phase === 'battle' && Math.random() < (enemy.isBoss ? 0.3 : 0.12)) {
     enemy.saidDie = true;
-    const pool = enemyLinePool(enemy, 'die'), t = pool[Math.floor(Math.random() * pool.length)];
+    const pool = enemyLinePool(enemy, 'die'), t = pickFresh(pool);
     speech.push({ ball: { x: enemy.x, y: enemy.y, radius: enemy.radius || 14 }, text: t, until: Date.now() + 2200, fixed: true });
   }
   return r;
@@ -1420,48 +1429,49 @@ const NUDGES = [
     hero: ['壁にぶつかったら、一度生まれ変わるのも手…なのかもしれない', '転生すれば、ずっと残る力が手に入るらしい…焦らず考えよう'],
     comp: ['無理しなくていいよ。「転生」すれば強くなってやり直せるんだって', '行き詰まったら転生もありだよ。積み上げた分はちゃんと残るから'],
     enemy: ['そのボスはまだ早いんじゃないか…生まれ変わって出直してきな', '転生ってやつをすれば、もっと強くなれるらしいぞ…教えてやらんがな'] },
-  { ok: () => isTabUnlocked('companion') && !(typeof anyCompanion === 'function' && anyCompanion()),
+  { ok: () => tabOpenNow('companion') && !(typeof anyCompanion === 'function' && anyCompanion()),
     hero: ['一人旅も悪くない…だが、仲間がいれば世界は変わる', '「仲間」の扉の向こうで、誰かが招集を待っている気がする…'],
     comp: [],
     enemy: ['あいつ、ずっと一人だな…仲間を呼ばれたらヤバかった', '仲間を呼ぶ「招集」とかいうの、知らないのかアイツ…'] },
-  { ok: () => isTabUnlocked('coinshop') && !(game.skillGachaPulls > 0) && !seenOf('skillGacha'),
+  { ok: () => tabOpenNow('coinshop') && !(game.skillGachaPulls > 0) && !seenOf('skillGacha'),
     hero: ['新たな技を覚えれば…もっと楽に勝てるはずだ', 'スキルの書がコインで手に入るらしい…試してみるか'],
     comp: ['勇者さん、スキルガチャって引いてみた？　メテオとか、すごいらしいよ', 'コインがたまってるなら、スキルを覚えに行こうよ'],
     enemy: ['あいつ、技も使わずに殴ってくるだけだぞ…', 'スキルとかいうのを覚えられたら、俺たち終わりだな'] },
-  { ok: () => isTabUnlocked('gacha') && !(game.evoCount > 0),
+  { ok: () => tabOpenNow('gacha') && !(game.evoCount > 0),
     hero: ['ジェムと羽…これを使えば、我は進化できる…？', '「進化」…その言葉が、胸の奥で疼く'],
     comp: ['ジェムがあるなら、進化してみたら？　ずっと強くなるよ', '進化の羽、使わないで持ってるだけ？　もったいないよ'],
     enemy: ['あいつ、まだ一度も進化してねぇな…今のうちだ！', '進化される前に、なんとかしねぇと…'] },
-  { ok: () => isTabUnlocked('gemshop') && !seenOf('shopBuy'),
+  { ok: () => tabOpenNow('gemshop') && !seenOf('shopBuy'),
     hero: ['ショップの品揃え…一度、覗いてみる価値はある', 'ジェムは貯めるだけでは輝かぬ…使ってこそだ'],
-    comp: ['ショップに便利なものが色々あるみたい。一回見てみない？', 'ジェム、ショップで使ってみようよ。反射玉が強くなる品もあるって'],
+    comp: ['ショップに便利なものが色々あるみたい。一回見てみない？', 'ジェム、ショップで使ってみようよ。便利な品がいろいろあるって'],
     enemy: ['ショップで何も買わずに来るとは、なめられたもんだ…', 'あの勇者、装備をほとんど買ってねぇぞ'] },
   { ok: () => (game.bestStage || 1) >= 10 && !seenOf('tower') && !(game.bestTowerJump > 0),
     hero: ['左上の塔が…我を呼んでいる。試練の塔、か…', '塔を登りきれば、一気に先へ進めると聞く'],
     comp: ['左上の「試練の塔」、挑戦してみない？　うまくいけば何ステージも飛べるよ', '塔のボス、強いけど…勝てば一気に進めるんだって'],
     enemy: ['塔に登られたら、俺たちの出番がなくなる…', 'あいつ、まだ塔に気づいてないみたいだな…'] },
-  { ok: () => isTabUnlocked('records') && !seenOf('tab_records'),
+  { ok: () => tabOpenNow('records') && !seenOf('tab_records'),
     hero: ['これまでの戦いの記録…「戦績」に刻まれているはずだ', '我が歩みを、一度振り返るのも悪くない'],
     comp: ['「戦績」のページ、見たことある？　いろんな記録が残ってるよ', '戦績のミッション、達成するとジェムがもらえるんだって'],
     enemy: ['あいつ、自分の記録を一度も見てねぇのか…'] },
-  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_mission'),
+  { ok: () => tabOpenNow('records') && seenOf('tab_records') && !seenOf('rec_mission'),
     hero: ['ミッション…果たせば報酬が待っている', '戦績の奥の「ミッション」を確かめねば'],
     comp: ['戦績の「ミッション」、受け取れる報酬がたまってるかも！'], enemy: [] },
-  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_bestiary'),
+  { ok: () => tabOpenNow('records') && seenOf('tab_records') && !seenOf('rec_bestiary'),
     hero: ['倒した敵の記録…「敵図鑑」に残っているはずだ'],
     comp: ['敵図鑑、見てみた？　倒した敵がちゃんと載ってるよ'],
     enemy: ['俺のこと、図鑑にちゃんと載ってんのかな…'] },
-  { ok: () => isTabUnlocked('records') && seenOf('tab_records') && !seenOf('rec_bgm'),
+  { ok: () => tabOpenNow('records') && seenOf('tab_records') && !seenOf('rec_bgm'),
     hero: ['この旋律…「BGM図鑑」で、いつでも聴けるらしい'],
     comp: ['BGM図鑑で、好きな曲を選んで聴けるんだって。知ってた？'], enemy: [] },
-  { ok: () => isTabUnlocked('ranking') && !seenOf('tab_ranking'),
+  { ok: () => tabOpenNow('ranking') && !seenOf('tab_ranking'),
     hero: ['世界には、我より強い者がいる…ランキングで確かめねば', '我が名は、ランキングの何位にあるのだろうか…'],
     comp: ['ランキング、のぞいてみようよ。上には上がいるみたい！', '勇者さんって、ランキングだと何位くらいなんだろう？'],
     enemy: ['ランキングの上の連中は、こんなもんじゃないらしいぜ', 'お前、自分の順位も知らねぇのか？'] },
 ];
+function tabOpenNow(tab) { const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`); return isTabUnlocked(tab) && Array.isArray(game.unlockedTabs) && game.unlockedTabs.includes(tab) && !(btn && btn.classList.contains('tab-locked')); } // ページ（タブ）が開いて押せる状態か
 function nudgeLine(who, last) {
   if (Math.random() >= NUDGE_RATE) return null;
   let list = []; try { for (const n of NUDGES) if (n.ok()) list.push(...(n[who] || [])); } catch (e) { return null; }
-  list = list.filter(t => t !== last); if (!list.length) return null;
+  list = list.filter(t => t !== last && !sayIsRecent(t)); if (!list.length) return null; // 教えるセリフも、最近言ったものはくり返さない
   return list[Math.floor(Math.random() * list.length)];
 }
