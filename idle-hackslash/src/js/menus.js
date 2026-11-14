@@ -59,7 +59,7 @@ function renderSkillGacha() {
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
-// スキル項目のON/OFF：ONのスキルだけがガチャに出る（ON・OFFとも💎2。ONは3つより少なくできない。切り替えは転生でリセット）
+// スキル項目のON/OFF：ONのスキルだけがガチャに出る。ON/OFFは転生のときのガチャ（rollSkillOn）だけで決まり、手で切り替えはできない
 // 最初はメテオ・斧・回復の3つがON。転生するとONの3つをランダムに選び直す（周回ごとに戦い方が変わるローグライク風）
 const SKILL_TOGGLE_ON_COST = 2, SKILL_TOGGLE_OFF_COST = 5, SKILL_MIN_ON = 2, SKILL_REBIRTH_ON = 3; // ONは2つより少なくできない。転生のときは3つ選ぶ
 function reflSkillInfo() { const v = typeof reflNowMult === 'function' ? reflNowMult() : 1, m = typeof reflSkillMult === 'function' ? reflSkillMult() : 1; return { v, m, txt: `反射玉 ${+m.toFixed(2)}（いま${typeof bounceMultLabel === 'function' ? bounceMultLabel(v) : '×' + v}）` }; } // メテオ・大爆発に上乗せする反射玉の力
@@ -90,9 +90,9 @@ function renderSkillToggleList() {
   const el = document.getElementById('skillToggleList'); if (!el) return;
   const ids = skillToggleIds().sort((a, b) => (isSkillItemOn(b) - isSkillItemOn(a)) || (isSkillUnlocked(b) - isSkillUnlocked(a))), onN = ids.filter(isSkillItemOn).length;
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
-    const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id), cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
+    const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
     if (!isSkillUnlocked(id)) return `<button class="skt-item off skt-locked" data-sk-toggle="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span></button>`;
-    return `<button class="skt-item ${on ? 'on' : 'off'} ${!on && game.gems < cost ? 'is-disabled' : ''}" data-sk-toggle="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i><span class="skt-cost">💎${cost}</span></span></button>`;
+    return `<button class="skt-item ${on ? 'on' : 'off'}" data-sk-info="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i></span></button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
@@ -426,7 +426,7 @@ function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
 function getCompSummonCost() { return getCompSummonPrice().coins; } // コインの分（ジェムの回は0）
 function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >= p.coins && game.gems >= p.gems; }
 const COMP_DUP_LV_MULT = 1.5; // 招集ガチャなどでパーティにいる仲間がダブったら、Lvが1.5倍
-// 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る（ONはレア度でN💎1〜UR💎16・OFFは💎10。ONは3人より少なくできない）。転生のたびにONの3人をランダムに選び直す（転生でリセット）
+// 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る。ON/OFFは転生のときのガチャ（rollCompOn）だけで決まり、手で切り替えはできない
 // まだ一度も転生していないセーブ（compOn が無い）は、起動時に initialCompOn() で決める
 const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 5;
 function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎5
@@ -459,12 +459,12 @@ function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を�
   const rank = id => (pool.includes(id) ? (isCompOn(id) ? 0 : 1) : 2);
   const ids = Object.keys(COMPANIONS).sort((a, b) => rank(a) - rank(b) || (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
   const html = `<div class="skt-count">ON <b>${onN}</b> / ${pool.length}　📖 図鑑 <b>${found}</b> / ${ids.length}</div><div class="cbk-grid">` + ids.map(id => {
-    const c = COMPANIONS[id], got = !!book[id], inPool = pool.includes(id), on = inPool && isCompOn(id), e = compEvo(id), cost = inPool ? compToggleCost(id) : 0;
-    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} ${inPool && !on && (game.gems < cost || !got) ? 'is-disabled' : ''}" ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
+    const c = COMPANIONS[id], got = !!book[id], inPool = pool.includes(id), on = inPool && isCompOn(id), e = compEvo(id);
+    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} " ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
       + `${inPool ? `<i class="cbk-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i>` : '<i class="cbk-tg lock">🔒</i>'}`
       + `<span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>`
       + `<small class="cbk-evo">🧬 ⚔️Lv${e.atk + 1} ❤️Lv${e.hp + 1}</small>`
-      + `${!inPool ? '<span class="cbk-cost lock">未解放</span>' : !on && !got ? '<span class="cbk-cost lock">未入手</span>' : `<span class="cbk-cost">💎${cost}</span>`}</button>`;
+      + `${!inPool ? '<span class="cbk-cost lock">未解放</span>' : !got ? '<span class="cbk-cost lock">未入手</span>' : ''}</button>`;
   }).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }

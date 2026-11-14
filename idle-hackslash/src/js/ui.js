@@ -1722,7 +1722,7 @@ document.getElementById('weaponList').addEventListener('click', event => {
   if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
     if (skillSwapLocked(event)) return;
     const id = eb.dataset.weaponEquip, eq = getEquippedWeapons();
-    if (!isSkillItemOn('w:' + id)) { showTapError('スキル項目がOFFです（ページ下でONにすると装備できます）', event.clientX, event.clientY); return; }
+    if (!isSkillItemOn('w:' + id)) { showTapError('スキル項目がOFFです（ON/OFFは転生のときに決まります）', event.clientX, event.clientY); return; }
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getWeaponSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
     eq.push(id);
@@ -1834,27 +1834,10 @@ function skillGachaPull(event, isReroll) {
   showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : skillLvUpText(id, slv), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo, { noStars: true });
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
-document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目のON/OFF（ジェム）
-  if (openSkillInfoFromEvent(event)) return; // アイコンを押したら概要（ON/OFFはアイコン以外を押す）
-  if (event.target.closest('[data-sk-toggle]') && !skillGachaLeft() && skillGachaLimit() >= SKILL_GACHA_MAX_PULLS) { showTapError('ガチャ上限なのでON/OFFできません\n転生してください', event.clientX, event.clientY); return; } // もう引けないのでON/OFFは無意味
-  const b = event.target.closest('[data-sk-toggle]'); if (!b) return;
-  const id = b.dataset.skToggle, { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
-  if (!isSkillUnlocked(id)) { showTapError('まだ解放していません\nSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えます', event.clientX, event.clientY); return; }
-  if (on && skillToggleIds().filter(isSkillItemOn).length <= SKILL_MIN_ON) { showTapError(`ONのスキルは${SKILL_MIN_ON}つ以上必要なのでOFFにできません`, event.clientX, event.clientY); return; }
-  const cost = gemPrice(on ? SKILL_TOGGLE_OFF_COST : SKILL_TOGGLE_ON_COST);
-  if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it), title: name + (auto ? '（自動）' : ''), text: `<b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？`, sub: (on ? 'OFFにするとスキルガチャに出なくなります（もう持っているこのスキルは、そのまま使えます）' : 'ONにするとスキルガチャに出るようになり、スキルガチャの値段が半額になります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3つはランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
-    onYes: () => {
-      if (game.gems < cost) { promptGemShortage(cost); return; }
-      game.gems -= cost;
-      if (on) { // OFFはスキルガチャに出なくなるだけ（もう引いているスキルはそのまま使える・ボタンも残す）
-        game.skillOn = game.skillOn.filter(x => x !== id);
-      } else { game.skillOn.push(id); game.skillGachaDisc = (game.skillGachaDisc || 0) + 1; }
-      game.skillGachaGemFree = true; // ON/OFFした直後の1回はスキルガチャにジェムがいらない // ONにしたらスキルガチャの値段を半額に（転生でリセット）
-      playRegisterSound(); // ショップで買ったときと同じ「チャリーン」
-      showNotice(on ? `「${name}」をスキルガチャから外した（OFF）` : `「${name}」がスキルガチャに出るようになった（ON）　スキルガチャが半額に！`);
-      updateStatsUI(); renderCoinShopList(); saveGame();
-    } });
+document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目：押したら概要（ON/OFFは転生のときのガチャだけで決まる）
+  if (openSkillInfoFromEvent(event)) return;
+  const b = event.target.closest('[data-sk-toggle]'); if (!b) return; // まだ解放していないスキル
+  showTapError('まだ解放していません\nSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えます', event.clientX, event.clientY);
 });
 // スキルを発動したら、そのスキルの絵を画面中央に大きく出して、派手な発動音を鳴らす
 function skillLastTimes() { return [lastSpecialAt, lastAccelAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, lastBlastAt, lastHalveAt]; }
@@ -1889,31 +1872,11 @@ document.getElementById('compToggleList')?.addEventListener('click', event => { 
   if (lk) { const id = lk.dataset.compLockinfo, c = COMPANIONS[id], got = !!(game.companionBook || {})[id], need = typeof hireNeedText === 'function' ? hireNeedText(id) : '';
     simpleChoice({ icon: got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, title: got ? c.name : '？？？', text: got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`, sub: `<b style="color:#ffd76b">🔒 未解放：${need ? need + 'で招集ガチャに出せるようになります' : 'まだ招集ガチャに出せません'}</b>`, yes: '閉じる', no: false });
     return; }
-  const b = event.target.closest('[data-comp-toggle]'); if (!b) return;
-  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), cost = compToggleCost(id);
-  const got = !!(game.companionBook || {})[id], cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
+  const b = event.target.closest('[data-comp-toggle]'); if (!b) return; // 仲間の概要だけ（ON/OFFは転生のときのガチャだけで決まる）
+  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), got = !!(game.companionBook || {})[id];
+  const cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
   const brief = got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`; // 未取得は名前と中身を伏せる
-  if (!on && !got) { // まだ出会っていない仲間はONにできない（転生の仲間ガチャや宝箱で出会うと図鑑に載ってONにできる）
-    simpleChoice({ icon: cIcon, title: cName, text: brief, sub: '<b style="color:#ff8a8a">⚠ まだ出会っていない仲間はONにできません</b><br>転生の仲間ガチャや宝箱で出会うと、ONにできるようになります', yes: '閉じる', no: false });
-    playTone(220, 0.12, 'square', 0.05, 160);
-    return;
-  }
-  if (on && compOnCount() <= COMP_MIN_ON) { // OFFにできない：概要は見せて、理由を赤字で
-    simpleChoice({ icon: cIcon, title: cName, text: brief, sub: `<b style="color:#ff8a8a">⚠ ONの仲間は${COMP_MIN_ON}人以上必要なのでOFFにできません</b>`, yes: '閉じる', no: false });
-    playTone(220, 0.12, 'square', 0.05, 160);
-    return;
-  }
-  if (game.gems < cost) { promptGemShortage(cost); return; }
-  simpleChoice({ icon: cIcon, title: cName, text: brief + `<div class="cgb-ask"><b>💎${cost}</b> で${on ? 'OFF' : 'ON'}にしますか？</div>`, sub: (on ? 'OFFにすると招集ガチャに出なくなります（もういる仲間はそのまま）' : 'ONにすると招集ガチャに出るようになります') + '<br><b style="color:#ff8a8a">⚠ 転生するとリセットされます（ONの3人はランダムに選び直し）</b>', yes: on ? 'OFFにする' : 'ONにする', no: 'やめる',
-    onYes: () => {
-      if (game.gems < cost) { promptGemShortage(cost); return; }
-      if (!Array.isArray(game.compOn)) game.compOn = compPoolIds(); // 全員ONの状態から切り替えるとき
-      game.gems -= cost;
-      if (on) game.compOn = game.compOn.filter(x => x !== id); else game.compOn.push(id);
-      playRegisterSound();
-      showNotice(on ? `「${cName}」を招集ガチャから外した（OFF）` : `「${cName}」が招集ガチャに出るようになった（ON）`);
-      updateStatsUI(); renderCompToggleList(); saveGame();
-    } });
+  simpleChoice({ icon: cIcon, title: cName, text: brief, sub: `<b style="color:${on ? '#7dff9a' : '#c8c8c8'}">いま${on ? 'ON（招集ガチャに出る）' : 'OFF（招集ガチャに出ない）'}</b><br>ON/OFFは転生のときのガチャで決まります`, yes: '閉じる', no: false });
 });
 // スキルガチャの「上限+5回」ボタン（ガチャの下の右）：残っていても先に増やせる
 document.getElementById('skillCountRow')?.addEventListener('click', ev => { if (ev.target.closest('[data-sk-extra]')) unifiedGachaPull(ev, true); });
@@ -1997,7 +1960,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     if (skillSwapLocked(event)) return;
     const id = equip.dataset.skillEquip;
     if (PASSIVE_SKILLS.includes(id)) { showNotice(`${SKILL_GACHA_SKILLS[id].name} は取得するだけで常に効きます（セット不要）`); return; }
-    if (!isSkillItemOn(id)) { showTapError('スキル項目がOFFです（ページ下でONにすると装備できます）', event.clientX, event.clientY); return; }
+    if (!isSkillItemOn(id)) { showTapError('スキル項目がOFFです（ON/OFFは転生のときに決まります）', event.clientX, event.clientY); return; }
     const eq = getEquippedSkills();
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getSkillSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
