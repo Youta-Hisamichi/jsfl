@@ -1722,7 +1722,7 @@ document.getElementById('weaponList').addEventListener('click', event => {
   if (eb) { // 装備する／外す（枠がいっぱいなら最後に装備したものと入れ替え）
     if (skillSwapLocked(event)) return;
     const id = eb.dataset.weaponEquip, eq = getEquippedWeapons();
-    if (!isSkillItemOn('w:' + id)) { showTapError('スキル項目がOFFです（ON/OFFは転生のときに決まります）', event.clientX, event.clientY); return; }
+    if (!isSkillItemOn('w:' + id)) { showTapError('いまの周回では使えないスキルです（転生のときに選び直されます）', event.clientX, event.clientY); return; }
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getWeaponSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
     eq.push(id);
@@ -1834,11 +1834,11 @@ function skillGachaPull(event, isReroll) {
   showSkGachaReveal(skGachaRarity(!owned, slv), `<span class="item-icon">${ico(sk)}</span>`, !owned ? `${sk.name} 解放！` : `${sk.name} Lv${slv}！`, !owned ? (PASSIVE_SKILLS.includes(id) ? '取得するだけで常に効きます' : '') : skillLvUpText(id, slv), () => { renderCoinShopList(); flashGachaCard('skillLevelList', id); }, undo, { noStars: true });
 }
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
-document.getElementById('skillToggleList')?.addEventListener('click', event => { // スキル項目：押したら概要（ON/OFFは転生のときのガチャだけで決まる）
+['skillToggleList', 'skillBookList'].forEach(lid => document.getElementById(lid)?.addEventListener('click', event => { // スキル：押したら概要（ON/OFFは転生のときのガチャだけで決まる）
   if (openSkillInfoFromEvent(event)) return;
   const b = event.target.closest('[data-sk-toggle]'); if (!b) return; // まだ解放していないスキル
   showTapError('まだ解放していません\nSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えます', event.clientX, event.clientY);
-});
+}));
 // スキルを発動したら、そのスキルの絵を画面中央に大きく出して、派手な発動音を鳴らす
 function skillLastTimes() { return [lastSpecialAt, lastAccelAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, lastBlastAt, lastHalveAt]; }
 let skillCastSnap = null;
@@ -1867,17 +1867,17 @@ function showSkillCast(skillKey, btn) { // スキルボタンの少し上に、�
     const key = SKILL_BUTTON_KEYS[btn.id]; if (key) showSkillCast(key, btn);
   });
 }
-document.getElementById('compToggleList')?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
+['compToggleList', 'compBookList'].forEach(lid => document.getElementById(lid)?.addEventListener('click', event => { // 仲間項目のON/OFF（ジェム）。確認画面に仲間の概要も出す
   const lk = event.target.closest('[data-comp-lockinfo]'); // 未解放の仲間：概要（未取得なら伏せる）と解放の条件
   if (lk) { const id = lk.dataset.compLockinfo, c = COMPANIONS[id], got = !!(game.companionBook || {})[id], need = typeof hireNeedText === 'function' ? hireNeedText(id) : '';
     simpleChoice({ icon: got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, title: got ? c.name : '？？？', text: got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`, sub: `<b style="color:#ffd76b">🔒 未解放：${need ? need + 'で招集ガチャに出せるようになります' : 'まだ招集ガチャに出せません'}</b>`, yes: '閉じる', no: false });
     return; }
   const b = event.target.closest('[data-comp-toggle]'); if (!b) return; // 仲間の概要だけ（ON/OFFは転生のときのガチャだけで決まる）
-  const id = b.dataset.compToggle, c = COMPANIONS[id], on = isCompOn(id), got = !!(game.companionBook || {})[id];
+  const id = b.dataset.compToggle, c = COMPANIONS[id], got = !!(game.companionBook || {})[id];
   const cIcon = got ? companionIconHtml(id) : `<span class="cbk-sil">${companionIconHtml(id)}</span>`, cName = got ? c.name : '？？？';
   const brief = got ? compBriefHtml(id) : `<div class="sc-text">まだ出会っていない仲間（${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}）</div>`; // 未取得は名前と中身を伏せる
-  simpleChoice({ icon: cIcon, title: cName, text: brief, sub: `<b style="color:${on ? '#7dff9a' : '#c8c8c8'}">いま${on ? 'ON（招集ガチャに出る）' : 'OFF（招集ガチャに出ない）'}</b><br>ON/OFFは転生のときのガチャで決まります`, yes: '閉じる', no: false });
-});
+  simpleChoice({ icon: cIcon, title: cName, text: brief, yes: '閉じる', no: false });
+}));
 // スキルガチャの「上限+5回」ボタン（ガチャの下の右）：残っていても先に増やせる
 document.getElementById('skillCountRow')?.addEventListener('click', ev => { if (ev.target.closest('[data-sk-extra]')) unifiedGachaPull(ev, true); });
 function unifiedGachaPull(event, extraOnly) {
@@ -1960,7 +1960,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     if (skillSwapLocked(event)) return;
     const id = equip.dataset.skillEquip;
     if (PASSIVE_SKILLS.includes(id)) { showNotice(`${SKILL_GACHA_SKILLS[id].name} は取得するだけで常に効きます（セット不要）`); return; }
-    if (!isSkillItemOn(id)) { showTapError('スキル項目がOFFです（ON/OFFは転生のときに決まります）', event.clientX, event.clientY); return; }
+    if (!isSkillItemOn(id)) { showTapError('いまの周回では使えないスキルです（転生のときに選び直されます）', event.clientX, event.clientY); return; }
     const eq = getEquippedSkills();
     if (eq.includes(id)) { showTapError('装備は転生するまで外せません', event.clientX, event.clientY); return; } // 入れ替え・取り外しは転生まで不可
     if (eq.length >= getSkillSlots()) { showTapError('装備枠がいっぱいです（転生まで入れ替え不可）', event.clientX, event.clientY); return; }
@@ -3875,13 +3875,13 @@ setInterval(() => {
   if (el.textContent !== txt) el.textContent = txt;
 }, 500);
 
-// 戦績ページは上のタブで「戦績／ミッション／敵図鑑／BGM図鑑」を切り替える（最後に見たタブを覚えておく）
+// 戦績ページは上のタブで「戦績／ミッション／敵図鑑／BGM図鑑／スキル図鑑／仲間図鑑」を切り替える（最後に見たタブを覚えておく）
 (() => {
   const tabs = document.querySelectorAll('[data-rec-tab]'), secs = document.querySelectorAll('[data-rec-sec]');
   const show = key => {
     tabs.forEach(t => t.classList.toggle('active', t.dataset.recTab === key));
     secs.forEach(sec => { sec.hidden = sec.dataset.recSec !== key; });
-    if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
+    if (key === 'bestiary') renderBestiary(); else if (key === 'bgm') renderBgmBook(); else if (key === 'skillbook') renderSkillBook(); else if (key === 'compbook') renderCompBook(); else if (key === 'mission' && typeof renderQuests === 'function') renderQuests();
     try { localStorage.setItem('recTab', key); } catch (e) {}
     if (getActiveTab() === 'records') { game.seen = game.seen || {}; game.seen['rec_' + key] = 1; } // 戦績の各ページを開いた印
     if (key !== 'bgm' && typeof bgmBookPreview !== 'undefined' && bgmBookPreview) { bgmBookPreview = null; renderBgmBook(); } // 図鑑の試聴は、上のタブを切り替えたら止めて戦績の曲に戻す

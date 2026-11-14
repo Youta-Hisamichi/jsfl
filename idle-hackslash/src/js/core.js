@@ -242,7 +242,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-btn.has-new').forEach(b => { if (b.dataset.tab === name) b.classList.remove('has-new'); });
   tabPages.forEach(p => p.classList.toggle('active', p.dataset.tab === name));
-  if (name === 'records') { renderBestiary(); renderBgmBook(); updateStatsUI(); renderRecordGoals(true); } // 戦績の目標は開いたときに必ず描く（他のページでは戦闘が止まって更新されないため）
+  if (name === 'records') { renderBestiary(); renderBgmBook(); renderSkillBook(); renderCompBook(); updateStatsUI(); renderRecordGoals(true); } // 戦績の目標は開いたときに必ず描く（他のページでは戦闘が止まって更新されないため）
   else if (bgmBookPreview) bgmBookPreview = null; // 戦績ページを離れたら試聴をやめる
   if (name === 'game') resizeCanvas();
   if (name === 'game' && typeof resumeGameOverForTab === 'function') resumeGameOverForTab();

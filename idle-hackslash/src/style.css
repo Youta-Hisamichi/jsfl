@@ -5404,3 +5404,10 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 .iapr-small { position: relative; margin: 10px 0 12px; font-size: 0.68rem; color: #9aa4cc; }
 .iapr-ok { position: relative; width: 100%; }
 .iapr-row > span { flex: 0 0 auto; white-space: nowrap; }
+
+/* 戦績のタブは6つ：3つずつ2段に並べる */
+.tab-page[data-tab="records"] .rec-tabs { flex-wrap: wrap; }
+.tab-page[data-tab="records"] .rec-tabs .sub-tab-btn { flex: 1 1 30%; max-width: 34%; }
+/* スキル図鑑・仲間図鑑の見出しと説明：背景の絵の上でも読めるように白字＋黒い縁取り */
+.rec-sec[data-rec-sec="skillbook"] > .title, .rec-sec[data-rec-sec="compbook"] > .title { color: #fff; font-weight: 900; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #000; }
+.rec-sec[data-rec-sec="skillbook"] > .modal-sub, .rec-sec[data-rec-sec="compbook"] > .modal-sub { color: #fff; opacity: 1; background: rgba(10, 16, 34, 0.72); border-radius: 8px; padding: 6px 9px; margin: 0 0 8px !important; line-height: 1.5; }

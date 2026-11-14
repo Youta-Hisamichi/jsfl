@@ -307,7 +307,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="title" id="coinShopTitle" style="margin-top:12px;"><i class="coin-ico"></i> コインショップ（転生でリセット・戦闘中のみ使用可）</div>
       <div class="shop-list" id="coinShopList"></div>
       <div class="sk-section-divider" aria-hidden="true"><span>◆</span></div>
-      <div class="skt-help">ONのスキルだけがスキルガチャに出ます。ON/OFFは転生のときのガチャで決まり、ONの3つがランダムに選び直されます（周回ごとに違う戦い方を楽しもう）。</div>
+      <div class="skt-help">ここに並ぶスキルだけがスキルガチャに出ます。転生するたびにランダムに選び直されます（周回ごとに違う戦い方を楽しもう）。すべてのスキルは戦績の「スキル図鑑」で見られます。</div>
       <div id="skillToggleList"></div>
     </div>
   </div>
@@ -332,8 +332,8 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="gacha-result" id="compGachaResult" style="display:none;"></div>
       <div class="companion-list" id="companionList"></div>
       <div class="sk-section-divider" aria-hidden="true"><span>◆</span></div>
-      <div class="title" style="margin-top:4px;">📖 仲間図鑑・仲間項目（招集ガチャに出る仲間）</div>
-      <details class="cp-help comp-book-help"><summary><i class="ch-i">i</i>しくみ</summary><p>ONの仲間だけが招集ガチャに出ます。🧬はキャラ進化で上がった初期Lv（⚔️攻撃力・❤️HP）、🔒はまだ招集ガチャに出せない仲間です。キャラ進化（転生ガチャや宝箱でダブったとき）で上がる初期Lvと上限はレア度で違います：N +1（最大Lv100）・R +2（200）・SR +5（400）・SSR +10（700）・UR +20（1000）。ON/OFFは転生のときのガチャで決まり、ONの3人がランダムに選び直されます（手で切り替えることはできません）。</p></details>
+      <div class="title" style="margin-top:4px;">🎲 招集ガチャに出る仲間</div>
+      <div class="skt-help">ここに並ぶ仲間だけが招集ガチャに出ます。転生するたびにランダムに選び直されます。すべての仲間は戦績の「仲間図鑑」で見られます。</div>
       <div id="compToggleList"></div>
     </div>
   </div>
@@ -397,7 +397,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   <div class="tab-page" data-tab="records">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="records"></div>
-      <div class="sub-tabs rec-tabs"><button class="sub-tab-btn active" data-rec-tab="stats" aria-label="戦績"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_stats.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="mission" aria-label="ミッション"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_mission.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bestiary" aria-label="敵図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bestiary.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bgm" aria-label="BGM図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bgm.webp" alt=""></button></div>
+      <div class="sub-tabs rec-tabs"><button class="sub-tab-btn active" data-rec-tab="stats" aria-label="戦績"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_stats.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="mission" aria-label="ミッション"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_mission.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bestiary" aria-label="敵図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bestiary.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bgm" aria-label="BGM図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bgm.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="skillbook" aria-label="スキル図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_skillbook.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="compbook" aria-label="仲間図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_compbook.webp" alt=""></button></div>
       <div class="rec-sec" data-rec-sec="stats">
       <div class="settings-row">
         <div style="display:flex; gap:6px; align-items:center;">
@@ -441,6 +441,16 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="title" style="margin-top:0;">🎵 BGM図鑑 <span id="bgmBookCount" style="color:var(--gold);">0 / 0</span></div>
       <div class="modal-sub" style="margin:-4px 0 6px;">戦闘の曲は、その曲が流れているステージをクリアすると登録。ページの曲は一度聴くと登録されます。</div>
       <div class="bgm-book-list" id="bgmBookList"></div>
+      </div>
+      <div class="rec-sec" data-rec-sec="skillbook" hidden>
+      <div class="title" style="margin-top:0;">📖 スキル図鑑 <span id="skillBookCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="modal-sub" style="margin:-4px 0 6px;">スキルはSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えるようになります。押すと概要を見られます。</div>
+      <div id="skillBookList"></div>
+      </div>
+      <div class="rec-sec" data-rec-sec="compbook" hidden>
+      <div class="title" style="margin-top:0;">📖 仲間図鑑 <span id="compBookCount" style="color:var(--gold);">0 / 0</span></div>
+      <div class="modal-sub" style="margin:-4px 0 6px;">🧬はキャラ進化で上がった初期Lv（⚔️攻撃力・❤️HP）。キャラ進化（転生ガチャや宝箱でダブったとき）で上がる初期Lvと上限はレア度で違います：N +1（最大Lv100）・R +2（200）・SR +5（400）・SSR +10（700）・UR +20（1000）。</div>
+      <div id="compBookList"></div>
       </div>
     </div>
   </div>

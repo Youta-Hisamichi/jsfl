@@ -86,14 +86,21 @@ function rollSkillOn() { const a = skillToggleIds().filter(isSkillUnlocked); for
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
 function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id) && isSkillUnlocked(id); }
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
-function renderSkillToggleList() {
+function skillTileHtml(id, locked) { // スキルの1行（スキルページ・スキル図鑑）
+  const { it, auto, name, desc } = skillToggleInfo(id), icon = auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it);
+  return `<button class="skt-item ${locked ? 'off skt-locked' : 'on'}" ${locked ? `data-sk-toggle="${id}"` : `data-sk-info="${id}"`}><span class="skt-ico" ${locked ? '' : `data-sk-info="${id}"`}>${icon}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span>${locked ? '<span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span>' : ''}</button>`;
+}
+function renderSkillToggleList() { // スキルページ：いまスキルガチャに出るスキル（転生のときに選ばれたもの）だけ。ON/OFFの表示・切り替えはしない
   const el = document.getElementById('skillToggleList'); if (!el) return;
-  const ids = skillToggleIds().sort((a, b) => (isSkillItemOn(b) - isSkillItemOn(a)) || (isSkillUnlocked(b) - isSkillUnlocked(a))), onN = ids.filter(isSkillItemOn).length;
-  const html = `<div class="skt-count">ON <b>${onN}</b> / ${ids.length}</div><div class="skt-grid">` + ids.map(id => {
-    const { it, auto, name, desc } = skillToggleInfo(id), on = isSkillItemOn(id);
-    if (!isSkillUnlocked(id)) return `<button class="skt-item off skt-locked" data-sk-toggle="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span></button>`;
-    return `<button class="skt-item ${on ? 'on' : 'off'}" data-sk-info="${id}"><span class="skt-ico" data-sk-info="${id}">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span><span class="skt-side"><i class="evo-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i></span></button>`;
-  }).join('') + '</div>';
+  const ids = skillToggleIds().filter(isSkillItemOn);
+  const html = `<div class="skt-grid">` + ids.map(id => skillTileHtml(id, false)).join('') + '</div>';
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+}
+function renderSkillBook() { // 戦績のスキル図鑑：全スキル（解放済みが先）
+  const el = document.getElementById('skillBookList'); if (!el) return;
+  const ids = skillToggleIds().sort((a, b) => isSkillUnlocked(b) - isSkillUnlocked(a)), n = ids.filter(isSkillUnlocked).length;
+  const cnt = document.getElementById('skillBookCount'); if (cnt) cnt.textContent = `${n} / ${ids.length}`;
+  const html = `<div class="skt-grid">` + ids.map(id => skillTileHtml(id, !isSkillUnlocked(id))).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
 // スキル列が横にあふれるときは、右端のボタンを画面の真ん中あたりまでスクロールできるよう右に余白（一時停止・種のボタンに重ならない）
@@ -452,20 +459,26 @@ function initialCompOn() {
   for (const id of out) if (typeof isCompLocked === 'function' && isCompLocked(id)) { if (!game.ticketUnlocked) game.ticketUnlocked = {}; game.ticketUnlocked[id] = true; } // まだ出せない仲間（★3など）は、選ばれたら出せるようにする
   return out;
 }
-function renderCompToggleList() { // 仲間図鑑と仲間項目（ON/OFF）を合体：全員をタイルで並べ、未取得は影と？？？、進化Lvも出す
+function compTileHtml(id) { // 仲間のタイル（仲間ページ・仲間図鑑）。未取得は影と？？？
+  const c = COMPANIONS[id], got = !!(game.companionBook || {})[id], inPool = compPoolIds().includes(id), e = compEvo(id);
+  return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? 'on' : 'lock'}" ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
+    + `${inPool ? '' : '<i class="cbk-tg lock">🔒</i>'}`
+    + `<span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>`
+    + `<small class="cbk-evo">🧬 ⚔️Lv${e.atk + 1} ❤️Lv${e.hp + 1}</small>`
+    + `${!inPool ? '<span class="cbk-cost lock">未解放</span>' : !got ? '<span class="cbk-cost lock">未入手</span>' : ''}</button>`;
+}
+const COMP_RARITY_ORD = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
+function renderCompToggleList() { // 仲間ページ：いま招集ガチャに出る仲間（転生のときに選ばれた仲間）だけ。ON/OFFの表示・切り替えはしない
   const el = document.getElementById('compToggleList'); if (!el) return;
-  const pool = compPoolIds(), book = game.companionBook || {}, ord = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };
-  const onN = pool.filter(isCompOn).length, found = Object.keys(COMPANIONS).filter(id => book[id]).length;
-  const rank = id => (pool.includes(id) ? (isCompOn(id) ? 0 : 1) : 2);
-  const ids = Object.keys(COMPANIONS).sort((a, b) => rank(a) - rank(b) || (!!book[b] - !!book[a]) || (ord[COMPANIONS[a].rarity] - ord[COMPANIONS[b].rarity]));
-  const html = `<div class="skt-count">ON <b>${onN}</b> / ${pool.length}　📖 図鑑 <b>${found}</b> / ${ids.length}</div><div class="cbk-grid">` + ids.map(id => {
-    const c = COMPANIONS[id], got = !!book[id], inPool = pool.includes(id), on = inPool && isCompOn(id), e = compEvo(id);
-    return `<button class="cbk-it ${got ? 'got' : 'unk'} ${inPool ? (on ? 'on' : 'off') : 'lock'} " ${inPool ? `data-comp-toggle="${id}"` : `data-comp-lockinfo="${id}"`} style="--rc:${RARITY_INFO[c.rarity].color}">`
-      + `${inPool ? `<i class="cbk-tg ${on ? 'on' : ''}">${on ? 'ON' : 'OFF'}</i>` : '<i class="cbk-tg lock">🔒</i>'}`
-      + `<span class="cbk-ico">${companionIconHtml(id)}</span><span class="cbk-st">${rarityStarsImg(c.rarity)}</span><b>${got ? c.name : '？？？'}</b>`
-      + `<small class="cbk-evo">🧬 ⚔️Lv${e.atk + 1} ❤️Lv${e.hp + 1}</small>`
-      + `${!inPool ? '<span class="cbk-cost lock">未解放</span>' : !got ? '<span class="cbk-cost lock">未入手</span>' : ''}</button>`;
-  }).join('') + '</div>';
+  const ids = compPoolIds().filter(isCompOn).sort((a, b) => COMP_RARITY_ORD[COMPANIONS[a].rarity] - COMP_RARITY_ORD[COMPANIONS[b].rarity]);
+  const html = `<div class="cbk-grid">` + ids.map(compTileHtml).join('') + '</div>';
+  if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+}
+function renderCompBook() { // 戦績の仲間図鑑：全員（出会った仲間が先）
+  const el = document.getElementById('compBookList'); if (!el) return;
+  const book = game.companionBook || {}, pool = compPoolIds(), ids = Object.keys(COMPANIONS).sort((a, b) => (!!book[b] - !!book[a]) || (pool.includes(b) - pool.includes(a)) || (COMP_RARITY_ORD[COMPANIONS[a].rarity] - COMP_RARITY_ORD[COMPANIONS[b].rarity]));
+  const cnt = document.getElementById('compBookCount'); if (cnt) cnt.textContent = `${ids.filter(id => book[id]).length} / ${ids.length}`;
+  const html = `<div class="cbk-grid">` + ids.map(compTileHtml).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
 function pickCompanionId() {
