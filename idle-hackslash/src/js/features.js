@@ -1476,3 +1476,25 @@ function nudgeLine(who, last) {
   list = list.filter(t => t !== last && !sayIsRecent(t)); if (!list.length) return null; // 教えるセリフも、最近言ったものはくり返さない
   return list[Math.floor(Math.random() * list.length)];
 }
+
+// ===== 追加ゼリフ（硝煙と鉄の匂いがする、乾いた戦場ものの雰囲気。言い回しはオリジナル） =====
+CHUUNI.idle.push('硝煙の匂いにも、もう慣れちまった', '撃って、倒して、また次だ。終わりなんてありゃしない', '戦場に正義なんてない。あるのは、立っている者と倒れた者だけだ', '剣は嘘をつかない。だから俺は、こいつを信じる', '鉄の匂いと、乾いた風。…ここが、俺の居場所らしい');
+CHUUNI.kill.push('生き残った…それだけだ', '名前も知らない相手だった。それでいい');
+CHUUNI.pinch.push('装甲がもたねぇ…だが、まだ動く', '地獄なら、とっくに見てきた', 'ここで終わるほど、安い命じゃない');
+CHUUNI.pinch2.push('装甲がもたねぇ…だが、まだ動く', '地獄なら、とっくに見てきた', 'ここで終わるほど、安い命じゃない');
+{ // 敵のセリフは人の兵士・将のものなので、高貴な敵（人型）だけが話す（スライムなどは言わない）
+  const soldier = ['命令だ。悪く思うなよ', '金のためさ。戦う理由なんて、それで十分だ', '吹き溜まりの街に、英雄は要らねぇ', '戦場じゃ、昨日の味方が今日の敵だ', 'どこへ逃げても、硝煙はついて回るぜ'];
+  const boss = ['平和とは、次の戦争までの準備期間にすぎん', '兵は消耗品だ。貴様もな', '歴史は、勝った者の手で書かれる'];
+  const die = ['俺の…戦争も…ここまでか', '帰る場所なんて…最初から…'];
+  ENEMY_SAY.idle.push(...soldier); ENEMY_SAY.boss.push(...boss); ENEMY_SAY.die.push(...die);
+  for (const t of [...soldier, ...boss, ...die]) ENEMY_LINE_TONE_OF.set(t, 'noble');
+}
+// ボス登場のときに、ときどき画面に予告風のナレーション（警告のあと、ボスが着地してから）
+const BOSS_NARRATION = ['硝煙の向こうに、また新たな敵が待つ。戦いは、終わらない', '生き延びるか、朽ち果てるか。選べるのは、ほんの一瞬だけだ'], BOSS_NARRATION_RATE = 0.3;
+function showBossNarration(text) {
+  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+  wrap.querySelectorAll('.boss-narr').forEach(e => e.remove());
+  const el = document.createElement('div'); el.className = 'boss-narr'; el.textContent = text; wrap.appendChild(el);
+  setTimeout(() => el.remove(), 4600);
+}
+{ const orig = showBossWarning; showBossWarning = function () { const r = orig.apply(this, arguments); if (Math.random() < BOSS_NARRATION_RATE) { const t = pickFresh(BOSS_NARRATION); sayRecent.set(t, Date.now()); setTimeout(() => showBossNarration(t), BOSS_WARNING_MS + 700); } return r; }; }

@@ -5411,3 +5411,9 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 /* スキル図鑑・仲間図鑑の見出しと説明：背景の絵の上でも読めるように白字＋黒い縁取り */
 .rec-sec[data-rec-sec="skillbook"] > .title, .rec-sec[data-rec-sec="compbook"] > .title { color: #fff; font-weight: 900; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 4px #000; }
 .rec-sec[data-rec-sec="skillbook"] > .modal-sub, .rec-sec[data-rec-sec="compbook"] > .modal-sub { color: #fff; opacity: 1; background: rgba(10, 16, 34, 0.72); border-radius: 8px; padding: 6px 9px; margin: 0 0 8px !important; line-height: 1.5; }
+/* ボス登場のナレーション（予告風）：画面の下寄りに、白字＋黒い縁取りで静かに出て消える */
+.boss-narr { position: absolute; left: 50%; bottom: 16%; transform: translateX(-50%); width: 88%; text-align: center; pointer-events: none; z-index: 6;
+  color: #fff; font-weight: 800; font-size: 0.95rem; line-height: 1.55; letter-spacing: 0.04em; padding: 8px 12px; border-radius: 6px;
+  background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.55) 85%, rgba(0,0,0,0) 100%);
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 6px #000; animation: bossNarr 4.6s ease forwards; }
+@keyframes bossNarr { 0% { opacity: 0; transform: translateX(-50%) translateY(6px); } 12% { opacity: 1; transform: translateX(-50%) translateY(0); } 82% { opacity: 1; } 100% { opacity: 0; } }
