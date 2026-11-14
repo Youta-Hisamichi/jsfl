@@ -1,0 +1,1 @@
+const FIREBASE_CONFIG={apiKey:"AIzaSyAjDRndz2N4YqDv5ec6Uu90UJPDiA1-bAA",authDomain:"mugenhansya.firebaseapp.com",projectId:"mugenhansya",storageBucket:"mugenhansya.firebasestorage.app",messagingSenderId:"713841390473",appId:"1:713841390473:web:12ab7da797a9df61942758",measurementId:"G-87N73B6404"};

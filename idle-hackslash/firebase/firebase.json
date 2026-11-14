@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "hosting",
+    "cleanUrls": true,
+    "trailingSlash": true
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
