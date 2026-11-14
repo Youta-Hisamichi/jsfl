@@ -779,7 +779,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['androidBuild', 'reflCapUp', 'admobTest', 'reflFormula', 'reflStep1', 'reflTackle', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['subExpire', 'androidBuild', 'reflCapUp', 'admobTest', 'reflFormula', 'reflStep1', 'reflTackle', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1147,6 +1147,12 @@ debugRow.addEventListener('click', event => {
   if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
   if (action === 'reflCapUp') { game.reflCapBuys = reflCapCount() >= 90 ? 0 : reflCapCount() + 10; for (const o of reflectors()) if (o.bm > reflMax()) { o.bm = reflMax(); saveReflector(o); } showNotice(`DEBUG: 反射MAXアップ ${game.reflCapBuys}個（上限 ×${reflMax()}）`); saveGame(); return; } // +10ずつ（90の次は0）
   if (action === 'admobTest') { admobDebugTest(); return; }
+  if (action === 'subExpire') { // 紋章（サブスク）の期限を今すぐ切らす（期限切れの動きを確かめる）。ストアで加入中なら、アプリに戻ったときや「購入を復元」でまた有効になる
+    const had = Object.keys(SUBSCRIPTIONS).filter(isSubActive);
+    game.subscriptions = {}; if (game.iapSubSeen) for (const k in game.iapSubSeen) game.iapSubSeen[k] = false;
+    if (typeof iapAfterChange === 'function') iapAfterChange(); else { refreshPlayerBallStats(false); updateStatsUI(); updateRewardAdButtons(); renderSupergemShopList(); }
+    saveGame(); showNotice(had.length ? `DEBUG: ${had.map(id => SUBSCRIPTIONS[id].name).join('・')}を期限切れにしました` : 'DEBUG: 有効な紋章はありません（期限切れのまま）'); return;
+  }
   if (action === 'androidBuild') { // GitHub Actions の「Android ビルド」を開く（そこで Run workflow を押すと APK と AAB ができる）
     const url = 'https://github.com/Youta-Hisamichi/jsfl/actions/workflows/android-build.yml';
     simpleChoice({ icon: '📦', title: 'Android ビルド', text: `GitHub の「Android ビルド」の画面を開きます。<br>右の <b>Run workflow</b> を押すと、10分ほどで APK と AAB ができます。<br>できたら、実行結果のページ下の <b>Artifacts</b> からダウンロードできます。<br><small>ブランチは claude/idle-hackslash-infinite-reflection-fmyxx3 を選んでください</small>`, yes: 'GitHub を開く', no: 'やめる', onYes: () => { try { window.open(url, '_blank'); } catch (e) { location.href = url; } } });
