@@ -773,21 +773,20 @@ SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp'
 // 反射MAX維持は削除（買っていた人には、払ったジェムを返す：reflKeepRefund）
 const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
 function reflKeepRefund() { const n = Math.min(3, game.reflKeepBuys || 0) || (game.refl16Keep ? 1 : 0); if (!n) return; const back = 5 * n * (n + 1) / 2; game.gems = (game.gems || 0) + back; delete game.reflKeepBuys; delete game.refl16Keep; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); if (typeof showNotice === 'function') showNotice(`🌈 反射MAX維持はなくなりました。払った 💎${back} をお返しします`); }
-// 反射玉の上がり方：反射するたびに +1。ショップの「反射上昇アップ」1個ごとに +0.1（最大5個で +1.5）
-const REFL_STEP_BASE = 1, REFL_STEP_UP = 0.1, REFL_STEP_MAX = 5;
-function reflStepCount() { if (game.reflStep1) { delete game.reflStep1; game.gems = (game.gems || 0) + 30; setTimeout(() => { if (typeof showNotice === 'function') showNotice('⏫ 反射上昇+1 は「反射上昇アップ」に変わりました。払った 💎30 をお返しします'); if (typeof updateStatsUI === 'function') updateStatsUI(); }, 1500); } if ((game.reflStepBuys || 0) > REFL_STEP_MAX) { let back = 0; for (let k = REFL_STEP_MAX; k < game.reflStepBuys; k++) back += 5 * (k + 1); game.reflStepBuys = REFL_STEP_MAX; game.gems = (game.gems || 0) + back; setTimeout(() => { if (typeof showNotice === 'function') showNotice(`⏫ 反射上昇アップは最大${REFL_STEP_MAX}個になりました。多い分の 💎${back} をお返しします`); if (typeof updateStatsUI === 'function') updateStatsUI(); }, 1500); } return Math.min(REFL_STEP_MAX, game.reflStepBuys || 0); } // 上限を10→5個にしたので、6個目からの分は返す // 前の「反射上昇+1」（1回買い切り）は、払ったジェムを返す
-function reflStep() { return reflRound(REFL_STEP_BASE + REFL_STEP_UP * reflStepCount()); }
+// 反射玉の上がり方：反射するたびに +1（上限なし）。ショップの「反射上昇アップ」「反射MAXアップ」「タックル反射ブースト」は削除
+// （買っていた人には、払ったジェムを返す：reflShopRefund）
+const REFL_STEP_BASE = 1;
+function reflStep() { return REFL_STEP_BASE; }
 function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 などの端数が、計算のずれで 0.30000…4 にならないように
-SHOP_ITEMS.reflStep1 = { icon: '⏫', name: '反射上昇アップ', desc: `反射玉が反射するたびに上がる倍率が、1個につき +0.1（はじめは +${REFL_STEP_BASE}、最大${REFL_STEP_MAX}個で +${reflRound(REFL_STEP_BASE + REFL_STEP_UP * REFL_STEP_MAX)}・転生しても残る）`, cost: 5, stackKey: 'reflStepBuys', maxStack: REFL_STEP_MAX, shopCount: true }; // 💎5→10→15→20→25
-// 反射MAXアップ：反射玉の倍率の上限（はじめ×255）が1個ごとに+1。💎1で何回でも買える（値段は上がらない）
-const REFL_CAP_MAX_BUYS = 990;
-function reflCapCount() { return Math.min(REFL_CAP_MAX_BUYS, game.reflCapBuys || 0); }
-SHOP_ITEMS.reflCap = { icon: '🔝', name: '反射MAXアップ', desc: '反射玉の倍率の上限が +1（はじめは×255）。💎1で何回でも買える（転生しても残る）', cost: 1, costGrowth: 1, stackKey: 'reflCapBuys', maxStack: REFL_CAP_MAX_BUYS, shopCount: true };
-// タックル反射ブースト：自分のタックルで反射玉を叩くと、倍率が1個につき+25%（1個で×1.25・2個で×1.5）。持っていなければ×1（変わらない）
-const REFL_TACKLE_MAX = 2, REFL_TACKLE_STEP = 0.25;
-function reflTackleCount() { return Math.min(REFL_TACKLE_MAX, game.reflTackleBuys || 0); }
-function reflTackleMult() { return 1 + REFL_TACKLE_STEP * reflTackleCount(); }
-SHOP_ITEMS.reflTackle = { icon: '💥', name: 'タックル反射ブースト', desc: `自分のタックルで反射玉を叩くと、反射玉の倍率が上がる。1個で×1.25・2個で×1.5（最大${REFL_TACKLE_MAX}個・転生しても残る）`, cost: 10, stackKey: 'reflTackleBuys', maxStack: REFL_TACKLE_MAX, shopCount: true }; // 💎10→20
+function reflShopRefund() {
+  if (game.reflShopRefunded) return; game.reflShopRefunded = true;
+  const tri = (c, n) => c * n * (n + 1) / 2, st = Math.min(5, game.reflStepBuys || 0), cap = Math.min(990, game.reflCapBuys || 0), tk = Math.min(2, game.reflTackleBuys || 0);
+  const back = tri(5, st) + cap + tri(10, tk) + (game.reflStep1 ? 30 : 0); // 反射上昇アップ 💎5→10→15…・反射MAXアップ 💎1ずつ・タックル反射ブースト 💎10→20（もっと前の「反射上昇+1」は💎30）
+  delete game.reflStepBuys; delete game.reflCapBuys; delete game.reflTackleBuys; delete game.reflStep1;
+  if (!back) { saveGame(); return; }
+  game.gems = (game.gems || 0) + back; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI();
+  setTimeout(() => { if (typeof showNotice === 'function') showNotice(`🔮 反射玉のショップアイテム（反射上昇アップ・反射MAXアップ・タックル反射ブースト）はなくなりました。反射玉の上限もなくなります。払った 💎${back} をお返しします`, false, 6000); }, 1800);
+}
 // ダブル反射玉は、いったんショップから外す（買っていた人には💎100を返して1つに戻す：reflTwoRefund。デバッグでは今までどおり切り替えられる）
 // SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
 function reflTwoRefund() { if (!game.reflTwo || game.refl2Refunded) { game.refl2Refunded = true; return; } game.refl2Refunded = true; game.reflTwo = false; game.gems = (game.gems || 0) + 100; try { ensureOneBounce(); } catch (e) {} saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI(); setTimeout(() => { if (typeof showNotice === 'function') showNotice('🪞 ダブル反射玉はいったんお休みになりました。払った 💎100 をお返しします'); }, 2500); }

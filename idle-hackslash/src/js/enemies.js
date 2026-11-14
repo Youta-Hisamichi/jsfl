@@ -1305,8 +1305,7 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
 const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
 const REFL_UNLIMITED = true; // 反射するたびに上がり（上限 reflMax で止まる）、敵に当たったら×1に戻る
-const REFL_CAP_BASE = 255; // 反射玉の倍率の上限：はじめは×255 // お試し：反射玉の倍率に上限なし（反射するたび+1し続け、敵に当たったら×1に戻る）。false で元の「最大値の次は×1」に戻る
-function reflMax() { if (REFL_UNLIMITED) return REFL_CAP_BASE + reflCapCount() + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0); return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×100から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
+function reflMax() { if (REFL_UNLIMITED) return Infinity; return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×100から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
 const REFL_SKILL_A = 0.2, REFL_SKILL_B = Math.log(5) / Math.log(9); // 1 + 0.2 ×（倍率−1）^0.73
 function reflNowMult() { return Math.max(1, ...reflectors().map(o => obstacleMult(o) || 1)); } // 反射玉が2つなら大きいほう
@@ -1390,7 +1389,6 @@ function applyBounceObjMult(ball, o) { // 反射玉は自キャラの強さを�
   o.launched = true; const lm = dashDmgMult(ball); o.launchMult = 1; // 叩いた力（溜め・ダッシュ込みで、攻撃力の何倍か）は、倍率に足す（当たったときに二重には掛けない）
   spawnDamageText(o.x, o.y - o.r - 16, `${fullNumOr(Math.round(ball.atk * lm))} を反射！`, BOUNCE_COL_PLUS, 0.03, true);
   const b0 = o.bm; o.bm = Math.min(reflMax(), reflRound(b0 + lm));
-  if (reflTackleMult() > 1) o.bm = Math.min(reflMax(), Math.round(o.bm * reflTackleMult())); // ショップの「タックル反射ブースト」：さらに×1.25（2個で×1.5）。結果は四捨五入して整数に
   if (o.bm !== b0) { o.bmFlash = now; saveReflector(o); spawnDamageText(o.x, o.y - o.r - 34, `💥 ${bounceMultLabel(reflShowMult(b0))} → ${bounceMultLabel(reflShowMult(o.bm))}`, '#ffe45c', 0.03, true); }
   if (typeof thump === 'function') { thump(900, 1800, 0.06, 0.12, 'square'); thump(300, 120, 0.12, 0.2, 'triangle'); } // カキーン！
 }
@@ -1791,7 +1789,7 @@ function reflectorStruck(q, o) { // ダブル反射玉：飛んでいる反射�
 }
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; if (!(o.chainN > 0) || o.bm <= reflMin()) o.chainN = Math.max(0, Math.round((o.bm - reflMin()) / reflStep())); stepBounceValue(o); o.chainN = o.bm < before ? 0 : o.chainN + 1; // 連鎖の数：反射するたびに+1（上限で倍率が止まっても数える）。×1に戻ったら数え直す
-  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.chainN, reflMax()); /* 音は反射した回数で上がる（上限に届いて倍率が止まっても、音は上がり続けてくり返す） */ if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
+  const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.chainN, 16); /* 音は反射した回数で上がる（上限に届いて倍率が止まっても、音は上がり続けてくり返す） */ if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音
 }
 let reflectBlasts = [];
 function reflectorSmash(o, e, pl) {
@@ -2621,7 +2619,7 @@ function showReflFormula() {
   let x = `<div class="dbg-list"><div class="dl-h">式</div><div class="dl-r"><small>ダメージ ＝ 自キャラ攻撃力 × 反射玉の倍率 × 進化「反射玉」× ボスへの倍率 ×（クリティカルなら クリティカル倍率）。タックルで叩くと、叩いた力（溜め×ダッシュ×専用技）を反射玉の倍率に足す。玉に出る数字は「反射玉の倍率 × 進化『反射玉』」＝攻撃力の何倍か</small></div>`;
   x += '<div class="dl-h">いまの数字</div>' + row('自キャラ攻撃力', F(atk)) + row('溜め（いま叩いたら）', M(wait), `最大 ×${HERO_WAIT_MAX}・叩くと使い切る`) + row('ダッシュパネル', M(dash), `通ると3秒 ×${DASH_DMG_MULT}`) + row('進化「反射玉」', M(evo));
   x += row('ボスへの倍率', M(boss), tgt ? (tgt.isBoss ? 'いまのボスに対して' : 'いまの敵に対して') : '敵がいない') + row('クリティカル', `${Math.round(critC * 100)}%で ${M(critM)}`) + row('当たる確率', hit == null ? '-' : `${Math.round(hit * 100)}%`, `タックルの${REFLECT_HIT_RATE}倍（30階までは必ず当たる）`);
-  x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`, `反射上昇アップ ${reflStepCount()}個（1個ごとに +0.1）`) + row('タックルで叩くと', M(reflTackleMult()), `タックル反射ブースト ${reflTackleCount()}個`) + row('上限', bounceMultLabel(reflMax()), `はじめ ×${REFL_CAP_BASE}＋反射MAXアップ ${reflCapCount()}個＋秘宝 ${Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)}個`) + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
+  x += '<div class="dl-h">反射玉</div>' + row('反射ごとに', `+${reflStep()}`) + row('上限', 'なし') + row('敵に当たったら', REFL_UNLIMITED ? `${bounceMultLabel(reflMin())}に戻る` : 'そのまま');
   for (const o of reflectors()) {
     const v0 = obstacleMult(o) || 1, add = o.launched ? 0 : wait * dash, v = Math.min(reflMax(), v0 + add), lm = 1, d = atk * lm * v * evo * boss;
     x += row(`反射玉${reflectors().length > 1 ? (o.ri || 0) + 1 : ''} 表示 ${bounceMultLabel(v0 * evo)}`, `≈ ${F(d)}`, `${F(atk)} × ${bounceMultLabel(v)}${o.launched ? '（飛んでいる今の倍率）' : `（いま叩いたら ${bounceMultLabel(v0)} ＋ 叩く力 ${M(add)}）`} × ${M(evo)} × ${M(boss)}　クリティカルなら ≈ ${F(d * critM)}`);

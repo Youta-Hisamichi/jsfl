@@ -2007,7 +2007,7 @@ function chestSpecials(rarity) { // コイン・羽以外の中身と、その�
   if (typeof CHEST_COMP_CHANCE !== 'undefined' && CHEST_COMP_CHANCE[rarity] && chestCompPool(rarity).length) o.push(['comp', CHEST_COMP_CHANCE[rarity]]);
   if (typeof CHEST_COMP_UP_CHANCE !== 'undefined' && CHEST_COMP_UP_CHANCE[rarity] && chestCompUpPool(rarity).length) o.push(['compUp', CHEST_COMP_UP_CHANCE[rarity]]); // 1つ上のレア度の仲間（0.1%）
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
-  if (rarity === 'mythic' && (game.reflMaxUp || 0) < REFL_MAX_UP_CAP) o.push(['reflMaxUp', REFL_MAX_UP_CHANCE]); // 反射倍率上昇の秘宝
+  if (!REFL_UNLIMITED && rarity === 'mythic' && (game.reflMaxUp || 0) < REFL_MAX_UP_CAP) o.push(['reflMaxUp', REFL_MAX_UP_CHANCE]); // 反射倍率上昇の秘宝
   { const ks = (EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)); if (ks.length) o.push(['evoUnlock', EVO_UNLOCK_CHANCE[rarity]]); } // 進化項目の解放（SR以上・まだ解放していない項目があるとき）
   for (const k in GRACE_ITEMS) if (GRACE_CHEST_CHANCE[rarity] && GRACE_CHEST_CHANCE[rarity][k] && graceItemCount(k) < GRACE_ITEMS[k].max) o.push(['grace:' + k, GRACE_CHEST_CHANCE[rarity][k]]); // 恩恵・絆のアイテム（SSR・URの宝箱）
   if (SKILL_UNLOCK_CHANCE[rarity] && lockedSkillIds().length) o.push(['skillUnlock', SKILL_UNLOCK_CHANCE[rarity]]); // スキルの解放（SSR・URの宝箱）
