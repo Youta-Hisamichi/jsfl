@@ -14,14 +14,14 @@ const IAP_TERMS_URL = 'https://mugenhansya.web.app/terms/', IAP_PRIVACY_URL = 'h
 function iapPlugin() { try { const C = window.Capacitor; return C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() && C.Plugins && C.Plugins.NativePurchases ? C.Plugins.NativePurchases : null; } catch (e) { return null; } }
 function iapActive() { return !!iapPlugin(); }
 const IAP_PLATFORM = (() => { try { return window.Capacitor && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
-let iapPrices = {}, iapBusy = false, iapReadyP = null;
+let iapPrices = {}, iapOffers = {}, iapBusy = false, iapReadyP = null;
 function iapPriceText(sku, fallbackYen, perMonth) { // ストアから読めた値段（その国の通貨）を出す。読めないうちは円の目安
   const p = iapPrices[sku]; if (p) return `${p}${perMonth ? '<small> / 月</small>' : ''}`;
   return `${Number(fallbackYen).toLocaleString('ja-JP')}<small>円${perMonth ? ' / 月' : ''}</small>`;
 }
 async function iapLoadPrices() {
   const P = iapPlugin(); if (!P) return;
-  try { const r = await P.getProducts({ productIdentifiers: Object.values(IAP_GEMS).map(x => x.sku), productType: 'inapp' }); for (const pr of r.products || []) iapPrices[pr.identifier] = pr.priceString; } catch (e) { console.warn('ジェム袋の値段を読めません', e); }
+  try { const r = await P.getProducts({ productIdentifiers: Object.values(IAP_GEMS).map(x => x.sku), productType: 'inapp' }); for (const pr of r.products || []) { iapPrices[pr.identifier] = pr.priceString; if (pr.offerToken) iapOffers[pr.identifier] = pr.offerToken; } } catch (e) { console.warn('ジェム袋の値段を読めません', e); }
   try { const r = await P.getProducts({ productIdentifiers: Object.values(IAP_SUBS).map(x => x.sku), productType: 'subs' }); for (const pr of r.products || []) iapPrices[pr.identifier] = pr.priceString; } catch (e) { console.warn('紋章の値段を読めません', e); }
   if (typeof renderSupergemShopList === 'function') try { renderSupergemShopList(); } catch (e) {}
 }
@@ -54,7 +54,8 @@ async function iapBuyGems(id) {
   const P = iapPlugin(), it = IAP_GEMS[id]; if (!P || !it || iapBusy) return;
   iapBusy = true; game.iapGranted = game.iapGranted || [];
   try {
-    const t = await P.purchaseProduct({ productIdentifier: it.sku, productType: 'inapp', quantity: 1, isConsumable: true });
+    const opt = { productIdentifier: it.sku, productType: 'inapp', quantity: 1, isConsumable: true }; if (IAP_PLATFORM === 'android' && iapOffers[it.sku]) opt.offerToken = iapOffers[it.sku]; // Google Play の新しい「購入オプション」の商品は、読み込んだ購入オプションをそのまま指定する
+    const t = await P.purchaseProduct(opt);
     const tid = t && (t.transactionId || t.orderId || t.purchaseToken);
     if (tid && game.iapGranted.includes(tid)) return; // 同じ購入で2回は配らない
     if (tid) game.iapGranted = game.iapGranted.concat(tid).slice(-50);
