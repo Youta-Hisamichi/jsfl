@@ -908,7 +908,7 @@ function normalizeSpeed(ball, targetSpeed) {
   ball.vy = (ball.vy / s) * targetSpeed;
 }
 
-function spawnDamageText(x, y, text, color, decay, big) { damageTexts.push({ x, y, text, color, life: 1, vy: -0.45, decay: (decay || 0.018) * 0.45, big: !!big }); } // 小さめの文字で長めに残す
+function spawnDamageText(x, y, text, color, decay, big) { if (typeof text === 'string' && text.indexOf('🟡') >= 0) text = text.replace(/\+\s*([0-9][0-9,.]*[^\s🟡]*)\s*🟡/g, '🟡$1'); damageTexts.push({ x, y, text, color, life: 1, vy: -0.45, decay: (decay || 0.018) * 0.45, big: !!big }); } // コインは「+123🟡」ではなく「🟡123」（コインの絵が先） // 小さめの文字で長めに残す
 
 const CRIT_CHANCE = 0.05; // 基本発生率 5%（アーティファクト「鷹の眼」で上昇）
 const CRIT_MULT = 2;     // 基本ダメージ 2倍（アーティファクト「会心の牙」で上昇）
