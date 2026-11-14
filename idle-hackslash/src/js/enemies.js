@@ -1335,35 +1335,38 @@ function obstacleMult(o) { // 反射玉の数値（掛け算）
   if (!(o.bm >= reflMin()) || o.bop !== '×') setBounceOp(o);
   return o.bm;
 }
-// 反射玉の色：×1 白 → 黄 → 緑 → 青 → 赤 → 紫（×15）→ ×16 虹色。1つずつ少しずつ色が変わる（青から赤へは混ぜると紫になるので、色を1つずつ決めておく）
-const REFL_COLORS = [null, [245, 245, 245], [255, 240, 170], [255, 222, 50], [215, 225, 40], [120, 210, 60], [50, 190, 80], [30, 180, 150], [60, 160, 255], [40, 105, 240], [35, 65, 205], [255, 95, 60], [235, 40, 50], [205, 30, 95], [170, 50, 205], [125, 40, 230]];
+// 反射玉の色：玉に出る数字（攻撃力の何倍か）で段階的に変わる。銀 → 金茶 → 黄 → 黄緑 → 緑 → 青緑 → 水色 → 青 → 紺 → 橙（×46）→ 赤（×50）→ 桃 → 赤紫 → 紫（×80）→ ゴールド（×90）→ 虹色（×100）
+const REFL_STAGES = [ // [この数字から, 玉の色（光・数字の色に使う）]
+  [1, [182, 189, 200]], [5, [216, 199, 130]], [10, [223, 174, 28]], [14, [167, 204, 32]], [19, [117, 208, 48]], [23, [38, 190, 79]], [28, [27, 173, 144]], [32, [33, 172, 223]],
+  [37, [28, 127, 236]], [41, [54, 71, 214]], [46, [226, 116, 34]], [50, [218, 49, 59]], [60, [215, 47, 136]], [70, [199, 73, 209]], [80, [148, 48, 225]], [90, [225, 164, 22]], [100, null]];
+const REFL_RAINBOW = REFL_STAGES.length - 1;
+const REFL_ORB_IMGS = [
+  'assets/img/obstacles/refl/00.webp', 'assets/img/obstacles/refl/01.webp', 'assets/img/obstacles/refl/02.webp', 'assets/img/obstacles/refl/03.webp', 'assets/img/obstacles/refl/04.webp', 'assets/img/obstacles/refl/05.webp',
+  'assets/img/obstacles/refl/06.webp', 'assets/img/obstacles/refl/07.webp', 'assets/img/obstacles/refl/08.webp', 'assets/img/obstacles/refl/09.webp', 'assets/img/obstacles/refl/10.webp', 'assets/img/obstacles/refl/11.webp',
+  'assets/img/obstacles/refl/12.webp', 'assets/img/obstacles/refl/13.webp', 'assets/img/obstacles/refl/14.webp', 'assets/img/obstacles/refl/15.webp', 'assets/img/obstacles/refl/16.webp'].map(src => { const img = new Image(); img.fetchPriority = 'high'; img.src = src; if (img.decode) img.decode().catch(() => {}); return img; });
+function reflStage(v) { const n = typeof reflShowMult === 'function' ? reflShowMult(v) : v; let i = 0; while (i + 1 < REFL_STAGES.length && n >= REFL_STAGES[i + 1][0]) i++; return i; }
 function mixRGB(a, b, t) { return a.map((x, i) => x + (b[i] - x) * t); }
 function rgbHex(c) { return '#' + c.map(x => Math.round(x).toString(16).padStart(2, '0')).join(''); }
 function reflectorRGB(v, now) {
-  if (v >= BOUNCE_OBJ_MAX) { const h = ((now || Date.now()) / 6) % 360, f = n => { const k = (n + h / 30) % 12; return 255 * (0.5 - 0.5 * Math.max(-1, Math.min(k - 3, 9 - k, 1))); }; return [f(0), f(8), f(4)]; } // 虹色：色がぐるぐる回る
-  return REFL_COLORS[Math.max(1, Math.min(REFL_COLORS.length - 1, Math.round(v)))];
+  const i = reflStage(v);
+  if (i === REFL_RAINBOW) { const h = ((now || Date.now()) / 6) % 360, f = n => { const k = (n + h / 30) % 12; return 255 * (0.5 - 0.5 * Math.max(-1, Math.min(k - 3, 9 - k, 1))); }; return [f(0), f(8), f(4)]; } // 虹色：色がぐるぐる回る
+  return REFL_STAGES[i][1];
 }
-// 反射玉の円盤の絵（光・影・縁・まわりの光）。数値と大きさごとに、画面外のキャンバスに一度だけ描いておく
+// 反射玉の絵（玉の絵＋まわりの光）。段階と大きさごとに、画面外のキャンバスに一度だけ描いておく
 const reflSpriteCache = new Map();
 function reflectorSprite(v, r) {
-  v = v >= BOUNCE_OBJ_MAX ? v : Math.max(BOUNCE_OBJ_MIN, Math.round(v)); // 端数（×1.5 など）は近い整数の色で描く
-  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, key = `${v >= BOUNCE_OBJ_MAX ? 'max' : Math.round(v)}|${Math.round(r)}|${dpr}`;
+  const i = reflStage(v), img = REFL_ORB_IMGS[i], ok = img.complete && img.naturalWidth > 0;
+  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, key = `${i}|${Math.round(r)}|${dpr}|${ok ? 1 : 0}`;
   let s = reflSpriteCache.get(key); if (s) return s;
   if (reflSpriteCache.size > 64) reflSpriteCache.clear();
-  const glow = 10 + 14 * (Math.min(v, BOUNCE_OBJ_MAX) - BOUNCE_OBJ_MIN) / (BOUNCE_OBJ_MAX - BOUNCE_OBJ_MIN), size = (r + glow + 6) * 2;
+  const glow = 8 + 16 * i / REFL_RAINBOW, size = (r + glow + 6) * 2;
   const cv = document.createElement('canvas'); cv.width = cv.height = Math.ceil(size * dpr);
   const g2 = cv.getContext('2d'); g2.scale(dpr, dpr); const c = size / 2, R = r;
-  const rgb = k => `rgb(${k.map(Math.round).join(',')})`, col = v >= BOUNCE_OBJ_MAX ? [255, 255, 255] : reflectorRGB(v);
-  let fill;
-  if (v >= BOUNCE_OBJ_MAX && g2.createConicGradient) { fill = g2.createConicGradient(0, c, c); for (let i = 0; i <= 6; i++) fill.addColorStop(i / 6, `hsl(${i * 60},95%,58%)`); } // 虹色の円盤
-  else { fill = g2.createRadialGradient(c - R * 0.3, c - R * 0.35, R * 0.1, c, c, R); fill.addColorStop(0, rgb(mixRGB(col, [255, 255, 255], 0.75))); fill.addColorStop(0.55, rgb(col)); fill.addColorStop(1, rgb(mixRGB(col, [0, 0, 0], 0.55))); }
-  g2.shadowColor = `rgba(${col.map(Math.round).join(',')},0.9)`; g2.shadowBlur = glow;
-  g2.fillStyle = fill; g2.beginPath(); g2.arc(c, c, R, 0, Math.PI * 2); g2.fill(); g2.shadowBlur = 0;
-  if (v >= BOUNCE_OBJ_MAX) {
-    const sh = g2.createRadialGradient(c - R * 0.3, c - R * 0.35, R * 0.05, c, c, R); sh.addColorStop(0, 'rgba(255,255,255,0.8)'); sh.addColorStop(0.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.3)'); g2.fillStyle = sh; g2.fill(); // 丸く見えるように光と影
-    g2.lineWidth = 4; for (let i = 0; i < 12; i++) { const a0 = i * Math.PI / 6; g2.strokeStyle = `hsl(${i * 30},100%,60%)`; g2.beginPath(); g2.arc(c, c, R, a0, a0 + Math.PI / 6 + 0.05); g2.stroke(); } // 縁が7色
-  } else { g2.lineWidth = 3; g2.strokeStyle = 'rgba(255,255,255,0.9)'; g2.stroke(); }
-  s = { cv, size }; reflSpriteCache.set(key, s); return s;
+  const col = i === REFL_RAINBOW ? [255, 255, 255] : REFL_STAGES[i][1];
+  g2.shadowColor = `rgba(${col.join(',')},0.85)`; g2.shadowBlur = glow;
+  if (ok) { g2.imageSmoothingEnabled = true; g2.imageSmoothingQuality = 'high'; g2.drawImage(img, c - R, c - R, R * 2, R * 2); }
+  else { g2.fillStyle = `rgb(${col.join(',')})`; g2.beginPath(); g2.arc(c, c, R, 0, Math.PI * 2); g2.fill(); } // 絵がまだ読み込めていないときは色の円
+  s = { cv, size }; if (ok) reflSpriteCache.set(key, s); return s;
 }
 function drawReflLabel(t, x, y, fs, maxW, col) { // 反射玉の数字：けたが多いほど小さく、小数点から下はさらに小さく。玉の幅からはみ出さない
   const m = /^(×\d+)(\.\d+)?$/.exec(t) || [t, t, ''], main = m[1], frac = m[2] || '', digits = main.length - 1;
@@ -2032,8 +2035,7 @@ function drawBounceObjMults() { // 反射物の倍率を大きく表示（プラ
     const plus = v > 0, big = Math.abs(v) >= 8, pt = o.bmFlash ? (now - o.bmFlash) / BOUNCE_POYON_MS : 1, pop = (pt < 1 ? 1 + 0.28 * Math.sin(pt * Math.PI * 2.5) * (1 - pt) : 1) * (1 - 0.12 * fade); // 変わった直後はポヨンと弾む
     if (o.kind === 'reflector') { // 反射玉：数値が大きくなるほど 白→黄→緑→青→赤→紫→虹色 と色が変わる円盤（絵は数値ごとに一度だけ作って使い回す：処理落ち対策）
       const spr = reflectorSprite(v, o.r), S = spr.size * pop;
-      if (v >= BOUNCE_OBJ_MAX) { ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(now / 450); ctx.drawImage(spr.cv, -S / 2, -S / 2, S, S); ctx.restore(); } // 虹色は回す
-      else ctx.drawImage(spr.cv, o.x - S / 2, o.y - S / 2, S, S);
+      ctx.drawImage(spr.cv, o.x - S / 2, o.y - S / 2, S, S);
     }
     ctx.globalAlpha = 1 - 0.75 * fade; // 文字だけ薄くする
     const fs = Math.round(Math.max(18, Math.min(30, o.r * (o.kind === 'reflector' ? 0.95 : 0.8))) * (big ? 1.15 : 1) * pop);
