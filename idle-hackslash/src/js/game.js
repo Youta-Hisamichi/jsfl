@@ -2558,6 +2558,9 @@ function setupRebirthExtraChest(ov, rbChests, rbStage) {
   });
   sync();
 }
+const RB_REROLL_GEM = 1; // 転生結果の「次のスキル」「次の仲間」は💎1で何度でも引き直せる
+function rbdSkillRowHtml() { return game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join(''); }
+function rbdCompRowHtml() { return game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join(''); }
 function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbStage) {
   got = got || { common: feathers };
   const list = FEA_RARITIES.slice().reverse().filter(r => got[r]), best = list[0] || 'common';
@@ -2565,8 +2568,8 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
   const ov = document.createElement('div'); ov.className = 'modal-overlay show rbd-ov'; ov.style.zIndex = 76;
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
     <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
-    ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h"><img class="rbd-h-ico" src="assets/img/icons/sk_skillSpecial.webp" alt=""> 次のスキル</div><div class="rbd-sk-row">${game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join('')}</div></div>` : ''}
-    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る3人）</div><div class="rbd-sk-row">${game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join('')}</div></div>` : ''}
+    ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h"><img class="rbd-h-ico" src="assets/img/icons/sk_skillSpecial.webp" alt=""> 次のスキル</div><div class="rbd-sk-row rbd-skill-row">${rbdSkillRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="skill"></button></div>` : ''}
+    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る3人）</div><div class="rbd-sk-row rbd-comp-row">${rbdCompRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="comp"></button></div>` : ''}
     ${compGacha ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🐾 仲間ガチャ<small>（ステージ${formatStageNumber(compGacha.stage)}まで進んだ分レア率UP）</small></div><div class="rbd-sk-row"><div class="rbd-sk rbd-cg" data-rbd-comp="${compGacha.id}" style="--rc:${RARITY_INFO[COMPANIONS[compGacha.id].rarity].color}"><span class="rbd-sk-ico rbd-cg-q">❓</span></div></div></div>` : ''}
     ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱${typeof ALL_CHEST_BTN !== 'undefined' ? ALL_CHEST_BTN.replace('aco-btn', 'aco-btn aco-inline').replace('全部の宝箱で出るもの', '中身') : ''}<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row rbd-chest-row">${rbdChestRowHtml(rbChests)}</div><button class="rbd-buy-chest" type="button"></button><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・恩恵が出る）</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
@@ -2594,6 +2597,22 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
     if (typeof playGachaSound === 'function') playGachaSound(c.rarity);
   }, Math.max(CG_REVEAL_MS, 900 + list.length * 180));
   ov.querySelectorAll('[data-rbd-skill]').forEach(el => el.addEventListener('click', () => { if (el.classList.contains('rbd-rolling')) return; const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); })); // 次のスキル：タップで概要
+  { // 💎1で引き直し（何度でも）：選び直して、回る演出をもう一度
+    const sync = () => ov.querySelectorAll('[data-rbd-reroll]').forEach(b => { const c = gemPrice(RB_REROLL_GEM); b.classList.toggle('is-disabled', game.gems < c); b.innerHTML = `<span data-xi="x_gem">💎</span>${c} で${b.dataset.rbdReroll === 'skill' ? 'スキル' : '仲間'}を引き直す`; });
+    ov.querySelectorAll('[data-rbd-reroll]').forEach(b => b.addEventListener('click', ev => {
+      ev.stopPropagation(); const sk = b.dataset.rbdReroll === 'skill', row = ov.querySelector(sk ? '.rbd-skill-row' : '.rbd-comp-row'); if (!row || row.querySelector('.rbd-rolling')) return;
+      const cost = gemPrice(RB_REROLL_GEM); if (game.gems < cost) { showTapError(`ジェムが ${cost - Math.floor(game.gems)} 個足りません`, ev.clientX, ev.clientY); return; }
+      game.gems -= cost;
+      if (sk) { game.skillOn = rollSkillOn(); row.innerHTML = rbdSkillRowHtml(); } else { game.compOn = rollCompOn(null); row.innerHTML = rbdCompRowHtml(); }
+      row.querySelectorAll(sk ? '[data-rbd-skill]' : '[data-rbd-comp]').forEach((el, i) => {
+        rollIcons(el, sk ? rndSkillIco : rndCompIco, 900 + i * 250);
+        el.addEventListener('click', () => { if (el.classList.contains('rbd-rolling')) return; if (sk) { const { it, auto, name, desc } = skillToggleInfo(el.dataset.rbdSkill); showSkillBrief(it, name + (auto ? '（自動）' : ''), desc, auto); } else showCompGachaInfo(el.dataset.rbdComp); });
+      });
+      try { renderSkillToggleList(); renderCompToggleList(); } catch (e) {}
+      updateStatsUI(); saveGame(); sync();
+    }));
+    sync();
+  }
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }
