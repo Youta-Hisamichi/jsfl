@@ -1589,3 +1589,36 @@ function syncGachaLeftBadge(rowId, wrapSel) {
   new MutationObserver(() => syncGachaLeftBadge(id, sel)).observe(row, { childList: true, subtree: true, characterData: true });
   syncGachaLeftBadge(id, sel);
 });
+
+// ===== 紋章（サブスク）の毎日ジェム：加入中は1日1回、熟練者💎8・伝説の勇者💎30（上位の紋章を持っていれば上位の分だけ） =====
+function activeSubId() { return isSubActive('hero') ? 'hero' : isSubActive('veteran') ? 'veteran' : null; }
+function checkSubDailyGems() {
+  const id = activeSubId(); if (!id) return;
+  const k = todayKey(); if (game.subDailyKey === k) return;
+  const sub = SUBSCRIPTIONS[id], n = sub.dailyGems || 0; if (!n) return;
+  game.subDailyKey = k; game.gems = (game.gems || 0) + n; saveGame(); if (typeof updateStatsUI === 'function') updateStatsUI();
+  const show = () => { if (document.querySelector('.modal-overlay.show, .sc-ov, .cg-info-ov')) { showNotice(`${sub.icon} ${sub.name}の毎日ボーナス 💎${n} を受け取りました`, false, 3500); return; }
+    simpleChoice({ icon: xi(sub.emblem) || sub.icon, title: '紋章の毎日ボーナス', text: `<div class="sc-text">${sub.name}の特典で<br><b style="font-size:1.4em;color:#ffd76b">💎${n}</b> を受け取りました</div>`, sub: '加入中は毎日もらえます', yes: 'OK', no: false }); };
+  setTimeout(show, 1200);
+  try { playTone(988, 0.1, 'triangle', 0.06); setTimeout(() => playTone(1319, 0.2, 'triangle', 0.06), 110); } catch (e) {}
+}
+tcReady(() => setTimeout(checkSubDailyGems, 2500)); // 起動時（サーバーの時刻を確かめてから。7日ログインのあと）
+setInterval(checkSubDailyGems, 30000); // 日付が変わったとき・加入した直後も
+
+// ===== 紋章に入っていない人に、動画のボタンの下でそれとなく紋章を案内する（押すとショップの紋章へ） =====
+const EMB_HINT_BTNS = '[data-reward-ad], #rebornAdBtn, #towerReadyAdBtn, #bossContAdBtn, #chestAdBtn, #rbAdBtn';
+function syncEmbHints() {
+  const off = isAdFree();
+  document.querySelectorAll(EMB_HINT_BTNS).forEach(btn => {
+    let h = btn.nextElementSibling; const has = h && h.classList.contains('emb-hint');
+    const vis = !off && btn.offsetParent !== null && btn.style.display !== 'none';
+    if (vis && !has) { h = document.createElement('div'); h.className = 'emb-hint'; h.innerHTML = '👑 紋章があれば、動画なしですぐ受け取れます <b>›</b>'; btn.after(h); }
+    else if (!vis && has) h.remove();
+  });
+}
+setInterval(syncEmbHints, 800);
+document.addEventListener('click', ev => {
+  const h = ev.target.closest('.emb-hint'); if (!h) return; ev.stopPropagation();
+  document.querySelectorAll('.modal-overlay.show').forEach(m => { if (!m.contains(document.getElementById('supergemShopList'))) m.classList.remove('show'); });
+  switchTab('gemshop'); setTimeout(() => { const c = document.querySelector('[data-shop-tab="charge"]'); if (c) c.click(); setTimeout(() => { const s = document.querySelector('[data-sub-shop]'); if (s) s.scrollIntoView({ block: 'center' }); }, 150); }, 80);
+}, true);
