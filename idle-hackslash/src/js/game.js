@@ -831,7 +831,7 @@ document.getElementById('bossContRebornBtn').addEventListener('click', () => {
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {
   ev.stopPropagation();
   if (!isBossFight() || phase !== 'battle') return;
-  if (game.skipChallenge) { giveUpSkipChallenge(); return; } // 試練の塔：自分でリタイヤしたら、確認なしで挑戦をやめて元のステージへ
+  if (game.skipChallenge) { giveUpSkipChallenge(true); return; } // 試練の塔：自分でリタイヤしたら、確認なしで挑戦をやめて元のステージへ
   bossFail('retire');
 });
 function updateBossRetireBtn() {
@@ -1509,7 +1509,7 @@ function retrySkipChallenge() {
   updateHPUI();
   saveGame();
 }
-function giveUpSkipChallenge() {
+function giveUpSkipChallenge(retire) { // retire：ボス戦中にリタイヤボタンで自分からやめた
   const { origin, target } = game.skipChallenge;
   skipRetryModal.classList.remove('show');
   game.skipChallenge = null;
@@ -1519,7 +1519,8 @@ function giveUpSkipChallenge() {
   refreshPlayerBallStats(true);
   stageAnnounceText = 'ステージ' + formatStageNumber(origin) + '';
   stageAnnounceTimer = STAGE_ANNOUNCE_DURATION;
-  showNotice(`🏳️ ステージ${target} への挑戦をあきらめ、ステージ${origin} に戻りました`, true);
+  showNotice(retire ? `🏳️ 試練の塔をリタイヤしました（ステージ${target}）。ステージ${origin} に戻りました` : `🏳️ ステージ${target} への挑戦をあきらめ、ステージ${origin} に戻りました`, true);
+  if (retire) spawnDamageText(arena.x, arena.y - 30, '🏳 試練の塔をリタイヤ', '#ff6b6b', 0.008, true); // 画面の真ん中にも大きく
   startBgm(origin % 10 === 0 ? 'boss' : 'normal');
   updateStatsUI();
   updateHPUI();
