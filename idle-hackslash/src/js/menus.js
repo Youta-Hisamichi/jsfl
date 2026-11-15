@@ -435,19 +435,21 @@ function canAffordSummon() { const p = getCompSummonPrice(); return game.coins >
 const COMP_DUP_LV_MULT = 1.5; // 招集ガチャなどでパーティにいる仲間がダブったら、Lvが1.5倍
 // 仲間項目のON/OFF：ONの仲間だけが招集ガチャに出る。ON/OFFは転生のときのガチャ（rollCompOn）だけで決まり、手で切り替えはできない
 // まだ一度も転生していないセーブ（compOn が無い）は、起動時に initialCompOn() で決める
-const COMP_MIN_ON = 3, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 5;
+const COMP_MIN_ON = 4, COMP_ON_COST = { common: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 }, COMP_OFF_COST = 5;
 function compToggleCost(id) { return gemPrice(isCompOn(id) ? COMP_OFF_COST : (COMP_ON_COST[COMPANIONS[id].rarity] || 1)); } // ONはレア度で💎1〜16、OFFは💎5
 function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanionUnlocked(id) && !isCompLocked(id)); }
 function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
 function compOnCount() { return compPoolIds().filter(isCompOn).length; }
 // 転生のときの3択：招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）で、かぶりなしに選ぶ。first は必ず入れる（仲間ガチャで出た仲間）
+// 転生のときの4人：★1・★2・★2以上・★3以上の枠で1人ずつ（その枠の中は招集ガチャと同じ重み）。枠に合う仲間がいなければ残りから。first は必ず入れる
+const COMP_ON_TIERS = [['common'], ['rare'], ['rare', 'epic', 'legendary', 'mythic'], ['epic', 'legendary', 'mythic']];
 function rollCompOn(first) {
   const pool = compPoolIds(), out = first && pool.includes(first) ? [first] : [];
   let rest = pool.filter(id => !out.includes(id));
-  while (out.length < COMP_MIN_ON && rest.length) {
-    let x = Math.random() * rest.reduce((t, id) => t + COMPANIONS[id].weight, 0), pick = rest[rest.length - 1];
-    for (const id of rest) { if ((x -= COMPANIONS[id].weight) < 0) { pick = id; break; } }
-    out.push(pick); rest = rest.filter(id => id !== pick);
+  const pickW = list => { let x = Math.random() * list.reduce((t, id) => t + COMPANIONS[id].weight, 0), pick = list[list.length - 1]; for (const id of list) { if ((x -= COMPANIONS[id].weight) < 0) { pick = id; break; } } return pick; };
+  for (let i = out.length; i < COMP_MIN_ON && rest.length; i++) {
+    const tier = COMP_ON_TIERS[i] || null, inTier = tier ? rest.filter(id => tier.includes(COMPANIONS[id].rarity)) : [];
+    const pick = pickW(inTier.length ? inTier : rest); out.push(pick); rest = rest.filter(id => id !== pick);
   }
   return out;
 }

@@ -1114,7 +1114,7 @@ function completeReincarnation() {
   game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
   const compGacha = null; // 転生の仲間ガチャは「SSR以上の宝箱」に変わった（仲間・進化の解放・スキルの解放・恩恵などが出る）
   const rbChests = rollRebirthChests(compGachaStage); { const hc = getHeldChests(); for (const r in rbChests) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + rbChests[r]); }
-  game.compOn = rollCompOn(null); // 招集ガチャに出る3人も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
+  game.compOn = rollCompOn(null); // 招集ガチャに出る4人（★1・★2・★2以上・★3以上）も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
   applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
   if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ else { if (!game.companionBook) game.companionBook = {}; game.companionBook[compGacha.id] = true; } }
@@ -2536,7 +2536,7 @@ function rebirthCompRatesText(stage) { /* まだ出せないレア度を除い�
 const RB_EXTRA_CHEST_GEM_EACH = 5;
 function rbdChestRowHtml(c) { return ['mythic', 'legendary'].filter(r => c[r]).map(r => `<div class="rbd-sk" style="--rc:${RARITY_INFO[r].color}"><span class="rbd-sk-ico">${xi(CHEST_ICON[r]) || '🎁'}</span><span class="rbd-stars">${rarityStarsImg(r)}</span><span>${RARITY_INFO[r].label}の宝箱 ×${c[r]}</span></div>`).join(''); }
 function setupRebirthExtraChest(ov, rbChests, rbStage) {
-  const btn = ov.querySelector('.rbd-buy-chest'); if (!btn) return;
+  const btn = ov.querySelector('.rbd-buy-chest:not(.rbd-reroll)'); if (!btn) return; // 引き直しのボタンと取り違えない
   const n = rebirthRewardChestN(rbStage); let bought = false;
   const sync = () => {
     if (bought) { btn.disabled = true; btn.innerHTML = '🎁 宝箱2倍にしました'; return; }
@@ -2569,7 +2569,7 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
   ov.innerHTML = `<div class="modal-panel rbd-panel"><div class="rbd-glow"></div><div class="rbd-title">輪廻転生</div><div class="rbd-sub">転生 <b>${game.reincarnations}</b>回目</div>
     <div class="rbd-list"><div><span>💎 ジェム</span><b>+${formatCoinNumber(gems)}</b></div><div class="rbd-gacha-h">🪶 羽ガチャ ${formatCoinNumber(feathers)}回</div>${list.map((r, i) => `<div class="rbd-fea${r === 'common' ? '' : ' rbd-rare'}" style="--rc:${RARITY_INFO[r].color};animation-delay:${0.25 + i * 0.18}s"><span>${feaIco(r, 'fea-ico')} 進化の${feaName(r)}</span><b>×${formatCoinNumber(got[r])}</b></div>`).join('')}<div><span>💪 転生ボーナス</span><b>攻撃力・最大HP ×${rebirthPowerMult()}</b></div></div>
     ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h"><img class="rbd-h-ico" src="assets/img/icons/sk_skillSpecial.webp" alt=""> 次のスキル</div><div class="rbd-sk-row rbd-skill-row">${rbdSkillRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="skill"></button></div>` : ''}
-    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る3人）</div><div class="rbd-sk-row rbd-comp-row">${rbdCompRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="comp"></button></div>` : ''}
+    ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る4人）</div><div class="rbd-sk-row rbd-comp-row">${rbdCompRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="comp"></button></div>` : ''}
     ${compGacha ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🐾 仲間ガチャ<small>（ステージ${formatStageNumber(compGacha.stage)}まで進んだ分レア率UP）</small></div><div class="rbd-sk-row"><div class="rbd-sk rbd-cg" data-rbd-comp="${compGacha.id}" style="--rc:${RARITY_INFO[COMPANIONS[compGacha.id].rarity].color}"><span class="rbd-sk-ico rbd-cg-q">❓</span></div></div></div>` : ''}
     ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱${typeof ALL_CHEST_BTN !== 'undefined' ? ALL_CHEST_BTN.replace('aco-btn', 'aco-btn aco-inline').replace('全部の宝箱で出るもの', '中身') : ''}<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row rbd-chest-row">${rbdChestRowHtml(rbChests)}</div><button class="rbd-buy-chest" type="button"></button><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・恩恵が出る）</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
