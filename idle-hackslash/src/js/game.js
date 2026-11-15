@@ -1622,9 +1622,17 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
     open = now;
   }).observe(m, { attributes: true, attributeFilter: ['class'] });
 });
+// ボタンのタップ音：指を離したときに鳴らす（押した瞬間に鳴らすと、ボタンの上から始めたスクロールでも鳴ってしまう）。動かしたら（スクロール）鳴らさない
+let uiTapPending = null;
 document.addEventListener('pointerdown', event => {
   const btn = event.target.closest && event.target.closest('button');
-  if (!btn || !audioCtx || btn.disabled || btn.classList.contains('is-disabled') || btn.closest('#tabBar')) return;
+  uiTapPending = (!btn || !audioCtx || btn.disabled || btn.classList.contains('is-disabled') || btn.closest('#tabBar')) ? null : { btn, x: event.clientX, y: event.clientY, id: event.pointerId };
+}, true);
+document.addEventListener('pointermove', event => { const p = uiTapPending; if (p && p.id === event.pointerId && Math.hypot(event.clientX - p.x, event.clientY - p.y) > 10) uiTapPending = null; }, true);
+document.addEventListener('pointercancel', () => { uiTapPending = null; }, true); // スクロールが始まると、ブラウザが指の追跡をやめる
+document.addEventListener('pointerup', event => {
+  const p = uiTapPending; uiTapPending = null; if (!p || p.id !== event.pointerId) return;
+  if (Math.hypot(event.clientX - p.x, event.clientY - p.y) > 10) return;
   playUiTapSound();
 }, true);
 new MutationObserver(() => refreshBgm()).observe(stageSkipModal, { attributes: true, attributeFilter: ['class'] }); // 塔の画面の開け閉めで BGM を切り替える
