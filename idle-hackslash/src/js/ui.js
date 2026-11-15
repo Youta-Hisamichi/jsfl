@@ -3314,7 +3314,7 @@ function fitArenaHeight() {
   if (row && bar) {
     const home = row.parentElement, mark = document.createComment('hp-row'); home.insertBefore(mark, row);
     setInterval(() => {
-      const boss = document.body.classList.contains('boss-hp') && getActiveTab() === 'game';
+      const boss = false; // ボス戦でもステージ進捗バーはそのまま（今のステージがわかるように。HPはキャラの上のゲージで見る）
       if (boss && row.parentElement !== bar) { bar.insertBefore(row, bar.querySelector('.stage-side-slot:not(.stage-side-left)')); document.body.classList.add('hp-in-bar'); }
       else if (!boss && row.parentElement === bar) { home.insertBefore(row, mark.nextSibling); document.body.classList.remove('hp-in-bar'); }
     }, 300);

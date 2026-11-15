@@ -5440,3 +5440,6 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 .tab-page[data-tab="coinshop"] .party-row #skillCountRow > span:first-child, .tab-page[data-tab="companion"] .party-row #partySlotBtn > span:first-child { display: none !important; }
 /* スキルガチャの値段：コインと数字が枠にくっつかないよう、枠を広げて余白をとる */
 .tab-page[data-tab="coinshop"] .gacha-art-btn .gab-cost { width: 46% !important; max-width: 200px; gap: 6px; padding: 0 16px !important; box-sizing: border-box; white-space: nowrap; }
+
+/* ボス戦でも上はステージ進捗バーのまま。自キャラとボスのHPはキャラの上のゲージで見るので、HPの段は出さない */
+body.boss-hp .hp-row { display: none !important; }

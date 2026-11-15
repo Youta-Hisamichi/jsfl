@@ -831,7 +831,7 @@ document.getElementById('bossContRebornBtn').addEventListener('click', () => {
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {
   ev.stopPropagation();
   if (!isBossFight() || phase !== 'battle') return;
-  if (game.skipChallenge) { failSkipChallenge(); return; } // 試練の塔：負けたときと同じ（もう一度挑むか、やめて元のステージへ）
+  if (game.skipChallenge) { giveUpSkipChallenge(); return; } // 試練の塔：自分でリタイヤしたら、確認なしで挑戦をやめて元のステージへ
   bossFail('retire');
 });
 function updateBossRetireBtn() {
