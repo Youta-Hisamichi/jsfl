@@ -581,7 +581,7 @@ const towerReadyModal = document.getElementById('towerReadyModal');
 function applyTowerBuff() { // 塔のボスが出たら、選んでいた動画バフをかける
   if (!towerBuffPending) return; const kind = towerBuffPending; towerBuffPending = false;
   const boss = balls.find(b => b.isBoss && !b.isPlayer); if (!boss) return;
-  bossAdBuffFor = boss; if (!boss.adHalved) { boss.adHalved = true; boss.maxHp = Math.max(1, Math.round(boss.maxHp * 0.5)); boss.hp = Math.min(boss.hp, boss.maxHp); boss.atk = Math.max(1, Math.round(boss.atk * 0.5)); } if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💫 ボスの強さ半減！\n🎁 報酬2倍！', '#ffd76b', 0.008, true); playBossFanfare(0);
+  bossAdBuffFor = boss; if (!boss.adHalved) { boss.adHalved = true; boss.maxHp = Math.max(1, Math.round(boss.maxHp * 0.5)); boss.hp = Math.min(boss.hp, boss.maxHp); boss.atk = Math.max(1, Math.round(boss.atk * 0.5)); } if (kind === 'free') questTick('ad'); spawnDamageText(arena.x, arena.y - 40, '💫 ボスの強さ半減！\n🎁 報酬2倍！', '#ffd76b', 0.008, true); /* ファンファーレは動画のあとの「ボス弱体化＆報酬2倍」の画面で1回だけ鳴らす（ボス登場時には鳴らさない） */
 }
 function drawBossBuffIcon() { if (bossAdBuffOn() && typeof arenaHalfY === 'function') { // 動画バフ中は画面上に「攻撃力×2・報酬×2」を出し続ける
     ctx.save(); ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const t = '💫ボス半減　🎁報酬×2', y = arena.y + arenaHalfY() - 14;
