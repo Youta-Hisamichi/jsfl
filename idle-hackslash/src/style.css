@@ -5417,3 +5417,11 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
   background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.55) 85%, rgba(0,0,0,0) 100%);
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 6px #000; animation: bossNarr 4.6s ease forwards; }
 @keyframes bossNarr { 0% { opacity: 0; transform: translateX(-50%) translateY(6px); } 12% { opacity: 1; transform: translateX(-50%) translateY(0); } 82% { opacity: 1; } 100% { opacity: 0; } }
+/* 招集ガチャの結果：絆・恩恵で強くなった分 */
+.cg-power { margin: 8px auto 4px; max-width: 340px; background: rgba(8, 12, 28, 0.78); border: 1px solid rgba(255, 215, 120, 0.55); border-radius: 10px; padding: 7px 10px; text-align: left; font-size: 0.74rem; color: #fff; }
+.cg-power .cgp-h { font-weight: 900; color: #ffd76b; text-align: center; margin-bottom: 4px; }
+.cg-power .cgp-r { display: grid; grid-template-columns: 1fr auto; column-gap: 6px; align-items: baseline; padding: 2px 0; border-top: 1px dashed rgba(255,255,255,0.12); }
+.cg-power .cgp-r:first-of-type { border-top: none; }
+.cg-power .cgp-r small { grid-column: 1 / -1; text-align: right; color: #9fe8a8; font-size: 0.92em; }
+.cg-power .cgp-r em { font-style: normal; } .cg-power .cgp-r em.up { color: #7dff9a; } .cg-power .cgp-r em.down { color: #ff8a8a; }
+.cg-power .cgp-note { margin-top: 4px; color: #ffe9a8; font-size: 0.92em; line-height: 1.45; }

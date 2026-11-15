@@ -553,6 +553,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
   compGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止める（残響も）。結果が出たら元の曲へ
+  const pw0 = compPowerSnap(); // ガチャの前の強さ（結果に「絆・恩恵でどれだけ強くなったか」を出す）
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
   const extra = compGachaStageBonus(); // いまは0（1回1人）
@@ -561,6 +562,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   snap.refund = 0; // （覚醒MAXのコイン返しはなくなった）
   lastCompGacha = { snap, count };
   refreshPlayerBallStats(false);
+  const pw1 = compPowerSnap();
   refreshCompanionBalls();
   const box = document.getElementById('compGachaResult');
   const bestRarity = results.reduce((best, r) => RARITY_ORDER.indexOf(COMPANIONS[r.id].rarity) > RARITY_ORDER.indexOf(best) ? COMPANIONS[r.id].rarity : best, 'common');
@@ -572,7 +574,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
     compGachaHush = false; refreshBgm(); // 結果が出たら曲を戻す
     compSummonReveal = null;
     if (activeTabCache !== 'companion') { box.style.display = 'none'; renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
-    showCompanionGachaResult(box, results, results.length, bestRarity); // ステージボーナスで増えた分も並べる
+    showCompanionGachaResult(box, results, results.length, bestRarity, { pw0, pw1 }); // ステージボーナスで増えた分も並べる
     box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
     renderCompanionList();
   };
@@ -604,7 +606,26 @@ function showCompGachaInfo(id) { // 招集ガチャの結果でキャラを押�
   ov.addEventListener('click', ev => { if (ev.target === ov || ev.target.closest('.cgi-ok')) ov.remove(); });
   playTone(880, 0.06, 'triangle', 0.05, 1175);
 }
-function showCompanionGachaResult(box, results, count, bestRarity) {
+// 招集ガチャの前後の強さ：勇者の攻撃力・HP、恩恵の倍率、絆で勇者が取り込む量、仲間全員の攻撃力・HPの合計
+function compPowerSnap() {
+  return withBondCache(() => {
+    let cAtk = 0, cHp = 0; for (const id of Object.keys(COMPANIONS)) { const n = getCompanionCount(id); if (n > 0) { cAtk += n * getCompanionAtk(id); cHp += n * getCompanionMaxHP(id); } }
+    return { atk: getPlayerAtk(), hp: getPlayerMaxHP(), grace: partyGraceMult(), bondAtk: compShare('atk'), bondHp: compShare('hp'), cAtk, cHp };
+  });
+}
+function compPowerDeltaHtml(d, results) {
+  if (!d || !d.pw0 || !d.pw1) return '';
+  const a = d.pw0, b = d.pw1, F = v => formatCoinNumber(Math.round(v)), pct = (x, y) => x > 0 ? `${y >= x ? '+' : ''}${(((y / x) - 1) * 100).toFixed(1)}%` : '';
+  const row = (k, x, y, note) => `<div class="cgp-r"><span>${k}</span><b>${F(x)} → <em class="${y > x ? 'up' : y < x ? 'down' : ''}">${F(y)}</em></b><small>${pct(x, y)}${note ? '　' + note : ''}</small></div>`;
+  const newIds = [...new Set(results.map(r => r.id))], rates = newIds.map(id => { const g = compGraceRate(id), bd = compBondRate(id); return g || bd ? `${COMPANIONS[id].name}：👑恩恵率 ${Math.round(g * 100)}%・🤝絆率 ${Math.round(bd * 100)}%` : ''; }).filter(Boolean);
+  return `<div class="cg-power"><div class="cgp-h">📈 この招集で強くなった分</div>`
+    + row('⚔️ 勇者の攻撃力', a.atk, b.atk) + row('❤️ 勇者の最大HP', a.hp, b.hp)
+    + `<div class="cgp-r"><span>👑 恩恵（全員に掛かる）</span><b>×${a.grace.toFixed(2)} → <em class="${b.grace > a.grace ? 'up' : ''}">×${b.grace.toFixed(2)}</em></b></div>`
+    + row('🤝 絆で勇者が取り込む攻撃力', a.bondAtk, b.bondAtk) + row('🤝 絆で勇者が取り込むHP', a.bondHp, b.bondHp)
+    + row('🐾 仲間全員の攻撃力', a.cAtk, b.cAtk)
+    + (rates.length ? `<div class="cgp-note">${rates.join('<br>')}</div>` : '<div class="cgp-note">N（★1）の仲間は恩恵・絆を持っていません（R以上から）</div>') + '</div>';
+}
+function showCompanionGachaResult(box, results, count, bestRarity, power) {
   box.style.display = 'block';
   box.className = 'gacha-result rarity-' + bestRarity;
   box.style.background = rarityBackground(bestRarity);
@@ -613,8 +634,8 @@ function showCompanionGachaResult(box, results, count, bestRarity) {
     return `<div class="gm-item gm-open rarity-${c.rarity}" data-cg-info="${r.id}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${companionIconHtml(r.id)}</div><span class="gm-name">${rarityStarsImg(c.rarity)}<br>${c.name}<br><b>${r.label}</b></span></div>`;
   };
   box.innerHTML = count === 1
-    ? `<div class="gr-icon gr-pop" data-cg-info="${results[0].id}">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div><button id="compGachaCloseBtn">閉じる</button>`
-    : `<div class="gr-title gr-pop">🐾 仲間${count}人の招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div><button id="compGachaCloseBtn">閉じる</button>`;
+    ? `<div class="gr-icon gr-pop" data-cg-info="${results[0].id}">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div>${compPowerDeltaHtml(power, results)}<button id="compGachaCloseBtn">閉じる</button>`
+    : `<div class="gr-title gr-pop">🐾 仲間${count}人の招集結果</div><div class="gacha-multi-grid">${results.map(cell).join('')}</div>${compPowerDeltaHtml(power, results)}<button id="compGachaCloseBtn">閉じる</button>`;
   { const cb = document.getElementById('compGachaCloseBtn'), row = document.createElement('div'); row.className = 'gr-btn-row'; cb.before(row); row.insertAdjacentHTML('beforeend', `<button class="gacha-reroll-btn" id="compGachaRerollBtn">💎${GACHA_REROLL_GEMS} で<br>引き直す</button>`); cb.classList.add('gr-ok-btn'); row.appendChild(cb); row.style.pointerEvents = 'none'; setTimeout(() => { row.style.pointerEvents = ''; }, 500); } // 演出スキップの誤タップを防ぐため、引き直しと閉じるは左右に離して並べる
   document.getElementById('compGachaRerollBtn').addEventListener('click', rerollCompanionGacha);
   document.getElementById('compGachaCloseBtn').addEventListener('click', () => { box.style.display = 'none'; });

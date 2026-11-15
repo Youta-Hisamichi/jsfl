@@ -593,7 +593,7 @@ function drawBossBuffIcon() { if (bossAdBuffOn() && typeof arenaHalfY === 'funct
 { const orig = markCompanionDead; markCompanionDead = function (id) { const was = game.companions.alive[id]; orig(id); if (was !== false) { const b = balls.find(x => x.isCompanion && x.companionId === id); if (b) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(b, pickFresh(pool), 2600); } } }; }
 { const orig = playRewardedVideo; playRewardedVideo = function (done, txt, asked) { return orig(asked ? done : () => { questTick('ad'); done(); }, txt, asked); }; } // asked（iPhone のトラッキング説明のあとの呼び直し）はそのまま渡す（渡さないと説明→呼び直しがくり返して止まる）
 { const orig = showCompanionGachaResult; showCompanionGachaResult = function (box, results, count, best) {
-  orig(box, results, count, best); questTick('gacha', count);
+  orig.apply(this, arguments); questTick('gacha', count);
   const r = results.find(x => RARITY_ORDER.indexOf(COMPANIONS[x.id].rarity) >= RARITY_ORDER.indexOf('legendary')); if (r) rareCutIn(r.id);
   setTimeout(() => { const b = balls.find(x => x.isCompanion && x.companionId === results[0].id); if (b) companionSay(b, COMP_PROFILE[results[0].id].say[0]); }, 600);
 }; }
