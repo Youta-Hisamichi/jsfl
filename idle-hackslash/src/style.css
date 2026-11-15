@@ -5451,3 +5451,5 @@ body.boss-hp .hp-row { display: none !important; }
 #supergemShopList .sub-daily { position: absolute; right: 3%; top: -5px; z-index: 2; display: inline-flex; align-items: center; gap: 3px; padding: 2px 10px 2px 8px; border-radius: 999px; background: linear-gradient(180deg, #fff3b0, #ffd24a 55%, #e8a417); border: 2px solid #7a4a0c; color: #3a1f00; font-size: 0.72rem; font-weight: 900; line-height: 1.2; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5); text-shadow: 0 1px 0 #fff6d0; pointer-events: none; }
 #supergemShopList .sub-daily b { font-size: 1.15em; color: #c0220a; margin: 0 1px; }
 #supergemShopList .sub-daily .ico-img { width: 1.15em; height: 1.15em; }
+/* 本物のランキング：読み込み中・記録なしの案内 */
+.rank-loading { text-align: center; padding: 18px 8px; color: #fff; font-weight: 800; font-size: 0.85rem; text-shadow: 0 1px 2px #000, 0 0 4px #000; }

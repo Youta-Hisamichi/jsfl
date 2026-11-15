@@ -24,6 +24,13 @@ async function fbInit() {
   window.fbCloud = {
     kind: 'firebase', uid: null, linked: false, provider: null, linkedName: '',
     save: d => ref().set(d, { merge: true }),
+    // 本物のランキング：ranks/<uid> に自分の記録、daily/<日付>/p/<uid> にその日のクリア数（だれでも読める・自分の分だけ書ける。firestore.rules）
+    rankPut: d => db.doc('ranks/' + fbCloud.uid).set({ ...d, at: fb.firestore.FieldValue.serverTimestamp() }),
+    dailyPut: (day, d) => db.doc(`daily/${day}/p/${fbCloud.uid}`).set({ ...d, at: fb.firestore.FieldValue.serverTimestamp() }),
+    rankTop: async (field, n) => (await db.collection('ranks').orderBy(field, 'desc').limit(n).get()).docs.map(x => ({ id: x.id, ...x.data() })),
+    dailyTop: async (day, n) => (await db.collection('daily').doc(day).collection('p').orderBy('c', 'desc').limit(n).get()).docs.map(x => ({ id: x.id, ...x.data() })),
+    rankAbove: async (field, v, day) => { const q = day ? db.collection('daily').doc(day).collection('p').where('c', '>', v) : db.collection('ranks').where(field, '>', v); if (typeof q.count !== 'function') return null; const r = await q.count().get(); return r.data().count; },
+    rankCount: async () => { const q = db.collection('ranks'); if (typeof q.count !== 'function') return null; const r = await q.count().get(); return r.data().count; },
     sendFeedback: d => db.collection('feedback').add({ ...d, uid: fbCloud.uid, at: fb.firestore.FieldValue.serverTimestamp() }), // 評価ダイアログの「ご意見」を feedback に1件ずつ置く（書くだけ。読めるのは Firebase コンソールから）
     async remove() { // クラウドの控え（users/<uid>）と、ログインの記録（アカウント）を消す
       const cur = auth.currentUser; if (!cur) throw new Error('not signed in');
