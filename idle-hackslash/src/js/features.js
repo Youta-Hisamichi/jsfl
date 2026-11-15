@@ -1421,7 +1421,7 @@ if (!game.seen) { game.seen = {}; if ((game.reincarnations || 0) > 0 || (game.be
 if (!game.seen.bossRetry && ((game.reincarnations || 0) > 0 || (game.bestStage || 1) >= 300)) game.seen.bossRetry = 1; // 転生済み・ステージ300以上なら、ボス再戦はもう知っているものとする
 const NUDGES = [
   { ok: () => (game.reincarnations || 0) > 0 && (game.stage || 1) <= 30, // 転生したあと、序盤のステージで（前の周回の記憶がよみがえる）
-    hero: ['気のせいか、前にも戦った気がする‥'], comp: [], enemy: [] },
+    hero: ['気のせいか、前にも戦った気がする‥', 'また、ここからか。…悪くない', '前の俺より、少しはマシになったはずだ'], comp: [], enemy: [] },
   { ok: () => game.bossLoop && (game.bossLoopClears || 0) >= 2 && !seenOf('bossRetry'), // ボスに負けてしばらくループしても、再戦ボタンを押したことがない
     hero: ['鍛え直した…今ならあのボスに届くかもしれない。「👑 ボス再戦」で挑み直せるはずだ', 'いつまでもここで足踏みはしていられない…「ボス再戦」、押してみるか'],
     comp: ['ねえ、「👑 ボス再戦」のボタンでいつでもボスに挑み直せるよ', 'そろそろリベンジしてみない？ 「ボス再戦」を押せばすぐだよ'],
@@ -1498,3 +1498,29 @@ function showBossNarration(text) {
   setTimeout(() => el.remove(), 4600);
 }
 { const orig = showBossWarning; showBossWarning = function () { const r = orig.apply(this, arguments); if (Math.random() < BOSS_NARRATION_RATE) { const t = pickFresh(BOSS_NARRATION); sayRecent.set(t, Date.now()); setTimeout(() => showBossNarration(t), BOSS_WARNING_MS + 700); } return r; }; }
+
+// ===== 追加ゼリフ（反射玉・転生・周回にちなんだもの） =====
+CHUUNI.idle.push('跳ね返るたびに強くなる…まるで俺の人生だな', '放っておかれても、俺は戦い続ける。それが勇者ってもんだ', '転生しても、この剣の重さだけは覚えている', '一撃で決めるより、百回跳ねて決めるほうが性に合ってる');
+META_COMP.push('ねえ、反射玉って、なんであんなに跳ねるの？', '勇者さん、たまには放置してもいいんだよ？', 'わたしたち、何周目なんだろうね', '宝箱、開ける瞬間がいちばん好き', '次の転生でも、また一緒に戦おうね');
+ENEMY_SAY.slime.push('ぷる…その玉、こっちに飛ばさないで…');
+{
+  const monster = ['跳ねる玉こわい跳ねる玉こわい', '群れで来れば勝てると思ったのに…'];
+  ENEMY_SAY.idle.push(...monster); for (const t of monster) ENEMY_LINE_TONE_OF.set(t, 'monster');
+  const noble = { boss: ['円環の中で足掻くがいい。それが貴様の宿命だ', '何度生まれ変わろうと、我が城門は越えられぬ'], bossHalf: ['跳ね返す力か…面白い。だが、限界はあろう'], bossLow: ['この我が…跳ね玉ごときに…！'], die: ['見事だ…次の周回で、また会おう'] };
+  for (const k in noble) { ENEMY_SAY[k].push(...noble[k]); for (const t of noble[k]) ENEMY_LINE_TONE_OF.set(t, 'noble'); }
+}
+BOSS_NARRATION.push('跳ぜる光に、また一つ影が落ちる。勇者の旅は、まだ終わらない', '跳ね返る光が、闇を削る。その輝きが尽きる前に');
+// 反射玉の色が赤（×50）より上の段階に上がったとき・虹色になったときに、勇者がひとこと（仲間を自キャラにしているときは言わない）
+const HERO_REFL_SAY = { big: ['玉が…光ってやがる。そろそろ決めるか', '跳ねろ、跳ねろ。お前が強くなるほど、俺は楽ができる'], rainbow: ['虹色…悪くない色だ'] }, HERO_REFL_BIG_STAGE = 11; // 11＝赤（×50）
+function heroReflSay(rainbow) {
+  if (typeof getHeroChar === 'function' && getHeroChar()) return;
+  const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
+  const now = Date.now(); if (now - chuuniAt < 3500) return;
+  const t = pickFresh(rainbow ? HERO_REFL_SAY.rainbow : HERO_REFL_SAY.big); if (!t || sayIsRecent(t)) return;
+  chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70);
+}
+{ const orig = stepBounceValue; stepBounceValue = function (o) {
+  const s0 = o && o.kind === 'reflector' ? reflStage(o.bm) : -1, r = orig.apply(this, arguments);
+  try { if (s0 >= 0) { const s1 = reflStage(o.bm); if (s1 > s0 && s1 >= HERO_REFL_BIG_STAGE) heroReflSay(s1 === REFL_RAINBOW); } } catch (e) {}
+  return r;
+}; }
