@@ -30,6 +30,10 @@ async function fbInit() {
     rankTop: async (field, n) => (await db.collection('ranks').orderBy(field, 'desc').limit(n).get()).docs.map(x => ({ id: x.id, ...x.data() })),
     dailyTop: async (day, n) => (await db.collection('daily').doc(day).collection('p').orderBy('c', 'desc').limit(n).get()).docs.map(x => ({ id: x.id, ...x.data() })),
     rankAbove: async (field, v, day) => { const q = day ? db.collection('daily').doc(day).collection('p').where('c', '>', v) : db.collection('ranks').where(field, '>', v); if (typeof q.count !== 'function') return null; const r = await q.count().get(); return r.data().count; },
+    dailyWatch: (day, n, cb) => db.collection('daily').doc(day).collection('p').orderBy('c', 'desc').limit(n).onSnapshot(sn => cb(sn.docs.map(x => ({ id: x.id, ...x.data() }))), e => console.warn('ランキングの見張りが止まりました', e)), // 開いているあいだ、変わったらすぐ届く
+    dailyNear: async (day, c) => { const col = db.collection('daily').doc(day).collection('p'); // 自分のすぐ上・すぐ下の人（少しだけ読む）
+      const [up, dn] = await Promise.all([col.where('c', '>', c).orderBy('c', 'asc').limit(3).get(), col.where('c', '<', c).orderBy('c', 'desc').limit(3).get()]);
+      return { up: up.docs.map(x => ({ id: x.id, ...x.data() })), down: dn.docs.map(x => ({ id: x.id, ...x.data() })) }; },
     rankCount: async () => { const q = db.collection('ranks'); if (typeof q.count !== 'function') return null; const r = await q.count().get(); return r.data().count; },
     sendFeedback: d => db.collection('feedback').add({ ...d, uid: fbCloud.uid, at: fb.firestore.FieldValue.serverTimestamp() }), // 評価ダイアログの「ご意見」を feedback に1件ずつ置く（書くだけ。読めるのは Firebase コンソールから）
     async remove() { // クラウドの控え（users/<uid>）と、ログインの記録（アカウント）を消す

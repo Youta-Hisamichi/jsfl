@@ -5453,3 +5453,14 @@ body.boss-hp .hp-row { display: none !important; }
 #supergemShopList .sub-daily .ico-img { width: 1.15em; height: 1.15em; }
 /* 本物のランキング：読み込み中・記録なしの案内 */
 .rank-loading { text-align: center; padding: 18px 8px; color: #fff; font-weight: 800; font-size: 0.85rem; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+/* 本日のクリア数のデッドヒート：順位の上下・差・締め切り */
+.rank-row .rk-mv { font-style: normal; font-weight: 900; margin-right: 4px; animation: rkMv 2.4s ease forwards; }
+.rank-row .rk-mv.up { color: #6ef08c; } .rank-row .rk-mv.down { color: #ff7b7b; }
+@keyframes rkMv { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+.rank-row.rk-moving { position: relative; z-index: 2; box-shadow: 0 0 0 2px #ffd76b, 0 0 14px rgba(255,215,107,0.7); }
+.rank-gap { margin: -2px 6px 8px; padding: 6px 10px; border-radius: 8px; background: rgba(8,12,28,0.82); border: 1px solid rgba(255,215,107,0.55); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.6; text-align: center; }
+.rank-gap b { color: #ffe9a8; } .rank-gap .gap-n { color: #ff9d4f; font-size: 1.15em; }
+.rank-deadline { margin: 6px auto 8px; width: fit-content; padding: 4px 14px; border-radius: 999px; background: rgba(8,12,28,0.8); border: 1px solid rgba(255,215,107,0.6); color: #fff; font-size: 0.78rem; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.rank-deadline b { color: #ffd76b; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.rank-deadline.soon { border-color: #ff6b6b; animation: rkSoon 1s ease-in-out infinite alternate; } .rank-deadline.soon b { color: #ff8a8a; }
+@keyframes rkSoon { from { box-shadow: 0 0 0 rgba(255,80,80,0); } to { box-shadow: 0 0 12px rgba(255,80,80,0.8); } }
