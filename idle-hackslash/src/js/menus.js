@@ -16,7 +16,7 @@ function renderSkillGacha() {
   const eq = getEquippedSkills();
   // 見出し：装備数（スキル＋自動スキル）／枠数と「＋枠を増やす」だけ
   const headHtml = ''; // 回数はガチャの下の左右に出す（招集ガチャと同じ）
-  { const sr = document.getElementById('skillCountRow'); if (sr) { const h = `<span>残り <b>${skillGachaLeft()}/${skillGachaLimit()}</b>回</span>` + (skillGachaLimit() >= SKILL_GACHA_MAX_PULLS ? '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>' : `<button class="${game.gems < SKILL_GACHA_EXTRA_GEM ? 'is-disabled' : ''}" data-sk-extra="1"><span>上限+${SKILL_GACHA_EXTRA_PULLS}回 💎${SKILL_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`); if (sr.dataset.html !== h) { sr.innerHTML = h; sr.dataset.html = h; } } }
+  { const sr = document.getElementById('skillCountRow'); if (sr) { const h = `<span>残り <b>${skillGachaLeft()}/${skillGachaLimit()}</b>回</span>` + (skillGachaLimit() >= SKILL_GACHA_MAX_PULLS ? (skillGachaLeft() > 0 ? '' : '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>') : `<button class="${game.gems < SKILL_GACHA_EXTRA_GEM ? 'is-disabled' : ''}" data-sk-extra="1"><span>上限+${SKILL_GACHA_EXTRA_PULLS}回 💎${SKILL_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`); if (sr.dataset.html !== h) { sr.innerHTML = h; sr.dataset.html = h; } } }
   if (head && head.dataset.html !== headHtml) { head.innerHTML = headHtml; head.dataset.html = headHtml; }
   lastSetSkill = null;
   const lvList = document.getElementById('skillLevelList');
@@ -401,7 +401,7 @@ function renderCompanionListNow() {
   if (psb) {
     const lim = getPartyLimit();
     psb.innerHTML = `<span>残り <b>${compGachaLeft()}/${compGachaLimit()}</b>回</span>` + (compGachaLimit() >= COMP_GACHA_MAX_PULLS // パーティ枠の代わりに、招集ガチャの回数
-      ? '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>'
+      ? (compGachaLeft() > 0 ? '' : '<span class="ws-max"><b>回数MAX</b><small>（転生でリセット）</small></span>') // まだ引けるなら何も出さない
       : `<button class="${game.gems < COMP_GACHA_EXTRA_GEM ? 'is-disabled' : ''}"><span>上限+${COMP_GACHA_EXTRA_PULLS}回 💎${COMP_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`);
   }
   const RARITY_ORDER = { mythic: 5, legendary: 4, epic: 3, rare: 2, common: 1 };

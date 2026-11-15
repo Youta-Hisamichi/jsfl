@@ -1524,3 +1524,53 @@ function heroReflSay(rainbow) {
   try { if (s0 >= 0) { const s1 = reflStage(o.bm); if (s1 > s0 && s1 >= HERO_REFL_BIG_STAGE) heroReflSay(s1 === REFL_RAINBOW); } } catch (e) {}
   return r;
 }; }
+
+// ===== 転生した直後の勇者の登場：天から光の柱が降りて、魔法陣の上に勇者が生まれ変わって現れる =====
+const REBORN_FX_MS = 2600;
+let rebornFx = null; // { start }
+function startRebornEntrance() {
+  const hero = balls.find(b => isMainPlayerBall(b));
+  rebornFx = { start: Date.now(), x: hero ? hero.x : arena.x, y: hero ? hero.y : arena.y };
+  try { // 「シャラララ…」と上がる鐘の音のあとに、決まりの和音
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.5, 'triangle', 0.05), 120 + i * 90));
+    setTimeout(() => { playTone(392, 0.9, 'sine', 0.07); playTone(523.25, 0.9, 'sine', 0.06); playTone(783.99, 0.9, 'sine', 0.05); }, 700);
+  } catch (e) {}
+  setTimeout(() => { // 光が収まったところで、転生回数とひとこと
+    const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
+    spawnDamageText(h.x, h.y - 46, `✨ 転生 ${game.reincarnations}回目 ✨`, '#fff3b0', 0.012, true);
+    for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3; particles.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1, life: 1, color: i % 3 ? '#ffe27a' : '#ffffff', decay: 0.025 }); }
+    if (!(typeof getHeroChar === 'function' && getHeroChar())) { const t = pickFresh(['気のせいか、前にも戦った気がする‥', 'また、ここからか。…悪くない', '前の俺より、少しはマシになったはずだ']); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 1800 + t.length * 70); }
+  }, 1100);
+}
+function drawRebornEntrance() {
+  if (!rebornFx) return;
+  const t = (Date.now() - rebornFx.start) / REBORN_FX_MS; if (t >= 1) { rebornFx = null; return; }
+  const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
+  const r = (h.radius || 20), top = arena.y - (typeof arenaHalfY === 'function' ? arenaHalfY() : 300) - 40;
+  ctx.save();
+  // 魔法陣：足もとで回りながら広がり、最後に消える
+  const ca = Math.min(1, t * 4) * (t > 0.75 ? (1 - t) / 0.25 : 1), cr = r * (1.6 + 0.6 * Math.min(1, t * 2));
+  ctx.translate(h.x, h.y); ctx.rotate(t * Math.PI * 2);
+  ctx.globalAlpha = ca * 0.9; ctx.strokeStyle = '#ffe27a'; ctx.lineWidth = 2.5; ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.arc(0, 0, cr, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, cr * 0.72, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); for (let i = 0; i <= 6; i++) { const a = i * Math.PI * 4 / 6 - Math.PI / 2; const x = Math.cos(a) * cr * 0.72, y = Math.sin(a) * cr * 0.72; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); // 六芒星
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.restore(); ctx.save();
+  // 光の柱：天から降りてきて、太く光ってから細くなって消える
+  const bt = Math.min(1, t / 0.28), bw = r * (t < 0.4 ? 0.6 + 1.6 * (t / 0.4) : 2.2 * Math.max(0, 1 - (t - 0.4) / 0.5)), ba = t < 0.4 ? 0.9 : Math.max(0, 0.9 * (1 - (t - 0.4) / 0.5));
+  if (bw > 0.5 && ba > 0.01) {
+    const y0 = top, y1 = top + (h.y - top) * bt, g = ctx.createLinearGradient(h.x - bw, 0, h.x + bw, 0);
+    g.addColorStop(0, 'rgba(255,240,180,0)'); g.addColorStop(0.35, 'rgba(255,240,180,0.55)'); g.addColorStop(0.5, 'rgba(255,255,255,0.95)'); g.addColorStop(0.65, 'rgba(255,240,180,0.55)'); g.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.globalAlpha = ba; ctx.fillStyle = g; ctx.fillRect(h.x - bw, y0, bw * 2, y1 - y0 + r);
+  }
+  // 着地の瞬間の白い光
+  if (t > 0.26 && t < 0.5) { const f = 1 - (t - 0.26) / 0.24; ctx.globalAlpha = f * 0.85; const g2 = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, r * 4); g2.addColorStop(0, 'rgba(255,255,255,1)'); g2.addColorStop(1, 'rgba(255,240,180,0)'); ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(h.x, h.y, r * 4, 0, Math.PI * 2); ctx.fill(); }
+  // 舞い上がる光の粒
+  ctx.globalAlpha = Math.min(1, (1 - t) * 2); ctx.fillStyle = '#fff6c8';
+  for (let i = 0; i < 14; i++) { const k = (i * 0.137 + t * 1.4) % 1, a = i * 2.39996; ctx.beginPath(); ctx.arc(h.x + Math.cos(a) * cr * 0.9 * (0.5 + k * 0.5), h.y - k * r * 4, 1.6 + (i % 3), 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
+const REBORN_HOLD_MS = 1300; // 光が降りて勇者が現れるまでは、その場から動かない
+{ const orig = step; step = function () { const r = orig.apply(this, arguments); try { if (rebornFx && Date.now() - rebornFx.start < REBORN_HOLD_MS) { const h = balls.find(b => isMainPlayerBall(b)); if (h) { h.x = rebornFx.x; h.y = rebornFx.y; h.vx = 0; h.vy = 0; } } } catch (e) {} return r; }; }
+{ const orig = startNextRun; startNextRun = function () { const r = orig.apply(this, arguments); try { startRebornEntrance(); } catch (e) { console.warn(e); } return r; }; }
+{ const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawRebornEntrance(); } catch (e) {} }; }
