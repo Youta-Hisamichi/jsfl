@@ -261,7 +261,7 @@ document.getElementById('powerBreakBtn')?.addEventListener('click', () => {
   const open = !el.classList.contains('open'); el.classList.toggle('open', open); el.innerHTML = open ? playerBreakdownHtml() : '';
   document.getElementById('powerBreakBtn').classList.toggle('open', open);
 });
-// 仲間カードの「📊 強さの内訳」ボタン：押すとカードの中に開く（開いた仲間は描き直しても開いたまま）
+// 仲間カードの「💪 強さの内訳」ボタン：押すとカードの中に開く（開いた仲間は描き直しても開いたまま）
 const compBreakOpen = new Set();
 document.addEventListener('click', e => { const b = e.target.closest('[data-comp-break]'); if (!b) return; const id = b.dataset.compBreak; if (compBreakOpen.has(id)) compBreakOpen.delete(id); else compBreakOpen.add(id); if (typeof renderCompanionList === 'function') renderCompanionList(); });
-function compBreakBtnHtml(id) { const open = compBreakOpen.has(id); return `<button class="power-break-btn ${open ? 'open' : ''}" data-comp-break="${id}">📊 強さの内訳</button>${open ? `<div class="pb-inline gem-src pb-body open">${compBreakdownHtml(id)}</div>` : ''}`; }
+function compBreakBtnHtml(id) { const open = compBreakOpen.has(id); return `<button class="power-break-btn ${open ? 'open' : ''}" data-comp-break="${id}">💪 強さの内訳</button>${open ? `<div class="pb-inline gem-src pb-body open">${compBreakdownHtml(id)}</div>` : ''}`; }
