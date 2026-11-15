@@ -830,12 +830,13 @@ document.getElementById('bossContRebornBtn').addEventListener('click', () => {
 // ボス戦のリタイヤ：その場で負けを認めて前の階ループへ（コンテニュー画面は出さない）
 document.getElementById('bossRetireBtn').addEventListener('click', ev => {
   ev.stopPropagation();
-  if (!isBossFight() || phase !== 'battle' || game.skipChallenge) return;
+  if (!isBossFight() || phase !== 'battle') return;
+  if (game.skipChallenge) { failSkipChallenge(); return; } // 試練の塔：負けたときと同じ（もう一度挑むか、やめて元のステージへ）
   bossFail('retire');
 });
 function updateBossRetireBtn() {
   const b = document.getElementById('bossRetireBtn'); if (!b) return;
-  const show = isBossFight() && !game.skipChallenge && phase === 'battle';
+  const show = isBossFight() && phase === 'battle' && !(game.skipChallenge && game.skipChallenge.lost); // 試練の塔のボスでも出す
   if ((b.style.display !== 'none') !== show) b.style.display = show ? '' : 'none';
   document.body.classList.toggle('in-boss', show); // ボス戦中は試練の塔ボタンを隠してリタイヤに場所をゆずる
 }
