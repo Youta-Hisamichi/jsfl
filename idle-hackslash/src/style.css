@@ -5429,3 +5429,9 @@ body.no-pause-btn #gamePauseBtn { display: none !important; } /* 設定の「一
 .rbd-panel { width: min(410px, 95vw) !important; max-height: calc(100dvh - 10px) !important; padding: 22px 14px 14px !important; }
 .rbd-panel .rbd-sk-row { gap: 4px; }
 .rbd-panel .rbd-skills { padding-top: 10px; padding-bottom: 10px; }
+/* ガチャの残り回数：ガチャの絵の右上に重ねる（下の段の「残り」は隠す） */
+.tab-page[data-tab="coinshop"] .gacha-pair, .tab-page[data-tab="companion"] .gacha-actions.pull-row { position: relative; }
+.gacha-left-badge { position: absolute; top: 2px; right: 4px; z-index: 3; width: 33%; max-width: 150px; aspect-ratio: 320 / 64; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/comp/pill.webp) center / 100% 100% no-repeat; color: #f3e7c4; font-size: 0.72rem; font-weight: 800; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.gacha-left-badge::before { content: '✦ '; color: #e8c46a; margin-right: 2px; }
+.gacha-left-badge b { color: #fff; font-size: 1rem; margin-left: 4px; }
+.tab-page[data-tab="coinshop"] .party-row #skillCountRow > span:first-child, .tab-page[data-tab="companion"] .party-row #partySlotBtn > span:first-child { display: none !important; }

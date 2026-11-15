@@ -1574,3 +1574,17 @@ const REBORN_HOLD_MS = 1300; // 光が降りて勇者が現れるまでは、そ
 { const orig = step; step = function () { const r = orig.apply(this, arguments); try { if (rebornFx && Date.now() - rebornFx.start < REBORN_HOLD_MS) { const h = balls.find(b => isMainPlayerBall(b)); if (h) { h.x = rebornFx.x; h.y = rebornFx.y; h.vx = 0; h.vy = 0; } } } catch (e) {} return r; }; }
 { const orig = startNextRun; startNextRun = function () { const r = orig.apply(this, arguments); try { startRebornEntrance(); } catch (e) { console.warn(e); } return r; }; }
 { const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawRebornEntrance(); } catch (e) {} }; }
+
+// ===== スキル・仲間ページ：ガチャの残り回数は、ガチャの絵の右上に出す（下の段には「上限+5回」のボタンだけ残す） =====
+function syncGachaLeftBadge(rowId, wrapSel) {
+  const row = document.getElementById(rowId), wrap = document.querySelector(wrapSel); if (!row || !wrap) return;
+  const src = row.querySelector(':scope > span:first-child'); if (!src) return;
+  let badge = wrap.querySelector(':scope > .gacha-left-badge');
+  if (!badge) { badge = document.createElement('div'); badge.className = 'gacha-left-badge'; wrap.appendChild(badge); }
+  if (badge.innerHTML !== src.innerHTML) badge.innerHTML = src.innerHTML;
+}
+[['skillCountRow', '.tab-page[data-tab="coinshop"] .gacha-pair'], ['partySlotBtn', '.tab-page[data-tab="companion"] .gacha-actions.pull-row']].forEach(([id, sel]) => {
+  const row = document.getElementById(id); if (!row) return;
+  new MutationObserver(() => syncGachaLeftBadge(id, sel)).observe(row, { childList: true, subtree: true, characterData: true });
+  syncGachaLeftBadge(id, sel);
+});
