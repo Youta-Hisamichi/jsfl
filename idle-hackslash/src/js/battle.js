@@ -212,7 +212,8 @@ function updateJumboSlime(e, speedMult) {
 }
 const MAX_FREE_ADDS = 1;          // 通常ステージで同時に出る雑魚の最大数（本体は別。基本は1対1、せいぜい2体）
 // 複数の敵が出る階：階が進むほど出やすく、数も増える（序盤はたまに2〜3体、ずっと先では最大10体）
-const MULTI_FROM_STAGE = 15, MULTI_MAX = 10;
+const MULTI_FROM_STAGE = 31, MULTI_MAX = 10; // 序盤（ステージ30まで）は大群ステージなし
+const EARLY_SOLO_STAGE = 30; // ここまでは敵を複数出さない（包囲・ときどき出る雑魚もなし）
 function stageHashRand(stage, salt) { let h = (stage * 2654435761 + salt * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; h = Math.imul(h, 3266489917) >>> 0; h ^= h >>> 16; return (h >>> 0) / 4294967296; } // 階ごとに決まった乱数
 function getStageEnemyCount(stage) {
   if (stage < MULTI_FROM_STAGE || stage % 10 === 0) return 1; // ボスの階は1体

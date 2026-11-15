@@ -88,7 +88,7 @@ function step() {
   }
   if (!e.isBoss && !swarm && !e.encircleChecked && !game.skipChallenge) { e.encircleChecked = true; if (game.stage >= ENCIRCLE_MIN_STAGE && Math.random() < ENCIRCLE_CHANCE) spawnEncircle(e, a); } // ときどき同じ敵がぐるりと取り囲んで迫ってくる
   const freeAdds = adds.filter(ad => !ad.mergeOwner).length;
-  if (!e.isBoss && !swarm && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0005) { // 大群ステージは補充しない（全滅させたらクリア）
+  if (!e.isBoss && !swarm && game.stage > EARLY_SOLO_STAGE && freeAdds < MAX_FREE_ADDS && Math.random() < 0.0005) { // 序盤は1対1 // 大群ステージは補充しない（全滅させたらクリア）
     adds.push(makeAddEnemy(e));
   }
 
@@ -1316,7 +1316,7 @@ function renderStageSkipList() {
   }).reverse().join('');
 }
 // 包囲：同じ見た目の敵が、主人公のまわり360度にぐるりと並んで、いっせいに中心へ迫ってくる
-const ENCIRCLE_CHANCE = 0.08, ENCIRCLE_MIN_STAGE = 5, ENCIRCLE_COUNT = 12;
+const ENCIRCLE_CHANCE = 0.08, ENCIRCLE_MIN_STAGE = 31, ENCIRCLE_COUNT = 12; // 序盤（ステージ30まで）は包囲なし
 function spawnEncircle(e, pl) {
   if (!pl) return;
   const R = Math.min(arenaHalf(), arenaHalfY()) * 0.72, base = Math.random() * Math.PI * 2;

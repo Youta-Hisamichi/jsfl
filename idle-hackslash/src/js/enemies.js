@@ -781,9 +781,11 @@ const GRACE_ITEMS = { // 宝箱から出る、恩恵・絆を上げるアイテ�
 };
 function graceItemCount(k) { return Math.max(0, Math.min(GRACE_ITEMS[k].max, Math.floor((game.graceItems && game.graceItems[k]) || 0))); }
 function gainGraceItem(k, n) { if (!game.graceItems) game.graceItems = {}; const before = graceItemCount(k); game.graceItems[k] = Math.min(GRACE_ITEMS[k].max, before + n); return game.graceItems[k] - before; }
-function compGraceRate(id) { const r = COMPANIONS[id] && COMPANIONS[id].rarity; return (GRACE_RATE[r] || 0) + (r === 'mythic' ? GRACE_ITEMS.urGrace.per * graceItemCount('urGrace') : r === 'legendary' ? GRACE_ITEMS.ssrGrace.per * graceItemCount('ssrGrace') : 0); }
+const COMP_DOWN_RATE = 0.5; // 倒れている（棺桶の）仲間は、絆と恩恵が半分
+function compDownMult(id) { return game.companions && game.companions.alive && game.companions.alive[id] === false ? COMP_DOWN_RATE : 1; }
+function compGraceRate(id) { const r = COMPANIONS[id] && COMPANIONS[id].rarity; return ((GRACE_RATE[r] || 0) + (r === 'mythic' ? GRACE_ITEMS.urGrace.per * graceItemCount('urGrace') : r === 'legendary' ? GRACE_ITEMS.ssrGrace.per * graceItemCount('ssrGrace') : 0)) * compDownMult(id); }
 function heroGraceRate() { return HERO_GRACE_BASE + GRACE_ITEMS.heroGrace.per * graceItemCount('heroGrace'); }
-function compBondRate(id) { return BOND_RATE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0; }
+function compBondRate(id) { return (BOND_RATE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0) * compDownMult(id); }
 function heroBondRate() { return HERO_BOND_BASE + GRACE_ITEMS.heroBond.per * graceItemCount('heroBond'); }
 function partyGraceMult() { // 仲間全員に掛かる恩恵の倍率 ＝ 1 ＋ 自キャラの恩恵率 ＋ パーティにいる仲間の恩恵率の合計
   let t = 1 + heroGraceRate();

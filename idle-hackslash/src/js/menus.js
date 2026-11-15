@@ -349,6 +349,7 @@ function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラ
   const P = v => `${+(v * 100).toFixed(1)}%`, F = v => formatCoinNumber(Math.round(v)), r = COMPANIONS[id].rarity, inParty = getCompanionCount(id) > 0;
   const item = r === 'mythic' ? `（URの恩恵 ${F(graceItemCount('urGrace'))}個）` : r === 'legendary' ? `（SSRの恩恵 ${F(graceItemCount('ssrGrace'))}個）` : '';
   const chips = [`🤝 絆率 ${P(compBondRate(id))}`, `👑 恩恵率 ${P(compGraceRate(id))}${item}`];
+  if (typeof compDownMult === 'function' && compDownMult(id) < 1) chips.push('💀 倒れているので絆・恩恵が半分');
   if (inParty) { const aO = getCompanionAtkOwn(id), aB = compBondAdd(id, 'atk'), hO = compOwnMaxHP(id), hB = compBondAdd(id, 'hp');
     chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋絆 ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋絆 ${F(hB)}）` : ''}`); }
   return `<div class="cc-chips">${chips.map(t => `<span class="cc-chip">${t}</span>`).join('')}</div>`

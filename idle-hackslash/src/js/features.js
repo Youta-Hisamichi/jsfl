@@ -1622,3 +1622,7 @@ document.addEventListener('click', ev => {
   document.querySelectorAll('.modal-overlay.show').forEach(m => { if (!m.contains(document.getElementById('supergemShopList'))) m.classList.remove('show'); });
   switchTab('gemshop'); setTimeout(() => { const c = document.querySelector('[data-shop-tab="charge"]'); if (c) c.click(); setTimeout(() => { const s = document.querySelector('[data-sub-shop]'); if (s) s.scrollIntoView({ block: 'center' }); }, 150); }, 80);
 }, true);
+
+// ===== 仲間が倒れた・起きたら、絆と恩恵（倒れている間は半分）をすぐ強さに反映する =====
+{ let lastDown = '';
+  setInterval(() => { try { if (!game.companions || !game.companions.alive) return; const k = Object.keys(game.companions.alive).filter(id => game.companions.alive[id] === false).sort().join(); if (k === lastDown) return; lastDown = k; if (phase === 'battle' || phase === 'paused') refreshPlayerBallStats(false); } catch (e) {} }, 500); }
