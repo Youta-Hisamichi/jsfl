@@ -1575,7 +1575,7 @@ const REBORN_HOLD_MS = 1300; // 光が降りて勇者が現れるまでは、そ
 { const orig = startNextRun; startNextRun = function () { const r = orig.apply(this, arguments); try { startRebornEntrance(); } catch (e) { console.warn(e); } return r; }; }
 { const baseDraw = draw; draw = function () { baseDraw.apply(this, arguments); try { drawRebornEntrance(); } catch (e) {} }; }
 
-// ===== スキル・仲間ページ：ガチャの残り回数は、「しくみ」と同じ行の右に出す（下の段には「上限+5回」のボタンだけ残す） =====
+// ===== スキル・仲間ページ：ガチャの残り回数は、「しくみ」と同じ行の右に出す（ガチャの回数を増やすボタンはなくした） =====
 function syncGachaLeftBadge(rowId, wrapSel) {
   const row = document.getElementById(rowId), wrap = document.querySelector(wrapSel); if (!row || !wrap) return;
   const src = row.querySelector(':scope > span:first-child'); if (!src) return;
