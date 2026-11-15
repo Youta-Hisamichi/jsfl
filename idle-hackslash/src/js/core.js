@@ -780,7 +780,7 @@ function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 など
 // SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
-SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', desc: 'ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる', rebirth: true };
+SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', get desc() { return `次で<b>${((game && game.reincarnations) || 0) + 1}回目</b>の転生。ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる`; }, rebirth: true };
 const REBORN_SHOP_GEMS = 1; // ショップの転生はコインに加えてジェム1個 // 転生はショップから（ゲーム画面の転生ボタンはなし）。値段はコイン
 function rebornCoinCost() { return Math.max(1, Math.round(stageCoinRaw(100 * ((game.reincarnations || 0) + 1)) * 3 * 10)); } // ステージ100×(転生回数+1)のボス討伐コイン（コイン獲得の倍率は掛けない基本の額）の10倍
 // 10%・MAXボタンはショップで買うと使える。買う前は🔒つきで、押すとショップのその商品へ
