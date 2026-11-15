@@ -149,7 +149,7 @@ function renderSupergemShopList() {
     const covered = !on && active && active.rank > sub.rank; // 上位プラン加入中
     const days = on ? Math.ceil((game.subscriptions[id] - Date.now()) / 86400000) : 0;
     const status = on ? `✅ 加入中（残り${days}日）・タップで30日延長` : covered ? '上位の紋章で有効中' : `サブスク（${SUBSCRIPTION_DAYS}日間）`;
-    return `<button class="shop-btn sub-btn sub-${id} ${covered || game.superGems < sub.cost ? 'is-disabled' : ''} ${on ? 'is-active' : ''}" data-sub-shop="${id}"><span class="sub-emblem">${xi(sub.emblem) || sub.icon}</span><span class="sub-body"><span class="sub-name">${sub.name}</span><span class="sub-desc">${sub.desc}</span><span class="sub-status">${status}</span><span class="sub-price">${sub.cost.toLocaleString('ja-JP')}<small>円 / 月</small></span></span></button>`;
+    return `<button class="shop-btn sub-btn sub-${id} ${covered || game.superGems < sub.cost ? 'is-disabled' : ''} ${on ? 'is-active' : ''}" data-sub-shop="${id}"><span class="sub-emblem">${xi(sub.emblem) || sub.icon}</span>${sub.dailyGems ? `<span class="sub-daily">${xi('x_gem') || '💎'}毎日<b>${sub.dailyGems}</b>個もらえる</span>` : ''}<span class="sub-body"><span class="sub-name">${sub.name}</span><span class="sub-desc">${sub.desc}</span><span class="sub-status">${status}</span><span class="sub-price">${sub.cost.toLocaleString('ja-JP')}<small>円 / 月</small></span></span></button>`;
   }).join('');
   supergemShopList.innerHTML = subHtml + Object.entries(SUPERGEM_SHOP_ITEMS).map(([id, item], i) => {
     const tier = i + 1, badge = GEM_BAG_BADGES[tier] ? `<span class="gb-badge">${GEM_BAG_BADGES[tier]}</span>` : '';
