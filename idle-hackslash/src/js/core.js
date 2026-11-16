@@ -1158,29 +1158,9 @@ function companionIconHtml(id) {
   return COMPANION_SPRITES[id] ? `<img class="comp-sprite" src="${COMPANION_SPRITES[id]}" alt="">` : COMPANIONS[id].icon;
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
-// 属性（炎・水・草の三すくみ）：炎→草→水→炎 の順に強い。有利なら与ダメージ2倍、不利なら0.5倍
-const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water: { icon: '💧', name: '水', color: '#3aa8ff' }, grass: { icon: '🌿', name: '草', color: '#3cbf5f' } };
-const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
-const ELEMENT_ADV = 2, ELEMENT_DIS = 0.5;
-const ELEMENTS_ON = false; // 属性はいったん停止中（相性の補正・表示を出さない）。属性相場（株）は削除した
-let lastElementHitAt = 0;
-function noteElementHit(attEl, target) { // 有利な属性で当てたら「属性ダメージ良好！」（出しすぎないよう少し間をあける）
-  if (!ELEMENTS_ON || !target || elementMult(attEl, getEnemyElement(target)) <= 1) return;
-  const now = Date.now(); if (now - lastElementHitAt < 900) return;
-  lastElementHitAt = now;
-  if (typeof obFlag === 'function') obFlag('superEff');
-  spawnDamageText(target.x, target.y - (target.radius || 12) - 46, '属性ダメージ良好！', '#ffe14f', 0.018, true);
-}
-const COMPANION_ELEMENT = {};
-[['fire', 'merchant warrior monk mage musketeer alchemist bunny lancer heavy samurai dragon dragoon bahamut'],
- ['water', 'penguin priest dancer bard princess fortune sage ninja pirate paladin pegasus archangel'],
- ['grass', 'villager hobbit dog cat hamster archer thief golem tamer summoner cavalry king']].forEach(([el, ids]) => ids.split(' ').forEach(id => { COMPANION_ELEMENT[id] = el; }));
-function elementMult(att, def) { return !ELEMENTS_ON || !att || !def ? 1 : ELEMENT_BEATS[att] === def ? ELEMENT_ADV : ELEMENT_BEATS[def] === att ? ELEMENT_DIS : 1; }
-function elemBadge(el, cls = '') { return ELEMENTS_ON && el && ELEMENTS[el] ? `<span class="el-badge el-${el} ${cls}">${ELEMENTS[el].icon}${ELEMENTS[el].name}</span>` : ''; }
 // 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
 function isCharSummoned(id) { return !!(game.companions && game.companions.recruited && game.companions.recruited[id]) && isCharObtained(id); } // いま招集している（パーティに入れている）仲間だけ
 function getHeroChar() { return null; } // 自キャラの変更はなくした（いつも勇者）
-function compElement(id) { return id === getHeroChar() ? null : COMPANION_ELEMENT[id]; } // 自キャラと交代した仲間は勇者が代わりに出るので属性なし
 const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
 // 自キャラのタイプ：仲間の得意分野で決まり、長所はレア度が高いほど大きい。短所は固定。勇者は補正なし・属性なし（相性の不利も受けない）
 const HERO_TYPES = {
@@ -1203,7 +1183,6 @@ function heroCharMods() {
   const v = { atk: m.atk || 1, hp: m.hp || 1, coin: m.coin || 1, speed: m.speed || 1, charge: m.charge || 1 };
   heroModsCache = { id, v }; return v;
 }
-function getHeroElement() { const h = getHeroChar(); return h ? COMPANION_ELEMENT[h] : null; }
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
 function isCharObtained(id) { return !!COMPANIONS[id]; } // 採用ガチャは廃止：どのキャラも最初から採用・解雇できる
 function companionNeedsUnlock(id) { return false; } // 永続ショップ廃止：仲間は最初から全員召喚に出る（出したくない仲間は「解雇」で外す）

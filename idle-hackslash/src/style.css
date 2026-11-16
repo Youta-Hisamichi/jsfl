@@ -1982,14 +1982,6 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .gem-ico.comp-ico { width: 1.25em; height: 1.25em; vertical-align: -0.28em; }
 .cp-summon .cps-ico { width: 1.6em; height: 1.6em; vertical-align: -0.45em; object-fit: contain; margin-right: 2px; }
 /* 属性バッジ（炎・水・草） */
-.el-badge { display: inline-flex; align-items: center; gap: 1px; font-size: 0.62rem; font-weight: 900; line-height: 1; padding: 2px 6px 2px 4px; border-radius: 999px; color: #fff; vertical-align: 1px; white-space: nowrap; margin-left: 4px; }
-.el-fire { background: linear-gradient(180deg, #ff8a5c, #e0412a); }
-.el-water { background: linear-gradient(180deg, #5cc2ff, #1f7fe0); }
-.el-grass { background: linear-gradient(180deg, #5fd67c, #23a046); }
-.el-none { background: #8a8fa3; }
-.el-badge.el-sm { font-size: 0.6rem; padding: 1px 5px 1px 3px; margin: 0 4px 0 0; }
-.el-badge.el-tile { display: block; width: max-content; margin: 1px auto 0; font-size: 0.56rem; }
-.bstz-el { margin: 2px 0 4px; }
 /* 自キャラ */
 .my-char-card { width: 100%; display: flex; align-items: center; gap: 10px; margin: 0 0 8px; padding: 6px 12px 6px 6px; border-radius: 12px; border: 2px solid #c9a24a; background: linear-gradient(135deg, rgba(255,215,107,0.18), rgba(255,255,255,0.6)); cursor: pointer; text-align: left; color: var(--text); }
 .my-char-card .mc-ico { flex: none; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(0,0,0,0.06); }
@@ -2077,7 +2069,6 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .enemy-info-pop .eip-row { white-space: nowrap; overflow: hidden; }
 .enemy-info-pop .eip-good { color: #ffe14f; }
 .enemy-info-pop .eip-bad { color: #9aa6c8; }
-.enemy-info-pop .el-badge { font-size: 0.68rem; }
 .comp-gacha-overlay #compGachaCloseBtn, .comp-gacha-overlay #gachaResultCloseBtn { color: #fff; border-color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.08); }
 .skill-charge-pop { position: fixed; z-index: 90; transform: translate(-50%, -100%); padding: 4px 10px; border-radius: 10px; background: rgba(20,24,48,0.92); border: 1px solid #7fb0ff; color: #cfe2ff; font-size: 0.78rem; font-weight: 800; white-space: nowrap; pointer-events: none; opacity: 0; text-align: center; line-height: 1.3; }
 .skill-charge-pop small { display: block; font-size: 0.66rem; color: #9fb4d8; font-weight: 700; }
@@ -2089,11 +2080,6 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .mc-ud .ht { color: #6a4fc0; }
 .mc-ud .up { color: #1f9a52; }
 .mc-ud .dn { color: #d04848; }
-.mc-rec { font-style: normal; margin-left: 6px; padding: 0 6px; border-radius: 8px; background: #ff9f2e; color: #fff; font-size: 0.6rem; font-weight: 900; vertical-align: 1px; }
-.mc-advice { margin: 0 0 8px; padding: 7px 10px; border-radius: 10px; background: rgba(255,200,80,0.14); border: 1px solid rgba(220,160,40,0.45); font-size: 0.7rem; line-height: 1.55; text-align: left; }
-.mc-advice b { display: block; font-size: 0.78rem; margin-bottom: 2px; }
-.mc-advice .mc-advice-sub { margin-top: 3px; color: var(--text-dim); font-size: 0.64rem; }
-.mc-advice .el-badge { font-size: 0.62rem; }
 .mc-list .mc-ud .ht { color: #c8b6ff; } .mc-list .mc-ud .up { color: #63e394; } .mc-list .mc-ud .dn { color: #ff8a8a; }
 /* 帰還ボーナスの動画後のお祝い */
 .login-ad-fx { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; border-radius: inherit; transition: opacity 0.5s; }

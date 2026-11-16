@@ -903,7 +903,7 @@ debugRow.addEventListener('click', event => {
       h += row(`${W.icon} ${W.name} ${lv ? 'Lv' + lv : '（未所持・Lv1で計算）'}`, `≈ ${F(atk * m)}`, `自キャラ攻撃力 ${F(atk)} × 倍率 ${M(m)}・${id === 'shield' ? `盾 ${[0, 1, 2, 2, 3, 4][Math.min(L, 5)]}枚` : `個数 ${weaponCount(id)}`}・${cd}・${WN[id] || ''}`);
     }
     h += '</div>';
-    simpleChoice({ icon: '📐', title: '全スキルの計算式', text: h, sub: '敵の防御・属性・弱点・ボス特攻・会心は入れていません', yes: '閉じる', no: false }); return; }
+    simpleChoice({ icon: '📐', title: '全スキルの計算式', text: h, sub: '敵の防御・弱点・ボス特攻・会心は入れていません', yes: '閉じる', no: false }); return; }
   if (action === 'dmgGuide') { // 通常攻撃のダメージ目安（いまの攻撃力・強化から計算。敵の防御や属性・弱点は入れない）
     const b = computeBonuses(), atk = getPlayerAtk(), F = v => formatCoinNumber(Math.round(v)), mel = b.meleeMult || 1, rush = b.rushDmgUp || 1, cm = CRIT_MULT + b.critMultBonus;
     const combo = n => 1 + Math.min(n - 1, COMBO_MAX_STACKS) * (COMBO_STEP + b.comboGrowth) * getEvoRate('combo');
@@ -915,7 +915,7 @@ debugRow.addEventListener('click', event => {
       <div class="dl-h">連鎖（コンボ）</div>${[2, 5, 8, COMBO_MAX_STACKS + 1].map(n => row(`${n}連鎖`, atk * combo(n), `× ${+combo(n).toFixed(2)}`)).join('')}
       <div class="dl-h">クリティカル</div>${row('クリティカル1発', atk * cm, `× ${+cm.toFixed(2)}（発生率 ${+((CRIT_CHANCE + b.critChance) * 100).toFixed(1)}%）`)}${row('引きMAX＋クリティカル', atk * pull(1) * cm)}
       <div class="dl-h">その他</div>${row('ダッシュパネル通過後', atk * mel * DASH_DMG_MULT, `3秒間 × ${DASH_DMG_MULT}`)}${row('攻撃後のスキ（スキあり！）', atk * mel * TG_STUN_DMG, `× ${TG_STUN_DMG}`)}</div>`;
-    simpleChoice({ icon: '⚔️', title: '通常攻撃のダメージ目安', text: html, sub: '敵の防御・属性の相性・弱点・ボス特攻は入れていません。倍率は掛け算で重なります', yes: '閉じる', no: false }); return; }
+    simpleChoice({ icon: '⚔️', title: '通常攻撃のダメージ目安', text: html, sub: '敵の防御・弱点・ボス特攻は入れていません。倍率は掛け算で重なります', yes: '閉じる', no: false }); return; }
   if (action === 'lifeglass') { gainItem('lifeglass', 3); saveGame(); updateLifeGlassBtn(); showNotice(`DEBUG: 命の砂時計 +3（所持 ${itemHeld('lifeglass')}個）`); return; }
   if (action === 'npcLines') { // 各ページの上の案内役のセリフ
     simpleChoice({ icon: '💬', title: '各ページの案内役のセリフ', text: `<div class="dbg-list">${Object.values(SHOPKEEPERS).map(k => `<div class="dl-h">${k.name}</div>${k.lines.map(t => `<div class="dl-r">・${t}</div>`).join('')}`).join('')}</div>`, yes: '閉じる', no: false }); return; }
@@ -1173,7 +1173,7 @@ function renderCompLockList() { // ショップの「キャラ」タブと、仲
     const btn = off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
       : off ? `<span class="cl-btn notyet cl-gacha-only"><span class="cl-act">🎰 ガチャで採用</span><span class="cl-lock">採用ガチャから出ます</span></span>` // 採用はガチャだけ
       : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) || !off && compFiredCount() >= compFireMax() ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
-    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])} ${st}${guar}</small></span>${btn}</div>`;
+    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${st}${guar}</small></span>${btn}</div>`;
   }).join('');
   for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
     if (!root) continue;
@@ -1186,7 +1186,7 @@ function showHireGachaInfo(id, anchor) { // 候補アイコンをタップした
   document.querySelectorAll('.hg-pop').forEach(el => el.remove());
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity], r = anchor.getBoundingClientRect();
   const el = document.createElement('div'); el.className = 'hg-pop'; el.style.setProperty('--rc', rar.color);
-  el.innerHTML = `<div class="hgp-head">${companionIconHtml(id)}<div><b>${c.name}</b><small>${rarityStars(c.rarity)} ${elemBadge(COMPANION_ELEMENT[id])}</small></div></div><div class="hgp-desc">${c.desc || ''}</div><div class="hgp-st">${isCompLocked(id) ? '📜 採用前（出たら採用）' : `✅ 採用中（ダブると強化Lv +${HIRE_DUP_LV}）`}</div>`;
+  el.innerHTML = `<div class="hgp-head">${companionIconHtml(id)}<div><b>${c.name}</b><small>${rarityStars(c.rarity)}</small></div></div><div class="hgp-desc">${c.desc || ''}</div><div class="hgp-st">${isCompLocked(id) ? '📜 採用前（出たら採用）' : `✅ 採用中（ダブると強化Lv +${HIRE_DUP_LV}）`}</div>`;
   document.body.appendChild(el);
   const w = el.offsetWidth, h = el.offsetHeight;
   el.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';

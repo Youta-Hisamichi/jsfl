@@ -291,21 +291,12 @@ function renderMyCharCard() {
   el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta">${id ? elemBadge(COMPANION_ELEMENT[id]) : ELEMENTS_ON ? '<span class="el-badge el-none">属性なし</span>' : ''}</span>${heroTypeHtml(id)}${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
+  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta"></span>${heroTypeHtml(id)}${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
 function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
   const info = heroTypeInfo(id);
-  if (!info) return `<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ ${ELEMENTS_ON ? '属性の不利を受けない' : '長所なし'}</i><i class="dn">▼ ${ELEMENTS_ON ? '補正なし' : '短所なし'}</i></span>`;
+  if (!info) return `<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ 長所なし</i><i class="dn">▼ 短所なし</i></span>`;
   return `<span class="mc-ud"><i class="ht">${info.t.icon} ${info.t.name}</i><i class="up">▲ ${info.up}</i><i class="dn">▼ ${info.down}</i></span>`;
-}
-function zoneElementAdvice() { // いまのエリアの雑魚と次のボスの属性から、有利な属性をすすめる
-  const zone = getStageZone(game.stage), cnt = { fire: 0, water: 0, grass: 0 };
-  zone.normal.filter(k => !isEnemyRemoved(k)).forEach(k => { const e = ENEMY_ELEMENT_BY_KEY[k]; if (e) cnt[e]++; });
-  const top = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0], beat = el => Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el);
-  const bossStage = Math.ceil(Math.max(1, game.stage) / 10) * 10, bossEm = getStageBossEmoji(bossStage), bossEl = ENEMY_ELEMENT_BY_KEY['boss:' + bossEm];
-  const zoneTxt = Object.keys(cnt).filter(k => cnt[k]).map(k => `${elemBadge(k)}${cnt[k]}`).join(' ');
-  return { rec: beat(top), bossRec: bossEl ? beat(bossEl) : null,
-    html: `<div class="mc-advice"><b>🧭 攻略のヒント</b><div>${zone.name}エリアの雑魚：${zoneTxt}<br>→ ${elemBadge(top)}が多いので ${elemBadge(beat(top))} の自キャラが有利</div>${bossEl ? `<div>次のボス「${BOSS_ENEMY_NAMES[bossEm] || 'ボス'}」は ${elemBadge(bossEl)} → ${elemBadge(beat(bossEl))} が有利（不利な ${elemBadge(ELEMENT_BEATS[bossEl])} は与ダメ半減）</div>` : ''}<div class="mc-advice-sub">雑魚戦は稼ぎ重視（トレジャー・スピード）、ボス戦は火力（アタッカー）や耐久（タンク）に切り替えるのも手</div></div>` };
 }
 function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
   const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
@@ -319,31 +310,30 @@ function openMyCharPicker() {
   let ov = document.getElementById('myCharOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">いま招集している仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + (ELEMENTS_ON ? '自キャラの属性で、敵との相性（有利なら与ダメージ2倍・不利なら0.5倍）が変わります。' : '') + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
+    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">いま招集している仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', ev => {
       if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
       const b = ev.target.closest('[data-my-char]'); if (!b) return;
       game.heroChar = b.dataset.myChar || null;
-      applyHeroChar(); lastFoeElement = undefined; refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderCompanionList(); playRegisterSound(); saveGame();
+      applyHeroChar(); refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderCompanionList(); playRegisterSound(); saveGame();
       ov.classList.remove('show');
       showShopPurchaseFx(game.heroChar ? companionIconHtml(game.heroChar) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, game.heroChar ? COMPANIONS[game.heroChar].name : '勇者', '自キャラを変更しました', '自キャラ変更！');
     });
   }
   const cur = getHeroChar() || '';
   const ids = COMPANION_IDS.filter(isCharSummoned).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
-  const adv = zoneElementAdvice();
-  const row = (id, name, img, badge, rcol) => { const el = id && COMPANION_ELEMENT[id], rec = ELEMENTS_ON && el && (el === adv.rec || el === adv.bossRec); return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
-  ov.querySelector('.mc-advice-box').innerHTML = ELEMENTS_ON ? adv.html : '';
-  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ELEMENTS_ON ? '属性なし' : '', '#9aa0b4')
-    + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)} ${elemBadge(COMPANION_ELEMENT[id])}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
+  const row = (id, name, img, badge, rcol) => { const rec = false; return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
+  ov.querySelector('.mc-advice-box').innerHTML = '';
+  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '', '#9aa0b4')
+    + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
   ov.classList.add('show');
 }
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
   const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
   const status = isCompLocked(id) ? '📜 採用前：ショップの「仲間」タブの採用ガチャで出ると、仲間招集に出ます' : '🐾 仲間招集で入手できます';
-  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span>${elemBadge(COMPANION_ELEMENT[id])}</div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${compBondInfoHtml(id)}${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
+  return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${compBondInfoHtml(id)}${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
 }
 function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラの概要と同じ書き方）
   const P = v => `${+(v * 100).toFixed(1)}%`, F = v => formatCoinNumber(Math.round(v)), r = COMPANIONS[id].rarity, inParty = getCompanionCount(id) > 0;
@@ -363,7 +353,7 @@ function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形
     `⚔️ 攻撃力 Lv.${formatCoinNumber((game.upgrades.atk || 0) + 1)}`, `❤️ 最大HP Lv.${formatCoinNumber((game.upgrades.hp || 0) + 1)}`,
     `🤝 絆率 ${P(heroBondRate())}（勇者の絆 ${F(graceItemCount('heroBond'))}個）`, `👑 恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${F(graceItemCount('heroGrace'))}個）`,
     `🧬 進化 初期Lv ⚔️+${ev.atk} ❤️+${ev.hp}`, `🌌 転生 ${game.reincarnations || 0}回（攻撃力・HP ×${+rebirthPowerMult().toFixed(2)}）`];
-  return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span>${ELEMENTS_ON && id ? elemBadge(COMPANION_ELEMENT[id]) : ''}</div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
+  return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span></div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
     + `<div class="cc-trait">${heroTypeHtml(id)}</div><div class="cc-trait">【絆】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
     + `<div class="cp-info-lock">攻撃力・HPは下の強化で上がります。宝箱から自キャラが出ると進化して初期Lvが上がります</div></div>`;
 }
@@ -415,7 +405,7 @@ function renderCompanionListNow() {
     const level = game.companions.level[id];
     const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
     const down = !sw && game.companions.alive[id] === false, left = down && game.companions.downStages ? game.companions.downStages[id] || 0 : 0; // 倒れている仲間は棺桶の印
-    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span>${sw ? '<span class="el-badge el-none">属性なし</span>' : elemBadge(COMPANION_ELEMENT[id])}</div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatPreciseNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span>${compEvoChip(id)}</div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div>${typeof compBreakBtnHtml === 'function' ? compBreakBtnHtml(id) : ''}</div></div>`; // カードの下に強さの内訳
+    return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatPreciseNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span>${compEvoChip(id)}</div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div>${typeof compBreakBtnHtml === 'function' ? compBreakBtnHtml(id) : ''}</div></div>`; // カードの下に強さの内訳
   }).join('');
   companionList.innerHTML = (typeof comboListHtml === 'function' ? comboListHtml() : '') + '<div id="myCharSlot"></div>' + (mine.length ? mineHtml : `<div class="cp-empty">まだ仲間がいません。上の「招集ガチャ」で仲間を呼びましょう！</div>`)
     ; /* 「待機中の仲間」の一覧は、仲間項目（ページの下）に置き換えたので出さない */
@@ -592,16 +582,16 @@ function showSkillBrief(it, title, desc, auto) { // スキルの概要（転生�
   playTone(880, 0.06, 'triangle', 0.05, 1175);
 }
 function compBriefHtml(id) { // 仲間の概要（ON/OFFの確認画面などに入れる）
-  const c = COMPANIONS[id], el = typeof compElement === 'function' ? compElement(id) : null, lv = (game.companions.level[id] || 0) + 1;
-  return `<div class="cg-brief"><div class="cgb-name">${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}${el ? ' ' + elemBadge(el) : ''}</div><div class="cgb-stat">Lv.${lv}　攻撃 <b>${formatCoinNumber(Math.round(getCompanionAtk(id)))}</b>　HP <b>${formatCoinNumber(Math.round(getCompanionMaxHP(id)))}</b></div><div class="cgb-row">🎖️ ${c.desc}</div>${c.trait ? `<div class="cgb-row cgb-trait">${c.trait}</div>` : ''}</div>`;
+  const c = COMPANIONS[id], lv = (game.companions.level[id] || 0) + 1;
+  return `<div class="cg-brief"><div class="cgb-name">${rarityStarsImg(c.rarity)} ${RARITY_INFO[c.rarity].label}</div><div class="cgb-stat">Lv.${lv}　攻撃 <b>${formatCoinNumber(Math.round(getCompanionAtk(id)))}</b>　HP <b>${formatCoinNumber(Math.round(getCompanionMaxHP(id)))}</b></div><div class="cgb-row">🎖️ ${c.desc}</div>${c.trait ? `<div class="cgb-row cgb-trait">${c.trait}</div>` : ''}</div>`;
 }
 function showCompGachaInfo(id) { // 招集ガチャの結果でキャラを押したときの概要
   const c = COMPANIONS[id]; if (!c) return;
   document.querySelectorAll('.cg-info-ov').forEach(o => o.remove());
-  const el = typeof compElement === 'function' ? compElement(id) : null, lv = (game.companions.level[id] || 0) + 1, n = getCompanionCount(id);
+  const lv = (game.companions.level[id] || 0) + 1, n = getCompanionCount(id);
   const ov = document.createElement('div'); ov.className = 'cg-info-ov';
   ov.innerHTML = `<div class="cg-info rarity-${c.rarity}" style="border-color:${RARITY_INFO[c.rarity].color}"><div class="cgi-face">${companionIconHtml(id)}</div>
-    <div class="cgi-name">${rarityStarsImg(c.rarity)} ${c.name}${el ? ' ' + elemBadge(el) : ''}</div>
+    <div class="cgi-name">${rarityStarsImg(c.rarity)} ${c.name}</div>
     <div class="cgi-stat">Lv.${lv}${n > 1 ? `　×${n}人` : ''}　攻撃 <b>${formatCoinNumber(Math.round(getCompanionAtk(id)))}</b>　HP <b>${formatCoinNumber(Math.round(getCompanionMaxHP(id)))}</b></div>
     <div class="cgi-row">🎖️ ${c.desc}</div>${c.trait ? `<div class="cgi-row cgi-trait">${c.trait}</div>` : ''}
     <button class="cgi-ok">OK</button></div>`;
@@ -1977,7 +1967,6 @@ function updateHomingMissiles(speedMult) {
       enemy.hp -= dmg;
       trackDamage(dmg);
       spawnAttackDamageText(enemy, dmg, crit, '#ffc3a0');
-      if (m.el) noteElementHit(m.el, enemy); // 仲間の飛び道具も属性の相性で
       onPlayerHitEnemy(enemy, dmg);
       playHomingHitSound();
       updateHPUI();

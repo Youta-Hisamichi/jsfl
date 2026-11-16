@@ -65,7 +65,6 @@ const BEGINNER_MISSIONS = [
   { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1, hint: '仲間ページの自キャラ強化' },
   { text: '溜めMAX（×3）で攻撃する', get: () => game.obFlags && game.obFlags.chargeMax ? 1 : 0, goal: 1, gems: 1, hint: '攻撃せずに待つほど次の一撃が強くなる' },
   { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 1, hint: '仲間ページの招集ガチャ（初回無料）' },
-  { elem: true, text: '「属性ダメージ良好！」を出す', get: () => game.obFlags && game.obFlags.superEff ? 1 : 0, goal: 1, gems: 1, hint: '炎→草→水→炎の順に有利' },
   { text: 'スキルガチャを引く', get: () => game.skillGachaPulls || 0, goal: 1, gems: 1 },
   { text: '×8の反射玉を敵に当てる', get: () => game.obFlags && game.obFlags.reflMax ? 1 : 0, goal: 1, gems: 1, hint: 'タックルで反射玉を飛ばし、壁や敵で跳ね返って×8になってから敵に当てよう' },
   { text: '宝箱を開ける', get: () => game.obFlags && game.obFlags.chest ? 1 : 0, goal: 1, gems: 1, hint: '木箱や柱を壊すと出ることも' },
@@ -73,7 +72,7 @@ const BEGINNER_MISSIONS = [
   { text: '最大HPをLv5まで強化する', get: () => upLv('hp'), goal: 5, gems: 1 },
   { text: 'ステージ20に到達する', get: () => game.bestStage || 1, goal: 20, gems: 1 },
   { text: 'ステージ30に到達する', get: () => game.bestStage || 1, goal: 30, gems: 1 },
-].filter(m => ELEMENTS_ON || !m.elem); // 属性を止めている間は属性のミッションを出さない
+];
 let missionSig = '';
 const MISSION_GAP_MS = 20000; let missionHoldUntil = Date.now() + 8000; // 始めてすぐには出さない
 function updateMission() {
@@ -213,12 +212,7 @@ function showEnemyInfo(e, stage, extra) { // ステージ進捗バーの上に�
   if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; host.appendChild(el); }
   const key = getEnemyBookKey(e.megaOwner || e), book = ENEMY_BOOK_BY_KEY[key];
   const name = e.milestone && !game.skipChallenge ? e.milestone.label : (book && book.name) || (e.isBoss ? 'ボス' : 'モンスター');
-  const el2 = getEnemyElement(e), hero = getHeroElement();
-  const weak = el2 ? Object.keys(ELEMENT_BEATS).find(k => ELEMENT_BEATS[k] === el2) : null;
-  const m = elementMult(hero, el2);
-  const aff = !el2 || !hero ? '' : m > 1 ? `<b class="eip-good">属性ダメージ良好×${ELEMENT_ADV}</b>` : m < 1 ? `<b class="eip-bad">いまひとつ×${ELEMENT_DIS}</b>` : 'ふつう';
   el.innerHTML = `<div class="eip-name">${e.isBoss ? '👑 ' : ''}${name}<small>Lv.${formatCoinNumber(enemyLevel(stage || game.stage))}　HP ${formatCoinNumber(Math.ceil(e.hp))}/${formatCoinNumber(Math.ceil(e.maxHp || e.hp))}${extra || ''}</small></div>`
-    + (ELEMENTS_ON ? `<div class="eip-row">属性 ${el2 ? elemBadge(el2) : '<span class="el-badge el-none">なし</span>'}${weak ? `　弱点 ${elemBadge(weak)}` : ''}${aff ? `　${aff}` : ''}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
@@ -282,14 +276,11 @@ function showAllyInfo(b) {
   const hero = getHeroChar(), swapped = !isMain && cid && cid === hero; // 自キャラと交代した仲間の枠は勇者が入る
   const id = isMain ? hero : swapped ? null : cid;
   const name = id ? COMPANIONS[id].name : '勇者';
-  const elem = isMain ? getHeroElement() : swapped ? null : (typeof compElement === 'function' ? compElement(cid) : COMPANION_ELEMENT[cid]);
-  const weakTo = elem ? ELEMENT_BEATS[ELEMENT_BEATS[elem]] : null; // 自分が不利になる相手の属性
   const role = isMain ? '自キャラ' : '仲間';
   const lv = !isMain && cid && game.companions.level ? `Lv.${(game.companions.level[cid] || 0) + 1}　` : '';
   const info = isMain && typeof heroTypeInfo === 'function' ? heroTypeInfo(hero) : null;
-  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : (ELEMENTS_ON ? '⚖️ バランス（属性の不利なし）' : '⚖️ バランス')) : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
+  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : '⚖️ バランス') : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
   el.innerHTML = `<div class="eip-name eip-ally">${isMain ? '⭐ ' : '🐾 '}${name}<small>${role}　${lv}HP ${formatCoinNumber(Math.ceil(Math.max(0, b.hp)))}/${formatCoinNumber(Math.ceil(b.maxHp || b.hp))}　攻撃 ${formatCoinNumber(Math.round(b.atk || 0))}</small></div>`
-    + (ELEMENTS_ON ? `<div class="eip-row">属性 ${elem ? elemBadge(elem) : '<span class="el-badge el-none">なし</span>'}${elem ? `　有利 ${elemBadge(ELEMENT_BEATS[elem])}　苦手 ${elemBadge(weakTo)}` : ''}</div>` : '')
     + (typeTxt ? `<div class="eip-row eip-sub">${typeTxt}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2800);

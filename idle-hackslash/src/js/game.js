@@ -13,8 +13,7 @@ function step() {
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   if (typeof tickMovingObstacles === 'function') tickMovingObstacles(speedMult); // ビリヤードのように飛んでいく障害物
-  const foeEl = getFoeElement(); syncElementAtk(foeEl);
-  a.atk = Math.max(1, Math.round(getPlayerAtk() * elementMult(getHeroElement(), foeEl))); // 加速中ボーナス等を毎フレーム反映（自キャラの属性の相性込み）
+  a.atk = Math.max(1, Math.round(getPlayerAtk())); // 加速中ボーナス等を毎フレーム反映
   a.inPinch = (b.pinchAtk > 0 || getEvoRate('pinch') > 1) && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
   if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk) * getEvoRate('pinch'))); // ピンチ補正進化も掛かる
   const e = balls.find(ball => !ball.isPlayer);
@@ -134,7 +133,6 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'player'); // みだれうち・にとうりゅう
         playPlayerAttackSound();
@@ -170,7 +168,6 @@ function step() {
         trackDamage(dmg);
         spawnHitParticles((a.x + e.x) / 2, (a.y + e.y) / 2, '#ffb35c');
         spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-        noteElementHit(getHeroElement(), e);
         if (tapDmgMult > 1 && rushMult === 1) spawnDamageText(e.x, e.y - e.radius - 34, `連打ボーナス +${Math.round((tapDmgMult - 1) * 100)}%`, '#ff9f43', 0.022, tapDmgMult >= 2);
         onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'player'); // みだれうち・にとうりゅう
         playPlayerAttackSound();
@@ -250,7 +247,6 @@ function step() {
           trackDamage(dmg);
           spawnHitParticles(comp.x, comp.y, comp.color);
           spawnAttackDamageText(e, dmg, crit, '#fff4b8');
-          noteElementHit(compElement(comp.companionId), e);
           onPlayerHitEnemy(e, dmg); if (typeof bossBuffExtraHits === 'function') bossBuffExtraHits(e, dmg, 'comp'); // アゲアゲダンス
           if (comp.launchUntil > Date.now()) { // 弾き飛ばされた仲間が直撃
             comp.launchUntil = 0; e.vx += comp.vx * 0.6; e.vy += comp.vy * 0.6;
@@ -437,7 +433,7 @@ function updateHPUI() {
   const enIcon = bookEntry && bookEntry.sprite ? enemySpriteHtml(bookEntry.sprite, 'enemy-name-sprite') : (bookEntry && bookEntry.icon ? bookEntry.icon : '🔴');
   const enTrait = getEnemyTrait(en);
   const traitTag = (en.isGiant ? ` <span style="font-size:0.7em;color:#ff5c6c;font-weight:900;">［激デカ］</span>` : '') + (enTrait ? ` <span style="font-size:0.7em;color:#ffb35c;">［${ENEMY_TRAIT_LABELS[enTrait]}］</span>` : '');
-  enemyName.innerHTML = `<span class="en-ico">${enIcon}</span>${elemBadge(getEnemyElement(en), 'el-sm')}${enName}${en.isBoss && game.skipChallenge ? '（試練の塔）' : ''}` + traitTag; // 敵のアイコンはHPゲージの左に大きく出す（ボスも同じ）
+  enemyName.innerHTML = `<span class="en-ico">${enIcon}</span>${enName}${en.isBoss && game.skipChallenge ? '（試練の塔）' : ''}` + traitTag; // 敵のアイコンはHPゲージの左に大きく出す（ボスも同じ）
   renderEnemyTraitBadge(en, enTrait);
 }
 // ステージ右上に、今の敵の特徴をアイコン＋短い文字で小さく表示
