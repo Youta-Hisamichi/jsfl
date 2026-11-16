@@ -5451,3 +5451,5 @@ body.boss-hp .hp-row { display: none !important; }
 .rank-row .rank-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab-page[data-tab="ranking"] .rank-name-row #usernameSaveBtn { background: linear-gradient(#f6c94a, #c98a14) !important; color: #2a1600 !important; font-weight: 900; border: 1px solid #fff2b0 !important; text-shadow: none !important; }
 #bossContModal .go3 .emb-hint { position: absolute; left: 0; right: 0; top: 109.9cqw; margin: 0; font-size: 2.7cqw; line-height: 1; z-index: 2; } /* 紋章の案内は、動画ボタンとあきらめるボタンのすき間に */
+
+.dbg-search { display: block; width: 100%; box-sizing: border-box; margin: 0 0 6px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--ring); background: var(--bg-soft); color: var(--text); font-size: 0.85rem; position: sticky; top: 0; z-index: 3; }

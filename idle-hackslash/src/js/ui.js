@@ -494,7 +494,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -553,6 +553,12 @@ debugRow.addEventListener('click', event => {
   if (action === 'rebornAlways') {
     game.dbgRebornAlways = !game.dbgRebornAlways; updateDbgRebornBtn(); updateStatsUI(); saveGame();
     showNotice(game.dbgRebornAlways ? 'DEBUG: 転生ボタンをステージに関係なく表示します' : 'DEBUG: 転生ボタンを通常の条件に戻しました');
+    return;
+  }
+  if (action === 'towerUnlock') { // 試練の塔をステージに関係なく使えるようにする（もう一度押すと通常の条件に戻す）
+    game.dbgTowerOpen = !game.dbgTowerOpen; saveGame();
+    try { updateSkipBtnVisibility(); } catch (e) {} try { updateTabLocks(); } catch (e) {}
+    showNotice(game.dbgTowerOpen ? 'DEBUG: 試練の塔を解放しました' : 'DEBUG: 試練の塔を通常の解放条件に戻しました');
     return;
   }
   if (action === 'unlockSkills') {
@@ -3844,3 +3850,23 @@ function openDbgFullPage(title, sub, html, setup) {
   ov.querySelector('.dfp-close').onclick = () => ov.classList.remove('show');
   ov.classList.add('show'); if (setup) setup(ov.querySelector('.dfp-body'));
 }
+
+// ===== デバッグボタンを名前で探す（入力した文字を含むボタンだけ出す。見出しは中身があるものだけ） =====
+(() => {
+  const inp = document.getElementById('dbgSearch'); if (!inp) return;
+  const norm = t => String(t || '').toLowerCase().replace(/\s+/g, '').normalize('NFKC').replace(/[\u30a1-\u30f6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)); // カタカナもひらがなで当たるように
+  const apply = () => {
+    const q = norm(inp.value), row = document.getElementById('debugRow'); if (!row) return;
+    let head = null, any = false;
+    const flush = () => { if (head) head.style.display = (q && !any) ? 'none' : ''; };
+    [...row.children].forEach(el => {
+      if (el.classList.contains('debug-cat')) { flush(); head = el; any = false; return; }
+      const hit = !q || norm(el.textContent + ' ' + (el.dataset.debug || '')).includes(q);
+      el.style.display = hit ? '' : 'none'; if (hit) any = true;
+    });
+    flush();
+  };
+  inp.addEventListener('input', apply);
+  const mo = new MutationObserver(() => { if (inp.value) apply(); }); // 「最近使った」を作り直したときも絞り込みを保つ
+  const row = document.getElementById('debugRow'); if (row) mo.observe(row, { childList: true });
+})();
