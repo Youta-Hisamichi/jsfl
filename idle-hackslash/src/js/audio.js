@@ -1556,7 +1556,8 @@ function playStageClearSound() {
 }
 const WARNING_BEEPS = 3, WARNING_BEEP_GAP_MS = 420;
 function playWarningSound() {
-  for (let i = 0; i < WARNING_BEEPS; i++) setTimeout(() => { playTone(200, 0.14, 'square', 0.22); setTimeout(() => playTone(160, 0.14, 'square', 0.22), 150); }, i * WARNING_BEEP_GAP_MS); // 「ビーボー」を3回鳴らしたらボス出現
+  const beeps = typeof BOSS_WARNING_MS !== 'undefined' && BOSS_WARNING_MS < 1000 ? 2 : WARNING_BEEPS; // 短い警告のときは2回
+  for (let i = 0; i < beeps; i++) setTimeout(() => { playTone(200, 0.14, 'square', 0.22); setTimeout(() => playTone(160, 0.14, 'square', 0.22), 150); }, i * WARNING_BEEP_GAP_MS); // 「ビーボー」を3回鳴らしたらボス出現
 }
 // やられボイス：のこぎり波の声帯音をフォルマント（母音の共鳴）フィルタに通して「ぐわぁっ」などをしゃべらせる
 const VOWEL_F = { a: [800, 1200, 2600], i: [300, 2300, 3000], u: [350, 1300, 2500], e: [500, 1800, 2500], o: [500, 850, 2500] };
@@ -1736,11 +1737,13 @@ function upgradeBell(f, at, len, vol, v) { // 鈴の音：サイン波＋高い�
     o.connect(g); g.connect(audioCtx.destination); o.start(at); o.stop(at + len + 0.05);
   }
 }
+let upgradeChain = 0;
 function playUpgradeSound() {
   if (!audioCtx || isBattleSfxMuted()) return;
   const now = performance.now(), quick = now - lastUpgradeSoundAt < 450; lastUpgradeSoundAt = now;
   const v = game.sfxVolume ?? 0.7, t0 = audioCtx.currentTime;
-  if (quick) { [1046.5, 1568.0].forEach((f, i) => upgradeBell(f, t0 + i * 0.03, 0.22, 0.09, v)); return; }
+  upgradeChain = quick ? upgradeChain + 1 : 0; const up = Math.pow(2, (upgradeChain % 13) / 12); // 続けて強化するほど半音ずつ上がる（1オクターブ上がったら下から）
+  if (quick) { [1046.5, 1568.0].forEach((f, i) => upgradeBell(f * up, t0 + i * 0.03, 0.22, 0.09, v)); return; }
   [783.99, 1046.5, 1318.51, 1567.98].forEach((f, i) => upgradeBell(f, t0 + i * 0.05, 0.25, 0.08, v)); // キラキラッ↑
   const c = t0 + 0.22;
   [1046.5, 1318.51, 1567.98, 2093.0].forEach((f, i) => upgradeBell(f, c + i * 0.012, 0.7, 0.07, v)); // シャラーン（和音）

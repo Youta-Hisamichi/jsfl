@@ -264,9 +264,10 @@ function updateGoalChip() {
   }
   lastGoalReached = goal;
   const ms = typeof getMilestoneBoss === 'function' && goal % 100 === 0 ? getMilestoneBoss(goal) : null;
-  const sig = goal + ':' + best;
+  const uc = Math.min(getUpgradeCost('atk'), getUpgradeCost('hp')), short = game.coins >= uc ? '<span class="gc-short ok">⚔️ 強化できます！</span>' : `<span class="gc-short">🟡あと${formatCoinNumber(Math.ceil(uc - game.coins))}で強化</span>`; // すぐ届く目標
+  const sig = goal + ':' + best + ':' + short;
   if (sig === goalSig) return; goalSig = sig;
-  el.innerHTML = `🎯 目標 <b>ステージ${formatStageNumber(goal)}</b>${ms ? ' <span>👑</span>' : ''}<span class="gc-final">｜🏆最終 100万</span>`;
+  el.innerHTML = `🎯 目標 <b>ステージ${formatStageNumber(goal)}</b>${ms ? ' <span>👑</span>' : ''}<span class="gc-final">｜🏆最終 100万</span>${short}`;
   el.style.display = game.skipChallenge ? 'none' : '';
 }
 setInterval(() => { try { updateGoalChip(); } catch (e) { console.error(e); } }, 1000);

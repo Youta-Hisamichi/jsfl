@@ -1626,3 +1626,45 @@ document.addEventListener('click', ev => {
 // ===== 仲間が倒れた・起きたら、絆と恩恵（倒れている間は半分）をすぐ強さに反映する =====
 { let lastDown = '';
   setInterval(() => { try { if (!game.companions || !game.companions.alive) return; const k = Object.keys(game.companions.alive).filter(id => game.companions.alive[id] === false).sort().join(); if (k === lastDown) return; lastDown = k; if (phase === 'battle' || phase === 'paused') refreshPlayerBallStats(false); } catch (e) {} }, 500); }
+
+// ===== ヘッダーのコイン・ジェムの数字が、増えるときにくるくる回って上がる =====
+{ const roll = { coin: null, gem: null };
+  const tween = (key, el, target, fmt) => {
+    const r = roll[key];
+    if (!r) { roll[key] = { shown: target, to: target }; return; }
+    if (target === r.to) { el.textContent = fmt(r.shown); return; }
+    r.from = r.shown; r.to = target; r.t0 = performance.now(); r.dur = target > r.from ? 450 : 200; // 減るときはすぐ
+    el.textContent = fmt(r.shown);
+  };
+  const step = () => {
+    for (const [key, el, fmt] of [['coin', headerCoinsEl, formatCoinNumber], ['gem', headerGemsEl, v => String(Math.floor(v))]]) {
+      const r = roll[key]; if (!r || r.t0 == null) continue;
+      const k = Math.min(1, (performance.now() - r.t0) / r.dur), e = 1 - Math.pow(1 - k, 3);
+      r.shown = r.from + (r.to - r.from) * e; el.textContent = fmt(Math.round(r.shown));
+      if (k >= 1) { r.shown = r.to; r.t0 = null; el.textContent = fmt(r.to); }
+    }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  window.rollHeaderCoins = () => { try { tween('coin', headerCoinsEl, Math.max(0, Math.floor(game.coins - coinsInFlight())), formatCoinNumber); } catch (e) {} };
+  { const o = releaseCoin; releaseCoin = function () { const r = o.apply(this, arguments); rollHeaderCoins(); return r; }; } // 飛んできたコインが届いたときも回して上げる
+  const orig = updateStatsUI; updateStatsUI = function () { const r = orig.apply(this, arguments);
+    try { tween('coin', headerCoinsEl, Math.max(0, Math.floor(game.coins - coinsInFlight())), formatCoinNumber); tween('gem', headerGemsEl, Math.floor(game.gems), v => String(Math.floor(v))); } catch (e) {}
+    return r; };
+}
+
+// ===== 倍速（ショップの高価なアイテム）：買った速さ（×1.5・×2・×2.5・×3）をゲーム画面の ⏩ ボタンで切り替える =====
+const SPEED_ITEMS = [[1.5, 'speed15', 150], [2, 'speed20', 300], [2.5, 'speed25', 500], [3, 'speed30', 800]];
+SPEED_ITEMS.forEach(([m, k, cost]) => { SHOP_ITEMS[k] = { icon: '⏩', name: `倍速 ×${m}`, desc: `ゲームの速さを×${m}にできる（ゲーム画面の ⏩ ボタンで切り替え・転生しても残る）`, cost, unlockKey: k + 'Unlocked' }; });
+function ownedSpeeds() { return [1, ...SPEED_ITEMS.filter(([m, k]) => game[k + 'Unlocked']).map(([m]) => m)]; }
+function speedMult() { const s = ownedSpeeds(), v = game.speedSel || 1; return s.includes(v) ? v : 1; }
+{ const orig = getEffectiveSpeed; getEffectiveSpeed = function () { return Date.now() < accelEndAt ? orig.apply(this, arguments) : gameSpeed * speedMult(); }; }
+function updateSpeedBtn() {
+  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
+  let b = document.getElementById('speedBtn'); const owned = ownedSpeeds();
+  if (owned.length <= 1) { if (b) b.style.display = 'none'; return; }
+  if (!b) { b = document.createElement('button'); b.id = 'speedBtn'; b.className = 'speed-float'; wrap.appendChild(b);
+    b.addEventListener('click', ev => { ev.stopPropagation(); const s = ownedSpeeds(), i = s.indexOf(speedMult()); game.speedSel = s[(i + 1) % s.length]; saveGame(); updateSpeedBtn(); showNotice(`⏩ ゲームの速さ ×${game.speedSel}`, false, 1400); try { playTone(700 + game.speedSel * 120, 0.06, 'square', 0.05); } catch (e) {} }); }
+  b.style.display = ''; const m = speedMult(), h = `⏩<b>×${m}</b>`; if (b.innerHTML !== h) b.innerHTML = h; b.classList.toggle('on', m > 1);
+}
+setInterval(updateSpeedBtn, 1000);

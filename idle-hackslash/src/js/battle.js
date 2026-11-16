@@ -1501,7 +1501,8 @@ function daysBetweenKeys(a, b) {
   const db = new Date(by, bm - 1, bd);
   return Math.round((db - da) / 86400000);
 }
-const BOSS_WARNING_MS = 1300, BOSS_ENTRANCE_FRAMES = 55; // 警告の長さ・ボスが降ってきて着地するまで
+let BOSS_WARNING_MS = 1300; const BOSS_WARNING_FIRST_MS = 1300, BOSS_WARNING_QUICK_MS = 800, BOSS_ENTRANCE_FRAMES = 55; // 初めてのボスはしっかり、2回目からは短く
+function setBossWarningMs() { BOSS_WARNING_MS = (game.bossBeaten && Object.keys(game.bossBeaten).length) || (game.bestStage || 1) > 10 ? BOSS_WARNING_QUICK_MS : BOSS_WARNING_FIRST_MS; } // 警告の長さ・ボスが降ってきて着地するまで
 function showBossWarning() {
   const ms = game.stage % 10 === 0 && !game.skipChallenge ? getMilestoneBoss(game.stage) : null; // 節目のボスは特別な警告
   const em = forcedBossEmoji || getStageBossEmoji(game.stage), name = (BOSS_ENEMY_NAMES && BOSS_ENEMY_NAMES[em]) || 'ボス';

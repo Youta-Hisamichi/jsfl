@@ -5464,3 +5464,10 @@ body.boss-hp .hp-row { display: none !important; }
 .rank-deadline b { color: #ffd76b; font-variant-numeric: tabular-nums; margin-left: 4px; }
 .rank-deadline.soon { border-color: #ff6b6b; animation: rkSoon 1s ease-in-out infinite alternate; } .rank-deadline.soon b { color: #ff8a8a; }
 @keyframes rkSoon { from { box-shadow: 0 0 0 rgba(255,80,80,0); } to { box-shadow: 0 0 12px rgba(255,80,80,0.8); } }
+/* すぐ届く目標（目標の札の2行目） */
+.goal-chip .gc-short { display: block; font-size: 0.86em; color: #ffe9a8; margin-top: 1px; }
+.goal-chip .gc-short.ok { color: #7dff9a; }
+/* 倍速ボタン（ゲーム画面の右上） */
+.speed-float { position: absolute; top: 1%; right: 1%; z-index: 4; display: flex; align-items: center; gap: 2px; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #8fd0ff; background: rgba(8,12,28,0.78); color: #cfe9ff; font-size: 0.95rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+.speed-float b { font-size: 0.78rem; }
+.speed-float.on { border-color: #ffd76b; color: #ffe27a; box-shadow: 0 0 10px rgba(255,215,107,0.6); }

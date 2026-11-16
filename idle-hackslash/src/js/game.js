@@ -514,8 +514,12 @@ function startEnemyEscape(e) {
 function escTextX(e) { const m = Math.min(110, arena.radius * 0.6); return Math.max(arena.x - arena.radius + m, Math.min(arena.x + arena.radius - m, e.x)); } // 長い文字が画面の端で切れないように
 const ESCAPE_WARN_FRAMES = 60 * 4; // 逃げる4秒前に予告
 const EARLY_KILL_CHEST_CHANCE = 0.08, ESCAPE_COIN_RATE = 0.3;
+// 連続撃破：前の撃破から KILL_STREAK_GAP_MS 以内に倒し続けると、3連から1つごとにコイン+5%（最大+50%）。逃げられたら途切れる
+const KILL_STREAK_GAP_MS = 6000, KILL_STREAK_STEP = 0.05, KILL_STREAK_MAX = 0.5;
+let killStreak = 0, killStreakAt = 0;
+function killStreakStep() { const now = Date.now(); killStreak = now - killStreakAt <= KILL_STREAK_GAP_MS ? killStreak + 1 : 1; killStreakAt = now; return { n: killStreak, bonus: killStreak >= 3 ? Math.min(KILL_STREAK_MAX, KILL_STREAK_STEP * (killStreak - 2)) : 0 }; }
 function onStageClear(passed) {
-  if (passed) return advanceStage(true); // 逃げられたときのコイン（撃破の30%）は startEnemyEscape で渡し済み
+  if (passed) { killStreak = 0; return advanceStage(true); } // 逃げられたときのコイン（撃破の30%）は startEnemyEscape で渡し済み
   if (BATTLE_BGM_KEYS[currentBgmType]) unlockBgmBook(currentBgmType); // 流れていた戦闘曲をBGM図鑑に登録
   const b = computeBonuses();
   const isBossStage = game.stage % 10 === 0;
@@ -527,6 +531,7 @@ function onStageClear(passed) {
     spawnDamageText(arena.x, arena.y - 40, '✨ メタルボーナス！ ×' + METAL_SLIME_COIN_MULT, '#e0e6f0', 0.01, true); // メタルスライムはコインだけ（進化の羽は出さない）
   }
   game.coins += coinGain;
+  { const st = killStreakStep(); if (st.bonus > 0) { const ex = Math.round(coinGain * st.bonus); game.coins += ex; spawnDamageText(arena.x, arena.y - 64, `🔥 ${st.n}連撃破！ コイン+${Math.round(st.bonus * 100)}%`, '#ff9d4f', 0.012, true); damageTexts[damageTexts.length - 1].fs = 16 + Math.min(10, st.n); playTone(660 + Math.min(12, st.n) * 40, 0.08, 'square', 0.05, 990 + Math.min(12, st.n) * 50); } }
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_petitMimic') { const extra = coinGain * 2; game.coins += extra; spawnDamageText(arena.x, arena.y - 40, `🎁 ぷちミミックのお宝！ +${formatCoinNumber(extra)} 🟡`, '#ffd76b', 0.01, true); } // 宝箱のふり：コイン3倍
   if (defeated && !defeated.isBoss && defeated.emoji === 'm_luckyCat' && Math.random() < 0.15) giveBattleFeather(arena.x, arena.y - 40, '🐱 招き猫のご利益！'); // まれに羽ガチャ1枚
   const giantKill = !!(defeated && defeated.isGiant);
@@ -1419,6 +1424,7 @@ function drawBossEntrance() { // 落下中の影（だんだん大きく濃く�
   }
 }
 function spawnBossWithWarning() {
+  if (typeof setBossWarningMs === 'function') setBossWarningMs();
   startBgm('silent'); // ワーニング中は雑魚戦の曲を止める
   showBossWarning();
   balls = balls.filter(ball => ball.isPlayer); // 敵だけ先に消しておく

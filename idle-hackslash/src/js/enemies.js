@@ -1084,7 +1084,7 @@ function spawnCoinDrop(x, y, value, count) {
     coinDisplayHold += v;
     coinFx.push({
       x, y, vx: (Math.random() - 0.5) * 5, vy: -3.5 - Math.random() * 3,
-      ground: y + 22 + Math.random() * 38, bounces: 0, phase: 'fly', wait: 30 + i * 12, t: 0, value: v, spin: Math.random() * 6, // wait：1枚ずつ順番に飛んでいく
+      ground: y + 22 + Math.random() * 38, bounces: 0, phase: 'fly', wait: 14 + i * 5, t: 0, value: v, spin: Math.random() * 6, // wait：1枚ずつ順番に飛んでいく（テンポよく、すぐヘッダーへ）
     });
   }
 }
@@ -2285,6 +2285,7 @@ function triggerEnemyDefeat(enemy, sourceX, sourceY) {
   hitStopFrames = KILL_HITSTOP_DURATION;
   if (enemy.isBoss && typeof playHomeRunSound === 'function') playHomeRunSound(); // ボスは金属バットでかっ飛ばしたような「カキーン！」
   startFlyout(enemy);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2, sp = 3.5 + Math.random() * 2.5; particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.8, color: i % 2 ? '#fff6c8' : '#ffd24a', decay: 0.06 }); } // パッとはじける光
 }
 
 // 自キャラと仲間の衝突：ふだんは押し合うだけ。タックル中にぶつかると仲間を弾き飛ばし、その仲間が敵に当たると大ダメージ

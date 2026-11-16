@@ -1205,7 +1205,7 @@ const KILL_HITSTOP_DURATION = 3; // 撃破時のヒットストップの長さ�
 const KNOCKBACK_SHAKE_FRAMES = 12; // 撃破後、震えながら吹っ飛ぶ演出の長さ（短縮済み）
 let stageAnnounceText = ''; // サークル中央に表示するステージ数
 let stageAnnounceTimer = 0; // 表示残りフレーム
-const STAGE_ANNOUNCE_DURATION = 180; // 「〜階」表示の長さ（約3秒・60fps）
+const STAGE_ANNOUNCE_DURATION = 100; // 「〜階」表示の長さ（約1.7秒・60fps。テンポよく）
 const KNOCKBACK_SPEED = 38; // 吹っ飛ぶ初速（サークル外まで爆発的に）
 const KNOCKBACK_DECEL = 0.985; // 吹っ飛び速度の減衰（ほぼ減速せず飛んでいく）
 
