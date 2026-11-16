@@ -23,6 +23,13 @@ const FIELDS = ['st', 'co', 'ki', 'ev', 'rf', 'dp'];
 const TOP_MAX = 100;
 const PUT_GAP_SEC = 3;       // 同じ人のベスト記録の書き込みは3秒に1回まで（それより早いものは skipped を返す。アプリは次にまた送る）
 const DAILY_KEEP_DAYS = 40;  // 本日のランキングは40日分だけ残す
+// ---- ありえない記録の見張り（ブラウザのコンソールで数字を書き換えた・通信を偽った、などを見つける） ----
+const SEC_PER_CLEAR = 1.5;   // ステージ1つのクリアにかかる最短の秒数（これより速いクリア数の伸びは怪しい）
+const CLEAR_SLACK = 30;      // 少しのずれは見逃す
+const EXTREME_X = 3;         // 怪しさがこの倍を超えたら、自動でシャドウバン（本人は気づかない。管理画面で戻せる）
+const ST_JUMP_FLAG = 3000;   // ベストステージが1回でこれ以上伸びたら「要確認」（試練の塔で大きく登れるので、止めはしない）
+const KILLS_PER_SEC = 60;    // キル数の伸びの上限の目安（1秒あたり）
+const REG_PER_HOUR = 30;     // 同じ回線から1時間に新しく登録できる人数（偽アカウントの大量登録を防ぐ）
 
 function out($data, $code = 200) { http_response_code($code); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
 function fail($msg, $code = 400) { out(['ok' => false, 'error' => $msg], $code); }
@@ -48,6 +55,8 @@ if ($isSqlite) { // 手元で試すとき用：表がなければ作る
   foreach (FIELDS as $f) $db->exec("CREATE INDEX IF NOT EXISTS ix_$f ON players($f)");
   $db->exec('CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, id TEXT NOT NULL, n TEXT NOT NULL, c INTEGER DEFAULT 0, at INTEGER DEFAULT 0, PRIMARY KEY(day, id))');
   $db->exec('CREATE INDEX IF NOT EXISTS ix_daily_c ON daily(day, c)');
+  try { $db->exec("ALTER TABLE players ADD COLUMN flag TEXT DEFAULT ''"); } catch (Throwable $e) {}
+  $db->exec('CREATE TABLE IF NOT EXISTS reg_ip (ip TEXT NOT NULL, hr INTEGER NOT NULL, n INTEGER DEFAULT 0, PRIMARY KEY(ip, hr))');
 }
 
 // ---- 入力のチェック ----
@@ -75,12 +84,29 @@ function auth($db, $body, $name) {
   $h = hash('sha256', $key);
   $st = $db->prepare('SELECT key_hash, at, ban FROM players WHERE id = ?'); $st->execute([$id]); $row = $st->fetch();
   if (!$row) {
+    regLimit($db);
     $db->prepare('INSERT INTO players (id, key_hash, n, st, at, created) VALUES (?, ?, ?, 1, ?, ?)')->execute([$id, $h, $name, time(), time()]);
     return [$id, 0];
   }
   if (!hash_equals($row['key_hash'], $h)) fail('key が合いません', 403);
   if ((int)$row['ban'] === 1) out(['ok' => true]); // 止めた人には、うまくいったふりをして何も書かない（シャドウバンの人は書ける）
   return [$id, (int)$row['at']];
+}
+
+// 同じ回線（IP は sha256 にして保存）からの新規登録は1時間に REG_PER_HOUR 人まで
+function regLimit($db) {
+  global $isSqlite;
+  $ip = hash('sha256', 'mugen|' . ($_SERVER['REMOTE_ADDR'] ?? '')); $hr = intdiv(time(), 3600);
+  $st = $db->prepare('SELECT n FROM reg_ip WHERE ip = ? AND hr = ?'); $st->execute([$ip, $hr]); $n = (int)($st->fetch()['n'] ?? 0);
+  if ($n >= REG_PER_HOUR) fail('登録が多すぎます。しばらくしてからお試しください', 429);
+  $db->prepare($isSqlite ? 'INSERT INTO reg_ip (ip, hr, n) VALUES (?, ?, 1) ON CONFLICT(ip, hr) DO UPDATE SET n = n + 1' : 'INSERT INTO reg_ip (ip, hr, n) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE n = n + 1')->execute([$ip, $hr]);
+  if (mt_rand(1, 100) === 1) $db->prepare('DELETE FROM reg_ip WHERE hr < ?')->execute([$hr - 24]);
+}
+// 怪しい記録の印を付ける（管理画面の「要確認」に出る）。$shadow なら自動でシャドウバン
+function flag($db, $id, $why, $shadow = false) {
+  $st = $db->prepare('SELECT flag FROM players WHERE id = ?'); $st->execute([$id]); $old = (string)($st->fetch()['flag'] ?? '');
+  $f = mb_substr(date('m/d H:i ') . $why . ($old !== '' ? ' ／ ' . $old : ''), 0, 190);
+  $db->prepare('UPDATE players SET flag = ?' . ($shadow ? ', ban = CASE WHEN ban = 0 THEN 2 ELSE ban END' : '') . ' WHERE id = ?')->execute([$f, $id]);
 }
 
 $a = $_GET['a'] ?? '';
@@ -101,6 +127,13 @@ if ($method === 'POST') {
     if ($lastAt && time() - $lastAt < PUT_GAP_SEC) out(['ok' => true, 'skipped' => true]);
     $v = ['st' => num($body['st'] ?? 0, 1e12), 'co' => num($body['co'] ?? 0, 1e300), 'ki' => num($body['ki'] ?? 0, 1e15), 'ev' => num($body['ev'] ?? 0, 1e300), 'rf' => num($body['rf'] ?? 0, 1e300), 'dp' => num($body['dp'] ?? 0, 1e300)];
     $ver = mb_substr((string)($body['ver'] ?? ''), 0, 20);
+    $pst = $db->prepare('SELECT st, ki FROM players WHERE id = ?'); $pst->execute([$id]); $prev = $pst->fetch();
+    if ($prev && $lastAt) { // 前回からの伸びを見る
+      $sec = max(1, time() - $lastAt);
+      if ($v['st'] - (float)$prev['st'] >= ST_JUMP_FLAG) flag($db, $id, 'ステージが一気に ' . number_format($v['st'] - (float)$prev['st']) . ' 伸びた');
+      $kLim = $sec * KILLS_PER_SEC + 10000;
+      if ($v['ki'] - (float)$prev['ki'] > $kLim) flag($db, $id, 'キル数の伸びが速すぎる（' . number_format($v['ki'] - (float)$prev['ki']) . '／' . $sec . '秒）', $v['ki'] - (float)$prev['ki'] > $kLim * EXTREME_X);
+    }
     $db->prepare('UPDATE players SET n = ?, st = ?, co = ?, ki = ?, ev = ?, rf = ?, dp = ?, ver = ?, at = ? WHERE id = ?')
        ->execute([$name, $v['st'], $v['co'], $v['ki'], $v['ev'], $v['rf'], $v['dp'], $ver, time(), $id]);
     out(['ok' => true]);
@@ -109,6 +142,16 @@ if ($method === 'POST') {
     [$id] = auth($db, $body, $name);
     $day = $body['day'] ?? ''; if (!validDay($day)) fail('day が変です');
     $c = (int)num($body['c'] ?? 0, 100000);
+    // クリア数の見張り：その日の0時からの時間・前回からの時間で、クリアできる数には限りがある
+    $sinceDay = max(60, min(3 * 86400, time() - strtotime($day . ' 00:00:00') + 14 * 3600)); // 日本より最大14時間進んだ国の人も困らないよう、その分は甘く見る
+    $lim = $sinceDay / SEC_PER_CLEAR + CLEAR_SLACK;
+    $pst = $db->prepare('SELECT c, at FROM daily WHERE day = ? AND id = ?'); $pst->execute([$day, $id]); $prev = $pst->fetch();
+    $dLim = $prev ? max(1, time() - (int)$prev['at']) / SEC_PER_CLEAR + CLEAR_SLACK : $lim;
+    $dc = $prev ? $c - (int)$prev['c'] : $c;
+    // その日の合計が「0時（＋時差の余裕）から最速で遊び続けても届かない数」なら、まず本物ではないので自動でシャドウバン。
+    // 前回からの伸びだけが速いとき（通信できない所で遊んでから、まとめて送った等もありうる）は、要確認の印だけ（極端なら自動でシャドウバン）
+    if ($c > $lim) flag($db, $id, "本日のクリア数がありえない（{$c}）", true);
+    elseif ($dc > $dLim) flag($db, $id, "本日のクリア数の伸びが速い（+{$dc}／" . max(1, time() - (int)($prev['at'] ?? time())) . '秒）', $dc > $dLim * EXTREME_X);
     $sql = $isSqlite
       ? 'INSERT INTO daily (day, id, n, c, at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(day, id) DO UPDATE SET n = excluded.n, c = MAX(daily.c, excluded.c), at = excluded.at'
       : 'INSERT INTO daily (day, id, n, c, at) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE n = VALUES(n), c = GREATEST(c, VALUES(c)), at = VALUES(at)';

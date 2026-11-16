@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS players (
   at INT NOT NULL DEFAULT 0,
   created INT NOT NULL DEFAULT 0,
   ban TINYINT NOT NULL DEFAULT 0,
+  flag VARCHAR(200) NOT NULL DEFAULT '',
   INDEX ix_st (st), INDEX ix_co (co), INDEX ix_ki (ki), INDEX ix_ev (ev), INDEX ix_rf (rf), INDEX ix_dp (dp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -26,5 +27,16 @@ CREATE TABLE IF NOT EXISTS daily (
   INDEX ix_day_c (day, c)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS reg_ip (
+  ip CHAR(64) NOT NULL,
+  hr INT NOT NULL,
+  n INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (ip, hr)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- すでに表を作ってある場合は、これだけ実行する（管理画面の「止める」用の列を足す）
 -- ALTER TABLE players ADD COLUMN ban TINYINT NOT NULL DEFAULT 0;
+
+-- 「要確認」の印と、新規登録の回数制限を足すとき（2つ目の更新）
+-- ALTER TABLE players ADD COLUMN flag VARCHAR(200) NOT NULL DEFAULT '';
+-- CREATE TABLE IF NOT EXISTS reg_ip (ip CHAR(64) NOT NULL, hr INT NOT NULL, n INT NOT NULL DEFAULT 0, PRIMARY KEY (ip, hr)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
