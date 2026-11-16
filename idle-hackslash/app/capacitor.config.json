@@ -1,0 +1,8 @@
+{
+  "appId": "com.hisashiapp.mugenhansya",
+  "appName": "放置系ハクスラ無限反射",
+  "webDir": "../dist",
+  "android": {
+    "backgroundColor": "#0c0e16"
+  }
+}

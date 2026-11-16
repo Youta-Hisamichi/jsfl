@@ -1,0 +1,51 @@
+rules_version = '2';
+// 無限反射（放置ハクスラ）のセーブの控え
+// users/<uid> は、その本人（ログインしている人の uid が同じ）だけが読み書きできる。ほかの人のセーブは見られない
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['save', 'saveAt', 'saveBest', 'saveReb', 'saveStage'])
+        && (request.resource.data.save == null || (request.resource.data.save is string && request.resource.data.save.size() < 240000));
+    }
+    // feedback/<自動ID>：評価ダイアログの「ちょっと不満がある」で送られたご意見。書くだけ（追加のみ）で、アプリからは誰も読めない。Firebase コンソールで見る
+    match /feedback/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['text', 'ver', 'platform', 'stage', 'best', 'reb', 'sentAt', 'uid', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 20
+        && request.resource.data.platform is string && request.resource.data.platform.size() <= 10
+        && request.resource.data.stage is number && request.resource.data.best is number && request.resource.data.reb is number
+        && request.resource.data.sentAt is number && request.resource.data.at == request.time;
+    }
+    // ranks/<uid>：ランキング用の自分の記録。ログインしていればだれでも読める・自分の分だけ書ける
+    match /ranks/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['n', 'st', 'co', 'ki', 'ev', 'rf', 'dp', 'ver', 'at'])
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 25
+        && request.resource.data.st is number && request.resource.data.st >= 0
+        && request.resource.data.co is number && request.resource.data.co >= 0
+        && request.resource.data.ki is number && request.resource.data.ki >= 0
+        && request.resource.data.ev is number && request.resource.data.ev >= 0
+        && request.resource.data.rf is number && request.resource.data.rf >= 0
+        && request.resource.data.dp is number && request.resource.data.dp >= 0
+        && request.resource.data.ver is string && request.resource.data.ver.size() <= 20
+        && request.resource.data.at == request.time;
+    }
+    // daily/<日付>/p/<uid>：その日のクリア数のランキング
+    match /daily/{day}/p/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid && day.size() == 10
+        && request.resource.data.keys().hasOnly(['n', 'c', 'at'])
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 25
+        && request.resource.data.c is number && request.resource.data.c >= 0 && request.resource.data.c <= 100000
+        && request.resource.data.at == request.time;
+    }
+    match /{document=**} {
+      allow read, write: if false; // それ以外は誰も読み書きできない
+    }
+  }
+}
