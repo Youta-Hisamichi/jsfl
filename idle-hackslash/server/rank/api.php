@@ -145,5 +145,5 @@ if ($a === 'near') {
   $dn = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ? AND d.c < ? AND $vis ORDER BY d.c DESC LIMIT 3"); $dn->execute([$day, $c, $me]);
   out(['ok' => true, 'up' => array_map($pub, $up->fetchAll()), 'down' => array_map($pub, $dn->fetchAll())]);
 }
-if ($a === 'count') { $st = $db->prepare("SELECT COUNT(*) AS k FROM players p WHERE $vis"); $st->execute([$me]); out(['ok' => true, 'count' => (int)$st->fetch()['k']]); }
+if ($a === 'count') out(['ok' => true, 'count' => (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban <> 1')->fetch()['k']]); // 総ユーザー数：シャドウバンの人も数に入れる（止めた人だけ除く）
 fail('a が変です');
