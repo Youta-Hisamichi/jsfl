@@ -867,7 +867,7 @@ function getTotalUserCountDisplay() {
 function renderTotalUserCount() {
   if (!totalUserCountEl) return;
   const count = getTotalUserCountDisplay();
-  totalUserCountEl.textContent = `👥 累計プレイヤー数：${count.toLocaleString('ja-JP')} 人`;
+  totalUserCountEl.style.display = ''; totalUserCountEl.innerHTML = `👥 総ユーザー数 <b>${count.toLocaleString('ja-JP')}</b> 人`;
 }
 
 function renderRanking() {

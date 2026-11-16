@@ -5453,3 +5453,7 @@ body.boss-hp .hp-row { display: none !important; }
 #bossContModal .go3 .emb-hint { position: absolute; left: 0; right: 0; top: 109.9cqw; margin: 0; font-size: 2.7cqw; line-height: 1; z-index: 2; } /* 紋章の案内は、動画ボタンとあきらめるボタンのすき間に */
 
 .dbg-search { display: block; width: 100%; box-sizing: border-box; margin: 0 0 6px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--ring); background: var(--bg-soft); color: var(--text); font-size: 0.85rem; position: sticky; top: 0; z-index: 3; }
+
+/* ランキング上部の総ユーザー数 */
+.tab-page[data-tab="ranking"] .rank-total { text-align: center; margin: 0 0 8px; padding: 6px 10px; border-radius: 10px; background: rgba(20, 14, 6, 0.72); border: 1px solid rgba(255, 210, 120, 0.45); color: #fff; font-size: 0.9rem; font-weight: 800; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="ranking"] .rank-total b { color: #ffd76b; font-size: 1.25em; margin: 0 2px; }

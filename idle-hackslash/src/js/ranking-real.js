@@ -67,6 +67,12 @@ function rankDailyEntries(list) { // サーバーより手元のほうが新し�
   if (!es.some(e => e.isPlayer) && (es.length < RANK_TOP_N || mine > es[es.length - 1].score)) es.push({ id: me, name: rankEsc(rankName()), score: mine, isPlayer: true });
   es.sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : b.isPlayer ? 1 : 0)); return es.slice(0, RANK_TOP_N);
 }
+function rankTotalText() { return rankTotal ? `👥 総ユーザー数 <b>${rankTotal.toLocaleString('ja-JP')}</b> 人` : ''; }
+async function rankShowTotal() {
+  const show = () => { if (!totalUserCountEl) return; totalUserCountEl.style.display = rankTotal ? '' : 'none'; if (rankTotal) totalUserCountEl.innerHTML = rankTotalText(); };
+  show();
+  if (Date.now() - rankTotalAt > 60000) { rankTotalAt = Date.now(); try { rankTotal = await rankSrv().rankCount(); } catch (e) {} show(); }
+}
 async function renderRankingReal() {
   const isDaily = rankingMode === 'daily', mode = RANK_MODES[rankingMode] || RANK_MODES.daily, day = getRankingDateKey(), field = RANK_FIELDS[rankingMode];
   const fmt = v => isDaily ? v + ' クリア' : mode.fmt(v);
@@ -87,12 +93,11 @@ async function renderRankingReal() {
     rankDraw(key, entries, { fmt, myScore: score, myRank, isDaily, live, nearUp, nearDown });
   };
   try { await rankUpload(true); } catch (e) {}
+  rankShowTotal(); // 総ユーザー数（一覧と並行して読む。1分に1回まで）
   rankStopWatch();
   let list; try { list = await rankFetch(isDaily, day, field); } catch (e) { rankingList.innerHTML = '<div class="rank-loading">ランキングを読み込めませんでした。通信をお確かめのうえ、もう一度開いてください</div>'; return; }
   if (today) { rankWatchList = list; rankWatchKey = key; rankWatchMine = rankTodayClears(); await finish(rankDailyEntries(list), rankingList.dataset.key === key && !!rankingList.querySelector('[data-rid]')); }
   else { const me = rankSrv().uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false); }
-  if (Date.now() - rankTotalAt > 10 * 60000) { rankTotalAt = Date.now(); try { rankTotal = await rankSrv().rankCount(); } catch (e) { rankTotal = null; } }
-  if (totalUserCountEl) { totalUserCountEl.style.display = rankTotal ? '' : 'none'; if (rankTotal) totalUserCountEl.textContent = `👥 ランキング参加者：${rankTotal.toLocaleString('ja-JP')} 人`; }
 }
 // ---- D：締め切りまでの残り時間 ----
 function rankDeadlineTick() {
@@ -138,7 +143,7 @@ async function rankYesterdayResult() {
 setInterval(() => { if (rankReal()) rankYesterdayResult(); }, 10 * 60000); // 起動したまま日付をまたいだとき
 { const orig = renderRanking; renderRanking = function () {
   if (!rankReal()) return orig.apply(this, arguments); // ブラウザ・アーティファクト（Firebase なし）は見本のまま
-  const keep = rankingList.innerHTML, tot = totalUserCountEl && totalUserCountEl.textContent; orig.apply(this, arguments); // タブ・日付の表示はそのまま使う（見本のライバルの一覧は捨てる）
-  rankingList.innerHTML = keep; if (totalUserCountEl && tot) totalUserCountEl.textContent = tot;
+  const keep = rankingList.innerHTML, tot = totalUserCountEl && totalUserCountEl.innerHTML; orig.apply(this, arguments); // タブ・日付の表示はそのまま使う（見本のライバルの一覧は捨てる）
+  rankingList.innerHTML = keep; if (totalUserCountEl && tot) { totalUserCountEl.innerHTML = tot; totalUserCountEl.style.display = ''; }
   renderRankingReal();
 }; }
