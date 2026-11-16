@@ -32,8 +32,9 @@ $FIELDS = ['st' => 'ベストステージ', 'co' => 'MAXコイン', 'ki' => 'MAX
 $mode = isset($FIELDS[$_GET['m'] ?? '']) ? $_GET['m'] : 'st';
 $day = preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['day'] ?? '') ? $_GET['day'] : date('Y-m-d');
 $q = trim((string)($_GET['q'] ?? ''));
+$cc = preg_match('/^[A-Z]{2}$/', $_GET['cc'] ?? '') ? $_GET['cc'] : '';
 $onlyFlag = !empty($_GET['flag']);
-$back = 'admin.php?' . http_build_query(['m' => $mode, 'day' => $day, 'q' => $q] + ($onlyFlag ? ['flag' => 1] : []));
+$back = 'admin.php?' . http_build_query(['m' => $mode, 'day' => $day, 'q' => $q] + ($onlyFlag ? ['flag' => 1] : []) + ($cc ? ['cc' => $cc] : []));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['act'])) { // 操作（止める・戻す・消す・名前を消す）
   if (!hash_equals($_SESSION['csrf'] ?? '', (string)($_POST['csrf'] ?? ''))) exit('もう一度開き直してください');
@@ -49,12 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['act'])) { // 操作�
   header('Location: ' . $back); exit;
 }
 
-$where = ($q !== '' ? ' AND p.n LIKE ?' : '') . ($onlyFlag ? " AND p.flag <> ''" : ''); $args = $q !== '' ? ['%' . $q . '%'] : [];
+$where = ($q !== '' ? ' AND p.n LIKE ?' : '') . ($onlyFlag ? " AND p.flag <> ''" : '') . ($cc ? ' AND p.cc = ?' : ''); $args = array_merge($q !== '' ? ['%' . $q . '%'] : [], $cc ? [$cc] : []);
 if ($mode === 'daily') {
-  $st = $db->prepare("SELECT p.id, d.n, d.c AS score, p.ver, d.at, p.created, p.ban, p.flag FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ?$where ORDER BY d.c DESC LIMIT 200");
+  $st = $db->prepare("SELECT p.id, d.n, d.c AS score, p.ver, d.at, p.created, p.ban, p.flag, p.cc, p.tz, p.lc FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ?$where ORDER BY d.c DESC LIMIT 200");
   $st->execute(array_merge([$day], $args));
 } else {
-  $st = $db->prepare("SELECT p.id, p.n, p.$mode AS score, p.ver, p.at, p.created, p.ban, p.flag FROM players p WHERE 1 = 1$where ORDER BY p.$mode DESC LIMIT 200");
+  $st = $db->prepare("SELECT p.id, p.n, p.$mode AS score, p.ver, p.at, p.created, p.ban, p.flag, p.cc, p.tz, p.lc FROM players p WHERE 1 = 1$where ORDER BY p.$mode DESC LIMIT 200");
   $st->execute($args);
 }
 $rows = $st->fetchAll();
@@ -62,6 +63,10 @@ $total = (int)$db->query('SELECT COUNT(*) AS k FROM players')->fetch()['k'];
 $banned = (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 1')->fetch()['k'];
 $shadow = (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 2')->fetch()['k'];
 $flagged = (int)$db->query("SELECT COUNT(*) AS k FROM players WHERE flag <> ''")->fetch()['k'];
+$byCountry = $db->query("SELECT cc, COUNT(*) AS k FROM players WHERE ban <> 1 GROUP BY cc ORDER BY k DESC LIMIT 30")->fetchAll();
+// 国コード → 国旗と日本語の国名（PHP の intl があれば国名はそれで、なければコードのまま）
+$ccFlag = fn($c) => preg_match('/^[A-Z]{2}$/', (string)$c) ? mb_chr(0x1F1E6 + ord($c[0]) - 65) . mb_chr(0x1F1E6 + ord($c[1]) - 65) : '❔';
+$ccName = function ($c) { if (!preg_match('/^[A-Z]{2}$/', (string)$c)) return '不明'; if (class_exists('Locale')) { $n = Locale::getDisplayRegion('-' . $c, 'ja'); if ($n && $n !== $c) return $n; } return $c; };
 $BAN = [0 => '', 1 => '（停止中）', 2 => '（シャドウバン中）'];
 $fmt = function ($v) { $v = (float)$v; if ($v >= 1e15) return sprintf('%.3e', $v); return number_format($v, $v == floor($v) ? 0 : 2); };
 $btn = fn($id, $act, $label, $confirm) => '<form method="post" style="display:inline" onsubmit="return confirm(\'' . $confirm . '\')"><input type="hidden" name="csrf" value="' . $_SESSION['csrf'] . '"><input type="hidden" name="id" value="' . $id . '"><input type="hidden" name="act" value="' . $act . '"><button>' . $label . '</button></form>';
@@ -71,11 +76,12 @@ $btn = fn($id, $act, $label, $confirm) => '<form method="post" style="display:in
 <h2>ランキング管理</h2>
 <p>登録 <?= number_format($total) ?> 人（止めている人 <?= number_format($banned) ?> 人・シャドウバン <?= number_format($shadow) ?> 人）　<a href="?<?= $h(http_build_query(['m' => $mode, 'day' => $day, 'flag' => 1])) ?>" style="color:#c60">⚠ 要確認 <?= number_format($flagged) ?> 人</a></p>
 <p style="font-size:12px;color:#666">止める：一覧から消し、記録も受け付けない ／ シャドウバン：記録は受け付けて本人には今までどおり見えるが、ほかの人の一覧・人数には出さない</p>
+<p style="font-size:13px">国別：<?php foreach ($byCountry as $b) echo '<a href="?' . $h(http_build_query(['m' => $mode, 'day' => $day, 'cc' => $b['cc']])) . '" style="margin-right:10px' . ($cc === $b['cc'] ? ';font-weight:bold' : '') . '">' . $ccFlag($b['cc']) . ' ' . $h($ccName($b['cc'])) . ' ' . number_format($b['k']) . '人</a>'; if ($cc) echo ' <a href="?' . $h(http_build_query(['m' => $mode, 'day' => $day])) . '">（すべての国）</a>'; ?></p>
 <div class="top"><?php foreach ($FIELDS as $k => $v) echo '<a href="?' . $h(http_build_query(['m' => $k, 'day' => $day, 'q' => $q])) . '"' . ($k === $mode ? ' style="font-weight:bold"' : '') . '>' . $h($v) . '</a>'; ?></div>
-<form class="f" method="get"><input type="hidden" name="m" value="<?= $h($mode) ?>"><?php if ($mode === 'daily'): ?><input type="date" name="day" value="<?= $h($day) ?>"> <?php endif; ?><input name="q" value="<?= $h($q) ?>" placeholder="名前で探す"> <label><input type="checkbox" name="flag" value="1"<?= $onlyFlag ? ' checked' : '' ?>>要確認だけ</label> <button>表示</button></form>
-<table><tr><th>#</th><th>名前</th><th>記録</th><th>版</th><th>最後の書き込み</th><th>登録</th><th>id</th><th>要確認</th><th></th></tr>
+<form class="f" method="get"><input type="hidden" name="m" value="<?= $h($mode) ?>"><?php if ($cc): ?><input type="hidden" name="cc" value="<?= $h($cc) ?>"><?php endif; ?><?php if ($mode === 'daily'): ?><input type="date" name="day" value="<?= $h($day) ?>"> <?php endif; ?><input name="q" value="<?= $h($q) ?>" placeholder="名前で探す"> <label><input type="checkbox" name="flag" value="1"<?= $onlyFlag ? ' checked' : '' ?>>要確認だけ</label> <button>表示</button></form>
+<table><tr><th>#</th><th>名前</th><th>国</th><th>記録</th><th>版</th><th>最後の書き込み</th><th>登録</th><th>id</th><th>要確認</th><th></th></tr>
 <?php foreach ($rows as $i => $r): ?>
-<tr class="<?= ['', 'ban', 'shadow'][(int)$r['ban']] ?? '' ?>"><td><?= $i + 1 ?></td><td class="n"><?= $h($r['n']) ?><?= $BAN[(int)$r['ban']] ?? '' ?></td><td><?= $h($fmt($r['score'])) ?></td><td><?= $h($r['ver']) ?></td>
+<tr class="<?= ['', 'ban', 'shadow'][(int)$r['ban']] ?? '' ?>"><td><?= $i + 1 ?></td><td class="n"><?= $h($r['n']) ?><?= $BAN[(int)$r['ban']] ?? '' ?></td><td title="<?= $h(($r['tz'] ?? '') . ' ' . ($r['lc'] ?? '')) ?>"><?= $ccFlag($r['cc'] ?? '') ?> <?= $h($ccName($r['cc'] ?? '')) ?></td><td><?= $h($fmt($r['score'])) ?></td><td><?= $h($r['ver']) ?></td>
 <td><?= $r['at'] ? date('m/d H:i', (int)$r['at']) : '' ?></td><td><?= $r['created'] ? date('Y/m/d', (int)$r['created']) : '' ?></td><td><?= $h(substr($r['id'], 0, 12)) ?></td><td class="n" style="color:#c60;font-size:11px"><?= $h($r['flag'] ?? '') ?><?= ($r['flag'] ?? '') !== '' ? ' ' . $btn($r['id'], 'ok', '確認済み', '要確認の印を消しますか？') : '' ?></td>
 <td><?= $r['ban'] ? $btn($r['id'], 'unban', '戻す', 'この人を一覧に戻しますか？') : $btn($r['id'], 'shadow', 'シャドウバン', 'シャドウバンしますか？（本人には今までどおり見えますが、ほかの人からは見えなくなります）') . ' ' . $btn($r['id'], 'ban', '止める', 'この人を止めますか？（一覧から消え、記録も送れなくなります）') ?>
 <?= $btn($r['id'], 'name', '名前を消す', '名前を「名無しの勇者」にしますか？') ?> <?= $btn($r['id'], 'del', '消す', 'この人の記録をすべて消しますか？（元に戻せません）') ?></td></tr>

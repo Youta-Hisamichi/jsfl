@@ -52,7 +52,7 @@ if ($isSqlite) { // 手元で試すとき用：表がなければ作る
   foreach (FIELDS as $f) $db->exec("CREATE INDEX IF NOT EXISTS ix_$f ON players($f)");
   $db->exec('CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, id TEXT NOT NULL, n TEXT NOT NULL, c INTEGER DEFAULT 0, at INTEGER DEFAULT 0, PRIMARY KEY(day, id))');
   $db->exec('CREATE INDEX IF NOT EXISTS ix_daily_c ON daily(day, c)');
-  foreach (["flag TEXT DEFAULT ''", 'gm REAL DEFAULT 0', 'rb REAL DEFAULT 0'] as $col) { try { $db->exec("ALTER TABLE players ADD COLUMN $col"); } catch (Throwable $e) {} }
+  foreach (["flag TEXT DEFAULT ''", 'gm REAL DEFAULT 0', 'rb REAL DEFAULT 0', "lc TEXT DEFAULT ''", "tz TEXT DEFAULT ''", "cc TEXT DEFAULT ''"] as $col) { try { $db->exec("ALTER TABLE players ADD COLUMN $col"); } catch (Throwable $e) {} }
 }
 
 // ---- 入力のチェック ----
@@ -88,6 +88,12 @@ function auth($db, $body, $name) {
   return [$id, (int)$row['at']];
 }
 
+// 国の見当：端末のタイムゾーン（Asia/Tokyo など）から。分からなければ言語（ja-JP の JP）から。IP は使わない
+function guessCountry($tz, $lc) {
+  if ($tz !== '') { try { $c = (new DateTimeZone($tz))->getLocation()['country_code'] ?? ''; if (preg_match('/^[A-Z]{2}$/', $c)) return $c; } catch (Throwable $e) {} }
+  if (preg_match('/[-_]([A-Za-z]{2})\b/', $lc, $m)) return strtoupper($m[1]);
+  return '';
+}
 // 怪しい記録の印を付ける（管理画面の「要確認」に出るだけ）
 function flag($db, $id, $why) {
   $st = $db->prepare('SELECT flag FROM players WHERE id = ?'); $st->execute([$id]); $old = (string)($st->fetch()['flag'] ?? '');
@@ -113,6 +119,8 @@ if ($method === 'POST') {
     if ($lastAt && time() - $lastAt < PUT_GAP_SEC) out(['ok' => true, 'skipped' => true]);
     $v = ['st' => num($body['st'] ?? 0, 1e12), 'co' => num($body['co'] ?? 0, 1e300), 'ki' => num($body['ki'] ?? 0, 1e15), 'ev' => num($body['ev'] ?? 0, 1e300), 'rf' => num($body['rf'] ?? 0, 1e300), 'dp' => num($body['dp'] ?? 0, 1e300)];
     $ver = mb_substr((string)($body['ver'] ?? ''), 0, 20);
+    $tz = mb_substr(preg_replace('/[^A-Za-z0-9_\/+\-]/', '', (string)($body['tz'] ?? '')), 0, 40); $lc = mb_substr(preg_replace('/[^A-Za-z0-9_\-]/', '', (string)($body['lc'] ?? '')), 0, 20);
+    $cc = guessCountry($tz, $lc); // 管理画面で国を見る用
     $gm = num($body['gm'] ?? 0, 1e15); $rb = num($body['rb'] ?? 0, 1e12); // ジェム・転生回数（見張り用。一覧には出さない）
     $pst = $db->prepare('SELECT co, gm, rb, created FROM players WHERE id = ?'); $pst->execute([$id]); $prev = $pst->fetch();
     $first = $prev && (float)$prev['gm'] == 0 && (float)$prev['rb'] == 0; // ジェム・転生をまだ一度も送っていない（この仕組みより前に登録した人の初回）は比べない
@@ -121,8 +129,8 @@ if ($method === 'POST') {
       if (!$first && $rb - (float)$prev['rb'] >= REBORN_JUMP_FLAG) flag($db, $id, '転生が一度に ' . number_format($rb - (float)$prev['rb']) . ' 回増えた');
       if (time() - (int)$prev['created'] < 86400 && $v['co'] - (float)$prev['co'] >= COIN_JUMP_FLAG) flag($db, $id, '登録1日目にコインが一度に ' . (($d = $v['co'] - (float)$prev['co']) < 1e15 ? number_format($d) : sprintf('%.3e', $d)) . ' 枚増えた');
     }
-    $db->prepare('UPDATE players SET n = ?, st = ?, co = ?, ki = ?, ev = ?, rf = ?, dp = ?, gm = ?, rb = ?, ver = ?, at = ? WHERE id = ?')
-       ->execute([$name, $v['st'], $v['co'], $v['ki'], $v['ev'], $v['rf'], $v['dp'], $gm, $rb, $ver, time(), $id]);
+    $db->prepare('UPDATE players SET n = ?, st = ?, co = ?, ki = ?, ev = ?, rf = ?, dp = ?, gm = ?, rb = ?, ver = ?, tz = ?, lc = ?, cc = ?, at = ? WHERE id = ?')
+       ->execute([$name, $v['st'], $v['co'], $v['ki'], $v['ev'], $v['rf'], $v['dp'], $gm, $rb, $ver, $tz, $lc, $cc, time(), $id]);
     out(['ok' => true]);
   }
   if ($a === 'dput') {
