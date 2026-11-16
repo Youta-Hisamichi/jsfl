@@ -1653,11 +1653,11 @@ document.addEventListener('click', ev => {
 }
 
 // ===== 倍速（ショップの高価なアイテム）：買った速さ（×1.5・×2・×2.5・×3）をゲーム画面の ⏩ ボタンで切り替える =====
-const SPEED_STEPS = [1.5, 2, 2.5, 3]; // 1つ買うごとに速さの上限が1段上がる（💎150→300→450→600）
+const SPEED_STEPS = [1.5, 2, 2.5, 3]; // 1つ買うごとに速さの上限が1段上がる（どの段も💎50）
 if (!game.speedLv) { const old = ['speed15', 'speed20', 'speed25', 'speed30'].reduce((n, k, i) => game[k + 'Unlocked'] ? i + 1 : n, 0); if (old) game.speedLv = old; } // 前の4つに分けていた品を買っていたら引き継ぐ
 SHOP_ITEMS.speedUp = { icon: '⏩', get name() { const n = game.speedLv || 0; return n >= SPEED_STEPS.length ? `倍速 ×${SPEED_STEPS[SPEED_STEPS.length - 1]}（MAX）` : `倍速 ×${SPEED_STEPS[n]}`; },
   get desc() { const n = game.speedLv || 0; return `ゲームの速さを上げられる（×1.5→×2→×2.5→×3。ゲーム画面の ⏩ ボタンで切り替え・転生しても残る）。いま最大 ×${n ? SPEED_STEPS[n - 1] : 1}`; },
-  cost: 150, stackKey: 'speedLv', maxStack: SPEED_STEPS.length, shopCount: true };
+  cost: 50, costGrowth: 1, stackKey: 'speedLv', maxStack: SPEED_STEPS.length, shopCount: true }; // 何段目でも💎50
 function ownedSpeeds() { return [1, ...SPEED_STEPS.slice(0, Math.min(SPEED_STEPS.length, game.speedLv || 0))]; }
 function speedMult() { const s = ownedSpeeds(), v = game.speedSel || 1; return s.includes(v) ? v : 1; }
 { const orig = getEffectiveSpeed; getEffectiveSpeed = function () { return Date.now() < accelEndAt ? orig.apply(this, arguments) : gameSpeed * speedMult(); }; }
