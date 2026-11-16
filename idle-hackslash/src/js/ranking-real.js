@@ -6,7 +6,7 @@ const RANK_DAILY_PUT_MS = 60000, RANK_DUEL_CHECK_MS = 3 * 60000;
 function rankReal() { const s = rankSrv(); return !!(s && s.uid && s.rankTop); } // rankSrv：XSERVER（rank-server.js）か Firebase
 function rankEsc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function rankName() { return (cleanUserName(game.username) || '名無しの勇者'); }
-function rankMine() { return { n: rankName(), st: Math.floor(game.bestStage || 1), co: Math.floor(game.bestCoins || 0), ki: Math.floor(game.totalKills || 0), ev: +(game.evoBestMult || 0), rf: Math.floor(game.reflBestMult || 0), dp: Math.floor(game.maxDps || 0), ver: String(typeof GAME_VERSION !== 'undefined' ? GAME_VERSION : '') }; }
+function rankMine() { return { n: rankName(), st: Math.floor(game.bestStage || 1), co: Math.floor(game.bestCoins || 0), ki: Math.floor(game.totalKills || 0), ev: +(game.evoBestMult || 0), rf: Math.floor(game.reflBestMult || 0), dp: Math.floor(game.maxDps || 0), gm: Math.floor(game.gems || 0), rb: Math.floor(game.reincarnations || 0), ver: String(typeof GAME_VERSION !== 'undefined' ? GAME_VERSION : '') }; }
 function rankTodayClears() { return Math.floor(getDailyClearsForDate(rankTodayKey()) || 0); }
 let rankLastPut = '', rankLastPutAt = 0, rankLastDaily = '';
 async function rankUpload(force) { // 記録が変わっていたら送る（本日のクリア数は1分おき、ほかは5分おき・ランキングを開いたとき）
