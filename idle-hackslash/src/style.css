@@ -5431,3 +5431,6 @@ body.boss-hp .hp-row { display: none !important; }
 .arena-wrap .arena-frame { position: absolute; inset: 0; z-index: 3; pointer-events: none; border: 38px solid transparent; border-image: url(assets/img/ui/arena_frame.webp) 140 / 38px stretch; }
 /* ランキングの背景を少し暗く */
 .tab-page[data-tab="ranking"] > .artifact-panel { background: linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)), linear-gradient(180deg, rgba(20,6,6,0.05) 0px, rgba(20,6,6,0.25) 600px, rgba(20,6,6,0.75) 900px, #1a0808 1100px), url(assets/img/ui/rk/bg.webp) 50% 0 / 100% auto no-repeat, #1a0808 !important; }
+
+/* 倍速ボタンは左上（回復ポーションの下）。右上は敵の特徴やイベントの札が並ぶので重ねない */
+.speed-float { top: 44px !important; right: auto !important; left: 1% !important; }

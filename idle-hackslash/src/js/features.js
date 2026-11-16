@@ -1670,3 +1670,13 @@ function updateSpeedBtn() {
   b.style.display = ''; const m = speedMult(), h = `⏩<b>×${m}</b>`; if (b.innerHTML !== h) b.innerHTML = h; b.classList.toggle('on', m > 1);
 }
 setInterval(updateSpeedBtn, 1000);
+
+// ===== ステージ1000未満は、同時に出る敵を9体まで（分裂・呼び出しなどで増えすぎたら、出たばかりの分を出さない） =====
+function trimEnemyCap() {
+  if (game.stage >= ENEMY_CAP_UNTIL || !adds.length) return;
+  const main = balls.filter(b => !b.isPlayer && !b.isDying && b.hp > 0).length;
+  let alive = adds.filter(a => a.hp > 0).length;
+  while (main + alive > ENEMY_CAP && adds.length) { const i = adds.map(a => a.hp > 0).lastIndexOf(true); if (i < 0) break; adds.splice(i, 1); alive--; }
+}
+{ const orig = step; step = function () { const r = orig.apply(this, arguments); try { trimEnemyCap(); } catch (e) {} return r; }; }
+{ const baseDraw = draw; draw = function () { try { trimEnemyCap(); } catch (e) {} return baseDraw.apply(this, arguments); }; }

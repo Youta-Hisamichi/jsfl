@@ -22,6 +22,7 @@ function formationMembers() { const main = balls.find(b => !b.isPlayer); return 
 function spawnFormation(e, pl) {
   const f = FORMATIONS[Math.abs(game.stage) % FORMATIONS.length];
   let pts = f.slots().map(([x, y]) => [x * FORM_GAP, y * FORM_GAP]);
+  if (game.stage < ENEMY_CAP_UNTIL) pts = pts.slice(0, ENEMY_CAP); // ステージ1000未満は9体まで
   const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length, my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
   pts = pts.map(([x, y]) => [x - mx, y - my]); // 真ん中を陣形の中心に
   const r = Math.max(...pts.map(([x, y]) => Math.hypot(x, y))) + 20;

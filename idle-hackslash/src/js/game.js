@@ -1315,8 +1315,9 @@ function spawnEncircle(e, pl) {
   if (!pl) return;
   const R = Math.min(arenaHalf(), arenaHalfY()) * 0.72, base = Math.random() * Math.PI * 2;
   const cx = Math.max(arena.x - arenaHalf() + R + 18, Math.min(arena.x + arenaHalf() - R - 18, pl.x)), cy = Math.max(arena.y - arenaHalfY() + R + 18, Math.min(arena.y + arenaHalfY() - R - 18, pl.y)); // 円が画面からはみ出さないよう中心を内側へ（主人公は必ず円の中）
-  for (let i = 0; i < ENCIRCLE_COUNT; i++) {
-    const ang = base + i * Math.PI * 2 / ENCIRCLE_COUNT, ad = makeAddEnemy(e);
+  const cnt = game.stage < ENEMY_CAP_UNTIL ? ENEMY_CAP - 1 : ENCIRCLE_COUNT; // ステージ1000未満は本体と合わせて9体まで
+  for (let i = 0; i < cnt; i++) {
+    const ang = base + i * Math.PI * 2 / cnt, ad = makeAddEnemy(e);
     const p = { x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R };
     Object.assign(ad, { x: p.x, y: p.y, vx: 0, vy: 0, shape: e.shape, emoji: e.emoji, color: e.color, glow: e.glow, movementStyle: 'encircle', isEncircle: true,
       maxHp: Math.max(4, Math.round(e.maxHp * 0.12)), hp: Math.max(4, Math.round(e.maxHp * 0.12)), atk: Math.max(1, Math.round(e.atk * 0.35)), spawnTimer: 0 });
