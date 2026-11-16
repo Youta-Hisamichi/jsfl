@@ -1589,7 +1589,7 @@ function syncGachaLeftBadge(rowId, wrapSel) {
   syncGachaLeftBadge(id, sel);
 });
 
-// ===== 紋章（サブスク）の毎日ジェム：加入中は1日1回、熟練者💎8・伝説の勇者💎30（上位の紋章を持っていれば上位の分だけ） =====
+// ===== 紋章（サブスク）の毎日ジェム：加入中は1日1回、熟練者💎10・伝説の勇者💎50（上位の紋章を持っていれば上位の分だけ） =====
 function activeSubId() { return isSubActive('hero') ? 'hero' : isSubActive('veteran') ? 'veteran' : null; }
 function checkSubDailyGems() {
   const id = activeSubId(); if (!id) return;
