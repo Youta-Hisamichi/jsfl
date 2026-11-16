@@ -3,7 +3,7 @@
 // 本日のクリア数は「デッドヒート」に見せる：開いたときの順位と前回開いたときの順位を比べて↑↓（サーバーの負荷を抑えるため、開いている間の自動更新はしない）・すぐ上と下の人との差・戦闘中に抜いた/抜かれたのお知らせ・締め切りまでの残り時間・昨日の結果
 const RANK_FIELDS = { stage: 'st', coins: 'co', kills: 'ki', evo: 'ev', refl: 'rf', dps: 'dp' }, RANK_TOP_N = 50, RANK_CACHE_MS = 60000, RANK_PUT_MS = 5 * 60000;
 const RANK_DAILY_PUT_MS = 60000, RANK_DUEL_CHECK_MS = 3 * 60000;
-function rankReal() { return !!(window.fbCloud && fbCloud.uid && fbCloud.rankTop); }
+function rankReal() { const s = rankSrv(); return !!(s && s.uid && s.rankTop); } // rankSrv：XSERVER（rank-server.js）か Firebase
 function rankEsc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function rankName() { return (cleanUserName(game.username) || '名無しの勇者'); }
 function rankMine() { return { n: rankName(), st: Math.floor(game.bestStage || 1), co: Math.floor(game.bestCoins || 0), ki: Math.floor(game.totalKills || 0), ev: +(game.evoBestMult || 0), rf: Math.floor(game.reflBestMult || 0), dp: Math.floor(game.maxDps || 0), ver: String(typeof GAME_VERSION !== 'undefined' ? GAME_VERSION : '') }; }
@@ -12,16 +12,16 @@ let rankLastPut = '', rankLastPutAt = 0, rankLastDaily = '';
 async function rankUpload(force) { // 記録が変わっていたら送る（本日のクリア数は1分おき、ほかは5分おき・ランキングを開いたとき）
   if (!rankReal()) return;
   const now = Date.now(), m = rankMine(), j = JSON.stringify(m);
-  if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { await fbCloud.rankPut(m); rankLastPut = j; rankLastPutAt = now; } catch (e) { console.warn('ランキングに送れません', e); } }
+  if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { await rankSrv().rankPut(m); rankLastPut = j; rankLastPutAt = now; } catch (e) { console.warn('ランキングに送れません', e); } }
   const day = rankTodayKey(), c = rankTodayClears(), dj = day + ':' + c + ':' + m.n;
-  if (dj !== rankLastDaily) { /* まだ1つもクリアしていなくても、開いた日は0で登録する */ try { await fbCloud.dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
+  if (dj !== rankLastDaily) { /* まだ1つもクリアしていなくても、開いた日は0で登録する */ try { await rankSrv().dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
 }
 setInterval(() => rankUpload(false), RANK_DAILY_PUT_MS);
 const rankCache = {}; let rankTotal = null, rankTotalAt = 0;
 async function rankFetch(isDaily, day, field) {
   const ck = isDaily ? 'd:' + day : 'r:' + field, c = rankCache[ck];
   if (c && Date.now() - c.at < RANK_CACHE_MS) return c.list;
-  const list = isDaily ? await fbCloud.dailyTop(day, RANK_TOP_N) : await fbCloud.rankTop(field, RANK_TOP_N);
+  const list = isDaily ? await rankSrv().dailyTop(day, RANK_TOP_N) : await rankSrv().rankTop(field, RANK_TOP_N);
   rankCache[ck] = { at: Date.now(), list }; return list;
 }
 // ---- 一覧を描く（前の順位と比べて ↑↓・行がすべるように動く） ----
@@ -59,7 +59,7 @@ setInterval(() => { if (rankWatchList && getActiveTab() === 'ranking' && ranking
 function rankStopWatch() { if (rankWatchStop) { try { rankWatchStop(); } catch (e) {} } rankWatchStop = null; }
 function rankDrawLocal() { const day = getRankingDateKey(), key = 'daily|' + day, es = rankDailyEntries(rankWatchList), r = es.findIndex(e => e.isPlayer) + 1; rankDraw(key, es, { fmt: v => v + ' クリア', myScore: rankTodayClears(), myRank: r, isDaily: true, live: true }); }
 function rankDailyEntries(list) { // サーバーより手元のほうが新しいので、自分の数は手元の数にして並べ直す
-  const me = fbCloud.uid, mine = rankTodayClears();
+  const me = rankSrv().uid, mine = rankTodayClears();
   const es = list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.id === me ? Math.max(d.c || 0, mine) : (d.c || 0), isPlayer: d.id === me }));
   if (!es.some(e => e.isPlayer) && (es.length < RANK_TOP_N || mine > es[es.length - 1].score)) es.push({ id: me, name: rankEsc(rankName()), score: mine, isPlayer: true });
   es.sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : b.isPlayer ? 1 : 0)); return es.slice(0, RANK_TOP_N);
@@ -77,8 +77,8 @@ async function renderRankingReal() {
     const score = isDaily && today ? rankTodayClears() : myScore;
     let myRank = entries.findIndex(e => e.isPlayer) + 1, nearUp = null, nearDown = null;
     if (!myRank && score > 0) {
-      try { const above = await fbCloud.rankAbove(field, score, isDaily ? day : null); if (above != null) myRank = above + 1; } catch (e) {}
-      if (isDaily && fbCloud.dailyNear) { try { const nr = await fbCloud.dailyNear(day, score); const f = d => d && { id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.c || 0 }; nearUp = f(nr.up[0]); nearDown = f(nr.down[0]); } catch (e) {} }
+      try { const above = await rankSrv().rankAbove(field, score, isDaily ? day : null); if (above != null) myRank = above + 1; } catch (e) {}
+      if (isDaily && rankSrv().dailyNear) { try { const nr = await rankSrv().dailyNear(day, score); const f = d => d && { id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.c || 0 }; nearUp = f(nr.up[0]); nearDown = f(nr.down[0]); } catch (e) {} }
     }
     lastRankInfo = { rank: myRank || 0, total: entries.length, label, score: fmt(score) };
     rankDraw(key, entries, { fmt, myScore: score, myRank, isDaily, live, nearUp, nearDown });
@@ -87,8 +87,8 @@ async function renderRankingReal() {
   rankStopWatch();
   let list; try { list = await rankFetch(isDaily, day, field); } catch (e) { rankingList.innerHTML = '<div class="rank-loading">ランキングを読み込めませんでした。通信をお確かめのうえ、もう一度開いてください</div>'; return; }
   if (today) { rankWatchList = list; rankWatchKey = key; rankWatchMine = rankTodayClears(); await finish(rankDailyEntries(list), rankingList.dataset.key === key && !!rankingList.querySelector('[data-rid]')); }
-  else { const me = fbCloud.uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false); }
-  if (Date.now() - rankTotalAt > 10 * 60000) { rankTotalAt = Date.now(); try { rankTotal = await fbCloud.rankCount(); } catch (e) { rankTotal = null; } }
+  else { const me = rankSrv().uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false); }
+  if (Date.now() - rankTotalAt > 10 * 60000) { rankTotalAt = Date.now(); try { rankTotal = await rankSrv().rankCount(); } catch (e) { rankTotal = null; } }
   if (totalUserCountEl) { totalUserCountEl.style.display = rankTotal ? '' : 'none'; if (rankTotal) totalUserCountEl.textContent = `👥 ランキング参加者：${rankTotal.toLocaleString('ja-JP')} 人`; }
 }
 // ---- D：締め切りまでの残り時間 ----
@@ -105,11 +105,11 @@ setInterval(rankDeadlineTick, 1000);
 // ---- C：戦闘中に、抜いた・抜かれたをお知らせ（3分おきに、すぐ上と下の人だけ少し読む） ----
 let rankDuel = null; // { day, rank, up: id, down: id, upName, downName }
 async function rankDuelCheck() {
-  if (!rankReal() || !fbCloud.dailyNear || getActiveTab() === 'ranking') return;
+  if (!rankReal() || !rankSrv().dailyNear || getActiveTab() === 'ranking') return;
   const day = rankTodayKey(), c = rankTodayClears(); if (c <= 0) return;
   try {
     await rankUpload(false);
-    const [above, nr] = await Promise.all([fbCloud.rankAbove(null, c, day), fbCloud.dailyNear(day, c)]);
+    const [above, nr] = await Promise.all([rankSrv().rankAbove(null, c, day), rankSrv().dailyNear(day, c)]);
     if (above == null) return;
     const rank = above + 1, prev = rankDuel, name = d => rankEsc((d && d.n) || 'ライバル');
     rankDuel = { day, rank, ups: nr.up.map(d => d.id), downs: nr.down.map(d => d.id) };
@@ -126,7 +126,7 @@ async function rankYesterdayResult() {
   if (game.rankResultShown === y) return;
   const c = Math.floor(getDailyClearsForDate(y) || 0); if (c <= 0) { game.rankResultShown = y; return; }
   try {
-    const above = await fbCloud.rankAbove(null, c, y); if (above == null) return;
+    const above = await rankSrv().rankAbove(null, c, y); if (above == null) return;
     game.rankResultShown = y; saveGame(); const r = above + 1;
     simpleChoice({ icon: r <= 3 ? ['🏆', '🥈', '🥉'][r - 1] : '📅', title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
   } catch (e) {}
