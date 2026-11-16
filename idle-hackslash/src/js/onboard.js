@@ -45,16 +45,17 @@ function showTabUnlock(tab) {
 document.getElementById('tabBar').addEventListener('click', event => { // 解放前のページは開けない
   const btn = event.target.closest('.tab-btn.tab-locked'); if (!btn) return;
   event.stopImmediatePropagation(); event.preventDefault();
-  if (btn.dataset.tab === 'gemshop' && shopSecretTap()) { // ストアの審査用：解放前でも、ショップを続けて7回押すと開く（課金ページを確かめられるように）
-    if (!game.unlockedTabs.includes('gemshop')) game.unlockedTabs.push('gemshop');
-    updateTabLocks(); saveGame(); switchTab('gemshop');
-    setTimeout(() => { const c = document.querySelector('[data-shop-tab="charge"]'); if (c) c.click(); }, 100);
-    showNotice('🔓 ショップを開きました', false, 2000); return;
+  const tab = btn.dataset.tab;
+  if (tabSecretTap(tab)) { // 解放前のページも、同じボタンを続けて10回押すと開く（ストアの審査・確かめ用）
+    if (!game.unlockedTabs.includes(tab)) game.unlockedTabs.push(tab);
+    updateTabLocks(); saveGame(); switchTab(tab);
+    if (tab === 'gemshop') setTimeout(() => { const c = document.querySelector('[data-shop-tab="charge"]'); if (c) c.click(); }, 100); // ショップは課金ページを開く
+    showNotice(`🔓 ${tabLabel(tab)}を開きました`, false, 2000); return;
   }
   showTapError(`🔒 ステージ${btn.dataset.lockStage}で解放`, event.clientX, event.clientY);
 }, true);
-let shopTapN = 0, shopTapAt = 0;
-function shopSecretTap() { const now = Date.now(); shopTapN = now - shopTapAt < 1500 ? shopTapN + 1 : 1; shopTapAt = now; if (shopTapN < 7) return false; shopTapN = 0; return true; } // 前のタップから1.5秒以内に続けて7回
+const TAB_SECRET_TAPS = 10; let secretTab = '', secretTapN = 0, secretTapAt = 0;
+function tabSecretTap(tab) { const now = Date.now(); secretTapN = tab === secretTab && now - secretTapAt < 1500 ? secretTapN + 1 : 1; secretTab = tab; secretTapAt = now; if (secretTapN < TAB_SECRET_TAPS) return false; secretTapN = 0; return true; } // 同じボタンを、前のタップから1.5秒以内に続けて10回
 
 // ---- 初心者ミッション（上から順に1つずつ。達成したらタップで受け取り） ----
 function obFlag(key) { if (!game.obFlags) game.obFlags = {}; if (!game.obFlags[key]) { game.obFlags[key] = true; updateMission(); } }
