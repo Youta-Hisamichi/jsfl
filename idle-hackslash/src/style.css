@@ -5436,3 +5436,9 @@ body.boss-hp .hp-row { display: none !important; }
 .speed-float { top: auto !important; right: auto !important; left: 14% !important; bottom: calc(100% + 2px) !important; z-index: 5; padding: 2px 7px !important; font-size: 0.72rem !important; gap: 1px !important; }
 .speed-float b { font-size: 0.7rem !important; }
 .arena-wrap:has(#speedBtn:not([style*="none"])) .goal-chip { margin-left: 26px; } /* 倍速ボタンがあるときは、目標の札を少し右へ（狭い画面でも重ならない） */
+/* 倍速ボタンはもらった絵（×2・×3）。×1のときは×2の絵をうすく出す */
+.speed-float { width: 34px !important; height: 34px !important; padding: 0 !important; border: none !important; background: none !important; box-shadow: none !important; bottom: calc(100% - 6px) !important; }
+.speed-float img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+.speed-float:not(.on) img { filter: grayscale(0.85) brightness(0.8) drop-shadow(0 2px 3px rgba(0,0,0,0.6)); opacity: 0.85; }
+.speed-float.on { box-shadow: none !important; }
+.speed-float.on img { filter: drop-shadow(0 0 6px rgba(255,215,107,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }

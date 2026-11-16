@@ -1653,12 +1653,13 @@ document.addEventListener('click', ev => {
 }
 
 // ===== 倍速（ショップの高価なアイテム）：買った速さ（×1.5・×2・×2.5・×3）をゲーム画面の ⏩ ボタンで切り替える =====
-const SPEED_STEPS = [1.5, 2, 2.5, 3]; // 1つ買うごとに速さの上限が1段上がる（どの段も💎50）
-if (!game.speedLv) { const old = ['speed15', 'speed20', 'speed25', 'speed30'].reduce((n, k, i) => game[k + 'Unlocked'] ? i + 1 : n, 0); if (old) game.speedLv = old; } // 前の4つに分けていた品を買っていたら引き継ぐ
-SHOP_ITEMS.speedUp = { icon: '⏩', get name() { const n = game.speedLv || 0; return n >= SPEED_STEPS.length ? `倍速 ×${SPEED_STEPS[SPEED_STEPS.length - 1]}（MAX）` : `倍速 ×${SPEED_STEPS[n]}`; },
-  get desc() { const n = game.speedLv || 0; return `ゲームの速さを上げられる（×1.5→×2→×2.5→×3。ゲーム画面の ⏩ ボタンで切り替え・転生しても残る）。いま最大 ×${n ? SPEED_STEPS[n - 1] : 1}`; },
-  cost: 50, costGrowth: 1, stackKey: 'speedLv', maxStack: SPEED_STEPS.length, shopCount: true }; // 何段目でも💎50
-function ownedSpeeds() { return [1, ...SPEED_STEPS.slice(0, Math.min(SPEED_STEPS.length, game.speedLv || 0))]; }
+const SPEED_STEPS = [2, 3]; // 1つ買うごとに速さの上限が1段上がる（×2→×3・どの段も💎50）
+const SPEED_IMG = { 2: 'assets/img/ui/speed_x2.webp', 3: 'assets/img/ui/speed_x3.webp' };
+if (game.speedLv2 == null) { const o = game.speedLv || ['speed15', 'speed20', 'speed25', 'speed30'].reduce((n, k, i) => game[k + 'Unlocked'] ? i + 1 : n, 0); game.speedLv2 = o >= 4 ? 2 : o >= 1 ? 1 : 0; } // 前の4段（×1.5〜×3）から引き継ぐ
+SHOP_ITEMS.speedUp = { icon: '⏩', img: 'assets/img/ui/speed_x2.webp', get name() { const n = game.speedLv2 || 0; return n >= SPEED_STEPS.length ? `倍速 ×${SPEED_STEPS[SPEED_STEPS.length - 1]}（MAX）` : `倍速 ×${SPEED_STEPS[n]}`; },
+  get desc() { const n = game.speedLv2 || 0; return `ゲームの速さを上げられる（×2→×3。ゲーム画面の ⏩ ボタンで切り替え・転生しても残る）。いま最大 ×${n ? SPEED_STEPS[n - 1] : 1}`; },
+  cost: 50, costGrowth: 1, stackKey: 'speedLv2', maxStack: SPEED_STEPS.length, shopCount: true }; // 何段目でも💎50
+function ownedSpeeds() { return [1, ...SPEED_STEPS.slice(0, Math.min(SPEED_STEPS.length, game.speedLv2 || 0))]; }
 function speedMult() { const s = ownedSpeeds(), v = game.speedSel || 1; return s.includes(v) ? v : 1; }
 { const orig = getEffectiveSpeed; getEffectiveSpeed = function () { return Date.now() < accelEndAt ? orig.apply(this, arguments) : gameSpeed * speedMult(); }; }
 function updateSpeedBtn() {
@@ -1667,7 +1668,7 @@ function updateSpeedBtn() {
   if (owned.length <= 1) { if (b) b.style.display = 'none'; return; }
   if (!b) { b = document.createElement('button'); b.id = 'speedBtn'; b.className = 'speed-float'; wrap.appendChild(b);
     b.addEventListener('click', ev => { ev.stopPropagation(); const s = ownedSpeeds(), i = s.indexOf(speedMult()); game.speedSel = s[(i + 1) % s.length]; saveGame(); updateSpeedBtn(); showNotice(`⏩ ゲームの速さ ×${game.speedSel}`, false, 1400); try { playTone(700 + game.speedSel * 120, 0.06, 'square', 0.05); } catch (e) {} }); }
-  b.style.display = ''; const m = speedMult(), h = `⏩<b>×${m}</b>`; if (b.innerHTML !== h) b.innerHTML = h; b.classList.toggle('on', m > 1);
+  b.style.display = ''; const m = speedMult(), h = `<img src="${SPEED_IMG[m] || SPEED_IMG[2]}" alt="×${m}">`; if (b.innerHTML !== h) b.innerHTML = h; b.classList.toggle('on', m > 1); b.title = m > 1 ? `ゲームの速さ ×${m}` : 'ゲームの速さ ×1（押すと速くなる）';
 }
 setInterval(updateSpeedBtn, 1000);
 
