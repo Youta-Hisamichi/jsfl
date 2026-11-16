@@ -125,7 +125,7 @@ $vis = '(p.ban = 0 OR (p.ban = 2 AND p.id = ?))'; // 一覧に出してよい人
 $pub = fn($r) => array_merge($r, ['id' => substr($r['id'], 0, 12)]); // 他人の id は先頭だけ見せる（自分かどうかの見分けにはこれで足りる）
 if ($a === 'top') {
   $f = field($_GET['f'] ?? ''); $n = limitN($_GET['n'] ?? 50);
-  $st = $db->prepare("SELECT p.id, p.n, p.st, p.co, p.ki, p.ev, p.rf, p.dp FROM players p WHERE $vis ORDER BY p.$f DESC, p.at ASC LIMIT $n"); $st->execute([$me]); $rows = $st->fetchAll();
+  $st = $db->prepare("SELECT p.id, p.n, p.st, p.co, p.ki, p.ev, p.rf, p.dp FROM players p WHERE p.$f > 0 AND $vis ORDER BY p.$f DESC, p.at ASC LIMIT $n"); /* 記録が0（まだやっていない）の人は並べない */ $st->execute([$me]); $rows = $st->fetchAll();
   out(['ok' => true, 'list' => array_map($pub, $rows)]);
 }
 if ($a === 'dtop') {

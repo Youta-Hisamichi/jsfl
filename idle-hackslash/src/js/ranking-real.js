@@ -49,7 +49,7 @@ function rankDraw(key, entries, opt) {
     return wall + `<div class="rank-row ${cls} ${entry.isPlayer ? 'me' : ''}" data-rid="${rankEsc(entry.id)}"><span class="rank-no">${no}</span><span class="rank-name">${mv}${entry.name}</span><span class="rank-score">${fmt(entry.score)}</span></div>` + (entry.isPlayer ? gap : '');
   }).join('');
   if (myIdx < 0) html += `<div class="rank-row me"><span class="rank-no">${myRank ? `${formatCoinNumber(myRank)}<small>位</small>` : '圏外'}</span><span class="rank-name">${rankEsc(rankName())}</span><span class="rank-score">${fmt(myScore)}</span></div>` + gap;
-  if (!entries.length) html = `<div class="rank-loading">${isDaily ? 'この日の記録はまだありません' : 'まだ記録がありません'}</div>` + html;
+  if (!entries.length && !(myScore > 0)) html = `<div class="rank-loading">${isDaily ? 'この日の記録はまだありません' : 'まだ記録がありません'}</div>` + html;
   const before = {}; rankingList.querySelectorAll('[data-rid]').forEach(el => { before[el.dataset.rid] = el.getBoundingClientRect().top; });
   rankingList.innerHTML = html;
   if (live) rankingList.querySelectorAll('[data-rid]').forEach(el => { const t0 = before[el.dataset.rid]; if (t0 == null) return; const d = t0 - el.getBoundingClientRect().top; if (Math.abs(d) < 2) return; // A：入れ替わった行がすべって動く

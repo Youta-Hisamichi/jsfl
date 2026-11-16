@@ -3870,3 +3870,9 @@ function openDbgFullPage(title, sub, html, setup) {
   const mo = new MutationObserver(() => { if (inp.value) apply(); }); // 「最近使った」を作り直したときも絞り込みを保つ
   const row = document.getElementById('debugRow'); if (row) mo.observe(row, { childList: true });
 })();
+
+// iPhone：入力が終わったら、入力中にずれた画面の位置を元に戻す（拡大・スクロールが残らないように）
+document.addEventListener('focusout', e => {
+  if (!e.target.matches || !e.target.matches('input, textarea, select')) return;
+  setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('input, textarea, select')) window.scrollTo(0, 0); }, 80);
+});

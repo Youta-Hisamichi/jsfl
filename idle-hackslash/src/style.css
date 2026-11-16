@@ -5457,3 +5457,5 @@ body.boss-hp .hp-row { display: none !important; }
 /* ランキング上部の総ユーザー数 */
 .tab-page[data-tab="ranking"] .rank-total { text-align: center; margin: 0 0 8px; padding: 6px 10px; border-radius: 10px; background: rgba(20, 14, 6, 0.72); border: 1px solid rgba(255, 210, 120, 0.45); color: #fff; font-size: 0.9rem; font-weight: 800; text-shadow: 0 1px 2px #000; }
 .tab-page[data-tab="ranking"] .rank-total b { color: #ffd76b; font-size: 1.25em; margin: 0 2px; }
+/* iPhone は文字が16pxより小さい入力欄を押すと画面を拡大してしまう（戻らない）ので、入力欄の文字は16px以上にする */
+input[type="text"], input[type="search"], input[type="number"], input[type="date"], input:not([type]), textarea, select { font-size: max(16px, 1em) !important; }
