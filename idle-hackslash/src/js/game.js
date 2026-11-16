@@ -752,10 +752,13 @@ function showBossContModal(reason) {
   if (getActiveTab() !== 'game') { deferredGameOver = { kind: 'cont', reason }; return; } // 他のページでは出さない
   document.getElementById('bossContTitle').innerHTML = reason === 'time' ? '<img class="go3-ti" src="assets/img/ui/go3/clock.webp" alt="">時間切れ…' : '<img class="go3-ti" src="assets/img/ui/go2/skull.webp" alt="">ボスに敗北…';
   document.getElementById('bossContText').innerHTML = typeof bossAdviceHtml === 'function' ? go3AdviceHtml(bossAdviceHtml(reason)) : '';
-  document.getElementById('bossContAdBtn').innerHTML = `<span class="go-ad-text">${isAdFree() ? '紋章特典でコンテニュー' : '動画を見てコンテニュー'}<small>1回まで</small></span>`;
+  document.getElementById('bossContAdBtn').innerHTML = isAdFree() ? '<span class="go-ad-text">紋章特典でコンテニュー<small>1回まで</small></span>' : '';
   document.getElementById('bossContAdBtn').style.display = '';
-  document.getElementById('bossContGiveUpBtn').innerHTML = '<span class="msb-name">あきらめる</span>';
-  document.getElementById('bossContRebornBtn').style.display = (dbgContReborn ?? (game.stage >= GAMEOVER_REBORN_STAGE && isRebornUnlocked())) ? '' : 'none'; dbgContReborn = null; // ステージ100以上なら転生も選べる
+  const rb = !!(dbgContReborn ?? (game.stage >= GAMEOVER_REBORN_STAGE && isRebornUnlocked())); dbgContReborn = null; // ステージ100以上なら転生も選べる
+  document.getElementById('bossContRebornBtn').style.display = rb ? '' : 'none';
+  const panel = document.getElementById('go4Panel'); // 転生ボタンのあるなしで下地の絵を替える（ボタンの文字は絵に描いてある）
+  panel.classList.toggle('rb', rb); panel.classList.toggle('time', reason === 'time'); panel.classList.toggle('adfree', isAdFree());
+  document.getElementById('go4Bg').src = rb ? 'assets/img/ui/go4/base_rb.webp' : 'assets/img/ui/go4/base.webp';
   bossContModal.classList.add('show'); refreshBgm(); requestAnimationFrame(fitGo3Advice);
   startBossContCountdown();
 }
