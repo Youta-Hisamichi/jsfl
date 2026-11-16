@@ -5427,3 +5427,7 @@ body.boss-hp .hp-row { display: none !important; }
 .speed-float { position: absolute; top: 1%; right: 1%; z-index: 4; display: flex; align-items: center; gap: 2px; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #8fd0ff; background: rgba(8,12,28,0.78); color: #cfe9ff; font-size: 0.95rem; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
 .speed-float b { font-size: 0.78rem; }
 .speed-float.on { border-color: #ffd76b; color: #ffe27a; box-shadow: 0 0 10px rgba(255,215,107,0.6); }
+/* ゲーム画面の金の枠（もらった絵を9分割で四隅の飾りを崩さずに伸ばす） */
+.arena-wrap .arena-frame { position: absolute; inset: 0; z-index: 3; pointer-events: none; border: 38px solid transparent; border-image: url(assets/img/ui/arena_frame.webp) 140 / 38px stretch; }
+/* ランキングの背景を少し暗く */
+.tab-page[data-tab="ranking"] > .artifact-panel { background: linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)), linear-gradient(180deg, rgba(20,6,6,0.05) 0px, rgba(20,6,6,0.25) 600px, rgba(20,6,6,0.75) 900px, #1a0808 1100px), url(assets/img/ui/rk/bg.webp) 50% 0 / 100% auto no-repeat, #1a0808 !important; }
