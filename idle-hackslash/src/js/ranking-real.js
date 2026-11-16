@@ -97,7 +97,12 @@ async function renderRankingReal() {
   rankStopWatch();
   let list; try { list = await rankFetch(isDaily, day, field); } catch (e) { rankingList.innerHTML = '<div class="rank-loading">ランキングを読み込めませんでした。通信をお確かめのうえ、もう一度開いてください</div>'; return; }
   if (today) { rankWatchList = list; rankWatchKey = key; rankWatchMine = rankTodayClears(); await finish(rankDailyEntries(list), rankingList.dataset.key === key && !!rankingList.querySelector('[data-rid]')); }
-  else { const me = rankSrv().uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false); }
+  else {
+    const me = rankSrv().uid, es = list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me }));
+    // 自分が一覧に入っていない（記録0で並ばない・送る前）とき、一覧に空きがあって自分の記録が一番下以上なら、ふつうの行として順位どおりに入れる
+    if (!es.some(e => e.isPlayer) && !isDaily && (es.length < RANK_TOP_N || myScore >= es[es.length - 1].score)) { es.push({ id: me, name: rankEsc(rankName()), score: myScore, isPlayer: true }); es.sort((a, b) => b.score - a.score || (a.isPlayer ? 1 : b.isPlayer ? -1 : 0)); }
+    await finish(es.slice(0, RANK_TOP_N), false);
+  }
 }
 // ---- D：締め切りまでの残り時間 ----
 function rankDeadlineTick() {
