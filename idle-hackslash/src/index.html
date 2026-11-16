@@ -121,7 +121,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
         <img class="stage-mark stage-mark-player" id="stagePlayerMark" alt="">
       </div>
       </div>
-      <div class="lv-row"><span class="lv-badge">Lv.<b id="pLvNum">1</b></span><div class="lv-track"><div class="lv-fill" id="pLvFill"></div></div><span class="lv-text" id="pLvText">0 / 45</span></div>
     </div>
     <div class="stage-side-slot"><!-- ステージ進捗バーの右：ボス再戦・リタイヤ -->
       <div class="stage-side-txt"><span id="stageToBoss">ボスまで</span><span id="stageProgressText">1/10</span></div><!-- ボスまでの残り（ボタンが出ているときは隠す） -->
@@ -207,7 +206,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 
     <div class="debug-panel" id="debugPanel" style="display:none;">
     <div class="debug-row" id="debugRow">
-      <div class="debug-cat">🛠 管理</div><button data-debug="subExpire">⌛ 紋章を期限切れにする</button><button data-debug="androidBuild">📦 Android ビルド（GitHub で APK を作る）</button><button data-debug="admobTest">🎬 AdMob リワード動画テスト</button><button data-debug="reflFormula">🔮 反射玉のダメージ式</button><button data-debug="firstBossGift">🎁 初ボス撃破のウインドウ</button><button data-debug="reflTwo">🪞 ダブル反射玉 所持ON/OFF</button><button data-debug="bondInfo">🤝 絆・恩恵の一覧</button><button data-debug="graceAdd">🌈 恩恵・絆アイテム +100ずつ</button><button data-debug="skillUnlockAll">🔓 スキルを全部解放／戻す</button><button data-debug="rbChest">🎁 転生の宝箱をもらう</button><button data-debug="clockInfo">🕰 時計のチェック</button><button data-debug="adminConsole">🛠 管理画面（アクセスログ）</button><button data-debug="notifySchedule">🔔 通知の予定（いま閉じたら）</button>
+      <div class="debug-cat">🛠 管理</div><button data-debug="subExpire">⌛ 紋章を期限切れにする</button><button data-debug="androidBuild">📦 Android ビルド（GitHub で APK を作る）</button><button data-debug="admobTest">🎬 AdMob リワード動画テスト</button><button data-debug="reflFormula">🔮 反射玉のダメージ式</button><button data-debug="firstBossGift">🎁 初ボス撃破のウインドウ</button><button data-debug="bondInfo">🤝 絆・恩恵の一覧</button><button data-debug="graceAdd">🌈 恩恵・絆アイテム +100ずつ</button><button data-debug="skillUnlockAll">🔓 スキルを全部解放／戻す</button><button data-debug="rbChest">🎁 転生の宝箱をもらう</button><button data-debug="clockInfo">🕰 時計のチェック</button><button data-debug="adminConsole">🛠 管理画面（アクセスログ）</button><button data-debug="notifySchedule">🔔 通知の予定（いま閉じたら）</button>
       <div class="debug-cat">📚 一覧</div><button data-debug="compList">🐾 全仲間の概要</button><button data-debug="evoFormula">🧬 進化の概要と計算式</button>
       <div class="debug-cat">🧪 スキル</div><button data-debug="allSkills">🧪 スキル・自動スキルを全部出す</button><button data-debug="mysteryList">❓ 謎魔法の一覧</button><button data-debug="meteorResist">☄️ 次のボスをメテオ耐性に（ON/OFF）</button><span id="dbgWeaponBtns" class="dbg-inline"></span>
       <div class="debug-cat">🌈 反射玉</div><button data-debug="reflStart2">⏫ 反射の初期値上昇 所持ON/OFF</button>
@@ -234,7 +233,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="debug-cat">🎁 宝箱（押すと+5個）</div>
       <button data-debug="chest:common">★1 N +5</button><button data-debug="chest:rare">★2 R +5</button><button data-debug="chest:epic">★3 SR +5</button><button data-debug="chest:legendary">★4 SSR +5</button><button data-debug="chest:mythic">★5 UR +5</button><button data-debug="chestClear">🗑 宝箱を全部消す</button>
       <div class="debug-cat">📖 図鑑（戦績ページ）</div>
-      <button data-debug="bookAll">📖 キャラと曲を全開放</button><button data-debug="artifactAll">🏺 遺物コンプ</button><button data-debug="companionUnlockAll">🐾 仲間を全開放</button><button data-debug="facingList">↔️ 向きを変えない敵一覧</button><button data-debug="anniv">📅 記念日一覧</button><button data-debug="friendCode">👥 挑戦状テストコード</button>
+      <button data-debug="bookAll">📖 キャラと曲を全開放</button><button data-debug="artifactAll">🏺 遺物コンプ</button><button data-debug="companionUnlockAll">🐾 仲間を全開放</button><button data-debug="facingList">↔️ 向きを変えない敵一覧</button><button data-debug="anniv">📅 記念日一覧</button>
       <div class="debug-cat">💀 ボス敗北画面</div>
       <button data-debug="bossCont">💀 コンテニュー画面（転生なし）</button><button data-debug="bossContReborn">💀 コンテニュー画面（転生あり）</button><button data-debug="bossContFinal">💀 再敗北画面</button>
       <div class="debug-cat">🗺️ ステージ・敵</div>
@@ -245,8 +244,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="dbg-mon-bar"><span id="dbgMonSel">画像をタップして選択</span><button id="dbgMonShow">▶ 出現</button><button id="dbgFilmBtn">🎬 撮影モード</button><button id="dbgMonDel">🗑 削除</button><button id="dbgMonRestore">↩ 全部戻す</button><button id="dbgMonCopy">📋 削除リストをコピー</button></div>
       </div>
       <textarea id="dbgMonList" class="dbg-mon-list" readonly style="display:none"></textarea>
-      <div class="debug-cat">🎲 3択パワーアップ一覧（押すとその場で取得）</div>
-      <div class="dbg-pu" id="dbgPuGrid"></div>
       <button class="debug-cat dbg-fold" id="debugEnemyCat">👾 特殊な敵（押すと出現） <b id="dbgEnemyFoldMark">▼ 開く</b></button>
       <div class="dbg-fold-wrap" id="dbgEnemyWrap"></div>
       <button class="debug-cat dbg-fold" id="dbgObsCat">🪨 障害物（押すと出現） <b id="dbgObsFoldMark">▼ 開く</b></button>
@@ -491,20 +488,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   <button class="tab-btn" data-tab="gacha"><span class="tab-icon">🎰</span><span class="tab-label" data-i18n="tabGacha">進化</span></button>
   <button class="tab-btn" data-tab="records"><span class="tab-icon">📊</span><span class="tab-label" data-i18n="tabRecords">戦績</span></button>
   <button class="tab-btn" data-tab="ranking"><span class="tab-icon">🏆</span><span class="tab-label" data-i18n="tabRanking">ランキング</span></button>
-</div>
-
-<div class="modal-overlay" id="powerUpModal" style="z-index:72;">
-  <div class="modal-panel pu-panel">
-    <div class="pu-title">⚡ パワーアップ！</div>
-    <div class="pu-sub">ひとつ選んでください</div>
-    <div class="pu-list" id="powerUpList"></div>
-    <div class="pu-actions">
-      <button class="pu-act all" id="puAllBtn"></button>
-      <button class="pu-act" id="puRerollBtn"></button>
-      <button class="pu-act" id="puSlotBtn"></button>
-    </div>
-    <div class="pu-timer" id="puTimer"></div>
-  </div>
 </div>
 
 <div class="modal-overlay tw2" id="stageSkipModal"><!-- tw2：もらった塔の絵（page_bg）を下地に、文字やボタンだけを重ねる -->
@@ -803,7 +786,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
 <script src="js/review.js"></script>
 <script src="js/rare.js"></script>
 <script src="js/opening.js"></script>
-<script src="js/market.js"></script>
 <script src="js/compensate.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/firebase-config.js"></script>

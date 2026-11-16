@@ -1243,7 +1243,6 @@ function buildGemSourceList() {
   row('動画を見る（ショップなどの動画ボタン）', `💎${REWARD_AD_GEMS}`, '見たあと5分待つ。紋章加入中は動画なし');
   row('シェアする', `💎${SHARE_REWARD_GEMS}`, '1日1回');
   row('レビューで応援する', '💎10', '1回だけ');
-  row('株（属性相場）', '羽・種', 'ジェムでは戻らない。翌日に値動きに合わせた数の羽ガチャ・種');
   row('最終目標ステージ100万に到達', '💎100', '1回だけ');
   sec('💳 課金ショップ');
   for (const id in SUPERGEM_SHOP_ITEMS) { const it = SUPERGEM_SHOP_ITEMS[id]; row(it.name, it.desc.replace('ジェム +', '💎'), `${it.cost}円`); }

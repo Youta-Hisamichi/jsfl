@@ -770,14 +770,10 @@ function overHealMult(n = overHealCount()) { return Math.min(OVERHEAL_CAP, 1 + O
 function overHealOn() { return overHealCount() > 0; }
 function healCap(p) { return p.maxHp * overHealMult(); }
 SHOP_ITEMS.overHeal = { icon: '💖', img: 'assets/img/icons/shop_overHeal.webp', name: '回復限界突破', get desc() { return `最大HPを超えて回復できる。+${OVERHEAL_STEP}倍。現在${+overHealMult().toFixed(1)}倍`; }, cost: 5, stackKey: 'overHealBuys', maxStack: OVERHEAL_MAX_BUYS, shopCount: true }; // 💎5→10→15…と5ずつ高くなる
-// 反射MAX維持は削除
-const REFL_KEEP_MS = 500; function reflKeepCount() { return 0; } function reflKeepSecText(k) { return String(k * REFL_KEEP_MS / 1000); }
 // 反射玉の上がり方：反射するたびに +1（上限なし）。ショップの「反射上昇アップ」「反射MAXアップ」「タックル反射ブースト」は削除
 const REFL_STEP_BASE = 1;
 function reflStep() { return REFL_STEP_BASE; }
 function reflRound(v) { return Math.round(v * 100) / 100; } // 0.1・1.25 などの端数が、計算のずれで 0.30000…4 にならないように
-// ダブル反射玉は、いったんショップから外す（デバッグでは今までどおり切り替えられる）
-// SHOP_ITEMS.refl2 = { icon: '🪞', img: 'assets/img/icons/shop_refl2.webp', name: 'ダブル反射玉', desc: '反射玉がステージに2つ置かれる。それぞれ別々に数値が増え、別々に敵に当たる（転生しても残る）', cost: 100, unlockKey: 'reflTwo' };
 SHOP_ITEMS.upMax = { icon: '⏫', name: 'MAXLvUPボタン', desc: '所持コインで可能なMAXLvまで、一気にLvUPできるボタンを解放', cost: 10, unlockKey: 'upMaxUnlocked' };
 // オートLvUP（ショップの品）は削除済み
 SHOP_ITEMS.reborn = { icon: '🌌', name: '転生チケット', get desc() { return `次で<b>${((game && game.reincarnations) || 0) + 1}回目</b>の転生。ステージ1からやり直す代わりに、ずっと強くなる転生ボーナス・ジェム・進化の羽がもらえる`; }, rebirth: true };
@@ -1166,7 +1162,7 @@ const COMPANION_IDS = Object.keys(COMPANIONS);
 const ELEMENTS = { fire: { icon: '🔥', name: '炎', color: '#ff6b4a' }, water: { icon: '💧', name: '水', color: '#3aa8ff' }, grass: { icon: '🌿', name: '草', color: '#3cbf5f' } };
 const ELEMENT_BEATS = { fire: 'grass', grass: 'water', water: 'fire' };
 const ELEMENT_ADV = 2, ELEMENT_DIS = 0.5;
-const ELEMENTS_ON = false; // 属性はいったん停止中（相性の補正・表示・属性相場を出さない）。true で元に戻る
+const ELEMENTS_ON = false; // 属性はいったん停止中（相性の補正・表示を出さない）。属性相場（株）は削除した
 let lastElementHitAt = 0;
 function noteElementHit(attEl, target) { // 有利な属性で当てたら「属性ダメージ良好！」（出しすぎないよう少し間をあける）
   if (!ELEMENTS_ON || !target || elementMult(attEl, getEnemyElement(target)) <= 1) return;

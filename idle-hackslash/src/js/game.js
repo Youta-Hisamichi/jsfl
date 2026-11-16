@@ -13,7 +13,6 @@ function step() {
   tickRampage(speedMult);
   updateWeapons(a, speedMult);
   if (typeof tickMovingObstacles === 'function') tickMovingObstacles(speedMult); // ビリヤードのように飛んでいく障害物
-  updateExpGems(speedMult);
   const foeEl = getFoeElement(); syncElementAtk(foeEl);
   a.atk = Math.max(1, Math.round(getPlayerAtk() * elementMult(getHeroElement(), foeEl))); // 加速中ボーナス等を毎フレーム反映（自キャラの属性の相性込み）
   a.inPinch = (b.pinchAtk > 0 || getEvoRate('pinch') > 1) && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
@@ -546,8 +545,7 @@ function onStageClear(passed) {
   if (isBossStage) { playBossClearSound(); showBossClearFx(game.stage); dbgBgmOverride = null; nextNormalBgm(); if (!isBossFirstRound(game.stage)) nextBossBgm(); } else if (!(game.bossLoop && game.stage === game.bossLoop - 1)) playStageClearSound(); // ループ中は鳴らさない // ボスを倒したら通常戦闘BGMを次の曲へ
   const richDrop = isBossStage || isMetal || giantKill || isSwarmStage(game.stage);
   spawnCoinBurst(arena.x, arena.y - 10, coinGain, richDrop ? 9 : 3);
-  if (isBossStage) spawnDamageText(arena.x, arena.y, `+${5 * (msBoss ? msBoss.reward : 1)} 💎`, '#64e8ff');
-  else if (game.stage <= EARLY_CHEST_STAGE && Math.random() < EARLY_KILL_CHEST_CHANCE) setTimeout(() => dropTreasureChest(), 700); // 序盤は雑魚からもたまに宝箱
+  if (!isBossStage && game.stage <= EARLY_CHEST_STAGE && Math.random() < EARLY_KILL_CHEST_CHANCE) setTimeout(() => dropTreasureChest(), 700); // 序盤は雑魚からもたまに宝箱
   if (isBossStage && Math.random() < 0.35) {
     setTimeout(() => dropTreasureChest(), 3300); // ボス撃破のお祝い演出が終わってから
   }
@@ -559,7 +557,6 @@ function onStageClear(passed) {
   if (isBossStage && defeated) markBossBeaten(defeated.emoji); if (isBossStage && defeated) rollForbiddenDrop(); // 禁断シリーズのドロップ // 倒したボスを記録（塔のボスも通常ボスとして出るように）
   game.totalKills++;
   if (typeof featureOnKill === 'function') featureOnKill(isBossStage);
-  checkPowerUp(isBossStage);
   countDailyClear(); // 本日のクリア数（セーブとは別に端末で記録）
   resetCombo();
   advanceStage(false, isBossStage);
@@ -1098,11 +1095,7 @@ function completeReincarnation() {
   const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
   const compGachaStage = game.stage; // 仲間ガチャのレア率はステージを戻す前の到達ステージで決める
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
-  game.pLv = 1; game.pExp = 0; expGems = []; // レベルは周回ごと
-  game.puSlots = 0; // 3択の追加枠も転生まで
   game.skillSlots = 2; game.weaponSlots = 1; game.companionSlots = 1; // スキル・サブウェポン・パーティの枠も転生でリセット
-  if (!document.getElementById('powerUpModal').classList.contains('show')) powerUpPending = false;
-  renderLvGauge(); // ゲージの長さもすぐ0に戻す
   coinFx = []; coinDisplayHold = 0; pendingChestCoins = 0; pendingChestCoinPts = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };

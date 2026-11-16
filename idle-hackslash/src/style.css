@@ -2429,7 +2429,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .ft-eff { margin: 8px 0; font-weight: 900; color: #7ee787; font-size: 0.86rem; }
 .ft-share { width: 100%; margin-bottom: 6px; }
 /* フレンドの挑戦状 */
-.friend-box { margin: 0 0 10px; padding: 8px 10px; border-radius: 12px; background: rgba(20,24,48,0.55); border: 1px solid rgba(100,232,255,0.4); color: #e8ecf8; }
 .fb-title { font-weight: 900; color: #64e8ff; font-size: 0.86rem; margin-bottom: 4px; }
 .fb-my { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 0.7rem; }
 .fb-my code { flex: 1 1 100%; padding: 4px 6px; border-radius: 6px; background: rgba(0,0,0,0.35); font-size: 0.66rem; word-break: break-all; user-select: all; }
@@ -2768,7 +2767,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .tab-page[data-tab="records"] .rec-tabs .sub-tab-btn.active, .tab-page[data-tab="ranking"] .gacha-actions.rank-tabs .rank-tab-btn.gacha-pull.active { background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat !important; color: #fff !important; }
 .tab-page[data-tab="records"] .record-panel { border: 14px solid transparent !important; border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: linear-gradient(180deg, #f5e9cc, #e8d6ac) padding-box !important; box-shadow: none !important; padding: 4px !important; }
 .tab-page[data-tab="ranking"] #totalUserCount { background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat !important; color: #fff !important; font-weight: 800; padding: 10px !important; }
-.tab-page[data-tab="ranking"] .friend-box { border: 14px solid transparent !important; border-image: url(assets/img/ui/comp/card.webp) 30 fill / 14px stretch !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; padding: 2px 4px !important; }
 /* 仲間・進化・戦績・ランキングのセリフ枠はショップと同じ吹き出し（skill/plate.webp） */
 .tab-page[data-tab="companion"] .shopkeeper .sk-bubble, .tab-page[data-tab="gacha"] .shopkeeper .sk-bubble, .tab-page[data-tab="records"] .shopkeeper .sk-bubble, .tab-page[data-tab="ranking"] .shopkeeper .sk-bubble { min-height: 44px; padding: 7px 16px 8px 22px; background: url(assets/img/ui/skill/plate.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="companion"] .shopkeeper .sk-name, .tab-page[data-tab="gacha"] .shopkeeper .sk-name, .tab-page[data-tab="records"] .shopkeeper .sk-name, .tab-page[data-tab="ranking"] .shopkeeper .sk-name { position: static; display: block; font-size: 0.72rem; }
@@ -2785,30 +2783,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 @keyframes clCnt { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @keyframes clCntDone { 0% { transform: scale(1.6); } 100% { transform: scale(1); } }
 /* ===== 属性相場 ===== */
-.mkt-entry { display: flex; flex-direction: column; align-items: center; width: 100%; margin: 0 0 8px; padding: 8px; border: none; border-radius: 0; aspect-ratio: auto; background: url(assets/img/ui/comp/btn.webp) center / 100% 100% no-repeat; color: #fff; font-size: 0.95rem; font-weight: 900; text-shadow: 0 1px 2px #000; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-.mkt-entry small { font-size: 0.68rem; color: #ffe08a; }
-.mkt-panel { width: min(400px, 96vw); max-width: none; max-height: 90vh; overflow-y: auto; text-align: left; border: 14px solid transparent !important; border-image: url(assets/img/ui/comp/card.webp) 30 fill / 14px stretch !important; background: none !important; color: #e8ecf6; padding: 4px 6px !important; }
-.mkt-title { text-align: center; font-size: 1.15rem; font-weight: 900; color: #ffd76b; text-shadow: 0 2px 3px #000; }
-.mkt-lead { font-size: 0.7rem; line-height: 1.5; margin: 4px 0 6px; color: #c8d0e6; }
-.mkt-lead b { color: #ffd76b; }
-.mkt-settle { margin: 0 0 6px; padding: 6px 8px; border-radius: 8px; background: rgba(255,215,107,0.12); border: 1px solid #c99a3a; font-size: 0.72rem; }
-.mkt-head { display: grid; grid-template-columns: 52px 1fr 70px 58px; gap: 4px; font-size: 0.6rem; color: #9aa6c8; padding: 0 4px; }
-.mkt-row { display: grid; grid-template-columns: 52px 1fr 70px 58px; grid-template-rows: auto auto; gap: 2px 4px; align-items: center; margin: 4px 0; padding: 6px 4px; border-radius: 8px; background: linear-gradient(180deg, #16234a, #0c142e); border: 1.5px solid color-mix(in srgb, var(--ec) 60%, #c99a3a); }
-.mkt-name { display: flex; flex-direction: column; align-items: center; font-size: 1.1rem; line-height: 1.1; }
-.mkt-name b { font-size: 0.7rem; }
-.mkt-share small { font-size: 0.6rem; color: #c8d0e6; } .mkt-share small b { color: #fff; }
-.mkt-bar { height: 6px; border-radius: 3px; background: rgba(0,0,0,0.5); overflow: hidden; margin-bottom: 2px; } .mkt-bar.y { height: 4px; opacity: 0.8; }
-.mkt-bar i { display: block; height: 100%; }
-.mkt-price { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
-.mkt-price b { font-size: 1rem; } .mkt-spark { width: 64px; height: 18px; }
-.mkt-eff { font-size: 0.68rem; font-weight: 900; text-align: center; }
-.mkt-panel .up { color: #7ee787; } .mkt-panel .dn { color: #ff8a8a; }
-.mkt-buy { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-.mkt-buy button { padding: 2px 10px; border-radius: 6px; background: linear-gradient(180deg, #1f3a7a, #0e1d48); border: 1.5px solid #c99a3a; color: #fff; font-weight: 900; font-size: 0.72rem; cursor: pointer; }
-.mkt-hold { margin-right: auto; font-size: 0.7rem; font-weight: 900; color: #ffd76b; }
-.mkt-news { margin: 8px 0 4px; padding: 6px 8px; border-radius: 8px; background: rgba(255,248,226,0.08); border: 1px solid rgba(201,154,58,0.6); font-size: 0.7rem; line-height: 1.6; }
-.mkt-news > b { color: #ffd76b; } .mkt-news small { display: block; color: #9aa6c8; font-size: 0.6rem; }
-.mkt-me, .mkt-rule { font-size: 0.66rem; line-height: 1.5; color: #c8d0e6; margin: 4px 0; } .mkt-me small { color: #9aa6c8; } .mkt-rule b { color: #ffd76b; }
 /* 転生ルールのチップは宝箱と重ならないよう右上（イベントボタンの下）へ */
 .run-rule-chip { left: auto !important; right: 6px; top: 30px !important; }
 .arena-wrap:has(#runRuleChip:not([style*="none"])) .enemy-trait-badge { top: 54px; }
@@ -2932,7 +2906,6 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .tab-page[data-tab="ranking"] #totalUserCount { position: relative; isolation: isolate; background: none !important; }
 .tab-page[data-tab="ranking"] #totalUserCount::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url(assets/img/ui/comp/pill2.webp) center / 100% 100% no-repeat; opacity: 0.6; }
 .tab-page[data-tab="ranking"] #rankingTitle, .tab-page[data-tab="ranking"] #rankDateNav { background: rgba(10,8,20,0.5) !important; }
-.tab-page[data-tab="ranking"] .friend-box { border-image: url(assets/img/ui/comp/card.webp) 30 / 14px stretch !important; background: rgba(10,10,30,0.5) padding-box !important; }
 /* 進化ページの背景：浮かぶ大水晶の祭壇（ページ全体に敷き、暗くするのは控えめに） */
 .tab-page[data-tab="gacha"] > .artifact-panel { background: linear-gradient(180deg, rgba(10,4,20,0.62), rgba(10,4,20,0.74)), url(assets/img/ui/rb/evo_bg.webp) 50% 0 / cover no-repeat, #120a1e !important; border-color: #6a4a9a !important; }
 /* スキルページの背景：緑の錬金術の塔 */
@@ -3589,9 +3562,6 @@ body .tab-page[data-tab="ranking"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 .tab-page[data-tab="ranking"] #rankDateNav > button:disabled, .tab-page[data-tab="ranking"] #rankDateNav > button.is-disabled { filter: grayscale(0.8) brightness(0.7); }
 .tab-page[data-tab="ranking"] #rankDateLabel { width: 30%; aspect-ratio: 204 / 65; display: flex; align-items: center; justify-content: center; background: url(assets/img/ui/rk/nav_mid.webp) center / 100% 100% no-repeat; color: #fff !important; font-size: 0.9rem !important; font-weight: 900; text-shadow: 0 1px 2px #000; }
 /* 属性相場・フレンド */
-.tab-page[data-tab="ranking"] .mkt-entry { aspect-ratio: 900 / 116 !important; padding: 0 !important; justify-content: center; background: url(assets/img/ui/rk/mkt.webp) center / 100% 100% no-repeat !important; border: none !important; color: #fff; font-size: clamp(0.95rem, 5vw, 1.25rem); font-weight: 900; text-shadow: 0 2px 2px #000; }
-.tab-page[data-tab="ranking"] .mkt-entry small { color: #fff; font-size: 0.75em; }
-.tab-page[data-tab="ranking"] .friend-box { border: 22px solid transparent !important; border-image: url(assets/img/ui/rk/friend.webp) 50 fill / 22px stretch !important; background: none !important; padding: 0 2px !important; }
 /* 1〜3位：絵の枠に順位が入っている */
 .tab-page[data-tab="ranking"] .rank-row.top1, .tab-page[data-tab="ranking"] .rank-row.top2, .tab-page[data-tab="ranking"] .rank-row.top3 { aspect-ratio: 900 / 103; min-height: 0 !important; padding: 0 7% 0 20% !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/rk/r1.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="ranking"] .rank-row.top2 { background-image: url(assets/img/ui/rk/r2.webp) !important; }

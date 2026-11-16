@@ -924,7 +924,6 @@ const BGM_INFO = [
   { key: 'battle34', name: '戦闘14 おどけ紳士のステップ', desc: 'ねばるファンクのベースとディスコの裏打ちに乗って、忍び足の旋律がおどけてステップを踏む。ちょび髭紳士のこっけいな踊り。VRC6風チップチューン。ホ・ブルース（ディスコファンクのコントの作風）・BPM120' },
   { key: 'dailybonus', name: 'ログインボーナス 朝の贈りもの', desc: 'ログインボーナスの画面で流れる、オルゴール風に転がる分散和音と弾むベースに、包みを開けるようにわくわく駆け上がる長調の曲。オリジナル曲。VRC6風チップチューン。ト長調。' },
   { key: 'loginbonus', name: '帰還ボーナス 黄金のカジノ', desc: '帰還ボーナスの画面で流れる、きらびやかなブラスのキメと跳ねるスウィングの旋律、ウォーキングベースの陽気な曲。ネオン輝く賭博場をイメージしたオリジナル曲。VRC6風チップチューン。ヘ長調。' },
-  { key: 'levelup', name: 'レベルアップ 闘士の選択', desc: '3択パワーアップを選んでいる間に流れる、うねるシンコペーションのロックベースとパワーコードの刻み、熱く挑発的な旋律のループ。VRC6風チップチューン。イ短調（90年代対戦格闘チーム戦のキャラクター選択の作風）・BPM152' },
   { key: 'boss', name: 'ボス1 ソニック・ブラスト', desc: '同じ音を叩きつけるシンコペーションのメロディと、うねるオクターブベースで疾走する、高速アクションゲームのボス戦のような曲。VRC6風チップチューン。ハ短調・BPM168' },
   { key: 'boss2', name: 'ボス2 変拍子', desc: '裏拍で刻むプログレ。ハ短調の半音進行（サガ系の作風）・BPM170' },
   { key: 'boss3', name: 'ボス3 死闘', desc: '疾走するうねりベースと高音の叫び。ホ短調（サガ系の作風）・BPM184' },
@@ -1043,7 +1042,6 @@ function refreshBgm() {
   else if (document.getElementById('newsModal')?.classList.contains('show')) type = 'news'; // お知らせ画面
   else if (gameOverBgm) type = 'gameover';
   else if (stageSkipModal.classList.contains('show')) type = 'tower'; // 試練の塔の画面
-  else if (document.getElementById('powerUpModal').classList.contains('show')) type = 'levelup'; // レベルアップ3択中
   else if (rebirthRewardBgm) type = 'rebirth'; // 転生の演出中は荘厳な曲
   else if (bgmBookPreview && getActiveTab() === 'records') type = bgmBookPreview; // BGM図鑑で試聴中
   else if (getActiveTab() === 'records' && document.querySelector('[data-rec-sec="bgm"]')?.hidden === false) type = 'bgmbook'; // BGM図鑑を開いているときの曲

@@ -65,7 +65,6 @@ function draw() {
   drawWeapons();
   tickChargeSound();
   drawDragStick();
-  drawExpGems();
   drawEnemyTraitEffects();
   drawNovaFx();
   drawBlastFx();
@@ -256,303 +255,13 @@ function loop() {
   animId = requestAnimationFrame(loop);
 }
 
-// ---------- 3択パワーアップ：敵を一定数倒すたびに、強化・スキル・仲間からランダムな3択 ----------
-let powerUpPending = false;
-// レベル：敵を倒すと経験値。ゲージがMAXになるとレベルアップして3択パワーアップ（転生でLv1に戻る）
-function getLvNeed(lv) { return 30 + lv * 15; }
-function renderLvGauge() {
-  { const row = document.querySelector('.lv-row'); if (row) row.style.display = EXP_ENABLED ? '' : 'none'; }
-  const lv = game.pLv || 1, ex = game.pExp || 0, need = getLvNeed(lv);
-  document.getElementById('pLvNum').textContent = lv;
-  const f = document.getElementById('pLvFill'); f.style.width = Math.min(100, ex / need * 100) + '%'; f.classList.toggle('full', powerUpPending);
-  document.getElementById('pLvText').textContent = `${Math.floor(ex)} / ${need}`;
+// 経験値・レベルアップ・3択パワーアップは削除した。宝箱・水晶などの「経験値ザクザク」は、少しのコインにしている
+let lastKillPos = null;
+function spawnExpGems(x, y, total) { // パンドラの箱・氷・水晶などの中身：少しのコイン（雑魚を倒したときの分はなし）
+  if (total <= 4) return;
+  const c = Math.max(1, Math.round(total * stageCoinRaw() * 0.1 * computeBonuses().coinMult));
+  game.coins += c; spawnCoinBurst(x, y, c, 5); updateStatsUI();
 }
-// レベルアップの軽いファンファーレ：「タタタ・ターン」と駆け上がって明るい和音で締める
-function playLevelUpFanfare() {
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const N = [[784, 0], [784, 0.09], [784, 0.18], [1047, 0.3]]; // ソソソ・ド
-  N.forEach(([f, t], i) => { const len = i === 3 ? 0.5 : 0.08; thump(f, f, len, 0.07, 'square', t); thump(f / 2, f / 2, len, 0.04, 'triangle', t); });
-  [1319, 1568].forEach(f => thump(f, f, 0.5, 0.03, 'square', 0.3)); // ミ・ソを重ねて和音に
-  [2093, 2637, 3136].forEach((f, i) => thump(f, f, 0.15, 0.015, 'sine', 0.36 + i * 0.05)); // キラッ
-}
-function gainExp(n) {
-  if (game.skipChallenge) return;
-  game.pLv = game.pLv || 1; game.pExp = (game.pExp || 0) + n;
-  if (!powerUpPending && game.pExp >= getLvNeed(game.pLv)) {
-    game.pExp -= getLvNeed(game.pLv); game.pLv++; powerUpPending = true;
-    const pl = balls.find(isMainPlayerBall);
-    if (pl) spawnDamageText(pl.x, pl.y - 46, `LEVEL UP!  Lv.${game.pLv}`, '#c792ea', 0.016, true);
-    playLevelUpFanfare();
-    setTimeout(openPowerUp, 900); // 撃破演出のあとに出す
-  }
-  renderLvGauge();
-}
-// 経験値は敵を倒すと出る「経験値ジェム」を拾って得る（近づくと吸い寄せられる・しばらくすると自動で飛んでくる）
-let expGems = [], lastKillPos = null;
-// 経験値とレベルアップ3択は一旦お休み（true に戻すと経験値ダイヤ・Lvバー・3択パワーアップが復活）
-const EXP_ENABLED = false;
-function spawnExpGems(x, y, total) {
-  if (!EXP_ENABLED) { // 経験値の代わりに少しのコインにする（パンドラの箱・氷・水晶などの中身）
-    const c = Math.max(1, Math.round(total * stageCoinRaw() * 0.1 * computeBonuses().coinMult));
-    if (total <= 4) return; // 雑魚を倒したときの経験値ぶんは無し
-    game.coins += c; spawnCoinBurst(x, y, c, 5); updateStatsUI(); return;
-  }
-  const n = Math.min(8, Math.max(1, Math.round(total / 6)));
-  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 2.5; expGems.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, v: total / n, born: Date.now(), big: total >= 30 }); }
-}
-function updateExpGems(speedMult) {
-  const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  for (const g of expGems) {
-    const dx = pl.x - g.x, dy = pl.y - g.y, d = Math.hypot(dx, dy) || 1;
-    const age = Date.now() - g.born;
-    if (d < 110 || age > 3500) { const sp = Math.min(18, 6 + (age > 3500 ? (age - 3500) / 120 : (110 - d) / 5)); const k = 1 - Math.pow(0.55, speedMult); g.vx += (dx / d * sp - g.vx) * k; g.vy += (dy / d * sp - g.vy) * k; } // 吸い寄せ（高速）
-    else { g.vx *= Math.pow(0.9, speedMult); g.vy *= Math.pow(0.9, speedMult); }
-    g.x += g.vx * speedMult; g.y += g.vy * speedMult;
-    const cp = arenaClampPt(g.x, g.y, 8); g.x = cp.x; g.y = cp.y;
-    if (Math.hypot(pl.x - g.x, pl.y - g.y) < pl.radius + 10 || d < Math.hypot(g.vx, g.vy) * speedMult + pl.radius) { g.got = true; gainExp(g.v); playExpGemSound(); }
-  }
-  expGems = expGems.filter(g => !g.got);
-}
-// 経験値ダイヤを拾う音：続けて拾うほど音階が上がり、上がりきったらまた下から（ペンタトニックでキラキラ鳴る）
-const EXP_GEM_SCALE = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
-const EXP_GEM_CHAIN_MS = 700;
-let expGemChain = -1, expGemLastAt = 0, expGemQueued = 0;
-function playExpGemSound() {
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const now = performance.now();
-  if (now - expGemLastAt > EXP_GEM_CHAIN_MS) expGemChain = -1;
-  expGemLastAt = now;
-  expGemChain = (expGemChain + 1) % EXP_GEM_SCALE.length;
-  const f = 1046.5 * Math.pow(2, EXP_GEM_SCALE[expGemChain] / 12); // C6 から
-  // 同じフレームでまとめて拾ったときは少しずつずらして鳴らす（音が重ならず駆け上がって聞こえる）
-  const delay = Math.min(0.25, expGemQueued * 0.045); expGemQueued++;
-  requestAnimationFrame(() => { expGemQueued = 0; });
-  thump(f, f, 0.16, 0.06, 'sine', delay);
-  thump(f * 2, f * 2, 0.07, 0.02, 'triangle', delay);
-  thump(f * 3.01, f * 3.01, 0.04, 0.008, 'sine', delay + 0.01);
-}
-function drawExpGems() {
-  ctx.save();
-  for (const g of expGems) {
-    const s = g.big ? 6 : 4.5, tw = 0.7 + 0.3 * Math.sin(Date.now() / 120 + g.born);
-    ctx.globalAlpha = 1;
-    ctx.shadowColor = '#64e8ff'; ctx.shadowBlur = 8 * tw;
-    ctx.fillStyle = g.big ? '#c792ea' : '#5fd8ff';
-    ctx.beginPath(); ctx.moveTo(g.x, g.y - s * 1.3); ctx.lineTo(g.x + s, g.y); ctx.lineTo(g.x, g.y + s * 1.3); ctx.lineTo(g.x - s, g.y); ctx.closePath(); ctx.fill();
-    ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.beginPath(); ctx.moveTo(g.x, g.y - s * 1.1); ctx.lineTo(g.x + s * 0.4, g.y - s * 0.2); ctx.lineTo(g.x - s * 0.3, g.y - s * 0.1); ctx.closePath(); ctx.fill();
-  }
-  ctx.restore();
-}
-function checkPowerUp(isBoss) { if (!EXP_ENABLED) return; const p = lastKillPos || arena; spawnExpGems(p.x, p.y, isBoss ? 40 : 12); }
-function compAtkIcon() { // 仲間の攻撃力：仲間タブの絵＋右下に剣
-  return `<span class="ico-combo"><img class="ico-img" src="${ICON_IMAGES.tab_companion}" alt=""><span class="ico-badge">⚔️</span></span>`;
-}
-const PU_EXCLUDED_SKILLS = ['skillParalyze']; // レベルアップ3択に出さないスキル
-function buildPowerUpPool() { // 3択パワーアップの候補すべて
-  const pool = [];
-  const upIds = Object.keys(UPGRADES).filter(id => !['accuracy', 'evasion', 'clash', 'bossDmg', 'critDmg', 'compAtk'].includes(id) && game.upgrades[id] < getUpgradeLevelCap(id)); // 命中率・回避・迫り合い・ボス特攻などは3択に出さない
-  for (const id of upIds) { const n = 3 + Math.floor(game.stage / 15); pool.push({ kind: 'up', id, n, col: '#2ea043', label: '強化', icon: id === 'compAtk' ? compAtkIcon() : id === 'atk' ? '⚔️' : ico(UPGRADES[id]), name: `${UPGRADES[id].name} +${n}Lv`, desc: `無料で ${n} レベルアップ` }); }
-  for (const id in SKILL_GACHA_SKILLS) {
-    if (PU_EXCLUDED_SKILLS.includes(id)) continue;
-    const sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
-    if (owned && getSkillLevel(id) >= SKILL_MAX_LEVEL) continue;
-    pool.push({ kind: 'skill', id, col: '#8a5bff', label: 'スキル', icon: id === 'skillAtkUp' ? '<span class="ico-combo atkup-ico">🗡️<span class="ico-badge">⏫</span></span>' : ico(sk), name: owned ? `${sk.name} Lv${getSkillLevel(id) + 1}` : `${sk.name} 解放`, desc: sk.desc });
-  }
-  { // 仲間は個別に選べる：まだいない仲間は「加入」、もういる仲間はレベルアップ
-    const room = getCompanionTotal() < getPartyLimit(), lvN = 2 + Math.floor(game.stage / 15);
-    const ids = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0) // 仲間は勝手に増えない：今いる仲間のレベルアップだけ.sort(() => Math.random() - 0.5).slice(0, 3);
-    for (const id of ids) {
-      const c = COMPANIONS[id], has = getCompanionCount(id) > 0;
-      pool.push({ kind: 'compPick', id, n: lvN, col: '#ff9a4f', label: '仲間', icon: companionIconHtml(id), name: has ? `${c.name} Lv+${lvN}` : `${c.name} 加入`, desc: has ? `Lv${(game.companions.level[id] || 0) + 1} → Lv${(game.companions.level[id] || 0) + 1 + lvN}` : '仲間に加わって一緒に戦う' });
-    }
-  }
-  for (const id in RUN_BUFFS) {
-    const lv = getRunBuff(id), B = RUN_BUFFS[id];
-    if (lv < RUN_BUFF_MAX) pool.push({ kind: 'buff', id, col: '#2f8fe0', label: '強化', icon: B.icon, name: `${B.name} Lv${lv + 1}`, desc: B.desc });
-  }
-  for (const id in WEAPONS) {
-    const lv = getWeaponLv(id), W = WEAPONS[id];
-    if (lv >= WEAPON_MAX_LV || !lv) continue; // サブウェポンは勝手に増えない：持っているもののレベルアップだけ
-    pool.push({ kind: 'weapon', id, col: '#e0a030', label: '武器', icon: ico(W), name: lv ? `${W.name} Lv${lv + 1}` : `${W.name} 獲得`, desc: lv ? `自キャラ攻撃力 ×${+weaponMult(lv).toFixed(2)} → ×${+weaponMult(lv + 1).toFixed(2)}` : W.desc + '（自動で発動）' });
-  }
-  pool.push({ kind: 'heal', col: '#ff5c8a', label: '回復', icon: '💗', name: 'HP回復', desc: 'HPと仲間のHPを最大HPの30%回復' });
-  pool.push({ kind: 'coin', col: '#ffb14f', label: 'コイン', icon: COIN_ICO, name: 'コインの山', desc: '今のステージに応じたコイン' });
-  return pool;
-}
-function makePowerUpChoices() {
-  const pool = buildPowerUpPool();
-  const picks = [], kinds = new Set();
-  const shuffled = pool.sort(() => Math.random() - 0.5);
-  const N = getPowerUpCount();
-  for (const c of shuffled) { if (picks.length >= N) break; if (!kinds.has(c.kind) || shuffled.length < 6) { picks.push(c); kinds.add(c.kind); } } // できるだけ別の種類から
-  for (const c of shuffled) { if (picks.length >= N) break; if (!picks.includes(c)) picks.push(c); }
-  return picks;
-}
-let powerUpChoices = [];
-function openPowerUp() {
-  document.querySelector('#powerUpModal .pu-title').innerHTML = `<img class="pu-banner" src="assets/img/ui/levelUp.webp" alt="LEVEL UP!"><span class="pu-lv">Lv.${game.pLv || 1}</span>`;
-  if (phase !== 'battle' || getActiveTab() !== 'game') { setTimeout(openPowerUp, 1000); return; } // ゲーム画面に戻ったら出す
-  powerUpChoices = makePowerUpChoices();
-  renderPowerUp();
-  phase = 'paused';
-  document.getElementById('powerUpModal').classList.add('show');
-  playGachaSound('rare');
-  refreshBgm(); // 3択中は明るいレベルアップの曲
-  puDeadline = Date.now() + PU_AUTO_MS;
-  clearInterval(puTimer); puTimer = setInterval(tickPowerUpTimer, 250); tickPowerUpTimer();
-}
-// 20秒操作がなければ自動で選ぶ。ジェムで「全部取る」「引き直し」「枠+1（永続）」
-const PU_AUTO_MS = 20000, PU_SLOT_MAX = 3;
-let puDeadline = 0, puTimer = null;
-function getPowerUpCount() { return 3 + Math.min(PU_SLOT_MAX, game.puSlots || 0); }
-function getPuAllCost() { return gemPrice(2 * getPowerUpCount()); }
-function getPuRerollCost() { return gemPrice(2); }
-function getPuSlotCost() { return gemPrice(20 * Math.pow(2, game.puSlots || 0)); }
-function renderPowerUp() {
-  const list = document.getElementById('powerUpList');
-  list.className = 'pu-list n' + powerUpChoices.length;
-  list.innerHTML = powerUpChoices.map((c, i) => `<button class="pu-card" style="--pc:${c.col}" data-pu="${i}"><span class="pu-kind">${c.label}</span><span class="pu-icon">${c.icon}</span><span class="pu-name">${c.name}</span><span class="pu-desc">${c.desc}</span></button>`).join('');
-  const all = document.getElementById('puAllBtn'), rr = document.getElementById('puRerollBtn'), sl = document.getElementById('puSlotBtn');
-  all.innerHTML = `全部取る<br>💎 ${getPuAllCost()}`; all.classList.toggle('is-disabled', game.gems < getPuAllCost());
-  rr.innerHTML = `引き直し<br>💎 ${getPuRerollCost()}`; rr.classList.toggle('is-disabled', game.gems < getPuRerollCost());
-  const maxed = (game.puSlots || 0) >= PU_SLOT_MAX;
-  sl.innerHTML = maxed ? '枠 最大' : `枠+1（転生まで）<br>💎 ${getPuSlotCost()}`; sl.classList.toggle('is-disabled', maxed || game.gems < getPuSlotCost());
-}
-function tickPowerUpTimer() {
-  if (!document.getElementById('powerUpModal').classList.contains('show')) { clearInterval(puTimer); return; }
-  const left = Math.max(0, puDeadline - Date.now());
-  document.getElementById('puTimer').textContent = `${Math.ceil(left / 1000)} 秒後に自動で選びます`;
-  if (left <= 0) { clearInterval(puTimer); startPowerUpSlot(); }
-}
-// 時間切れ：スロットのように選択枠が回って、だんだん遅くなって止まったカードに自動決定
-let puSpinning = false;
-function startPowerUpSlot() {
-  if (puSpinning || !powerUpChoices.length) return;
-  puSpinning = true;
-  document.getElementById('puTimer').textContent = '🎰 時間切れ！ 自動で選んでいます…';
-  const cards = [...document.querySelectorAll('#powerUpList .pu-card')];
-  const win = Math.floor(Math.random() * powerUpChoices.length);
-  const steps = cards.length * 4 + win + 1; // 何周か回ってから当たりで止まる
-  let i = 0, delay = 55;
-  const tick = () => {
-    cards.forEach(c => c.classList.remove('slot-hl'));
-    const idx = i % cards.length;
-    if (cards[idx]) cards[idx].classList.add('slot-hl');
-    playTone(900 + idx * 120, 0.04, 'square', 0.05);
-    i++;
-    if (i >= steps) {
-      if (cards[idx]) cards[idx].classList.add('slot-win');
-      thump(1046, 1046, 0.25, 0.06, 'square'); thump(1568, 1568, 0.3, 0.04, 'triangle', 0.06);
-      setTimeout(() => { puSpinning = false; cards.forEach(c => c.classList.remove('slot-hl', 'slot-win')); finishPowerUp([powerUpChoices[idx]]); }, 650);
-      return;
-    }
-    if (i > steps - 7) delay *= 1.35; // 終わり際にだんだん遅く
-    setTimeout(tick, delay);
-  };
-  tick();
-}
-function showPowerUpZoom(list) { // 選んだアイコンが大きく拡大しながらフェードアウト
-  list.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'pu-zoom';
-    el.style.setProperty('--pc', c.col || '#ffd76b');
-    el.style.left = (50 + (i - (list.length - 1) / 2) * (list.length > 1 ? 22 : 0)) + '%';
-    el.innerHTML = `<span class="pu-zoom-icon">${c.icon || '✨'}</span><span class="pu-zoom-name">${c.name}</span>`;
-    document.body.appendChild(el);
-    el.addEventListener('animationend', () => el.remove());
-  });
-}
-// パワーアップ選択音：上へ駆け上がる「ギュイーン」＋分散和音＋キラキラの余韻で締める
-function playPowerUpSound() { // パワーアップ：力がみなぎる上昇チャージ → 一気に駆け上がるアルペジオ → 「ドーン！ジャーン！」と覚醒
-  if (!audioCtx || isBattleSfxMuted()) return;
-  const t = audioCtx.currentTime, v = game.sfxVolume;
-  { // 力がたまっていく上昇音（震えながら高くなる）
-    const o = audioCtx.createOscillator(), o2 = audioCtx.createOscillator(), g = audioCtx.createGain(), lfo = audioCtx.createOscillator(), lg = audioCtx.createGain();
-    o.type = 'sawtooth'; o2.type = 'square';
-    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(1600, t + 0.42);
-    o2.frequency.setValueAtTime(152, t); o2.frequency.exponentialRampToValueAtTime(1612, t + 0.42);
-    lfo.frequency.setValueAtTime(10, t); lfo.frequency.linearRampToValueAtTime(30, t + 0.42); lg.gain.value = 0.5; lfo.connect(lg);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06 * v, t + 0.38); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.46);
-    const trem = audioCtx.createGain(); trem.gain.value = 0.6; lg.connect(trem.gain);
-    o.connect(trem); o2.connect(trem); trem.connect(g); g.connect(audioCtx.destination);
-    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + 0.48); });
-  }
-  filteredNoise(0, 0.42, 0.08, 1800, 0.6, 'bandpass'); // ゴォォ…（気が集まる）
-  [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => { thump(f, f, 0.07, 0.05, 'square', 0.26 + i * 0.03); thump(f * 2, f * 2, 0.05, 0.015, 'triangle', 0.26 + i * 0.03); }); // 駆け上がるアルペジオ
-  const hit = 0.48;
-  thump(150, 40, 0.5, 0.6, 'sine', hit);                    // ドーン
-  filteredNoise(hit, 0.5, 0.18, 6000, 0.6, 'highpass');      // シャーン（シンバル）
-  [523, 659, 784, 1047].forEach(f => { thump(f, f, 0.9, 0.04, 'square', hit); thump(f * 1.003, f * 1.003, 0.9, 0.03, 'sawtooth', hit); }); // ジャーン（覚醒の和音）
-  thump(131, 131, 0.9, 0.08, 'triangle', hit);
-  [2637, 3136, 3951, 4699, 5274].forEach((f, i) => thump(f, f, 0.12, 0.02, 'sine', hit + 0.1 + i * 0.06)); // キラキラ
-}
-function finishPowerUp(list) {
-  showPowerUpZoom(list);
-  clearInterval(puTimer);
-  list.forEach(applyPowerUp);
-  document.getElementById('powerUpModal').classList.remove('show');
-  refreshBgm(); // 戦闘の曲に戻す
-  powerUpPending = false;
-  phase = 'battle';
-  if ((game.pExp || 0) >= getLvNeed(game.pLv || 1)) gainExp(0); // 溜まっていた分で続けてレベルアップ
-  renderLvGauge();
-  playPowerUpSound();
-  updateStatsUI(); updateHPUI(); saveGame();
-}
-document.getElementById('powerUpModal').addEventListener('pointerdown', () => { if (!puSpinning) puDeadline = Date.now() + PU_AUTO_MS; }); // タップがあれば時間を戻す
-document.getElementById('puAllBtn').addEventListener('click', ev => {
-  if (puSpinning) return;
-  const cost = getPuAllCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
-  game.gems -= cost; finishPowerUp(powerUpChoices);
-});
-document.getElementById('puRerollBtn').addEventListener('click', ev => {
-  if (puSpinning) return;
-  const cost = getPuRerollCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
-  game.gems -= cost; powerUpChoices = makePowerUpChoices(); renderPowerUp(); playGachaSound('rare'); updateStatsUI();
-});
-document.getElementById('puSlotBtn').addEventListener('click', ev => {
-  if (puSpinning) return;
-  if ((game.puSlots || 0) >= PU_SLOT_MAX) return;
-  const cost = getPuSlotCost(); if (game.gems < cost) { showTapError('ジェムが足りません', ev.clientX, ev.clientY); return; }
-  game.gems -= cost; game.puSlots = (game.puSlots || 0) + 1;
-  const extra = makePowerUpChoices().find(c => !powerUpChoices.some(p => p.kind === c.kind && p.id === c.id));
-  if (extra) powerUpChoices.push(extra);
-  renderPowerUp(); playRegisterSound(); updateStatsUI(); saveGame();
-});
-function applyPowerUp(c) {
-  if (c.kind === 'up') { game.upgrades[c.id] = Math.min(getUpgradeLevelCap(c.id), game.upgrades[c.id] + c.n); refreshPlayerBallStats(false); }
-  else if (c.kind === 'skill') {
-    if (!game.skillLevels) game.skillLevels = {};
-    if (!game.shopOwned[c.id]) { game.shopOwned[c.id] = true; game.skillLevels[c.id] = 1; const eq = getEquippedSkills(); if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(c.id)) eq.push(c.id); }
-    else game.skillLevels[c.id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(c.id) + 1);
-    updateSkillButtonVisibility(); renderSkillGacha();
-  } else if (c.kind === 'compPick') {
-    const id = c.id, has = getCompanionCount(id) > 0;
-    if (has) { setCompUpLv(id, 'hp', compHpLv(id) + c.n); game.companions.level[id] = (game.companions.level[id] || 0) + c.n; showNotice(`🐾 ${COMPANIONS[id].name} がレベルアップ！（Lv${game.companions.level[id] + 1}）`); }
-    else {
-      const r = grantCompanion(id);
-      syncCompanionBalls(r.id).forEach(cb => spawnHitParticles(cb.x, cb.y, '#ff9a4f'));
-      showNotice(`🐾 ${COMPANIONS[id].name}：${r.label}`);
-    }
-    refreshCompanionBalls(); refreshPlayerBallStats(false); renderCompanionList();
-  } else if (c.kind === 'comp') {
-    const r = grantCompanion(pickCompanionId());
-    // 選択中は phase が 'battle' ではないため grantCompanion では戦場に出ない → ここで出現させる
-    syncCompanionBalls(r.id).forEach(cb => spawnHitParticles(cb.x, cb.y, '#ff9a4f'));
-    refreshCompanionBalls(); refreshPlayerBallStats(false);
-    showNotice(`🐾 ${COMPANIONS[r.id].name}：${r.label}`); renderCompanionList();
-  }
-  else if (c.kind === 'buff') { if (!game.runBuffs) game.runBuffs = {}; game.runBuffs[c.id] = Math.min(RUN_BUFF_MAX, getRunBuff(c.id) + 1); }
-  else if (c.kind === 'weapon') { if (!game.weapons) game.weapons = {}; game.weapons[c.id] = Math.min(WEAPON_MAX_LV, getWeaponLv(c.id) + 1); weaponCd[c.id] = 20; autoEquipWeapon(c.id); }
-  else if (c.kind === 'heal') { const PU_HEAL = 0.3; const pl = balls.find(isMainPlayerBall); if (pl && pl.hp > 0) { const h = Math.min(pl.maxHp - pl.hp, Math.round(pl.maxHp * PU_HEAL)); pl.hp += h; spawnDamageText(pl.x, pl.y - pl.radius - 14, '+' + h + ' HP', '#5fe0a8', 0.012); } balls.forEach(b => { if (b.isCompanion && b.hp > 0) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * PU_HEAL); }); playHealSound(); }
-  else if (c.kind === 'coin') { const g = Math.max(1, Math.round(stageCoinRaw() * 6)); game.coins += g; const pl = balls.find(isMainPlayerBall); spawnCoinFountain(pl ? pl.x : arena.x, pl ? pl.y : arena.y, g); }
-}
-document.getElementById('powerUpList').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-pu]'); if (!b || puSpinning) return; // スロット中は選べない
-  const c = powerUpChoices[+b.dataset.pu]; if (!c) return;
-  finishPowerUp([c]);
-});
 let userPaused = false;
 function setUserPaused(on) {
   userPaused = on;
@@ -779,7 +488,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'reflTwo', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -1143,7 +852,6 @@ debugRow.addEventListener('click', event => {
   if (action === 'mysteryList') { // 謎魔法の効果と出る確率
     const tot = MYSTERY_EFFECTS.reduce((t, e) => t + e.w, 0);
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
-  if (action === 'reflTwo') { game.reflTwo = !game.reflTwo; try { ensureOneBounce(); } catch (e) {} saveGame(); updateReflDebugBtns(); showNotice(`DEBUG: ダブル反射玉：${game.reflTwo ? '所持（ON）' : '未所持（OFF）'}`); return; }
   if (action === 'admobTest') { admobDebugTest(); return; }
   if (action === 'subExpire') { // 紋章（サブスク）の期限を今すぐ切らす（期限切れの動きを確かめる）。ストアで加入中なら、アプリに戻ったときや「購入を復元」でまた有効になる
     const had = Object.keys(SUBSCRIPTIONS).filter(isSubActive);
@@ -1215,7 +923,6 @@ debugRow.addEventListener('click', event => {
     const fixed = [['👑 ボス', 'ボス戦'], ['⬆️ 激デカ', '激デカボス'], ['☄️ メテオ耐性（1/10）', 'メテオのダメージが1/10になるボス（ステージ30から・ボスの約4体に1体。進行ゲージのボスをタップすると下見できる）'], ['🪨 硬い（ダメージ減）', 'メタル系'], ['🔥 発狂中！防御ダウン', 'HPが減って発狂した'], ['🏃 しつこく追ってくる', '追いかけてくる敵'], ['⚡ 爆速で追ってくる！', 'とんでもない速さで主人公を追いかける敵（ステージ8から・ザコ5%／ボス12%）']];
     const tr = Object.keys(ENEMY_TRAIT_LABELS).map(k => [`${ENEMY_TRAIT_ICONS[k] || '✨'} ${ENEMY_TRAIT_LABELS[k]}`, (typeof ENEMY_TRAIT_DESCS !== 'undefined' && ENEMY_TRAIT_DESCS[k]) || '']);
     simpleChoice({ icon: '👾', title: '敵の特徴一覧', text: `<div class="dbg-list">${[...fixed, ...tr].map(([n, d]) => `<div class="dl-r"><b>${n}</b>${d ? `<small>${d}</small>` : ''}</div>`).join('')}</div>`, yes: '閉じる', no: false }); return; }
-  if (action === 'friendCode') { openFriendCodeDebug(); return; }
   if (action === 'loginBonus') {
     checkLoginBonus([15, 45, 90, 240, 600, 2000][Math.floor(Math.random() * 6)] * 60000);
     return;
@@ -3423,7 +3130,6 @@ Object.keys(SKILL_BUTTON_KEYS).forEach(id => {
   decorateSkillButton(btn);
 });
 updateSkillButtonVisibility();
-renderLvGauge();
 updatePotionButton();
 updateRedPotionButton();
 renderDebugMonsters();
@@ -3449,21 +3155,6 @@ renderDebugMonsters();
     showNotice(debugSpawnObstacle(k, sp) ? `DEBUG: ${name} を出現` : 'DEBUG: 空いている場所がありません');
   });
 })();
-let dbgPuPool = [];
-function renderDebugPowerUps() {
-  const grid = document.getElementById('dbgPuGrid'); if (!grid) return;
-  dbgPuPool = buildPowerUpPool();
-  grid.innerHTML = dbgPuPool.map((c, i) => `<button style="--pc:${c.col}" data-dbg-pu="${i}"><span>${c.icon}</span><span>${c.label}｜${c.name}</span></button>`).join('');
-}
-renderDebugPowerUps();
-document.getElementById('dbgPuGrid').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-dbg-pu]'); if (!b) return;
-  const c = dbgPuPool[+b.dataset.dbgPu]; if (!c) return;
-  if (phase !== 'battle' && (c.kind === 'comp' || c.kind === 'heal')) { showNotice('DEBUG: 戦闘中に使ってください', true); return; }
-  applyPowerUp(c); playPowerUpSound();
-  updateStatsUI(); updateHPUI(); saveGame(); renderDebugPowerUps();
-  showNotice(`DEBUG: ${c.label}「${c.name}」を取得`);
-});
 document.getElementById('dbgMonGrid').addEventListener('click', ev => { const b = ev.target.closest('[data-mon]'); if (b) { dbgMonKey = b.dataset.mon; renderDebugMonsters(); } });
 // 🎬 撮影モード：選んだ敵を出し、倒しても同じ敵が出続ける（ステージは進まない・自キャラはやられない）。デバッグ一覧を閉じて画面を撮りやすく
 let filmMode = null;
@@ -4122,7 +3813,7 @@ function showRebirthRulesDebug() {
 
 // デバッグの反射玉アイテムのボタンに、いまON（所持）かOFFかを出す
 function updateReflDebugBtns() {
-  for (const [k, label] of [['reflTwo', '🪞 ダブル反射玉'], ['reflStart2', '⏫ 反射の初期値上昇']]) {
+  for (const [k, label] of [['reflStart2', '⏫ 反射の初期値上昇']]) {
     const on = !!game[k], h = `${label}：<b class="dbg-state ${on ? 'on' : 'off'}">${on ? 'ON（所持）' : 'OFF'}</b>`;
     document.querySelectorAll(`[data-debug="${k}"]`).forEach(b => { const hh = b.classList.contains('dbg-recent') ? h + '<i class="dbg-rm" title="最近使ったから外す">×</i>' : h; if (b.innerHTML !== hh) b.innerHTML = hh; }); // 「最近使った」の写しも
   }

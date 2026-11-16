@@ -50,7 +50,7 @@ async function makeShareCard() {
     c.fillStyle = '#fff'; c.font = '900 44px sans-serif'; fitText(c, v, x, y + 22, 290);
   });
   c.fillStyle = '#64e8ff'; c.font = '800 34px sans-serif'; fitText(c, SHARE_HASHTAG, S / 2, 962, S - 140);
-  c.fillStyle = '#aab4d0'; c.font = '700 24px sans-serif'; if (friendCodeOpen()) fitText(c, `挑戦状コード：${myRivalCode()}`, S / 2, 1004, S - 140);
+  c.fillStyle = '#aab4d0'; c.font = '700 24px sans-serif';
   return cv;
 }
 function fitText(c, t, x, y, maxW) { const w = c.measureText(t).width; if (w > maxW) { c.save(); c.translate(x, y); c.scale(maxW / w, 1); c.fillText(t, 0, 0); c.restore(); } else c.fillText(t, x, y); }
@@ -72,8 +72,8 @@ let shareCardBlob = null;
   const note = document.getElementById('shareRewardNote'); if (note) note.textContent = shareRewardReady() ? `🎁 今日はじめてのシェアで 💎${SHARE_REWARD_GEMS}` : '';
 }; }
 { const orig = buildShareText; buildShareText = function (kind) {
-  if (kind === 'moment' && shareMoment) return `${shareMoment.title}\n${shareMoment.text}\n🏔 最高 ステージ${game.bestStage} ／ 🌌 転生 ${game.reincarnations}回${friendCodeOpen() ? `\n挑戦状コード：${myRivalCode()}` : ''}\n${SHARE_HASHTAG}`;
-  return orig.apply(this, arguments) + (friendCodeOpen() ? `\n挑戦状コード：${myRivalCode()}` : '');
+  if (kind === 'moment' && shareMoment) return `${shareMoment.title}\n${shareMoment.text}\n🏔 最高 ステージ${game.bestStage} ／ 🌌 転生 ${game.reincarnations}回\n${SHARE_HASHTAG}`;
+  return orig.apply(this, arguments);
 }; }
 document.getElementById('shareImgBtn') && document.getElementById('shareImgBtn').addEventListener('click', async () => {
   const text = document.getElementById('shareText').value;
@@ -156,109 +156,7 @@ function openFortune() {
   updateStatsUI();
 }
 
-// ===== 挑戦状コード（フレンド）：自分の名前と最高ステージを入れたコード。友達のコードを入れるとライバルになる =====
-function b64u(s) { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
-function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); }
-function codeSum(s) { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h.toString(36); }
-// 挑戦状コード：「MH＋最高ステージ（36進）－プレイヤー番号4文字＋確認1文字」の短いコード（例：MH6I-K3F2X）。名前は入れない
-function myRivalId() { return (myPlayerSeed() % 1679616).toString(36).toUpperCase().padStart(4, '0'); }
-function shortCheck(s) { let h = 11; for (const ch of s) h = (h * 37 + ch.charCodeAt(0)) % 36; return h.toString(36).toUpperCase(); }
-function myRivalCode() { const st = Math.max(1, Math.floor(game.bestStage || 1)).toString(36).toUpperCase(), id = myRivalId(); return `MH${st}-${id}${shortCheck(st + id)}`; }
-function parseRivalCode(code) {
-  const sm = String(code).trim().toUpperCase().replace(/\s/g, '').match(/MH([0-9A-Z]+)-([0-9A-Z]{4})([0-9A-Z])\b/);
-  if (sm) { if (shortCheck(sm[1] + sm[2]) !== sm[3]) return null; const stage = parseInt(sm[1], 36); if (!(stage >= 1)) return null; return { name: '勇者#' + sm[2], stage, id: sm[2] }; }
-  // 以前の長いコードも読める
-  const m = String(code).trim().match(/MH-([A-Za-z0-9_-]+)\.([0-9a-z]+)/); if (!m) return null;
-  let body; try { body = unb64u(m[1]); } catch (e) { return null; }
-  if (codeSum(body) !== m[2]) return null;
-  const [name, st, id] = body.split('|'); const stage = parseInt(st, 10);
-  if (!name || !(stage >= 1)) return null;
-  return { name: name.slice(0, 12), stage, id: String(id) };
-}
-const FRIEND_FIRST_FEA = 10, FRIEND_BEAT_FEA = 5, FRIEND_MAX = 20, FRIEND_BEAT_DAILY = 3, FRIEND_CODE_STAGE = 100; // 報酬はSSR以上の羽ガチャ（初フレンド10回・突破ごとに5回、突破の報酬は1日3回まで）。挑戦状はベスト100から
-function friendCodeOpen() { return (game.bestStage || 1) >= FRIEND_CODE_STAGE; }
-function rollSsrFeathers(n) { // SSR以上の羽ガチャ（SSR:UR はふだんの羽ガチャと同じ比率 1:0.2）
-  const got = {}; for (let i = 0; i < n; i++) { const r = Math.random() * (RECORD_FEA_RATES.legendary + RECORD_FEA_RATES.mythic) < RECORD_FEA_RATES.mythic ? 'mythic' : 'legendary'; got[r] = (got[r] || 0) + 1; }
-  for (const r in got) addFea(r, got[r]);
-  rollSsrFeathers.last = got;
-  return ['mythic', 'legendary'].filter(r => got[r]).map(r => `${RARITY_INFO[r].label}の羽×${got[r]}`).join('・');
-}
-// 羽ガチャの結果画面（宝箱の結果と同じカード）。閉じるまで残す。share があればシェアボタンも
-function showFeaGachaResult(title, sub, got, share) {
-  document.querySelectorAll('.fgr-ov').forEach(o => o.remove());
-  const ov = document.createElement('div'); ov.className = 'modal-overlay show fgr-ov'; ov.style.zIndex = 84;
-  const cards = ['mythic', 'legendary'].filter(r => got[r]).map((r, i) => `<div class="cl-card" style="--rc:${RARITY_INFO[r].color};animation-delay:${i * 0.15}s">${lootStackHtml(`<img class="ico-img" src="assets/img/icons/feather_r${CHEST_FEATHER_ICON_N[r]}.webp" alt="">`, got[r], i * 0.15)}<div class="cl-name">進化の${feaName(r)}</div><div class="cl-desc">進化1回で1枚使い、倍率×${FEA_MULT[r]}</div><div class="cl-trans">所持 <b>${feaCount(r)}枚</b></div></div>`).join('');
-  ov.innerHTML = `<div class="modal-panel chest-panel fgr-panel"><div class="fgr-title">${title}</div><div class="fgr-sub">${sub}</div><div class="chest-loot-grid">${cards}</div>${share ? '<div class="fgr-share-lead">📣 フレンドに突破を知らせよう！</div><button class="modal-shop-btn fgr-share">📤 突破をシェアする</button>' : ''}<button class="modal-close-btn fgr-ok">閉じる</button></div>`; // シェアはこのダイアログで誘導する（ゲーム画面のシェアボタンは出さない）
-  document.body.appendChild(ov);
-  if (typeof playGachaSound === 'function') playGachaSound(got.mythic ? 'mythic' : 'legendary');
-  ov.querySelectorAll('.cl-cnt').forEach(el => { const n = +el.dataset.n; el.textContent = '×' + n; });
-  ov.querySelector('.fgr-ok').onclick = () => ov.remove();
-  const sb = ov.querySelector('.fgr-share'); if (sb) sb.onclick = () => { ov.remove(); shareMoment = { title: share.title, text: share.text }; openShare('moment'); };
-}
-function friendBeatLeftToday() { return game.friendBeatDay === todayKey() ? Math.max(0, FRIEND_BEAT_DAILY - (game.friendBeatN || 0)) : FRIEND_BEAT_DAILY; }
-function addFriendCode(code) {
-  const f = parseRivalCode(code);
-  if (!friendCodeOpen()) return `⚠️ 挑戦状はベストステージ${FRIEND_CODE_STAGE}から使えます`;
-  if (!f) return '⚠️ コードが正しくありません';
-  if (f.id === myRivalId() || (f.id === String(myPlayerSeed() % 46656) && f.name === (game.username || '名無しの勇者').slice(0, 12))) return '⚠️ 自分のコードは登録できません';
-  if (!game.friends) game.friends = [];
-  const old = game.friends.find(x => x.id === f.id);
-  if (old) { old.stage = Math.max(old.stage, f.stage); old.beaten = (game.bestStage || 1) > old.stage; saveGame(); return `🔄 ${f.name}の記録を更新しました（ステージ${old.stage}）`; }
-  if (game.friends.length >= FRIEND_MAX) game.friends.shift();
-  game.friends.push({ ...f, beaten: false, at: Date.now() });
-  let msg = `👥 ${f.name}から挑戦状！ ステージ${f.stage}を超えろ`;
-  if (!game.friendBonusGot) { game.friendBonusGot = true; msg += `（はじめての登録：SSR以上の羽ガチャ${FRIEND_FIRST_FEA}回 → ${rollSsrFeathers(FRIEND_FIRST_FEA)}）`; const g = rollSsrFeathers.last; setTimeout(() => showFeaGachaResult('👥 はじめてのフレンド！', `SSR以上の羽ガチャ ${FRIEND_FIRST_FEA}回`, g), 300); }
-  updateStatsUI(); saveGame(); return msg;
-}
-setInterval(() => { // フレンドの記録を超えたら報酬
-  if (!game.friends || phase !== 'battle') return;
-  for (const f of game.friends) if (!f.beaten && (game.bestStage || 1) > f.stage) {
-    if (!friendBeatLeftToday()) break; // 突破の報酬は1日3回まで（残りは次の日に受け取れる）
-    if (game.friendBeatDay !== todayKey()) { game.friendBeatDay = todayKey(); game.friendBeatN = 0; }
-    game.friendBeatN++; f.beaten = true; const got = rollSsrFeathers(FRIEND_BEAT_FEA); updateStatsUI(); saveGame();
-    if (typeof showRunBanner === 'function') showRunBanner(`👥 ${f.name}の挑戦状を突破！`, `ステージ${f.stage}を超えた！ SSR以上の羽ガチャ${FRIEND_BEAT_FEA}回：${got}`);
-    { const g = rollSsrFeathers.last, sh = { title: `👥 ${f.name}の挑戦状を突破！`, text: `ステージ${formatStageNumber(f.stage)}を超えた！ 次はキミの番だ` }; setTimeout(() => showFeaGachaResult(`👥 ${f.name}の挑戦状を突破！`, `ステージ${formatStageNumber(f.stage)}を超えた！ SSR以上の羽ガチャ ${FRIEND_BEAT_FEA}回`, g, sh), 800); } // 結果画面（閉じるまで残る）→ シェアをすすめる
-  }
-}, 2000);
-function friendRankEntries(mode) { // ベストステージのランキングにフレンドも並べる
-  if (mode !== 'stage' || !game.friends) return [];
-  return game.friends.map(f => ({ name: '👥 ' + f.name, score: f.stage, isPlayer: false, isFriend: true }));
-}
-function renderFriendBox() {
-  const host = document.getElementById('friendBox'); if (!host) return;
-  const fr = game.friends || [], me = game.bestStage || 1;
-  if (!friendCodeOpen()) { host.innerHTML = `<div class="fb-title">👥 フレンドの挑戦状</div><div class="fb-note">🔒 ベストステージ${FRIEND_CODE_STAGE}で、挑戦状コードが使えるようになります（いま ${formatStageNumber(me)}）</div>`; return; }
-  host.innerHTML = `<div class="fb-title">👥 フレンドの挑戦状</div>
-    <div class="fb-my"><span>あなたの挑戦状コード</span><code id="myRivalCode">${myRivalCode()}</code><button class="fb-copy" id="fbCopyBtn">📋 コピー</button><button class="fb-copy" data-share="records">📤 送る</button></div>
-    <div class="fb-in"><input id="fbCodeInput" placeholder="友達の挑戦状コードを貼り付け" autocomplete="off"><button id="fbAddBtn">登録</button></div>
-    <div class="fb-note">${game.friendBonusGot ? '' : `はじめて登録すると SSR以上の羽ガチャ${FRIEND_FIRST_FEA}回・`}友達の最高ステージを超えるたびに SSR以上の羽ガチャ${FRIEND_BEAT_FEA}回（1日${FRIEND_BEAT_DAILY}回まで・今日あと${friendBeatLeftToday()}回）</div>
-    <div class="fb-list">${fr.length ? fr.slice().sort((a, b) => b.stage - a.stage).map(f => `<div class="fb-row ${f.beaten || me > f.stage ? 'beat' : ''}"><b>${f.name}</b><span>ステージ${f.stage}</span><em>${f.beaten || me > f.stage ? '✓ 突破' : `あと${f.stage - me + 1}`}</em></div>`).join('') : '<div class="fb-empty">まだフレンドがいません。コードを送り合って競おう！</div>'}</div>`;
-  document.getElementById('fbCopyBtn').onclick = async ev => {
-    const code = myRivalCode(), x = ev.clientX, y = ev.clientY;
-    try { await navigator.clipboard.writeText(code); showTapOk('📋 コピーしました', x, y); return; } catch (e) {}
-    try { // 埋め込み表示などでクリップボードが使えないときは、選択してコピー
-      const ta = document.createElement('textarea'); ta.value = code; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select();
-      const ok = document.execCommand('copy'); ta.remove();
-      if (ok) { showTapOk('📋 コピーしました', x, y); return; }
-    } catch (e) {}
-    const el = document.getElementById('myRivalCode'); if (el) { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
-    showTapOk('コードを選択しました。長押しでコピーしてください', x, y);
-  };
-  document.getElementById('fbAddBtn').onclick = ev => { const msg = addFriendCode(document.getElementById('fbCodeInput').value); showNotice(msg, msg.startsWith('⚠️'), 2600); if (!msg.startsWith('⚠️')) { renderFriendBox(); if (typeof renderRanking === 'function') renderRanking(); } };
-}
-{ const list = document.getElementById('rankingList');
-  if (list) { const box = document.createElement('div'); box.id = 'friendBox'; box.className = 'friend-box'; list.parentNode.insertBefore(box, list); }
-  document.querySelectorAll('.tab-btn[data-tab="ranking"]').forEach(b => b.addEventListener('click', () => setTimeout(renderFriendBox, 0)));
-  renderFriendBox();
-}
-// デバッグ：テスト用の挑戦状コード（正しい形のコードを作って、コピーや登録を試せる）
-function makeRivalCode(stage, id) { const st = Math.max(1, Math.floor(stage)).toString(36).toUpperCase(); return `MH${st}-${id}${shortCheck(st + id)}`; }
-function openFriendCodeDebug() {
-  const me = game.bestStage || 1, rid = () => Math.floor(Math.random() * 1679616).toString(36).toUpperCase().padStart(4, '0');
-  const list = [['自分より少し下（登録したらすぐ突破）', Math.max(1, me - 5)], ['自分より少し上', me + 10], ['自分の2倍', me * 2], ['ステージ1000', 1000], ['ステージ10万', 100000]].map(([t, st]) => ({ t, code: makeRivalCode(st, rid()) }));
-  simpleChoice({ icon: '👥', title: '挑戦状テストコード', text: `<div class="fdbg">${list.map(c => `<div class="fdbg-row"><small>${c.t}</small><code>${c.code}</code><button data-fd-add="${c.code}">登録</button></div>`).join('')}<div class="fdbg-row"><small>まちがったコード（エラーの確認）</small><code>MH2S-ABCD0</code><button data-fd-add="MH2S-ABCD0">登録</button></div></div>`, sub: `自分のコード：${myRivalCode()}　登録中のフレンド ${(game.friends || []).length}人`, yes: '🗑 フレンドを全部消す', onYes: () => { game.friends = []; game.friendBonusGot = false; game.friendBeatN = 0; saveGame(); renderFriendBox(); showNotice('DEBUG: フレンドと初回ボーナスの記録を消しました'); }, no: '閉じる' });
-  document.querySelectorAll('[data-fd-add]').forEach(b => b.onclick = () => { const msg = addFriendCode(b.dataset.fdAdd); showNotice(msg, msg.startsWith('⚠️'), 2600); renderFriendBox(); b.textContent = msg.startsWith('⚠️') ? 'NG' : '✓'; });
-}
+// フレンドの挑戦状（挑戦状コード）は削除した（本物のランキングに役目をゆずった）
 // 戦績ページ（ミッション上部）の占いボタンは削除
 
 // シェア画面を開いている間はスタッフロールの曲（開け閉めで曲を切り替える）

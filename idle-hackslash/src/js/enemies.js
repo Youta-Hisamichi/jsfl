@@ -1305,32 +1305,25 @@ function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } 
 // 反射玉の数値：×1〜×16（掛け算だけ）。×1から始まり、射出したタックルで当てると反射玉が高速で跳ね回り、
 // 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射玉に当てたときの自キャラのダメージ × 今の数値」。
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
-const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16, REFL_MAX_BASE = 8, REFL_MAX_UP_CAP = BOUNCE_OBJ_MAX - REFL_MAX_BASE; // 最大値は×8から。URの宝箱の「反射倍率上昇の秘宝」1個ごとに+1（8個で×16）
+const BOUNCE_OBJ_MIN = 1, BOUNCE_OBJ_MAX = 16; // BOUNCE_OBJ_MAX：光の強さや音の上がり方の目安（倍率の上限ではない）
 const REFL_UNLIMITED = true; // 反射するたびに上がり（上限 reflMax で止まる）、敵に当たったら×1に戻る
-function reflMax() { if (REFL_UNLIMITED) return Infinity; return Math.min(BOUNCE_OBJ_MAX, REFL_MAX_BASE + Math.min(REFL_MAX_UP_CAP, game.reflMaxUp || 0)); } // いまの仕組み：上限は×100から。ショップの「反射MAXアップ」（💎1）と、宝箱の秘宝1個ごとに+1
+function reflMax() { return Infinity; } // 反射玉の倍率に上限はない
 // メテオ・大爆発に、いまの反射玉の力を上乗せする（そのままの倍率だと強すぎるので弱める）：×1→×1、×2→×1.2、×10→×2、×20→約×2.7、×100→約×6.8
 const REFL_SKILL_A = 0.2, REFL_SKILL_B = Math.log(5) / Math.log(9); // 1 + 0.2 ×（倍率−1）^0.73
 function reflNowMult() { return Math.max(1, ...reflectors().map(o => obstacleMult(o) || 1)); } // 反射玉が2つなら大きいほう
 function reflSkillMult() { const v = reflNowMult(); return v <= 1 ? 1 : 1 + REFL_SKILL_A * Math.pow(v - 1, REFL_SKILL_B); }
 function reflSkillText(x, y) { const v = reflNowMult(), m = reflSkillMult(); if (m > 1.001) spawnDamageText(x, y, `🔮 反射玉×${v} → 威力×${m < 10 ? m.toFixed(1) : Math.round(m)}`, '#8fd0ff', 0.025, true); return m; }
 function reflMin() { return game.reflStart2 ? 2 : BOUNCE_OBJ_MIN; } // 宝箱の「反射の初期値上昇」を持っていると×2から
-// ショップの「ダブル反射玉」（💎100）を持っていると、反射玉が2つ。2つ目の状態は game.reflB に保存する（o.ri＝0か1）
-function reflCount() { return game.reflTwo ? 2 : 1; }
-function reflState(i) { return i ? game.reflB : game.refl; }
+function reflCount() { return 1; } // 反射玉はいつも1つ（ダブル反射玉は削除した）
+function reflState(i) { return game.refl; }
 function reflectors() { return obstacles.filter(o => o.kind === 'reflector' && !o.broken); }
-function setBounceOp(o) { o.bop = '×'; const st = reflState(o.ri || 0), ok = st && st.bm >= reflMin() && (REFL_UNLIMITED || st.bm <= reflMax()); o.bm = ok ? Math.min(st.bm, reflMax()) : reflMin(); o.held16 = !!(ok && st.held); }
+function setBounceOp(o) { o.bop = '×'; const st = reflState(0), ok = st && st.bm >= reflMin(); o.bm = ok ? st.bm : reflMin(); }
 function saveReflector(o) { // 持ち越し用に、数値と場所（闘技場の中心からの割合）を覚える
   if (!o || o.kind !== 'reflector') return;
-  const st = { bm: o.bm, held: !!o.held16, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
-  if (o.ri) game.reflB = st; else game.refl = st;
+  game.refl = { bm: o.bm, fx: (o.x - arena.x) / (arenaHalf() || 1), fy: (o.y - arena.y) / (arenaHalfY() || 1) };
 }
-function stepBounceValue(o) { // 反射するたびに+1。最大値の次は×1（初期値上昇なら×2）に戻る。ショップの「反射MAX維持」があれば、×16のまま1回だけ反射できる
-  if (REFL_UNLIMITED) { o.held16 = false; o.bm = Math.min(reflMax(), reflRound(o.bm + reflStep())); o.bmFlash = Date.now(); saveReflector(o); return; } // お試し：上限なし。反射するたびに +0.5（反射上昇+1 で +1）
-  if (o.bm >= reflMax()) {
-    if (reflKeepCount() && !o.held16) { o.held16 = true; spawnDamageText(o.x, o.y - o.r - 16, `🌈 維持！ ×${o.bm}のまま`, '#ffe45c', 0.03); } // 粘りで1回だけ残る（もう残した印はセーブにも残すので、ステージをまたいでも2回は残らない）
-    else { o.held16 = false; o.bm = reflMin(); }
-  } else { o.held16 = false; o.bm = Math.min(reflMax(), reflRound(o.bm + reflStep())); }
-  o.bmFlash = Date.now(); saveReflector(o);
+function stepBounceValue(o) { // 反射するたびに上がる（上限なし）。敵に当たったら×1（初期値上昇なら×2）に戻る
+  o.bm = reflRound(o.bm + reflStep()); o.bmFlash = Date.now(); saveReflector(o);
 }
 function obstacleMult(o) { // 反射玉の数値（掛け算）
   if (!o || o.kind !== 'reflector') return null; // 数値が付くのは反射玉だけ（ステージに1つ）
@@ -1546,11 +1539,11 @@ function setupObstacles(dropDebug) {
 // 数値付きの反射玉は、どのステージにも1つだけ置く
 { const orig = setupObstacles; setupObstacles = function () {
   const mvs = {}; // 飛んでいる反射玉は、ボス戦などの次のステージでもそのまま飛び続ける
-  for (const old of reflectors()) { saveReflector(old); if (old.mvx || old.mvy) mvs[old.ri || 0] = { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map(), held16: old.held16 }; }
+  for (const old of reflectors()) { saveReflector(old); if (old.mvx || old.mvy) mvs[old.ri || 0] = { mvx: old.mvx, mvy: old.mvy, launched: old.launched, launchMult: old.launchMult, hitMap: new Map() }; }
   orig.apply(this, arguments);
   try { ensureOneBounce(); for (const o of reflectors()) if (mvs[o.ri || 0]) Object.assign(o, mvs[o.ri || 0]); } catch (e) {}
 }; }
-function ensureOneBounce() { // 反射玉をいつも決まった数（ふつう1つ・アイテムで2つ）にそろえる
+function ensureOneBounce() { // 反射玉をいつも1つにそろえる
   const n = reflCount(), seen = new Set();
   obstacles = obstacles.filter(o => { if (o.kind !== 'reflector' || o.broken) return true; const i = o.ri || 0; if (i >= n || seen.has(i)) return false; seen.add(i); return true; });
   for (let i = 0; i < n; i++) if (!seen.has(i)) placeReflector(i);
@@ -1574,8 +1567,8 @@ function placeReflector(ri) {
 function reflectorRadius() { return arenaHalf() * 0.11; } // 反射玉はいつも同じ大きさ（配置ごとに障害物の大きさが変わっても小さくならない）
 let obstacleHalf = 0;
 let reflCheckAt = 0;
-function reflKeepEnd(o) { o.keepUntil = 0; if (o.bm > reflMin()) { o.bm = reflMin(); o.held16 = false; o.bmFlash = Date.now(); saveReflector(o); if (typeof playReflReset === 'function') playReflReset(); } }
-function tickObstacles() { { const now = Date.now(); for (const o of obstacles) if (o.kind === 'reflector' && o.keepUntil && now >= o.keepUntil) reflKeepEnd(o); } /* 反射MAX維持の時間が切れたら×1へ */ { const rr = reflectorRadius(); for (const o of obstacles) if (o.kind === 'reflector' && !o.broken && o.r !== rr) o.r = rr; } /* 反射玉の大きさは毎回そろえる（配置の都合や画面の大きさが変わって、大きいまま・小さいままにならないように） */ if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
+function reflResetToMin(o) { if (o.bm > reflMin()) { o.bm = reflMin(); o.bmFlash = Date.now(); saveReflector(o); if (typeof playReflReset === 'function') playReflReset(); } }
+function tickObstacles() { { const rr = reflectorRadius(); for (const o of obstacles) if (o.kind === 'reflector' && !o.broken && o.r !== rr) o.r = rr; } /* 反射玉の大きさは毎回そろえる（配置の都合や画面の大きさが変わって、大きいまま・小さいままにならないように） */ if (phase === 'battle' && Date.now() - reflCheckAt > 1000) { reflCheckAt = Date.now(); if (reflectors().length !== reflCount()) { try { ensureOneBounce(); } catch (e) {} } } /* 反射玉がなくなっていたら置き直す（いつもステージに1つ・アイテムで2つ） */ if (obstacleStage !== game.stage + (game.skipChallenge ? 0.5 : 0) || obstacleHalf !== arena.radius) { obstacleHalf = arena.radius; setupObstacles(); } } // ステージが変わる・画面サイズが変わると配置し直す
 function obstacleHit(x, y, r) { return obstacles.find(o => !FLOOR_OBSTACLES.has(o.kind) && Math.hypot(x - o.x, y - o.y) < o.r + r) || null; }
 // デバッグ：好きな障害物を空いている場所に出す
 const DEBUG_OBSTACLES = [
@@ -1645,7 +1638,7 @@ function breakObstacleLoot(o) { // 壊れた障害物の中身
     spawnExpGems(o.x, o.y, 10);
     if (r < 0.3) { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.15); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(pl.x, pl.y - pl.radius - 14, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016); playHealSound(); updateHPUI(); } }
   } else if (o.kind === 'crystal') { // 水晶：経験値ザクザク、たまにジェム
-    spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, EXP_ENABLED ? '🔮 経験値ザクザク！' : '🔮 キラキラ！', '#c79bff', 0.016, true);
+    spawnExpGems(o.x, o.y, 25); spawnDamageText(x, y, '🔮 キラキラ！', '#c79bff', 0.016, true);
     if (r < 0.15) setTimeout(() => giveBattleFeather(x, y - 20), 300); // 15%で羽ガチャ1枚
   } else if (o.kind === 'pot') { // 壺・袋：割るとコインが出ることが多い
     if (r < 0.75) { const c = coinsFor(0.7); game.coins += c; spawnCoinBurst(o.x, o.y, c, 5); spawnDamageText(x, y, '🏺 +' + formatCoinNumber(c) + ' 🟡', '#ffd76b', 0.016, true); }
@@ -1803,7 +1796,7 @@ function reflectorSmash(o, e, pl) {
   const x = (o.x + e.x) / 2, y = (o.y + e.y) / 2, power = Math.min(1, Math.log(v) / Math.log(BOUNCE_OBJ_MAX)); // 0〜1：数値の大きさ
   const hp0 = e.hp; playerHitEnemyBy(e, pl, (o.launchMult || 1) * reflShowMult(v), col, 2.2, o, true); const dmg = Math.max(0, hp0 - e.hp); /* 進化「反射玉」も掛かる */
   if (dmg > 0 && Math.ceil(v) > (game.reflBestMult || 0)) game.reflBestMult = Math.ceil(v); // ランキング「MAX反射倍率」：敵に当てた反射玉の倍率の最高
-  if (dmg > 0 && v >= REFL_MAX_BASE) { if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：×8（パワーアップ前の最大値）以上の反射玉を敵に当てる。秘宝で最大値が上がっても条件は×8のまま
+  if (dmg > 0 && v >= 8) { /* ミッション「×8以上の反射玉を当てる」 */ if (typeof questTick === 'function') questTick('reflMax'); if (typeof obFlag === 'function') obFlag('reflMax'); } // ミッション：×8（パワーアップ前の最大値）以上の反射玉を敵に当てる。秘宝で最大値が上がっても条件は×8のまま
   if (dmg > 0) { // 当たった手ごたえ：一瞬止める（ヒットストップ）・敵を止めてから吹っ飛ばす・HIT!の文字
     hitStopFrames = Math.max(hitStopFrames || 0, 4 + Math.round(power * 4)); e.stunnedUntil = Math.max(e.stunnedUntil || 0, Date.now() + 250);
     spawnDamageText(e.x, e.y - e.radius - 30, 'HIT!', '#ffffff', 0.025, true);
@@ -1813,11 +1806,8 @@ function reflectorSmash(o, e, pl) {
   for (let i = 0; i < 2 + Math.round(power * 4); i++) spawnHitParticles(x, y, i % 2 ? col : '#fff6b0');
   if (power >= 0.55) shakeScreen(); else if (typeof shakeScreenLight === 'function') shakeScreenLight();
   playReflectSmash(good, power);
-  if (REFL_UNLIMITED && o.bm > reflMin()) { // お試し：敵に当たったら×1に戻る。反射MAX維持があれば、1個につき1秒そのまま保ってから戻す
-    const k = reflKeepCount(), now = Date.now();
-    if (!k) reflKeepEnd(o);
-    else if (!o.keepUntil) { o.keepUntil = now + k * REFL_KEEP_MS; spawnDamageText(o.x, o.y - o.r - 16, `🌈 MAX維持 ${reflKeepSecText(k)}秒！ ×${o.bm}`, '#ffe45c', 0.03, true); }
-  }
+  reflResetToMin(o); // 敵に当たったら×1に戻る
+
 }
 function playReflectSmash(good, power) { // ドカーン＋キラーン（＋と×は明るく上がる、－と÷は重く下がる）
   if (typeof thump === 'function') { thump(160, 40, 0.35 + power * 0.3, 0.35 + power * 0.25, 'sawtooth'); thump(90, 30, 0.5, 0.4, 'sine', 0.02); }
@@ -1955,7 +1945,7 @@ function openQBox(o) {
   const r = Math.random(), x = o.x, y = o.y - o.r - 10;
   if (r < 0.2) { const rar = rollChestRarity(2); spawnChestText(x, y, `${RARITY_INFO[rar].label}の宝箱！`, rar, RARITY_INFO[rar].color, 0.016, true); dropTreasureChest(rar); }
   else if (r < 0.55) { const coins = Math.max(1, Math.round(stageCoinRaw() * 2.5)); game.coins += coins; spawnCoinBurst(o.x, o.y - o.r, coins, 6); spawnDamageText(x, y, '+' + formatCoinNumber(coins) + ' 🟡', '#ffd76b', 0.016, true); }
-  else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, EXP_ENABLED ? '💎 経験値ザクザク！' : '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
+  else if (r < 0.8) { spawnExpGems(o.x, o.y - o.r, 18); spawnDamageText(x, y, '🟡 コインザクザク！', '#7ee7ff', 0.016, true); }
   else { const pl = balls.find(isMainPlayerBall); if (pl) { const h = Math.round(pl.maxHp * 0.25); pl.hp = Math.min(pl.maxHp, pl.hp + h); spawnDamageText(x, y, `💚 HP +${formatCoinNumber(h)}`, '#5fe0a8', 0.016, true); playHealSound(); updateHPUI(); } }
   spawnHitParticles(o.x, o.y - o.r, '#ffd76b'); updateStatsUI();
 }
