@@ -1662,12 +1662,28 @@ SHOP_ITEMS.speedUp = { icon: '⏩', get img() { return (game.speedLv2 || 0) >= 1
 function ownedSpeeds() { return [1, ...SPEED_STEPS.slice(0, Math.min(SPEED_STEPS.length, game.speedLv2 || 0))]; }
 function speedMult() { const s = ownedSpeeds(), v = game.speedSel || 1; return s.includes(v) ? v : 1; }
 { const orig = getEffectiveSpeed; getEffectiveSpeed = function () { return Date.now() < accelEndAt ? orig.apply(this, arguments) : gameSpeed * speedMult(); }; }
+// 倍速を切り替えたときの音：速くなるときは「ギュイーン↑」とエンジンがうなって駆け上がり、×1に戻すときは「シュゥン↓」と下がる
+function playSpeedShiftSound(m) {
+  try {
+    if (!audioCtx) return;
+    if (m > 1) {
+      const top = m >= 3 ? 1.6 : 1.25;
+      noiseSweep(0.35, 400, 5000 * top, 'bandpass', 2.5, 0.16);                 // 風を切る音
+      playTone(140, 0.38, 'sawtooth', 0.07, 520 * top);                         // エンジンがうなって上がる
+      playTone(280, 0.32, 'square', 0.035, 1040 * top);
+      [0, 1, m >= 3 ? 2 : -1].filter(i => i >= 0).forEach(i => setTimeout(() => playTone((880 + i * 220) * top, 0.12, 'triangle', 0.06), 260 + i * 70)); // 決まりの「キュイッ」（×3は3段）
+    } else {
+      noiseSweep(0.3, 4000, 400, 'bandpass', 2, 0.12);                          // シュゥン↓
+      playTone(520, 0.3, 'sawtooth', 0.05, 120);
+    }
+  } catch (e) {}
+}
 function updateSpeedBtn() {
   const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
   let b = document.getElementById('speedBtn'); const owned = ownedSpeeds();
   if (owned.length <= 1) { if (b) b.style.display = 'none'; return; }
   if (!b) { b = document.createElement('button'); b.id = 'speedBtn'; b.className = 'speed-float'; wrap.appendChild(b);
-    b.addEventListener('click', ev => { ev.stopPropagation(); const s = ownedSpeeds(), i = s.indexOf(speedMult()); game.speedSel = s[(i + 1) % s.length]; saveGame(); updateSpeedBtn(); showNotice(`⏩ ゲームの速さ ×${game.speedSel}`, false, 1400); try { playTone(700 + game.speedSel * 120, 0.06, 'square', 0.05); } catch (e) {} }); }
+    b.addEventListener('click', ev => { ev.stopPropagation(); const s = ownedSpeeds(), i = s.indexOf(speedMult()); game.speedSel = s[(i + 1) % s.length]; saveGame(); updateSpeedBtn(); showNotice(`⏩ ゲームの速さ ×${game.speedSel}`, false, 1400); playSpeedShiftSound(game.speedSel); }); }
   b.style.display = ''; const m = speedMult(), h = `<img src="${SPEED_IMG[m] || SPEED_IMG[2]}" alt="×${m}">`; if (b.innerHTML !== h) b.innerHTML = h; b.classList.toggle('on', m > 1); b.title = m > 1 ? `ゲームの速さ ×${m}` : 'ゲームの速さ ×1（押すと速くなる）';
 }
 setInterval(updateSpeedBtn, 1000);
