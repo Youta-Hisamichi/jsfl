@@ -85,7 +85,7 @@ async function renderRankingReal() {
     if (rankingMode !== modeNow || getRankingDateKey() !== day || getActiveTab() !== 'ranking') return; // 読んでいる間にタブ・日付を変えた
     const score = isDaily && today ? rankTodayClears() : myScore;
     let myRank = entries.findIndex(e => e.isPlayer) + 1, nearUp = null, nearDown = null;
-    if (!myRank && score > 0) {
+    if (!myRank) { /* 記録が0でも順位を出す（0より上の人の数＋1） */
       try { const above = await rankSrv().rankAbove(field, score, isDaily ? day : null); if (above != null) myRank = above + 1; } catch (e) {}
       if (isDaily && rankSrv().dailyNear) { try { const nr = await rankSrv().dailyNear(day, score); const f = d => d && { id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.c || 0 }; nearUp = f(nr.up[0]); nearDown = f(nr.down[0]); } catch (e) {} }
     }
