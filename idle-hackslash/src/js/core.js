@@ -914,8 +914,8 @@ const SUPERGEM_SHOP_ITEMS = {
   huge: { icon: '💎', name: 'ジェム超大袋', desc: 'ジェム +1331', cost: 9980 }
 };
 const SUBSCRIPTIONS = {
-  hero: { emblem: 'x_emb_hero', icon: '👑', name: '伝説の勇者の紋章', desc: '広告オフ＆全能力3倍＆全ショップ半額＆毎日💎30', cost: 2980, dailyGems: 30, statMult: 3, coinPriceMult: 0.5, gemPriceMult: 0.5, rank: 2 },
-  veteran: { emblem: 'x_emb_vet', icon: '🎖️', name: '熟練者の紋章', desc: '広告オフ＆全能力2倍＆コイン系ショップ3割引＆毎日💎8', cost: 980, dailyGems: 8, statMult: 2, coinPriceMult: 0.7, gemPriceMult: 1, rank: 1 },
+  hero: { emblem: 'x_emb_hero', icon: '👑', name: '伝説の勇者の紋章', desc: '広告オフ＆全能力3倍＆全ショップ半額＆毎日💎50', cost: 2980, dailyGems: 50, statMult: 3, coinPriceMult: 0.5, gemPriceMult: 0.5, rank: 2 },
+  veteran: { emblem: 'x_emb_vet', icon: '🎖️', name: '熟練者の紋章', desc: '広告オフ＆全能力2倍＆コイン系ショップ3割引＆毎日💎10', cost: 980, dailyGems: 10, statMult: 2, coinPriceMult: 0.7, gemPriceMult: 1, rank: 1 },
 };
 const SUBSCRIPTION_DAYS = 30;
 function isSubActive(id) { return !!(game.subscriptions && game.subscriptions[id] > Date.now()); }
