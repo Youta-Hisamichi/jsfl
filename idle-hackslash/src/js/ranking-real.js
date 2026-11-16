@@ -1,6 +1,6 @@
 // ===== 本物のランキング（アプリ版：Firebase）。ブラウザ・アーティファクトでは今までどおりの見本（架空のライバル）を出す =====
 // 記録は ranks/<uid>、本日のクリア数は daily/<日付>/p/<uid>。上位100人を出し、自分が100位より下なら「自分より上の人数」から順位を出す
-// 本日のクリア数は「デッドヒート」に見せる：開いているあいだはその場で順位が動く（↑↓）・すぐ上と下の人との差・戦闘中に抜いた/抜かれたのお知らせ・締め切りまでの残り時間・昨日の結果
+// 本日のクリア数は「デッドヒート」に見せる：開いたときの順位と前回開いたときの順位を比べて↑↓（サーバーの負荷を抑えるため、開いている間の自動更新はしない）・すぐ上と下の人との差・戦闘中に抜いた/抜かれたのお知らせ・締め切りまでの残り時間・昨日の結果
 const RANK_FIELDS = { stage: 'st', coins: 'co', kills: 'ki', evo: 'ev', refl: 'rf', dps: 'dp' }, RANK_TOP_N = 100, RANK_CACHE_MS = 60000, RANK_PUT_MS = 5 * 60000;
 const RANK_DAILY_PUT_MS = 20000, RANK_DUEL_CHECK_MS = 3 * 60000;
 function rankReal() { return !!(window.fbCloud && fbCloud.uid && fbCloud.rankTop); }
@@ -14,7 +14,7 @@ async function rankUpload(force) { // 記録が変わっていたら送る（本
   const now = Date.now(), m = rankMine(), j = JSON.stringify(m);
   if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { await fbCloud.rankPut(m); rankLastPut = j; rankLastPutAt = now; } catch (e) { console.warn('ランキングに送れません', e); } }
   const day = rankTodayKey(), c = rankTodayClears(), dj = day + ':' + c + ':' + m.n;
-  if (c > 0 && dj !== rankLastDaily) { try { await fbCloud.dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
+  if (dj !== rankLastDaily) { /* まだ1つもクリアしていなくても、開いた日は0で登録する */ try { await fbCloud.dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
 }
 setInterval(() => rankUpload(false), RANK_DAILY_PUT_MS);
 const rankCache = {}; let rankTotal = null, rankTotalAt = 0;
@@ -55,13 +55,13 @@ function rankDraw(key, entries, opt) {
 }
 // ---- A：本日のクリア数は、開いているあいだその場で順位が動く ----
 let rankWatchStop = null, rankWatchKey = '', rankWatchList = null, rankWatchMine = 0;
-setInterval(() => { if (rankWatchStop && rankWatchList && rankTodayClears() !== rankWatchMine) { rankWatchMine = rankTodayClears(); renderRankingReal(); } }, 3000); // 自分のクリア数が増えたら、開いている一覧もすぐ動かす
-function rankStopWatch() { if (rankWatchStop) { try { rankWatchStop(); } catch (e) {} } rankWatchStop = null; rankWatchKey = ''; }
-setInterval(() => { if (rankWatchStop && (getActiveTab() !== 'ranking' || rankingMode !== 'daily' || rankingDateOffset !== 0)) rankStopWatch(); }, 2000);
+setInterval(() => { if (rankWatchList && getActiveTab() === 'ranking' && rankingMode === 'daily' && rankingDateOffset === 0 && rankTodayClears() !== rankWatchMine) { rankWatchMine = rankTodayClears(); const key = 'daily|' + getRankingDateKey(); if (rankWatchKey === key) rankDrawLocal(); } }, 3000); // 自分のクリア数が増えたら、読みこんである一覧の中で自分の行だけ動かす（サーバーは読まない。ほかの人の数は開き直したとき）
+function rankStopWatch() { if (rankWatchStop) { try { rankWatchStop(); } catch (e) {} } rankWatchStop = null; }
+function rankDrawLocal() { const day = getRankingDateKey(), key = 'daily|' + day, es = rankDailyEntries(rankWatchList), r = es.findIndex(e => e.isPlayer) + 1; rankDraw(key, es, { fmt: v => v + ' クリア', myScore: rankTodayClears(), myRank: r, isDaily: true, live: true }); }
 function rankDailyEntries(list) { // サーバーより手元のほうが新しいので、自分の数は手元の数にして並べ直す
   const me = fbCloud.uid, mine = rankTodayClears();
   const es = list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.id === me ? Math.max(d.c || 0, mine) : (d.c || 0), isPlayer: d.id === me }));
-  if (!es.some(e => e.isPlayer) && mine > 0 && (es.length < RANK_TOP_N || mine > es[es.length - 1].score)) es.push({ id: me, name: rankEsc(rankName()), score: mine, isPlayer: true });
+  if (!es.some(e => e.isPlayer) && (es.length < RANK_TOP_N || mine > es[es.length - 1].score)) es.push({ id: me, name: rankEsc(rankName()), score: mine, isPlayer: true });
   es.sort((a, b) => b.score - a.score || (a.isPlayer ? -1 : b.isPlayer ? 1 : 0)); return es.slice(0, RANK_TOP_N);
 }
 async function renderRankingReal() {
@@ -84,14 +84,10 @@ async function renderRankingReal() {
     rankDraw(key, entries, { fmt, myScore: score, myRank, isDaily, live, nearUp, nearDown });
   };
   try { await rankUpload(true); } catch (e) {}
-  if (today && fbCloud.dailyWatch) {
-    if (rankWatchKey !== key) { rankStopWatch(); rankWatchKey = key; let first = true; rankWatchStop = fbCloud.dailyWatch(day, RANK_TOP_N, list => { rankWatchList = list; rankWatchMine = rankTodayClears(); finish(rankDailyEntries(list), !first); first = false; }); }
-    else if (rankWatchList) finish(rankDailyEntries(rankWatchList), true); // 見張り中：手元の数を入れて描き直す
-  } else {
-    rankStopWatch();
-    let list; try { list = await rankFetch(isDaily, day, field); } catch (e) { rankingList.innerHTML = '<div class="rank-loading">ランキングを読み込めませんでした。通信をお確かめのうえ、もう一度開いてください</div>'; return; }
-    const me = fbCloud.uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false);
-  }
+  rankStopWatch();
+  let list; try { list = await rankFetch(isDaily, day, field); } catch (e) { rankingList.innerHTML = '<div class="rank-loading">ランキングを読み込めませんでした。通信をお確かめのうえ、もう一度開いてください</div>'; return; }
+  if (today) { rankWatchList = list; rankWatchKey = key; rankWatchMine = rankTodayClears(); await finish(rankDailyEntries(list), rankingList.dataset.key === key && !!rankingList.querySelector('[data-rid]')); }
+  else { const me = fbCloud.uid; await finish(list.map(d => ({ id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: isDaily ? (d.c || 0) : (d[field] || 0), isPlayer: d.id === me })), false); }
   if (Date.now() - rankTotalAt > 10 * 60000) { rankTotalAt = Date.now(); try { rankTotal = await fbCloud.rankCount(); } catch (e) { rankTotal = null; } }
   if (totalUserCountEl) { totalUserCountEl.style.display = rankTotal ? '' : 'none'; if (rankTotal) totalUserCountEl.textContent = `👥 ランキング参加者：${rankTotal.toLocaleString('ja-JP')} 人`; }
 }
