@@ -8,6 +8,8 @@
 //       GET  api.php?a=above&f=st&v=123 / a=above&day=YYYY-MM-DD&v=12（自分より上の人数）
 //       GET  api.php?a=near&day=YYYY-MM-DD&c=12（すぐ上・すぐ下の3人ずつ） / a=count（登録人数）
 // id は端末で作る32桁の英数字、key は端末だけが知っている合言葉（サーバーには sha256 だけ残す）。
+// 書き込みには署名 s（HMAC-SHA256(sign_key, a + '|' + 本文)）を付ける。config.php に sign_key があるときは、署名が合わないものを断る。
+// 管理画面（admin.php）で止めた人（ban = 1）は、一覧に出さず、書き込みも黙って捨てる。
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -41,7 +43,7 @@ try {
 } catch (Throwable $e) { fail('DB につながりません', 500); }
 $isSqlite = $db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
 if ($isSqlite) { // 手元で試すとき用：表がなければ作る
-  $db->exec('CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, key_hash TEXT NOT NULL, n TEXT NOT NULL, st REAL DEFAULT 0, co REAL DEFAULT 0, ki REAL DEFAULT 0, ev REAL DEFAULT 0, rf REAL DEFAULT 0, dp REAL DEFAULT 0, ver TEXT DEFAULT "", at INTEGER DEFAULT 0, created INTEGER DEFAULT 0)');
+  $db->exec('CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, key_hash TEXT NOT NULL, n TEXT NOT NULL, st REAL DEFAULT 0, co REAL DEFAULT 0, ki REAL DEFAULT 0, ev REAL DEFAULT 0, rf REAL DEFAULT 0, dp REAL DEFAULT 0, ver TEXT DEFAULT "", at INTEGER DEFAULT 0, created INTEGER DEFAULT 0, ban INTEGER DEFAULT 0)');
   foreach (FIELDS as $f) $db->exec("CREATE INDEX IF NOT EXISTS ix_$f ON players($f)");
   $db->exec('CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, id TEXT NOT NULL, n TEXT NOT NULL, c INTEGER DEFAULT 0, at INTEGER DEFAULT 0, PRIMARY KEY(day, id))');
   $db->exec('CREATE INDEX IF NOT EXISTS ix_daily_c ON daily(day, c)');
@@ -70,12 +72,13 @@ function auth($db, $body, $name) {
   if (!is_string($id) || !preg_match('/^[0-9a-f]{32}$/', $id)) fail('id が変です');
   if (!is_string($key) || !preg_match('/^[0-9a-f]{32,64}$/', $key)) fail('key が変です');
   $h = hash('sha256', $key);
-  $st = $db->prepare('SELECT key_hash, at FROM players WHERE id = ?'); $st->execute([$id]); $row = $st->fetch();
+  $st = $db->prepare('SELECT key_hash, at, ban FROM players WHERE id = ?'); $st->execute([$id]); $row = $st->fetch();
   if (!$row) {
     $db->prepare('INSERT INTO players (id, key_hash, n, st, at, created) VALUES (?, ?, ?, 1, ?, ?)')->execute([$id, $h, $name, time(), time()]);
     return [$id, 0];
   }
   if (!hash_equals($row['key_hash'], $h)) fail('key が合いません', 403);
+  if ((int)$row['ban']) out(['ok' => true]); // 止めた人には、うまくいったふりをして何も書かない
   return [$id, (int)$row['at']];
 }
 
@@ -85,6 +88,11 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'POST') {
   $raw = file_get_contents('php://input', false, null, 0, 4096);
   $body = json_decode($raw, true); if (!is_array($body)) fail('本文が JSON ではありません');
+  if (!empty($cfg['sign_key'])) { // 署名のチェック（アプリに入れた鍵で作ったものだけ受け付ける）
+    $sig = $_GET['s'] ?? '';
+    if (!is_string($sig) || !hash_equals(hash_hmac('sha256', $a . '|' . $raw, $cfg['sign_key']), $sig)) fail('署名が合いません', 403);
+    if (abs(time() - (int)($body['ts'] ?? 0)) > 86400) fail('時刻がずれています', 403); // 同じ書き込みを何日もあとに使い回させない
+  }
   $name = cleanName($body['n'] ?? '');
   if ($a === 'put') {
     [$id, $lastAt] = auth($db, $body, $name);
@@ -114,25 +122,25 @@ if ($method === 'POST') {
 $pub = fn($r) => array_merge($r, ['id' => substr($r['id'], 0, 12)]); // 他人の id は先頭だけ見せる（自分かどうかの見分けにはこれで足りる）
 if ($a === 'top') {
   $f = field($_GET['f'] ?? ''); $n = limitN($_GET['n'] ?? 50);
-  $rows = $db->query("SELECT id, n, st, co, ki, ev, rf, dp FROM players ORDER BY $f DESC, at ASC LIMIT $n")->fetchAll();
+  $rows = $db->query("SELECT id, n, st, co, ki, ev, rf, dp FROM players WHERE ban = 0 ORDER BY $f DESC, at ASC LIMIT $n")->fetchAll();
   out(['ok' => true, 'list' => array_map($pub, $rows)]);
 }
 if ($a === 'dtop') {
   $day = readDay($_GET['day'] ?? ''); $n = limitN($_GET['n'] ?? 50);
-  $st = $db->prepare("SELECT id, n, c FROM daily WHERE day = ? ORDER BY c DESC, at ASC LIMIT $n"); $st->execute([$day]);
+  $st = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? ORDER BY d.c DESC, d.at ASC LIMIT $n"); $st->execute([$day]);
   out(['ok' => true, 'list' => array_map($pub, $st->fetchAll())]);
 }
 if ($a === 'above') {
   $v = (float)($_GET['v'] ?? 0);
-  if (isset($_GET['day'])) { $st = $db->prepare('SELECT COUNT(*) AS k FROM daily WHERE day = ? AND c > ?'); $st->execute([readDay($_GET['day']), $v]); }
-  else { $f = field($_GET['f'] ?? ''); $st = $db->prepare("SELECT COUNT(*) AS k FROM players WHERE $f > ?"); $st->execute([$v]); }
+  if (isset($_GET['day'])) { $st = $db->prepare('SELECT COUNT(*) AS k FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c > ?'); $st->execute([readDay($_GET['day']), $v]); }
+  else { $f = field($_GET['f'] ?? ''); $st = $db->prepare("SELECT COUNT(*) AS k FROM players WHERE ban = 0 AND $f > ?"); $st->execute([$v]); }
   out(['ok' => true, 'count' => (int)$st->fetch()['k']]);
 }
 if ($a === 'near') {
   $day = readDay($_GET['day'] ?? ''); $c = (int)($_GET['c'] ?? 0);
-  $up = $db->prepare('SELECT id, n, c FROM daily WHERE day = ? AND c > ? ORDER BY c ASC LIMIT 3'); $up->execute([$day, $c]);
-  $dn = $db->prepare('SELECT id, n, c FROM daily WHERE day = ? AND c < ? ORDER BY c DESC LIMIT 3'); $dn->execute([$day, $c]);
+  $up = $db->prepare('SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c > ? ORDER BY d.c ASC LIMIT 3'); $up->execute([$day, $c]);
+  $dn = $db->prepare('SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c < ? ORDER BY d.c DESC LIMIT 3'); $dn->execute([$day, $c]);
   out(['ok' => true, 'up' => array_map($pub, $up->fetchAll()), 'down' => array_map($pub, $dn->fetchAll())]);
 }
-if ($a === 'count') out(['ok' => true, 'count' => (int)$db->query('SELECT COUNT(*) AS k FROM players')->fetch()['k']]);
+if ($a === 'count') out(['ok' => true, 'count' => (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 0')->fetch()['k']]);
 fail('a が変です');

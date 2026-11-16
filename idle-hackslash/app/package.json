@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "放置系ハクスラ無限反射の Android アプリ（Capacitor）。ゲーム本体は ../dist",
   "scripts": {
-    "sync": "cap sync android"
+    "sync": "cap sync android",
+    "capacitor:copy:after": "node ../tools/rank-key-copy.js"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.3.0",

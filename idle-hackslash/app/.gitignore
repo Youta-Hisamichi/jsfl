@@ -7,3 +7,4 @@ android/app/release/
 *.jks
 *.keystore
 keystore.properties
+rank-key.txt

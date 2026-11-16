@@ -23,7 +23,9 @@
 
 ## ランキング（XSERVER）
 - 本物のランキングは XSERVER の PHP + MySQL（`server/rank/`。置き方は README.md）。ゲーム側は `src/js/rank-server.js` の RANK_API_URL（空なら Firebase のまま）。
-- `server/rank/config.php`（DB のパスワード）は**リポジトリに入れない**（.gitignore 済み）。
+- `server/rank/config.php`（DB のパスワード・署名の鍵・管理画面のパスワード）は**リポジトリに入れない**（.gitignore 済み）。
+- 書き込みの署名の鍵は `app/rank-key.txt`（gitignore 済み。ユーザーが保管。この環境ではスクラッチパッドの keys/rank-key.txt に控え）。`npx cap sync` のあと tools/rank-key-copy.js が自動でアプリに入れる。ないとランキングに書き込めないアプリになるので、組み立て前に必ずあるか確かめる。GitHub Actions は Secrets の RANK_SIGN_KEY。
+- 管理画面は https://hisashiapp.xsrv.jp/mugen-rank/admin.php（ありえない記録の人を止める・消す）。
 
 ## iPhone アプリ（idle-hackslash/app/ios/）
 - 同じ Capacitor のプロジェクト。Bundle ID は **com.hisashiapp.mugenhansya**。iPhone と iPad（TARGETED_DEVICE_FAMILY "1,2"）・縦画面のみ（iPad は全画面）。タブレットでは index.html の先頭のスクリプトで viewport の幅を狭めて画面いっぱいに拡大する。ストア画像は store/ios（iPhone）・store/ipad（iPad 2064×2752）。組み立てはユーザーの Mac の Xcode（この環境ではできない）。

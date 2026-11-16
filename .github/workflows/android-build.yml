@@ -5,6 +5,7 @@
 #   ANDROID_KEYSTORE_PASSWORD … 鍵のファイルのパスワード
 #   ANDROID_KEY_ALIAS … 鍵の名前（upload）
 #   ANDROID_KEY_PASSWORD … 鍵のパスワード
+#   RANK_SIGN_KEY … ランキングの署名の鍵（app/rank-key.txt の64桁。ないとランキングに書き込めないアプリになる）
 # できた APK と AAB は、実行結果のページ下の「Artifacts」からダウンロードできる。
 name: Android ビルド
 
@@ -47,6 +48,12 @@ jobs:
 
       - name: 部品を入れる
         run: npm ci
+
+      - name: ランキングの署名の鍵を置く（cap sync のときにアプリへ入る）
+        env:
+          RANK_SIGN_KEY: ${{ secrets.RANK_SIGN_KEY }}
+        run: |
+          if [ -n "$RANK_SIGN_KEY" ]; then printf '%s' "$RANK_SIGN_KEY" > rank-key.txt; else echo "::warning::RANK_SIGN_KEY がないので、ランキングに書き込めないアプリになります"; fi
 
       - name: ゲーム（dist）をアプリに取り込む
         run: npx cap sync android
@@ -96,7 +103,7 @@ jobs:
 
       - name: 鍵を消す
         if: always()
-        run: rm -f android/app/release.jks android/keystore.properties
+        run: rm -f android/app/release.jks android/keystore.properties rank-key.txt
 
       - uses: actions/upload-artifact@v4
         with:

@@ -1,4 +1,4 @@
-# api.php 以外は外から見せない（config.php・schema.sql・README など）
-<FilesMatch "^(?!api\.php$).*">
+# api.php と admin.php 以外は外から見せない（config.php・schema.sql・README など）
+<FilesMatch "^(?!(api|admin)\.php$).*">
   Require all denied
 </FilesMatch>

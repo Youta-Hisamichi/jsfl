@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS players (
   ver VARCHAR(20) NOT NULL DEFAULT '',
   at INT NOT NULL DEFAULT 0,
   created INT NOT NULL DEFAULT 0,
+  ban TINYINT NOT NULL DEFAULT 0,
   INDEX ix_st (st), INDEX ix_co (co), INDEX ix_ki (ki), INDEX ix_ev (ev), INDEX ix_rf (rf), INDEX ix_dp (dp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -24,3 +25,6 @@ CREATE TABLE IF NOT EXISTS daily (
   PRIMARY KEY (day, id),
   INDEX ix_day_c (day, c)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- すでに表を作ってある場合は、これだけ実行する（管理画面の「止める」用の列を足す）
+-- ALTER TABLE players ADD COLUMN ban TINYINT NOT NULL DEFAULT 0;

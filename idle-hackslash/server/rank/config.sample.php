@@ -8,4 +8,6 @@ return [
   'user'   => 'xxxx_mugen',         // MySQL ユーザー名
   'pass'   => 'ここにパスワード',
   'tz'     => 'Asia/Tokyo',
+  'sign_key'   => '',             // 署名の鍵（アプリの app/rank-key.txt と同じ64桁）。入れると署名のない書き込みを断る
+  'admin_pass' => '',             // 管理画面（admin.php）のパスワード（10文字以上）
 ];
