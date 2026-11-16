@@ -189,7 +189,7 @@ function openCharEdit(first, onDone) {
   ov.innerHTML = `<div class="ce-panel"><div class="ce-title">🎨 キャラエディット</div>${first ? '<div class="ce-sub">冒険に出る勇者の姿を決めよう！（あとから設定で変えられます）</div>' : ''}
     <div class="ce-stage"><img class="ce-hero" alt=""><button class="ce-rand" title="ランダム">🎲 ランダム</button></div>
     <div class="ce-say"></div>
-    <label class="ce-name"><span>名前</span><input type="text" maxlength="12" placeholder="名無しの勇者" value="${esc(game.username || '')}"></label>
+    <label class="ce-name"><span>名前</span><input type="text" maxlength="25" placeholder="名無しの勇者" value="${esc(game.username || '')}"></label>
     <div class="ce-sec">性別</div><div class="ce-opts ce-gender"><button data-ce-gender="male">♂ 男の子</button><button data-ce-gender="female">♀ 女の子</button></div>
     <div class="ce-sec" style="display:none">語尾</div><div class="ce-opts ce-ending" style="display:none">${HERO_ENDINGS.map(([n], i) => `<button data-ce-end="${i}">${n}</button>`).join('')}</div>
     <label class="ce-name ce-endtext" style="display:none !important"><span>語尾</span><input type="text" maxlength="6" placeholder="例：でござる" value="${esc(endingText)}"></label>
@@ -236,7 +236,7 @@ function openCharEdit(first, onDone) {
       game.heroLook = { ...look }; game.charEditSeen = true;
       game.heroEnding = ending; game.heroEndingText = endIn.value.trim().slice(0, 6);
       if (ending === 4 && !game.heroEndingText) game.heroEnding = 0; // 空なら普通
-      game.username = nameIn.value.trim().slice(0, 12);
+      game.username = cleanUserName(nameIn.value);
       if (typeof usernameInput !== 'undefined' && usernameInput) usernameInput.value = game.username;
       applyHeroLook(); saveGame();
       if (typeof renderRanking === 'function') try { renderRanking(); } catch (err) {}

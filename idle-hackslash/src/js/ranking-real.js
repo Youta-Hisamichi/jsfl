@@ -1,15 +1,15 @@
 // ===== 本物のランキング（アプリ版：Firebase）。ブラウザ・アーティファクトでは今までどおりの見本（架空のライバル）を出す =====
 // 記録は ranks/<uid>、本日のクリア数は daily/<日付>/p/<uid>。上位100人を出し、自分が100位より下なら「自分より上の人数」から順位を出す
 // 本日のクリア数は「デッドヒート」に見せる：開いたときの順位と前回開いたときの順位を比べて↑↓（サーバーの負荷を抑えるため、開いている間の自動更新はしない）・すぐ上と下の人との差・戦闘中に抜いた/抜かれたのお知らせ・締め切りまでの残り時間・昨日の結果
-const RANK_FIELDS = { stage: 'st', coins: 'co', kills: 'ki', evo: 'ev', refl: 'rf', dps: 'dp' }, RANK_TOP_N = 100, RANK_CACHE_MS = 60000, RANK_PUT_MS = 5 * 60000;
-const RANK_DAILY_PUT_MS = 20000, RANK_DUEL_CHECK_MS = 3 * 60000;
+const RANK_FIELDS = { stage: 'st', coins: 'co', kills: 'ki', evo: 'ev', refl: 'rf', dps: 'dp' }, RANK_TOP_N = 50, RANK_CACHE_MS = 60000, RANK_PUT_MS = 5 * 60000;
+const RANK_DAILY_PUT_MS = 60000, RANK_DUEL_CHECK_MS = 3 * 60000;
 function rankReal() { return !!(window.fbCloud && fbCloud.uid && fbCloud.rankTop); }
 function rankEsc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
-function rankName() { return (String(game.username || '').trim() || '名無しの勇者').slice(0, 12); }
+function rankName() { return (cleanUserName(game.username) || '名無しの勇者'); }
 function rankMine() { return { n: rankName(), st: Math.floor(game.bestStage || 1), co: Math.floor(game.bestCoins || 0), ki: Math.floor(game.totalKills || 0), ev: +(game.evoBestMult || 0), rf: Math.floor(game.reflBestMult || 0), dp: Math.floor(game.maxDps || 0), ver: String(typeof GAME_VERSION !== 'undefined' ? GAME_VERSION : '') }; }
 function rankTodayClears() { return Math.floor(getDailyClearsForDate(rankTodayKey()) || 0); }
 let rankLastPut = '', rankLastPutAt = 0, rankLastDaily = '';
-async function rankUpload(force) { // 記録が変わっていたら送る（本日のクリア数は20秒おき、ほかは5分おき・ランキングを開いたとき）
+async function rankUpload(force) { // 記録が変わっていたら送る（本日のクリア数は1分おき、ほかは5分おき・ランキングを開いたとき）
   if (!rankReal()) return;
   const now = Date.now(), m = rankMine(), j = JSON.stringify(m);
   if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { await fbCloud.rankPut(m); rankLastPut = j; rankLastPutAt = now; } catch (e) { console.warn('ランキングに送れません', e); } }

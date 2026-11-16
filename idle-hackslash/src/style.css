@@ -5442,3 +5442,10 @@ body.boss-hp .hp-row { display: none !important; }
 .speed-float:not(.on) img { filter: grayscale(0.85) brightness(0.8) drop-shadow(0 2px 3px rgba(0,0,0,0.6)); opacity: 0.85; }
 .speed-float.on { box-shadow: none !important; }
 .speed-float.on img { filter: drop-shadow(0 0 6px rgba(255,215,107,0.8)) drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+/* ランキングページの名前入力 */
+.tab-page[data-tab="ranking"] .rank-name-row { background: rgba(20, 14, 6, 0.72); border: 1px solid rgba(255, 210, 120, 0.45); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+.tab-page[data-tab="ranking"] .rank-name-row label { color: #fff; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="ranking"] .rank-name-row input { color: #fff !important; background: rgba(0, 0, 0, 0.55) !important; border: 1px solid rgba(255, 210, 120, 0.5) !important; }
+.tab-page[data-tab="ranking"] .rank-name-row input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.rank-row .rank-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-page[data-tab="ranking"] .rank-name-row #usernameSaveBtn { background: linear-gradient(#f6c94a, #c98a14) !important; color: #2a1600 !important; font-weight: 900; border: 1px solid #fff2b0 !important; text-shadow: none !important; }

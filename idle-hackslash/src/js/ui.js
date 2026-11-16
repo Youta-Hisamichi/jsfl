@@ -372,11 +372,16 @@ function fullReset() {
   loop();
 }
 
+/* 名前からタグや < > を取り除き、最大25文字にする */
+function cleanUserName(v) { return String(v || '').replace(/<[^>]*>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 25); }
+
 resetBtn.addEventListener('click', fullReset);
 usernameSaveBtn.addEventListener('click', () => {
-  const name = usernameInput.value.trim().slice(0, 12);
+  const name = cleanUserName(usernameInput.value);
+  usernameInput.value = name;
   game.username = name;
   saveGame();
+  if (typeof rankUpload === 'function') rankUpload(true);
   renderRanking();
   showNotice(name ? `ユーザー名を「${name}」に設定しました` : 'ユーザー名をリセットしました');
 });

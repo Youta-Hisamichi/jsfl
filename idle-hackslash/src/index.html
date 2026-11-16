@@ -396,13 +396,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="shopkeeper" data-npc-tab="records"></div>
       <div class="sub-tabs rec-tabs"><button class="sub-tab-btn active" data-rec-tab="stats" aria-label="戦績"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_stats.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="mission" aria-label="ミッション"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_mission.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bestiary" aria-label="敵図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bestiary.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="bgm" aria-label="BGM図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_bgm.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="skillbook" aria-label="スキル図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_skillbook.webp" alt=""></button><button class="sub-tab-btn" data-rec-tab="compbook" aria-label="仲間図鑑"><img class="rec-tab-lbl" src="assets/img/ui/rec/lbl_compbook.webp" alt=""></button></div>
       <div class="rec-sec" data-rec-sec="stats">
-      <div class="settings-row">
-        <div style="display:flex; gap:6px; align-items:center;">
-          <label style="margin-bottom:0; white-space:nowrap;">👤 ユーザー名</label>
-          <input type="text" id="usernameInput" maxlength="12" placeholder="名無しの勇者" style="flex:1; min-width:0; background:var(--bg-soft); border:1px solid var(--ring); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.8rem;">
-          <button class="modal-shop-btn" id="usernameSaveBtn" style="width:auto; padding:8px 14px;">保存</button>
-        </div>
-      </div>
       <button class="rg-claim-all is-off" id="rgClaimAll" style="display:none;"></button>
       <div class="record-panel one">
         <div class="record" data-goal-row="reincarnations">TOTAL<strong id="rebornNum" data-unit="回">0</strong>転生回数<div class="rec-goal" data-goal="reincarnations"></div></div>
@@ -456,6 +449,13 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
   <div class="tab-page" data-tab="ranking">
     <div class="artifact-panel">
       <div class="shopkeeper" data-npc-tab="ranking"></div>
+      <div class="settings-row rank-name-row">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <label style="margin-bottom:0; white-space:nowrap;">👤 ユーザー名</label>
+          <input type="text" id="usernameInput" maxlength="25" placeholder="名無しの勇者" style="flex:1; min-width:0; background:var(--bg-soft); border:1px solid var(--ring); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.8rem;">
+          <button class="modal-shop-btn" id="usernameSaveBtn" style="width:auto; padding:8px 14px;">保存</button>
+        </div>
+      </div>
       <div id="totalUserCount" style="text-align:center; font-size:14px; color:#9db0d8; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.04); border-radius:10px;">👥 累計プレイヤー数：--- 人</div>
       <div class="gacha-actions rank-tabs">
         <button class="gacha-pull rank-tab-btn active" id="rankDailyBtn" data-rank-mode="daily">本日の<br>クリア数</button>
