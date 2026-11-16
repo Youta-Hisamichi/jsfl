@@ -23,6 +23,7 @@
 
 ## ランキング（XSERVER）
 - 本物のランキングは XSERVER の PHP + MySQL（`server/rank/`。置き方は README.md）。ゲーム側は `src/js/rank-server.js` の RANK_API_URL（空なら Firebase のまま）。
+- パソコン（ブラウザ・アーティファクト）も本物のランキング。署名なしで送る（サーバーは受け付け、版に「web」が付く）。サーバーにつながらないブラウザでは見本のライバルに戻る。
 - `server/rank/config.php`（DB のパスワード・署名の鍵・管理画面のパスワード）は**リポジトリに入れない**（.gitignore 済み）。
 - 書き込みの署名の鍵は `app/rank-key.txt`（gitignore 済み。ユーザーが保管。この環境ではスクラッチパッドの keys/rank-key.txt に控え）。`npx cap sync` のあと tools/rank-key-copy.js が自動でアプリに入れる。ないとランキングに書き込めないアプリになるので、組み立て前に必ずあるか確かめる。GitHub Actions は Secrets の RANK_SIGN_KEY。
 - 管理画面は https://hisashiapp.xsrv.jp/mugen-rank/admin.php（ありえない記録の人を止める・消す）。

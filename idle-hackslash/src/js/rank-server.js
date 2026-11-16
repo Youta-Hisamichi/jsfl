@@ -1,6 +1,7 @@
 // ===== ランキングを XSERVER の PHP（server/rank/api.php）で読み書きする =====
 // RANK_API_URL を入れると、Firebase のかわりにこちらを使う（空なら今までどおり Firebase）。
-// アプリ（Android・iPhone）だけで使う。ブラウザ・アーティファクトは見本のライバルのまま。
+// アプリもパソコン（ブラウザ・アーティファクト）も本物のランキング。パソコンは署名の鍵がないので署名なしで送る（サーバーは受け付ける）。
+// ブラウザからサーバーにつながらないとき（アーティファクトのページが外への通信を止めているなど）は、見本のライバルに戻す。
 const RANK_API_URL = (() => { try { return localStorage.getItem('rankApiUrl') || ''; } catch (e) { return ''; } })() || 'https://hisashiapp.xsrv.jp/mugen-rank/api.php'; // 試すときは localStorage の rankApiUrl で上書きできる。本番の URL は右の文字（空にすると Firebase に戻る）
 function rankIds() { // 端末ごとの id と合言葉（セーブに入れるので、クラウドの控えから戻しても同じ人のまま）
   const hex = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); };
@@ -8,7 +9,9 @@ function rankIds() { // 端末ごとの id と合言葉（セーブに入れる�
   if (!/^[0-9a-f]{32}$/.test(game.rankKey || '')) game.rankKey = hex(16);
   return { id: game.rankId, key: game.rankKey };
 }
-const rankApiOn = () => !!RANK_API_URL && (!!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()) || localStorage.getItem('rankApiTest') === '1');
+const rankIsNative = () => !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+let rankApiBroken = false; // ブラウザでサーバーにつながらなかった
+const rankApiOn = () => !!RANK_API_URL && !rankApiBroken;
 // 送る中身に署名を付ける（HMAC-SHA256。鍵はアプリの中の rank-key.txt だけにあり、リポジトリ・ブラウザ版には入らない）。
 // 1回の計算は1ミリ秒もかからない軽い処理。サーバー（api.php）は同じ鍵で確かめ、合わない書き込みは断る。
 let rankSignKey = '';
@@ -44,11 +47,16 @@ async function rankApi(a, params, body) {
   if (body) {
     await rankKeyReady;
     const ts = Math.floor((typeof trustNow === 'function' ? trustNow() : Date.now()) / 1000);
-    const text = JSON.stringify({ ...rankIds(), ...body, ts });
+    const text = JSON.stringify({ ...rankIds(), ...body, ...(body.ver && !rankIsNative() ? { ver: String(body.ver).slice(0, 15) + ' web' } : {}), ts }); // パソコンからの記録は版に web を付ける（管理画面で見分ける）
     if (rankSignKey) q.set('s', rankHmacHex(rankSignKey, a + '|' + text));
     opt = { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text, keepalive: true }; // keepalive：アプリを閉じる途中でも送り切る
   }
-  const r = await fetch(RANK_API_URL + '?' + q, opt);
+  let r;
+  try { r = await fetch(RANK_API_URL + '?' + q, opt); }
+  catch (e) { // つながらない：ブラウザなら見本のランキングに戻す（アプリは「読み込めませんでした」を出す）
+    if (!rankIsNative() && !rankApiBroken) { rankApiBroken = true; console.warn('ランキングのサーバーにつながらないので見本を出します', e); setTimeout(() => { try { if (getActiveTab() === 'ranking') renderRanking(); } catch (x) {} }, 0); }
+    throw e;
+  }
   const j = await r.json(); if (!j.ok) throw new Error(j.error || 'ranking api'); return j;
 }
 const rankNum = list => (list || []).map(d => { const o = { ...d }; for (const k of ['st', 'co', 'ki', 'ev', 'rf', 'dp', 'c']) if (k in o) o[k] = Number(o[k]) || 0; return o; }); // 数は必ず数として扱う

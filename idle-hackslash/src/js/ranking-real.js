@@ -147,7 +147,7 @@ async function rankYesterdayResult() {
 { let tries = 0; const t = setInterval(() => { if (rankReal() || ++tries > 30) { clearInterval(t); setTimeout(rankYesterdayResult, 6000); } }, 2000); }
 setInterval(() => { if (rankReal()) rankYesterdayResult(); }, 10 * 60000); // 起動したまま日付をまたいだとき
 { const orig = renderRanking; renderRanking = function () {
-  if (!rankReal()) return orig.apply(this, arguments); // ブラウザ・アーティファクト（Firebase なし）は見本のまま
+  if (!rankReal()) return orig.apply(this, arguments); // サーバーにつながらないときは見本のまま
   const keep = rankingList.innerHTML, tot = totalUserCountEl && totalUserCountEl.innerHTML; orig.apply(this, arguments); // タブ・日付の表示はそのまま使う（見本のライバルの一覧は捨てる）
   rankingList.innerHTML = keep; if (totalUserCountEl && tot) { totalUserCountEl.innerHTML = tot; totalUserCountEl.style.display = ''; }
   renderRankingReal();

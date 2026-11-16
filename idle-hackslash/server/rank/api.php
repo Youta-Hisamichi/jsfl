@@ -8,7 +8,7 @@
 //       GET  api.php?a=above&f=st&v=123 / a=above&day=YYYY-MM-DD&v=12（自分より上の人数）
 //       GET  api.php?a=near&day=YYYY-MM-DD&c=12（すぐ上・すぐ下の3人ずつ） / a=count（登録人数）
 // id は端末で作る32桁の英数字、key は端末だけが知っている合言葉（サーバーには sha256 だけ残す）。
-// 書き込みには署名 s（HMAC-SHA256(sign_key, a + '|' + 本文)）を付ける。config.php に sign_key があるときは、署名が合わないものを断る。
+// アプリの書き込みには署名 s（HMAC-SHA256(sign_key, a + '|' + 本文)）を付ける。署名が付いていて合わないものは断る（署名なしのパソコン版は受け付ける）。
 // 管理画面（admin.php）で止めた人（ban = 1）は、一覧に出さず、書き込みも黙って捨てる。
 // シャドウバン（ban = 2）の人は、書き込みは受け付けるが、本人以外の一覧・人数には出さない（読むときの me＝自分の id で見分ける）。
 
@@ -89,11 +89,12 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'POST') {
   $raw = file_get_contents('php://input', false, null, 0, 4096);
   $body = json_decode($raw, true); if (!is_array($body)) fail('本文が JSON ではありません');
-  if (!empty($cfg['sign_key'])) { // 署名のチェック（アプリに入れた鍵で作ったものだけ受け付ける）
-    $sig = $_GET['s'] ?? '';
+  $sig = $_GET['s'] ?? '';
+  if (!empty($cfg['sign_key']) && $sig !== '') { // 署名のチェック：署名が付いているなら、アプリに入れた鍵で作ったものだけ受け付ける
     if (!is_string($sig) || !hash_equals(hash_hmac('sha256', $a . '|' . $raw, $cfg['sign_key']), $sig)) fail('署名が合いません', 403);
     if (abs(time() - (int)($body['ts'] ?? 0)) > 86400) fail('時刻がずれています', 403); // 同じ書き込みを何日もあとに使い回させない
   }
+  // 署名なし（パソコン・ブラウザ版。鍵を入れられない）も受け付ける。版（ver）の「web」で見分けられる。ありえない記録は管理画面で止める
   $name = cleanName($body['n'] ?? '');
   if ($a === 'put') {
     [$id, $lastAt] = auth($db, $body, $name);
