@@ -5432,5 +5432,7 @@ body.boss-hp .hp-row { display: none !important; }
 /* ランキングの背景を少し暗く */
 .tab-page[data-tab="ranking"] > .artifact-panel { background: linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)), linear-gradient(180deg, rgba(20,6,6,0.05) 0px, rgba(20,6,6,0.25) 600px, rgba(20,6,6,0.75) 900px, #1a0808 1100px), url(assets/img/ui/rk/bg.webp) 50% 0 / 100% auto no-repeat, #1a0808 !important; }
 
-/* 倍速ボタンは左上（回復ポーションの下）。右上は敵の特徴やイベントの札が並ぶので重ねない */
-.speed-float { top: 44px !important; right: auto !important; left: 1% !important; }
+/* 倍速ボタンは、ステージ進捗バーの左下（目標の札の左のすき間）。ゲーム画面の中には重ねない */
+.speed-float { top: auto !important; right: auto !important; left: 14% !important; bottom: calc(100% + 2px) !important; z-index: 5; padding: 2px 7px !important; font-size: 0.72rem !important; gap: 1px !important; }
+.speed-float b { font-size: 0.7rem !important; }
+.arena-wrap:has(#speedBtn:not([style*="none"])) .goal-chip { margin-left: 26px; } /* 倍速ボタンがあるときは、目標の札を少し右へ（狭い画面でも重ならない） */
