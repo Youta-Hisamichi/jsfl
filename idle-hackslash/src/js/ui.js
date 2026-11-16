@@ -494,7 +494,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -553,6 +553,12 @@ debugRow.addEventListener('click', event => {
   if (action === 'rebornAlways') {
     game.dbgRebornAlways = !game.dbgRebornAlways; updateDbgRebornBtn(); updateStatsUI(); saveGame();
     showNotice(game.dbgRebornAlways ? 'DEBUG: 転生ボタンをステージに関係なく表示します' : 'DEBUG: 転生ボタンを通常の条件に戻しました');
+    return;
+  }
+  if (action === 'rankNewId') { // ランキングの id と合言葉を作り直す（同じセーブを入れた2台を、別の人として試すとき用）
+    game.rankId = ''; game.rankKey = ''; if (typeof rankIds === 'function') rankIds(); saveGame();
+    try { rankLastPut = ''; rankLastDaily = ''; rankUpload(true); } catch (e) {}
+    showNotice('DEBUG: ランキングの自分を作り直しました（新しい人として登録されます。前の記録は管理画面から消せます）');
     return;
   }
   if (action === 'towerUnlock') { // 試練の塔をステージに関係なく使えるようにする（もう一度押すと通常の条件に戻す）

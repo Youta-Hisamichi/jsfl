@@ -122,7 +122,10 @@ if ($method === 'POST') {
 // ---- 読む ----
 $me = (is_string($_GET['me'] ?? null) && preg_match('/^[0-9a-f]{32}$/', $_GET['me'])) ? $_GET['me'] : ''; // 読む人の id（シャドウバンの本人には自分を見せる）
 $vis = '(p.ban = 0 OR (p.ban = 2 AND p.id = ?))'; // 一覧に出してよい人
-$pub = fn($r) => array_merge($r, ['id' => substr($r['id'], 0, 12)]); // 他人の id は先頭だけ見せる（自分かどうかの見分けにはこれで足りる）
+$pub = function ($r) { // 他人の id は先頭だけ見せる（自分かどうかの見分けにはこれで足りる）。MySQL は数を文字で返すので、数に直す
+  foreach ($r as $k => $v) if ($k !== 'id' && $k !== 'n') $r[$k] = $k === 'c' ? (int)$v : (float)$v;
+  return array_merge($r, ['id' => substr($r['id'], 0, 12)]);
+};
 if ($a === 'top') {
   $f = field($_GET['f'] ?? ''); $n = limitN($_GET['n'] ?? 50);
   $st = $db->prepare("SELECT p.id, p.n, p.st, p.co, p.ki, p.ev, p.rf, p.dp FROM players p WHERE p.$f > 0 AND $vis ORDER BY p.$f DESC, p.at ASC LIMIT $n"); /* 記録が0（まだやっていない）の人は並べない */ $st->execute([$me]); $rows = $st->fetchAll();

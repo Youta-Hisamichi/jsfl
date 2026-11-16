@@ -51,15 +51,16 @@ async function rankApi(a, params, body) {
   const r = await fetch(RANK_API_URL + '?' + q, opt);
   const j = await r.json(); if (!j.ok) throw new Error(j.error || 'ranking api'); return j;
 }
+const rankNum = list => (list || []).map(d => { const o = { ...d }; for (const k of ['st', 'co', 'ki', 'ev', 'rf', 'dp', 'c']) if (k in o) o[k] = Number(o[k]) || 0; return o; }); // 数は必ず数として扱う
 const rankServerApi = {
   kind: 'xserver',
   get uid() { return rankApiOn() ? rankIds().id.slice(0, 12) : null; }, // 一覧の id は先頭12文字だけ返ってくるので、それで自分を見分ける
-  rankTop: async (f, n) => (await rankApi('top', { f, n })).list,
-  dailyTop: async (day, n) => (await rankApi('dtop', { day, n })).list,
+  rankTop: async (f, n) => rankNum((await rankApi('top', { f, n })).list),
+  dailyTop: async (day, n) => rankNum((await rankApi('dtop', { day, n })).list),
   rankPut: d => rankApi('put', null, d),
   dailyPut: (day, d) => rankApi('dput', null, { ...d, day }),
-  rankAbove: async (f, v, day) => (await rankApi('above', day ? { day, v } : { f, v })).count,
-  dailyNear: async (day, c) => { const j = await rankApi('near', { day, c }); return { up: j.up, down: j.down }; },
-  rankCount: async () => (await rankApi('count')).count,
+  rankAbove: async (f, v, day) => Number((await rankApi('above', day ? { day, v } : { f, v })).count) || 0,
+  dailyNear: async (day, c) => { const j = await rankApi('near', { day, c }); return { up: rankNum(j.up), down: rankNum(j.down) }; },
+  rankCount: async () => Number((await rankApi('count')).count) || 0,
 };
 function rankSrv() { return rankApiOn() ? rankServerApi : window.fbCloud; } // ランキングの読み書き先
