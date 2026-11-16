@@ -1,7 +1,7 @@
 // ===== ランキングを XSERVER の PHP（server/rank/api.php）で読み書きする =====
 // RANK_API_URL を入れると、Firebase のかわりにこちらを使う（空なら今までどおり Firebase）。
 // アプリ（Android・iPhone）だけで使う。ブラウザ・アーティファクトは見本のライバルのまま。
-const RANK_API_URL = (() => { try { return localStorage.getItem('rankApiUrl') || ''; } catch (e) { return ''; } })() || ''; // 試すときは localStorage の rankApiUrl で上書きできる。本番の URL は '' の中に入れる
+const RANK_API_URL = (() => { try { return localStorage.getItem('rankApiUrl') || ''; } catch (e) { return ''; } })() || 'https://hisashiapp.xsrv.jp/mugen-rank/api.php'; // 試すときは localStorage の rankApiUrl で上書きできる。本番の URL は右の文字（空にすると Firebase に戻る）
 function rankIds() { // 端末ごとの id と合言葉（セーブに入れるので、クラウドの控えから戻しても同じ人のまま）
   const hex = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); };
   if (!/^[0-9a-f]{32}$/.test(game.rankId || '')) game.rankId = hex(16);
