@@ -372,8 +372,9 @@ function fullReset() {
   loop();
 }
 
-/* 名前からタグや < > を取り除き、最大25文字にする */
-function cleanUserName(v) { return String(v || '').replace(/<[^>]*>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 25); }
+/* 名前から <b> や </script> のようなタグだけ取り除き、最大25文字にする（(>_<) のような顔文字の < > は残す。画面に出すときは userNameHtml で必ず無害化する） */
+function cleanUserName(v) { return String(v || '').replace(/<\/?[A-Za-z!][^<>]*>/g, '').replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 25); }
+function userNameHtml(fallback) { return String(game.username || fallback || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 resetBtn.addEventListener('click', fullReset);
 usernameSaveBtn.addEventListener('click', () => {

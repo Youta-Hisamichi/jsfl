@@ -545,7 +545,7 @@ function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーテ�
 // ★3（SR）・★4（SSR）・★5（UR）の宝箱の中身の1つとして、自キャラが出て進化する（攻撃力かHPの初期Lv+1）
 const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
 function chestHeroLoot() { // 宝箱の中身「自キャラ」：攻撃力かHPの初期Lv+1
-  const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : (game.username || '勇者'), t = heroEvolve();
+  const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : userNameHtml('勇者'), t = heroEvolve();
   setTimeout(() => { try { renderMyCharCard(); } catch (e) {} }, 0);
   return { misc: 'hero', n: 1, icon: hid ? companionIconHtml(hid) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 自キャラ（${name}）`, cardName: `自キャラ（${name}）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
 }

@@ -135,7 +135,7 @@ const HERO_ORIG_SRC = PLAYER_SPRITE;
 const HERO_GENDER_SRC = { male: HERO_ORIG_SRC, female: HERO_ORIG_SRC }; // 性別ごとの勇者の絵（女の子の絵はあとで差し替え。今は同じ絵）
 const HERO_ENDINGS = [['普通', ''], ['にゃん', 'にゃん'], ['にょ', 'にょ'], ['ぞい', 'ぞい'], ['自由に決める', null]];
 const HERO_RANDOM_NAMES = { male: ['アレン', 'カイト', 'レオン', 'ユウ', 'ジーク', 'ソラ', 'リク', 'ハヤテ', 'ルーク', 'ガルド'], female: ['エマ', 'リナ', 'ミア', 'セレナ', 'ユイ', 'ルナ', 'アリサ', 'ヒカリ', 'ノエル', 'サクラ'] };
-function heroName() { return game.username || '勇者'; }
+function heroName() { return userNameHtml('勇者'); } // 画面（HTML）に出す用に無害化した名前
 function heroEnding() { return ''; /* キャラエディットの語尾は廃止（いつも普通のしゃべり方） */ const e = game.heroEnding || 0; return e === 4 ? String(game.heroEndingText || '').slice(0, 6) : (HERO_ENDINGS[e] || HERO_ENDINGS[0])[1]; }
 function heroSay(text, ending) { // 勇者のセリフに語尾を付ける（文の終わりごと。「。」「！」などの記号の前に入れる）
   const end = ending != null ? ending : heroEnding(); if (!end || !text) return text;

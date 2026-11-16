@@ -289,7 +289,7 @@ function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
   const canChange = false; // 自キャラの変更はなくした
   el.classList.toggle('no-change', !canChange);
-  const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者');
+  const id = getHeroChar(), name = id ? COMPANIONS[id].name : userNameHtml('勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
   el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta"></span>${heroTypeHtml(id)}${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
@@ -346,7 +346,7 @@ function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラ
     + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
-  const id = getHeroChar(), name = id ? COMPANIONS[id].name : (game.username || '勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
+  const id = getHeroChar(), name = id ? COMPANIONS[id].name : userNameHtml('勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ev = heroEvo();
   const atkOwn = heroOwnAtk(), hpOwn = heroOwnMaxHP(), atkB = compShare('atk'), hpB = compShare('hp');
   const chips = [`⚔️ 攻撃力 ${F(atkOwn + atkB)}${atkB >= 1 ? `（自分 ${F(atkOwn)}＋絆 ${F(atkB)}）` : ''}`, `❤️ 最大HP ${F(hpOwn + hpB)}${hpB >= 1 ? `（自分 ${F(hpOwn)}＋絆 ${F(hpB)}）` : ''}`,
@@ -895,7 +895,7 @@ function renderRanking() {
   const rivalFactor = Math.max(0.3, 1 - daysAgo * 0.05); // 過去日ほどライバルのスコアも控えめに演出
   const entries = RIVALS.map((r, i) => ({ name: r.name, score: isDaily ? Math.round(getRivalDailyScore(r, i, selectedKey) * rivalFactor) : mode.rival(r, i), isPlayer: false }));
   const myScore = isDaily ? getDailyClearsForDate(selectedKey) : mode.mine();
-  entries.push({ name: game.username || 'あなた', score: myScore, isPlayer: true });
+  entries.push({ name: userNameHtml('あなた'), score: myScore, isPlayer: true });
   entries.sort((a, b) => b.score - a.score);
   const fmt = v => isDaily ? v + ' クリア' : mode.fmt(v);
   lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title, score: fmt(myScore) };
