@@ -12,11 +12,14 @@ let rankLastPut = '', rankLastPutAt = 0, rankLastDaily = '';
 async function rankUpload(force) { // 記録が変わっていたら送る（本日のクリア数は1分おき、ほかは5分おき・ランキングを開いたとき）
   if (!rankReal()) return;
   const now = Date.now(), m = rankMine(), j = JSON.stringify(m);
-  if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { await rankSrv().rankPut(m); rankLastPut = j; rankLastPutAt = now; } catch (e) { console.warn('ランキングに送れません', e); } }
+  if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { const r = await rankSrv().rankPut(m); if (!(r && r.skipped)) { rankLastPut = j; rankLastPutAt = now; } } catch (e) { console.warn('ランキングに送れません', e); } }
   const day = rankTodayKey(), c = rankTodayClears(), dj = day + ':' + c + ':' + m.n;
   if (dj !== rankLastDaily) { /* まだ1つもクリアしていなくても、開いた日は0で登録する */ try { await rankSrv().dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
 }
 setInterval(() => rankUpload(false), RANK_DAILY_PUT_MS);
+// アプリを裏に回したとき・閉じるときは、待たずにすぐ送る（5分おきの間に閉じると、最後の記録が次に開くまで届かないので）
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rankUpload(true); });
+window.addEventListener('pagehide', () => rankUpload(true));
 const rankCache = {}; let rankTotal = null, rankTotalAt = 0;
 async function rankFetch(isDaily, day, field) {
   const ck = isDaily ? 'd:' + day : 'r:' + field, c = rankCache[ck];

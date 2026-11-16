@@ -1,5 +1,5 @@
 <?php
-// ランキングの管理画面：ありえない記録の人を止める（一覧から消し、書き込みも黙って捨てる）・消す・名前を消す
+// ランキングの管理画面：ありえない記録の人を止める（一覧から消し、書き込みも黙って捨てる）・シャドウバン（本人にだけ見える）・消す・名前を消す
 // パスワードは config.php の admin_pass。ブラウザで https://（ドメイン）/mugen-rank/admin.php を開く
 session_start();
 header('Content-Type: text/html; charset=utf-8');
@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['act'])) { // 操作�
   $id = (string)($_POST['id'] ?? ''); if (!preg_match('/^[0-9a-f]{32}$/', $id)) exit('id が変です');
   switch ($_POST['act']) {
     case 'ban':   $db->prepare('UPDATE players SET ban = 1 WHERE id = ?')->execute([$id]); break;
+    case 'shadow': $db->prepare('UPDATE players SET ban = 2 WHERE id = ?')->execute([$id]); break;
     case 'unban': $db->prepare('UPDATE players SET ban = 0 WHERE id = ?')->execute([$id]); break;
     case 'name':  $db->prepare("UPDATE players SET n = '名無しの勇者' WHERE id = ?")->execute([$id]); $db->prepare("UPDATE daily SET n = '名無しの勇者' WHERE id = ?")->execute([$id]); break;
     case 'del':   $db->prepare('DELETE FROM daily WHERE id = ?')->execute([$id]); $db->prepare('DELETE FROM players WHERE id = ?')->execute([$id]); break;
@@ -57,20 +58,23 @@ if ($mode === 'daily') {
 $rows = $st->fetchAll();
 $total = (int)$db->query('SELECT COUNT(*) AS k FROM players')->fetch()['k'];
 $banned = (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 1')->fetch()['k'];
+$shadow = (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 2')->fetch()['k'];
+$BAN = [0 => '', 1 => '（停止中）', 2 => '（シャドウバン中）'];
 $fmt = function ($v) { $v = (float)$v; if ($v >= 1e15) return sprintf('%.3e', $v); return number_format($v, $v == floor($v) ? 0 : 2); };
 $btn = fn($id, $act, $label, $confirm) => '<form method="post" style="display:inline" onsubmit="return confirm(\'' . $confirm . '\')"><input type="hidden" name="csrf" value="' . $_SESSION['csrf'] . '"><input type="hidden" name="id" value="' . $id . '"><input type="hidden" name="act" value="' . $act . '"><button>' . $label . '</button></form>';
 ?><!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>ランキング管理</title>
-<style>body{font-family:sans-serif;margin:16px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #ddd;padding:5px 6px;text-align:left;white-space:nowrap}tr.ban{background:#fde2e2;color:#999}td.n{white-space:normal;max-width:220px;word-break:break-all}.top a{margin-right:8px}button{font-size:12px}form.f{margin:10px 0}</style>
+<style>body{font-family:sans-serif;margin:16px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #ddd;padding:5px 6px;text-align:left;white-space:nowrap}tr.ban{background:#fde2e2;color:#999}tr.shadow{background:#ece4fb;color:#777}td.n{white-space:normal;max-width:220px;word-break:break-all}.top a{margin-right:8px}button{font-size:12px}form.f{margin:10px 0}</style>
 <form method="post" style="float:right"><button name="logout" value="1">ログアウト</button></form>
 <h2>ランキング管理</h2>
-<p>登録 <?= number_format($total) ?> 人（止めている人 <?= number_format($banned) ?> 人）</p>
+<p>登録 <?= number_format($total) ?> 人（止めている人 <?= number_format($banned) ?> 人・シャドウバン <?= number_format($shadow) ?> 人）</p>
+<p style="font-size:12px;color:#666">止める：一覧から消し、記録も受け付けない ／ シャドウバン：記録は受け付けて本人には今までどおり見えるが、ほかの人の一覧・人数には出さない</p>
 <div class="top"><?php foreach ($FIELDS as $k => $v) echo '<a href="?' . $h(http_build_query(['m' => $k, 'day' => $day, 'q' => $q])) . '"' . ($k === $mode ? ' style="font-weight:bold"' : '') . '>' . $h($v) . '</a>'; ?></div>
 <form class="f" method="get"><input type="hidden" name="m" value="<?= $h($mode) ?>"><?php if ($mode === 'daily'): ?><input type="date" name="day" value="<?= $h($day) ?>"> <?php endif; ?><input name="q" value="<?= $h($q) ?>" placeholder="名前で探す"> <button>表示</button></form>
 <table><tr><th>#</th><th>名前</th><th>記録</th><th>版</th><th>最後の書き込み</th><th>登録</th><th>id</th><th></th></tr>
 <?php foreach ($rows as $i => $r): ?>
-<tr class="<?= $r['ban'] ? 'ban' : '' ?>"><td><?= $i + 1 ?></td><td class="n"><?= $h($r['n']) ?><?= $r['ban'] ? '（停止中）' : '' ?></td><td><?= $h($fmt($r['score'])) ?></td><td><?= $h($r['ver']) ?></td>
+<tr class="<?= ['', 'ban', 'shadow'][(int)$r['ban']] ?? '' ?>"><td><?= $i + 1 ?></td><td class="n"><?= $h($r['n']) ?><?= $BAN[(int)$r['ban']] ?? '' ?></td><td><?= $h($fmt($r['score'])) ?></td><td><?= $h($r['ver']) ?></td>
 <td><?= $r['at'] ? date('m/d H:i', (int)$r['at']) : '' ?></td><td><?= $r['created'] ? date('Y/m/d', (int)$r['created']) : '' ?></td><td><?= $h(substr($r['id'], 0, 12)) ?></td>
-<td><?= $r['ban'] ? $btn($r['id'], 'unban', '戻す', 'この人を一覧に戻しますか？') : $btn($r['id'], 'ban', '止める', 'この人を止めますか？（一覧から消え、記録も送れなくなります）') ?>
+<td><?= $r['ban'] ? $btn($r['id'], 'unban', '戻す', 'この人を一覧に戻しますか？') : $btn($r['id'], 'shadow', 'シャドウバン', 'シャドウバンしますか？（本人には今までどおり見えますが、ほかの人からは見えなくなります）') . ' ' . $btn($r['id'], 'ban', '止める', 'この人を止めますか？（一覧から消え、記録も送れなくなります）') ?>
 <?= $btn($r['id'], 'name', '名前を消す', '名前を「名無しの勇者」にしますか？') ?> <?= $btn($r['id'], 'del', '消す', 'この人の記録をすべて消しますか？（元に戻せません）') ?></td></tr>
 <?php endforeach; ?>
 </table>

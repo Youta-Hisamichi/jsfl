@@ -40,12 +40,13 @@ function rankHmacHex(key, msg) {
 }
 async function rankApi(a, params, body) {
   const q = new URLSearchParams({ a, ...(params || {}) }); let opt = {};
+  if (!body) q.set('me', rankIds().id); // 読むとき：自分の id（シャドウバン中の本人には自分が見える）
   if (body) {
     await rankKeyReady;
     const ts = Math.floor((typeof trustNow === 'function' ? trustNow() : Date.now()) / 1000);
     const text = JSON.stringify({ ...rankIds(), ...body, ts });
     if (rankSignKey) q.set('s', rankHmacHex(rankSignKey, a + '|' + text));
-    opt = { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text };
+    opt = { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text, keepalive: true }; // keepalive：アプリを閉じる途中でも送り切る
   }
   const r = await fetch(RANK_API_URL + '?' + q, opt);
   const j = await r.json(); if (!j.ok) throw new Error(j.error || 'ranking api'); return j;

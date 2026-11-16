@@ -10,6 +10,7 @@
 // id は端末で作る32桁の英数字、key は端末だけが知っている合言葉（サーバーには sha256 だけ残す）。
 // 書き込みには署名 s（HMAC-SHA256(sign_key, a + '|' + 本文)）を付ける。config.php に sign_key があるときは、署名が合わないものを断る。
 // 管理画面（admin.php）で止めた人（ban = 1）は、一覧に出さず、書き込みも黙って捨てる。
+// シャドウバン（ban = 2）の人は、書き込みは受け付けるが、本人以外の一覧・人数には出さない（読むときの me＝自分の id で見分ける）。
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -20,7 +21,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { http_response_code(204);
 
 const FIELDS = ['st', 'co', 'ki', 'ev', 'rf', 'dp'];
 const TOP_MAX = 100;
-const PUT_GAP_SEC = 10;      // 同じ人の書き込みは10秒に1回まで（それより早いものは読み捨てる）
+const PUT_GAP_SEC = 3;       // 同じ人のベスト記録の書き込みは3秒に1回まで（それより早いものは skipped を返す。アプリは次にまた送る）
 const DAILY_KEEP_DAYS = 40;  // 本日のランキングは40日分だけ残す
 
 function out($data, $code = 200) { http_response_code($code); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
@@ -78,7 +79,7 @@ function auth($db, $body, $name) {
     return [$id, 0];
   }
   if (!hash_equals($row['key_hash'], $h)) fail('key が合いません', 403);
-  if ((int)$row['ban']) out(['ok' => true]); // 止めた人には、うまくいったふりをして何も書かない
+  if ((int)$row['ban'] === 1) out(['ok' => true]); // 止めた人には、うまくいったふりをして何も書かない（シャドウバンの人は書ける）
   return [$id, (int)$row['at']];
 }
 
@@ -119,28 +120,30 @@ if ($method === 'POST') {
 }
 
 // ---- 読む ----
+$me = (is_string($_GET['me'] ?? null) && preg_match('/^[0-9a-f]{32}$/', $_GET['me'])) ? $_GET['me'] : ''; // 読む人の id（シャドウバンの本人には自分を見せる）
+$vis = '(p.ban = 0 OR (p.ban = 2 AND p.id = ?))'; // 一覧に出してよい人
 $pub = fn($r) => array_merge($r, ['id' => substr($r['id'], 0, 12)]); // 他人の id は先頭だけ見せる（自分かどうかの見分けにはこれで足りる）
 if ($a === 'top') {
   $f = field($_GET['f'] ?? ''); $n = limitN($_GET['n'] ?? 50);
-  $rows = $db->query("SELECT id, n, st, co, ki, ev, rf, dp FROM players WHERE ban = 0 ORDER BY $f DESC, at ASC LIMIT $n")->fetchAll();
+  $st = $db->prepare("SELECT p.id, p.n, p.st, p.co, p.ki, p.ev, p.rf, p.dp FROM players p WHERE $vis ORDER BY p.$f DESC, p.at ASC LIMIT $n"); $st->execute([$me]); $rows = $st->fetchAll();
   out(['ok' => true, 'list' => array_map($pub, $rows)]);
 }
 if ($a === 'dtop') {
   $day = readDay($_GET['day'] ?? ''); $n = limitN($_GET['n'] ?? 50);
-  $st = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? ORDER BY d.c DESC, d.at ASC LIMIT $n"); $st->execute([$day]);
+  $st = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ? AND $vis ORDER BY d.c DESC, d.at ASC LIMIT $n"); $st->execute([$day, $me]);
   out(['ok' => true, 'list' => array_map($pub, $st->fetchAll())]);
 }
 if ($a === 'above') {
   $v = (float)($_GET['v'] ?? 0);
-  if (isset($_GET['day'])) { $st = $db->prepare('SELECT COUNT(*) AS k FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c > ?'); $st->execute([readDay($_GET['day']), $v]); }
-  else { $f = field($_GET['f'] ?? ''); $st = $db->prepare("SELECT COUNT(*) AS k FROM players WHERE ban = 0 AND $f > ?"); $st->execute([$v]); }
+  if (isset($_GET['day'])) { $st = $db->prepare("SELECT COUNT(*) AS k FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ? AND d.c > ? AND $vis"); $st->execute([readDay($_GET['day']), $v, $me]); }
+  else { $f = field($_GET['f'] ?? ''); $st = $db->prepare("SELECT COUNT(*) AS k FROM players p WHERE p.$f > ? AND $vis"); $st->execute([$v, $me]); }
   out(['ok' => true, 'count' => (int)$st->fetch()['k']]);
 }
 if ($a === 'near') {
   $day = readDay($_GET['day'] ?? ''); $c = (int)($_GET['c'] ?? 0);
-  $up = $db->prepare('SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c > ? ORDER BY d.c ASC LIMIT 3'); $up->execute([$day, $c]);
-  $dn = $db->prepare('SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id AND p.ban = 0 WHERE d.day = ? AND d.c < ? ORDER BY d.c DESC LIMIT 3'); $dn->execute([$day, $c]);
+  $up = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ? AND d.c > ? AND $vis ORDER BY d.c ASC LIMIT 3"); $up->execute([$day, $c, $me]);
+  $dn = $db->prepare("SELECT d.id, d.n, d.c FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ? AND d.c < ? AND $vis ORDER BY d.c DESC LIMIT 3"); $dn->execute([$day, $c, $me]);
   out(['ok' => true, 'up' => array_map($pub, $up->fetchAll()), 'down' => array_map($pub, $dn->fetchAll())]);
 }
-if ($a === 'count') out(['ok' => true, 'count' => (int)$db->query('SELECT COUNT(*) AS k FROM players WHERE ban = 0')->fetch()['k']]);
+if ($a === 'count') { $st = $db->prepare("SELECT COUNT(*) AS k FROM players p WHERE $vis"); $st->execute([$me]); out(['ok' => true, 'count' => (int)$st->fetch()['k']]); }
 fail('a が変です');
