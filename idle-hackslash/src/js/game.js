@@ -1124,7 +1124,7 @@ function completeReincarnation() {
   clearTimeout(rebirthTimer);
   rebirthChest = null; rebirthChestFromTray = false;
   rebirthSkippable = true;
-  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot, compGacha, rbChests, compGachaStage); // 転生ボーナスはダイアログで（OKを押すまで消えない）
+  showRebirthRewardDialog(rebirthGemGain, featherGain, feaGot, compGacha, rbChests, compGachaStage, gemBase); // 転生ボーナスはダイアログで（OKを押すまで消えない）
   renderChestTray();
   if (typeof renderEvolutionList === 'function') renderEvolutionList();
 }
@@ -2547,20 +2547,20 @@ function rollRebirthCompanion(stage) {
   return { id: ids[Math.floor(Math.random() * ids.length)], stage };
 }
 function rebirthCompRatesText(stage) { /* まだ出せないレア度を除いて100%に直して見せる */ const r = rebirthCompRates(stage), pool = compPoolIds(), av = RARITY_ORDER.filter(k => pool.some(id => COMPANIONS[id].rarity === k)).reverse(), tot = av.reduce((t, k) => t + r[k], 0) || 1, f = v => v >= 10 ? Math.round(v) : +v.toFixed(1); return av.map(k => `${RARITY_INFO[k].label} ${f(r[k] / tot * 100)}%`).join('・'); }
-// 転生の宝箱：ジェムを払うと、同じ確率で同じ数の宝箱をもう一度（宝箱2倍・1回の転生で1回だけ）。値段は宝箱1個につき💎5
-const RB_EXTRA_CHEST_GEM_EACH = 5;
+// 転生の宝箱：ジェムを払うと、同じ確率で同じ数の宝箱をもう一度（宝箱2倍・1回の転生で1回だけ）。値段は転生でもらうジェム（動画で増やす前）の1/3（切り上げ・最低💎1）
+const rbExtraChestCost = gemBase => gemPrice(Math.max(1, Math.ceil((gemBase || 0) / 3)));
 function rbdChestRowHtml(c) { return ['mythic', 'legendary'].filter(r => c[r]).map(r => `<div class="rbd-sk" style="--rc:${RARITY_INFO[r].color}"><span class="rbd-sk-ico">${xi(CHEST_ICON[r]) || '🎁'}</span><span class="rbd-stars">${rarityStarsImg(r)}</span><span>${RARITY_INFO[r].label}の宝箱 ×${c[r]}</span></div>`).join(''); }
-function setupRebirthExtraChest(ov, rbChests, rbStage) {
+function setupRebirthExtraChest(ov, rbChests, rbStage, gemBase) {
   const btn = ov.querySelector('.rbd-buy-chest:not(.rbd-reroll)'); if (!btn) return; // 引き直しのボタンと取り違えない
   const n = rebirthRewardChestN(rbStage); let bought = false;
   const sync = () => {
     if (bought) { btn.disabled = true; btn.innerHTML = '🎁 宝箱2倍にしました'; return; }
-    const cost = gemPrice(RB_EXTRA_CHEST_GEM_EACH * n); btn.classList.toggle('is-disabled', game.gems < cost);
+    const cost = rbExtraChestCost(gemBase); btn.classList.toggle('is-disabled', game.gems < cost);
     btn.innerHTML = `<span data-xi="x_gem">💎</span>${cost} で宝箱2倍 <small>（もう${n}個）</small>`;
   };
   btn.addEventListener('click', ev => {
     ev.stopPropagation(); if (bought) return;
-    const cost = gemPrice(RB_EXTRA_CHEST_GEM_EACH * n);
+    const cost = rbExtraChestCost(gemBase);
     if (game.gems < cost) { showTapError(`ジェムが ${cost - Math.floor(game.gems)} 個足りません`, ev.clientX, ev.clientY); return; } // ジェム不足の画面は転生画面の後ろに隠れるので、その場で知らせる
     game.gems -= cost; bought = true;
     const add = rollRebirthChests(rbStage), hc = getHeldChests(); // もらった宝箱と同じ数・同じ確率でもう一度
@@ -2576,7 +2576,7 @@ function setupRebirthExtraChest(ov, rbChests, rbStage) {
 const RB_REROLL_GEM = 1; // 転生結果の「次のスキル」「次の仲間」は💎1で何度でも引き直せる
 function rbdSkillRowHtml() { return game.skillOn.map(id => { const { it, auto, name } = skillToggleInfo(id); return `<div class="rbd-sk" data-rbd-skill="${id}"><span class="rbd-sk-ico">${auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it)}</span><span>${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span></div>`; }).join(''); }
 function rbdCompRowHtml() { return game.compOn.map(id => `<div class="rbd-sk" data-rbd-comp="${id}"><span class="rbd-sk-ico">${companionIconHtml(id)}</span><span class="rbd-stars">${rarityStarsImg(COMPANIONS[id].rarity)}</span><span>${COMPANIONS[id].name}</span></div>`).join(''); }
-function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbStage) {
+function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbStage, gemBase) {
   got = got || { common: feathers };
   const list = FEA_RARITIES.slice().reverse().filter(r => got[r]), best = list[0] || 'common';
   document.querySelectorAll('.rbd-ov').forEach(e => e.remove());
@@ -2589,7 +2589,7 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
     ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱${typeof ALL_CHEST_BTN !== 'undefined' ? ALL_CHEST_BTN.replace('aco-btn', 'aco-btn aco-inline').replace('全部の宝箱で出るもの', '中身') : ''}<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row rbd-chest-row">${rbdChestRowHtml(rbChests)}</div><button class="rbd-buy-chest" type="button"></button><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・恩恵が出る）</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
-  if (rbChests) setupRebirthExtraChest(ov, rbChests, rbStage);
+  if (rbChests) setupRebirthExtraChest(ov, rbChests, rbStage, gemBase == null ? gems : gemBase);
   if (best !== 'common' && typeof playGachaSound === 'function') setTimeout(() => playGachaSound(best), 300 + list.length * 180); // レアな羽が出たらガチャの当たり音
   // 決まる前の演出：次のスキル・次の仲間・仲間ガチャのアイコンを約3秒ランダムに切り替えてから、決まったものを見せる
   const rndSkillIco = () => { const ids = skillToggleIds(), { it, auto } = skillToggleInfo(ids[Math.floor(Math.random() * ids.length)]); return auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it); };
