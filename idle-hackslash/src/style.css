@@ -5471,3 +5471,16 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 .rank-deadline .rd-lbl { font-size: 0.85rem; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; }
 .rank-deadline b { margin: 0; font-size: 1.45rem; line-height: 1.1; font-weight: 900; letter-spacing: 0.04em; color: #ffd76b; text-shadow: 0 2px 0 #7a3b00, 0 0 10px rgba(255, 200, 80, 0.6); }
 .rk-y-share { display: block; margin: 10px auto 2px; } /* 昨日のランキング結果のシェアボタン */
+
+/* ===== GAME OVER（ui/go5：新しい見本の絵。動画ボタンの下に紋章の案内の枠、その下に「あきらめる」「転生する」の絵のボタン。位置は絵の幅968pxに対する cqw） ===== */
+#bossContModal .go3 { width: min(380px, 94vw, calc((100dvh - 110px) / 1.497)); aspect-ratio: 968 / 1449; }
+#bossContModal .go3.rb { width: min(380px, 94vw, calc((100dvh - 110px) / 1.611)); aspect-ratio: 968 / 1559; }
+#bossContModal .go3-giveup, #bossContModal .go3-reborn { background-position: center; background-size: 100% 100%; background-repeat: no-repeat; border-radius: 6cqw; }
+#bossContModal .go3-giveup { left: 16.9cqw; top: 127.7cqw; width: 66.1cqw; height: 11.05cqw; background-image: url(assets/img/ui/go5/btn_giveup.webp); }
+#bossContModal .go3-reborn { left: 16.9cqw; top: 140.5cqw; width: 66.1cqw; height: 12.5cqw; background-image: url(assets/img/ui/go5/btn_reborn.webp); }
+#bossContModal .go3-giveup:active, #bossContModal .go3-reborn:active { background-color: transparent; filter: brightness(1.15); }
+#bossContModal .go3 .emb-hint:not(.go5-hint) { display: none !important; } /* 自動で足される小さい案内は出さない（下の枠に大きく出す） */
+#bossContModal .go3 .go5-hint { position: absolute; left: 10.85cqw; top: 111.4cqw; width: 78cqw; height: 14.9cqw; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 4.6cqw; line-height: 1.35; font-weight: 800; color: #ffe9a8; text-shadow: 0 2px 2px #000, 0 0 6px rgba(0,0,0,0.8); opacity: 1; z-index: 2; }
+#bossContModal .go3 .go5-hint b { color: #ffd76b; font-size: 1.15em; margin: 0 0.1em; }
+#bossContModal .go3 .go5-hint.emb-hint { cursor: pointer; }
+#bossContModal .go3 .go5-hint > span { display: block; }

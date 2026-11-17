@@ -758,7 +758,9 @@ function showBossContModal(reason) {
   document.getElementById('bossContRebornBtn').style.display = rb ? '' : 'none';
   const panel = document.getElementById('go4Panel'); // 転生ボタンのあるなしで下地の絵を替える（ボタンの文字は絵に描いてある）
   panel.classList.toggle('rb', rb); panel.classList.toggle('time', reason === 'time'); panel.classList.toggle('adfree', isAdFree());
-  document.getElementById('go4Bg').src = rb ? 'assets/img/ui/go4/base_rb.webp' : 'assets/img/ui/go4/base.webp';
+  document.getElementById('go4Bg').src = rb ? 'assets/img/ui/go5/base_rb.webp' : 'assets/img/ui/go5/base.webp';
+  const hint = document.getElementById('go5Hint'); // 動画ボタンの下の枠：紋章に入っていなければ案内（押すとショップの紋章へ）、入っていれば特典の説明
+  if (hint) { const af = isAdFree(); hint.classList.toggle('emb-hint', !af); hint.innerHTML = af ? '<span>👑 紋章の特典で<br><b>動画なしで</b>すぐコンテニュー！</span>' : '<span>👑 紋章があれば<br><b>動画なしで</b>すぐコンテニュー <b>›</b></span>'; }
   bossContModal.classList.add('show'); refreshBgm(); requestAnimationFrame(fitGo3Advice);
   startBossContCountdown();
 }
