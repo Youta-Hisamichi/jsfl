@@ -760,7 +760,7 @@ function showBossContModal(reason) {
   panel.classList.toggle('rb', rb); panel.classList.toggle('time', reason === 'time'); panel.classList.toggle('adfree', isAdFree());
   document.getElementById('go4Bg').src = rb ? 'assets/img/ui/go5/base_rb.webp' : 'assets/img/ui/go5/base.webp';
   const hint = document.getElementById('go5Hint'); // 動画ボタンの下の枠：紋章に入っていなければ案内（押すとショップの紋章へ）、入っていれば特典の説明
-  if (hint) { const af = isAdFree(); hint.classList.toggle('emb-hint', !af); hint.innerHTML = af ? '<span>👑 紋章の特典で<br><b>動画なしで</b>すぐコンテニュー！</span>' : '<span>👑 紋章があれば<br><b>動画なしで</b>すぐコンテニュー <b>›</b></span>'; }
+  if (hint) { const af = isAdFree(); hint.classList.toggle('emb-hint', !af); hint.innerHTML = af ? '<span>👑 紋章の特典で<br>動画なしですぐコンテニュー！</span>' : '<span>👑 紋章があれば<br>動画なしですぐコンテニュー ›</span>'; }
   bossContModal.classList.add('show'); refreshBgm(); requestAnimationFrame(fitGo3Advice);
   startBossContCountdown();
 }
@@ -2361,7 +2361,7 @@ const FLOOR_MIX = { lawn: ['dirt', 'mossStone', 'market', 'desert'], dirt: ['law
   brick: ['redCarpet', 'panel'], sea: ['desert', 'blueTile'], dungeon2: ['dungeon', 'brick'], mystic: ['blueTile', 'panel'], dungeon: ['dungeon2', 'brick'] };
 const FLOOR_SHAPES = ['path', 'patches', 'plaza', 'path2', 'frame', 'none'];
 const ROAD_RATE = 1, ROAD_W = 2; // 道が通るステージの割合（途中で道が途切れないよう、いつも通す）・道の太さ（マス）
-function roadEdge(stage) { const r = floorRand(floorSeed(stage, 7)); r(); return 0.18 + r() * 0.64; } // ステージ stage と次のステージの境目で、道が通る横の位置（0〜1）
+function roadEdge(stage) { const r = floorRand(floorSeed(stage, 7)); r(); return { side: r() < 0.5 ? 'top' : 'right', f: 0.18 + r() * 0.64 }; } // ステージ stage から次のステージへ道が抜ける辺（上か右）と位置（0〜1）。次のステージは、その反対の辺（下か左）の同じ位置から道が始まる
 function roadFloor(stage, key) { const opts = FLOOR_MIX[key] || []; if (!opts.length) return null; const area = Math.floor((Math.max(1, stage) - 1) / 10); return opts[Math.floor(floorRand(floorSeed(area, 9 + (stage % 10 === 0 ? 1 : 0)))() * opts.length)]; }
 let floorMixCache = null;
 function getFloorMix(stage, key, cols, rows) {
@@ -2382,21 +2382,28 @@ function getFloorMix(stage, key, cols, rows) {
       if (r() < 0.35) { const np = p + (r() < 0.5 ? -1 : 1); if (np >= 1 && np + w <= (vertical ? cols : rows) - 1) { for (let k = 0; k < w; k++) vertical ? set(np + k, t) : set(t, np + k); p = np; } }
     }
   };
-  if (road) { // 下（前のステージから来た位置）から上（次のステージへ続く位置）へ、くねくねと続く道
-    const w = Math.min(ROAD_W, cols - 2), toCol = f => Math.max(1, Math.min(cols - 1 - w, Math.round(f * (cols - w))));
-    let p = toCol(roadEdge(stage - 1)); const goal = toCol(roadEdge(stage));
-    for (let y = rows - 1; y >= 0; y--) {
-      for (let k = 0; k < w; k++) set(p + k, y);
-      if (y === 0) break;
-      const need = goal - p, left = y; // 残りの行で、上の出口に必ず着くように曲がる
-      let np = p;
-      if (Math.abs(need) >= left) np = p + Math.sign(need);
-      else if (r() < 0.4) np = p + (need !== 0 && r() < 0.6 ? Math.sign(need) : (r() < 0.5 ? -1 : 1));
-      np = Math.max(1, Math.min(cols - 1 - w, np));
-      if (Math.abs(goal - np) > y - 1) np = p + Math.sign(goal - p); // 出口に間に合わなくなる曲がり方はしない
-      if (np !== p) { for (let k = 0; k < w; k++) set(np + k, y); p = np; } // 曲がるところは角をつなげる
+  if (road) { // 前のステージから来た辺（下か左）から、次のステージへ続く辺（上か右）へ、くねくねと続く道。まっすぐ・曲がり角・十字路になる
+    const toCol = f => Math.max(1, Math.min(cols - 2, Math.round(f * (cols - 2)))), toRow = f => Math.max(1, Math.min(rows - 2, Math.round(f * (rows - 1))));
+    const inE = roadEdge(stage - 1), outE = roadEdge(stage);
+    let x = inE.side === 'top' ? toCol(inE.f) : 0, y = inE.side === 'top' ? rows - 1 : toRow(inE.f); // 入口（下の辺か左の辺）
+    const tx = outE.side === 'top' ? toCol(outE.f) : cols - 1, ty = outE.side === 'top' ? 0 : toRow(outE.f); // 出口（上の辺か右の辺）
+    const stamp = (cx, cy) => { set(cx, cy); set(cx + 1, cy); set(cx, cy - 1); set(cx + 1, cy - 1); }; // 2×2で塗る（入口・出口の辺で、次のステージと同じ2マスになる）
+    const inV = inE.side === 'top'; // 入口が下の辺（上へ進み始める）
+    let dir = inV ? 'y' : 'x', guard = 0;
+    for (let k = 0; k < 2 && guard < 4; k++, guard++) { stamp(x, y); if (inV) { if (y > ty) y--; } else if (x < tx) x++; } // 入口からは、いったん辺に直角に入る
+    while ((x !== tx || y !== ty) && guard++ < 400) {
+      stamp(x, y);
+      const ddx = Math.sign(tx - x), ddy = Math.sign(ty - y);
+      if (r() < 0.3) dir = dir === 'x' ? 'y' : 'x'; // ときどき向きを変えて、くねくねさせる
+      if (dir === 'x' && !ddx) dir = 'y'; if (dir === 'y' && !ddy) dir = 'x';
+      if (dir === 'y' && Math.abs(ty - y) > 3 && r() < 0.15) x = Math.max(1, Math.min(cols - 2, x + (r() < 0.5 ? -1 : 1))); // まっすぐな所も少し左右にゆらす（あとで出口へ戻る）
+      else if (dir === 'x' && Math.abs(tx - x) > 3 && r() < 0.15) y = Math.max(1, Math.min(rows - 2, y + (r() < 0.5 ? -1 : 1)));
+      else if (dir === 'x') x += ddx; else y += ddy;
     }
+    stamp(x, y);
+    if (r() < 0.3) walk(!(inV && outE.side === 'top'), 2); // ときどき、横切るもう1本の道（十字路）。縦の道には横の道、それ以外には縦の道
   }
+
   if (shape === 'path') walk(r() < 0.6, 1 + (r() < 0.5 ? 1 : 0));
   else if (shape === 'path2') { walk(true, 1 + (r() < 0.4 ? 1 : 0)); walk(false, 1 + (r() < 0.4 ? 1 : 0)); } // 十字路
   else if (shape === 'patches') { // ところどころの島（池・砂地・石畳の跡のような形）
