@@ -18,7 +18,7 @@ $id = $req['id'] ?? null; $m = $req['method']; $p = $req['params'] ?? [];
 if (!array_key_exists('id', $req)) { http_response_code(202); exit; } // お知らせ（notifications/initialized など）は返事なし
 
 const READ_ACTIONS = ['top', 'dtop', 'above', 'near', 'count'];
-const WRITE_ACTIONS = ['put', 'dput'];
+const WRITE_ACTIONS = ['put', 'dput', 'fb'];
 
 // api.php を1回だけ動かして、その結果（配列）を返す
 function rank_call($http, $a, $get, $body) {
@@ -47,7 +47,7 @@ switch ($m) {
        'inputSchema' => ['type' => 'object', 'properties' => ['a' => ['type' => 'string', 'enum' => READ_ACTIONS], 'params' => ['type' => 'object', 'additionalProperties' => true]], 'required' => ['a']],
        'annotations' => ['readOnlyHint' => true]],
       ['name' => 'rank_write', 'title' => 'ランキングに記録を送る',
-       'description' => '無限反射のランキングに自分の記録を送る。a: put（ベスト記録。body: id, key, n, st, co, ki, ev, rf, dp, gm, rb, ver, tz, lc, ts）, dput（本日のクリア数。body: id, key, n, day, c, ts）。',
+       'description' => '無限反射のランキングに自分の記録を送る。a: put（ベスト記録。body: id, key, n, st, co, ki, ev, rf, dp, gm, rb, ver, tz, lc, ts）, dput（本日のクリア数。body: id, key, n, day, c, ts）, fb（ご意見。body: id, text, ver, platform, stage, best, reb, tz, lc, ts）。',
        'inputSchema' => ['type' => 'object', 'properties' => ['a' => ['type' => 'string', 'enum' => WRITE_ACTIONS], 'body' => ['type' => 'object', 'additionalProperties' => true]], 'required' => ['a', 'body']],
        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false]],
     ]]);

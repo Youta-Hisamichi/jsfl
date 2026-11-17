@@ -98,6 +98,7 @@ const rankServerApi = {
   dailyPut: (day, d) => rankApi('dput', null, { ...d, day }),
   rankAbove: async (f, v, day) => Number((await rankApi('above', day ? { day, v } : { f, v })).count) || 0,
   dailyNear: async (day, c) => { const j = await rankApi('near', { day, c }); return { up: rankNum(j.up), down: rankNum(j.down) }; },
+  sendFeedback: d => rankApi('fb', null, { ...d, tz: typeof rankTz === 'function' ? rankTz() : '', lc: String(navigator.language || '').slice(0, 20) }), // ご意見（管理画面の「📝 ご意見」で読む）
   rankCount: async () => Number((await rankApi('count')).count) || 0,
 };
 function rankSrv() { return rankApiOn() ? rankServerApi : window.fbCloud; } // ランキングの読み書き先

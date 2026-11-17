@@ -28,7 +28,7 @@ else $db = new PDO("mysql:host={$cfg['host']};dbname={$cfg['dbname']};charset=ut
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
-$FIELDS = ['st' => 'ベストステージ', 'co' => 'MAXコイン', 'ki' => 'MAXキル数', 'dp' => 'MAX DPS', 'ev' => 'MAX一撃進化', 'rf' => 'MAX反射倍率', 'daily' => '本日のクリア数'];
+$FIELDS = ['fb' => '📝 ご意見', 'st' => 'ベストステージ', 'co' => 'MAXコイン', 'ki' => 'MAXキル数', 'dp' => 'MAX DPS', 'ev' => 'MAX一撃進化', 'rf' => 'MAX反射倍率', 'daily' => '本日のクリア数'];
 $mode = isset($FIELDS[$_GET['m'] ?? '']) ? $_GET['m'] : 'st';
 $day = preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['day'] ?? '') ? $_GET['day'] : date('Y-m-d');
 $q = trim((string)($_GET['q'] ?? ''));
@@ -38,20 +38,28 @@ $back = 'admin.php?' . http_build_query(['m' => $mode, 'day' => $day, 'q' => $q]
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['act'])) { // 操作（止める・戻す・消す・名前を消す）
   if (!hash_equals($_SESSION['csrf'] ?? '', (string)($_POST['csrf'] ?? ''))) exit('もう一度開き直してください');
-  $id = (string)($_POST['id'] ?? ''); if (!preg_match('/^[0-9a-f]{32}$/', $id)) exit('id が変です');
+  $id = (string)($_POST['id'] ?? ''); if (!in_array($_POST['act'], ['fbdone', 'fbdel'], true) && !preg_match('/^[0-9a-f]{32}$/', $id)) exit('id が変です');
   switch ($_POST['act']) {
     case 'ban':   $db->prepare('UPDATE players SET ban = 1 WHERE id = ?')->execute([$id]); break;
     case 'shadow': $db->prepare('UPDATE players SET ban = 2 WHERE id = ?')->execute([$id]); break;
     case 'unban': $db->prepare('UPDATE players SET ban = 0 WHERE id = ?')->execute([$id]); break;
     case 'ok':    $db->prepare("UPDATE players SET flag = '' WHERE id = ?")->execute([$id]); break; // 要確認を消す（問題なしと確かめた）
     case 'name':  $db->prepare("UPDATE players SET n = '名無しの勇者' WHERE id = ?")->execute([$id]); $db->prepare("UPDATE daily SET n = '名無しの勇者' WHERE id = ?")->execute([$id]); break;
+    case 'fbdone': $db->prepare('UPDATE feedback SET done = 1 - done WHERE fid = ?')->execute([(int)($_POST['fid'] ?? 0)]); break;
+    case 'fbdel':  $db->prepare('DELETE FROM feedback WHERE fid = ?')->execute([(int)($_POST['fid'] ?? 0)]); break;
     case 'del':   $db->prepare('DELETE FROM daily WHERE id = ?')->execute([$id]); $db->prepare('DELETE FROM players WHERE id = ?')->execute([$id]); break;
   }
   header('Location: ' . $back); exit;
 }
 
+$fbRows = [];
+if ($mode === 'fb') { // ご意見の一覧（新しい順）
+  $fq = $q !== '' ? ' WHERE f.text LIKE ?' : ''; $st = $db->prepare("SELECT f.*, p.n FROM feedback f LEFT JOIN players p ON p.id = f.id$fq ORDER BY f.fid DESC LIMIT 300"); $st->execute($q !== '' ? ['%' . $q . '%'] : []);
+  $fbRows = $st->fetchAll();
+}
 $where = ($q !== '' ? ' AND p.n LIKE ?' : '') . ($onlyFlag ? " AND p.flag <> ''" : '') . ($cc ? ' AND p.cc = ?' : ''); $args = array_merge($q !== '' ? ['%' . $q . '%'] : [], $cc ? [$cc] : []);
-if ($mode === 'daily') {
+if ($mode === 'fb') { $rows = []; }
+elseif ($mode === 'daily') {
   $st = $db->prepare("SELECT p.id, d.n, d.c AS score, p.ver, d.at, p.created, p.ban, p.flag, p.cc, p.tz, p.lc FROM daily d JOIN players p ON p.id = d.id WHERE d.day = ?$where ORDER BY d.c DESC LIMIT 200");
   $st->execute(array_merge([$day], $args));
 } else {
@@ -79,6 +87,16 @@ $btn = fn($id, $act, $label, $confirm) => '<form method="post" style="display:in
 <p style="font-size:13px">国別：<?php foreach ($byCountry as $b) echo '<a href="?' . $h(http_build_query(['m' => $mode, 'day' => $day, 'cc' => $b['cc']])) . '" style="margin-right:10px' . ($cc === $b['cc'] ? ';font-weight:bold' : '') . '">' . $ccFlag($b['cc']) . ' ' . $h($ccName($b['cc'])) . ' ' . number_format($b['k']) . '人</a>'; if ($cc) echo ' <a href="?' . $h(http_build_query(['m' => $mode, 'day' => $day])) . '">（すべての国）</a>'; ?></p>
 <div class="top"><?php foreach ($FIELDS as $k => $v) echo '<a href="?' . $h(http_build_query(['m' => $k, 'day' => $day, 'q' => $q])) . '"' . ($k === $mode ? ' style="font-weight:bold"' : '') . '>' . $h($v) . '</a>'; ?></div>
 <form class="f" method="get"><input type="hidden" name="m" value="<?= $h($mode) ?>"><?php if ($cc): ?><input type="hidden" name="cc" value="<?= $h($cc) ?>"><?php endif; ?><?php if ($mode === 'daily'): ?><input type="date" name="day" value="<?= $h($day) ?>"> <?php endif; ?><input name="q" value="<?= $h($q) ?>" placeholder="名前で探す"> <label><input type="checkbox" name="flag" value="1"<?= $onlyFlag ? ' checked' : '' ?>>要確認だけ</label> <button>表示</button></form>
+<?php if ($mode === 'fb'): $fbBtn = fn($fid, $act, $label, $confirm) => '<form method="post" style="display:inline" onsubmit="return confirm(\'' . $confirm . '\')"><input type="hidden" name="csrf" value="' . $_SESSION['csrf'] . '"><input type="hidden" name="fid" value="' . (int)$fid . '"><input type="hidden" name="act" value="' . $act . '"><button>' . $label . '</button></form>'; ?>
+<p style="font-size:12px;color:#666">レビューの「ちょっと不満がある…」から届いたご意見（新しい順・最大300件）。検索欄で本文を探せます</p>
+<table><tr><th>日時</th><th>名前</th><th>ご意見</th><th>版</th><th>端末</th><th>ステージ（最高）</th><th>転生</th><th>地域</th><th></th></tr>
+<?php foreach ($fbRows as $f): ?>
+<tr style="<?= $f['done'] ? 'color:#aaa' : '' ?>"><td><?= date('m/d H:i', (int)$f['at']) ?></td><td class="n"><?= $h($f['n'] ?? '（未登録）') ?></td><td class="n" style="max-width:420px;white-space:pre-wrap"><?= $h($f['text']) ?></td><td><?= $h($f['ver']) ?></td><td><?= $h($f['platform']) ?></td>
+<td><?= $h($fmt($f['stage'])) ?>（<?= $h($fmt($f['best'])) ?>）</td><td><?= $h($fmt($f['reb'])) ?></td><td><?= $h($f['tz'] ?: $f['lc']) ?></td>
+<td><?= $fbBtn($f['fid'], 'fbdone', $f['done'] ? '未読に戻す' : '確認済み', $f['done'] ? '未読に戻しますか？' : '確認済みにしますか？') ?> <?= $fbBtn($f['fid'], 'fbdel', '消す', 'このご意見を消しますか？') ?></td></tr>
+<?php endforeach; ?>
+</table>
+<?php else: ?>
 <table><tr><th>#</th><th>名前</th><th>国</th><th>記録</th><th>版</th><th>最後の書き込み</th><th>登録</th><th>id</th><th>要確認</th><th></th></tr>
 <?php foreach ($rows as $i => $r): ?>
 <tr class="<?= ['', 'ban', 'shadow'][(int)$r['ban']] ?? '' ?>"><td><?= $i + 1 ?></td><td class="n"><?= $h($r['n']) ?><?= $BAN[(int)$r['ban']] ?? '' ?></td><td title="<?= $h(($r['tz'] ?? '') . ' ' . ($r['lc'] ?? '')) ?>"><?= $ccFlag($r['cc'] ?? '') ?> <?= $h($ccName($r['cc'] ?? '')) ?></td><td><?= $h($fmt($r['score'])) ?></td><td><?= $h($r['ver']) ?></td>
@@ -87,3 +105,4 @@ $btn = fn($id, $act, $label, $confirm) => '<form method="post" style="display:in
 <?= $btn($r['id'], 'name', '名前を消す', '名前を「名無しの勇者」にしますか？') ?> <?= $btn($r['id'], 'del', '消す', 'この人の記録をすべて消しますか？（元に戻せません）') ?></td></tr>
 <?php endforeach; ?>
 </table>
+<?php endif; ?>

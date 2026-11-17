@@ -47,7 +47,7 @@ function openReviewAsk(force) {
     ov.querySelector('.rv-send').onclick = () => { const t = ov.querySelector('.rv-fb').value.trim(); if (t) { game.review.feedback = (game.review.feedback || []).concat(t).slice(-5); queueFeedback(t); } close(); showNotice('📝 ご意見ありがとうございました', false, 2500); };
   };
 }
-// ご意見は Firebase の feedback に送る。つながっていない（オフライン・ログイン前）ときは、ためておいて、あとで送る
+// ご意見は XSERVER（管理画面の「📝 ご意見」）に送る。つながっていない（オフライン）ときは、ためておいて、あとで送る
 function queueFeedback(text) {
   const plat = (() => { try { return window.Capacitor && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'web'; } catch (e) { return 'web'; } })();
   game.review.fbQueue = (game.review.fbQueue || []).concat({ text: String(text).slice(0, 1000), ver: GAME_VERSION, platform: plat, stage: game.stage || 1, best: game.bestStage || 1, reb: game.reincarnations || 0, sentAt: Date.now() }).slice(-10);
@@ -56,9 +56,9 @@ function queueFeedback(text) {
 let feedbackSending = false;
 async function flushFeedback() {
   const q = game.review && game.review.fbQueue; if (!q || !q.length || feedbackSending) return;
-  if (!(window.fbCloud && fbCloud.uid && fbCloud.sendFeedback)) return;
+  const dest = typeof rankSrv === 'function' && rankSrv() && rankSrv().sendFeedback ? rankSrv() : (window.fbCloud && fbCloud.uid && fbCloud.sendFeedback ? fbCloud : null); if (!dest) return; // ランキングのサーバーに送る（使えなければ Firebase）
   feedbackSending = true;
-  try { while (game.review.fbQueue.length) { await fbCloud.sendFeedback(game.review.fbQueue[0]); game.review.fbQueue.shift(); saveGame(); } }
+  try { while (game.review.fbQueue.length) { await dest.sendFeedback(game.review.fbQueue[0]); game.review.fbQueue.shift(); saveGame(); } }
   catch (e) { console.warn('ご意見を送れませんでした（あとでもう一度送ります）', e); }
   feedbackSending = false;
 }

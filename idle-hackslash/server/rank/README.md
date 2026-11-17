@@ -43,3 +43,7 @@ PHP は 7.4 以上（8 系推奨）。
 2. claude.ai の 設定 → コネクタ →「カスタムコネクタを追加」で、名前 **Mugen Ranking**（このとおり）、URL `https://hisashiapp.xsrv.jp/mugen-rank/mcp.php` を登録する（認証なし）。
 3. アーティファクトを開くと、最初の1回だけ「Mugen Ranking を使ってよいか」を聞かれるので許可する。
 - 登録した本人の claude.ai でだけ有効。登録していない人のプレビューは見本のランキングになる。
+
+## ご意見（レビューの「ちょっと不満がある…」）
+- ゲームから api.php の a=fb に送り、feedback の表に入る。管理画面の「📝 ご意見」で読める（確認済み・消す）。
+- 表を作る SQL は schema.sql の feedback。

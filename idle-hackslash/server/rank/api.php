@@ -56,6 +56,7 @@ if ($isSqlite) { // 手元で試すとき用：表がなければ作る
   foreach (FIELDS as $f) $db->exec("CREATE INDEX IF NOT EXISTS ix_$f ON players($f)");
   $db->exec('CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, id TEXT NOT NULL, n TEXT NOT NULL, c INTEGER DEFAULT 0, at INTEGER DEFAULT 0, PRIMARY KEY(day, id))');
   $db->exec('CREATE INDEX IF NOT EXISTS ix_daily_c ON daily(day, c)');
+  $db->exec('CREATE TABLE IF NOT EXISTS feedback (fid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT, text TEXT, ver TEXT, platform TEXT, stage REAL, best REAL, reb REAL, tz TEXT, lc TEXT, at INTEGER, done INTEGER DEFAULT 0)');
   foreach (["flag TEXT DEFAULT ''", 'gm REAL DEFAULT 0', 'rb REAL DEFAULT 0', "lc TEXT DEFAULT ''", "tz TEXT DEFAULT ''", "cc TEXT DEFAULT ''"] as $col) { try { $db->exec("ALTER TABLE players ADD COLUMN $col"); } catch (Throwable $e) {} }
 }
 
@@ -135,6 +136,17 @@ if ($method === 'POST') {
     }
     $db->prepare('UPDATE players SET n = ?, st = ?, co = ?, ki = ?, ev = ?, rf = ?, dp = ?, gm = ?, rb = ?, ver = ?, tz = ?, lc = ?, cc = ?, at = ? WHERE id = ?')
        ->execute([$name, $v['st'], $v['co'], $v['ki'], $v['ev'], $v['rf'], $v['dp'], $gm, $rb, $ver, $tz, $lc, $cc, time(), $id]);
+    out(['ok' => true]);
+  }
+  if ($a === 'fb') { // ご意見（レビューの「ちょっと不満がある」）。管理画面の「📝 ご意見」で読む
+    $id = $body['id'] ?? ''; if (!is_string($id) || !preg_match('/^[0-9a-f]{32}$/', $id)) fail('id が変です');
+    $text = trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', (string)($body['text'] ?? ''))); if ($text === '') fail('text が空です');
+    $st = $db->prepare('SELECT MAX(at) AS t FROM feedback WHERE id = ?'); $st->execute([$id]); $last = (int)($st->fetch()['t'] ?? 0);
+    if ($last && time() - $last < 20) fail('少し待ってから送ってください', 429); // 同じ人の連投は20秒あける
+    $db->prepare('INSERT INTO feedback (id, text, ver, platform, stage, best, reb, tz, lc, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([
+      $id, mb_substr($text, 0, 1000), mb_substr((string)($body['ver'] ?? ''), 0, 20), mb_substr((string)($body['platform'] ?? ''), 0, 10),
+      num($body['stage'] ?? 0, 1e12), num($body['best'] ?? 0, 1e12), num($body['reb'] ?? 0, 1e12),
+      mb_substr(preg_replace('/[^A-Za-z0-9_\/+\-]/', '', (string)($body['tz'] ?? '')), 0, 40), mb_substr(preg_replace('/[^A-Za-z0-9_\-]/', '', (string)($body['lc'] ?? '')), 0, 20), time()]);
     out(['ok' => true]);
   }
   if ($a === 'dput') {
