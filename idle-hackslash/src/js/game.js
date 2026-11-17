@@ -1528,7 +1528,13 @@ function giveUpSkipChallenge(retire) { // retire：ボス戦中にリタイヤ�
 document.getElementById('bossRetryBtn').addEventListener('click', () => { (game.seen = game.seen || {}).bossRetry = 1; retryBoss(); });
 document.getElementById('autoBossBtn').addEventListener('click', () => { game.autoBossRetry = game.autoBossRetry === false; updateBossRetryBtn(); saveGame(); });
 stageSkipBtn.addEventListener('click', event => {
-  if (!isTowerUnlocked()) { showTapError(`🔒 ステージ${TOWER_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return; }
+  if (!isTowerUnlocked()) {
+    if (typeof tabSecretTap === 'function' && tabSecretTap('tower')) { // ページのボタンと同じく、続けて10回押すと開く（ストアの審査・確かめ用）
+      game.towerTapOpen = true; saveGame(); try { updateSkipBtnVisibility(); } catch (e) {}
+      showNotice('🔓 試練の塔を開きました', false, 2000); return;
+    }
+    showTapError(`🔒 ステージ${TOWER_UNLOCK_STAGE}到達で解放`, event.clientX, event.clientY); return;
+  }
   if (game.skipChallenge) { showTapError('ボスに挑戦中です', event.clientX, event.clientY); return; }
   if (phase !== 'battle' || !balls.some(ball => !ball.isPlayer)) { showTapError('今は塔に挑めません', event.clientX, event.clientY); return; }
   playTowerGateSound();
