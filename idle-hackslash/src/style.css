@@ -5485,3 +5485,11 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 #bossContModal .go3 .go5-hint.emb-hint { cursor: pointer; }
 #bossContModal .go3 .go5-hint > span { display: block; }
 #bossContModal .go3 .go5-hint .go5-arrow { font-style: normal; display: inline-block; margin-left: 0.35em; font-size: 0.7em; vertical-align: 0.12em; color: #ffd76b; } /* 押すとショップへ、の矢印 */
+
+/* ランキングの上の「あなたの記録・順位」 */
+.tab-page[data-tab="ranking"] .rank-my { display: flex; align-items: center; justify-content: center; gap: 10px; margin: -2px auto 8px; padding: 6px 16px; width: fit-content; max-width: 100%; box-sizing: border-box; border-radius: 12px; background: rgba(10, 14, 32, 0.82); border: 1px solid rgba(120, 200, 255, 0.55); color: #fff; text-shadow: 0 1px 2px #000; }
+.tab-page[data-tab="ranking"] .rank-my:empty { display: none; }
+.tab-page[data-tab="ranking"] .rank-my .rm-l { font-size: 0.8rem; font-weight: 800; color: #cfe6ff; }
+.tab-page[data-tab="ranking"] .rank-my .rm-s { font-size: 1.15rem; font-weight: 900; color: #fff; }
+.tab-page[data-tab="ranking"] .rank-my .rm-r { font-size: 0.85rem; font-weight: 800; color: #ffe9a8; }
+.tab-page[data-tab="ranking"] .rank-my .rm-r b { font-size: 1.15rem; color: #ffd76b; }

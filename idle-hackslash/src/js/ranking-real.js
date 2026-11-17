@@ -83,6 +83,7 @@ async function renderRankingReal() {
   rankDeadlineTick();
   const myScore = isDaily ? getDailyClearsForDate(day) : mode.mine();
   const label = isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title;
+  rankMyBoxSet(fmt(isDaily && today ? rankTodayClears() : myScore), null); // 記録はすぐ、順位は読めてから
   const finish = async (entries, live) => {
     if (rankingMode !== modeNow || getRankingDateKey() !== day || getActiveTab() !== 'ranking') return; // 読んでいる間にタブ・日付を変えた
     const score = isDaily && today ? rankTodayClears() : myScore;
@@ -92,6 +93,7 @@ async function renderRankingReal() {
       if (isDaily && rankSrv().dailyNear) { try { const nr = await rankSrv().dailyNear(day, score); const f = d => d && { id: d.id, name: rankEsc(d.n || '名無しの勇者'), score: d.c || 0 }; nearUp = f(nr.up[0]); nearDown = f(nr.down[0]); } catch (e) {} }
     }
     lastRankInfo = { rank: myRank || 0, total: entries.length, label, score: fmt(score) };
+    rankMyBoxSet(lastRankInfo.score, myRank || 0);
     rankDraw(key, entries, { fmt, myScore: score, myRank, isDaily, live, nearUp, nearDown });
   };
   try { await rankUpload(true); } catch (e) {}

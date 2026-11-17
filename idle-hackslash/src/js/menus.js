@@ -850,6 +850,11 @@ const RANK_MODES = {
   dps: { title: 'MAX DPS', mine: () => Math.floor(game.maxDps || 0), rival: (r, i) => Math.round(Math.pow(10, 1.6 + r.stageScore / 30) * (0.5 + rivalSeed(i, 37))), fmt: v => `${formatCoinNumber(v)} DPS` },
 };
 let lastRankInfo = null;
+// ランキングの上に「あなたの記録・順位」を出す（ランキングが多くても、自分の記録がすぐ分かるように）
+function rankMyBoxSet(score, rank) {
+  const el = document.getElementById('rankMyBox'); if (!el) return;
+  el.innerHTML = `<span class="rm-l">あなたの記録</span><b class="rm-s">${score}</b><span class="rm-r">${rank ? `<b>${formatCoinNumber(rank)}</b>位` : rank === 0 ? '圏外' : '…'}</span>`;
+}
 const SERVICE_START_DATE_KEY = '2026-06-01'; // サービス開始日（これより過去へは遡れない）
 let rankingDateOffset = 0; // 0=本日, -1=前日, ...
 
@@ -898,6 +903,7 @@ function renderRanking() {
   entries.sort((a, b) => b.score - a.score);
   const fmt = v => isDaily ? v + ' クリア' : mode.fmt(v);
   lastRankInfo = { rank: entries.findIndex(e => e.isPlayer) + 1, total: entries.length, label: isDaily ? `${rankDateLabel.textContent}のクリア数` : mode.title, score: fmt(myScore) };
+  rankMyBoxSet(lastRankInfo.score, lastRankInfo.rank);
   const RANK_ICONS = ['🏆', '🥈', '🥉'];
   const RANK_WALLS = { 3: ['神の壁', 'w-god'], 10: ['プロゲーマーの壁', 'w-pro'], 20: ['名人の壁', 'w-master'], 50: ['クラスで上手い奴の壁', 'w-class'] }; // この順位のすぐ下に壁
   const shown = entries.slice(0, 1000);
