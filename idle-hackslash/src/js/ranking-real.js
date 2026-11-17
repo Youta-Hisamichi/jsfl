@@ -143,7 +143,8 @@ async function rankYesterdayResult() {
   try {
     const above = await rankSrv().rankAbove(null, c, y); if (above == null) return;
     game.rankResultShown = y; saveGame(); const r = above + 1;
-    simpleChoice({ icon: r <= 3 ? ['🏆', '🥈', '🥉'][r - 1] : '📅', title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
+    rankYesterdayInfo = { r, c, day: y }; // シェアの文に使う
+    simpleChoice({ icon: r <= 3 ? ['🏆', '🥈', '🥉'][r - 1] : '📅', title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div><button class="share-btn rk-y-share" data-share="yesterday" onclick="this.closest('.modal-overlay').remove()">📤 結果をシェア</button>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
   } catch (e) {}
 }
 { let tries = 0; const t = setInterval(() => { if (rankReal() || ++tries > 30) { clearInterval(t); setTimeout(rankYesterdayResult, 6000); } }, 2000); }

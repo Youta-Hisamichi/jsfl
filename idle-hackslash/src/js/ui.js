@@ -2318,7 +2318,12 @@ rebirthShopList.addEventListener('click', event => {
 });
 
 const SHARE_HASHTAG = '#放置系ハクスラ無限反射';
+let rankYesterdayInfo = null; // 昨日のクリア数ランキングの結果（シェア用。ranking-real.js が入れる）
 function buildShareText(kind) {
+  if (kind === 'yesterday' && rankYesterdayInfo) {
+    const { r, c } = rankYesterdayInfo;
+    return `【放置系ハクスラ無限反射】\n${r <= 3 ? ['🏆', '🥈', '🥉'][r - 1] : '📅'} 昨日のクリア数ランキングで ${r}位！（${c}クリア）\n${SHARE_HASHTAG}`;
+  }
   const b = computeBonuses();
   const found = ENEMY_BOOK.filter(entry => (game.bestiary || {})[entry.key]).length;
   const comp = (Math.floor(found / ENEMY_BOOK.length * 1000) / 10).toFixed(1);

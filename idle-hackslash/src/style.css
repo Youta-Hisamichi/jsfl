@@ -5470,3 +5470,4 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 .rank-deadline { display: flex; flex-direction: row; align-items: baseline; justify-content: center; gap: 8px; width: fit-content; margin: 6px auto 8px; padding: 5px 16px 6px; border-radius: 999px; border-width: 2px; background: linear-gradient(rgba(40, 10, 10, 0.88), rgba(10, 8, 24, 0.9)); box-shadow: 0 0 12px rgba(255, 190, 80, 0.35); text-align: center; }
 .rank-deadline .rd-lbl { font-size: 0.85rem; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; }
 .rank-deadline b { margin: 0; font-size: 1.45rem; line-height: 1.1; font-weight: 900; letter-spacing: 0.04em; color: #ffd76b; text-shadow: 0 2px 0 #7a3b00, 0 0 10px rgba(255, 200, 80, 0.6); }
+.rk-y-share { display: block; margin: 10px auto 2px; } /* 昨日のランキング結果のシェアボタン */
