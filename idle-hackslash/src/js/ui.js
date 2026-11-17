@@ -3002,7 +3002,13 @@ canvas.addEventListener('pointerdown', event => {
 
 try {
   const tryCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (tryCtx.state === 'running') audioCtx = tryCtx; else tryCtx.close(); // 曲はセーブ（音量）を読み込んでから鳴らす
+  if (tryCtx.state === 'running') audioCtx = tryCtx; // 曲はセーブ（音量）を読み込んでから鳴らす
+  else { // iPhone アプリなどは、タップなしでも少し待てば鳴らせる。動き出したらそのまま使う（ブラウザで許されないときは、最初のタップで鳴らす）
+    const adopt = () => { if (tryCtx.state === 'running' && !audioCtx) { audioCtx = tryCtx; try { refreshBgm(); if (typeof loadBossFinish === 'function') loadBossFinish(); } catch (e) {} } else if (audioCtx !== tryCtx && tryCtx.state !== 'closed') { if (audioCtx) tryCtx.close(); } };
+    tryCtx.onstatechange = adopt;
+    try { const pr = tryCtx.resume(); if (pr && pr.then) pr.then(adopt, () => {}); } catch (e) {}
+    setTimeout(() => { if (audioCtx !== tryCtx && tryCtx.state !== 'closed') tryCtx.close(); }, 4000); // 4秒たっても動かなければあきらめる
+  }
 } catch (e) {}
 function unlockAudio() {
   ensureAudio(); refreshBgm(); if (typeof loadBossFinish === 'function') loadBossFinish(); // ボス撃破音を前もって読み込む

@@ -2279,8 +2279,11 @@ function resizeCanvas() {
 }
 
 function ensureAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  else if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!audioCtx) { // 作ったらすぐ動かしてみる（iPhone アプリはタップなしでも動く。動き出したら曲を流す）
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx; ctx.addEventListener('statechange', () => { if (ctx.state === 'running' && audioCtx === ctx) { try { refreshBgm(); } catch (e) {} } });
+  }
+  if (audioCtx.state === 'suspended') { try { const pr = audioCtx.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
 }
 
 const BGM_PATTERNS = {
