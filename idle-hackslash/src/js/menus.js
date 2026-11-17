@@ -853,9 +853,7 @@ const SERVICE_START_DATE_KEY = '2026-06-01'; // サービス開始日（これ�
 let rankingDateOffset = 0; // 0=本日, -1=前日, ...
 
 function getRankingDateKey() {
-  const d = new Date(typeof trustNow === 'function' ? trustNow() : Date.now());
-  d.setDate(d.getDate() + rankingDateOffset);
-  return dateKey(d);
+  return jstDateKey(typeof trustNow === 'function' ? trustNow() : Date.now(), rankingDateOffset); // 日本時間の日付
 }
 
 function getTotalUserCountDisplay() {

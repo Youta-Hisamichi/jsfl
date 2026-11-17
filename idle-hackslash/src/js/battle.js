@@ -1513,7 +1513,11 @@ function showBossWarning() {
 // 本日のクリア数（ランキング）は、セーブとは別に「この端末で実際にクリアした数」を日付ごとに記録する。
 // セーブをロードし直したり（クラウド・引き継ぎコード・控え）、書き換えたりしても増えない・減らない。日付は信用できる時計で決める
 const DAILY_LEDGER_KEY = 'circle-battle-idle-daily-ledger', DAILY_LEDGER_KEEP_DAYS = 40;
-function rankTodayKey() { return dateKey(new Date(typeof trustNow === 'function' ? trustNow() : Date.now())); }
+// 本日のランキングの「日」は、世界中どこでも日本時間で区切る（日本時間0時に切り替わる）
+const JST_MS = 9 * 3600000;
+function jstDateKey(ms, addDays = 0) { const d = new Date(ms + JST_MS + addDays * 86400000); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); }
+function rankTodayKey() { return jstDateKey(typeof trustNow === 'function' ? trustNow() : Date.now()); }
+function rankMsToJstMidnight() { const now = typeof trustNow === 'function' ? trustNow() : Date.now(); return 86400000 - ((now + JST_MS) % 86400000); } // 本日のランキングの締め切り（日本時間24時）まで
 function readDailyLedger() { try { return JSON.parse(localStorage.getItem(DAILY_LEDGER_KEY) || 'null'); } catch (e) { return null; } }
 function dailyLedger() {
   let L = readDailyLedger();

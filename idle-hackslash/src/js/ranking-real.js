@@ -108,11 +108,11 @@ async function renderRankingReal() {
 // ---- D：締め切りまでの残り時間 ----
 function rankDeadlineTick() {
   let el = document.getElementById('rankDeadline');
-  const show = rankReal() && getActiveTab() === 'ranking' && rankingMode === 'daily' && rankingDateOffset === 0;
+  const show = getActiveTab() === 'ranking' && rankingMode === 'daily' && rankingDateOffset === 0; // 見本のランキングのときも出す
   if (!el) { if (!show) return; el = document.createElement('div'); el.id = 'rankDeadline'; el.className = 'rank-deadline'; rankDateNav.after(el); }
   el.style.display = show ? '' : 'none'; if (!show) return;
-  const now = new Date(typeof trustNow === 'function' ? trustNow() : Date.now()), end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), s = Math.max(0, Math.floor((end - now) / 1000));
-  el.innerHTML = `⏳ 本日の締め切りまで <b>${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b>`;
+  const s = Math.max(0, Math.floor(rankMsToJstMidnight() / 1000)); // 日本時間24時まで（世界共通）
+  el.innerHTML = `⏳ 本日のランキング終了まで <b>${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b>`;
   el.classList.toggle('soon', s < 3600);
 }
 setInterval(rankDeadlineTick, 1000);
@@ -136,7 +136,7 @@ setInterval(rankDuelCheck, RANK_DUEL_CHECK_MS);
 // ---- D：日付が変わったら「昨日の結果」を1回だけ出す ----
 async function rankYesterdayResult() {
   if (!rankReal()) return;
-  const d = new Date(typeof trustNow === 'function' ? trustNow() : Date.now()); d.setDate(d.getDate() - 1); const y = dateKey(d);
+  const y = jstDateKey(typeof trustNow === 'function' ? trustNow() : Date.now(), -1); // 日本時間のきのう
   if (game.rankResultShown === y) return;
   const c = Math.floor(getDailyClearsForDate(y) || 0); if (c <= 0) { game.rankResultShown = y; return; }
   try {
