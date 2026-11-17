@@ -11,7 +11,6 @@ const GIMMICKS = {
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
   rocks:     { name: '落石注意', icon: '🪨', desc: '岩が降ってきて敵をつぶす', coin: 1.1 },
   snow:      { name: '雪まつり', icon: '⛄', desc: '雪が舞う。雪だるまを壊すとコイン', coin: 1 },
-  slime:     { name: 'ぷるぷる床', icon: '🟢', desc: '跳ね返りが強くなる。コイン×1.2', coin: 1.2 },
   pots:      { name: '壺割りまくり', icon: '🏺', desc: '壺がずらり！ 割るたびにコイン', coin: 1 },
   mow:       { name: '芝刈りしまくり', icon: '🌿', desc: '草ぼうぼう！ 刈るたびにコイン', coin: 1 },
   blocks:    { name: 'パンドラの箱叩きまくり', icon: '❓', desc: 'パンドラの箱を何度も叩いてコイン', coin: 1 },
@@ -25,7 +24,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'slime', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
+const GIMMICK_FIRST_RUN = ['stars', 'pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
@@ -108,7 +107,6 @@ function tickGimmick(sp) {
       b.vx += fx * sp; b.vy += fy * sp;
     }
   }
-  if (key === 'slime') for (const b of pls) { if (b.vx == null) continue; const v = Math.hypot(b.vx, b.vy); if (v > 0 && v < 2.2) { b.vx *= 1.02; b.vy *= 1.02; } }
   // 宝さがし
   if (key === 'treasure' && !gm.treasureDone && gm.spot) {
     const p = pls.find(b => isMainPlayerBall(b) && Math.hypot(b.x - gm.spot.x, b.y - gm.spot.y) < (b.radius || 12) + 14);
@@ -305,6 +303,8 @@ function drawGimmickLabel(key, A, now) { // 右上にイベント名、開始時
   const lx = A.r - 6 - w; let ly = A.t + 6; // 右上にイベント名
   const sh = document.getElementById('momentShareBtn'); // 右上に「この瞬間をシェア」が出ている間は、その下に出して重ねない
   if (sh && sh.offsetHeight && getComputedStyle(sh).display !== 'none' && getComputedStyle(sh).opacity !== '0') ly = Math.max(ly, sh.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top + 4);
+  const tb = document.getElementById('enemyTraitBadge'); // 右上の「敵の特徴」とも重ねない（その下に出す）
+  if (tb && tb.offsetHeight && getComputedStyle(tb).display !== 'none') { const cr = canvas.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (r.left - cr.left < lx + w + 4) ly = Math.max(ly, r.bottom - cr.top + 4); }
   ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly, w, 20, 10) : ctx.rect(lx, ly, w, 20); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, lx + 7, ly + 10);
   const t = (now - gm.bannerAt) / 2600;
