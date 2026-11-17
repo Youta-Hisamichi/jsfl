@@ -51,13 +51,42 @@ async function rankApi(a, params, body) {
     if (rankSignKey) q.set('s', rankHmacHex(rankSignKey, a + '|' + text));
     opt = { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text, keepalive: true }; // keepalive：アプリを閉じる途中でも送り切る
   }
+  if (rankMcp) return rankViaMcp(a, q, opt); // Claude のプレビュー：コネクタ経由
   let r;
   try { r = await fetch(RANK_API_URL + '?' + q, opt); }
-  catch (e) { // つながらない：ブラウザなら見本のランキングに戻す（アプリは「読み込めませんでした」を出す）
-    if (!rankIsNative() && !rankApiBroken) { rankApiBroken = true; console.warn('ランキングのサーバーにつながらないので見本を出します', e); setTimeout(() => { try { if (getActiveTab() === 'ranking') renderRanking(); } catch (x) {} }, 0); }
+  catch (e) { // つながらない：Claude のプレビューならコネクタ（Mugen Ranking）を試し、だめならブラウザは見本のランキングに戻す（アプリは「読み込めませんでした」を出す）
+    if (!rankIsNative() && !rankApiBroken) {
+      const m = await rankMcpReady();
+      if (m) return rankViaMcp(a, q, opt);
+      rankFallbackToSample(e);
+    }
     throw e;
   }
   const j = await r.json(); if (!j.ok) throw new Error(j.error || 'ranking api'); return j;
+}
+// ---- Claude のプレビュー（アーティファクト）用：外へ直接つなげないので、claude.ai のコネクタ「Mugen Ranking」（server/rank/mcp.php）を通して読み書きする ----
+const RANK_MCP_SERVER = 'Mugen Ranking';
+let rankMcp = null, rankMcpTried = null;
+function rankMcpReady() { // コネクタの機能が使える画面か（プレビュー以外は null）
+  if (!rankMcpTried) rankMcpTried = (async () => { try { const m = window.claude && window.claude.use ? await window.claude.use('mcp') : null; if (m) rankMcp = m; return m; } catch (e) { return null; } })();
+  return rankMcpTried;
+}
+function rankFallbackToSample(e) {
+  if (rankApiBroken) return; rankApiBroken = true; console.warn('ランキングのサーバーにつながらないので見本を出します', e);
+  setTimeout(() => { try { if (getActiveTab() === 'ranking') renderRanking(); } catch (x) {} }, 0);
+}
+const RANK_MCP_GONE = ['server_not_connected', 'not_in_manifest', 'not_granted', 'capability_disabled', 'capability_removed', 'needs_reauth', 'blocked_by_policy', 'selection_required', 'server_not_found', 'approval_required'];
+async function rankViaMcp(a, q, opt) {
+  const params = Object.fromEntries(q); delete params.a; delete params.s;
+  try {
+    const res = opt.body ? await rankMcp.callTool(RANK_MCP_SERVER, 'rank_write', { a, body: JSON.parse(opt.body) })
+                         : await rankMcp.callTool(RANK_MCP_SERVER, 'rank_read', { a, params }, { cache: false });
+    const j = res && res.payload; if (!j || !j.ok) throw new Error((j && j.error) || 'ranking api'); return j;
+  } catch (e) {
+    if (e && e.code === 'tool_error') { const sc = e.result && e.result.structuredContent; throw new Error((sc && sc.error) || 'ranking api'); }
+    if (e && RANK_MCP_GONE.includes(e.code)) { console.warn('コネクタ「' + RANK_MCP_SERVER + '」が使えません：' + e.code); rankMcp = null; rankFallbackToSample(e); } // 未登録・許可なし：見本に戻す
+    throw e;
+  }
 }
 const rankNum = list => (list || []).map(d => { const o = { ...d }; for (const k of ['st', 'co', 'ki', 'ev', 'rf', 'dp', 'c']) if (k in o) o[k] = Number(o[k]) || 0; return o; }); // 数は必ず数として扱う
 const rankServerApi = {

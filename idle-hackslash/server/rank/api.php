@@ -12,12 +12,15 @@
 // 管理画面（admin.php）で止めた人（ban = 1）は、一覧に出さず、書き込みも黙って捨てる。
 // シャドウバン（ban = 2）の人は、書き込みは受け付けるが、本人以外の一覧・人数には出さない（読むときの me＝自分の id で見分ける）。
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Cache-Control: no-store');
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { http_response_code(204); exit; }
+// mcp.php（Claude のコネクタ用の窓口）から読み込まれたときは RANK_LIB が決まっていて、結果を RankOut で投げ返す
+if (!defined('RANK_LIB')) {
+  header('Content-Type: application/json; charset=utf-8');
+  header('Access-Control-Allow-Origin: *');
+  header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+  header('Access-Control-Allow-Headers: Content-Type');
+  header('Cache-Control: no-store');
+  if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { http_response_code(204); exit; }
+}
 
 const FIELDS = ['st', 'co', 'ki', 'ev', 'rf', 'dp'];
 const TOP_MAX = 100;
@@ -28,7 +31,8 @@ const GEM_JUMP_FLAG = 10000;     // ジェムが1回の書き込みでこれ以�
 const REBORN_JUMP_FLAG = 100;    // 転生回数が1回の書き込みでこれ以上増えた
 const COIN_JUMP_FLAG = 1e10;     // 登録して1日目に、コイン（最高所持）が1回の書き込みでこれ以上増えた
 
-function out($data, $code = 200) { http_response_code($code); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
+if (!class_exists('RankOut')) { class RankOut extends Exception { public $data; public $status; function __construct($d, $c) { parent::__construct('rank'); $this->data = $d; $this->status = $c; } } }
+function out($data, $code = 200) { if (defined('RANK_LIB')) throw new RankOut($data, $code); http_response_code($code); echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
 function fail($msg, $code = 400) { out(['ok' => false, 'error' => $msg], $code); }
 
 $cfgFile = __DIR__ . '/config.php';
@@ -105,7 +109,7 @@ $a = $_GET['a'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'POST') {
-  $raw = file_get_contents('php://input', false, null, 0, 4096);
+  $raw = defined('RANK_LIB') ? (string)($GLOBALS['RANK_RAW'] ?? '') : file_get_contents('php://input', false, null, 0, 4096);
   $body = json_decode($raw, true); if (!is_array($body)) fail('本文が JSON ではありません');
   $sig = $_GET['s'] ?? '';
   if (!empty($cfg['sign_key']) && $sig !== '') { // 署名のチェック：署名が付いているなら、アプリに入れた鍵で作ったものだけ受け付ける

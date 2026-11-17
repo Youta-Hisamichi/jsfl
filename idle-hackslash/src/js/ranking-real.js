@@ -14,6 +14,7 @@ async function rankUpload(force) { // 記録が変わっていたら送る（本
   if (!rankReal()) return;
   const now = Date.now(), m = rankMine(), j = JSON.stringify(m);
   if (j !== rankLastPut && (force || now - rankLastPutAt > RANK_PUT_MS)) { try { const r = await rankSrv().rankPut(m); if (!(r && r.skipped)) { rankLastPut = j; rankLastPutAt = now; } } catch (e) { console.warn('ランキングに送れません', e); } }
+  if (!rankReal()) return; // 送っている途中で見本に切り替わった
   const day = rankTodayKey(), c = rankTodayClears(), dj = day + ':' + c + ':' + m.n;
   if (dj !== rankLastDaily) { /* まだ1つもクリアしていなくても、開いた日は0で登録する */ try { await rankSrv().dailyPut(day, { n: m.n, c }); rankLastDaily = dj; } catch (e) { console.warn('本日のランキングに送れません', e); } }
 }
