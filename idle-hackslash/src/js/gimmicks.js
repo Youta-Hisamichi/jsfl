@@ -1,7 +1,6 @@
 // ---- ステージイベント（ギミック）：数ステージごとに見た目と遊びが変わる。序盤は毎回なにかが起きる ----
 // 3ステージ1組で同じイベントが続く（ボス階・試練の塔はお休み）。初めて見たイベントは「NEW!」でステージ図鑑に登録
 const GIMMICKS = {
-  stars:     { name: '流れ星の夜', icon: '🌠', desc: '落ちた星にさわるかタップでコイン', coin: 1, tint: 'rgba(10,16,60,0.12)' },
   night:     { name: '月夜の草原', icon: '🌙', desc: '暗い夜。ホタルを集めるとコイン', coin: 1.3 },
   wind:      { name: '強風注意報', icon: '🍃', desc: 'みんな風に流される！ コイン×1.2', coin: 1.2 },
   treasure:  { name: '宝さがし', icon: '🗺️', desc: '✕じるしの上を通ると宝箱！', coin: 1 },
@@ -24,7 +23,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['stars', 'pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
+const GIMMICK_FIRST_RUN = ['pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
