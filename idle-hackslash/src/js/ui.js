@@ -494,7 +494,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -553,6 +553,15 @@ debugRow.addEventListener('click', event => {
   if (action === 'rebornAlways') {
     game.dbgRebornAlways = !game.dbgRebornAlways; updateDbgRebornBtn(); updateStatsUI(); saveGame();
     showNotice(game.dbgRebornAlways ? 'DEBUG: 転生ボタンをステージに関係なく表示します' : 'DEBUG: 転生ボタンを通常の条件に戻しました');
+    return;
+  }
+  if (action === 'floorNext') { // 床の模様を順番に切り替えて見る（全部見たら、ふだんの床に戻る）
+    const all = [...FLOOR_NORMAL, ...FLOOR_BOSS], i = dbgFloor ? all.indexOf(dbgFloor) : -1;
+    dbgFloor = i + 1 < all.length ? all[i + 1] : null;
+    const label = dbgFloor ? `🧱 床：${dbgFloor}（${all.indexOf(dbgFloor) + 1}/${all.length}）` : '🧱 床パターン切り替え';
+    document.querySelectorAll('[data-debug="floorNext"]').forEach(b => { b.textContent = label; });
+    try { applyOuterBackground(getFloorKey(game.stage)); } catch (e) {} try { draw(); } catch (e) {}
+    showNotice(dbgFloor ? `DEBUG: 床を「${dbgFloor}」に固定しました${FLOOR_BOSS.includes(dbgFloor) ? '（ボス用の床）' : ''}` : 'DEBUG: 床をふだんどおりに戻しました');
     return;
   }
   if (action === 'rankNewId') { // ランキングの id と合言葉を作り直す（同じセーブを入れた2台を、別の人として試すとき用）

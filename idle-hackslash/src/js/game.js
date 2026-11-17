@@ -2341,7 +2341,9 @@ function floorOrder(list, lap, salt) {
   if (salt === 1 && lap === 0 && !game.reincarnations) { a.splice(a.indexOf('lawn'), 1); a.unshift('lawn'); } // はじめての周回の最初のエリアは草原から
   return (floorOrderCache[id] = a);
 }
+let dbgFloor = null; // デバッグ：床を固定して見る（「床パターン切り替え」ボタン）
 function getFloorKey(stage) { // エリア（10ステージ）ごとの床。順番は転生のたびに変わるランダム（ひと回りで全部の床を1回ずつ）
+  if (dbgFloor) return dbgFloor;
   const cycle = Math.floor((Math.max(1, stage) - 1) / 10);
   if (stage % 10 === 0) return floorOrder(FLOOR_BOSS, Math.floor(cycle / FLOOR_BOSS.length), 2)[cycle % FLOOR_BOSS.length];
   return floorOrder(FLOOR_NORMAL, Math.floor(cycle / FLOOR_NORMAL.length), 1)[cycle % FLOOR_NORMAL.length];
