@@ -760,7 +760,7 @@ function showBossContModal(reason) {
   panel.classList.toggle('rb', rb); panel.classList.toggle('time', reason === 'time'); panel.classList.toggle('adfree', isAdFree());
   document.getElementById('go4Bg').src = rb ? 'assets/img/ui/go5/base_rb.webp' : 'assets/img/ui/go5/base.webp';
   const hint = document.getElementById('go5Hint'); // 動画ボタンの下の枠：紋章に入っていなければ案内（押すとショップの紋章へ）、入っていれば特典の説明
-  if (hint) { const af = isAdFree(); hint.classList.toggle('emb-hint', !af); hint.innerHTML = af ? '<span>👑 紋章の特典で<br>動画なしですぐコンテニュー！</span>' : '<span>👑 紋章があれば<br>動画なしですぐコンテニュー ›</span>'; }
+  if (hint) { const af = isAdFree(); hint.classList.toggle('emb-hint', !af); hint.innerHTML = af ? '<span>👑 紋章の特典で<br>動画なしですぐコンテニュー！</span>' : '<span>👑 紋章があれば<br>動画なしですぐコンテニュー<i class="go5-arrow">▶</i></span>'; }
   bossContModal.classList.add('show'); refreshBgm(); requestAnimationFrame(fitGo3Advice);
   startBossContCountdown();
 }

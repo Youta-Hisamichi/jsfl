@@ -5484,3 +5484,4 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 #bossContModal .go3 .go5-hint b { color: #ffd76b; font-size: 1.15em; margin: 0 0.1em; }
 #bossContModal .go3 .go5-hint.emb-hint { cursor: pointer; }
 #bossContModal .go3 .go5-hint > span { display: block; }
+#bossContModal .go3 .go5-hint .go5-arrow { font-style: normal; display: inline-block; margin-left: 0.35em; font-size: 0.7em; vertical-align: 0.12em; color: #ffd76b; } /* 押すとショップへ、の矢印 */
