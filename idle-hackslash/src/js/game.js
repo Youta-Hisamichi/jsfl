@@ -2349,10 +2349,18 @@ function getFloorKey(stage) { // エリア（10ステージ）ごとの床。順
   return floorOrder(FLOOR_NORMAL, Math.floor(cycle / FLOOR_NORMAL.length), 1)[cycle % FLOOR_NORMAL.length];
 }
 // 床の模様替え：同じエリアでも、ステージごとに別の床を道・水たまりのような島・広場・縁取りの形で重ねて、毎回ちがう地形に見せる
+// ほとんどのステージには、画面の下から上へ抜ける「道」を通す。あるステージの道が上に抜けた位置から、次のステージの道が下から始まるので、
+// ステージを進むたびに一本の道を歩いているように見える（道の床はエリアの中では同じもの）
 const FLOOR_MIX = { lawn: ['dirt', 'mossStone', 'market', 'desert'], dirt: ['lawn', 'desert', 'dryCrack', 'mossStone'], desert: ['dryCrack', 'dirt', 'wasteland', 'market'], mossStone: ['lawn', 'ruins', 'dirt', 'town'],
   town: ['market', 'lawn', 'mossStone', 'brick'], snow: ['mossStone', 'blueTile', 'town', 'panel'], market: ['town', 'lawn', 'dirt', 'woodFloor'], woodFloor: ['market', 'brick', 'town', 'redCarpet'],
-  ruins: ['mossStone', 'lawn', 'dirt', 'wasteland'], tower: ['panel', 'brick', 'mossStone', 'blueTile'] };
+  ruins: ['mossStone', 'lawn', 'dirt', 'wasteland'], tower: ['panel', 'brick', 'mossStone', 'blueTile'],
+  // ボスの床にも道を通す
+  redCarpet: ['brick', 'panel'], dryCrack: ['wasteland', 'dirt'], panel: ['brick', 'blueTile'], blueTile: ['panel', 'mystic'], wasteland: ['dryCrack', 'desert'],
+  brick: ['redCarpet', 'panel'], sea: ['desert', 'blueTile'], dungeon2: ['dungeon', 'brick'], mystic: ['blueTile', 'panel'], dungeon: ['dungeon2', 'brick'] };
 const FLOOR_SHAPES = ['path', 'patches', 'plaza', 'path2', 'frame', 'none'];
+const ROAD_RATE = 1, ROAD_W = 2; // 道が通るステージの割合（途中で道が途切れないよう、いつも通す）・道の太さ（マス）
+function roadEdge(stage) { const r = floorRand(floorSeed(stage, 7)); r(); return 0.18 + r() * 0.64; } // ステージ stage と次のステージの境目で、道が通る横の位置（0〜1）
+function roadFloor(stage, key) { const opts = FLOOR_MIX[key] || []; if (!opts.length) return null; const area = Math.floor((Math.max(1, stage) - 1) / 10); return opts[Math.floor(floorRand(floorSeed(area, 9 + (stage % 10 === 0 ? 1 : 0)))() * opts.length)]; }
 let floorMixCache = null;
 function getFloorMix(stage, key, cols, rows) {
   const id = `${stage}|${key}|${cols}|${rows}|${game.reincarnations || 0}`;
@@ -2360,17 +2368,33 @@ function getFloorMix(stage, key, cols, rows) {
   floorMixCache = { id, over: null, cells: null };
   const opts = FLOOR_MIX[key]; if (!opts || cols < 4 || rows < 4) return floorMixCache;
   const r = floorRand(floorSeed(stage, 3));
-  const shape = FLOOR_SHAPES[Math.floor(r() * FLOOR_SHAPES.length)];
-  if (shape === 'none') return floorMixCache; // ときどきは元の床だけ
-  const over = opts[Math.floor(r() * opts.length)];
+  const road = r() < ROAD_RATE;
+  const shape = road ? (['patches', 'plaza', 'none', 'none'][Math.floor(r() * 4)]) : FLOOR_SHAPES[Math.floor(r() * FLOOR_SHAPES.length)]; // 道に重ねる飾り（道がないステージは前と同じ）
+  if (!road && shape === 'none') return floorMixCache; // ときどきは元の床だけ
+  const over = road ? roadFloor(stage, key) : opts[Math.floor(r() * opts.length)];
   const g = Array.from({ length: rows }, () => new Uint8Array(cols)), set = (x, y) => { if (x >= 0 && y >= 0 && x < cols && y < rows) g[y][x] = 1; };
-  const walk = (vertical, w) => { // くねくねと画面の端から端まで続く道
+  const walk = (vertical, w) => { // くねくねと画面の端から端まで続く道（道のないステージ用）
     let p = Math.floor((vertical ? cols : rows) * (0.25 + r() * 0.5));
     for (let t = 0; t < (vertical ? rows : cols); t++) {
       for (let k = 0; k < w; k++) vertical ? set(p + k, t) : set(t, p + k);
       if (r() < 0.35) { const np = p + (r() < 0.5 ? -1 : 1); if (np >= 1 && np + w <= (vertical ? cols : rows) - 1) { for (let k = 0; k < w; k++) vertical ? set(np + k, t) : set(t, np + k); p = np; } }
     }
   };
+  if (road) { // 下（前のステージから来た位置）から上（次のステージへ続く位置）へ、くねくねと続く道
+    const w = Math.min(ROAD_W, cols - 2), toCol = f => Math.max(1, Math.min(cols - 1 - w, Math.round(f * (cols - w))));
+    let p = toCol(roadEdge(stage - 1)); const goal = toCol(roadEdge(stage));
+    for (let y = rows - 1; y >= 0; y--) {
+      for (let k = 0; k < w; k++) set(p + k, y);
+      if (y === 0) break;
+      const need = goal - p, left = y; // 残りの行で、上の出口に必ず着くように曲がる
+      let np = p;
+      if (Math.abs(need) >= left) np = p + Math.sign(need);
+      else if (r() < 0.4) np = p + (need !== 0 && r() < 0.6 ? Math.sign(need) : (r() < 0.5 ? -1 : 1));
+      np = Math.max(1, Math.min(cols - 1 - w, np));
+      if (Math.abs(goal - np) > y - 1) np = p + Math.sign(goal - p); // 出口に間に合わなくなる曲がり方はしない
+      if (np !== p) { for (let k = 0; k < w; k++) set(np + k, y); p = np; } // 曲がるところは角をつなげる
+    }
+  }
   if (shape === 'path') walk(r() < 0.6, 1 + (r() < 0.5 ? 1 : 0));
   else if (shape === 'path2') { walk(true, 1 + (r() < 0.4 ? 1 : 0)); walk(false, 1 + (r() < 0.4 ? 1 : 0)); } // 十字路
   else if (shape === 'patches') { // ところどころの島（池・砂地・石畳の跡のような形）
@@ -2382,7 +2406,7 @@ function getFloorMix(stage, key, cols, rows) {
   } else if (shape === 'plaza') { // まんなかの広場
     const rx = 1.5 + r() * Math.max(1, cols * 0.25), ry = 1.5 + r() * Math.max(1, rows * 0.2), round = r() < 0.5;
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const dx = Math.abs(x + 0.5 - cols / 2) / rx, dy = Math.abs(y + 0.5 - rows / 2) / ry; if (round ? dx * dx + dy * dy < 1 : Math.max(dx, dy) < 1) g[y][x] = 1; }
-    if (r() < 0.5) walk(r() < 0.5, 1);
+    if (!road && r() < 0.5) walk(r() < 0.5, 1); // 道のあるステージでは、別の道は足さない
   } else if (shape === 'frame') { // 外まわりの縁取り（ところどころ欠ける）
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if ((x === 0 || y === 0 || x === cols - 1 || y === rows - 1) && r() < 0.85) g[y][x] = 1;
   }
