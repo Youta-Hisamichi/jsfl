@@ -5459,3 +5459,6 @@ body.boss-hp .hp-row { display: none !important; }
 .tab-page[data-tab="ranking"] .rank-total b { color: #ffd76b; font-size: 1.25em; margin: 0 2px; }
 /* iPhone は文字が16pxより小さい入力欄を押すと画面を拡大してしまう（戻らない）ので、入力欄の文字は16px以上にする */
 input[type="text"], input[type="search"], input[type="number"], input[type="date"], input:not([type]), textarea, select { font-size: max(16px, 1em) !important; }
+/* iPhone：文字を長押ししたときの「選択・拡大鏡・メニュー」を出さない（ゲームの操作中に出てしまうので）。入力欄とコピー用の欄だけは選べるまま */
+html, body, body * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, [contenteditable="true"] { -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important; }
