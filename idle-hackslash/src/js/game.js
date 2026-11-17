@@ -2422,7 +2422,7 @@ function getFloorMix(stage, key, cols, rows) {
   for (let it = 0; it < 1; it++) { // 1マスだけ飛び出た角をならして、それっぽい形にする
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { let n = 0; for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) n += (g[y + ay] && g[y + ay][x + ax]) ? 1 : 0; if (g[y][x] && n === 0) g[y][x] = 0; else if (!g[y][x] && n >= 3) g[y][x] = 1; }
   }
-  floorMixCache.over = over; floorMixCache.cells = g;
+  floorMixCache.over = over; floorMixCache.cells = g; floorMixCache.road = road;
   return floorMixCache;
 }
 const floorMixPatterns = {};
@@ -2488,11 +2488,94 @@ function drawArenaFloor() {
   ctx.restore();
   ctx.imageSmoothingEnabled = true;
 }
+
+// ===== 道の専用タイル（assets/img/road）：道のマスを道の地面で塗り、道でないマスと接する辺に縁取り（草・石の縁・木の枠など）を描く。道ばたに小物も置く =====
+// 床ごとに合う道の種類。道のあるステージ（getFloorMix の road）は、重ねる床の代わりにこれで描く
+const ROAD_KIT_OF = { lawn: 'grass', dirt: 'pebble', desert: 'pebble', mossStone: 'mossy', town: 'cobble', snow: 'cobble', market: 'cobble', woodFloor: 'wood', ruins: 'mossy', tower: 'stone',
+  redCarpet: 'stone', dryCrack: 'pebble', panel: 'stone', blueTile: 'stone', wasteland: 'pebble', brick: 'cobble', sea: 'wood', dungeon2: 'stone', mystic: 'stone', dungeon: 'mossy' };
+const ROAD_KIT_SRC = {
+  grass: ['assets/img/road/grass_edge.webp', 'assets/img/road/grass_fill.webp'], pebble: ['assets/img/road/pebble_edge.webp', 'assets/img/road/pebble_fill.webp'],
+  wood: ['assets/img/road/wood_edge.webp', 'assets/img/road/wood_fill.webp'], cobble: ['assets/img/road/cobble_edge.webp', 'assets/img/road/cobble_fill.webp'],
+  stone: ['assets/img/road/stone_edge.webp', 'assets/img/road/stone_fill.webp'], mossy: ['assets/img/road/mossy_edge.webp', 'assets/img/road/stone_fill.webp'] };
+const ROAD_PROP_SRC = {
+  sign: 'assets/img/road/p_sign.webp',
+  board: 'assets/img/road/p_board.webp',
+  bannerR: 'assets/img/road/p_bannerR.webp',
+  bannerB: 'assets/img/road/p_bannerB.webp',
+  lantern: 'assets/img/road/p_lantern.webp',
+  grave: 'assets/img/road/p_grave.webp',
+  rubble: 'assets/img/road/p_rubble.webp',
+  pillar: 'assets/img/road/p_pillar.webp',
+  stump: 'assets/img/road/p_stump.webp',
+  barrel: 'assets/img/road/p_barrel.webp',
+  barrel2: 'assets/img/road/p_barrel2.webp',
+  crate: 'assets/img/road/p_crate.webp',
+  wheel: 'assets/img/road/p_wheel.webp',
+  sack: 'assets/img/road/p_sack.webp',
+  grass1: 'assets/img/road/p_grass1.webp',
+  bush1: 'assets/img/road/p_bush1.webp',
+  bush2: 'assets/img/road/p_bush2.webp',
+  bushP: 'assets/img/road/p_bushP.webp',
+  rocks: 'assets/img/road/p_rocks.webp',
+  grass2: 'assets/img/road/p_grass2.webp',
+  grass3: 'assets/img/road/p_grass3.webp',
+  grass4: 'assets/img/road/p_grass4.webp',
+  mush: 'assets/img/road/p_mush.webp',
+  pebbles: 'assets/img/road/p_pebbles.webp',
+  rocks2: 'assets/img/road/p_rocks2.webp',
+  steps: 'assets/img/road/p_steps.webp',
+  ruts: 'assets/img/road/p_ruts.webp',
+  grate: 'assets/img/road/p_grate.webp' };
+// 道の種類ごとの小物：side＝道のわきの小さな草花・石、on＝道の上（足あと・わだち）、big＝道ばたの大きめの物（立て札・街灯・樽など）
+const ROAD_PROPS = {
+  grass: { side: ['grass1', 'grass2', 'grass3', 'grass4', 'bush1', 'bush2', 'bushP', 'rocks', 'mush', 'pebbles'], on: ['steps', 'ruts', 'pebbles'], big: ['sign', 'lantern', 'stump', 'barrel', 'wheel', 'sack', 'board'] },
+  pebble: { side: ['grass1', 'grass3', 'rocks', 'rocks2', 'pebbles', 'bush1'], on: ['ruts', 'steps', 'pebbles'], big: ['sign', 'stump', 'crate', 'barrel2', 'wheel', 'sack'] },
+  wood: { side: ['grass2', 'grass4', 'pebbles'], on: [], big: ['barrel', 'barrel2', 'crate', 'sack', 'lantern'] },
+  cobble: { side: ['grass3', 'grass4', 'pebbles', 'bush2'], on: ['grate'], big: ['lantern', 'bannerR', 'bannerB', 'barrel', 'crate', 'board', 'sign'] },
+  stone: { side: ['grass3', 'pebbles', 'rocks2'], on: ['grate'], big: ['bannerR', 'bannerB', 'lantern', 'pillar'] },
+  mossy: { side: ['grass1', 'grass2', 'bush1', 'bushP', 'mush', 'rocks'], on: ['pebbles'], big: ['pillar', 'rubble', 'grave', 'stump'] } };
+const roadImgs = {};
+function roadImg(src) { let im = roadImgs[src]; if (!im) { im = roadImgs[src] = new Image(); im.src = src; } return im.complete && im.naturalWidth ? im : null; }
+for (const k in ROAD_KIT_SRC) ROAD_KIT_SRC[k].forEach(roadImg); for (const k in ROAD_PROP_SRC) roadImg(ROAD_PROP_SRC[k]);
+let roadLayer = null;
+function drawRoadKit(kit, mix, ox, oy, cols, rows, tilePx) { // 道の絵は1枚の画像にまとめて描いておき、毎フレームはそれを貼るだけ
+  const [eSrc, fSrc] = ROAD_KIT_SRC[kit], edge = roadImg(eSrc), fill = roadImg(fSrc); if (!edge || !fill) return false;
+  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, id = `${mix.id}|${kit}|${tilePx}|${dpr}`;
+  if (!roadLayer || roadLayer.id !== id) {
+    const W = cols * tilePx, H = rows * tilePx, cv = document.createElement('canvas'); cv.width = Math.ceil(W * dpr); cv.height = Math.ceil(H * dpr);
+    const c = cv.getContext('2d'); c.scale(dpr, dpr); c.imageSmoothingEnabled = false; // 小さいドット絵なので、ぼかさずくっきり
+    const g = mix.cells, on = (x, y) => !!(g[y] && g[y][x]);
+    const pat = c.createPattern(fill, 'repeat'), fs = tilePx * 1.5 / fill.width; pat.setTransform(new DOMMatrix().scale(fs));
+    c.fillStyle = pat; for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (on(x, y)) c.fillRect(x * tilePx, y * tilePx, tilePx + 0.5, tilePx + 0.5);
+    const T = tilePx * 0.42, sc = T / edge.width, sl = Math.min(edge.height, tilePx / sc), hash = (a, b, k) => ((a * 73856093) ^ (b * 19349663) ^ (k * 83492791)) >>> 0;
+    const strip = (x, y, k) => { const sy = hash(x, y, k) % Math.max(1, Math.floor(edge.height - sl)); c.drawImage(edge, 0, sy, edge.width, sl, 0, 0, T, tilePx); };
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      if (!on(x, y)) continue;
+      const px = x * tilePx, py = y * tilePx;
+      if (!on(x - 1, y)) { c.save(); c.translate(px, py); strip(x, y, 1); c.restore(); }
+      if (!on(x + 1, y)) { c.save(); c.translate(px + tilePx, py); c.scale(-1, 1); strip(x, y, 2); c.restore(); }
+      if (!on(x, y - 1)) { c.save(); c.translate(px + tilePx, py); c.rotate(Math.PI / 2); strip(x, y, 3); c.restore(); }
+      if (!on(x, y + 1)) { c.save(); c.translate(px, py + tilePx); c.rotate(-Math.PI / 2); strip(x, y, 4); c.restore(); }
+    }
+    // 道ばたの小物（ステージごとに決まった置き方）
+    const P = ROAD_PROPS[kit], r = floorRand(floorSeed(game.stage, 11)), side = [], road = [];
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { if (on(x, y)) road.push([x, y]); else if (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1)) side.push([x, y]); }
+    const put = (name, cell, hTiles, onRoad) => { const im = roadImg(ROAD_PROP_SRC[name]); if (!im || !cell) return; const h = tilePx * hTiles, w = h * im.width / im.height, [x, y] = cell;
+      const cx = x * tilePx + tilePx / 2 + (r() - 0.5) * tilePx * (onRoad ? 0.3 : 0.5), by = y * tilePx + tilePx * (onRoad ? 0.5 + h / tilePx / 2 : 0.85);
+      c.drawImage(im, cx - w / 2, by - h, w, h); };
+    const pick = (list, n, hT, onRoad, cells) => { if (!list || !list.length) return; for (let i = 0; i < n && cells.length; i++) { const j = Math.floor(r() * cells.length); put(list[Math.floor(r() * list.length)], cells.splice(j, 1)[0], hT, onRoad); } };
+    if (P) { pick(P.on, 1 + Math.floor(r() * 2), 0.6, true, road); pick(P.side, 4 + Math.floor(r() * 4), 0.6, false, side); pick(P.big, 1 + Math.floor(r() * 2), 1.35, false, side); }
+    roadLayer = { id, cv, W, H };
+  }
+  ctx.drawImage(roadLayer.cv, ox, oy, roadLayer.W, roadLayer.H);
+  return true;
+}
 function drawFloorMix(key, tilePx) { // 別の床を、タイルの目にそろえて重ねる
   const x0 = arena.x - arenaHalf(), y0 = arena.y - arenaHalfY();
   const ox = arena.x - Math.ceil((arena.x - x0) / tilePx) * tilePx, oy = arena.y - Math.ceil((arena.y - y0) / tilePx) * tilePx; // 床の模様のマス目の位置
   const cols = Math.ceil((arena.x + arenaHalf() - ox) / tilePx), rows = Math.ceil((arena.y + arenaHalfY() - oy) / tilePx);
   const mix = getFloorMix(game.stage, key, cols, rows);
+  if (mix.road && mix.cells && ROAD_KIT_OF[key] && drawRoadKit(ROAD_KIT_OF[key], mix, ox, oy, cols, rows, tilePx)) return; // 道は専用タイルで
   if (!mix.over) return;
   const img = floorImgs[mix.over]; if (!img || !img.complete || !img.naturalWidth) return;
   let pat = floorMixPatterns[mix.over];
