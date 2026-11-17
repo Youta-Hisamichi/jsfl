@@ -444,11 +444,12 @@ function rollCompOn(first) {
   }
   return out;
 }
-// 最初（まだ転生していないとき）の招集ガチャに出る仲間：★1は村人・ホビット・名犬ポチ・相棒ニャンタの4人、★2は2人、★3は1人（★2・★3はランダム）。ほかはOFF
+// 最初（インストール直後・まだ転生していないとき）の招集ガチャに出る仲間：★1が2人（村人・ホビット・名犬ポチ・相棒ニャンタから2人）、★2が1人、★3が1人（すべてランダム）。ほかはOFF
 const COMP_FIRST_COMMON = ['villager', 'hobbit', 'dog', 'cat'];
 function initialCompOn() {
-  const pick = (r, n) => Object.keys(COMPANIONS).filter(id => COMPANIONS[id].rarity === r).sort(() => Math.random() - 0.5).slice(0, n);
-  const out = [...COMP_FIRST_COMMON, ...pick('rare', 2), ...pick('epic', 1)];
+  const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }; // かたよりなく混ぜる
+  const pick = (r, n) => shuffle(Object.keys(COMPANIONS).filter(id => COMPANIONS[id].rarity === r)).slice(0, n);
+  const out = [...shuffle(COMP_FIRST_COMMON).slice(0, 2), ...pick('rare', 1), ...pick('epic', 1)];
   for (const id of out) if (typeof isCompLocked === 'function' && isCompLocked(id)) { if (!game.ticketUnlocked) game.ticketUnlocked = {}; game.ticketUnlocked[id] = true; } // まだ出せない仲間（★3など）は、選ばれたら出せるようにする
   return out;
 }
