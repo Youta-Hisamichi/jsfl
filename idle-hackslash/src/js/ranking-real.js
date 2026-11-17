@@ -112,7 +112,7 @@ function rankDeadlineTick() {
   if (!el) { if (!show) return; el = document.createElement('div'); el.id = 'rankDeadline'; el.className = 'rank-deadline'; rankDateNav.after(el); }
   el.style.display = show ? '' : 'none'; if (!show) return;
   const s = Math.max(0, Math.floor(rankMsToJstMidnight() / 1000)); // 日本時間24時まで（世界共通）
-  el.innerHTML = `⏳ 本日のランキング終了まで <b>${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b>`;
+  el.innerHTML = `<span class="rd-lbl">⏳ 本日のランキング終了まで</span><b>${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}</b>`;
   el.classList.toggle('soon', s < 3600);
 }
 setInterval(rankDeadlineTick, 1000);
