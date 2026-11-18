@@ -64,8 +64,8 @@ async function admobShowRewarded(done) {
   } catch (e) { finish(false, 'show'); }
 }
 // 広告の準備（AdMob の立ち上げ＋動画の先読み）は重く、起動直後にやると画面が10秒近く固まることがある（特に新規インストール直後）。
-// 起動から60秒たって、画面が見えているときに行う。それより前に広告を見るボタンを押したときは、そのときに読み込む（admobShowRewarded）。
-const ADMOB_FIRST_PREPARE_MS = 60000;
+// 立ち上げは MainActivity が起動時に裏のスレッドで済ませる。動画の先読みは起動から20秒たって、画面が見えているときに行う。それより前に広告を見るボタンを押したときは、そのときに読み込む（admobShowRewarded）。
+const ADMOB_FIRST_PREPARE_MS = 20000;
 { const t0 = Date.now(); const tryPrep = () => { if (!admobPlugin() || admobPreloaded) return; if (document.hidden) { setTimeout(tryPrep, 5000); return; } admobPrepare(); };
   setTimeout(tryPrep, ADMOB_FIRST_PREPARE_MS); }
 // デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）

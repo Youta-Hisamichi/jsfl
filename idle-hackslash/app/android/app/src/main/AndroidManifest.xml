@@ -10,6 +10,9 @@
         android:theme="@style/AppTheme">
         <!-- AdMob のアプリ ID（res/values/strings.xml の admob_app_id） -->
         <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="@string/admob_app_id" />
+        <!-- AdMob の立ち上げと広告の読み込みを、画面のスレッドではなく裏のスレッドで行う（ゲームの画面が固まらないように） -->
+        <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION" android:value="true" />
+        <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING" android:value="true" />
 
 
         <activity
