@@ -34,6 +34,7 @@
 - Mac では `cd idle-hackslash/app && npm install && npx cap sync ios` → `npx cap open ios`。版は Xcode の MARKETING_VERSION（GAME_VERSION と同じにする）と、出すたびに上げる CURRENT_PROJECT_VERSION（Android の versionCode と同じ数字にそろえる）。
 - AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（本番の ID）。
 
+- **リリース前はアプリ（Android・iPhone）でもデバッグのボタンを常に出す。** リリースのタイミングはユーザーが伝える。そのとき `src/js/core.js` の `HIDE_DEBUG_IN_STORE_APP` を true にする（バージョンの文字を7回押すと出せる仕組みは残る）。
 - デバッグにボタンを足すときは、デバッグパネルの**一番上**に足す。
 - 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」にも出す（`DBG_NEW`（src/js/ui.js）の先頭に action 名を足す）。
 

@@ -105,7 +105,8 @@ function setDebugOpen(open) {
 debugToggleBtn.addEventListener('click', () => setDebugOpen(document.getElementById('debugPanel').style.display === 'none'));
 // ストアに出すアプリ（Capacitor の中で動いているとき）は、デバッグのボタンを隠す（開発で使うときは localStorage に mh-dev を入れる）
 const IS_STORE_APP = (() => { try { return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()); } catch (e) { return false; } })();
-if (IS_STORE_APP) { let dev = false; try { dev = !!localStorage.getItem('mh-dev'); } catch (e) {} if (!dev) { debugToggleBtn.style.setProperty('display', 'none', 'important'); document.getElementById('debugPanel').style.display = 'none'; } }
+const HIDE_DEBUG_IN_STORE_APP = false; // リリースまではアプリでもデバッグのボタンを常に出す。リリースするときに true にする（ユーザーが合図する）
+if (IS_STORE_APP && HIDE_DEBUG_IN_STORE_APP) { let dev = false; try { dev = !!localStorage.getItem('mh-dev'); } catch (e) {} if (!dev) { debugToggleBtn.style.setProperty('display', 'none', 'important'); document.getElementById('debugPanel').style.display = 'none'; } }
 try { if (localStorage.getItem('circle-battle-idle-debug-open') === '1' && debugToggleBtn.style.display !== 'none') setDebugOpen(true); } catch (err) { /* 読めなければ閉じたまま（ストア版でデバッグを隠しているときも開かない） */ }
 
 const tabBar = document.getElementById('tabBar');
@@ -522,7 +523,7 @@ privacyBtn.addEventListener('click', () => {
   infoModal.classList.add('show');
 });
 const GAME_TITLE = '放置系ハクスラ無限反射';
-const GAME_VERSION = '1.0.57'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
+const GAME_VERSION = '1.0.58'; // アプリの版（versionName）もここから読む（app/android/app/build.gradle）。出すたびに上げる
 { const v = document.getElementById('blVer'); if (v) v.textContent = 'Ver. ' + GAME_VERSION; } // 起動画面の右下にも版を出す
 const DEVELOPER_NAME = 'ひさしApp（HisashiApp）';
 document.getElementById('settingsGameVersion').textContent = `Ver. ${GAME_VERSION}　©ひさしApp`;
