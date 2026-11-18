@@ -19,7 +19,9 @@ function admobInit() {
   if (!admobReady) admobReady = A.initialize({ initializeForTesting: ADMOB_TESTING }).then(() => true, e => { console.warn('AdMob を初期化できません', e); admobReady = null; return false; }); // トラッキングの許可は、ここでは聞かない（起動直後やオープニング中に急に出さない）
   return admobReady;
 }
-async function admobPrepare() { // 次の広告を先に読み込んでおく（押してから待たせない）
+let admobLoading = null; // 読み込み中の Promise（二重に読み込まない）
+function admobPrepare() { if (!admobLoading) admobLoading = admobPrepareRun().finally(() => { admobLoading = null; }); return admobLoading; }
+async function admobPrepareRun() { // 次の広告を読み込んでおく
   const A = admobPlugin(); if (!A || admobPreloaded) return admobPreloaded;
   if (!(await admobInit())) return false;
   for (let i = 0; i < 2 && !admobPreloaded; i++) { // 読み込めなかったら、少し待って1回だけやり直す
@@ -53,7 +55,7 @@ function admobAskTracking(next) {
 async function admobShowRewarded(done) {
   const A = admobPlugin(); if (!A || admobBusy) { done(false, 'busy'); return; }
   admobBusy = true; let rewarded = false; const hs = [];
-  const finish = (ok, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(admobPrepare, 3000); setTimeout(() => done(ok, why), 350); }; // 画面の処理（ごほうび・ダイアログ）は、広告の知らせの中ではなく、広告の画面が閉じきってから少しあとに行う（AdMob のコールバックと同じ流れで画面をいじると落ちやすい）
+  const finish = (ok, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(() => done(ok, why), 350); }; // 次の動画は、戦闘の画面が見えていないときに先読みする（下の admobIdlePrepare） // 画面の処理（ごほうび・ダイアログ）は、広告の知らせの中ではなく、広告の画面が閉じきってから少しあとに行う（AdMob のコールバックと同じ流れで画面をいじると落ちやすい）
   try {
     hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; })); // ここでは印を付けるだけ（画面の処理はしない）
     hs.push(await A.addListener('onRewardedVideoAdDismissed', () => finish(rewarded, rewarded ? '' : 'closed')));
@@ -65,9 +67,17 @@ async function admobShowRewarded(done) {
 }
 // 動画広告の読み込みについて：
 // ・AdMob の立ち上げ（MobileAds.initialize）は、MainActivity が起動時に裏のスレッドで済ませる。
-// ・最初の動画の読み込み（prepareRewardVideoAd）は、新規インストール直後だと Android でゲームの画面が10秒近く止まることがある。
-//   そのため時間で先読みはせず、はじめて動画のボタンを押したとき（「動画を読み込み中…」の画面を出している間）に読み込む。
-// ・2回目からは、動画を見終わった3秒後に次の動画を先読みする（admobShowRewarded の finish）。
+// ・本番の動画の読み込み（6〜9秒）の間、Android では広告の WebView とゲームの WebView が処理を取り合い、ゲームが1〜2秒止まる
+//   （ゲームの画面が広い・長押しチャージ中ほど長い。テスト広告ではほぼ止まらない）。
+// ・そのため戦闘中は読み込まない。戦闘の画面が止まっているとき（ほかのページを開いている・一時停止・宝箱などの画面）にだけ先読みする。
+// ・先読みが済んでいないときは、動画のボタンを押したとき「動画を読み込み中…」の画面の間に読み込む（admobShowRewarded）。
+function admobBattleHidden() { return (typeof activeTabCache !== 'undefined' && activeTabCache !== 'game') || (typeof phase !== 'undefined' && phase === 'paused') || (typeof userPaused !== 'undefined' && userPaused); }
+function admobIdlePrepare() {
+  if (!admobPlugin() || admobPreloaded || admobLoading || admobBusy || document.hidden) return;
+  if (typeof isAdFree === 'function' && isAdFree()) return; // 紋章（広告なし）なら読み込まない
+  if (admobBattleHidden()) admobPrepare();
+}
+setInterval(admobIdlePrepare, 2000);
 // デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）
 const ADMOB_TEST_REWARDED_ID = ADMOB_PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/1712485313' : 'ca-app-pub-3940256099942544/5224354917'; // Google のテスト用（機種ごと）
 async function admobDebugTest() {
