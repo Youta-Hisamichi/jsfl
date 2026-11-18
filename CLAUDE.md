@@ -34,6 +34,14 @@
 - Mac では `cd idle-hackslash/app && npm install && npx cap sync ios` → `npx cap open ios`。版は Xcode の MARKETING_VERSION（GAME_VERSION と同じにする）と、出すたびに上げる CURRENT_PROJECT_VERSION（Android の versionCode と同じ数字にそろえる）。
 - AdMob の iOS の ID は `src/js/admob.js` の ADMOB_IDS.ios と `ios/App/App/Info.plist` の GADApplicationIdentifier（本番の ID）。
 
+## AdMob（動画広告）の注意（Android で10秒フリーズした件で分かったこと）
+- WebView のゲームは、AdMob が画面のスレッドを使う・広告の WebView と処理を取り合うと**ゲームごと止まる**（Unity では起きなかった）。
+- 立ち上げ（MobileAds.initialize）は MainActivity.java で起動時に裏のスレッドで済ませる。AndroidManifest に OPTIMIZE_INITIALIZATION・OPTIMIZE_AD_LOADING・hardwareAccelerated。
+- 動画の読み込みは**戦闘中にしない**。戦闘の画面が止まっているとき（ほかのページ・一時停止・宝箱などの画面）だけ先読み（admob.js の admobIdlePrepare）。まだなら動画のボタンで「読み込み中…」の間に読む。
+- 広告の知らせ（コールバック）の中では画面をいじらない。報酬・ダイアログは広告が閉じてから少しあと。
+- SDK を 25.4→25.5（プラグイン 8.4.2）に上げたら本番の読み込みの止まりが 2秒→0.2秒に減った。SDK・プラグインは古くしない。
+- デバッグの「⏱ 本番の広告の読み込みで固まるか測る」は、本番の広告を表示せず読み込むので、くり返し押さない（表示率が下がる）。
+
 - **リリース前はアプリ（Android・iPhone）でもデバッグのボタンを常に出す。** リリースのタイミングはユーザーが伝える。そのとき `src/js/core.js` の `HIDE_DEBUG_IN_STORE_APP` を true にする（バージョンの文字を7回押すと出せる仕組みは残る）。
 - デバッグにボタンを足すときは、デバッグパネルの**一番上**に足す。
 - 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」にも出す（`DBG_NEW`（src/js/ui.js）の先頭に action 名を足す）。
