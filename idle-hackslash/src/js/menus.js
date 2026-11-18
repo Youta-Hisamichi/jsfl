@@ -1732,13 +1732,14 @@ function updateChargeHum(lv) { // lv＝溜めた時間の割合（0〜1）
     h.full = true;
     h.swg.gain.setValueAtTime(0, t);
     h.o1.frequency.setValueAtTime(880, t); h.o2.frequency.setValueAtTime(1760, t);
-    h.g.gain.setTargetAtTime(0.03 * v, t, 0.01);
+    h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.03 * v, t, 0.01);
   } else {
     h.full = false;
     h.swg.gain.setValueAtTime(0, t);
     h.o1.frequency.setValueAtTime(f, t); h.o2.frequency.setValueAtTime(f * 2, t); // カクカク段階的に
-    h.g.gain.setTargetAtTime((0.018 + lv * 0.012) * v, t, 0.01);
+    h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime((0.018 + lv * 0.012) * v, t, 0.01);
   }
+  h.g.gain.setTargetAtTime(0.0001, t + 0.3, 0.05); // 毎フレーム先送りする「消える予約」：画面が固まって更新が止まっても、音は0.3秒ほどで自然に消える
 }
 function tickChargeSound() { // 引っ張り中のチャージ音：ロータリーエンジンの空ぶかし
   const lvNow = chargeHold && phase === 'battle' ? getChargeLevel() : 0;

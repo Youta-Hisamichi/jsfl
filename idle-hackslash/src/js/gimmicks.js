@@ -789,9 +789,14 @@ function drawChandelier(x, y, a) {
 
 // ===== 村・町・遺跡・墓地・祠・教会のステージ（床の上に建物などを描き、それぞれの小さな遊びを足す） =====
 const GIMMICK_FLOORS = { village: 'st_village', town: 'st_town', ruins: 'st_ruins', graveyard: 'st_graveyard', church: 'st_church' };
-const STAGE_ART = {}; // 背景の一枚絵と小物の絵（読み込めるまでは床タイル＋プログラムで描いた飾りで代用）
-['village', 'town', 'ruins', 'graveyard', 'church', 'castle'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/bg_${k}.webp`; STAGE_ART['bg_' + k] = im; });
-['chicken', 'chicken2', 'coins', 'purse', 'pillar', 'wisp', 'wisp2', 'holy', 'chandelier'].forEach(k => { const im = new Image(); im.src = `assets/img/stages/${k}.webp`; STAGE_ART[k] = im; });
+// 背景の一枚絵と小物の絵（読み込めるまでは床タイル＋プログラムで描いた飾りで代用）。大きい絵なので、起動時ではなく初めて使うときに読み込む
+const STAGE_ART_SRC = {
+  bg_village: 'assets/img/stages/bg_village.webp', bg_town: 'assets/img/stages/bg_town.webp', bg_ruins: 'assets/img/stages/bg_ruins.webp', bg_graveyard: 'assets/img/stages/bg_graveyard.webp', bg_church: 'assets/img/stages/bg_church.webp', bg_castle: 'assets/img/stages/bg_castle.webp',
+  chicken: 'assets/img/stages/chicken.webp', chicken2: 'assets/img/stages/chicken2.webp', coins: 'assets/img/stages/coins.webp', purse: 'assets/img/stages/purse.webp', pillar: 'assets/img/stages/pillar.webp', wisp: 'assets/img/stages/wisp.webp', wisp2: 'assets/img/stages/wisp2.webp', holy: 'assets/img/stages/holy.webp', chandelier: 'assets/img/stages/chandelier.webp' };
+const STAGE_ART = new Proxy({}, { get(t, k) {
+  if (typeof k === 'string' && !(k in t) && STAGE_ART_SRC[k]) { const im = new Image(); im.decoding = 'async'; im.src = STAGE_ART_SRC[k]; t[k] = im; }
+  return t[k];
+} });
 function stageArt(k) { const im = STAGE_ART[k]; return im && im.complete && im.naturalWidth ? im : null; }
 function drawStageSprite(k, x, y, h, flip = false) { const im = stageArt(k); if (!im) return false; const w = h * im.naturalWidth / im.naturalHeight; ctx.save(); ctx.translate(x, y); if (flip) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); return true; }
 { const orig = getFloorKey; getFloorKey = function (stage) { const k = typeof gimmickForStage === 'function' && gimmickForStage(stage); return GIMMICK_FLOORS[k] || orig.apply(this, arguments); }; }
