@@ -681,7 +681,14 @@ const ENEMY_LV_PER_STAGE = 1, ENEMY_HP_POW = 1.2, ENEMY_ATK_POW = 1.1;
 const ENEMY_HP_BASE = 20, ENEMY_ATK_BASE = 0.3; // 序盤の雑魚は引っ張り連打2発くらいで倒れる・最初のボスは強化なしでも頑張れば勝てる
 const BOSS_HP_MULT = 1;    // ボスのHP：通常の敵×桁数（もう1回桁数を掛ける）
 const BOSS_ATK_MULT = 2.2; // ボスの攻撃力倍率（通常敵比）
-const FIRST_BOSS_BUFF = { hp: 2, atk: 1.3 }; // ステージ10のボス（マッチョスライム）：反射玉で序盤が楽になったので、HP×2・攻撃力×1.3
+// 序盤のボスの上乗せ：反射玉で序盤が楽になったので、ステージ10のボス（マッチョスライム）を HP×2・攻撃力×1.3 にし、
+// ステージ100に向けてまっすぐ弱めて、ステージ100で ×1（もとの強さ）に戻す（後半の釣り合いは変えない）
+const EARLY_BOSS_BUFF = { hp: 2, atk: 1.3, until: 100 };
+function earlyBossBuff(stage) {
+  if (stage < 10 || stage >= EARLY_BOSS_BUFF.until) return { hp: 1, atk: 1 };
+  const t = (EARLY_BOSS_BUFF.until - stage) / (EARLY_BOSS_BUFF.until - 10); // ステージ10で1、ステージ100で0
+  return { hp: 1 + (EARLY_BOSS_BUFF.hp - 1) * t, atk: 1 + (EARLY_BOSS_BUFF.atk - 1) * t };
+}
 function stageDigits(stage) { return String(Math.max(1, Math.floor(stage))).length; }
 function enemyLevel(stage) { return 1 + (Math.max(1, stage) - 1) * ENEMY_LV_PER_STAGE; }
 function bossHpMult(stage) { return BOSS_HP_MULT * stageDigits(stage); }
@@ -714,7 +721,7 @@ function getEnemyStats(stage) {
   const baseHp = Math.max(10, Math.round(ENEMY_HP_BASE * Math.pow(lv, ENEMY_HP_POW) * d * getEarlyHpRate(stage) * z.hp));
   const baseAtk = Math.max(1, Math.round(ENEMY_ATK_BASE * Math.pow(lv, ENEMY_ATK_POW) * d * z.atk));
   const ms = isBoss ? getMilestoneBoss(stage) : null; // 100・1000階ごとの節目のボスは別格に強い
-  const fb = stage === 10 ? FIRST_BOSS_BUFF : { hp: 1, atk: 1 }; // 最初のボス（ステージ10）は少し手ごわく
+  const fb = isBoss ? earlyBossBuff(stage) : { hp: 1, atk: 1 }; // 序盤のボスは少し手ごわく（ステージ100でもとに戻る）
   return {
     hp: safeNum(isBoss ? Math.round(baseHp * bossHpMult(stage) * (ms ? ms.hp : 1) * fb.hp) : baseHp), // 何万階になっても Infinity にしない
     atk: safeNum(isBoss ? Math.round(baseAtk * BOSS_ATK_MULT * (ms ? ms.atk : 1) * fb.atk) : baseAtk),
