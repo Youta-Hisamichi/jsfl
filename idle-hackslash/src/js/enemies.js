@@ -2597,3 +2597,18 @@ function showReflFormula() {
   x += row('メテオ・大爆発への上乗せ', M(reflSkillMult()), `いまの反射玉 ${bounceMultLabel(reflNowMult())}（×2→×1.2・×10→×2）`) + '</div>';
   simpleChoice({ icon: '🔮', title: '反射玉のダメージ式', text: x, yes: '閉じる', no: false });
 }
+
+// 軽量化：反射玉の数字（縁取り文字）は毎フレーム描き直さず、数字・大きさごとに一度だけ絵にして貼る（スマホで重い strokeText を減らす）
+const reflLabelCache = new Map();
+{ const orig = drawReflLabel; drawReflLabel = function (t, x, y, fs, maxW, col) {
+  const dpr = typeof renderDpr === 'function' ? renderDpr() : 1, fsq = Math.round(fs * 2) / 2, mwq = Math.round(maxW), key = `${t}|${fsq}|${mwq}|${col}|${dpr}`;
+  let s = reflLabelCache.get(key);
+  if (!s) {
+    if (reflLabelCache.size > 160) reflLabelCache.clear();
+    const W = Math.ceil(mwq + fsq * 2), H = Math.ceil(fsq * 2.4), cv = document.createElement('canvas'); cv.width = Math.ceil(W * dpr); cv.height = Math.ceil(H * dpr);
+    const g = cv.getContext('2d'); g.scale(dpr, dpr);
+    const keep = ctx; ctx = g; try { orig(t, W / 2, H / 2, fsq, mwq, col); } finally { ctx = keep; } // もとの描き方のまま、小さな画用紙に描く
+    s = { cv, W, H }; reflLabelCache.set(key, s);
+  }
+  ctx.drawImage(s.cv, x - s.W / 2, y - s.H / 2, s.W, s.H);
+}; }
