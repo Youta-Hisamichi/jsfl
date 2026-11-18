@@ -50,7 +50,9 @@ let speech = [];
 // 最近しゃべったセリフは、しばらく（SAY_RECENT_MS）同じものを選ばない（勇者・仲間・敵の全員で共通）
 const SAY_RECENT_MS = 5 * 60 * 1000, sayRecent = new Map(); // セリフ → 最後にしゃべった時刻
 function sayIsRecent(t) { const at = sayRecent.get(t); return at != null && Date.now() - at < SAY_RECENT_MS; }
+const SAY_MIN_STAGE = { '数字がデカすぎて、もう読めねぇよ…': 10000 }; // このステージより前では言わないセリフ
 function pickFresh(pool) { // 最近しゃべっていないものから選ぶ。全部しゃべったばかりなら、いちばん前にしゃべったもの
+  if (pool && pool.some(t => SAY_MIN_STAGE[t] && (game.stage || 1) < SAY_MIN_STAGE[t])) pool = pool.filter(t => !(SAY_MIN_STAGE[t] && (game.stage || 1) < SAY_MIN_STAGE[t]));
   if (!pool || !pool.length) return undefined;
   const fresh = pool.filter(t => !sayIsRecent(t)); if (fresh.length) return fresh[Math.floor(Math.random() * fresh.length)];
   return pool.reduce((a, b) => (sayRecent.get(a) || 0) <= (sayRecent.get(b) || 0) ? a : b);
@@ -301,7 +303,7 @@ const ENEMY_SAY = {
   bossHalf: ['…少しはやるようだな', 'ほう、本気を出すか', 'おのれ…！', 'まだ終わらんぞ！'],
   bossLow: ['ば、ばかな…！', 'このままでは…！', '覚えておれ…！', 'ぐおおお…！'],
   bossWin: ['フハハハ！弱すぎる！', '出直してこい', 'その程度か勇者よ'],
-  die: ['ぬわーーっっ！！', 'ぐふっ！', 'ぐはぁっ！', 'む、無念…'],
+  die: ['ぬわーーっっ！！', 'ぐふっ！', 'ぐはぁっ！', 'む、無念…', 'あわびゅっ！'],
 };
 let enemySayAt = 0;
 function enemySay(b, kind, force) {

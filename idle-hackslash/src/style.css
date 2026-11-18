@@ -3375,11 +3375,11 @@ body .tab-page[data-tab="companion"] .gen-hero-panel .gen-hero > .page-head .ico
 .chest-stars b { margin-left: 1.5%; color: #fff4d8; font-size: clamp(1.2rem, 6.5vw, 1.7rem); font-weight: 900; line-height: 1; text-shadow: 0 2px 0 #3a2408, 0 0 6px rgba(0,0,0,0.8); }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list { position: absolute; inset: 0; display: block; margin: 0; }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button { position: absolute; left: 5.2%; width: 89.6%; margin: 0 !important; padding: 0 !important; border: none !important; border-image: none !important; border-radius: 8px !important; background: transparent !important; box-shadow: none !important; filter: none !important; color: transparent !important; text-shadow: none !important; font-size: 0 !important; display: flex !important; align-items: center; justify-content: center; }
-.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-child(1) { top: 47.5%; height: 13.8%; }
-.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-child(2) { top: 64.4%; height: 12.6%; }
-.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-child(3) { top: 79.7%; height: 13%; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-of-type(1) { top: 47.5%; height: 13.8%; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-of-type(2) { top: 64.4%; height: 12.6%; }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-of-type(3) { top: 79.7%; height: 13%; }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button > * { display: none !important; }
-.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-child(2) > .msb-name { display: block !important; color: #3a1c06; font-size: clamp(1rem, 5.6vw, 1.45rem); font-weight: 900; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgba(255,240,200,0.8); }
+.chest-panel:has(#chestCancelBtn) .modal-shop-list > button:nth-of-type(2) > .msb-name { display: block !important; color: #3a1c06; font-size: clamp(1rem, 5.6vw, 1.45rem); font-weight: 900; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgba(255,240,200,0.8); }
 .chest-panel:has(#chestCancelBtn) .modal-shop-list > button:active { background: rgba(255,255,255,0.12) !important; }
 /* 宝箱：小さめにして、回転ではなく拡大縮小でゆらす。×個数も控えめに */
 .chest-panel:has(#chestCancelBtn) .chest-big { width: 22%; top: 10%; }
