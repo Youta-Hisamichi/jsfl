@@ -494,7 +494,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -881,6 +881,7 @@ debugRow.addEventListener('click', event => {
     simpleChoice({ icon: '❓', title: `謎魔法の一覧（${MYSTERY_EFFECTS.length}種類）`, text: `<div class="co-list">${MYSTERY_EFFECTS.map(e => `<div class="co-row"><span style="color:${e.color}">${e.name}</span><b style="margin-left:auto">${Math.round(e.w / tot * 1000) / 10}%</b></div>`).join('')}</div>`, sub: '確率は重み（合計' + tot + '）から計算', yes: '閉じる', no: false }); return; }
   if (action === 'admobTest') { admobDebugTest(); return; }
   if (action === 'admobFreeze') { admobFreezeTest(); return; }
+  if (action === 'admobFreezeProd') { admobFreezeTest(true); return; }
   if (action === 'subExpire') { // 紋章（サブスク）の期限を今すぐ切らす（期限切れの動きを確かめる）。ストアで加入中なら、アプリに戻ったときや「購入を復元」でまた有効になる
     const had = Object.keys(SUBSCRIPTIONS).filter(isSubActive);
     game.subscriptions = {}; if (game.iapSubSeen) for (const k in game.iapSubSeen) game.iapSubSeen[k] = false;
