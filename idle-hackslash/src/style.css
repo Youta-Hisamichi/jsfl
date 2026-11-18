@@ -5527,3 +5527,4 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 @keyframes rkYSpin { to { transform: rotate(360deg); } }
 @keyframes rkYFade { from { opacity: 0; } to { opacity: 1; } }
 .rk-y-ov { overflow: hidden; }
+.tab-page[data-tab="ranking"] #rankingTitle { justify-content: center !important; text-align: center !important; } /* 見出しの文字は真ん中 */
