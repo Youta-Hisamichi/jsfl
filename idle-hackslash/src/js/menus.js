@@ -510,7 +510,7 @@ function grantCompanion(id) {
     setCompUpLv(id, 'atk', a1 - 1); setCompUpLv(id, 'hp', h1 - 1);
     if (!cp.hp) cp.hp = {}; cp.hp[id] = getCompanionMaxHP(id);
     if (phase === 'battle') refreshCompanionBalls();
-    return { id, label: `ダブり → Lv1.5倍！ ⚔️Lv${a0}→${a1} ❤️Lv${h0}→${h1}` };
+    return { id, kind: 'dup', label: a0 === h0 && a1 === h1 ? `ダブり！ Lv${a0}→${a1} に強化` : `ダブり！ ⚔️Lv${a0}→${a1} ❤️Lv${h0}→${h1}`, badge: `Lv${a0}→${a1}` };
   }
   if (getCompanionTotal() < getPartyLimit()) {
     const isNew = !cp.recruited[id];
@@ -523,11 +523,11 @@ function grantCompanion(id) {
     cp.alive[id] = true;
     cp.hp[id] = getCompanionMaxHP(id);
     if (phase === 'battle') { syncCompanionBalls(id); refreshCompanionBalls(); } // 2人目以降も別の体で出る
-    return { id, label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）` };
+    return { id, kind: isNew ? 'new' : 'more', label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）`, badge: isNew ? 'NEW!' : `${cp.count[id]}人目` };
   }
   if (!game.companionBook) game.companionBook = {}; // 満員で入れないときは図鑑にだけ載る（覚醒はなくした）
   game.companionBook[id] = true;
-  return { id, label: 'パーティ満員 → 図鑑に登録' };
+  return { id, kind: 'full', label: 'パーティ満員 → 図鑑に登録', badge: '満員' };
 }
 var compSummoning = false; // 召喚演出中は連打できない
 const COMP_SUMMON_LOADING_MS = 1000;
@@ -609,15 +609,16 @@ function compPowerSnap() {
 }
 function compPowerDeltaHtml(d, results) {
   if (!d || !d.pw0 || !d.pw1) return '';
-  const a = d.pw0, b = d.pw1, F = v => formatCoinNumber(Math.round(v)), pct = (x, y) => x > 0 ? `${y >= x ? '+' : ''}${(((y / x) - 1) * 100).toFixed(1)}%` : '';
-  const row = (k, x, y, note) => `<div class="cgp-r"><span>${k}</span><b>${F(x)} → <em class="${y > x ? 'up' : y < x ? 'down' : ''}">${F(y)}</em></b><small>${pct(x, y)}${note ? '　' + note : ''}</small></div>`;
+  const a = d.pw0, b = d.pw1, F = v => formatCoinNumber(Math.round(v));
+  const gain = (x, y) => { if (!(y > x)) return y < x ? '<small class="dn">下がった</small>' : '<small>変わらず</small>'; if (!(x > 0)) return '<small class="up">NEW</small>'; const r = y / x; return `<small class="up">${r >= 2 ? `約×${r >= 10 ? r.toFixed(0) : r.toFixed(1)}` : `+${Math.round((r - 1) * 100)}%`}</small>`; }; // 2倍を超えたら「約×○」、それまでは「+○%」
+  const row = (k, x, y) => `<div class="cgp-r"><span>${k}</span><b>${F(x)} → <em class="${y > x ? 'up' : y < x ? 'down' : ''}">${F(y)}</em></b>${gain(x, y)}</div>`;
+  const row2 = (k, x, y, f = F) => `<div class="cgp-r cgp-sub"><span>${k}</span><b>${f(x)} → <em class="${y > x ? 'up' : ''}">${f(y)}</em></b></div>`;
   const newIds = [...new Set(results.map(r => r.id))], rates = newIds.map(id => { const g = compGraceRate(id), bd = compBondRate(id); return g || bd ? `${COMPANIONS[id].name}：👑恩恵率 ${Math.round(g * 100)}%・🤝絆率 ${Math.round(bd * 100)}%` : ''; }).filter(Boolean);
   return `<div class="cg-power"><div class="cgp-h">📈 この招集で強くなった分</div>`
-    + row('⚔️ 勇者の攻撃力', a.atk, b.atk) + row('❤️ 勇者の最大HP', a.hp, b.hp)
-    + `<div class="cgp-r"><span>👑 恩恵（全員に掛かる）</span><b>×${a.grace.toFixed(2)} → <em class="${b.grace > a.grace ? 'up' : ''}">×${b.grace.toFixed(2)}</em></b></div>`
-    + row('🤝 絆で勇者が取り込む攻撃力', a.bondAtk, b.bondAtk) + row('🤝 絆で勇者が取り込むHP', a.bondHp, b.bondHp)
-    + row('🐾 仲間全員の攻撃力', a.cAtk, b.cAtk)
-    + (rates.length ? `<div class="cgp-note">${rates.join('<br>')}</div>` : '<div class="cgp-note">N（★1）の仲間は恩恵・絆を持っていません（R以上から）</div>') + '</div>';
+    + row('⚔️ 勇者の攻撃力', a.atk, b.atk) + row('❤️ 勇者の最大HP', a.hp, b.hp) + row('🐾 仲間全員の攻撃力', a.cAtk, b.cAtk)
+    + `<details class="cgp-more"><summary>くわしく（恩恵・絆）</summary>`
+    + row2('👑 恩恵（全員に掛かる）', a.grace, b.grace, v => '×' + v.toFixed(2)) + row2('🤝 絆で勇者が取り込む攻撃力', a.bondAtk, b.bondAtk) + row2('🤝 絆で勇者が取り込むHP', a.bondHp, b.bondHp)
+    + (rates.length ? `<div class="cgp-note">${rates.join('<br>')}</div>` : '<div class="cgp-note">N（★1）の仲間は恩恵・絆を持っていません（R以上から）</div>') + '</details></div>';
 }
 function showCompanionGachaResult(box, results, count, bestRarity, power) {
   box.style.display = 'block';
@@ -625,7 +626,7 @@ function showCompanionGachaResult(box, results, count, bestRarity, power) {
   box.style.background = rarityBackground(bestRarity);
   const cell = r => {
     const c = COMPANIONS[r.id];
-    return `<div class="gm-item gm-open rarity-${c.rarity}" data-cg-info="${r.id}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${companionIconHtml(r.id)}</div><span class="gm-name">${rarityStarsImg(c.rarity)}<br>${c.name}<br><b>${r.label}</b></span></div>`;
+    return `<div class="gm-item gm-open rarity-${c.rarity}" data-cg-info="${r.id}" style="border:1px solid ${RARITY_INFO[c.rarity].color}; background:${rarityBackground(c.rarity)}"><div class="gm-face">${companionIconHtml(r.id)}</div><span class="gm-name">${rarityStarsImg(c.rarity)}<br>${c.name}</span><span class="gm-badge gmb-${r.kind || 'new'}">${r.badge || r.label}</span></div>`;
   };
   box.innerHTML = count === 1
     ? `<div class="gr-icon gr-pop" data-cg-info="${results[0].id}">${companionIconHtml(results[0].id)}</div><div class="gr-title gr-pop" style="color:${RARITY_INFO[COMPANIONS[results[0].id].rarity].color}">${rarityStarsImg(COMPANIONS[results[0].id].rarity)}<br>${COMPANIONS[results[0].id].name}</div><div class="gr-sub">${results[0].label}</div>${compPowerDeltaHtml(power, results)}<button id="compGachaCloseBtn">閉じる</button>`
