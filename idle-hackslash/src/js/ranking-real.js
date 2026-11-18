@@ -146,7 +146,9 @@ async function rankYesterdayResult() {
     const above = await rankSrv().rankAbove(null, c, y); if (above == null) return;
     game.rankResultShown = y; saveGame(); const r = above + 1;
     rankYesterdayInfo = { r, c, day: y }; // シェアの文に使う
-    simpleChoice({ icon: r <= 3 ? ['🏆', '🥈', '🥉'][r - 1] : '📅', title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div><button class="share-btn rk-y-share" data-share="yesterday" onclick="this.closest('.modal-overlay').remove()">📤 結果をシェア</button>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
+    simpleChoice({ icon: `<img class="rk-y-badge" src="${['assets/img/ui/rankbadge/etc.webp', 'assets/img/ui/rankbadge/1.webp', 'assets/img/ui/rankbadge/2.webp', 'assets/img/ui/rankbadge/3.webp'][r <= 3 ? r : 0]}" alt="${r}位">`, title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div><button class="share-btn rk-y-share" data-share="yesterday" onclick="this.closest('.modal-overlay').remove()">📤 結果をシェア</button>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
+    { const ov = [...document.querySelectorAll('.modal-overlay')].pop(); if (ov) { ov.classList.add('rk-y-ov', r <= 3 ? 'rk-y-top' + r : 'rk-y-etc'); const h = document.createElement('div'); h.className = 'rk-y-halo'; ov.insertBefore(h, ov.firstChild); } } // ダイアログの後ろに後光
+    try { playSummonFanfare(r === 1 ? 'mythic' : r <= 3 ? 'legendary' : r <= 10 ? 'epic' : 'rare'); } catch (e) {} // ファンファーレ（順位が高いほど豪華）
   } catch (e) {}
 }
 { let tries = 0; const t = setInterval(() => { if (rankReal() || ++tries > 30) { clearInterval(t); setTimeout(rankYesterdayResult, 6000); } }, 2000); }
