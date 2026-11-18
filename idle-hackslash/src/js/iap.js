@@ -139,7 +139,7 @@ document.addEventListener('click', ev => {
 });
 if (iapActive()) {
   ['iapRestoreBtn', 'iapManageBtn'].forEach(id => { const b = document.getElementById(id); if (b) b.style.display = ''; }); // 設定ページの「購入を復元」「サブスクの管理・解約」（ストアのアプリだけ）
-  setTimeout(() => { iapLoadPrices(); iapSyncSubs(false); }, 2500);
+  setTimeout(() => { iapLoadPrices(); iapSyncSubs(false); }, 8000); // ストアへの問い合わせは、起動直後の重い時間を避けて少しあとに
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') iapSyncSubs(false); });
   // 課金ショップの表示：値段をストアのものに、ボタンは「リアルマネー」の残りに関係なく押せる
   { const orig = renderSupergemShopList; renderSupergemShopList = function () {

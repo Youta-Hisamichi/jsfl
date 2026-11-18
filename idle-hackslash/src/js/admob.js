@@ -63,7 +63,11 @@ async function admobShowRewarded(done) {
     const item = await A.showRewardVideoAd(); if (item) rewarded = true;
   } catch (e) { finish(false, 'show'); }
 }
-setTimeout(() => { if (admobPlugin()) admobPrepare(); }, 3000);
+// 広告の準備（AdMob の立ち上げ＋動画の先読み）は重く、起動直後にやると画面が10秒近く固まることがある（特に新規インストール直後）。
+// 起動から60秒たって、画面が見えているときに行う。それより前に広告を見るボタンを押したときは、そのときに読み込む（admobShowRewarded）。
+const ADMOB_FIRST_PREPARE_MS = 60000;
+{ const t0 = Date.now(); const tryPrep = () => { if (!admobPlugin() || admobPreloaded) return; if (document.hidden) { setTimeout(tryPrep, 5000); return; } admobPrepare(); };
+  setTimeout(tryPrep, ADMOB_FIRST_PREPARE_MS); }
 // デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）
 const ADMOB_TEST_REWARDED_ID = ADMOB_PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/1712485313' : 'ca-app-pub-3940256099942544/5224354917'; // Google のテスト用（機種ごと）
 async function admobDebugTest() {
