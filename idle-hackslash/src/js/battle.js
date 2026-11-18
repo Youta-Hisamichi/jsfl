@@ -586,8 +586,8 @@ function drawEnemyTraitEffects() {
 }
 
 // 攻撃予兆：敵が足元に赤い予告エリア（扇・円・直線）を出してから攻撃する。範囲の外へ動けば回避でき、攻撃後の隙は大ダメージのチャンス
-const TG_LINE_WIND = 22, TG_LINE_DASH = 19; // 突進の予告は約0.37秒、突進の速さ
-const TG_WIND = 32, TG_STUN = 50, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙は約0.8秒（短め）、その間はどの攻撃もダメージ3倍
+const TG_LINE_WIND = 13, TG_LINE_DASH = 19; // 突進の予告（赤い線が満ちるまで）は約0.22秒、突進の速さ
+const TG_WIND = 32, TG_STUN = 30, TG_STUN_DMG = 3, TG_DMG = 1.6; // 大技のあとの隙（気絶）は約0.5秒、その間はどの攻撃もダメージ3倍
 const TG_KINDS = ['fan', 'circle', 'line'];
 const TG_JUMP_CHANCE = 0.3, TG_JUMP_WIND = 58, TG_JUMP_H = 150; // ボスのジャンプアタック：確率・溜め（空中にいる時間）・飛び上がる高さ
 const TG_RAIN_CHANCE = 0.25, TG_RAIN_FALL = 44, TG_RAIN_GAP = 9, TG_RAIN_R = 34, TG_RAIN_DMG = 0.8; // ボスの「上から降ってくる」攻撃：確率・落ちるまで・次の岩までの間隔・範囲・威力

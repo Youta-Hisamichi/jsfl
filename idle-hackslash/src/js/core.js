@@ -1112,7 +1112,7 @@ const COMPANIONS = { // 職業の仲間（kind：どの能力の仕組みを使�
   tamer: { icon: '🐺', name: '魔物使い', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'ranger', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【けしかけ】4秒ごとに追尾する魔獣の牙を3本放つ' },
   heavy: { icon: '🛡️', name: '重戦士', stat: 'hp', desc: '最大HP上昇', rarity: 'epic', kind: 'knight', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
-    trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.8秒気絶させ大きく弾き飛ばす' },
+    trait: '【鉄壁】受けるダメージ半減／【盾撃】当てた敵を0.5秒気絶させ大きく弾き飛ばす' },
   cavalry: { icon: '🐎', name: '騎兵', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'lancer', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
     trait: '【突撃槍】自キャラと仲間全員のボスへのダメージ1.5倍（槍兵・騎兵が何人いても1.5倍）' },
   samurai: { icon: '🎌', name: '侍', stat: 'atk', desc: '攻撃力上昇', rarity: 'epic', kind: 'samurai', weight: 10, recruitCost: 130, baseBonus: 0.09, perLevel: 0.035, levelCostBase: 2,
@@ -1200,7 +1200,7 @@ const PRIEST_INTERVAL_MS = 12000;
 const PRIEST_REVIVE_RATIO = 0.5;
 const PRIEST_HEAL_RATIO = 0.2;
 const KNIGHT_DAMAGE_TAKEN_MULT = 0.5;
-const KNIGHT_STUN_MS = 800;
+const KNIGHT_STUN_MS = 500;
 const ARCHER_SHOT_INTERVAL_MS = 3000;
 const WITCH_HEAL_INTERVAL_MS = 10000;
 const WITCH_HEAL_RATIO = 0.08;
