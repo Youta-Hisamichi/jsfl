@@ -306,8 +306,8 @@ function drawGimmickLabel(key, A, now) { // 右上にイベント名、開始時
   if (sh && sh.offsetHeight && getComputedStyle(sh).display !== 'none' && getComputedStyle(sh).opacity !== '0') ly = Math.max(ly, sh.getBoundingClientRect().bottom - canvas.getBoundingClientRect().top + 4);
   const tb = document.getElementById('enemyTraitBadge'); // 右上の「敵の特徴」とも重ねない（その下に出す）
   if (tb && tb.offsetHeight && getComputedStyle(tb).display !== 'none') { const cr = canvas.getBoundingClientRect(), r = tb.getBoundingClientRect(); if (r.left - cr.left < lx + w + 4) ly = Math.max(ly, r.bottom - cr.top + 4); }
-  ctx.fillStyle = 'rgba(10,12,30,0.6)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly, w, 20, 10) : ctx.rect(lx, ly, w, 20); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(label, lx + 7, ly + 10);
+  ctx.fillStyle = 'rgba(10,12,30,0.3)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly, w, 20, 10) : ctx.rect(lx, ly, w, 20); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.strokeText(label, lx + 7, ly + 10); ctx.fillText(label, lx + 7, ly + 10); // 台を半透明にしたぶん、文字に黒い縁取り
   const t = (now - gm.bannerAt) / 2600;
   if (gm.bannerAt && t < 1) {
     const inT = Math.min(1, t * 6), outA = t > 0.8 ? (1 - t) / 0.2 : 1, y = arena.y + A.h * 0.22; // 中央の「ステージN」や上の解放告知と重ならない位置

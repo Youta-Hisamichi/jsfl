@@ -417,8 +417,9 @@ function updateHPUI() {
   playerHPFill.style.width = Math.min(100, hpGaugeRatio(p.hp / p.maxHp) * 100) + '%';
   playerHPFill.classList.toggle('over-heal', p.hp > p.maxHp); // 回復限界突破で上限を超えているとき
   const hpRatio = p.hp / p.maxHp;
-  document.body.classList.toggle('player-pinch', p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
-  document.body.classList.toggle('player-critical', p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);
+  const pinchShow = isBossFight(); // ピンチの赤い演出はボス戦の間だけ（ザコ戦はHPの表示も隠していて、ボス戦で減ったHPのまま赤く光り続けるため）
+  document.body.classList.toggle('player-pinch', pinchShow && p.hp > 0 && hpRatio <= PINCH_HP_RATIO);
+  document.body.classList.toggle('player-critical', pinchShow && p.hp > 0 && hpRatio <= PINCH_HP_RATIO / 2);
   enemyHPFill.style.width = Math.max(0, en.hp / en.maxHp * 100) + '%';
   playerHPText.textContent = formatCoinNumber(Math.max(0, Math.round(p.hp))); // 万・億などの単位を付ける
   enemyHPText.textContent = en.megaPhase === 'mini' ? `分裂 ${en.megaCount || 1}/${MEGA_COUNT}` : en.megaPhase === 'gather' ? '合体中…' : formatCoinNumber(Math.max(0, Math.round(en.hp)));
@@ -2775,3 +2776,5 @@ function stageBonusOnKill(en) {
   if (add > 0 && !filmMode && !(game.bossLoop && game.stage === game.bossLoop - 1)) game.stage += add;
   return orig.apply(this, arguments);
 }; }
+
+{ const orig = advanceStage; advanceStage = function () { const r = orig.apply(this, arguments); try { updateHPUI(); } catch (e) {} return r; }; } // ステージが変わったら、ピンチの赤い演出をすぐ消す

@@ -860,7 +860,7 @@ let bgmToken = 0;
 let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
-const NORMAL_BATTLE_SONGS = ['battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle39', 'battle41'];
+const NORMAL_BATTLE_SONGS = ['battle3', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle39', 'battle41'];
 let normalBgmOrder = [], normalBgmIndex = 0;
 function shuffleNormalBgm(avoidFirst) {
   normalBgmOrder = NORMAL_BATTLE_SONGS.slice();
@@ -899,11 +899,12 @@ function nextBossBgm() {
   if (++bossBgmIndex >= bossBgmOrder.length) shuffleBossBgm(prev);
 }
 const TOWER_BOSS_SONGS = ['tboss1', 'tboss3', 'tboss4', 'tboss5', 'boss9', 'boss18', 'tboss6', 'tboss7']; // 試練の塔のボス専用（挑戦ごとに順番に切り替え）
+const HIDDEN_BGM = ['battle4']; // 隠した曲：戦闘2 時を駆ける戦い（戦闘1と似ていて、ボスを倒しても曲が変わったと分かりにくい）。流さず、BGM図鑑にも出さない
 function resolveBgmType(type) {
   if (type === 'boss' && game.skipChallenge) return TOWER_BOSS_SONGS[(game.skipChallenge.bgm || 0) % TOWER_BOSS_SONGS.length];
   if ((type === 'normal' || type === 'boss') && dbgBgmOverride) return dbgBgmOverride;
   if (type === 'normal' && game.stage < 10) return 'battle3';  // 1〜9ステージ
-  if (type === 'normal' && game.stage < 20) return 'battle4';  // 11〜19ステージ
+  if (type === 'normal' && game.stage < 20) return 'battle5';  // 11〜19ステージ（戦闘2は戦闘1と似ているので外し、戦闘3に）
   if (type === 'boss' && isBossFirstRound(game.stage)) return BOSS_FIRST_ROUND[Math.floor(game.stage / 10) - 1];
   return type === 'normal' ? normalBgmOrder[normalBgmIndex] : type === 'boss' ? bossBgmOrder[bossBgmIndex] : type;
 }
@@ -975,6 +976,7 @@ const BGM_INFO = [
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
 ];
+for (const k of HIDDEN_BGM) { const i = BGM_INFO.findIndex(b => b.key === k); if (i >= 0) BGM_INFO.splice(i, 1); }
 let gameOverBgm = false;      // コンテニュー確認中
 let bgmBookPreview = null;    // 図鑑で試聴中の曲
 const BATTLE_BGM_KEYS = {};   // 戦闘の曲（ステージをクリアして登録）
