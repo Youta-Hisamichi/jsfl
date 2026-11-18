@@ -789,9 +789,8 @@ function drawChandelier(x, y, a) {
 
 // ===== 村・町・遺跡・墓地・祠・教会のステージ（床の上に建物などを描き、それぞれの小さな遊びを足す） =====
 const GIMMICK_FLOORS = { village: 'st_village', town: 'st_town', ruins: 'st_ruins', graveyard: 'st_graveyard', church: 'st_church' };
-// 背景の一枚絵と小物の絵（読み込めるまでは床タイル＋プログラムで描いた飾りで代用）。大きい絵なので、起動時ではなく初めて使うときに読み込む
+// 小物の絵（読み込めるまではプログラムで描いた飾りで代用）。使うときに読み込む。背景の一枚絵（bg_village など6枚）は削除済み：村・町・遺跡・墓地・教会は専用の床タイル、王城は赤じゅうたん＋プログラムで描く王の間
 const STAGE_ART_SRC = {
-  bg_village: 'assets/img/stages/bg_village.webp', bg_town: 'assets/img/stages/bg_town.webp', bg_ruins: 'assets/img/stages/bg_ruins.webp', bg_graveyard: 'assets/img/stages/bg_graveyard.webp', bg_church: 'assets/img/stages/bg_church.webp', bg_castle: 'assets/img/stages/bg_castle.webp',
   chicken: 'assets/img/stages/chicken.webp', chicken2: 'assets/img/stages/chicken2.webp', coins: 'assets/img/stages/coins.webp', purse: 'assets/img/stages/purse.webp', pillar: 'assets/img/stages/pillar.webp', wisp: 'assets/img/stages/wisp.webp', wisp2: 'assets/img/stages/wisp2.webp', holy: 'assets/img/stages/holy.webp', chandelier: 'assets/img/stages/chandelier.webp' };
 const STAGE_ART = new Proxy({}, { get(t, k) {
   if (typeof k === 'string' && !(k in t) && STAGE_ART_SRC[k]) { const im = new Image(); im.decoding = 'async'; im.src = STAGE_ART_SRC[k]; t[k] = im; }
@@ -982,7 +981,7 @@ const GIMMICK_DECOR = { village: drawVillageDecor, town: drawTownDecor, ruins: d
       ctx.save(); arenaPath(); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; /* 背景は高解像度にした絵なので、なめらかに縮小して描く */ ctx.drawImage(bg, (A.l + A.r - w) / 2, (A.t + A.b - h) / 2, w, h); ctx.restore(); return r; }
     const d = GIMMICK_DECOR[key]; if (d) { ctx.save(); arenaPath(); ctx.clip(); d(gArea(), Date.now()); ctx.restore(); } } catch (e) {} return r; }; }
 { const orig = drawGimmick; drawGimmick = function () { // 墓地は暗闇（人魂と味方のまわりだけ明るい）
-  if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), stageArt('bg_graveyard') ? 'rgba(8,4,26,0.35)' : 'rgba(8,4,26,0.55)', 75); ctx.restore(); }
+  if (curGimmick() === 'graveyard') { ctx.save(); arenaPath(); ctx.clip(); drawGimmickDark(gArea(), 'rgba(8,4,26,0.35)', 75); ctx.restore(); }
   return orig.apply(this, arguments);
 }; }
 // 月夜の草原（ホタル）は、草原・森・河原の床で（雪原などエリアの床にしない）
