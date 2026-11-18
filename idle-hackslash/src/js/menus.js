@@ -488,7 +488,7 @@ function pickCompanionId() {
 const COMPANION_PARTY_MAX = 999; // パーティ枠の最大（ジェムで拡張できる上限）
 function getPartyLimit() { return COMPANION_PARTY_MAX; } // パーティ枠の制限はなくした（招集ガチャは回数で制限）
 // 招集ガチャの回数：1周回（転生まで）5回まで（ジェムで回数を増やすボタンはなくした）。転生でリセット
-const COMP_GACHA_BASE_PULLS = 5, COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = COMP_GACHA_BASE_PULLS;
+const COMP_GACHA_BASE_PULLS = 5, COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = 10; // はじめ5回・💎1で+5回して最大10回（転生でリセット）
 function compGachaLimit() { return Math.min(COMP_GACHA_MAX_PULLS, COMP_GACHA_BASE_PULLS + (game.compGachaExtra || 0)); }
 function compGachaLeft() { return Math.max(0, compGachaLimit() - (game.companionSummons || 0)); }
 function buyCompGachaExtra(ev) {
