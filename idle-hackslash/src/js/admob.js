@@ -77,7 +77,7 @@ function admobIdlePrepare() {
   if (typeof isAdFree === 'function' && isAdFree()) return; // 紋章（広告なし）なら読み込まない
   if (admobBattleHidden()) admobPrepare();
 }
-setInterval(admobIdlePrepare, 2000);
+setInterval(() => { if (window.requestIdleCallback) requestIdleCallback(admobIdlePrepare, { timeout: 1500 }); else admobIdlePrepare(); }, 2000); // ブラウザの手が空いたときに呼ぶ（iPhone の WKWebView には requestIdleCallback がないので、そのときはそのまま呼ぶ）
 // デバッグ：リワード動画のテスト。必ず Google のテスト用の広告ユニットで流す（本番の広告を自分で見ないように）
 const ADMOB_TEST_REWARDED_ID = ADMOB_PLATFORM === 'ios' ? 'ca-app-pub-3940256099942544/1712485313' : 'ca-app-pub-3940256099942544/5224354917'; // Google のテスト用（機種ごと）
 async function admobDebugTest() {

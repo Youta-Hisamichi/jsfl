@@ -8,7 +8,7 @@
     "capacitor:copy:after": "node ../tools/rank-key-copy.js"
   },
   "dependencies": {
-    "@capacitor-community/admob": "^8.3.0",
+    "@capacitor-community/admob": "^8.4.2",
     "@capacitor/android": "8.6.0",
     "@capacitor/core": "8.6.0",
     "@capacitor/ios": "^8.6.0",

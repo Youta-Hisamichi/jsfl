@@ -14,7 +14,7 @@ android {
         applicationId "com.hisashiapp.mugenhansya"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 61
+        versionCode 62
         versionName gameVersion // ゲームの GAME_VERSION（src/js/core.js）と同じにする
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -58,7 +58,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    implementation "com.google.android.gms:play-services-ads:25.4.0" // AdMob を起動時に裏のスレッドで立ち上げる（MainActivity）ため。プラグインと同じ版
+    implementation "com.google.android.gms:play-services-ads:$playServicesAdsVersion" // AdMob を起動時に裏のスレッドで立ち上げる（MainActivity）ため。プラグインと同じ版（variables.gradle）
 }
 
 apply from: 'capacitor.build.gradle'
