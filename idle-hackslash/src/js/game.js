@@ -2749,3 +2749,29 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
   const ok = ov.querySelector('.rbd-ok'); ok.disabled = true; setTimeout(() => { ok.disabled = false; }, 600); // 連打で読む前に閉じないよう少しだけ待つ
   ok.addEventListener('click', () => { ov.remove(); finishRebirth(); });
 }
+
+// ===== 敵を1体倒すごとに1ステージ進む：大群ステージの群れや、分裂した子も1体ごとに+1 =====
+// 戦いの途中で game.stage を変えると床・障害物・群れの判定がずれるので、進んだ分は「ためておき」、その戦いが終わるとき（advanceStage）にまとめて足す。
+// 表示（ステージ番号・ボスまでのゲージ）・本日のクリア数・自己ベストはその場で増える。ボスのステージは飛ばさない（ボスの直前で止まる）。
+let stageBonus = 0, stageBonusFor = -1;
+function stageBonusNow() { return stageBonusFor === game.stage && !game.skipChallenge ? stageBonus : 0; }
+function stageBonusOnKill(en) {
+  if (!en || !en.isAdd || en.megaOwner || en.stageCounted) return;
+  if (phase !== 'battle' || filmMode || game.skipChallenge || game.stage % 10 === 0) return; // ボス戦のお供・試練の塔・撮影モードは数えない
+  if (game.bossLoop && game.stage === game.bossLoop - 1) return; // ボスに負けて前の階をくり返している間は進まない
+  if (!(en.isSplit || isSwarmStage(game.stage))) return;
+  if (stageBonusFor !== game.stage) { stageBonusFor = game.stage; stageBonus = 0; }
+  const next = game.stage + stageBonus + 1;
+  if (next % 10 === 0) return; // ボスのステージには、群れを倒しても入らない（最後の1体＝本体を倒したときに入る）
+  en.stageCounted = true; stageBonus++;
+  countDailyClear();
+  game.bestStage = Math.max(game.bestStage, next); if (typeof checkDigitGems === 'function') checkDigitGems();
+  spawnDamageText(en.x, en.y - (en.radius || 14) - 14, `ステージ${formatStageNumber(next)}へ！`, '#9fe8ff', 0.014, true);
+  updateStatsUI();
+}
+{ const orig = recordBestiaryKill; recordBestiaryKill = function (enemy) { stageBonusOnKill(enemy); return orig.apply(this, arguments); }; }
+{ const orig = advanceStage; advanceStage = function () { // ためた分を足してから、いつも通り1つ進める
+  const add = stageBonusNow(); stageBonus = 0; stageBonusFor = -1;
+  if (add > 0 && !filmMode && !(game.bossLoop && game.stage === game.bossLoop - 1)) game.stage += add;
+  return orig.apply(this, arguments);
+}; }

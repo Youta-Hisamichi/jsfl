@@ -1050,7 +1050,8 @@ function updateStatsUI() {
   sanitizeBigNumbers();
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
   updateTabBadges();
-  stageNumEl.textContent = formatStageNumber(game.stage); // 万・億などの単位を付ける
+  const shownStage = game.stage + (typeof stageBonusNow === 'function' ? stageBonusNow() : 0); // 群れを1体倒すごとに進んだ分も表示に入れる
+  stageNumEl.textContent = formatStageNumber(shownStage); // 万・億などの単位を付ける
   superGemsNumEl.textContent = Math.floor(game.superGems).toLocaleString('ja-JP');
   rebornNumEl.textContent = formatCoinNumber(game.reincarnations);
   { const el = document.getElementById('rebirthLvNum'); if (el) { el.textContent = '×' + rebirthPowerMult(); document.getElementById('rebirthLvBonus').textContent = `自キャラ・仲間の攻撃力・HP ×${rebirthPowerMult()}`; } }
@@ -1080,7 +1081,7 @@ function updateStatsUI() {
   playTimeText.textContent = formatDuration(game.playTimeMs || 0);
   renderRecordGoals();
 
-  const stageInCycle = ((game.stage - 1) % 10) + 1;
+  const stageInCycle = ((shownStage - 1) % 10) + 1;
   const bossNow = stageInCycle >= 10; // ボスの階は「ボス！」とだけ出す
   const waitRetry = !!game.bossLoop && !bossNow; // ボス戦をリタイヤ（負け）して前の階をくり返している間
   stageProgressText.textContent = bossNow || waitRetry ? '' : stageInCycle + '/10';
