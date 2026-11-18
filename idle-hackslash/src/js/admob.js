@@ -53,9 +53,9 @@ function admobAskTracking(next) {
 async function admobShowRewarded(done) {
   const A = admobPlugin(); if (!A || admobBusy) { done(false, 'busy'); return; }
   admobBusy = true; let rewarded = false; const hs = [];
-  const finish = (ok, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(admobPrepare, 1500); done(ok, why); };
+  const finish = (ok, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(admobPrepare, 3000); setTimeout(() => done(ok, why), 350); }; // 画面の処理（ごほうび・ダイアログ）は、広告の知らせの中ではなく、広告の画面が閉じきってから少しあとに行う（AdMob のコールバックと同じ流れで画面をいじると落ちやすい）
   try {
-    hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; }));
+    hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; })); // ここでは印を付けるだけ（画面の処理はしない）
     hs.push(await A.addListener('onRewardedVideoAdDismissed', () => finish(rewarded, rewarded ? '' : 'closed')));
     hs.push(await A.addListener('onRewardedVideoAdFailedToShow', () => finish(false, 'show')));
     if (!(await admobPrepare())) { finish(false, 'load'); return; }
@@ -81,7 +81,7 @@ async function admobDebugTest() {
   const end = (title, why) => { if (!admobBusy) return; admobBusy = false; hs.forEach(h => { try { h.remove(); } catch (e) {} }); try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} admobPreloaded = false; setTimeout(admobPrepare, 1500);
     simpleChoice({ icon: rewarded ? '✅' : '⚠️', title, text: info() + `<div class="dbg-list">${row('結果', why)}${row('かかった時間', ((Date.now() - t0) / 1000).toFixed(1) + '秒')}</div>`, sub: 'テスト用の広告なので、報酬（ジェム）は配りません', yes: '閉じる', no: false }); };
   try {
-    hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; }));
+    hs.push(await A.addListener('onRewardedVideoAdReward', () => { rewarded = true; })); // ここでは印を付けるだけ（画面の処理はしない）
     hs.push(await A.addListener('onRewardedVideoAdDismissed', () => end(rewarded ? '最後まで見られました' : '途中で閉じました', rewarded ? '報酬の合図あり（本番なら報酬を渡す）' : '報酬の合図なし')));
     hs.push(await A.addListener('onRewardedVideoAdFailedToShow', e => end('広告を表示できません', JSON.stringify(e || {}))));
     try { await A.prepareRewardVideoAd({ adId: ADMOB_TEST_REWARDED_ID, isTesting: true }); } catch (e) { end('広告を読み込めません', JSON.stringify(e && (e.message || e.code) || e)); return; }
