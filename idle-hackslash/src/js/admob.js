@@ -89,3 +89,20 @@ async function admobDebugTest() {
     const item = await A.showRewardVideoAd(); if (item) rewarded = true;
   } catch (e) { end('広告を表示できません', String(e && e.message || e)); }
 } // 起動して少ししたら1本読み込んでおく
+
+// デバッグ：AdMob の立ち上げ・動画の読み込みで、ゲームの画面がどれだけ止まるかを測る（Android と iPhone で比べる用）。
+// テスト用の広告ユニットで読み込むだけ（表示はしない）。新規インストール直後（まだ一度も広告を読み込んでいない状態）で押すのがいちばん分かりやすい
+async function admobFreezeTest() {
+  const A = admobPlugin();
+  if (!A) { simpleChoice({ icon: '⏱', title: '広告の読み込みテスト', text: 'アプリの中でだけ測れます（ブラウザ・アーティファクトには AdMob がありません）', yes: 'OK', no: false }); return; }
+  const box = document.createElement('div'); box.style.cssText = 'position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:300;background:rgba(0,0,0,0.85);color:#fff;font:900 20px sans-serif;padding:14px 20px;border-radius:12px;text-align:center;line-height:1.5;'; document.body.appendChild(box);
+  let worst = 0, worstAt = '', last = performance.now(), stage = '準備', run = true; const t0 = performance.now(), log = [];
+  const tick = () => { const now = performance.now(), gap = now - last; last = now; if (gap > worst) { worst = gap; worstAt = stage; } box.innerHTML = `⏱ ${((now - t0) / 1000).toFixed(1)}秒<br><small>${stage}</small><br><small>いちばん長い止まり ${Math.round(worst)}ms</small>`; if (run) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+  const step = async (name, fn) => { stage = name; const s = performance.now(); let ok = true, err = ''; try { await fn(); } catch (e) { ok = false; err = String((e && (e.message || e.code)) || e).slice(0, 80); } log.push(`${name}：${Math.round(performance.now() - s)}ms${ok ? '' : '（失敗 ' + err + '）'}`); };
+  await new Promise(r => setTimeout(r, 600)); // 測り始めの基準
+  await step('立ち上げ（initialize）', () => A.initialize({ initializeForTesting: true }));
+  await step('動画の読み込み（テスト広告）', () => A.prepareRewardVideoAd({ adId: ADMOB_TEST_REWARDED_ID, isTesting: true }));
+  stage = '読み込み後'; await new Promise(r => setTimeout(r, 1500)); run = false; box.remove();
+  simpleChoice({ icon: '⏱', title: '広告の読み込みテスト（' + ADMOB_PLATFORM + '）', text: `<div class="dbg-list"><div class="dl-r"><b>いちばん長い止まり</b>　${Math.round(worst)}ms（${worstAt}）</div>${log.map(t => `<div class="dl-r">${t}</div>`).join('')}</div>`, sub: '止まり＝画面の更新が止まった時間。100ms を超えると引っかかりを感じ、1000ms 以上は固まって見える。新規インストール直後の1回目で測るのがいちばん分かりやすい', yes: 'OK', no: false });
+}
