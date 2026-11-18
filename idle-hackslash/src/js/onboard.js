@@ -39,7 +39,7 @@ function showTabUnlock(tab) {
   el.innerHTML = `<span class="obu-new">NEW!</span>${src ? `<img class="ico-img" src="${src}" alt="">` : ''}<span class="obu-main"><b>「${tabLabel(tab)}」が解放！</b><small>${TAB_UNLOCK_INFO[tab] || ''}</small></span>`;
   el.onclick = () => { el.classList.remove('show'); switchTab(tab); };
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
-  playTone(784, 0.12, 'square', 0.05, 1175); setTimeout(() => playTone(1175, 0.18, 'square', 0.05, 1568), 120);
+  playUnlockJingle(false); // ページ解放の効果音
   clearTimeout(el._t); el._t = setTimeout(() => { el.classList.remove('show'); setTimeout(updateTabLocks, 400); }, 4200);
 }
 document.getElementById('tabBar').addEventListener('click', event => { // 解放前のページは開けない
@@ -190,7 +190,7 @@ function showFeatureUnlock(key) {
   const ok = ov.querySelector('.fu-ok'); // 連打で読む前に閉じないよう、OK は少し待ってから出す
   ok.disabled = true; ok.classList.remove('fu-ok-in'); clearTimeout(ov._okT);
   ov._okT = setTimeout(() => { ok.disabled = false; ok.classList.add('fu-ok-in'); }, 1500);
-  playTone(784, 0.12, 'square', 0.05, 1175); setTimeout(() => playTone(1568, 0.25, 'square', 0.05, 2093), 140);
+  playUnlockJingle(true); // 機能解放（試練の塔・転生など）の効果音
 }
 setInterval(() => { try { updateFeatureUnlocks(); } catch (e) { console.error(e); } }, 700);
 

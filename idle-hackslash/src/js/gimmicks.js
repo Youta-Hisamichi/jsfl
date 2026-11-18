@@ -23,11 +23,12 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['pots', 'mow', 'wind', 'treasure', 'blocks', 'tansu', 'bubbles', 'thunder', 'gold', 'snow', 'rocks', 'haste', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church'];
+const GIMMICK_FIRST_RUN = ['mow', 'wind', 'bubbles', 'thunder', 'treasure', 'snow', 'rocks', 'haste', 'gold', 'pots', 'blocks', 'tansu', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church']; /* 序盤（ステージ30まで）はツボ・タンス・宝箱をびっしり並べるイベントを出さない */
 const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
+const GIMMICK_PACKED = ['pots', 'blocks', 'tansu'], GIMMICK_PACKED_UNTIL = 30; // ツボ・宝箱・タンスを大量に並べるイベントは、ステージ30を過ぎてから
 function gimmickForStage(stage) {
   if (dbgGimmick) return dbgGimmick;
   if (stage < GIMMICK_FROM_STAGE || stage % 10 === 0 || game.skipChallenge) return null;
@@ -37,6 +38,7 @@ function gimmickForStage(stage) {
   const rate = stage <= 60 ? 0.85 : stage <= 300 ? 0.6 : 0.45; // 序盤ほどよく起きる
   if (r() >= rate) return null;
   let k = GIMMICK_KEYS[Math.floor(r() * GIMMICK_KEYS.length)];
+  for (let i = 0; stage <= GIMMICK_PACKED_UNTIL && GIMMICK_PACKED.includes(k) && i < GIMMICK_KEYS.length; i++) k = GIMMICK_KEYS[(GIMMICK_KEYS.indexOf(k) + 1) % GIMMICK_KEYS.length]; // 転生後も序盤はびっしり置くイベントを避ける
   if (k === 'night' && (stage < 300 || r() < 0.75)) k = GIMMICK_KEYS[(GIMMICK_KEYS.indexOf(k) + 7) % GIMMICK_KEYS.length]; // 月夜の草原（ホタル）は後半にまれに
   if (w > 0) { const prev = stageRand((w - 1) * 31 + reb * 977 + 7); prev(); prev(); prev(); if (GIMMICK_KEYS[Math.floor(prev() * GIMMICK_KEYS.length)] === k) k = GIMMICK_KEYS[(GIMMICK_KEYS.indexOf(k) + 5) % GIMMICK_KEYS.length]; } // 2組続けて同じにしない
   return k;

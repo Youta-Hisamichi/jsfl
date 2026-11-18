@@ -1888,3 +1888,18 @@ function playSnowmanBreak() {
   [2093, 2637, 3136, 2794].forEach((f, i) => { const t = t0 + 0.2 + i * 0.06, o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'triangle'; o.frequency.value = f; // キラキラ
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.37); });
 }
+
+// 機能解放の効果音：カチャッ（鍵が回る）→ キラキラと駆け上がる → 「ジャーン」と明るい和音
+function playUnlockJingle(big) {
+  if (!audioCtx) return;
+  thump(1400, 700, 0.035, 0.18, 'square'); noiseSweep(0.05, 4000, 1800, 'bandpass', 5, 0.22); // カチャ
+  thump(1100, 600, 0.04, 0.16, 'square', 0.1); noiseSweep(0.06, 3200, 1400, 'bandpass', 5, 0.2, 0.1); // ッ
+  const run = [1046.5, 1318.5, 1568, 2093]; // ド・ミ・ソ・ド（上）
+  run.forEach((f, i) => setTimeout(() => { playTone(f, 0.14, 'triangle', 0.09); playTone(f * 2, 0.08, 'sine', 0.025); }, 220 + i * 65));
+  const t = 220 + run.length * 65 + 20;
+  setTimeout(() => {
+    [523.25, 659.25, 783.99, 1046.5].forEach(f => { playTone(f, big ? 0.9 : 0.6, 'triangle', 0.06); playTone(f, big ? 0.7 : 0.45, 'square', 0.012); });
+    noiseSweep(big ? 0.9 : 0.6, 9000, 5000, 'highpass', 0.7, 0.12); // シャラーン
+  }, t);
+  if (big) setTimeout(() => [2093, 2637, 3136].forEach((f, i) => setTimeout(() => playTone(f, 0.25, 'sine', 0.035), i * 90)), t + 300); // 余韻のきらめき
+}
