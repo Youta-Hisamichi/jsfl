@@ -792,14 +792,14 @@ function compBondAdd(id, kind) { // その仲間が絆で取り込む量
 function compOwnMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
-  const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」・進化「守護の欠片」
+  const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」
   return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
 }
 function getCompanionMaxHP(id) { if (!COMPANIONS[id]) return 0; return safeNum(Math.max(1, Math.round(compOwnMaxHP(id) + compBondAdd(id, 'hp')))); } // 自分のHP＋絆で取り込んだHP
 function compInspire() { return 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); } // 踊り子（1人ごと+10%）・王様の号令（+30%）
 function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
-  const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」・進化「絆の欠片」
+  const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」
   return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
 }
 function getCompanionAtkOwn(id) { // 恩恵のあと・絆を足す前の攻撃力（バハムートは仲間全員の分を合わせる）

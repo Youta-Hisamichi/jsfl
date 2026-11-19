@@ -14,8 +14,8 @@ function step() {
   updateWeapons(a, speedMult);
   if (typeof tickMovingObstacles === 'function') tickMovingObstacles(speedMult); // ビリヤードのように飛んでいく障害物
   a.atk = Math.max(1, Math.round(getPlayerAtk())); // 加速中ボーナス等を毎フレーム反映
-  a.inPinch = (b.pinchAtk > 0 || getEvoRate('pinch') > 1) && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
-  if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * (1 + b.pinchAtk) * getEvoRate('pinch'))); // ピンチ補正進化も掛かる
+  a.inPinch = getEvoRate('pinch') > 1 && a.hp > 0 && a.hp <= a.maxHp * PINCH_HP_RATIO;
+  if (a.inPinch) a.atk = Math.max(1, Math.round(a.atk * getEvoRate('pinch'))); // ピンチ補正進化も掛かる
   const e = balls.find(ball => !ball.isPlayer);
   updateBarrierOrbs(a, e, speedMult, b);
 

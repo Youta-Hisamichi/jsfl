@@ -301,8 +301,6 @@ function fullReset() {
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaDisc = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 2; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
-  game.gachaShards = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
-  game.evolutions = { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 };
   game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
@@ -1983,97 +1981,6 @@ function runGachaCountdown(hintRarity, onDone, el = gachaResult, opts = {}) { //
   if (opts.skippable) setTimeout(() => { if (!done) el.onclick = finish; }, 150); // 演出中にタップしたらすぐ結果へ（引き直しボタンを押したタップがそのまま届いて演出が飛ばないよう少し待つ）
 }
 
-gachaBtn.addEventListener('click', event => {
-  if (game.gems < 5) { promptGemShortage(5, { returnTo: () => switchTab('gacha') }); return; }
-  if (gachaBtn.disabled) return;
-  gachaBtn.disabled = true; gacha10Btn.disabled = true;
-  game.gems -= 5;
-  const id = pickGachaId(); // 排出結果は先に決定し、カウントダウン中の背景で予感させる
-  runGachaCountdown(GACHA_POOL[id].rarity, () => {
-    game.evolutions[id]++;
-    refreshPlayerBallStats(false);
-    updateStatsUI();
-    updateHPUI();
-    const result = GACHA_POOL[id];
-    const rarity = RARITY_INFO[result.rarity];
-    playGachaSound(result.rarity);
-    gachaResult.className = 'gacha-result rarity-' + result.rarity;
-    gachaResult.style.background = rarityBackground(result.rarity);
-    gachaResult.innerHTML = `<div class="gr-icon gr-pop">${ico(result)}</div><div class="gr-sparkle">✨🌟✨</div><div class="gr-title gr-pop" style="color:${rarity.color}">${rarityStarsImg(result.rarity)} ${result.name}</div><div class="gr-sub">Lv.${game.evolutions[id]} に進化！（${result.desc}）</div><button id="gachaResultCloseBtn">閉じる</button>`;
-    document.getElementById('gachaResultCloseBtn').addEventListener('click', () => { gachaResult.style.display = 'none'; });
-    gachaBtn.disabled = false; gacha10Btn.disabled = false;
-    updateStatsUI();
-  });
-});
-
-const GACHA_AUTO_OPEN_INTERVAL_MS = 650;
-function autoOpenGachaResults(results, onAllDone) {
-  gachaResult.className = 'gacha-result';
-  gachaResult.style.background = '';
-  const cards = results.map((r, i) => `<div class="gm-item gm-hidden" data-gm="${i}"><div class="gm-face">❔</div><span class="gm-name">&nbsp;<br>&nbsp;</span></div>`).join('');
-  gachaResult.innerHTML = `<div class="gr-title">🌟 10連召喚結果 🌟</div><div class="gacha-multi-grid">${cards}</div><div class="gr-sub" id="gachaAutoOpenHint">タップで一気に開封</div>`;
-  let idx = 0;
-  let timer = null;
-  const open = (i, withSound) => {
-    const r = results[i];
-    const rarity = RARITY_INFO[r.rarity];
-    const el = gachaResult.querySelector(`[data-gm="${i}"]`);
-    el.classList.remove('gm-hidden');
-    el.classList.add('gm-open', 'rarity-' + r.rarity);
-    el.style.border = `1px solid ${rarity.color}`;
-    el.style.background = rarityBackground(r.rarity);
-    el.innerHTML = `<div class="gm-face">${ico(r)}</div><span class="gm-name">${rarityStarsImg(r.rarity)}<br>${r.name.replace('の欠片', '')}</span>`;
-    if (withSound) playGachaSound(r.rarity);
-  };
-  const finish = () => {
-    clearInterval(timer);
-    gachaResult.removeEventListener('click', skipAll);
-    const bestRarity = results.reduce((best, r) => RARITY_INFO[r.rarity].needMult < RARITY_INFO[best.rarity].needMult ? r : best, results[0]).rarity;
-    gachaResult.className = 'gacha-result rarity-' + bestRarity;
-    const hint = document.getElementById('gachaAutoOpenHint');
-    if (hint) hint.remove();
-    onAllDone();
-  };
-  const step = () => {
-    open(idx, true);
-    idx++;
-    if (idx >= results.length) finish();
-  };
-  const skipAll = () => {
-    if (idx >= results.length) return;
-    for (; idx < results.length; idx++) open(idx, false);
-    const bestRarity = results.reduce((best, r) => RARITY_INFO[r.rarity].needMult < RARITY_INFO[best.rarity].needMult ? r : best, results[0]).rarity;
-    playGachaSound(bestRarity);
-    finish();
-  };
-  gachaResult.addEventListener('click', skipAll);
-  timer = setInterval(step, GACHA_AUTO_OPEN_INTERVAL_MS);
-}
-
-gacha10Btn.addEventListener('click', event => {
-  if (game.gems < 45) { promptGemShortage(45, { returnTo: () => switchTab('gacha') }); return; }
-  if (gachaBtn.disabled) return;
-  gachaBtn.disabled = true; gacha10Btn.disabled = true;
-  game.gems -= 45;
-  const ids = []; // 排出結果は先に決定し、カウントダウン中の背景で予感させる
-  for (let i = 0; i < 10; i++) ids.push(pickGachaId());
-  const bestRarityForHint = ids.reduce((best, id) => RARITY_INFO[GACHA_POOL[id].rarity].needMult < RARITY_INFO[best].needMult ? GACHA_POOL[id].rarity : best, GACHA_POOL[ids[0]].rarity);
-  runGachaCountdown(bestRarityForHint, () => {
-    const results = ids.map(id => { game.evolutions[id]++; return { id, ...GACHA_POOL[id] }; });
-    refreshPlayerBallStats(false);
-    updateStatsUI();
-    updateHPUI();
-    autoOpenGachaResults(results, () => {
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = '閉じる';
-      closeBtn.addEventListener('click', () => { gachaResult.style.display = 'none'; });
-      gachaResult.appendChild(closeBtn);
-      gachaBtn.disabled = false; gacha10Btn.disabled = false;
-      updateStatsUI();
-    });
-  });
-});
-
 // 新しい進化：攻撃力かHPを選び、ジェムと羽の数を決めて進化
 const EVO_GRADE = { common: 'N', rare: 'R', epic: 'SR', legendary: 'SSR', mythic: 'UR' }; // 進化ガチャのレア度表記
 const onEvoPanelClick = event => {
@@ -2140,20 +2047,6 @@ function showEvoAccUnlocked() { // 進化3回目：命中が進化の項目に�
 }
 function fmtEvoRate(v) { return v < 1000 ? String(+v.toFixed(2)) : formatCoinNumber(v); } // ×1.1 などの小数も見えるように
 function fmtEvoPct(total) { const p = (total - 1) * 100; return '+' + (p < 1000 ? String(+p.toFixed(p < 10 ? 2 : 1)) : formatCoinNumber(Math.round(p))) + '%'; } // 1回の進化で上がる割合（+1% など）
-evolutionList.addEventListener('click', event => {
-  const button = event.target.closest('[data-evolve]');
-  if (!button) return;
-  const id = button.dataset.evolve;
-  const need = getEvolveNeed(id);
-  if (game.gachaShards[id] < need) { showTapError('進化用の欠片が足りません', event.clientX, event.clientY); return; }
-  game.gachaShards[id] -= need;
-  game.evolutions[id]++;
-  refreshPlayerBallStats(false);
-  playUpgradeSound();
-  updateStatsUI();
-  updateHPUI();
-});
-
 companionList.addEventListener('click', event => {
   const infoTile = event.target.closest('[data-comp-info]');
   if (infoTile) { openCompInfo(infoTile.dataset.compInfo); return; }
@@ -3295,16 +3188,11 @@ if (game.bestiary && game.bestiary['shape:circle']) {
   delete game.bestiary['shape:circle'];
 }
 delete game.artifactSlots; delete game.extraArtifactSlots;
-if (game.evolutions) delete game.evolutions.swift;
-if (game.gachaShards) delete game.gachaShards.swift;
+delete game.evolutions; delete game.gachaShards; // 旧方式の進化（欠片）は削除済み：古いセーブに残っていれば消す
 if (!game.upgrades) game.upgrades = newUpgradeLevels();
 if (game.autoUpgrade && game.autoUpgradeUnlocked === undefined) game.autoUpgradeUnlocked = true; // ショップのアイテムになる前からオートLvUPを使っていた人はそのまま使える
 for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0; // 追加された強化は0から
 for (const id in UPGRADES) if (typeof game.upgrades[id] !== 'number') game.upgrades[id] = 0;
-for (const id in GACHA_POOL) {
-  if (typeof game.evolutions[id] !== 'number') game.evolutions[id] = 0;
-  if (typeof game.gachaShards[id] !== 'number') game.gachaShards[id] = 0;
-}
 if (!game.companions.level) game.companions.level = {};
 if (!game.companions.hpLv) game.companions.hpLv = { ...game.companions.level }; // 攻撃力とHPを分ける前のセーブは、HPも今のLvから
 if (!game.companions.hp) game.companions.hp = {};

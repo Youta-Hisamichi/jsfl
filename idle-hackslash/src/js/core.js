@@ -70,10 +70,7 @@ const rebornBtn = document.getElementById('rebornBtn');
 const shopList = document.getElementById('shopList');
 const coinShopList = document.getElementById('coinShopList');
 const supergemShopList = document.getElementById('supergemShopList');
-const gachaBtn = document.getElementById('gachaBtn');
-const gacha10Btn = document.getElementById('gacha10Btn');
 const gachaResult = document.getElementById('gachaResult');
-const evolutionList = document.getElementById('evolutionList');
 const companionList = document.getElementById('companionList');
 const battleNotice = document.getElementById('battleNotice');
 const cloneCounter = document.getElementById('cloneCounter');
@@ -634,32 +631,6 @@ function rarityBackground(rarity) {
 function rarityStars(rarity) { return '★'.repeat(RARITY_INFO[rarity].stars) + '☆'.repeat(5 - RARITY_INFO[rarity].stars); }
 const STAR_ON_IMG = 'assets/img/ui/chest/star_on.webp', STAR_OFF_IMG = 'assets/img/ui/chest/star_off.webp';
 function rarityStarsImg(rarity) { const n = RARITY_INFO[rarity].stars; return `<span class="rstars">${[0, 1, 2, 3, 4].map(i => `<img src="${i < n ? STAR_ON_IMG : STAR_OFF_IMG}" alt="">`).join('')}</span>`; } // ガチャ結果の★は金の星の絵で統一
-const GACHA_POOL = {
-  power:    { icon: '⚔️', name: '闘気の欠片',   rarity: 'common',    desc: '攻撃力 +10%/Lv',        bonus: { atk: 0.10 },               weight: 26 },
-  vitality: { icon: '❤️', name: '生命の欠片',   rarity: 'common',    desc: '最大HP +10%/Lv',        bonus: { hp: 0.10 },                weight: 26 },
-  fortune:  { icon: '🍀', name: '幸運の欠片',   rarity: 'rare',      desc: 'コイン獲得 +15%/Lv',    bonus: { coin: 0.15 },              weight: 16 },
-  meteor:   { icon: '☄️', name: '隕星の欠片',   rarity: 'epic',      desc: 'メテオダメージ +20%/Lv', bonus: { special: 0.20 },           weight: 9 },
-  chain:    { icon: '🔗', name: '連鎖の欠片',   rarity: 'epic',      desc: '連鎖ダメージ +5%/Lv',   bonus: { combo: 0.05 },             weight: 4 },
-  critical: { icon: '🎯', name: '会心の欠片',   rarity: 'epic',      desc: 'クリティカル率 +1%/Lv', bonus: { crit: 0.01 },              weight: 5 },
-  critdmg:  { icon: '💥', name: '剛撃の欠片',   rarity: 'epic',      desc: 'クリティカルダメージ +10%/Lv', bonus: { critDmg: 0.10 },    weight: 5 },
-  aim:      { icon: '🔍', name: '照準の欠片',   rarity: 'rare',      desc: '命中率 +1%/Lv',         bonus: { accuracy: 0.01 },          weight: 7 },
-  evade:    { icon: '🍃', name: '幻影の欠片',   rarity: 'rare',      desc: '回避率 +1%/Lv',         bonus: { evasion: 0.01 },           weight: 7 },
-  slayer:   { icon: '🗡️', name: '討伐の欠片',   rarity: 'epic',      desc: 'ボスへのダメージ +5%/Lv', bonus: { bossDmg: 0.05 },         weight: 5 },
-  counter:  { icon: '🔁', name: '反撃の欠片',   rarity: 'rare',      desc: 'カウンター率 +2%/Lv',   bonus: { counter: 0.02 },           weight: 7 },
-  bond:     { icon: '🤝', name: '絆の欠片',     rarity: 'rare',      desc: '仲間の攻撃力 +10%/Lv',  bonus: { companionAtk: 0.10 },      weight: 7 },
-  pinch:    { icon: '🩹', name: '背水の欠片',   rarity: 'rare',      desc: 'HP30%以下で攻撃力 +10%/Lv', bonus: { pinchAtk: 0.10 },   weight: 7 },
-  guard:    { icon: '🫶', name: '守護の欠片',   rarity: 'rare',      desc: '仲間の最大HP +10%/Lv',  bonus: { companionHp: 0.10 },       weight: 7 },
-  phoenix:  { icon: '🔥', name: '不死鳥の欠片', rarity: 'legendary', desc: '攻撃力+20%・HP+15%/Lv', bonus: { atk: 0.20, hp: 0.15 },      weight: 1 },
-};
-function pickGachaId() {
-  const total = Object.values(GACHA_POOL).reduce((s, i) => s + i.weight, 0);
-  let r = Math.random() * total;
-  for (const id in GACHA_POOL) {
-    r -= GACHA_POOL[id].weight;
-    if (r <= 0) return id;
-  }
-  return Object.keys(GACHA_POOL)[0];
-}
 // ===== 進化：攻撃力かHPを選び、ジェムと進化の羽を捧げて進化。5段階のレア度で 1.01・1.1・2・10・100倍 が出て（インフレと試練の塔が前提なので大きめ）、進化率に掛け算される =====
 const EVO_TIERS = [ // 1回の進化で上がる割合：N +1%・R +3%・SR +7%・SSR +15%・UR +100%
   { rarity: 'common', mult: 1.01, base: 71 }, { rarity: 'rare', mult: 1.03, base: 20 }, { rarity: 'epic', mult: 1.07, base: 6.5 },
@@ -710,12 +681,6 @@ function evoOdds(gems, feathers) {
   return w.map(x => x / sum);
 }
 function rollEvoTier(gems, feathers) { const o = evoOdds(gems, feathers); let r = Math.random(); for (let i = 0; i < o.length; i++) { r -= o[i]; if (r < 0) return i; } return 0; }
-function getEvolveNeed(id) {
-  const level = game.evolutions[id];
-  const mult = RARITY_INFO[GACHA_POOL[id].rarity].needMult;
-  return (level + 1) * mult;
-}
-
 const UPGRADES = {
   atk: { icon: '⚔️', name: '攻撃力', desc: 'Lvが上がるほど伸びる', baseCost: 2, group: 'attack' },
   hp: { icon: '❤️', name: '最大HP', desc: 'Lvが上がるほど伸びる', baseCost: 2, group: 'defense' },
@@ -928,7 +893,6 @@ function gemPrice(cost) { const s = getActiveSub(); return s && s.gemPriceMult <
 ICON_IMAGES.x_feather = ICON_IMAGES.art_evoFeather = 'assets/img/icons/bag_feather.webp'; // 進化の羽は所持品と同じアイコン
 ARTIFACT_ALL.forEach(a => { a.img = ICON_IMAGES['art_' + a.id]; });
 ARTIFACT_BY_ID.rareRing.img = 'assets/img/icons/art_rareRing.webp'; // レアリング専用の絵
-Object.keys(GACHA_POOL).forEach(id => { GACHA_POOL[id].img = ICON_IMAGES['g_' + id]; });
 Object.keys(UPGRADES).forEach(id => { UPGRADES[id].img = ICON_IMAGES['up_' + id]; });
 // 強化の仲間系3つのアイコン：仲間タブの絵＋それぞれの強化の絵（ファイル数を増やさないよう埋め込み）
  // 体当たりはタックルの絵 // 仲間の攻撃力は仲間タブと同じ絵
@@ -1214,9 +1178,7 @@ const game = {
   upgrades: newUpgradeLevels(),
   coinCloneSlots: 0,
   shopOwned: {},
-  gachaShards: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
   evoRate: {}, // 進化率（攻撃力・HPに掛け算。命中はボスの回避力を打ち消す）
-  evolutions: { power: 0, vitality: 0, fortune: 0, meteor: 0, chain: 0, critical: 0, critdmg: 0, aim: 0, evade: 0, slayer: 0, counter: 0, rush: 0, bond: 0, guard: 0, pinch: 0, phoenix: 0 },
   ownedArtifacts: {},
   rebirthBonus: { atk: 0, hp: 0, cloneSlots: 0 },
   totalCoinsSpent: 0, // 累計の消費コイン（戦績用）
@@ -1264,7 +1226,7 @@ function canShowReborn() { return (game.stage >= 3 || !!game.dbgRebornAlways) &&
 function isRebornUnlocked() { return !!game.dbgRebornAlways || (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= REBORN_UNLOCK_STAGE; }
 function isTowerUnlocked() { return !!game.dbgTowerOpen || !!game.towerTapOpen || (game.reincarnations || 0) > 0 || (game.bestStage || 1) >= TOWER_UNLOCK_STAGE || !!game.skipChallenge; }
 const SPEED_MULT_CAP = 1.6;
-function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, pinchAtk: 0, rebirthGems: 0 }; }
+function baseBonuses() { return { atkMult: 1, coinMult: 1, hpMult: 1, speedMult: 1, bounceMult: 1, specialMult: 1, comboGrowth: 0, bounceCoinCount: 0, loginBonusMult: 1, specialDmgMult: 1, specialCooldownMult: 1, accelDmgMult: 1, critChance: 0, critMultBonus: 0, accuracy: 0, evasion: 0, bossDmg: 0, counter: 0, tackleMult: 1, companionAtkMult: 1, companionHpMult: 1, rebirthGems: 0 }; }
 function applyArtifactBonuses(b) {
   // 古い遺物（攻撃力・HP・会心などを上げるもの）は削除済み。今ある遺物（禁断シリーズ・レアリング・進化の羽）は、それぞれの場所で効果を計算する
   return b;
@@ -1288,28 +1250,6 @@ function computeBonuses() {
   b.companionHpMult *= (1 + (up.cHp || 0) * 0.20) * upgradeLeapMult(up.cHp || 0);
   b.companionSpeedMult = (1 + (up.cSpd || 0) * 0.05) * upgradeLeapMult(up.cSpd || 0);
   snap('強化Lv（倍率・飛躍）');
-
-  const evoBoost = getEvoBoost(); // 遺物「進化の羽」：進化の効果アップ
-  for (const id in GACHA_POOL) {
-    const level = 0; // 旧方式の進化（欠片）は廃止：効果なし
-    if (!level) continue;
-    const bonus = GACHA_POOL[id].bonus;
-    if (bonus.atk) b.atkMult += bonus.atk * level;
-    if (bonus.hp) b.hpMult += bonus.hp * level;
-    if (bonus.coin) b.coinMult += bonus.coin * level;
-    if (bonus.special) b.specialMult += bonus.special * level;
-    if (bonus.combo) b.comboGrowth += bonus.combo * level;
-    if (bonus.crit) b.critChance += bonus.crit * level;
-    if (bonus.critDmg) b.critMultBonus += bonus.critDmg * level;
-    if (bonus.accuracy) b.accuracy += bonus.accuracy * level;
-    if (bonus.evasion) b.evasion += bonus.evasion * level;
-    if (bonus.bossDmg) b.bossDmg += bonus.bossDmg * level;
-    if (bonus.counter) b.counter += bonus.counter * level;
-    if (bonus.tackle) b.tackleMult += bonus.tackle * level;
-    if (bonus.companionAtk) b.companionAtkMult += bonus.companionAtk * level;
-    if (bonus.companionHp) b.companionHpMult += bonus.companionHp * level;
-    if (bonus.pinchAtk) b.pinchAtk += bonus.pinchAtk * level;
-  }
 
   for (const id in COMPANIONS) {
     if (!game.companions.recruited[id]) continue;
