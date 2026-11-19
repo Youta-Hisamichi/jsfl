@@ -413,8 +413,8 @@ function renderCompanionListNow() {
   if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }
 
-// 招集ガチャの値段（周回ごと）：1人目はコイン300、2人目から 1000→3000→9000 と3倍ずつ、5人目からはジェム1個
-const COMP_GACHA_FIRST_COST = 300, COMP_GACHA_2ND_COST = 1000, COMP_GACHA_GROWTH = 3, COMP_GACHA_GEM_FROM = 4;
+// 招集ガチャの値段（周回ごと）：1人目はコイン100、2人目から 1000→3000→9000 と3倍ずつ、5人目からはジェム1個
+const COMP_GACHA_FIRST_COST = 100, COMP_GACHA_2ND_COST = 1000, COMP_GACHA_GROWTH = 3, COMP_GACHA_GEM_FROM = 4;
 function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
   const i = game.companionSummons || 0;
   if (i >= COMP_GACHA_GEM_FROM) return { coins: 0, gems: 1 };
