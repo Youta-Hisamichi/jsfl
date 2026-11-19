@@ -69,11 +69,20 @@ async function admobShowRewarded(done) {
 // ・AdMob の立ち上げ（MobileAds.initialize）は、MainActivity が起動時に裏のスレッドで済ませる。
 // ・本番の動画の読み込み（6〜9秒）の間、Android では広告の WebView とゲームの WebView が処理を取り合い、ゲームが1〜2秒止まる
 //   （ゲームの画面が広い・長押しチャージ中ほど長い。テスト広告ではほぼ止まらない）。
-// ・そのため戦闘中は読み込まない。戦闘の画面が止まっているとき（ほかのページを開いている・一時停止・宝箱などの画面）にだけ先読みする。
+// ・そのため戦闘中は読み込まない。戦闘の画面が止まっているとき（ほかのページを開いている・一時停止など）で、最後に触ってから5秒以上たち、ガチャ・宝箱などの演出中でないときだけ先読みする。
 // ・先読みが済んでいないときは、動画のボタンを押したとき「動画を読み込み中…」の画面の間に読み込む（admobShowRewarded）。
 function admobBattleHidden() { return (typeof activeTabCache !== 'undefined' && activeTabCache !== 'game') || (typeof phase !== 'undefined' && phase === 'paused') || (typeof userPaused !== 'undefined' && userPaused); }
+let admobLastTouch = Date.now(); // 最後に画面を触った時刻（操作の最中に読み込みを始めない）
+['pointerdown', 'touchstart', 'keydown'].forEach(t => window.addEventListener(t, () => { admobLastTouch = Date.now(); }, { capture: true, passive: true }));
+const ADMOB_IDLE_MS = 5000; // 最後に触ってからこの時間たったら先読みしてよい
+function admobUiQuiet() { // ガチャや演出の最中でない
+  if (Date.now() - admobLastTouch < ADMOB_IDLE_MS) return false;
+  if ((typeof skGachaBusy !== 'undefined' && skGachaBusy) || (typeof compSummoning !== 'undefined' && compSummoning)) return false;
+  return !document.querySelector('.comp-gacha-overlay.show, #skGachaModal.show, #chestModal.show, #rewardAdModal.show');
+}
 function admobIdlePrepare() {
   if (!admobPlugin() || admobPreloaded || admobLoading || admobBusy || document.hidden) return;
+  if (!admobUiQuiet()) return; // 操作中・ガチャの演出中は読み込まない（最初の読み込みは重く、画面が引っかかることがある）
   if (typeof isAdFree === 'function' && isAdFree()) return; // 紋章（広告なし）なら読み込まない
   if (admobBattleHidden()) admobPrepare();
 }
