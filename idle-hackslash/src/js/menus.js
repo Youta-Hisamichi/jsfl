@@ -291,9 +291,9 @@ function renderMyCharCard() {
   el.classList.toggle('no-change', !canChange);
   const id = getHeroChar(), name = id ? COMPANIONS[id].name : userNameHtml('勇者');
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
-  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta"></span>${heroTypeHtml(id)}${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
+  el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta"></span>${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
-function heroTypeHtml(id) { // 自キャラのタイプと長所・短所
+function heroTypeHtml(id) { // 自キャラのタイプと長所・短所（自キャラの変更をなくしたので、いまはどこにも出していない）
   const info = heroTypeInfo(id);
   if (!info) return `<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ 長所なし</i><i class="dn">▼ 短所なし</i></span>`;
   return `<span class="mc-ud"><i class="ht">${info.t.icon} ${info.t.name}</i><i class="up">▲ ${info.up}</i><i class="dn">▼ ${info.down}</i></span>`;
@@ -354,7 +354,7 @@ function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形
     `🤝 絆率 ${P(heroBondRate())}（勇者の絆 ${F(graceItemCount('heroBond'))}個）`, `👑 恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${F(graceItemCount('heroGrace'))}個）`,
     `🧬 進化 初期Lv ⚔️+${ev.atk} ❤️+${ev.hp}`, `🌌 転生 ${game.reincarnations || 0}回（攻撃力・HP ×${+rebirthPowerMult().toFixed(2)}）`];
   return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span></div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
-    + `<div class="cc-trait">${heroTypeHtml(id)}</div><div class="cc-trait">【絆】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
+    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
     + `<div class="cp-info-lock">攻撃力・HPは下の強化で上がります。宝箱から自キャラが出ると進化して初期Lvが上がります</div></div>`;
 }
 function openHeroInfo() { openCompInfo(null, heroInfoHtml()); }
