@@ -23,8 +23,8 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['mow', 'wind', 'bubbles', 'thunder', 'treasure', 'snow', 'rocks', 'haste', 'gold', 'pots', 'blocks', 'tansu', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church']; /* 序盤（ステージ30まで）はツボ・タンス・宝箱をびっしり並べるイベントを出さない */
-const GIMMICK_FROM_STAGE = 3, GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
+const GIMMICK_FIRST_RUN = ['wind', 'bubbles', 'thunder', 'mow', 'treasure', 'snow', 'rocks', 'haste', 'gold', 'pots', 'blocks', 'tansu', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church']; /* 序盤（ステージ30まで）はツボ・タンス・宝箱をびっしり並べるイベントを出さない */
+const GIMMICK_FROM_STAGE = 11, /* 序盤（最初のボスまで）は特殊ステージにしない */ GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
 function gimmickWindow(stage) { return Math.floor((stage - GIMMICK_FROM_STAGE) / GIMMICK_SPAN); }
@@ -359,6 +359,14 @@ const GM_FILL = {
   blocks: { kind: 'qbox', n: 12, size: 0.075, regrow: 0, hits: 6 },
   tansu:  { kind: 'qbox', n: 9, size: 0.085, regrow: 80, hits: 3, tansu: true },
 };
+// 芝刈りの草の数：今までの26本を最大に、ステージごとに少なめ〜多めを混ぜて緩急をつける（序盤は少なめ。草が多いと反射玉が使いにくい）
+const MOW_COUNTS = [6, 10, 14, 20, 26], MOW_FEW_UNTIL = 30;
+function gmFillCount(key, stage = game.stage) {
+  const F = GM_FILL[key]; if (key !== 'mow') return F.n;
+  const r = stageRand(gimmickWindow(stage) * 53 + (game.reincarnations || 0) * 211 + 9); r(); const v = r();
+  if (stage <= MOW_FEW_UNTIL) return v < 0.5 ? MOW_COUNTS[0] : MOW_COUNTS[1];
+  return MOW_COUNTS[Math.min(MOW_COUNTS.length - 1, Math.floor(v * MOW_COUNTS.length))];
+}
 function gmFillSpots() { // ゲーム画面いっぱいの格子（少しずらして自然に）
   const A = gArea(), pts = [], cols = 6, rows = Math.max(5, Math.round(cols * A.h / A.w));
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) pts.push({ x: A.l + A.w * (c + 0.5 + (r % 2 ? 0.25 : -0.25) * 0.6) / cols, y: A.t + A.h * (r + 0.5) / rows });
@@ -376,7 +384,8 @@ function fillGimmickObstacles(key) {
   const F = GM_FILL[key]; if (!F) return;
   obstacles = obstacles.filter(o => o.debug || o.gm === key || o.kind === 'reflector'); // ほかの障害物はどけて、この遊びに集中（反射玉は残す）
   const rnd = stageRand(game.stage * 7 + 1), spots = gmFillSpots().sort(() => rnd() - 0.5), r = arena.radius * F.size;
-  for (const p of spots) { if (obstacles.filter(o => o.gm === key).length >= F.n) break; if (gmSpotFree(p, r)) obstacles.push(gmMakeObstacle(key, p, rnd)); }
+  const cap = gmFillCount(key);
+  for (const p of spots) { if (obstacles.filter(o => o.gm === key).length >= cap) break; if (gmSpotFree(p, r)) obstacles.push(gmMakeObstacle(key, p, rnd)); }
 }
 { const orig = setupObstacles; setupObstacles = function () { orig.apply(this, arguments); const k = gimmickForStage(game.stage); if (GM_FILL[k]) fillGimmickObstacles(k); }; }
 // また生えてくる（壺・草）
@@ -387,7 +396,7 @@ let gmRegrowT = 0;
   for (const o of obstacles) if (o.tansu && o.used && Date.now() - (o.usedAt || 0) > 3000) o.broken = true; // 空になったタンスは消える
   if (gm.lastFill !== game.stage + ':' + k) { gm.lastFill = game.stage + ':' + k; if (!obstacles.some(o => o.gm === k)) fillGimmickObstacles(k); }
   gmRegrowT += sp; if (gmRegrowT < F.regrow) return; gmRegrowT = 0;
-  if (obstacles.filter(o => o.gm === k).length >= F.n) return;
+  if (obstacles.filter(o => o.gm === k).length >= gmFillCount(k)) return;
   const r = arena.radius * F.size, spots = gmFillSpots().filter(p => gmSpotFree(p, r));
   if (spots.length) { const o = gmMakeObstacle(k, spots[Math.floor(Math.random() * spots.length)], Math.random); obstacles.push(o); spawnHitParticles(o.x, o.y, F.kind === 'bush' ? '#7fd06a' : '#c8a070'); }
 }; }
