@@ -852,7 +852,7 @@ function getSkillLevel(id) {
 function skillCdCut(lv) { return lv <= 10 ? SKILL_CD_CUT_PER_LV * (lv - 1) : 0.54 + 0.31 * (1 - Math.pow(0.985, lv - 10)); }
 const SKILL_MIN_CD = 5 * 60 * 1000; // どのスキルも待ち時間は最低5分（Lvが上がっても短くならない）
 function skillCd(id, base) { return Math.max(SKILL_MIN_CD, Math.round(base * (1 - skillCdCut(Math.max(1, getSkillLevel(id)))))); }
-// スキルの威力：Lvごとに+10%、10Lvごとに飛躍（×1.5）、100Lvごとに超飛躍（×3）
+// スキルの威力：Lvごとに+10%（10Lv・100Lvごとの飛躍はなくした）
 const METEOR_ATK_MULT = 10; // メテオのダメージ：攻撃力の10倍から
 // メテオのダメージ倍率：(10 + スキルLv) × メテオブースト × スキル進化（ダメージ = 自キャラ攻撃力 × これ）
 function meteorLv(lv) { return lv != null ? lv : game.shopOwned && game.shopOwned.skillSpecial ? getSkillLevel('skillSpecial') : 1; }

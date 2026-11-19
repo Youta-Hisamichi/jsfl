@@ -1680,7 +1680,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
       const eq = getEquippedSkills();
       if (eq.length < getSkillSlots()) { eq.push(id); lastSetSkill = id; } // 空き枠があれば自動で装備
     } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
-    const slv = game.skillLevels[id], leapTier = owned ? (slv % 100 === 0 ? 2 : slv % 10 === 0 ? 1 : 0) : 0; // 10の倍数で飛躍・100の倍数で超飛躍
+    const slv = game.skillLevels[id], leapTier = 0; // スキルの飛躍はなくした
     showNotice(!owned ? `${sk.icon} ${sk.name} スキルを解放！` : leapTier ? `✨ ${sk.icon} ${sk.name} Lv${slv} ${leapTier >= 2 ? '超飛躍' : '飛躍'}！` : `${sk.icon} ${sk.name} スキルが Lv${slv} に！`);
     showLevelUpPop(event.clientX, event.clientY, !owned ? '解放！' : `Lv${slv}！`);
     if (leapTier) { showLeapBanner(leapTier >= 2 ? '超飛躍！！' : '飛躍！', leapTier); playLeapSound(leapTier); }

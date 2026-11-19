@@ -2102,7 +2102,8 @@ function skillLvUpText(id, slv) { // ガチャでLvが上がったときの一�
   if (id === 'skillCoinStrike') return `コイン盗み ${+coinStealSecs(slv).toFixed(2)}秒`;
   if (id === 'skillZeni') return `ダメージ倍率 ×${+zeniMult(slv).toFixed(3)}`;
   if (!POWER_SKILLS.includes(id)) return 'Lvアップ';
-  return slv % 100 === 0 ? `超飛躍！！ ${k}×3` : slv % 10 === 0 ? `飛躍！ ${k}×1.5` : `${k}がアップ`;
+  if (id === 'skillSpecial') return `ダメージ 攻撃力×${formatCoinNumber(Math.round(meteorMult(slv)))} にアップ`; // メテオは (10＋Lv) 倍
+  return `${k} ×${+skillPower(id).toFixed(1)} にアップ`; // スキルの10Lv・100Lvごとの飛躍はなくした（威力は Lvごとに +0.1倍）
 }
 const SKILL_COINSTRIKE_COOLDOWN = SKILL_MIN_CD;
 // コイン盗みの長さ：Lv1で10秒、Lvごとに+1秒。30秒からは+0.5秒、60秒からは+0.25秒…と30秒ごとに増え方が半分になる
