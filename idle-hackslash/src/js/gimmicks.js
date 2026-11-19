@@ -5,7 +5,6 @@ const GIMMICKS = {
   wind:      { name: '強風注意報', icon: '🍃', desc: 'みんな風に流される！ コイン×1.2', coin: 1.2 },
   treasure:  { name: '宝さがし', icon: '🗺️', desc: '✕じるしの上を通ると宝箱！', coin: 1 },
   thunder:   { name: '雷雨', icon: '⛈️', desc: '雷が敵に落ちて大ダメージ', coin: 1.1, tint: 'rgba(20,24,40,0.14)' },
-  bubbles:   { name: 'シャボン玉の庭', icon: '🫧', desc: 'シャボン玉を割るとコイン', coin: 1 },
   gold:      { name: 'ゴールドラッシュ', icon: '💰', desc: '撃破コイン×2！', coin: 2, tint: 'rgba(255,200,40,0.08)' },
   haste:     { name: '疾風ステージ', icon: '⚡', desc: 'すべてが速い！ コイン×1.2', coin: 1.2 },
   rocks:     { name: '落石注意', icon: '🪨', desc: '岩が降ってきて敵をつぶす', coin: 1.1 },
@@ -23,7 +22,7 @@ const GIMMICKS = {
 };
 const GIMMICK_KEYS = Object.keys(GIMMICKS);
 // 1周目の序盤は、毎組ちがうイベントを見せて飽きさせない
-const GIMMICK_FIRST_RUN = ['wind', 'bubbles', 'thunder', 'mow', 'treasure', 'snow', 'rocks', 'haste', 'gold', 'pots', 'blocks', 'tansu', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church']; /* 序盤（ステージ30まで）はツボ・タンス・宝箱をびっしり並べるイベントを出さない */
+const GIMMICK_FIRST_RUN = ['wind', 'thunder', 'mow', 'treasure', 'snow', 'rocks', 'haste', 'gold', 'pots', 'blocks', 'tansu', 'castle', 'village', 'town', 'ruins', 'graveyard', 'church']; /* 序盤（ステージ30まで）はツボ・タンス・宝箱をびっしり並べるイベントを出さない */
 const GIMMICK_FROM_STAGE = 11, /* 序盤（最初のボスまで）は特殊ステージにしない */ GIMMICK_SPAN = 3, GIMMICK_FIND_GEMS = 1; // 初めて出会ったイベントはジェムのごほうび
 let dbgGimmick = null; // デバッグで固定表示するイベント
 let dbgStageNow = null, dbgStagePrev = null; // デバッグの一番上に出す、今と直前のステージ名
@@ -88,7 +87,6 @@ function tickGimmick(sp) {
   // 出現
   if (gm.t >= gm.nextAt) {
     if (key === 'stars') { gm.nextAt = gm.t + gRand(70, 130); const tx = gRand(A.l + 30, A.r - 30), ty = gRand(A.t + 40, A.b - 30); gm.fx.push({ kind: 'shoot', x: tx - 160, y: ty - 220, tx, ty, life: 1 }); }
-    else if (key === 'bubbles') { gm.nextAt = gm.t + gRand(25, 50); gm.items.push({ kind: 'bubble', x: gRand(A.l + 20, A.r - 20), y: A.b + 20, vy: -gRand(0.4, 0.9), r: gRand(9, 17), ph: Math.random() * 6 }); }
     else if (key === 'fireworks') { gm.nextAt = gm.t + gRand(35, 75); for (let k = Math.random() < 0.3 ? 2 : 1; k > 0; k--) { const x = gRand(A.l + 40, A.r - 40), y = gRand(A.t + 40, A.t + A.h * 0.45); gm.fx.push({ kind: 'rocket', x, y: A.b + k * 30, ty: y, life: 1, hue: Math.floor(Math.random() * 360) }); } playTone(300, 0.35, 'sine', 0.025, 900); } // ときどき2発同時
     else if (key === 'thunder') { gm.nextAt = gm.t + gRand(170, 240); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'warn', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'castle') { gm.nextAt = gm.t + gRand(150, 230); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', chand: true, target: e, x: e.x, y: e.y, t: 0 }); } }
@@ -133,7 +131,6 @@ function tickGimmick(sp) {
   }
   for (const it of gm.items) {
     if (it.dead) continue;
-    else if (it.kind === 'bubble') { it.y += it.vy * sp; it.ph += 0.05 * sp; it.x += Math.sin(it.ph) * 0.5 * sp; if (it.y < A.t - 30) it.dead = true; else if (touch(it, it.r)) popGimmickItem(it); }
     else if (it.kind === 'star') { it.life -= 0.0028 * sp; if (it.life <= 0) it.dead = true; else if (touch(it, 12)) popGimmickItem(it); }
     else if (it.kind === 'coin') { if (it.y < it.landY) it.y += it.vy * sp; else it.ground = (it.ground || 0) + sp; it.spin += 0.15 * sp; if (it.ground > 360) it.dead = true; else if (touch(it, 9)) popGimmickItem(it); }
     else if (it.kind === 'firefly') { it.ph += 0.05 * sp; it.x += (it.vx + Math.sin(it.ph * 0.7) * 0.4) * sp; it.y += (it.vy + Math.cos(it.ph * 0.5) * 0.4) * sp; if (it.x < A.l + 10 || it.x > A.r - 10) it.vx *= -1; if (it.y < A.t + 10 || it.y > A.b - 10) it.vy *= -1; it.x = Math.max(A.l + 10, Math.min(A.r - 10, it.x)); it.y = Math.max(A.t + 10, Math.min(A.b - 10, it.y)); if (touch(it, 8)) popGimmickItem(it); }
@@ -158,8 +155,7 @@ function tickGimmick(sp) {
 }
 function popGimmickItem(it) {
   it.dead = true;
-  if (it.kind === 'bubble') { playTone(1300, 0.05, 'sine', 0.05, 1900); spawnHitParticles(it.x, it.y, '#bfe9ff'); gimmickGiveCoins(it.x, it.y, 0.12, '🫧'); }
-  else if (it.kind === 'star') { playCoinChime(5); playTone(1800, 0.15, 'triangle', 0.05, 2600); for (let i = 0; i < 4; i++) spawnHitParticles(it.x, it.y, '#fff3a0'); gimmickGiveCoins(it.x, it.y, 0.4, '🌠'); }
+  if (it.kind === 'star') { playCoinChime(5); playTone(1800, 0.15, 'triangle', 0.05, 2600); for (let i = 0; i < 4; i++) spawnHitParticles(it.x, it.y, '#fff3a0'); gimmickGiveCoins(it.x, it.y, 0.4, '🌠'); }
   else if (it.kind === 'coin') { playCoinChime(Math.floor(Math.random() * 6)); gimmickGiveCoins(it.x, it.y, 0.1, ''); }
   else if (it.kind === 'firefly') { playTone(2000, 0.08, 'sine', 0.04, 2600); spawnHitParticles(it.x, it.y, '#d6ff7a'); gimmickGiveCoins(it.x, it.y, 0.2, '✨'); }
   else if (it.kind === 'snowman') { if (typeof playSnowmanBreak === 'function') playSnowmanBreak(); else playNoiseBurst(0.2, 0.25); for (let i = 0; i < 6; i++) spawnHitParticles(it.x + gRand(-10, 10), it.y + gRand(-10, 10), '#ffffff'); gimmickGiveCoins(it.x, it.y, 0.6, '⛄'); }
@@ -217,11 +213,7 @@ function drawGimmickDark(A, col, lightR) { // 暗闇（味方とホタルのま�
 }
 function gStar(x, y, r) { ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
 function drawGimmickItem(it, now) {
-  if (it.kind === 'bubble') {
-    const g = ctx.createRadialGradient(it.x - it.r * 0.3, it.y - it.r * 0.3, 1, it.x, it.y, it.r);
-    g.addColorStop(0, 'rgba(255,255,255,0.5)'); g.addColorStop(0.7, `hsla(${(now / 10 + it.ph * 60) % 360},90%,75%,0.18)`); g.addColorStop(1, 'rgba(255,255,255,0.55)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2); ctx.fill();
-  } else if (it.kind === 'star') {
+  if (it.kind === 'star') {
     const s = 9 + Math.sin(now / 120) * 2; ctx.globalAlpha = Math.min(1, it.life * 3); ctx.shadowColor = '#fff3a0'; ctx.shadowBlur = 16; ctx.fillStyle = '#ffe75c'; gStar(it.x, it.y, s); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
   } else if (it.kind === 'coin') {
     const w = Math.abs(Math.cos(it.spin)) * 7 + 1; ctx.fillStyle = '#ffcf3a'; ctx.strokeStyle = '#a8740a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(it.x, it.y, w, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -322,7 +314,7 @@ function drawGimmickLabel(key, A, now) { // 右上にイベント名、開始時
   ctx.restore();
 }
 
-// タップで拾える物（星・シャボン玉・コイン・ホタル）
+// タップで拾える物（星・コイン・ホタル）
 canvas.addEventListener('pointerdown', event => {
   if (!curGimmick() || phase !== 'battle') return;
   const rect = canvas.getBoundingClientRect();
