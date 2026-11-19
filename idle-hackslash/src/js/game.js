@@ -1115,7 +1115,7 @@ function completeReincarnation() {
   game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
   const compGacha = null; // 転生の仲間ガチャは「SSR以上の宝箱」に変わった（仲間・進化の解放・スキルの解放・恩恵などが出る）
   const rbChests = rollRebirthChests(compGachaStage); { const hc = getHeldChests(); for (const r in rbChests) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + rbChests[r]); }
-  game.compOn = rollCompOn(null); // 招集ガチャに出る4人（★1・★2・★2以上・★3以上）も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
+  game.compOn = rollCompOn(null); // 招集ガチャに出る4人（★1〜★5・★1〜★5・★2以上・★3以上）も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
   applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
   if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ else { if (!game.companionBook) game.companionBook = {}; game.companionBook[compGacha.id] = true; } }

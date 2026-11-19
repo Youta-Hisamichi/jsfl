@@ -431,8 +431,8 @@ function compPoolIds() { return Object.keys(COMPANIONS).filter(id => isCompanion
 function isCompOn(id) { return !Array.isArray(game.compOn) || game.compOn.includes(id); }
 function compOnCount() { return compPoolIds().filter(isCompOn).length; }
 // 転生のときの3択：招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）で、かぶりなしに選ぶ。first は必ず入れる（仲間ガチャで出た仲間）
-// 転生のときの4人：★1・★2・★2以上・★3以上の枠で1人ずつ（その枠の中は招集ガチャと同じ重み）。枠に合う仲間がいなければ残りから。first は必ず入れる
-const COMP_ON_TIERS = [['common'], ['rare'], ['rare', 'epic', 'legendary', 'mythic'], ['epic', 'legendary', 'mythic']];
+// 転生のときの4人：★1〜★5・★1〜★5・★2以上・★3以上の枠で1人ずつ（その枠の中は招集ガチャと同じ重み）。枠に合う仲間がいなければ残りから。first は必ず入れる
+const COMP_ON_TIERS = [['common', 'rare', 'epic', 'legendary', 'mythic'], ['common', 'rare', 'epic', 'legendary', 'mythic'], ['rare', 'epic', 'legendary', 'mythic'], ['epic', 'legendary', 'mythic']]; // 1・2人目は N〜UR のどれでも（重みで選ぶ）、3人目は R 以上、4人目は SR 以上
 function rollCompOn(first) {
   const pool = compPoolIds(), out = first && pool.includes(first) ? [first] : [];
   let rest = pool.filter(id => !out.includes(id));
@@ -474,14 +474,25 @@ function renderCompBook() { // 戦績の仲間図鑑：全員（出会った仲�
   const html = `<div class="cbk-grid">` + ids.map(compTileHtml).join('') + '</div>';
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
 }
+// 招集ガチャの重み：ふだんは仲間の重み（N30・R25・SR10・SSR2・UR1）。ただし UR がいるときは、UR 1人が出る確率を 1/32 より低くしない
+const COMP_UR_MIN_RATE = 1 / 32;
+function compSummonWeights(ids) {
+  const w = {}; ids.forEach(id => { w[id] = COMPANIONS[id].weight; });
+  const ur = ids.filter(id => COMPANIONS[id].rarity === 'mythic'); if (!ur.length || ur.length >= ids.length) return w;
+  const other = ids.filter(id => COMPANIONS[id].rarity !== 'mythic').reduce((t, id) => t + w[id], 0);
+  const need = other * COMP_UR_MIN_RATE / (1 - COMP_UR_MIN_RATE * ur.length); // UR 1人の重みをこれ以上にすると、1人あたり 1/32 以上
+  ur.forEach(id => { if (w[id] < need) w[id] = need; });
+  return w;
+}
 function pickCompanionId() {
   const q = Array.isArray(game.summonGuarantee) ? game.summonGuarantee : [];
   while (q.length) { const g = q.shift(); if (COMPANIONS[g] && !isCompLocked(g) && isCompOn(g)) return g; } // 昔の「採用したら次で確定」の残り。OFFの仲間は出さない
   let entries = Object.entries(COMPANIONS).filter(([id]) => isCompanionUnlocked(id) && !isCompLocked(id)); // 解雇した仲間は出ない
   { const on = entries.filter(([id]) => isCompOn(id)); if (on.length) entries = on; } // ONの仲間だけ（ONが誰も出せないときは今までどおり）
   if (!entries.length) entries = Object.entries(COMPANIONS);
-  let roll = Math.random() * entries.reduce((sum, [, c]) => sum + c.weight, 0);
-  for (const [id, c] of entries) { roll -= c.weight; if (roll < 0) return id; }
+  const w = compSummonWeights(entries.map(([id]) => id));
+  let roll = Math.random() * entries.reduce((sum, [id]) => sum + w[id], 0);
+  for (const [id] of entries) { roll -= w[id]; if (roll < 0) return id; }
   return entries[0][0];
 }
 const COMPANION_PARTY_MAX = 999; // パーティ枠の最大（ジェムで拡張できる上限）
