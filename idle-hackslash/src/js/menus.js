@@ -433,13 +433,22 @@ function compOnCount() { return compPoolIds().filter(isCompOn).length; }
 // 転生のときの3択：招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）で、かぶりなしに選ぶ。first は必ず入れる（仲間ガチャで出た仲間）
 // 転生のときの4人：★1〜★5・★1〜★5・★2以上・★3以上の枠で1人ずつ（その枠の中は招集ガチャと同じ重み）。枠に合う仲間がいなければ残りから。first は必ず入れる
 const COMP_ON_TIERS = [['common', 'rare', 'epic', 'legendary', 'mythic'], ['common', 'rare', 'epic', 'legendary', 'mythic'], ['rare', 'epic', 'legendary', 'mythic'], ['epic', 'legendary', 'mythic']]; // 1・2人目は N〜UR のどれでも（重みで選ぶ）、3人目は R 以上、4人目は SR 以上
+// 転生の1・2人目：まずレア度を重みの合計で選んでから、その中で1人。N（★1）の重みは R（★2）より低くしない（人数の多い R ばかりにならないように）
+function pickByRarityNotBelowR(cand, pickW) {
+  const rw = {}; cand.forEach(id => { const r = COMPANIONS[id].rarity; rw[r] = (rw[r] || 0) + COMPANIONS[id].weight; });
+  if (rw.common != null && rw.rare != null && rw.common < rw.rare) rw.common = rw.rare;
+  let x = Math.random() * Object.values(rw).reduce((a, b) => a + b, 0), rar = Object.keys(rw)[0];
+  for (const r in rw) { if ((x -= rw[r]) < 0) { rar = r; break; } }
+  return pickW(cand.filter(id => COMPANIONS[id].rarity === rar));
+}
 function rollCompOn(first) {
   const pool = compPoolIds(), out = first && pool.includes(first) ? [first] : [];
   let rest = pool.filter(id => !out.includes(id));
   const pickW = list => { let x = Math.random() * list.reduce((t, id) => t + COMPANIONS[id].weight, 0), pick = list[list.length - 1]; for (const id of list) { if ((x -= COMPANIONS[id].weight) < 0) { pick = id; break; } } return pick; };
   for (let i = out.length; i < COMP_MIN_ON && rest.length; i++) {
     const tier = COMP_ON_TIERS[i] || null, inTier = tier ? rest.filter(id => tier.includes(COMPANIONS[id].rarity)) : [];
-    const pick = pickW(inTier.length ? inTier : rest); out.push(pick); rest = rest.filter(id => id !== pick);
+    const cand = inTier.length ? inTier : rest;
+    const pick = i < 2 ? pickByRarityNotBelowR(cand, pickW) : pickW(cand); out.push(pick); rest = rest.filter(id => id !== pick);
   }
   return out;
 }
