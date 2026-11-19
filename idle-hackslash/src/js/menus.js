@@ -189,7 +189,7 @@ function updateCompSummonVisibility() {
   const pr = getCompSummonPrice(); // ボタンの文字（費用）は仲間ページを開いたときにも必ず入れる
   cgb.classList.toggle('is-disabled', full ? compGachaLimit() >= COMP_GACHA_MAX_PULLS : !canAffordSummon()); // 満員・コイン不足のときは消さずにグレー
   cgb.dataset.full = full ? '1' : '';
-  { const h = gachaArtHtml(0, full ? (compGachaLimit() < COMP_GACHA_MAX_PULLS ? `💎${COMP_GACHA_EXTRA_GEM}で+${COMP_GACHA_EXTRA_PULLS}回` : `上限${COMP_GACHA_MAX_PULLS}回`) : pr.gems ? `💎 ${pr.gems}` : pr.coins ? `${COIN_ICO} ${formatCoinNumber(pr.coins)}` : '🎁 初回無料！'); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
+  { const h = gachaArtHtml(0, full ? (compGachaLimit() < COMP_GACHA_MAX_PULLS ? `💎${COMP_GACHA_EXTRA_GEM}で+${COMP_GACHA_EXTRA_PULLS}回` : `上限${COMP_GACHA_MAX_PULLS}回`) : pr.gems ? `💎 ${pr.gems}` : `${COIN_ICO} ${formatCoinNumber(pr.coins)}`); if (cgb.dataset.html !== h) { cgb.innerHTML = h; cgb.dataset.html = h; } }
   cgb.parentElement.style.display = '';
 }
 function renderRebirthShopList() {
@@ -413,11 +413,10 @@ function renderCompanionListNow() {
   if (myCharBoxEl && slot) { slot.appendChild(myCharBoxEl); if (autoUpBtnEl) slot.before(autoUpBtnEl); } // オートLvUPは自キャラ枠の上
 }
 
-// 招集ガチャの値段（周回ごと）：1人目はコイン300（はじめての1回は無料）、2人目から 1000→3000→9000 と3倍ずつ、5人目からはジェム1個
+// 招集ガチャの値段（周回ごと）：1人目はコイン300、2人目から 1000→3000→9000 と3倍ずつ、5人目からはジェム1個
 const COMP_GACHA_FIRST_COST = 300, COMP_GACHA_2ND_COST = 1000, COMP_GACHA_GROWTH = 3, COMP_GACHA_GEM_FROM = 4;
 function getCompSummonPrice() { // 次の1回の値段 { coins, gems }
   const i = game.companionSummons || 0;
-  if (!game.firstFreeSummon) return { coins: 0, gems: 0 }; // はじめての招集は無料
   if (i >= COMP_GACHA_GEM_FROM) return { coins: 0, gems: 1 };
   return { coins: coinPrice(i === 0 ? COMP_GACHA_FIRST_COST : COMP_GACHA_2ND_COST * Math.pow(COMP_GACHA_GROWTH, i - 1)), gems: 0 };
 }
@@ -488,7 +487,7 @@ function pickCompanionId() {
 const COMPANION_PARTY_MAX = 999; // パーティ枠の最大（ジェムで拡張できる上限）
 function getPartyLimit() { return COMPANION_PARTY_MAX; } // パーティ枠の制限はなくした（招集ガチャは回数で制限）
 // 招集ガチャの回数：1周回（転生まで）5回まで（ジェムで回数を増やすボタンはなくした）。転生でリセット
-const COMP_GACHA_BASE_PULLS = 5, COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = 10; // はじめ5回・💎1で+5回して最大10回（転生でリセット）
+const COMP_GACHA_BASE_PULLS = 10, /* はじめから10回（1周回の上限） */ COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = 10; // 1周回10回（転生でリセット）
 function compGachaLimit() { return Math.min(COMP_GACHA_MAX_PULLS, COMP_GACHA_BASE_PULLS + (game.compGachaExtra || 0)); }
 function compGachaLeft() { return Math.max(0, compGachaLimit() - (game.companionSummons || 0)); }
 function buyCompGachaExtra(ev) {

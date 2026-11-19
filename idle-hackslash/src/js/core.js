@@ -864,7 +864,7 @@ function skillPower(id) {
 }
 const SKILL_GACHA_MIN_COST = 100; // スキルガチャの値段は最低100コイン（ONにしたときの半額は、この値段からさらに半分にする）
 // スキルガチャ：1周回（転生まで）5回まで（ジェムで回数を増やすボタンはなくした）。値段はコインだけ
-const SKILL_GACHA_BASE_PULLS = 5, SKILL_GACHA_EXTRA_PULLS = 5, SKILL_GACHA_EXTRA_GEM = 1, SKILL_GACHA_MAX_PULLS = 10; // はじめ5回・💎1で+5回して最大10回（転生でリセット）
+const SKILL_GACHA_BASE_PULLS = 10, /* はじめから10回（1周回の上限） */ SKILL_GACHA_EXTRA_PULLS = 5, SKILL_GACHA_EXTRA_GEM = 1, SKILL_GACHA_MAX_PULLS = 10; // 1周回10回（転生でリセット）
 function skillGachaLimit() { return Math.min(SKILL_GACHA_MAX_PULLS, SKILL_GACHA_BASE_PULLS + (game.skillGachaExtra || 0)); }
 function skillGachaLeft() { return Math.max(0, skillGachaLimit() - (game.skillGachaPulls || 0)); }
 function getSkillGachaGem() { return 0; } // ガチャ1回ごとのジェムはなし

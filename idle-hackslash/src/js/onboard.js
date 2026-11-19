@@ -3,7 +3,7 @@
 const TAB_UNLOCK_STAGE = { companion: 6, coinshop: 14, gacha: 20, records: 25, gemshop: 30, ranking: 35 }; // 反射玉で進みが速くなったので、前（2・8・11・14・17・20）より遅く // 矢継ぎ早にならないよう間をあける // 到達ステージで解放
 const TAB_UNLOCK_INFO = {
   records: '目標を達成すると進化の羽がもらえます',
-  companion: '自キャラの攻撃力・HPを強化！ 仲間の招集もここで（初回無料）',
+  companion: '自キャラの攻撃力・HPを強化！ 仲間の招集もここで',
   ranking: 'ほかのプレイヤーと記録を競おう',
   coinshop: 'スキルを覚えて戦いを有利に進めよう',
   gemshop: 'ジェムでアイテムやレア仲間を手に入れよう',
@@ -65,7 +65,7 @@ const BEGINNER_MISSIONS = [
   { text: 'ステージ3に到達する', get: () => game.bestStage || 1, goal: 3, gems: 1 },
   { text: '攻撃力をLv3まで強化する', get: () => upLv('atk'), goal: 3, gems: 1, hint: '仲間ページの自キャラ強化' },
   { text: '溜めMAX（×3）で攻撃する', get: () => game.obFlags && game.obFlags.chargeMax ? 1 : 0, goal: 1, gems: 1, hint: '攻撃せずに待つほど次の一撃が強くなる' },
-  { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 1, hint: '仲間ページの招集ガチャ（初回無料）' },
+  { text: '仲間を招集する', get: () => anyCompanion() ? 1 : 0, goal: 1, gems: 1, hint: '仲間ページの招集ガチャ' },
   { text: 'スキルガチャを引く', get: () => game.skillGachaPulls || 0, goal: 1, gems: 1 },
   { text: '×8の反射玉を敵に当てる', get: () => game.obFlags && game.obFlags.reflMax ? 1 : 0, goal: 1, gems: 1, hint: 'タックルで反射玉を飛ばし、壁や敵で跳ね返って×8になってから敵に当てよう' },
   { text: '宝箱を開ける', get: () => game.obFlags && game.obFlags.chest ? 1 : 0, goal: 1, gems: 1, hint: '木箱や柱を壊すと出ることも' },
