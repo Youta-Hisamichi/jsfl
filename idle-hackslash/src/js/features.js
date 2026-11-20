@@ -706,19 +706,6 @@ if (loginBonusModal.classList.contains('show')) addLbGreet(); // 起動直後の
 { const orig = bossDefeated; bossDefeated = function (reason) { const boss = balls.find(b => !b.isPlayer && b.isBoss && !b.isDying); if (boss && phase === 'battle') enemySay(boss, 'bossWin', true); return orig.apply(this, arguments); }; } // 負けたらボスが勝ち誇る
 
 // ===== 勇者のうざい自慢ゼリフ（忙しいアピール・寝てない自慢・さりげなく強さ自慢の作風） =====
-const HERO_BRAG_RATE = 0; // 自慢ゼリフは全部削除したので出さない
-const HERO_BRAG = {
-  idle: [],
-  kill: [],
-};
-{ const orig = heroChuuni; heroChuuni = function (kind, force) {
-  if ((kind === 'idle' || kind === 'kill') && Math.random() < HERO_BRAG_RATE) {
-    const hero = balls.find(b => isMainPlayerBall(b)), now = Date.now();
-    if (hero && (force || now - chuuniAt >= 3500)) { const pool = HERO_BRAG[kind].filter(t => t !== chuuniLast), t = pickFresh(pool); chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70); return; }
-  }
-  return orig.apply(this, arguments);
-}; }
-
 // ===== 自キャラの「ざわ…ざわ…」系ゼリフ（ギャンブル漫画の作風・勇者でも仲間を自キャラにしていても） =====
 const KAIJI_RATE = 0.12;
 const KAIJI_SAY = {
@@ -932,7 +919,7 @@ const EPIC_HERO = {
     '旗は折れても、志までは折らせん', '信じる道を進め。迷ったら、俺の背中を見ろ', '血で汚れた手でも、誰かを守ることはできる', '風が変わった…次の戦場が呼んでいる',
     '理想を語るなら、まず剣で道を拓け', '俺は英雄じゃない。ただ、逃げなかっただけだ', '星の巡りが告げている…この戦、まだ序章にすぎん', '友よ、この大地に眠る者たちの名を忘れるな'],
   kill: ['これも戦の倣い…恨むなよ', '道を誤ったな', 'その剣、守るべきものに向けるべきだった', '次に生まれる時は、味方であることを願う', '一騎、討ち取った！', '退け！ 命までは取らん…と言いたかったがな'],
-  charge: ['我が剣に宿れ、古の王の誓い！', '星よ砕けて刃となれ――星辰断！', '受けてみよ、聖騎士の一閃！', '大地よ吠えよ――地裂斬！', '閃いた…！ この一太刀だ！', '全軍、我に続けェェッ！'],
+  charge: ['我が剣に宿れ、古の王の誓い！', '星よ砕けて刃となれ――星辰断！', '受けてみよ、聖騎士の一閃！', '閃いた…！ この一太刀だ！', '全軍、我に続けェェッ！'],
   boss: ['貴様が全ての元凶か…ならば、ここで終わらせる', '王国の名において――覚悟しろ', '剣を抜け。言葉はもう要らん', 'この一戦に、散っていった仲間の想いを懸ける', '退く理由など、とうに置いてきた'],
   bossKill: ['…勝鬨を上げろ！ 我らの勝利だ！', '倒れた者たちよ、見ていてくれたか', 'これで…ひとつの戦が終わった', '剣を納めよ。だが油断はするな', '正しかったかどうかは、歴史が決めるだろう'],
   pinch: ['まだ…膝をつくわけにはいかん…！', '仲間が待っている…ここで倒れるものか！', '傷など勲章だ…！', '援軍はまだか…いや、俺が持ちこたえる！'],
@@ -1473,16 +1460,6 @@ CHUUNI.pinch2.push('装甲がもたねぇ…だが、まだ動く', '地獄な�
   ENEMY_SAY.idle.push(...soldier); ENEMY_SAY.boss.push(...boss); ENEMY_SAY.die.push(...die);
   for (const t of [...soldier, ...boss, ...die]) ENEMY_LINE_TONE_OF.set(t, 'noble');
 }
-// ボス登場のときに、ときどき画面に予告風のナレーション（警告のあと、ボスが着地してから）
-const BOSS_NARRATION = ['硝煙の向こうに、また新たな敵が待つ。戦いは、終わらない', '生き延びるか、朽ち果てるか。選べるのは、ほんの一瞬だけだ'], BOSS_NARRATION_RATE = 0.3;
-function showBossNarration(text) {
-  const wrap = document.querySelector('.arena-wrap'); if (!wrap) return;
-  wrap.querySelectorAll('.boss-narr').forEach(e => e.remove());
-  const el = document.createElement('div'); el.className = 'boss-narr'; el.textContent = text; wrap.appendChild(el);
-  setTimeout(() => el.remove(), 4600);
-}
-{ const orig = showBossWarning; showBossWarning = function () { const r = orig.apply(this, arguments); if (Math.random() < BOSS_NARRATION_RATE) { const t = pickFresh(BOSS_NARRATION); sayRecent.set(t, Date.now()); setTimeout(() => showBossNarration(t), BOSS_WARNING_MS + 700); } return r; }; }
-
 // ===== 追加ゼリフ（反射玉・転生・周回にちなんだもの） =====
 CHUUNI.idle.push('跳ね返るたびに強くなる…まるで俺の人生だな', '放っておかれても、俺は戦い続ける。それが勇者ってもんだ', '転生しても、この剣の重さだけは覚えている', '一撃で決めるより、百回跳ねて決めるほうが性に合ってる');
 META_COMP.push('ねえ、反射玉って、なんであんなに跳ねるの？', '勇者さん、たまには放置してもいいんだよ？', 'わたしたち、何周目なんだろうね', '宝箱、開ける瞬間がいちばん好き', '次の転生でも、また一緒に戦おうね');
@@ -1493,7 +1470,6 @@ ENEMY_SAY.slime.push('ぷる…その玉、こっちに飛ばさないで…');
   const noble = { boss: ['円環の中で足掻くがいい。それが貴様の宿命だ', '何度生まれ変わろうと、我が城門は越えられぬ'], bossHalf: ['跳ね返す力か…面白い。だが、限界はあろう'], bossLow: ['この我が…跳ね玉ごときに…！'], die: ['見事だ…次の周回で、また会おう'] };
   for (const k in noble) { ENEMY_SAY[k].push(...noble[k]); for (const t of noble[k]) ENEMY_LINE_TONE_OF.set(t, 'noble'); }
 }
-BOSS_NARRATION.push('跳ぜる光に、また一つ影が落ちる。勇者の旅は、まだ終わらない', '跳ね返る光が、闇を削る。その輝きが尽きる前に');
 // 反射玉の色が赤（×50）より上の段階に上がったとき・虹色になったときに、勇者がひとこと（仲間を自キャラにしているときは言わない）
 const HERO_REFL_SAY = { big: ['玉が…光ってやがる。そろそろ決めるか', '跳ねろ、跳ねろ。お前が強くなるほど、俺は楽ができる'], rainbow: ['虹色…悪くない色だ'] }, HERO_REFL_BIG_STAGE = 11; // 11＝赤（×50）
 function heroReflSay(rainbow) {
