@@ -5238,3 +5238,9 @@ input, textarea, [contenteditable="true"] { -webkit-user-select: text !important
 .wc-panel .wc-ok { width: calc(100% - 20px); margin: 0 10px; }
 .wc-ov.wc-closing { opacity: 0; transition: opacity 0.25s; }
 .wc-card .wc-ico[src*="i_refl"] { transform: scale(1.45); }
+
+/* 強さの内訳：計算式と注意書きは閉じておく（押すと開く） */
+details.pb-formula > summary, details.pb-note > summary { cursor: pointer; font-weight: 800; color: #0a6aa0; list-style: none; }
+details.pb-formula > summary::before, details.pb-note > summary::before { content: '▶ '; font-size: 0.8em; }
+details.pb-formula[open] > summary::before, details.pb-note[open] > summary::before { content: '▼ '; }
+details.pb-formula[open] > summary, details.pb-note[open] > summary { margin-bottom: 3px; }

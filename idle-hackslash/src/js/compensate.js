@@ -251,11 +251,11 @@ function playerBreakdownHtml() { // 自キャラの強さの内訳（仲間ペ�
   const M = v => v >= 1000 ? '×' + formatCoinNumber(v) : '×' + (+v.toFixed(v >= 10 ? 1 : Math.abs(v - 1) < 0.05 ? 3 : 2)); // 1に近い小さな補正は細かい桁まで
   const total = list => list.reduce((t, [, r]) => t * r, 1);
   const tbl = (list, base, unit) => `<div class="pb-base">もとの${unit} <b>${base}</b></div>` + (list.length ? list.map(([l, r]) => `<div class="gs-row"><span class="gs-src">${l}</span><b class="gs-amt ${r >= 1 ? 'up' : 'dn'}">${M(r)}</b></div>`).join('') : '<div class="serif-sub">補正なし</div>') + `<div class="gs-row pb-total"><span class="gs-src">合計の倍率</span><b class="gs-amt">${M(total(list))}</b></div>`;
-  return `<div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}<div class="pb-formula"><b>強化Lvの倍率の計算</b><br>${lvMultFormula(game.upgrades.atk || 0)}</div>${csA ? `<div class="gs-row"><span class="gs-src">＋ 自分バフ（仲間全員の攻撃力の${+(heroBondRate() * 100).toFixed(1)}%）</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
-    <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}<div class="pb-formula"><b>強化Lvの倍率の計算</b><br>${lvMultFormula(game.upgrades.hp || 0)}</div>${csH ? `<div class="gs-row"><span class="gs-src">＋ 自分バフ（仲間全員の最大HPの${+(heroBondRate() * 100).toFixed(1)}%）</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
-    <div class="serif-sub">倍率は掛け算で効きます。「強化Lv」は攻撃力・最大HPの強化、「進化」は進化ガチャ、「ショップ」は流星剣・月の盾などです。</div>`;
+  return `<div class="serif-h2">⚔️ 自キャラの攻撃力 ${F(getPlayerAtk())}</div>${tbl(rows.atk, 10, '攻撃力')}<details class="pb-formula"><summary>強化Lvの倍率の計算</summary>${lvMultFormula(game.upgrades.atk || 0)}</details>${csA ? `<div class="gs-row"><span class="gs-src">＋ 自分バフ（仲間全員の攻撃力の${+(heroBondRate() * 100).toFixed(1)}%）</span><b class="gs-amt">＋${F(csA)}</b></div>` : ''}
+    <div class="serif-h2">❤️ 自キャラの最大HP ${F(getPlayerMaxHP())}</div>${tbl(rows.hp, 100, '最大HP')}<details class="pb-formula"><summary>強化Lvの倍率の計算</summary>${lvMultFormula(game.upgrades.hp || 0)}</details>${csH ? `<div class="gs-row"><span class="gs-src">＋ 自分バフ（仲間全員の最大HPの${+(heroBondRate() * 100).toFixed(1)}%）</span><b class="gs-amt">＋${F(csH)}</b></div>` : ''}
+    <details class="serif-sub pb-note"><summary>倍率の見かた</summary>倍率は掛け算で効きます。「強化Lv」は攻撃力・最大HPの強化、「進化」は進化ガチャ、「ショップ」は流星剣・月の盾などです。</details>`;
 }
-function renderPowerBreakInline() { const el = document.getElementById('powerBreakPanel'); if (el && el.classList.contains('open')) el.innerHTML = playerBreakdownHtml(); }
+function renderPowerBreakInline() { const el = document.getElementById('powerBreakPanel'); if (!el || !el.classList.contains('open')) return; const op = [...el.querySelectorAll('details')].map(d => d.open); el.innerHTML = playerBreakdownHtml(); el.querySelectorAll('details').forEach((d, i) => { if (op[i]) d.open = true; }); } // 開いた計算式は描き直しても開いたまま
 document.getElementById('powerBreakBtn')?.addEventListener('click', () => {
   const el = document.getElementById('powerBreakPanel'); if (!el) return;
   const open = !el.classList.contains('open'); el.classList.toggle('open', open); el.innerHTML = open ? playerBreakdownHtml() : '';
