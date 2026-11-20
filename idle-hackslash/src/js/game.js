@@ -1112,7 +1112,7 @@ function completeReincarnation() {
   const rebirthGemGain = gemBase * rebirthGemMult; rebirthGemMult = 1;
   game.gems += rebirthGemGain; game.reincarnations++;
   game.compDeaths = {}; // 仲間の倒れた回数は転生でリセット
-  const compGacha = null; // 転生の仲間ガチャは「SSR以上の宝箱」に変わった（仲間・進化の解放・スキルの解放・恩恵などが出る）
+  const compGacha = null; // 転生の仲間ガチャは「SSR以上の宝箱」に変わった（仲間・進化の解放・スキルの解放・味方バフなどが出る）
   const rbChests = rollRebirthChests(compGachaStage); { const hc = getHeldChests(); for (const r in rbChests) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + rbChests[r]); }
   game.compOn = rollCompOn(null); // 招集ガチャに出る4人（★1〜★5・★1〜★5・★2以上・★3以上）も転生のたびに選び直す（仲間ガチャで出た仲間は必ず入る）
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
@@ -2704,7 +2704,7 @@ function showRebirthRewardDialog(gems, feathers, got, compGacha, rbChests, rbSta
     ${(Array.isArray(game.skillOn) && game.skillOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h"><img class="rbd-h-ico" src="assets/img/icons/sk_skillSpecial.webp" alt=""> 次のスキル</div><div class="rbd-sk-row rbd-skill-row">${rbdSkillRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="skill"></button></div>` : ''}
     ${(Array.isArray(game.compOn) && game.compOn.length) ? `<div class="rbd-skills"><div class="rbd-sk-h">🐾 次の仲間（招集ガチャに出る4人）</div><div class="rbd-sk-row rbd-comp-row">${rbdCompRowHtml()}</div><button class="rbd-buy-chest rbd-reroll" type="button" data-rbd-reroll="comp"></button></div>` : ''}
     ${compGacha ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🐾 仲間ガチャ<small>（ステージ${formatStageNumber(compGacha.stage)}まで進んだ分レア率UP）</small></div><div class="rbd-sk-row"><div class="rbd-sk rbd-cg" data-rbd-comp="${compGacha.id}" style="--rc:${RARITY_INFO[COMPANIONS[compGacha.id].rarity].color}"><span class="rbd-sk-ico rbd-cg-q">❓</span></div></div></div>` : ''}
-    ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱${typeof ALL_CHEST_BTN !== 'undefined' ? ALL_CHEST_BTN.replace('aco-btn', 'aco-btn aco-inline').replace('全部の宝箱で出るもの', '中身') : ''}<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row rbd-chest-row">${rbdChestRowHtml(rbChests)}</div><button class="rbd-buy-chest" type="button"></button><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・恩恵が出る）</div></div>` : ''}
+    ${rbChests && (rbChests.legendary || rbChests.mythic) ? `<div class="rbd-skills rbd-cgacha"><div class="rbd-sk-h">🎁 SSR以上の宝箱${typeof ALL_CHEST_BTN !== 'undefined' ? ALL_CHEST_BTN.replace('aco-btn', 'aco-btn aco-inline').replace('全部の宝箱で出るもの', '中身') : ''}<small>（ステージ${formatStageNumber(rbStage)}：${rebirthRewardChestN(rbStage)}個・UR ${Math.round(rebirthUrChance(rbStage) * 100)}%）</small></div><div class="rbd-sk-row rbd-chest-row">${rbdChestRowHtml(rbChests)}</div><button class="rbd-buy-chest" type="button"></button><div class="rbd-note">左下の宝箱から開けよう（仲間・進化の解放・スキルの解放・味方バフが出る）</div></div>` : ''}
     <button class="modal-close-btn rbd-ok">OK</button></div>`;
   document.body.appendChild(ov);
   if (rbChests) setupRebirthExtraChest(ov, rbChests, rbStage, gemBase == null ? gems : gemBase);

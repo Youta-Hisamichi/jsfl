@@ -305,26 +305,26 @@ function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで�
   const status = isCompLocked(id) ? '📜 採用前：ショップの「仲間」タブの採用ガチャで出ると、仲間招集に出ます' : '🐾 仲間招集で入手できます';
   return `<div class="cp-info ${game.companionBook && game.companionBook[id] ? '' : 'never'}" style="--rc:${rar.color}"><div class="cp-info-head">${companionIconHtml(id)}<div><b>${c.name}</b><span style="color:${rar.color}">${rarityStars(c.rarity)} ${rar.label}</span></div></div><div class="cc-chips"><span class="cc-chip">${c.desc}（基礎+${Math.round(c.baseBonus * 100)}%）</span></div><div class="cc-trait">${c.trait}</div>${compBondInfoHtml(id)}${typeof compExtraHtml === 'function' ? compExtraHtml(id) : ''}<div class="cp-info-lock">${status}</div></div>`;
 }
-function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラの概要と同じ書き方）
+function compBondInfoHtml(id) { // 仲間の概要：自分バフと味方バフ（自キャラの概要と同じ書き方）
   const P = v => `${+(v * 100).toFixed(1)}%`, F = v => formatCoinNumber(Math.round(v)), r = COMPANIONS[id].rarity, inParty = getCompanionCount(id) > 0;
-  const item = r === 'mythic' ? `（URの恩恵 ${F(graceItemCount('urGrace'))}個）` : r === 'legendary' ? `（SSRの恩恵 ${F(graceItemCount('ssrGrace'))}個）` : '';
-  const chips = [`🤝 絆率 ${P(compBondRate(id))}`, `👑 恩恵率 ${P(compGraceRate(id))}${item}`];
-  if (typeof compDownMult === 'function' && compDownMult(id) < 1) chips.push('💀 倒れているので絆・恩恵が半分');
+  const item = r === 'mythic' ? `（URの味方バフ ${F(graceItemCount('urGrace'))}個）` : r === 'legendary' ? `（SSRの味方バフ ${F(graceItemCount('ssrGrace'))}個）` : '';
+  const chips = [`🤝 自分バフ率 ${P(compBondRate(id))}`, `👑 味方バフ率 ${P(compGraceRate(id))}${item}`];
+  if (typeof compDownMult === 'function' && compDownMult(id) < 1) chips.push('💀 倒れているので自分バフ・味方バフが半分');
   if (inParty) { const aO = getCompanionAtkOwn(id), aB = compBondAdd(id, 'atk'), hO = compOwnMaxHP(id), hB = compBondAdd(id, 'hp');
-    chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋絆 ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋絆 ${F(hB)}）` : ''}`); }
+    chips.unshift(`⚔️ 攻撃力 ${F(aO + aB)}${aB >= 1 ? `（自分 ${F(aO)}＋自分バフ ${F(aB)}）` : ''}`, `❤️ 最大HP ${F(hO + hB)}${hB >= 1 ? `（自分 ${F(hO)}＋自分バフ ${F(hB)}）` : ''}`); }
   return `<div class="cc-chips">${chips.map(t => `<span class="cc-chip">${t}</span>`).join('')}</div>`
-    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
+    + `<div class="cc-trait">【自分バフ】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【味方バフ】全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
   const id = null, name = userNameHtml('勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ev = heroEvo();
   const atkOwn = heroOwnAtk(), hpOwn = heroOwnMaxHP(), atkB = compShare('atk'), hpB = compShare('hp');
-  const chips = [`⚔️ 攻撃力 ${F(atkOwn + atkB)}${atkB >= 1 ? `（自分 ${F(atkOwn)}＋絆 ${F(atkB)}）` : ''}`, `❤️ 最大HP ${F(hpOwn + hpB)}${hpB >= 1 ? `（自分 ${F(hpOwn)}＋絆 ${F(hpB)}）` : ''}`,
+  const chips = [`⚔️ 攻撃力 ${F(atkOwn + atkB)}${atkB >= 1 ? `（自分 ${F(atkOwn)}＋自分バフ ${F(atkB)}）` : ''}`, `❤️ 最大HP ${F(hpOwn + hpB)}${hpB >= 1 ? `（自分 ${F(hpOwn)}＋自分バフ ${F(hpB)}）` : ''}`,
     `⚔️ 攻撃力 Lv.${formatCoinNumber((game.upgrades.atk || 0) + 1)}`, `❤️ 最大HP Lv.${formatCoinNumber((game.upgrades.hp || 0) + 1)}`,
-    `🤝 絆率 ${P(heroBondRate())}（勇者の絆 ${F(graceItemCount('heroBond'))}個）`, `👑 恩恵率 ${P(heroGraceRate())}（勇者の恩恵 ${F(graceItemCount('heroGrace'))}個）`,
+    `🤝 自分バフ率 ${P(heroBondRate())}（勇者の自分バフ ${F(graceItemCount('heroBond'))}個）`, `👑 味方バフ率 ${P(heroGraceRate())}（勇者の味方バフ ${F(graceItemCount('heroGrace'))}個）`,
     `🧬 進化 初期Lv ⚔️+${ev.atk} ❤️+${ev.hp}`, `🌌 転生 ${game.reincarnations || 0}回（攻撃力・HP ×${+rebirthPowerMult().toFixed(2)}）`];
   return `<div class="cp-info" style="--rc:#ffd76b"><div class="cp-info-head">${img}<div><b>${name}</b><span style="color:#ffd76b">⭐ 自キャラ</span></div></div><div class="cc-chips">${chips.map(c => `<span class="cc-chip">${c}</span>`).join('')}</div>`
-    + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
+    + `<div class="cc-trait">【自分バフ】全員の攻撃力とHPの${P(heroBondRate())}を自分の力にする。【味方バフ】全員の攻撃力とHPを${P(heroGraceRate())}強める</div>`
     + `<div class="cp-info-lock">攻撃力・HPは下の強化で上がります。宝箱から自キャラが出ると進化して初期Lvが上がります</div></div>`;
 }
 function openHeroInfo() { openCompInfo(null, heroInfoHtml()); }
@@ -524,7 +524,7 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   }
   compSummoning = true; // ここから開封までは仲間一覧を書き換えない
   compGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止める（残響も）。結果が出たら元の曲へ
-  const pw0 = compPowerSnap(); // ガチャの前の強さ（結果に「絆・恩恵でどれだけ強くなったか」を出す）
+  const pw0 = compPowerSnap(); // ガチャの前の強さ（結果に「自分バフ・味方バフでどれだけ強くなったか」を出す）
   const snap = { comps: JSON.stringify(game.companions), book: JSON.stringify(game.companionBook || {}), coins: game.coins, guar: JSON.stringify(game.summonGuarantee || []) };
   const results = [];
   const extra = compGachaStageBonus(); // いまは0（1回1人）
@@ -590,12 +590,12 @@ function compPowerDeltaHtml(d, results) {
   const gain = (x, y) => { if (!(y > x)) return y < x ? '<small class="dn">下がった</small>' : '<small>変わらず</small>'; if (!(x > 0)) return '<small class="up">NEW</small>'; const r = y / x; return `<small class="up">${r >= 2 ? `約×${r >= 10 ? r.toFixed(0) : r.toFixed(1)}` : `+${Math.round((r - 1) * 100)}%`}</small>`; }; // 2倍を超えたら「約×○」、それまでは「+○%」
   const row = (k, x, y) => `<div class="cgp-r"><span>${k}</span><b>${F(x)} → <em class="${y > x ? 'up' : y < x ? 'down' : ''}">${F(y)}</em></b>${gain(x, y)}</div>`;
   const row2 = (k, x, y, f = F) => `<div class="cgp-r cgp-sub"><span>${k}</span><b>${f(x)} → <em class="${y > x ? 'up' : ''}">${f(y)}</em></b></div>`;
-  const newIds = [...new Set(results.map(r => r.id))], rates = newIds.map(id => { const g = compGraceRate(id), bd = compBondRate(id); return g || bd ? `${COMPANIONS[id].name}：👑恩恵率 ${Math.round(g * 100)}%・🤝絆率 ${Math.round(bd * 100)}%` : ''; }).filter(Boolean);
+  const newIds = [...new Set(results.map(r => r.id))], rates = newIds.map(id => { const g = compGraceRate(id), bd = compBondRate(id); return g || bd ? `${COMPANIONS[id].name}：👑味方バフ率 ${Math.round(g * 100)}%・🤝自分バフ率 ${Math.round(bd * 100)}%` : ''; }).filter(Boolean);
   return `<div class="cg-power"><div class="cgp-h">📈 この招集で強くなった分</div>`
     + row('⚔️ 勇者の攻撃力', a.atk, b.atk) + row('❤️ 勇者の最大HP', a.hp, b.hp) + row('🐾 仲間全員の攻撃力', a.cAtk, b.cAtk)
-    + `<details class="cgp-more"><summary>くわしく（恩恵・絆）</summary>`
-    + row2('👑 恩恵（全員に掛かる）', a.grace, b.grace, v => '×' + v.toFixed(2)) + row2('🤝 絆で勇者が取り込む攻撃力', a.bondAtk, b.bondAtk) + row2('🤝 絆で勇者が取り込むHP', a.bondHp, b.bondHp)
-    + (rates.length ? `<div class="cgp-note">${rates.join('<br>')}</div>` : '<div class="cgp-note">N（★1）の仲間は恩恵・絆を持っていません（R以上から）</div>') + '</details></div>';
+    + `<details class="cgp-more"><summary>くわしく（味方バフ・自分バフ）</summary>`
+    + row2('👑 味方バフ（全員に掛かる）', a.grace, b.grace, v => '×' + v.toFixed(2)) + row2('🤝 自分バフで勇者が取り込む攻撃力', a.bondAtk, b.bondAtk) + row2('🤝 自分バフで勇者が取り込むHP', a.bondHp, b.bondHp)
+    + (rates.length ? `<div class="cgp-note">${rates.join('<br>')}</div>` : '<div class="cgp-note">N（★1）の仲間は味方バフ・自分バフを持っていません（R以上から）</div>') + '</details></div>';
 }
 function showCompanionGachaResult(box, results, count, bestRarity, power) {
   box.style.display = 'block';
@@ -633,19 +633,19 @@ function compShare(kind) { // kind: 'atk' | 'hp'
   try { const P = bondPool(); return P.building ? 0 : P[kind] * heroBondRate(); }
   finally { compShareGuard = false; }
 }
-function heroOwnAtk() { // 自キャラ自身の攻撃力（絆を足す前）。王様・吟遊詩人・踊り子の「仲間全員の攻撃力UP」は自キャラにも掛かる
+function heroOwnAtk() { // 自キャラ自身の攻撃力（自分バフを足す前）。王様・吟遊詩人・踊り子の「仲間全員の攻撃力UP」は自キャラにも掛かる
   const b = computeBonuses();
   const base = 10; // 攻撃力は強化・遺物・ガチャ・仲間などでのみ上昇（ゲーム中に自然には増えない）
   const accelBonus = (Date.now() < accelEndAt) ? b.accelDmgMult : 1;
   const atkUpBonus = Date.now() < atkUpEndAt ? atkUpMult() : 1; // 攻撃力UPスキル（ボタンを押してから一定時間）
-  return safeNum(Math.max(1, base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) * (typeof compInspire === 'function' ? compInspire() : 1) * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 恩恵は勇者にも掛かる
+  return safeNum(Math.max(1, base * b.atkMult * accelBonus * atkUpBonus * getSubStatMult() * (typeof bossAdBuffMult === 'function' ? bossAdBuffMult() : 1) * (typeof compInspire === 'function' ? compInspire() : 1) * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 味方バフは勇者にも掛かる
 }
 function heroOwnMaxHP() {
   const b = computeBonuses();
-  return safeNum(Math.max(1, 100 * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult() * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 恩恵は勇者にも掛かる
+  return safeNum(Math.max(1, 100 * b.hpMult * getEarlyPlayerHpRate(game.stage) * getSubStatMult() * (typeof partyGraceMult === 'function' ? partyGraceMult() : 1))); // 味方バフは勇者にも掛かる
 }
-function getPlayerAtk() { return safeNum(Math.max(1, Math.round(heroOwnAtk() + compShare('atk')))); } // 自キャラ＋絆（仲間の攻撃力の合計×絆率）
-function getPlayerMaxHP() { return safeNum(Math.max(1, Math.round(heroOwnMaxHP() + compShare('hp')))); } // 自キャラ＋絆（仲間のHPの合計×絆率）
+function getPlayerAtk() { return safeNum(Math.max(1, Math.round(heroOwnAtk() + compShare('atk')))); } // 自キャラ＋自分バフ（仲間の攻撃力の合計×自分バフ率）
+function getPlayerMaxHP() { return safeNum(Math.max(1, Math.round(heroOwnMaxHP() + compShare('hp')))); } // 自キャラ＋自分バフ（仲間のHPの合計×自分バフ率）
 const EARLY_PLAYER_HP_MIN_RATE = 0.4;
 function getEarlyPlayerHpRate(stage) {
   if (stage >= EARLY_HP_UNTIL_STAGE) return 1;

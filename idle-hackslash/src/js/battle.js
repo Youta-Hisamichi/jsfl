@@ -2010,7 +2010,7 @@ function chestSpecials(rarity) { // コイン・羽以外の中身と、その�
   if (typeof CHEST_COMP_UP_CHANCE !== 'undefined' && CHEST_COMP_UP_CHANCE[rarity] && chestCompUpPool(rarity).length) o.push(['compUp', CHEST_COMP_UP_CHANCE[rarity]]); // 1つ上のレア度の仲間（0.1%）
   if (typeof CHEST_HERO_CHANCE !== 'undefined' && CHEST_HERO_CHANCE[rarity]) o.push(['hero', CHEST_HERO_CHANCE[rarity]]);
   { const ks = (EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)); if (ks.length) o.push(['evoUnlock', EVO_UNLOCK_CHANCE[rarity]]); } // 進化項目の解放（SR以上・まだ解放していない項目があるとき）
-  for (const k in GRACE_ITEMS) if (GRACE_CHEST_CHANCE[rarity] && GRACE_CHEST_CHANCE[rarity][k] && graceItemCount(k) < GRACE_ITEMS[k].max) o.push(['grace:' + k, GRACE_CHEST_CHANCE[rarity][k]]); // 恩恵・絆のアイテム（SSR・URの宝箱）
+  for (const k in GRACE_ITEMS) if (GRACE_CHEST_CHANCE[rarity] && GRACE_CHEST_CHANCE[rarity][k] && graceItemCount(k) < GRACE_ITEMS[k].max) o.push(['grace:' + k, GRACE_CHEST_CHANCE[rarity][k]]); // 味方バフ・自分バフのアイテム（SSR・URの宝箱）
   if (SKILL_UNLOCK_CHANCE[rarity] && lockedSkillIds().length) o.push(['skillUnlock', SKILL_UNLOCK_CHANCE[rarity]]); // スキルの解放（SSR・URの宝箱）
   if (!game.reflStart2 && REFL_START_CHANCE[rarity]) o.push(['reflStart', REFL_START_CHANCE[rarity]]); // 反射の初期値上昇（1個だけ・めったに出ない）
   if (typeof CHEST_ITEM_DROP !== 'undefined') for (const [k, p] of (CHEST_ITEM_DROP[rarity] || [])) o.push(['item:' + k, p]); // 使いきりアイテム（ガチャ券・招き猫・身代わり人形・Lv倍増券・帰還ボーナス券）
@@ -2089,7 +2089,7 @@ function openChestBatchDialog(rarity) {
       const t0 = Math.min(i, 20) * 0.06;
       if (g.misc) return `<div class="cl-card" style="--rc:${g.color};${delay}">${lootStackHtml(g.icon, g.n, t0)}<div class="cl-name">${g.name}</div><div class="cl-desc">${g.desc}</div>${g.own ? ownTransHtml(...g.own) : ''}</div>`;
       if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(chestCoinIco(rarity) || COIN_ICO, g.count, t0)}<div class="cl-name">${chestCoinName(rarity)}</div><div class="cl-desc">1個 ザコ${CHEST_COIN_MULT[rarity] * mult}体ぶんのコイン</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
-      if (g.fea) { const fc = RARITY_INFO[g.fea].color, nn = feaCount(g.fea); return `<div class="cl-card" style="--rc:${fc};${delay}">${lootStackHtml(chestArtIco(g.art, g.fea), g.n, t0)}<div class="cl-name">進化の${feaName(g.fea)}</div><div class="cl-desc">倍率×${FEA_MULT[g.fea]}</div>${ownTransHtml(nn - g.n, nn, '枚')}</div>`; } // 進化の羽はレア度ごと
+      if (g.fea) { const fc = RARITY_INFO[g.fea].color, nn = feaCount(g.fea); return `<div class="cl-card" style="--rc:${fc};${delay}">${lootStackHtml(chestArtIco(g.art, g.fea), g.n, t0)}<div class="cl-name">進化の${feaName(g.fea)}</div><div class="cl-desc">進化倍率×${FEA_MULT[g.fea]}</div>${ownTransHtml(nn - g.n, nn, '枚')}</div>`; } // 進化の羽はレア度ごと
       const c = RARITY_INFO[g.art.rarity].color;
       return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(g.rebirth ? ico(g.art) : chestArtIco(g.art, rarity), g.n, t0)}<div class="cl-name">${g.art.name}</div>${ARTIFACT_STACK_LIMIT[g.art.id] === 1 ? '' /* 1個だけの遺物（レアリングなど）は下の効果と同じ文になるので出さない */ : `<div class="cl-desc">${g.art.id === 'evoFeather' ? '進化を加速させる素材' : (g.n > 1 ? '合計 ' : '') + sumDesc(g.art.desc, g.n)}</div>`}${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}${g.art.id === 'evoFeather' ? '' : ownTransHtml(ownedBefore[g.art.id] || 0, game.ownedArtifacts[g.art.id] || 0, '個')}</div>`;
     });
@@ -2214,7 +2214,7 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
     if (pick.id === 'evoFeather') { // 進化の羽は宝箱と同じレア度の羽（N宝箱→N羽 … UR宝箱→UR羽）
       const beforeF = feaCount(rarity); addFea(rarity, mult);
-      loot = { art: pick, fea: rarity, n: mult, icon: chestArtIco(pick, rarity), main: `進化の${feaName(rarity)}${mult > 1 ? ` ×${mult}` : ''}`, color: RARITY_INFO[rarity].color, sub: `倍率×${FEA_MULT[rarity]}`, own: [beforeF, feaCount(rarity), '枚'] };
+      loot = { art: pick, fea: rarity, n: mult, icon: chestArtIco(pick, rarity), main: `進化の${feaName(rarity)}${mult > 1 ? ` ×${mult}` : ''}`, color: RARITY_INFO[rarity].color, sub: `進化倍率×${FEA_MULT[rarity]}`, own: [beforeF, feaCount(rarity), '枚'] };
     } else {
     const beforeN = game.ownedArtifacts[pick.id] || 0;
     const per = 1;

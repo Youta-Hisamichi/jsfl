@@ -751,26 +751,26 @@ function compRarityBase(id) { return COMP_RARITY_BASE[COMPANIONS[id] && COMPANIO
 //   ・自キャラの絆率は「勇者の絆」1個ごとに+1%（最大3万個）
 const GRACE_RATE = { common: 0, rare: 0.01, epic: 0.05, legendary: 0.10, mythic: 0.25 }, HERO_GRACE_BASE = 0.10;
 const BOND_RATE = { common: 0, rare: 0.03, epic: 0.10, legendary: 0.30, mythic: 1.0 }, HERO_BOND_BASE = 0.20;
-const GRACE_ITEMS = { // 宝箱から出る、恩恵・絆を上げるアイテム（転生しても残る）
-  urGrace:   { name: 'URの恩恵',   icon: '🌈', per: 0.03, max: 10000, desc: 'URの仲間の恩恵率 +3%' },
-  ssrGrace:  { name: 'SSRの恩恵',  icon: '🌟', per: 0.01, max: 5000,  desc: 'SSRの仲間の恩恵率 +1%' },
-  heroBond:  { name: '勇者の絆',   icon: '🤝', per: 0.01, max: 30000, desc: '自キャラの絆率 +1%' },
-  heroGrace: { name: '勇者の恩恵', icon: '👑', per: 0.01, max: 30000, desc: '自キャラの恩恵率 +1%' },
+const GRACE_ITEMS = { // 宝箱から出る、味方バフ・自分バフを上げるアイテム（転生しても残る）
+  urGrace:   { name: 'URの味方バフ',   icon: '🌈', per: 0.03, max: 10000, desc: 'URの仲間の味方バフ率 +3%' },
+  ssrGrace:  { name: 'SSRの味方バフ',  icon: '🌟', per: 0.01, max: 5000,  desc: 'SSRの仲間の味方バフ率 +1%' },
+  heroBond:  { name: '勇者の自分バフ',   icon: '🤝', per: 0.01, max: 30000, desc: '自キャラの自分バフ率 +1%' },
+  heroGrace: { name: '勇者の味方バフ', icon: '👑', per: 0.01, max: 30000, desc: '自キャラの味方バフ率 +1%' },
 };
 function graceItemCount(k) { return Math.max(0, Math.min(GRACE_ITEMS[k].max, Math.floor((game.graceItems && game.graceItems[k]) || 0))); }
 function gainGraceItem(k, n) { if (!game.graceItems) game.graceItems = {}; const before = graceItemCount(k); game.graceItems[k] = Math.min(GRACE_ITEMS[k].max, before + n); return game.graceItems[k] - before; }
-const COMP_DOWN_RATE = 0.5; // 倒れている（棺桶の）仲間は、絆と恩恵が半分
+const COMP_DOWN_RATE = 0.5; // 倒れている（棺桶の）仲間は、自分バフと味方バフが半分
 function compDownMult(id) { return game.companions && game.companions.alive && game.companions.alive[id] === false ? COMP_DOWN_RATE : 1; }
 function compGraceRate(id) { const r = COMPANIONS[id] && COMPANIONS[id].rarity; return ((GRACE_RATE[r] || 0) + (r === 'mythic' ? GRACE_ITEMS.urGrace.per * graceItemCount('urGrace') : r === 'legendary' ? GRACE_ITEMS.ssrGrace.per * graceItemCount('ssrGrace') : 0)) * compDownMult(id); }
 function heroGraceRate() { return HERO_GRACE_BASE + GRACE_ITEMS.heroGrace.per * graceItemCount('heroGrace'); }
 function compBondRate(id) { return (BOND_RATE[COMPANIONS[id] && COMPANIONS[id].rarity] || 0) * compDownMult(id); }
 function heroBondRate() { return HERO_BOND_BASE + GRACE_ITEMS.heroBond.per * graceItemCount('heroBond'); }
-function partyGraceMult() { // 仲間全員に掛かる恩恵の倍率 ＝ 1 ＋ 自キャラの恩恵率 ＋ パーティにいる仲間の恩恵率の合計
+function partyGraceMult() { // 仲間全員に掛かる味方バフの倍率 ＝ 1 ＋ 自キャラの味方バフ率 ＋ パーティにいる仲間の味方バフ率の合計
   let t = 1 + heroGraceRate();
   if (game.companions) for (const id in COMPANIONS) if (getCompanionCount(id) > 0) t += compGraceRate(id);
   return t;
 }
-// 絆の計算に使う「恩恵のあとの、絆を足す前の」仲間の力の合計（同じ処理の中では使い回す）
+// 自分バフの計算に使う「味方バフのあとの、自分バフを足す前の」仲間の力の合計（同じ処理の中では使い回す）
 let bondPoolCache = null, bondBuilding = false;
 function bondPool() {
   if (bondPoolCache) return bondPoolCache;
@@ -783,7 +783,7 @@ function bondPool() {
 }
 let bondCacheDepth = 0;
 function withBondCache(fn) { bondCacheDepth++; try { return fn(); } finally { if (--bondCacheDepth === 0) bondPoolCache = null; } }
-function compBondAdd(id, kind) { // その仲間が絆で取り込む量
+function compBondAdd(id, kind) { // その仲間が自分バフで取り込む量
   const rate = compBondRate(id); if (!rate) return 0;
   const P = bondPool(); if (P.building) return 0;
   const me = P.own[id], others = P[kind] - (me ? me.n * me[kind] : 0);
@@ -793,16 +793,16 @@ function compOwnMaxHP(id) {
   if (!COMPANIONS[id]) return 0;
   const level = typeof compHpLv === 'function' ? compHpLv(id) : (game.companions.level[id] || 0); // HPはHPの強化Lvで伸びる
   const boost = computeBonuses().companionHpMult; // 遺物「守護の護符」
-  return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
+  return Math.max(1, Math.round(100 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * (compKind(id) === 'golem' ? GOLEM_HP_MULT : 1) * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・味方バフも掛かる
 }
-function getCompanionMaxHP(id) { if (!COMPANIONS[id]) return 0; return safeNum(Math.max(1, Math.round(compOwnMaxHP(id) + compBondAdd(id, 'hp')))); } // 自分のHP＋絆で取り込んだHP
+function getCompanionMaxHP(id) { if (!COMPANIONS[id]) return 0; return safeNum(Math.max(1, Math.round(compOwnMaxHP(id) + compBondAdd(id, 'hp')))); } // 自分のHP＋自分バフで取り込んだHP
 function compInspire() { return 1 + BARD_ATK_BONUS * companionKindCount('bard') + KING_ATK_BONUS * getCompanionCount('king'); } // 踊り子（1人ごと+10%）・王様の号令（+30%）
 function getCompanionBaseAtk(id) {
   const level = game.companions.level[id] || 0;
   const boost = computeBonuses().companionAtkMult; // 遺物「絆の軍旗」
-  return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・恩恵も掛かる
+  return Math.max(1, Math.round(10 * compLvMult(level) * compRarityBase(id) * rebirthPowerMult() * getCompanionPower(id) * compInspire() * boost * partyGraceMult())); // 転生ボーナスも自キャラと同じだけ掛かる・味方バフも掛かる
 }
-function getCompanionAtkOwn(id) { // 恩恵のあと・絆を足す前の攻撃力（バハムートは仲間全員の分を合わせる）
+function getCompanionAtkOwn(id) { // 味方バフのあと・自分バフを足す前の攻撃力（バハムートは仲間全員の分を合わせる）
   if (compKind(id) !== 'dragon') return getCompanionBaseAtk(id);
   let total = getCompanionBaseAtk(id);
   for (const other of COMPANION_IDS) {
@@ -810,7 +810,7 @@ function getCompanionAtkOwn(id) { // 恩恵のあと・絆を足す前の攻撃�
   }
   return total;
 }
-function getCompanionAtk(id) { return safeNum(Math.max(1, Math.round(getCompanionAtkOwn(id) + compBondAdd(id, 'atk')))); } // 自分の攻撃力＋絆で取り込んだ攻撃力
+function getCompanionAtk(id) { return safeNum(Math.max(1, Math.round(getCompanionAtkOwn(id) + compBondAdd(id, 'atk')))); } // 自分の攻撃力＋自分バフで取り込んだ攻撃力
 
 function makeCompanionBall(id) {
   const c = COMPANIONS[id];
