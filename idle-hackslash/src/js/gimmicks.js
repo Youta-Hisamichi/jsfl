@@ -436,7 +436,7 @@ const CHEST_ITEMS = {
   nitoryu:     { icon: '📜', name: 'にとうりゅうの巻物', desc: '使うと次のボスを倒すまで、自キャラの攻撃が2回攻撃になる', col: '#ffb35c', buff: 'nitoryu' },
   yamabiko:    { icon: '📜', name: 'やまびこの巻物', desc: '使うと次のボスを倒すまで、メテオなどの攻撃スキルがもう1回落ちる', col: '#8ad0ff', buff: 'yamabiko' },
   ageage:      { icon: '💃', name: 'アゲアゲダンス', desc: '使うと次のボスを倒すまで、仲間の攻撃が2回攻撃になる', col: '#ff8adf', buff: 'ageage' },
-  lifeglass:   { icon: '⏳', img: 'assets/img/icons/item_lifeglass.webp', name: '命の砂時計', desc: 'ボス戦で使うと、ボス戦の残り時間が最初に戻る（同じボスには1回だけ。コンテニューするとまた使える。ゲーム画面のスキル列から使う）', col: '#ffd76b' },
+  lifeglass:   { icon: '⏳', img: 'assets/img/icons/item_lifeglass.webp', name: '命の砂時計', desc: 'ボス戦で使うと、ボス戦の残り時間が最初に戻る（同じボスには1回だけ。コンテニューするとまた使える）', col: '#ffd76b' },
   ret2:        { icon: '🏠', name: '帰還ボーナス2倍券', desc: '次の帰還ボーナスのコインが2倍（自動で使う。1.5倍券より先に使う）', col: '#5fe0ff' },
 };
 // 宝箱のレア度ごとに、どのアイテムがどれくらいの確率で出るか（コイン・羽などと同じ「どれか1つ」の中身）
