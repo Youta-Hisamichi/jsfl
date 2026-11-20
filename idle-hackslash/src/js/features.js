@@ -68,7 +68,7 @@ function sayByEvent(kind, pick) { // kind: 0=登場 1=ボス戦 2=ボス撃破 3
   if (!allies.length) return;
   const list = pick ? allies.filter(pick) : allies;
   const b = list[Math.floor(Math.random() * list.length)]; if (!b) return;
-  const id = b.isCompanion ? b.companionId : getHeroChar();
+  const id = b.isCompanion ? b.companionId : null;
   if (!id && isMainPlayerBall(b)) return heroChuuni(['boss', 'boss', 'bossKill', 'down'][kind] || 'idle', true);
   const lines = (id && COMP_PROFILE[id] && COMP_PROFILE[id].say) || HERO_SAY;
   companionSay(b, lines[kind]);
@@ -207,7 +207,6 @@ const CHUUNI = {
 };
 let chuuniLast = '', chuuniAt = 0;
 function heroChuuni(kind, force) {
-  if (getHeroChar()) return; // 仲間を自キャラにしているときはその仲間のセリフ
   const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
   const now = Date.now(); if (!force && now - chuuniAt < 3500) return; // しゃべりすぎない
   const pool = (CHUUNI[kind] || CHUUNI.idle).filter(t => t !== chuuniLast);
@@ -344,7 +343,7 @@ const COMP_COMBOS = [
   { ids: ['archangel', 'bahamut'], name: '天と竜の王', desc: '攻撃力・最大HP +30%', apply: b => { b.atkMult *= 1.3; b.hpMult *= 1.3; } },
   { ids: ['cavalry', 'pegasus'], name: '騎士団', desc: 'ボスへのダメージ（攻撃力）+15%', apply: b => { b.atkMult *= 1.15; } },
 ];
-function inParty(id) { return !!(game.companions.recruited[id] || getHeroChar() === id); }
+function inParty(id) { return !!game.companions.recruited[id]; }
 function activeCombos() { return COMP_COMBOS.filter(c => c.ids.every(inParty)); }
 function applyComboBonuses(b) { activeCombos().forEach(c => c.apply(b)); }
 
@@ -359,24 +358,7 @@ function rareCutIn(id) {
   setTimeout(() => ov.classList.add('out'), 2400); setTimeout(() => ov.remove(), 2900);
 }
 
-// ===== 自キャラの専用技（溜めMAXで当てたときに発動） =====
-const HERO_MOVES = {
-  bahamut: 'メガフレア', archangel: 'ジャッジメント', dragoon: 'ドラゴンダイブ', pegasus: 'ペガサスストライク', king: 'ロイヤルオーダー',
-  samurai: '居合・一閃', ninja: '影縫い', mage: 'エクスプロージョン', dragon: 'ファイアブレス', paladin: 'ホーリークロス', priest: 'ヒールライト', princess: 'プリンセスキス',
-};
-const HERO_TYPE_MOVE = { atk: '渾身の一撃', hp: '守護の一撃', speed: '疾風連撃', coin: '黄金スマッシュ' };
-let heroMoveCd = 0;
-function heroSignature(ball) { // 自キャラにした仲間ごとの技名と効果
-  const id = getHeroChar(); if (!id || Date.now() < heroMoveCd) return 1;
-  heroMoveCd = Date.now() + 1500;
-  const c = COMPANIONS[id], name = HERO_MOVES[id] || HERO_TYPE_MOVE[c.stat] || '必殺技';
-  spawnDamageText(ball.x, ball.y - ball.radius - 48, `✨ ${name}！`, '#ffe14f', 0.016, true);
-  companionSay(ball, name + '！', 1400);
-  if (c.stat === 'hp') { ball.hp = Math.min(ball.maxHp, ball.hp + ball.maxHp * 0.08); return 1.3; }
-  if (c.stat === 'coin') { const g = Math.max(1, Math.round(stageCoinRaw() * 0.5)); game.coins += g; spawnDamageText(ball.x, ball.y - ball.radius - 30, `+${formatCoinNumber(g)} 🟡`, '#ffd76b', 0.016, true); return 1.2; }
-  if (c.stat === 'speed') return 1.4;
-  return c.rarity === 'mythic' ? 2 : c.rarity === 'legendary' ? 1.7 : 1.5;
-}
+function heroSignature(ball) { return 1; } // 溜めMAXで当てたとき（勇者はセリフだけ。仲間ごとの技は自キャラの変更と一緒になくした）
 
 // ===== 7日ログイン（7日目は★5宝箱＋ジェム10個が確定） =====
 const LOGIN7 = [
@@ -409,7 +391,7 @@ function showLogin7(day, got) {
   const cells = LOGIN7_SHOW.map(([k, n], i) => { const d = i + 1, st = d < day ? 'got' : d === day ? 'today' : '', [x0, y0, x1, y1] = BOX[i];
     return `<div class="lb7-cell ${st}" style="left:${(x0 / 1111 * 100).toFixed(2)}%;top:${(y0 / 1415 * 100).toFixed(2)}%;width:${((x1 - x0) / 1111 * 100).toFixed(2)}%;height:${((y1 - y0) / 1415 * 100).toFixed(2)}%"><b class="lb7-dn">${d}</b><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
   const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
-  const face = gid === 'hero' ? `<span class="lb7-face lb8-hero">${typeof getHeroChar === 'function' && getHeroChar() ? companionIconHtml(getHeroChar()) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`}</span>` : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
+  const face = gid === 'hero' ? `<span class="lb7-face lb8-hero"><img class="comp-sprite" src="${PLAYER_SPRITE}" alt=""></span>` : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
   const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<img class="lb7-ico" src="assets/img/ui/lb8/chest.webp" alt="">${LB7_ICON.gem}<b>10</b>`;
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb8">
@@ -543,15 +525,6 @@ function rebornGoalsHtml() {
   box.innerHTML = rebornGoalsHtml();
 }; }
 
-// ===== ピックアップ採用券（★4・★5の採用条件を1回だけ無視して解放） =====
-function useHireTicket(id) {
-  if (!(game.hireTickets > 0)) return false;
-  if (!confirm(`🎫 ピックアップ採用券を1枚使って「${COMPANIONS[id].name}」を解放しますか？（残り${game.hireTickets}枚）`)) return true;
-  game.hireTickets--; if (!game.ticketUnlocked) game.ticketUnlocked = {}; game.ticketUnlocked[id] = true;
-  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, '採用の条件なしで解放しました', 'ピックアップ解放！');
-  if (RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary')) rareCutIn(id);
-  renderCompLockList(); saveGame(); return true;
-}
 
 // ===== ボス戦の動画バフ（ボスのHP・攻撃力を半分に＋報酬2倍）：試練の塔に挑む直前のダイアログでだけ選べる（戦闘中に出すと誤タップするため） =====
 let bossAdBuffFor = null, towerBuffPending = false;
@@ -616,21 +589,19 @@ setInterval(() => { if (Math.random() < 0.06 && phase === 'battle' && getActiveT
       if (r > 0.5 || b.hp <= 0) { if (r > 0.5) b.lowSaid = false; continue; }
       if (r > 0.3 || b.lowSaid) continue;
       b.lowSaid = true;
-      if (isMainPlayerBall(b)) { if (getHeroChar()) { const L = COMP_TALK_LOW[getHeroChar()]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); } else heroChuuni(Math.random() < 0.5 ? 'pinch' : 'pinch2', true); }
+      if (isMainPlayerBall(b)) heroChuuni(Math.random() < 0.5 ? 'pinch' : 'pinch2', true);
       else if (b.isCompanion) { const L = COMP_TALK_LOW[b.companionId]; if (L) companionSay(b, L.p[Math.floor(Math.random() * L.p.length)], 2200); }
     }
     if (Math.random() < 0.04) heroChuuni('idle');
   }, 500); }
 function heroDownSay(kind) { // 勇者（自キャラ）がやられたとき
   const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
-  const id = getHeroChar();
-  if (id) { const L = COMP_TALK_LOW[id], pool = [((COMP_PROFILE[id] || {}).say || HERO_SAY)[3], ...(L ? L.d : [])]; companionSay(h, pickFresh(pool), 2600); }
-  else { const pool = CHUUNI[kind]; const t = pickFresh(pool); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600); }
+  const t = pickFresh(CHUUNI[kind]); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 2600);
 }
 { const orig = bossDefeated; bossDefeated = function (reason) { heroDownSay(reason === 'time' ? 'timeout' : 'down'); return orig.apply(this, arguments); }; }
 { const orig = failSkipChallenge; failSkipChallenge = function () { if (!(game.skipChallenge && game.skipChallenge.lost)) heroDownSay('down'); return orig.apply(this, arguments); }; }
 { const orig = startEnemyEscape; startEnemyEscape = function (e) { orig(e); setTimeout(() => heroChuuni('escape'), 900); }; }
-{ const orig = heroSignature; heroSignature = function (ball) { if (!getHeroChar() && Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
+{ const orig = heroSignature; heroSignature = function (ball) { if (Math.random() < 0.4) heroChuuni('charge'); return orig(ball); }; }
 tcReady(checkDailyLogin); questState(); // 7日ログインはサーバーの時刻を確かめてから
 
 // ===== 仲間の詳細（プロフィール・組み合わせ）とパーティの組み合わせ一覧 =====
@@ -727,7 +698,7 @@ const HERO_BRAG = {
   kill: [],
 };
 { const orig = heroChuuni; heroChuuni = function (kind, force) {
-  if ((kind === 'idle' || kind === 'kill') && !getHeroChar() && Math.random() < HERO_BRAG_RATE) {
+  if ((kind === 'idle' || kind === 'kill') && Math.random() < HERO_BRAG_RATE) {
     const hero = balls.find(b => isMainPlayerBall(b)), now = Date.now();
     if (hero && (force || now - chuuniAt >= 3500)) { const pool = HERO_BRAG[kind].filter(t => t !== chuuniLast), t = pickFresh(pool); chuuniLast = t; chuuniAt = now; companionSay(hero, t, 1800 + t.length * 70); return; }
   }
@@ -750,7 +721,6 @@ function kaijiSay(kind) {
   kaijiAt = now; if (typeof chuuniAt !== 'undefined') chuuniAt = now; companionSay(pl, t, 1800 + t.length * 80); return true;
 }
 { const orig = heroChuuni; heroChuuni = function (kind) { const k = kind === 'pinch2' ? 'pinch' : kind; if (KAIJI_SAY[k] && kaijiSay(k)) return; return orig.apply(this, arguments); }; }
-setInterval(() => { if (phase === 'battle' && getHeroChar()) kaijiSay('idle'); }, 6000); // 仲間を自キャラにしているときも時々
 
 // ===== ボスごとの専用ゼリフ [登場, HP半分, 瀕死, 勝ったとき] =====
 const BOSS_SAY = {
@@ -1514,7 +1484,6 @@ BOSS_NARRATION.push('跳ぜる光に、また一つ影が落ちる。勇者の�
 // 反射玉の色が赤（×50）より上の段階に上がったとき・虹色になったときに、勇者がひとこと（仲間を自キャラにしているときは言わない）
 const HERO_REFL_SAY = { big: ['玉が…光ってやがる。そろそろ決めるか', '跳ねろ、跳ねろ。お前が強くなるほど、俺は楽ができる'], rainbow: ['虹色…悪くない色だ'] }, HERO_REFL_BIG_STAGE = 11; // 11＝赤（×50）
 function heroReflSay(rainbow) {
-  if (typeof getHeroChar === 'function' && getHeroChar()) return;
   const hero = balls.find(b => isMainPlayerBall(b)); if (!hero) return;
   const now = Date.now(); if (now - chuuniAt < 3500) return;
   const t = pickFresh(rainbow ? HERO_REFL_SAY.rainbow : HERO_REFL_SAY.big); if (!t || sayIsRecent(t)) return;
@@ -1540,7 +1509,7 @@ function startRebornEntrance() {
     const h = balls.find(b => isMainPlayerBall(b)); if (!h) return;
     spawnDamageText(h.x, h.y - 46, `✨ 転生 ${game.reincarnations}回目 ✨`, '#fff3b0', 0.012, true);
     for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 3; particles.push({ x: h.x, y: h.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1, life: 1, color: i % 3 ? '#ffe27a' : '#ffffff', decay: 0.025 }); }
-    if (!(typeof getHeroChar === 'function' && getHeroChar())) { const t = pickFresh(['気のせいか、前にも戦った気がする‥', 'また、ここからか。…悪くない', '前の俺より、少しはマシになったはずだ']); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 1800 + t.length * 70); }
+    { const t = pickFresh(['気のせいか、前にも戦った気がする‥', 'また、ここからか。…悪くない', '前の俺より、少しはマシになったはずだ']); chuuniLast = t; chuuniAt = Date.now(); companionSay(h, t, 1800 + t.length * 70); }
   }, 1100);
 }
 function drawRebornEntrance() {

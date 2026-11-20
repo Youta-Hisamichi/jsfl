@@ -49,13 +49,11 @@ function renderSkillGacha() {
   if (wList && wList.dataset.html !== wHtml) { wList.innerHTML = wHtml; wList.dataset.html = wHtml; }
   const gachaBtn = (el, label, cost) => { if (!el) return; const gem = el.id === 'skillGachaBtn' ? getSkillGachaGem() : 0, done = el.id === 'skillGachaBtn' && !skillGachaLeft(), canExtra = skillGachaLimit() < SKILL_GACHA_MAX_PULLS; const h = gachaArtHtml(el.id === 'skillGachaBtn' ? 1 : 2, done ? (canExtra ? `💎${SKILL_GACHA_EXTRA_GEM}で+${SKILL_GACHA_EXTRA_PULLS}回` : `上限${SKILL_GACHA_MAX_PULLS}回`) : `${COIN_ICO} ${formatCoinNumber(cost)}`, done ? (canExtra ? `${skillGachaLimit()}回 回しきりました（転生でリセット）` : '転生でまた回せます') : label); if (el.dataset.html !== h) { el.innerHTML = h; el.dataset.html = h; } el.classList.toggle('is-disabled', el.id === 'skillGachaBtn' && !skillGachaLeft() ? skillGachaLimit() >= SKILL_GACHA_MAX_PULLS || game.gems < SKILL_GACHA_EXTRA_GEM : game.coins < cost); };
   gachaBtn(document.getElementById('skillGachaBtn'), 'ランダムで解放・Lvアップ', getSkillGachaCost());
-  gachaBtn(document.getElementById('weaponGachaBtn'), 'ランダムで入手・Lvアップ', getWeaponGachaCost());
   // 装備枠に空きがなければガチャボタンは隠す（枠を増やすとまた出る）
   const sFull = eq.length >= slots, wFull = weq.length >= wslots;
-  const sg = document.getElementById('skillGachaBtn'), wg = document.getElementById('weaponGachaBtn');
+  const sg = document.getElementById('skillGachaBtn');
   // 回せないとき（枠がいっぱい・コイン不足・引けるものなし）は消さずにグレーにする
   if (sg) { sg.hidden = false; sg.dataset.full = !skillGachaPool().length && !weaponGachaPool().length ? '1' : ''; if (sg.dataset.full) sg.classList.add('is-disabled'); } // ガチャは1つ（スキルと自動スキルの両方から出る）
-  if (wg) { wg.hidden = true; wg.dataset.full = wFull || !weaponGachaPool().length ? '1' : ''; if (wg.dataset.full) wg.classList.add('is-disabled'); }
   updateSkillButtonVisibility();
 }
 const PASSIVE_SKILLS = ['skillRegen']; // 取得するだけで効く（スキル枠を使わない）
@@ -289,45 +287,17 @@ function renderMyCharCard() {
   const el = document.getElementById('myCharCard'); if (!el) return;
   const canChange = false; // 自キャラの変更はなくした
   el.classList.toggle('no-change', !canChange);
-  const id = getHeroChar(), name = id ? COMPANIONS[id].name : userNameHtml('勇者');
-  const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
+  const name = userNameHtml('勇者');
+  const img = `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
   el.innerHTML = `<span class="cc-top"><span class="cc-portrait">${img}</span><span class="cc-main"><span class="cc-name"><b class="su-name cc-ribbon">${name}</b><small class="mc-tag">自キャラ</small></span><span class="cc-meta"></span>${(() => { const e = heroEvo(); return e.atk || e.hp ? `<span class="cc-chip cc-evo mc-evo">🧬 進化 ⚔️+${e.atk} ❤️+${e.hp}</span>` : ''; })()}</span>${canChange ? '<span class="mc-go">変更 ▶</span>' : ''}</span>`;
 }
-function heroTypeHtml(id) { // 自キャラのタイプと長所・短所（自キャラの変更をなくしたので、いまはどこにも出していない）
-  const info = heroTypeInfo(id);
-  if (!info) return `<span class="mc-ud"><i class="ht">⚖️ バランス</i><i class="up">▲ 長所なし</i><i class="dn">▼ 短所なし</i></span>`;
-  return `<span class="mc-ud"><i class="ht">${info.t.icon} ${info.t.name}</i><i class="up">▲ ${info.up}</i><i class="dn">▼ ${info.down}</i></span>`;
-}
 function applyHeroChar() { // 自キャラの見た目を戦闘・ゲージ・HPパネルに反映
-  const id = getHeroChar(), src = id ? COMPANION_SPRITES[id] : PLAYER_SPRITE;
+  const src = PLAYER_SPRITE;
   if (playerSpriteImg.src !== new URL(src, location.href).href) playerSpriteImg.src = src;
-  const left = !!id && (SPRITE_FACING[id] || 0) < 0; // 左向きの絵は反転して、勇者と同じく右（ボスの方）を向かせる
+  const left = false;
   stagePlayerMark.src = src; stagePlayerMark.style.transform = left ? 'translate(-50%, -58%) scaleX(-1)' : ''; // ゲージ上の位置合わせ（translate）は残す
   const hpIco = document.getElementById('playerHpIco'); if (hpIco) { hpIco.src = src; hpIco.style.transform = left ? 'scaleX(-1)' : ''; }
   renderMyCharCard();
-}
-function openMyCharPicker() {
-  let ov = document.getElementById('myCharOverlay');
-  if (!ov) {
-    ov = document.createElement('div'); ov.id = 'myCharOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-title">自キャラを選ぶ</div><div class="cl-note">いま招集している仲間を自キャラにできます。その仲間がパーティにいるときは、代わりに勇者がその枠に入ります（Lvや特技はそのまま）。' + '仲間の得意分野でタイプが決まり、長所（レア度が高いほど大きい）と短所がつきます</div><div class="mc-advice-box"></div><div class="cl-list mc-list"></div><button class="cl-close">閉じる</button></div>';
-    document.body.appendChild(ov);
-    ov.addEventListener('click', ev => {
-      if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
-      const b = ev.target.closest('[data-my-char]'); if (!b) return;
-      game.heroChar = b.dataset.myChar || null;
-      applyHeroChar(); refreshPlayerBallStats(false); updateStatsUI(); updateHPUI(); renderCompanionList(); playRegisterSound(); saveGame();
-      ov.classList.remove('show');
-      showShopPurchaseFx(game.heroChar ? companionIconHtml(game.heroChar) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, game.heroChar ? COMPANIONS[game.heroChar].name : '勇者', '自キャラを変更しました', '自キャラ変更！');
-    });
-  }
-  const cur = getHeroChar() || '';
-  const ids = COMPANION_IDS.filter(isCharSummoned).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[b].rarity) - RARITY_ORDER.indexOf(COMPANIONS[a].rarity));
-  const row = (id, name, img, badge, rcol) => { const rec = false; return `<button class="cl-row mc-row ${cur === id ? 'on' : ''}" style="--rc:${rcol}" data-my-char="${id}"><span class="cl-ico">${img}</span><span class="cl-name"><b>${name}${rec ? '<i class="mc-rec">おすすめ</i>' : ''}</b><small>${badge}</small>${heroTypeHtml(id)}</span><span class="mc-sel">${cur === id ? '✓ 選択中' : '選ぶ'}</span></button>`; };
-  ov.querySelector('.mc-advice-box').innerHTML = '';
-  ov.querySelector('.mc-list').innerHTML = row('', '勇者', `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, '', '#9aa0b4')
-    + ids.map(id => row(id, COMPANIONS[id].name, companionIconHtml(id), `${rarityStars(COMPANIONS[id].rarity)}`, RARITY_INFO[COMPANIONS[id].rarity].color)).join('');
-  ov.classList.add('show');
 }
 let compInfoId = null; // 待機中の仲間で詳しく表示中のもの
 function compInfoHtml(id) { // 待機中の仲間の詳細（ダイアログで重ねて表示）
@@ -346,7 +316,7 @@ function compBondInfoHtml(id) { // 仲間の概要：絆と恩恵（自キャラ
     + `<div class="cc-trait">【絆】全員の攻撃力とHPの${P(compBondRate(id))}を自分の力にする。【恩恵】全員の攻撃力とHPを${P(compGraceRate(id))}強める${inParty ? '' : '（いまはパーティにいないので効いていない）'}</div>`;
 }
 function heroInfoHtml() { // 自キャラの概要（仲間の詳細と同じ形）
-  const id = getHeroChar(), name = id ? COMPANIONS[id].name : userNameHtml('勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
+  const id = null, name = userNameHtml('勇者'), F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`;
   const img = id ? companionIconHtml(id) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, ev = heroEvo();
   const atkOwn = heroOwnAtk(), hpOwn = heroOwnMaxHP(), atkB = compShare('atk'), hpB = compShare('hp');
   const chips = [`⚔️ 攻撃力 ${F(atkOwn + atkB)}${atkB >= 1 ? `（自分 ${F(atkOwn)}＋絆 ${F(atkB)}）` : ''}`, `❤️ 最大HP ${F(hpOwn + hpB)}${hpB >= 1 ? `（自分 ${F(hpOwn)}＋絆 ${F(hpB)}）` : ''}`,
@@ -379,18 +349,12 @@ function renderCompanionListNow() {
   if (compSummoning) return; // 召喚演出中は一覧を書き換えない（結果が先に見えてしまうため。開封時に描き直す）
   if (!game.companionBook) game.companionBook = {};
   for (const id in game.companions.recruited) if (game.companions.recruited[id] && COMPANIONS[id]) game.companionBook[id] = true;
-  const compIds = Object.keys(COMPANIONS);
-  const found = compIds.filter(id => game.companionBook[id]).length;
-  const compRate = (compIds.length ? Math.floor(found / compIds.length * 1000) / 10 : 0).toFixed(1);
-  document.getElementById('companionProgress').innerHTML = `${found} / ${compIds.length}<small>${compRate}%</small>`;
-  document.getElementById('compBookBar').style.width = compRate + '%';
   const pc = document.getElementById('partyCount');
   if (pc) pc.innerHTML = `${getCompanionTotal()}<small>人</small>`; // パーティ枠の上限はなくした
   { const pb = document.getElementById('partyBar'); if (pb) pb.style.width = Math.min(100, compGachaLeft() / Math.max(1, compGachaLimit()) * 100) + '%'; }
   updateCompSummonVisibility();
   const psb = document.getElementById('partySlotBtn');
   if (psb) {
-    const lim = getPartyLimit();
     psb.innerHTML = `<span>残り <b>${compGachaLeft()}/${compGachaLimit()}</b>回</span>` + (compGachaLimit() >= COMP_GACHA_MAX_PULLS // パーティ枠の代わりに、招集ガチャの回数
       ? '' // 回数を増やすボタンはなくした（使い切ったらガチャの絵に「上限5回」と出る）
       : `<button class="${game.gems < COMP_GACHA_EXTRA_GEM ? 'is-disabled' : ''}"><span>上限+${COMP_GACHA_EXTRA_PULLS}回 💎${COMP_GACHA_EXTRA_GEM}</span><small class="slot-reset">（転生でリセット）</small></button>`);
@@ -403,7 +367,7 @@ function renderCompanionListNow() {
     const rar = RARITY_INFO[c.rarity];
     const aw = getCompanionAwaken(id);
     const level = game.companions.level[id];
-    const sw = id === getHeroChar(); // 自キャラにした仲間の枠には勇者が入る
+    const sw = false;
     const down = !sw && game.companions.alive[id] === false, left = down && game.companions.downStages ? game.companions.downStages[id] || 0 : 0; // 倒れている仲間は棺桶の印
     return `<div class="companion-card recruited cc-up-layout ${down ? 'is-down' : ''}" style="--rc:${rar.color}"><div class="cc-body"><div class="cc-top"><div class="cc-portrait" data-comp-info="${id}">${sw ? `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">` : companionIconHtml(id)}<span class="cc-lv">Lv.${formatCoinNumber((level || 0) + 1)}</span>${down ? `<span class="cc-down">⚰️<b>${left ? `あと${left}ステージ` : '戦闘不能'}</b></span>` : ''}</div>${down && typeof reviveOneCost === 'function' ? `<button class="cc-revive cc-revive-big ${game.coins < reviveOneCost(id) ? 'is-disabled' : ''}" data-revive-one="${id}"><b>✨ 復活</b><small>${COIN_ICO}${formatCoinNumber(reviveOneCost(id))}</small></button>` : ''}<div class="cc-main"><div class="cc-name"><b class="su-name cc-ribbon">${sw ? '勇者' : c.name}</b>${sw ? `<small class="cc-swap">（${c.name}と交代中）</small>` : ''}</div><div class="cc-meta"><span class="cc-rarity">${rarityStars(c.rarity)} ${rar.label}</span></div><div class="cc-chips"><span class="cc-chip atk">⚔️ ATK ${formatPreciseNumber(getCompanionAtk(id))}</span><span class="cc-chip">👥 ×${getCompanionCount(id)}人</span><span class="cc-chip">${c.desc}</span>${compEvoChip(id)}</div></div></div><div class="cc-trait">${c.trait}</div><div class="cc-ups">${compUpRowHtml(id, 'atk')}${compUpRowHtml(id, 'hp')}</div>${typeof compBreakBtnHtml === 'function' ? compBreakBtnHtml(id) : ''}</div></div>`; // カードの下に強さの内訳
   }).join('');
@@ -504,8 +468,6 @@ function pickCompanionId() {
   for (const [id] of entries) { roll -= w[id]; if (roll < 0) return id; }
   return entries[0][0];
 }
-const COMPANION_PARTY_MAX = 999; // パーティ枠の最大（ジェムで拡張できる上限）
-function getPartyLimit() { return COMPANION_PARTY_MAX; } // パーティ枠の制限はなくした（招集ガチャは回数で制限）
 // 招集ガチャの回数：1周回（転生まで）5回まで（ジェムで回数を増やすボタンはなくした）。転生でリセット
 const COMP_GACHA_BASE_PULLS = 10, /* はじめから10回（1周回の上限） */ COMP_GACHA_EXTRA_PULLS = 5, COMP_GACHA_EXTRA_GEM = 1, COMP_GACHA_MAX_PULLS = 10; // 1周回10回（転生でリセット）
 function compGachaLimit() { return Math.min(COMP_GACHA_MAX_PULLS, COMP_GACHA_BASE_PULLS + (game.compGachaExtra || 0)); }
@@ -516,7 +478,6 @@ function buyCompGachaExtra(ev) {
   game.gems -= COMP_GACHA_EXTRA_GEM; game.compGachaExtra = (game.compGachaExtra || 0) + COMP_GACHA_EXTRA_PULLS;
   showNotice(`🐾 招集ガチャが +${COMP_GACHA_EXTRA_PULLS}回 回せるようになりました（転生でリセット）`); playRegisterSound(); updateStatsUI(); renderCompanionList(); saveGame();
 }
-function getPartySlotCost() { return 1; } // ジェム1個で一気にMAXまで（転生でリセット）
 function getCompanionCount(id) { return (game.companions.count && game.companions.count[id]) || 0; }
 function getCompanionTotal() { return Object.keys(COMPANIONS).reduce((sum, id) => sum + getCompanionCount(id), 0); }
 function grantCompanion(id) {
@@ -531,7 +492,7 @@ function grantCompanion(id) {
     if (phase === 'battle') refreshCompanionBalls();
     return { id, kind: 'dup', label: a0 === h0 && a1 === h1 ? `ダブり！ Lv${a0}→${a1} に強化` : `ダブり！ ⚔️Lv${a0}→${a1} ❤️Lv${h0}→${h1}`, badge: `Lv${a0}→${a1}` };
   }
-  if (getCompanionTotal() < getPartyLimit()) {
+  {
     const isNew = !cp.recruited[id];
     cp.recruited[id] = true;
     if (!game.companionBook) game.companionBook = {};
@@ -544,9 +505,6 @@ function grantCompanion(id) {
     if (phase === 'battle') { syncCompanionBalls(id); refreshCompanionBalls(); } // 2人目以降も別の体で出る
     return { id, kind: isNew ? 'new' : 'more', label: isNew ? 'NEW! 仲間に加入' : `仲間が増えた！（${cp.count[id]}人）`, badge: isNew ? 'NEW!' : `${cp.count[id]}人目` };
   }
-  if (!game.companionBook) game.companionBook = {}; // 満員で入れないときは図鑑にだけ載る（覚醒はなくした）
-  game.companionBook[id] = true;
-  return { id, kind: 'full', label: 'パーティ満員 → 図鑑に登録', badge: '満員' };
 }
 var compSummoning = false; // 召喚演出中は連打できない
 const COMP_SUMMON_LOADING_MS = 1000;
@@ -1063,7 +1021,7 @@ function updateTabBadges() {
   if (Date.now() - tabBadgeAt < 500) return;
   tabBadgeAt = Date.now();
   const canUp = Object.keys(UPGRADES).some(id => game.upgrades[id] < getUpgradeLevelCap(id) && game.coins >= getUpgradeCost(id));
-  const canComp = getCompanionTotal() < getPartyLimit() && canAffordSummon();
+  const canComp = canAffordSummon();
   const canShop = Object.entries(REBIRTH_SHOP_ITEMS).some(([id, item]) => !isRebirthItemMaxed(item) && !isRebirthItemLocked(item) && !getRebirthShopLockLeft(id) && game.gems >= getRebirthItemCost(id));
   const canEvo = game.gems >= 5;
   const set = { upgrade: canUp, companion: canComp, gemshop: canShop, gacha: canEvo };
@@ -1323,7 +1281,7 @@ function drawPullMash() { // 連打倍率をキャラの頭上に1つだけ表�
 }
 function launchPull(ang, lv, auto = false) { // 引っ張り攻撃の発射（ang の向きへ、威力 lv＝0〜1）
   const pl = balls.find(isMainPlayerBall); if (!pl) return;
-  const dur = (1300 + 1700 * lv) * (1 + 0.1 * getRunBuff('pull')), sp = 6.5 + 8.5 * lv; // 通常の反射はほどほど（たくさん跳ねるのはスキル「無限反射」で）
+  const dur = 1300 + 1700 * lv, sp = 6.5 + 8.5 * lv; // 通常の反射はほどほど（たくさん跳ねるのはスキル「無限反射」で）
   holdRush = { id: -1, dist: 0, until: Date.now() + dur, start: Date.now(), dur, charge: lv, shot: true, speed: sp, auto };
   pl.vx = Math.cos(ang) * sp; pl.vy = Math.sin(ang) * sp;
   if (Math.abs(pl.vx) > 0.5) pl.faceDir = pl.vx > 0 ? 1 : -1;
@@ -1401,7 +1359,7 @@ function doTapSlash(auto = false) {
   if (now - lastSlashAt < SLASH_GAP_MS) return;
   lastSlashAt = now;
   const pl = balls.find(isMainPlayerBall); if (!pl || pl.hp <= 0) return;
-  const R = pl.radius + SLASH_RANGE + 6 * getRunBuff('slash');
+  const R = pl.radius + SLASH_RANGE;
   const foes = [...balls.filter(x => !x.isPlayer && !x.isDying && x.hp > 0 && !(x.spawnTimer > 0)), ...adds.filter(x => x.hp > 0)];
   const near = nearestOf(pl, foes);
   const egg = typeof obstacles !== 'undefined' ? nearestOf(pl, obstacles.filter(o => o.kind === 'egg' && !o.broken)) : null; // 近くに敵がいなければ卵の方へ振る
@@ -1418,7 +1376,7 @@ function doTapSlash(auto = false) {
     if (d > R + en.radius) continue;
     let da = Math.atan2(en.y - pl.y, en.x - pl.x) - ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
     if (Math.abs(da) > SLASH_HALF && d > pl.radius + en.radius) continue;
-    if (playerHitEnemyBy(en, pl, SLASH_DMG * (1 + 0.3 * getRunBuff('slash')) * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6, pl)) hits++;
+    if (playerHitEnemyBy(en, pl, SLASH_DMG * (auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT), '#ffe08a', 1.6, pl)) hits++;
   }
   for (const o of obstacles) { // 卵も切り払いで割れる
     if (o.kind !== 'egg' || o.broken) continue;
@@ -1471,7 +1429,7 @@ function drawSlashFx() { // 三日月形の斬撃の軌跡
     ctx.restore();
   }
 }
-// 武器スキル（3択パワーアップで取得・一定時間ごとに自動で発動）。Lvが上がると倍率（自キャラ攻撃力×倍率）が上がる
+// 武器スキル（スキルガチャで取得・一定時間ごとに自動で発動）。Lvが上がると倍率（自キャラ攻撃力×倍率）が上がる
 // 時間の単位は「フレーム（ゲーム速度1倍で約60/秒）」
 const DOVE_ACCEL = 1.07, DOVE_SPEED_MAX = 16; // 鳩：時間とともに ×1.07 ずつ加速（上限あり）
 const AXE_SPEED = 2.4; // 斧の飛ぶ速さ（放物線の形は同じ）
@@ -1807,14 +1765,12 @@ function drawPullArrow(pl, a, lv) {
   if (full) { ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText('MAX', pl.x, pl.y - pl.radius - 16); ctx.fillStyle = '#ffd76b'; ctx.fillText('MAX', pl.x, pl.y - pl.radius - 16); }
   ctx.restore();
 }
-// レベルアップ3択の強化（転生まで）：引っ張り体当たり・近距離の切り払い
 const RUN_BUFF_MAX = 5;
 const RUN_BUFFS = {
   pull:  { icon: '🎯', name: '引っ張り体当たり強化', desc: '引っ張り攻撃のダメージ+25%・飛ぶ時間+10%' },
   slash: { icon: '🗡️', name: '近距離攻撃強化', desc: 'タップの切り払いのダメージ+30%・範囲+6' },
 };
-function getRunBuff(id) { return (game.runBuffs && game.runBuffs[id]) || 0; }
-function getRushDmgMult() { return rushingNow && holdRush ? pullMashMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.shot ? 1 + 0.25 * getRunBuff('pull') : 1) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
+function getRushDmgMult() { return rushingNow && holdRush ? pullMashMult() * (1 + (RUSH_RUN_MAX - 1) * (holdRush.charge || 0)) * (holdRush.auto ? AUTO_ATK_MULT : MANUAL_ATK_MULT) : 1; }
 function getRushPierce() { return 0; } // 体当たりは貫通しない（敵を吹っ飛ばす）
 const RUSH_KNOCK_SPEED = 24; // 体当たりで敵を吹っ飛ばす初速。吹っ飛んだ敵は壁・障害物・ほかの敵にぶつかると激突ダメージ
 function rushKnockFly(en, from) {

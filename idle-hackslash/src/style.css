@@ -1952,9 +1952,6 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 /* ショップのタブ */
 .shop-tabs .sub-tab-btn { flex: 1 1 0; font-size: 0.82rem; padding: 9px 6px; }
 .shop-sec[hidden] { display: none !important; }
-#shopCharaSec .cl-note { color: var(--text-dim); text-align: left; margin: 0 0 4px; }
-#shopCharaSec .cl-gems { color: #1a7fb0; }
-#shopCharaSec .cl-row { background: var(--bg-soft); color: var(--text); }
 /* 待機中の仲間の詳細ダイアログ */
 .ci-panel { max-width: 360px; }
 .ci-panel .cp-info { margin: 0; color: var(--text); font-size: 0.8rem; }
@@ -1990,9 +1987,6 @@ body.hp-safe:not(.boss-hp) .hp-row { display: none !important; }
 .my-char-card .mc-main small { width: 100%; font-size: 0.64rem; color: var(--text-dim); font-weight: 800; }
 .my-char-card .mc-main b { font-size: 1rem; font-weight: 900; }
 .my-char-card .mc-go { flex: none; font-size: 0.78rem; font-weight: 900; color: #b07800; }
-.mc-row { width: 100%; text-align: left; cursor: pointer; color: #fff; font: inherit; }
-.mc-row.on { box-shadow: 0 0 0 2px #ffd76b inset; background: rgba(255,215,107,0.16); }
-.mc-row .mc-sel { flex: none; font-size: 0.74rem; font-weight: 900; color: #ffd76b; }
 /* 自キャラのカード：文字とアイコンを目立たせる */
 .my-char-card { padding: 8px 12px 8px 8px; }
 .my-char-card .mc-ico { width: 76px; height: 76px; background: radial-gradient(circle at 50% 45%, rgba(255,215,107,0.45), rgba(0,0,0,0.06) 70%); border: 2px solid #e2c06a; }
@@ -2075,12 +2069,6 @@ body.drag-scrolling, body.drag-scrolling * { user-select: none !important; curso
 .skill-charge-pop.show { animation: skillChargePop 1.1s ease-out forwards; }
 @keyframes skillChargePop { 0% { opacity: 0; transform: translate(-50%, -80%) scale(0.85); } 15% { opacity: 1; transform: translate(-50%, -110%) scale(1); } 75% { opacity: 1; transform: translate(-50%, -125%); } 100% { opacity: 0; transform: translate(-50%, -140%); } }
 /* 自キャラのタイプ（長所・短所）と攻略のヒント */
-.mc-ud { display: flex; flex-wrap: wrap; gap: 2px 6px; margin-top: 2px; font-size: 0.64rem; line-height: 1.3; }
-.mc-ud i { font-style: normal; font-weight: 700; }
-.mc-ud .ht { color: #6a4fc0; }
-.mc-ud .up { color: #1f9a52; }
-.mc-ud .dn { color: #d04848; }
-.mc-list .mc-ud .ht { color: #c8b6ff; } .mc-list .mc-ud .up { color: #63e394; } .mc-list .mc-ud .dn { color: #ff8a8a; }
 /* 帰還ボーナスの動画後のお祝い */
 .login-ad-fx { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; border-radius: inherit; transition: opacity 0.5s; }
 .login-ad-fx.out { opacity: 0; }
@@ -2306,9 +2294,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .top-header .th-item.coin { border-left-width: 34px !important; padding-left: 0 !important; margin-left: 0; }
 .top-header .th-item.coin .coin-ico { margin-left: -24px; }
 /* サブウェポンガチャの後ろにも魔法陣（スキルガチャと同じく、ページ上部と同じ絵を敷く） */
-#weaponGachaBtn { position: relative; isolation: isolate; }
-#weaponGachaBtn::before { content: ''; position: absolute; left: 50%; top: 42%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: url(assets/img/ui/magic_circle.webp) center / contain no-repeat; z-index: -1; pointer-events: none; }
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) #weaponGachaBtn::before { opacity: 0.6; filter: brightness(0.35) saturate(0.6); } }
 .weapon-slot-head button { line-height: 1.2; text-align: center; white-space: nowrap; } /* 「＋枠を増やす」とジェム数を2行に */
 /* スキル・サブウェポン・進化ガチャの結果：アイコンの後ろに回る後光（レア度の色） */
 .gr-halo-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; margin: 6px auto 4px; }
@@ -2341,11 +2326,6 @@ body.floor-bg::before { content: ''; position: fixed; left: 50%; top: 55%; width
 .sc-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .sc-btns > button { width: 100%; margin: 0 !important; justify-content: center; text-align: center; }
 /* 仲間ページの自キャラカード：タイプ・長所・短所を読みやすく（大きめの文字・白い下地のチップ・濃い色） */
-#myCharCard .mc-ud { gap: 3px; margin-top: 4px; font-size: 0.74rem; line-height: 1.25; }
-#myCharCard .mc-ud i { display: inline-block; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,0.88); border: 1px solid rgba(0,0,0,0.12); font-weight: 800; }
-#myCharCard .mc-ud .ht { color: #4b2fa8; }
-#myCharCard .mc-ud .up { color: #0e7a3a; }
-#myCharCard .mc-ud .dn { color: #b3261e; }
 /* 仲間ページのキャラカード：ショップの仲間ページと同じ台（金の縁の羊皮紙・紺のキャラ枠・リボンの名前） */
 .companion-list .companion-card.recruited { border: 3px solid #b8862e !important; border-radius: 8px !important; background: linear-gradient(180deg, #f7ecd2, #ecdcb6) !important; box-shadow: inset 0 0 0 2px #f6dc8e, inset 0 0 0 3px #7a5418, 0 2px 4px rgba(0,0,0,0.3) !important; color: #3a2a10 !important; }
 .companion-list .companion-card.recruited .cc-portrait { background: radial-gradient(circle, #2c3f7a, #0e1630) !important; border: 2px solid #c99a3a !important; box-shadow: inset 0 0 0 1px #6a4a10 !important; border-radius: 8px !important; }
@@ -2918,7 +2898,7 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 /* 「＋枠を増やす」系と「解雇・採用」ボタンの台：青地に金の飾り枠（仲間・スキル共通） */
 .tab-page[data-tab="coinshop"] .weapon-slot-head button { aspect-ratio: 248 / 85; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
 .tab-page[data-tab="companion"] .party-row #partySlotBtn > button, .tab-page[data-tab="companion"] .party-row #compLockBtn { aspect-ratio: 248 / 92; background: url(assets/img/ui/rb/slot_btn.webp) center / 100% 100% no-repeat !important; }
-#skillGachaBtn, #weaponGachaBtn { max-width: 290px; } /* スキル・サブウェポンのガチャボタンは少し小さめに */
+#skillGachaBtn { max-width: 290px; } /* スキルガチャのボタンは少し小さめに */
 /* スキル・ショップの「〜のしくみ」：▶とⓘは絵ではなく文字で（横長の帯に合わせて伸びないように） */
 .tab-page[data-tab="coinshop"] .cp-help summary, .tab-page[data-tab="gemshop"] .cp-help summary { padding-left: 16px !important; gap: 6px; background-image: url(assets/img/ui/rb/helpbar_plain.webp) !important; }
 .tab-page[data-tab="coinshop"] .cp-help summary::before, .tab-page[data-tab="gemshop"] .cp-help summary::before { content: '▶'; flex: none; font-size: 0.6rem; color: #f3e7c4; transition: transform 0.2s; }
@@ -2994,9 +2974,6 @@ body:has(#loginBonusModal.show) .run-banner { display: none; }
 .my-char-box .my-char-card .cc-name { align-items: center; gap: 6px; flex-wrap: wrap; }
 .my-char-box .my-char-card .mc-tag { padding: 1px 8px; border-radius: 6px; background: linear-gradient(180deg, #e0943a, #9a5414); border: 1px solid #ffd27a; color: #fff; font-size: 0.66rem; font-weight: 900; }
 .my-char-box .my-char-card .cc-portrait .comp-sprite, .my-char-box .my-char-card .cc-portrait img { width: 56px; height: 56px; }
-#myCharCard .mc-ud { margin-top: 0; font-size: 0.66rem; }
-#myCharCard .mc-ud i { background: rgba(10,16,40,0.85); border: 1px solid rgba(201,154,58,0.7); }
-#myCharCard .mc-ud .ht { color: #c8b6ff; } #myCharCard .mc-ud .up { color: #63e394; } #myCharCard .mc-ud .dn { color: #ff8a8a; }
 .tab-page[data-tab="companion"] .my-char-box .my-char-card .mc-go { flex: none; align-self: center; width: 64px; font-size: 0.8rem; }
 .tab-page[data-tab="companion"] .my-char-box .auto-toggle-btn, .tab-page[data-tab="companion"] .companion-list > .auto-toggle-btn { width: min(280px, 90%); margin: 8px auto 2px; }
 .my-char-box .upgrade-leap.leap-next { display: block; font-style: normal; font-size: 0.56rem; color: var(--lc, #ffd76b); white-space: nowrap; }
@@ -3329,11 +3306,6 @@ body .tab-page[data-tab="records"] .gen-hero-panel.gen-hero-panel > .shopkeeper 
 #shopList .shop-row .sr-ico-emoji { border: none; background: none; }
 #shopList .shop-desc { color: #c8d0e6 !important; text-shadow: 0 1px 2px #000 !important; }
 /* ショップの仲間タブ：所持品と同じ紺のアイテムベースを流用 */
-#shopCharaSec .cl-list .cl-row { position: relative; display: flex; align-items: center; aspect-ratio: 720 / 138; min-height: 0; margin-bottom: 6px; padding: 4px 4.5% 4px 20.5%; border: none; border-radius: 0; box-shadow: none; background: url(assets/img/ui/shop/bag_row.webp) center / 100% 100% no-repeat !important; color: #e8ecf6 !important; }
-#shopCharaSec .cl-list .cl-ico { position: absolute; left: 4.2%; top: 17.5%; width: 13.2%; height: 67%; border: none; border-radius: 0; background: none; box-shadow: none; display: flex; align-items: center; justify-content: center; }
-#shopCharaSec .cl-list .cl-ico img { width: 86%; height: 86%; object-fit: contain; }
-#shopCharaSec .cl-list .cl-name { flex: 1; min-width: 0; }
-#shopCharaSec .cl-list .cl-name small, #shopCharaSec .cl-list .cl-btn .cl-lock { color: #c8d0e6; text-shadow: 0 1px 2px #000; }
 /* 課金のアイテム：周りを光らせ、表面に光の帯を走らせる */
 @keyframes sgGlow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255,220,120,0.55)) drop-shadow(0 3px 4px rgba(0,0,0,0.5)); } 50% { filter: drop-shadow(0 0 10px rgba(255,230,140,0.95)) drop-shadow(0 0 4px rgba(255,255,220,0.8)) drop-shadow(0 3px 4px rgba(0,0,0,0.5)); } }
 #supergemShopList .sub-btn, #supergemShopList .gb-btn { animation: sgGlow 2.4s ease-in-out infinite; }
@@ -3881,7 +3853,6 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .shop-tabs .sub-tab-btn.active { background: var(--stn) center / 100% 100% no-repeat !important; filter: drop-shadow(0 0 5px rgba(90,170,255,0.8)) !important; }
 .shop-tabs .sub-tab-btn:active { transform: scale(0.96); }
 .shop-tabs [data-shop-tab="item"] { --sto: url(assets/img/ui/shop/tab_item_off.webp); --stn: url(assets/img/ui/shop/tab_item_on.webp); }
-.shop-tabs [data-shop-tab="chara"] { --sto: url(assets/img/ui/shop/tab_chara_off.webp); --stn: url(assets/img/ui/shop/tab_chara_on.webp); }
 .shop-tabs [data-shop-tab="charge"] { --sto: url(assets/img/ui/shop/tab_charge_off.webp); --stn: url(assets/img/ui/shop/tab_charge_on.webp); }
 .shop-tabs [data-shop-tab="bag"] { --sto: url(assets/img/ui/shop/tab_bag_off.webp); --stn: url(assets/img/ui/shop/tab_bag_on.webp); }
 .shop-tabs .sub-tab-btn { aspect-ratio: 514 / 174 !important; } .shop-tabs .sub-tab-btn.active { filter: none !important; } /* 新しいタブ絵（オンは絵の中で明るく大きい） */
@@ -4050,126 +4021,21 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 #settingsModal .st2 .sgh-title { background: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; color: #fff !important; filter: none !important; text-shadow: -1px -1px 0 #0a1440, 1px -1px 0 #0a1440, -1px 1px 0 #0a1440, 1px 1px 0 #0a1440, 0 2px 0 #0a1440 !important; }
 #settingsModal .st2 .sgh-ver { text-shadow: 0 1px 1px #000; }
 #settingsModal .st2 .settings-game-head { margin: 0 0 6px !important; }
-/* 採用ガチャ（ショップの仲間タブ） */
-.hire-gacha { margin: 4px 0 10px; padding: 10px 12px; border: 2px solid #d9a93f; border-radius: 10px; background: radial-gradient(ellipse at 50% 0%, rgba(140,110,255,0.3), transparent 70%), linear-gradient(180deg, #1c2a60, #0b1434); box-shadow: inset 0 0 0 1px #4a3208, 0 3px 8px rgba(0,0,0,0.5); text-align: center; color: #fff; }
-.hire-gacha .hg-head { font-size: 1.05rem; font-weight: 900; color: #ffe08a; text-shadow: 0 1px 2px #000; }
-.hire-gacha .hg-head small { margin-left: 8px; font-size: 0.72rem; color: #c8d0e6; font-weight: 700; }
-.hire-gacha .hg-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 52px; margin: 6px 0; align-items: center; }
-.hire-gacha .hg-face { width: 38px; height: 38px; border: 2px solid var(--rc); border-radius: 8px; background: rgba(0,0,0,0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.hire-gacha .hg-face img, .hire-gacha .hg-roll img { width: 100%; height: 100%; object-fit: contain; }
-.hire-gacha .hg-more, .hire-gacha .hg-empty { font-size: 0.72rem; color: #c8d0e6; }
-.hire-gacha .hg-roll { width: 72px; height: 72px; border: 3px solid var(--rc, #d9a93f); border-radius: 12px; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.hire-gacha .hg-roll.hit { animation: hgHit 0.45s ease-out; box-shadow: 0 0 16px var(--rc); }
-@keyframes hgHit { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1.15); } }
-.hire-gacha .hg-odds { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; font-size: 0.68rem; margin-bottom: 6px; }
-.hire-gacha .hg-odds span { color: var(--rc); font-weight: 800; text-shadow: 0 1px 1px #000; }
-.hire-gacha .hg-btn { display: block; width: 100%; padding: 10px 0; border: 2px solid #ffe08a; border-radius: 999px; background: linear-gradient(180deg, #ffcf4a, #e8901a); color: #3a1c00; font-size: 1rem; font-weight: 900; cursor: pointer; box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 3px 0 #8a4a08; }
-.hire-gacha .hg-btn b { margin-left: 6px; color: #2a1000; }
-.hire-gacha .hg-btn.is-disabled { filter: grayscale(0.7) brightness(0.8); }
-.hire-gacha .hg-btn:active { transform: translateY(2px); }
-.hire-gacha .hg-cell { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 40px; }
-.hire-gacha .hg-face { position: relative; }
-.hire-gacha .hg-face.new::after { content: 'NEW'; position: absolute; top: -1px; right: -1px; padding: 0 2px; border-radius: 3px; background: #ff4d6d; color: #fff; font-size: 0.45rem; font-weight: 900; line-height: 1.3; }
-.hire-gacha .hg-star { color: var(--rc); font-size: 0.62rem; letter-spacing: -0.12em; line-height: 1; white-space: nowrap; text-shadow: 0 1px 1px #000, 0 0 2px #000; }
-.hire-gacha .hg-note { font-size: 0.66rem; color: #c8d0e6; margin: 0 0 6px; }
-.hire-gacha .hg-cell { width: 48px; cursor: pointer; }
-.hire-gacha .hg-face { width: 46px; height: 46px; }
-.hire-gacha .hg-star { font-size: 0.66rem; }
-.hg-pop { position: fixed; z-index: 120; width: min(260px, 80vw); padding: 8px 10px; border: 2px solid var(--rc); border-radius: 10px; background: linear-gradient(180deg, #1c2a60, #0b1434); box-shadow: 0 4px 12px rgba(0,0,0,0.6); color: #fff; font-size: 0.74rem; animation: hgPop 0.15s ease-out; }
-@keyframes hgPop { from { transform: scale(0.9); opacity: 0; } }
-.hg-pop .hgp-head { display: flex; align-items: center; gap: 8px; }
-.hg-pop .hgp-head img { width: 40px; height: 40px; object-fit: contain; flex: none; }
-.hg-pop .hgp-head b { display: block; font-size: 0.92rem; color: #ffe08a; }
-.hg-pop .hgp-head small { color: var(--rc); }
-.hg-pop .hgp-desc { margin: 5px 0 3px; color: #e0e6f6; line-height: 1.4; }
-.hg-pop .hgp-st { color: #9ff0ff; font-weight: 800; }
 /* ショップのタブ：絵の左右の透明な余白を削ったので、隙間なく大きく並べる（幅は絵の横幅の比で分ける） */
 .shop-tabs { gap: 0 !important; margin-left: -4px !important; margin-right: -4px !important; }
 .shop-tabs .sub-tab-btn { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; margin: 0 !important; }
 .shop-tabs [data-shop-tab="item"] { flex-grow: 514 !important; aspect-ratio: 514 / 174 !important; }
-.shop-tabs [data-shop-tab="chara"] { flex-grow: 456 !important; aspect-ratio: 456 / 174 !important; }
 .shop-tabs [data-shop-tab="charge"] { flex-grow: 454 !important; aspect-ratio: 454 / 174 !important; }
 .shop-tabs [data-shop-tab="bag"] { flex-grow: 449 !important; aspect-ratio: 449 / 174 !important; }
-/* 採用ガチャ：まだ出ていない（採用前の）候補はシルエット */
-.hire-gacha .hg-face.new img, .hire-gacha .hg-face.new .comp-sprite { filter: brightness(0) drop-shadow(0 0 1px rgba(160,190,255,0.6)) !important; opacity: 0.85; }
-/* 採用ガチャのダイアログ（ルーレット→結果） */
-.hgm-panel { --rc: #d9a93f; position: relative; width: min(340px, 90vw); max-width: none !important; padding: 14px 14px 16px !important; border: 3px solid #d9a93f !important; border-radius: 14px !important; background: radial-gradient(ellipse at 50% 30%, rgba(140,110,255,0.35), transparent 70%), linear-gradient(180deg, #1c2a60, #0a1230) !important; box-shadow: inset 0 0 0 1px #4a3208, 0 6px 20px rgba(0,0,0,0.7) !important; text-align: center; color: #fff; overflow: hidden; }
-.hgm-title { font-size: 1.25rem; font-weight: 900; color: #ffe08a; text-shadow: 0 2px 0 #3a2200, 0 0 6px rgba(255,200,80,0.5); margin-bottom: 8px; }
-.hgm-stage { position: relative; height: 180px; display: flex; align-items: center; justify-content: center; }
-.hgm-rays { position: absolute; left: 50%; top: 50%; width: 320px; height: 320px; margin: -160px 0 0 -160px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,230,150,0.16) 0 10deg, transparent 10deg 20deg); animation: hgmSpin 6s linear infinite; opacity: 0.6; }
-.hgm-panel.hit .hgm-rays { background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc) 45%, transparent) 0 10deg, transparent 10deg 20deg); opacity: 1; animation-duration: 3s; }
-@keyframes hgmSpin { to { transform: rotate(360deg); } }
-.hgm-roll { position: relative; width: 140px; height: 140px; border: 4px solid var(--rc, #d9a93f); border-radius: 18px; background: radial-gradient(circle, rgba(255,255,255,0.12), rgba(0,0,0,0.45)); box-shadow: 0 0 14px var(--rc, #d9a93f); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.hgm-roll img { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
-.hgm-roll.flip { animation: hgmFlip 0.12s ease-out; }
-@keyframes hgmFlip { from { transform: scale(0.88); } }
-.hgm-panel.hit .hgm-roll { animation: hgmHit 0.5s cubic-bezier(.2,.9,.3,1.4); box-shadow: 0 0 26px var(--rc), 0 0 60px var(--rc); }
-@keyframes hgmHit { 0% { transform: scale(0.8); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
-.hgm-res { min-height: 86px; margin-top: 6px; }
-.hgm-stars { color: var(--rc); font-size: 1.1rem; text-shadow: 0 1px 2px #000; }
-.hgm-name { font-size: 1.35rem; font-weight: 900; color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 3px #000; }
-.hgm-panel.hit .hgm-name { animation: hgmHit 0.5s ease-out; }
-.hgm-line { margin-top: 4px; font-size: 0.85rem; color: #9ff0ff; font-weight: 800; text-shadow: 0 1px 2px #000; }
-.hgm-line b { color: #ffe08a; }
-.hgm-line small { color: #c8d0e6; font-weight: 700; }
-.hgm-btns { display: flex; gap: 8px; margin-top: 10px; }
-.hgm-btns button { flex: 1; padding: 10px 0; border-radius: 999px; font-size: 0.95rem; font-weight: 900; cursor: pointer; }
-.hgm-again { border: 2px solid #ffe08a; background: linear-gradient(180deg, #ffcf4a, #e8901a); color: #3a1c00; box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 3px 0 #8a4a08; }
-.hgm-close { border: 2px solid #8a9cc0; background: linear-gradient(180deg, #2c3e72, #15214a); color: #fff; box-shadow: 0 3px 0 #0a1230; }
-.hgm-btns button:active { transform: translateY(2px); }
-/* 採用ガチャ：画面全体を切り替えてルーレットだけを見せる（ヘッダー・下のタブも隠す） */
-#hireGachaModal { position: fixed !important; inset: 0 !important; z-index: 300 !important; padding: 0 !important; display: none; align-items: stretch !important; justify-content: stretch !important; background: radial-gradient(ellipse at 50% 40%, #2a2f7a, #0a0f2e 70%, #05081a) !important; backdrop-filter: none !important; }
-#hireGachaModal.show { display: flex !important; }
-#hireGachaModal .hgm-panel { width: 100% !important; height: 100% !important; max-height: none !important; margin: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px calc(24px + env(safe-area-inset-bottom)) !important; box-sizing: border-box; }
-#hireGachaModal .hgm-title { font-size: 1.8rem; margin-bottom: 18px; }
-#hireGachaModal .hgm-stage { height: 300px; width: 100%; }
-#hireGachaModal .hgm-rays { width: 560px; height: 560px; margin: -280px 0 0 -280px; }
-#hireGachaModal .hgm-roll { width: 210px; height: 210px; border-width: 5px; border-radius: 24px; }
-#hireGachaModal .hgm-res { min-height: 120px; margin-top: 14px; }
-#hireGachaModal .hgm-stars { font-size: 1.5rem; }
-#hireGachaModal .hgm-name { font-size: 2rem; }
-#hireGachaModal .hgm-line { font-size: 1rem; }
-#hireGachaModal .hgm-btns { width: min(360px, 100%); margin-top: 18px; }
-#hireGachaModal .hgm-btns button { padding: 14px 0; font-size: 1.05rem; }
-/* 採用ガチャ：画面は全体を切り替えたまま、ルーレットと結果は画面の縦半分くらいの正方形のダイアログに */
-#hireGachaModal { align-items: center !important; justify-content: center !important; }
-#hireGachaModal .hgm-panel { --sq: min(50dvh, 94vw); width: var(--sq) !important; height: var(--sq) !important; padding: calc(var(--sq) * 0.04) !important; border: 3px solid #d9a93f !important; border-radius: 16px !important; background: radial-gradient(ellipse at 50% 35%, rgba(140,110,255,0.35), transparent 70%), linear-gradient(180deg, #1c2a60, #0a1230) !important; box-shadow: inset 0 0 0 1px #4a3208, 0 0 0 1px #4a3208, 0 8px 30px rgba(0,0,0,0.75) !important; justify-content: space-between; gap: 0; overflow: hidden; }
-#hireGachaModal .hgm-title { font-size: calc(var(--sq) * 0.065); margin: 0; }
-#hireGachaModal .hgm-stage { flex: 1 1 auto; height: auto; min-height: 0; }
-#hireGachaModal .hgm-rays { width: calc(var(--sq) * 1.4); height: calc(var(--sq) * 1.4); margin: calc(var(--sq) * -0.7) 0 0 calc(var(--sq) * -0.7); }
-#hireGachaModal .hgm-roll { width: calc(var(--sq) * 0.42); height: calc(var(--sq) * 0.42); border-width: 4px; border-radius: 18px; }
-#hireGachaModal .hgm-res { min-height: 0; margin: 0; }
-#hireGachaModal .hgm-stars { font-size: calc(var(--sq) * 0.05); line-height: 1.2; }
-#hireGachaModal .hgm-name { font-size: calc(var(--sq) * 0.075); line-height: 1.2; }
-#hireGachaModal .hgm-line { font-size: calc(var(--sq) * 0.042); margin-top: 2px; line-height: 1.3; }
-#hireGachaModal .hgm-btns { width: 100%; margin-top: calc(var(--sq) * 0.03); }
-#hireGachaModal .hgm-btns button { padding: calc(var(--sq) * 0.025) 0; font-size: calc(var(--sq) * 0.045); }
 /* ガチャ結果の★：金の星の絵（1〜5個＋空き） */
 .rstars { display: inline-flex; align-items: center; gap: 0.06em; vertical-align: -0.15em; line-height: 1; }
 .rstars img { height: 1.05em; width: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
 .gr-stars-row { display: flex; justify-content: center; margin: 2px 0 2px; font-size: 1.5rem; }
 .gr-title .rstars { font-size: 1.15em; }
-.hgm-stars .rstars { font-size: 1.2em; }
 .gacha-multi-grid .gm-name .rstars { font-size: 0.85em; }
-.hgm-stars .rstars { font-size: 1.7em; }
 .gr-title .rstars { font-size: 0.85em; }
 .skr .gr-stars-row { font-size: 1.25rem; margin: -4px 0 0; position: relative; z-index: 2; }
 #skGachaModal #skGachaResult.skr .gr-stars-row { position: absolute !important; left: 0; right: 0; top: 9%; margin: 0 !important; font-size: clamp(1.1rem, 5.5vw, 1.5rem) !important; }
-/* 採用ガチャ：放射の光は四隅まで届く大きさで、文字・ボタンの下に敷く（押せるように） */
-#hireGachaModal .hgm-panel { position: relative; }
-#hireGachaModal .hgm-rays { position: absolute !important; left: 50% !important; top: 42% !important; width: calc(var(--sq) * 2.3) !important; height: calc(var(--sq) * 2.3) !important; margin: calc(var(--sq) * -1.15) 0 0 calc(var(--sq) * -1.15) !important; z-index: 0; pointer-events: none; }
-#hireGachaModal .hgm-title, #hireGachaModal .hgm-stage, #hireGachaModal .hgm-res, #hireGachaModal .hgm-btns { position: relative; z-index: 1; }
-#hireGachaModal .hgm-res { width: 100%; text-align: center; }
-#hireGachaModal .hgm-line { text-align: center; }
-/* 採用ガチャ：結果に仲間図鑑の進み具合（ダイアログは少し縦長に） */
-#hireGachaModal .hgm-panel { height: calc(var(--sq) * 1.14) !important; }
-#hireGachaModal .hgm-book { position: relative; margin: calc(var(--sq) * 0.025) auto 0; width: 86%; padding: 3px 8px 7px; border: 1px solid rgba(217,169,63,0.7); border-radius: 8px; background: rgba(0,0,0,0.35); font-size: calc(var(--sq) * 0.04); color: #d6def2; text-shadow: 0 1px 2px #000; overflow: hidden; }
-#hireGachaModal .hgm-book:empty { display: none; }
-#hireGachaModal .hgm-book b { color: #fff; }
-#hireGachaModal .hgm-book em { margin-left: 6px; padding: 0 5px; border-radius: 4px; background: #ff4d6d; color: #fff; font-style: normal; font-weight: 900; font-size: 0.85em; }
-#hireGachaModal .hgm-book i { position: absolute; left: 0; bottom: 0; height: 4px; width: var(--p); background: linear-gradient(90deg, #ffd76b, #ff9a3c); }
-#hireGachaModal .hgm-book { white-space: nowrap; font-size: calc(var(--sq) * 0.037); }
-#hireGachaModal .hgm-book em { white-space: nowrap; margin-left: 4px; }
 /* ステージ進捗バーの左右：同じ幅でせまく（ボタンは少し小さく） */
 .stage-bar-row { margin-left: -12px !important; margin-right: -12px !important; gap: 2px !important; }
 .stage-side-slot, .stage-side-slot.stage-side-left { flex: 0 0 44px !important; height: 54px !important; overflow: visible; }
@@ -4181,117 +4047,16 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 /* 帰還ボーナス：上の段階（10分〜1日）の並びは出さない */
 #lbDays { display: none !important; }
 #lbPanel .lb-chip { text-align: center !important; }
-/* 採用ガチャの結果画面（見本の絵を下地に、キャラ・★・名前・文字だけ重ねる） */
-#hireGachaModal .hg2-panel { --rc: #6fd0ff; position: relative; container-type: inline-size; width: min(94vw, 430px, calc(92dvh * 1164 / 1327)); aspect-ratio: 1164 / 1327; background: url(assets/img/ui/hire/panel.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7)); color: #fff; text-align: center; user-select: none; }
-#hireGachaModal .hg2-portrait { position: absolute; left: 27.5%; top: 17%; width: 45.5%; height: 34.8%; }
-#hireGachaModal .hg2-bg { position: absolute; inset: 3%; border-radius: 6cqw; background: radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--rc) 35%, #2a6ee8), #0b2a7a 60%, #071a52); overflow: hidden; }
-#hireGachaModal .hg2-glow { position: absolute; left: 50%; top: 46%; width: 125%; aspect-ratio: 1; transform: translate(-50%, -50%); background: none center / contain no-repeat; opacity: 0.55; animation: hg2Spin 14s linear infinite; pointer-events: none; }
-#hireGachaModal .hg2-panel.hit .hg2-glow { opacity: 1; animation-duration: 8s; }
-@keyframes hg2Spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-#hireGachaModal .hg2-char { position: absolute; inset: 6% 6% 3%; display: flex; align-items: center; justify-content: center; }
-#hireGachaModal .hg2-char img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1.2cqw 1.2cqw rgba(0,0,0,0.45)); }
-#hireGachaModal .hg2-char.flip { animation: hgmFlip 0.12s ease-out; }
-#hireGachaModal .hg2-panel.hit .hg2-char { animation: hgmHit 0.5s cubic-bezier(.2,.9,.3,1.4); }
-#hireGachaModal .hg2-frame { position: absolute; inset: 0; border: 4.6cqw solid transparent; border-image: url(assets/img/ui/hire/frame.webp) 62 / 4.6cqw stretch; pointer-events: none; }
-#hireGachaModal .hg2-stars { position: absolute; left: 27.5%; width: 45.5%; top: 48.3%; height: 7.8%; display: flex; align-items: center; justify-content: center; font-size: 8.4cqw; }
-#hireGachaModal .hg2-stars .rstars { gap: 0.02em; }
-#hireGachaModal .hg2-stars .rstars img { height: 1.08em; filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,0.6)); }
-#hireGachaModal .hg2-panel.hit .hg2-stars { animation: hgmHit 0.5s ease-out; }
-#hireGachaModal .hg2-name { position: absolute; left: 19%; width: 62%; top: 56.8%; height: 8%; display: flex; align-items: center; justify-content: center; font-size: 7.6cqw; font-weight: 900; letter-spacing: 0.02em; color: #f2f8ff; white-space: nowrap; text-shadow: -0.35cqw -0.35cqw 0 #0a1440, 0.35cqw -0.35cqw 0 #0a1440, -0.35cqw 0.35cqw 0 #0a1440, 0.35cqw 0.35cqw 0 #0a1440, 0 0.8cqw 0 #0a1440, 0 0 2cqw rgba(140,200,255,0.6); }
-#hireGachaModal .hg2-line { position: absolute; left: 5%; width: 90%; top: 67.3%; height: 10.8%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; align-content: center; column-gap: 1.5cqw; font-size: 4.6cqw; font-weight: 900; color: #fff; line-height: 1.2; text-shadow: -0.3cqw -0.3cqw 0 #0a1440, 0.3cqw -0.3cqw 0 #0a1440, -0.3cqw 0.3cqw 0 #0a1440, 0.3cqw 0.3cqw 0 #0a1440, 0 0.6cqw 0 #0a1440; }
-#hireGachaModal .hg2-line .hg2-dup { color: #7ff0ff; font-size: 1.12em; }
-#hireGachaModal .hg2-line b { color: #ffd23c; font-size: 1.3em; }
-#hireGachaModal .hg2-line small { flex-basis: 100%; font-size: 0.66em; font-weight: 800; color: #e8eefc; }
-#hireGachaModal .hg2-line .hg2-new { color: #ffd23c; font-size: 1.5em; }
-#hireGachaModal .hg2-book { position: absolute; left: 10.7%; width: 78.7%; top: 78.8%; height: 5.4%; display: flex; align-items: center; justify-content: center; font-size: 3.5cqw; font-weight: 800; color: #d6def2; text-shadow: 0 0.3cqw 0.4cqw #000; white-space: nowrap; }
-#hireGachaModal .hg2-book b { color: #fff; }
-#hireGachaModal .hg2-book em { margin-left: 2cqw; padding: 0 1.2cqw; border-radius: 1cqw; background: linear-gradient(180deg, #ff5577, #d0193f); color: #fff; font-style: normal; font-weight: 900; box-shadow: 0 0 0 0.3cqw rgba(255,255,255,0.35); }
-#hireGachaModal .hg2-book i { position: absolute; left: 2.5%; bottom: 8%; height: 0.9cqw; width: calc(var(--p) * 0.95); max-width: 95%; border-radius: 1cqw; background: linear-gradient(90deg, #ffd76b, #ff9a3c); }
-#hireGachaModal .hg2-btn { position: absolute; top: 87%; height: 10.2%; width: 47.3%; padding: 0; border: none; background: none; cursor: pointer; border-radius: 6cqw; }
-#hireGachaModal .hg2-again { left: 4.3%; }
-#hireGachaModal .hg2-close { left: 53.3%; }
-#hireGachaModal .hg2-btn:active { background: rgba(255,255,255,0.15); }
-#hireGachaModal .hg2-btncover { position: absolute; left: 3%; width: 94%; top: 86.5%; height: 11%; border-radius: 6cqw; background: rgba(5,12,40,0.6); }
 /* 戦績のサブタイトル下地：本体を伸ばし、右端の三角（透明つき）は縦横比を保って付ける */
 .tab-page[data-tab="records"] .record.rec-v2 .rec-tag { background: url(assets/img/ui/rec/ribbon_tip.webp) right center / auto 100% no-repeat, url(assets/img/ui/rec/ribbon_body.webp) left center / calc(100% - var(--rtip, 11px) + 1px) 100% no-repeat !important; }
-/* 採用ガチャ：図鑑の欄を新しい枠に合わせて、文字とバーが重ならないように */
-#hireGachaModal .hg2-book { left: 9.5%; width: 81.2%; top: 77.7%; height: 7.9%; padding-bottom: 1.6cqw; box-sizing: border-box; }
-#hireGachaModal .hg2-book i { left: 4%; bottom: 20%; height: 0.8cqw; width: calc(var(--p) * 0.92); max-width: 92%; }
-/* 採用ガチャ結果：レア度で背景の色を変える（パネルの中のキャラの背景・後光も同じ色に） */
-#hireGachaModal { transition: background 0.4s; }
-#hireGachaModal[data-rar="common"] { background: radial-gradient(ellipse at 50% 40%, #4a5470, #1a2033 65%, #0b0e18) !important; }
-#hireGachaModal[data-rar="rare"] { background: radial-gradient(ellipse at 50% 40%, #1f7fd0, #0b3570 60%, #051634) !important; }
-#hireGachaModal[data-rar="epic"] { background: radial-gradient(ellipse at 50% 40%, #9a4de0, #45157a 60%, #1a0636) !important; }
-#hireGachaModal[data-rar="legendary"] { background: radial-gradient(ellipse at 50% 40%, #e8a52a, #7a4208 60%, #2e1502) !important; }
-#hireGachaModal[data-rar="mythic"] { background: radial-gradient(ellipse at 50% 40%, #ff4d6d, #8a1040 45%, #2a0630 75%, #0c0214) !important; }
-#hireGachaModal[data-rar] .hg2-panel.hit .hg2-bg { background: radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--rc) 70%, #fff), color-mix(in srgb, var(--rc) 55%, #0b1a50) 55%, color-mix(in srgb, var(--rc) 25%, #050a24)); }
-#hireGachaModal[data-rar] .hg2-panel.hit .hg2-glow { filter: drop-shadow(0 0 0 transparent) hue-rotate(var(--hgh, 0deg)) saturate(1.2); }
-#hireGachaModal[data-rar="common"] .hg2-panel.hit .hg2-glow { filter: grayscale(1) brightness(1.1); }
-#hireGachaModal[data-rar="epic"] .hg2-panel.hit .hg2-glow { --hgh: 60deg; }
-#hireGachaModal[data-rar="legendary"] .hg2-panel.hit .hg2-glow { --hgh: 180deg; }
-#hireGachaModal[data-rar="mythic"] .hg2-panel.hit .hg2-glow { --hgh: 120deg; }
 /* パネルの紺の部分だけをレア度の色に染める（金の縁やボタンはそのまま） */
-#hireGachaModal .hg2-tint { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s; -webkit-mask: url(assets/img/ui/hire/tintmask.webp) center / 100% 100% no-repeat; mask: url(assets/img/ui/hire/tintmask.webp) center / 100% 100% no-repeat; mix-blend-mode: color; }
-#hireGachaModal[data-rar="common"] .hg2-tint { opacity: 0.85; background: #8a90a0; }
-#hireGachaModal[data-rar="epic"] .hg2-tint { opacity: 0.9; background: #9b3ff0; }
-#hireGachaModal[data-rar="legendary"] .hg2-tint { opacity: 0.9; background: #e09a10; }
-#hireGachaModal[data-rar="mythic"] .hg2-tint { opacity: 0.9; background: linear-gradient(160deg, #ff3d7a, #c43dff 50%, #ff8a2a); }
 /* 後光をパネルの大きい枠の中いっぱいまで（紺の部分だけに光らせる。金の縁・飾り・ボタンには乗らない） */
-#hireGachaModal .hg2-bigglow { position: absolute; inset: 0; pointer-events: none; overflow: hidden; -webkit-mask: url(assets/img/ui/hire/glowmask2.webp) center / 100% 100% no-repeat; mask: url(assets/img/ui/hire/glowmask2.webp) center / 100% 100% no-repeat; mix-blend-mode: screen; opacity: 0.35; transition: opacity 0.4s; }
-#hireGachaModal .hg2-bigglow i { position: absolute; left: 50%; top: 34%; width: 190%; aspect-ratio: 1; transform: translate(-50%, -50%); background: none center / contain no-repeat; animation: hg2Spin 16s linear infinite; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.85; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow i { animation-duration: 9s; }
-#hireGachaModal[data-rar="common"] .hg2-bigglow i { filter: grayscale(1); }
-#hireGachaModal[data-rar="epic"] .hg2-bigglow i { filter: hue-rotate(60deg) saturate(1.2); }
-#hireGachaModal[data-rar="legendary"] .hg2-bigglow i { filter: hue-rotate(180deg) saturate(1.3); }
-#hireGachaModal[data-rar="mythic"] .hg2-bigglow i { filter: hue-rotate(120deg) saturate(1.3); }
 /* 後光：加算合成で光らせる／小さい枠（キャラの後ろ）の後光はなし */
-#hireGachaModal .hg2-bigglow { mix-blend-mode: screen; mix-blend-mode: plus-lighter; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.75; }
-#hireGachaModal .hg2-glow { display: none !important; }
-/* 採用ガチャ（引く画面）：見本の絵を下地に、候補の人数・アイコン・説明・確率を重ねる */
-.hire-gacha { position: relative; container-type: inline-size; aspect-ratio: 1489 / 1027; margin: 4px -6px 10px !important; padding: 0 !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; background: url(assets/img/ui/hire/box.webp) center / 100% 100% no-repeat !important; }
-.hire-gacha .hg-cnt { position: absolute; left: 65.2%; width: 4%; top: 7.6%; height: 3.6%; display: flex; align-items: center; justify-content: center; font-size: 3.4cqw; font-weight: 900; color: #fff; text-shadow: 0 0.3cqw 0.4cqw #000; }
-.hire-gacha .hg-faces { position: absolute; left: 4.8%; width: 90.4%; top: 18.4%; height: 45.6%; margin: 0 !important; min-height: 0 !important; display: grid !important; grid-template-columns: repeat(var(--cols, 9), 1fr); align-content: center; justify-content: center; gap: 0.8cqw 1cqw; }
-.hire-gacha .hg-faces:has(.hg-empty) { display: flex !important; }
-.hire-gacha .hg-cell { width: auto !important; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.2cqw; cursor: pointer; }
-.hire-gacha .hg-face { width: 100% !important; height: auto !important; aspect-ratio: 1; border: 0.45cqw solid var(--rc) !important; border-radius: 1.4cqw !important; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--rc) 30%, #24346e), #0d1636) !important; box-shadow: 0 0 1cqw color-mix(in srgb, var(--rc) 70%, transparent), inset 0 0 0 0.25cqw rgba(0,0,0,0.5); }
-.hire-gacha .hg-face.new::after { top: -0.2cqw !important; right: -0.2cqw !important; padding: 0 0.6cqw !important; border-radius: 0.6cqw !important; font-size: 1.6cqw !important; }
-.hire-gacha .hg-star { font-size: 2.1cqw !important; letter-spacing: -0.15em; }
-.hire-gacha .hg-empty { margin: auto; font-size: 2.6cqw !important; }
-.hire-gacha .hg-note { position: absolute; left: 6%; width: 88%; top: 65.6%; height: 9%; margin: 0 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 2.35cqw !important; line-height: 1.45; color: #eef2fc !important; text-shadow: 0 0.2cqw 0.3cqw #000; }
-.hire-gacha .hg-note b { color: #fff; }
-.hire-gacha .hg-odds { position: absolute; left: 6%; width: 88%; top: 75%; height: 5.4%; margin: 0 !important; display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-evenly; gap: 1cqw !important; font-size: 2.5cqw !important; white-space: nowrap; }
-.hire-gacha .hg-btn { position: absolute; left: 18.3%; width: 63.6%; top: 81.3%; height: 11.4%; margin: 0; padding: 0; border: none !important; border-radius: 6cqw !important; background: none !important; box-shadow: none !important; font-size: 0 !important; cursor: pointer; }
-.hire-gacha .hg-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.15) !important; }
-.hire-gacha .hg-btn.is-disabled { filter: none !important; background: rgba(10,16,40,0.55) !important; }
-.hire-gacha .hg-faces { grid-template-columns: repeat(var(--cols, 9), minmax(0, 7.3cqw)); gap: 0.5cqw 1.6cqw; align-content: center; }
-.hire-gacha .hg-star { line-height: 1; }
-.hire-gacha .hg-note { display: block !important; text-align: center; padding-top: 1.6cqw; box-sizing: border-box; }
-.hire-gacha .hg-odds span { text-shadow: 0 0.2cqw 0.3cqw #000; }
-.hire-gacha .hg-note { top: 65.8%; height: 8.6%; padding-top: 0.9cqw; font-size: 2.15cqw !important; line-height: 1.38; }
-.hire-gacha .hg-odds { top: 75.3%; height: 5%; font-size: 2.3cqw !important; }
-.hire-gacha .hg-faces { grid-template-columns: repeat(var(--cols, 9), minmax(0, 7.8cqw)); }
-.hire-gacha .hg-faces { display: flex !important; flex-wrap: wrap; justify-content: center; align-content: center; padding: 0 calc((90.4cqw - var(--cols, 9) * 9.4cqw) / 2); box-sizing: border-box; }
-.hire-gacha .hg-cell { flex: 0 0 7.8cqw; }
-.hire-gacha .hg-cnt { left: 65.2%; width: 3.9%; top: 6.6%; height: 4.8%; font-size: 2.7cqw; letter-spacing: -0.06em; line-height: 1; overflow: visible; white-space: nowrap; }
 /* 後光：元の素材をそのままの解像度で（引き伸ばしすぎない）、キャラ・文字・ボタンより後ろに */
-#hireGachaModal .hg2-bigglow i { width: 135%; top: 36%; background-image: none; image-rendering: auto; }
 /* 後光（作り直し）：画像を使わず、まっすぐな光の筋をなめらかに描く。光らせる範囲もきれいな形に */
-#hireGachaModal .hg2-bigglow { -webkit-mask-image: url(assets/img/ui/hire/glowmask2.webp) !important; mask-image: url(assets/img/ui/hire/glowmask2.webp) !important; }
-#hireGachaModal .hg2-bigglow i { width: 170% !important; top: 36% !important; background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0) 0deg, rgba(150,205,255,0.55) 3.2deg, rgba(235,248,255,0.95) 4.5deg, rgba(150,205,255,0.55) 5.8deg, rgba(255,255,255,0) 9deg, rgba(255,255,255,0) 15deg) !important; -webkit-mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.85) 22%, rgba(0,0,0,0.35) 48%, transparent 70%); mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.85) 22%, rgba(0,0,0,0.35) 48%, transparent 70%); border-radius: 50%; animation: hg2Spin 30s linear infinite !important; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow i { animation-duration: 18s !important; }
-#hireGachaModal .hg2-bigglow::after { content: ''; position: absolute; left: 50%; top: 36%; width: 80%; aspect-ratio: 1; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(220,240,255,0.55), rgba(120,180,255,0.18) 45%, transparent 70%); }
 /* 後光の筋を太く（前の版のように、ほぼ半分が光の帯） */
-#hireGachaModal .hg2-bigglow i { width: 190% !important; background: repeating-conic-gradient(from 0deg, rgba(150,205,255,0.06) 0deg, rgba(170,215,255,0.5) 2.5deg, rgba(225,242,255,0.7) 5deg, rgba(170,215,255,0.5) 7.5deg, rgba(150,205,255,0.06) 10deg, rgba(150,205,255,0.06) 18deg) !important; -webkit-mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.55) 55%, transparent 72%) !important; mask: radial-gradient(circle, #000 0, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.55) 55%, transparent 72%) !important; }
 /* 後光：いただいた光の画像に差し替え（加算合成・キャラや文字より後ろ） */
-#hireGachaModal .hg2-bigglow i { width: 150% !important; top: 36% !important; border-radius: 0 !important; background: url(assets/img/ui/hire/burst.webp) center / contain no-repeat !important; -webkit-mask: none !important; mask: none !important; }
-#hireGachaModal .hg2-bigglow::after { display: none; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.9; }
-#hireGachaModal .hg2-bigglow { opacity: 0.22 !important; }
-#hireGachaModal .hg2-panel.hit .hg2-bigglow { opacity: 0.42 !important; }
 /* 結果が決まったら後光の回転を速く */
-#hireGachaModal .hg2-panel.hit .hg2-bigglow i { animation-duration: 5s !important; }
 /* ステージ数：左の塔を消したので、左の区画（左端〜ゲージの手前）のまん中に */
 .exp-wrap .stage-floor { left: 3.2cqw !important; width: 19cqw !important; }
 #lbPanel .lb-chip.lb-big { font-size: 0.95rem !important; padding-top: 10px !important; padding-bottom: 10px !important; }
@@ -4468,7 +4233,6 @@ body .tab-page[data-tab="ranking"] .gen-hero > .page-head { flex: 0 0 auto !impo
 .evr-rays b { position: absolute; left: 50%; top: 45%; width: 90vmin; height: 90vmin; margin: -45vmin 0 0 -45vmin; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--rc) 60%, #fff) 0%, color-mix(in srgb, var(--rc) 35%, transparent) 35%, transparent 70%); animation: evrPulse 2s ease-in-out infinite; }
 @keyframes evrSpin { to { transform: rotate(360deg); } }
 @keyframes evrPulse { 0%, 100% { opacity: 0.55; transform: scale(0.92); } 50% { opacity: 0.9; transform: scale(1.06); } }
-#hireGachaModal > .hg2-panel { z-index: 1; } /* 後光の上にパネル */
 /* ショップの購入結果：正方形にして長めに表示 */
 .sbf-card { width: min(290px, 78vw); min-width: 0 !important; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 14px 16px !important; box-sizing: border-box; animation-duration: 3.8s !important; }
 .sbf-card .sbf-rays { animation-duration: 3.8s !important; }
@@ -4532,10 +4296,6 @@ body { height: auto; min-height: 100%; } /* 長いページ（ショップなど
 .evo-rate span .evo-k-ico { width: 1.9em; height: 1.9em; object-fit: contain; vertical-align: middle; margin: -0.4em 2px -0.3em 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6)); } /* 進化項目のアイコン（結果画面と同じ絵） */
 
 /* 自キャラを選ぶ：選択肢は紺×金縁の汎用パネル（クリーム地だと文字が読めない） */
-#myCharOverlay .mc-row { border: 14px solid transparent !important; border-image: url(assets/img/ui/skin/panel_navy.webp) 22 fill / 14px stretch !important; background: none !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 2px !important; color: #fff !important; }
-#myCharOverlay .mc-row.on { filter: drop-shadow(0 0 6px rgba(255,215,107,0.9)); }
-#myCharOverlay .mc-row b, #myCharOverlay .mc-row .cl-name { color: #fff !important; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
-#myCharOverlay .mc-row .mc-sel { color: #ffd76b !important; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
 
 /* オープニング冒頭：魔法陣が途中でまばゆく光る */
 .op-circle-flash { position: absolute; width: 100%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(170,210,255,0.6) 30%, rgba(110,160,255,0) 68%); mix-blend-mode: screen; opacity: 0; animation: opCircleFlash 2.6s 1.5s ease-out both !important; }
@@ -4687,7 +4447,6 @@ body.hp-in-bar .stage-bar-row > .hp-row .hp-card .label .name { padding-left: 0 
 .pb-body .pb-total { border-top: 2px solid rgba(0,0,0,0.25); } .pb-body .pb-total .gs-src { font-weight: 900; }
 .pb-body .pb-sub { margin: 6px 2px 2px; font-size: 0.74rem; font-weight: 900; color: #6a4a1a; }
 /* スキルとサブウェポンの統一：ガチャは1つ、自動スキルには「自動」の印 */
-#weaponGachaBtn { display: none !important; }
 .gacha-pair > #skillGachaBtn { max-width: 290px; }
 .sk-name .sk-auto, .rbd-sk .sk-auto, .skt-name .sk-auto { display: inline-block; margin-left: 5px; padding: 0 6px; border-radius: 999px; background: linear-gradient(180deg, #5fd0ff, #2a7ad0); color: #fff; font-size: 0.6rem; font-style: normal; font-weight: 900; vertical-align: middle; text-shadow: 0 1px 1px #0a3a70; }
 /* デバッグボタンは右上の設定ボタンのすぐ下に重ねる（ゲーム画面を狭くしない） */

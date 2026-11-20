@@ -554,7 +554,7 @@ const BGM_SONGS = {
     drums: 'k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - k - h k s - h h | k - h - s - h - s s s s ks s ks ks',
     kickBoost: 1.3, // ティンパニのように太く
   },
-  hireget: { // 採用ガチャの結果 やったね！新しい仲間：弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う（ヘ長調）
+  hireget: { // ガチャの結果 やったね！：弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う（ヘ長調）
     bpm: 150,
     echo: { time: 0.2, feedback: 0.2, wet: 0.14 },
     tracks: [
@@ -857,7 +857,7 @@ function stopSong(hard) {
 }
 let bgmTimer = null;
 let bgmToken = 0;
-let bgmResume = null; // { type, step }：3択パワーアップで中断した戦闘曲の位置
+let bgmResume = null; // { type, step }：ほかのページなどで中断した戦闘曲の位置
 let currentBgmType = null;
 let battleBgmType = 'normal'; // 戦闘中に流すBGM（通常／ボス）
 const NORMAL_BATTLE_SONGS = ['battle3', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'battle30', 'battle34', 'battle39', 'battle41'];
@@ -958,7 +958,7 @@ const BGM_INFO = [
   { key: 'ranking', name: 'ページ ランキング 栄光の頂', desc: '王道進行で駆け上がる爽快感と表彰の高揚感に、切なさと郷愁をひとさじ。VRC6風チップチューン。ホ長調・BPM140' },
   { key: 'bgmbook', name: 'ページ BGM図鑑 音楽家のソナチネ', desc: 'アルベルティ・バスの分散和音に乗って、軽やかな音階とトリル風の飾りで歌う、古典派のピアノソナチネのような曲。VRC6風チップチューン。ト長調（モーツァルト風の作風）・BPM132' },
   { key: 'charge', name: 'ページ ショップ 課金 王家の宝物庫', desc: '弾むオクターブベースと行進曲のスネア、ハープのような分散和音に乗って、ファンファーレ風の旋律が華やかに駆け上がる、王宮の祝宴のような高揚感のある曲。VRC6風チップチューン。ニ長調・BPM132' },
-  { key: 'hireget', name: '採用ガチャ やったね！新しい仲間', desc: '採用ガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う曲。VRC6風チップチューン。ヘ長調・BPM150' },
+  { key: 'hireget', name: 'ガチャ やったね！', desc: 'スキルガチャ・進化ガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、跳ねる明るい旋律が当たった喜びを歌う曲。VRC6風チップチューン。ヘ長調・BPM150' },
   { key: 'boss27', name: 'ボス15 神竜の咆哮', desc: '疾走するオクターブベースと渦巻く分散和音に乗って、悲壮で壮大な旋律が嵐の空を切り裂く、神竜に挑む戦記RPG風の決戦曲。VRC6風チップチューン。ト短調（竜と空の戦記シミュレーションRPGの作風）・BPM156' },
   { key: 'battle39', name: '戦闘15 刃に宿る炎', desc: '和太鼓の刻みと三味線のような裏打ちに乗って、都節の音階で駆け抜ける疾走感のある旋律。和風の剣戟活劇をイメージしたオリジナル曲。VRC6風チップチューン。ニ短調。' },
   { key: 'battle41', name: '戦闘16 真夜中のダンスフロア', desc: '弾むスラップのようなベースと鋭い和音のカッティングに乗って、キレのある旋律がステップを踏むように跳ねる、ファンキーなダンス・ポップ（VRC6風）。ホ短調・BPM116' },
@@ -1013,9 +1013,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   refreshBgm();
   renderBgmBook();
 });
-let hireGachaBgmOn = false; // 採用ガチャの結果を出している間
 let compGachaHush = false; // 仲間の招集ガチャの演出中（押した瞬間から結果が出るまで曲を止める）
-let hireGachaHush = false;  // 採用ガチャのルーレット中（曲を止めてドキドキの効果音だけ）
 let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
@@ -1035,9 +1033,8 @@ function refreshBgm() {
   if (openingPending()) { stopBgm(true); return; }
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
-  else if (skGachaBgmOn) type = 'hireget'; // スキル・サブウェポン・進化ガチャの結果も、採用ガチャと同じお祝いの曲
-  else if (hireGachaHush || compGachaHush) type = 'silent'; // 採用ガチャのルーレット中・招集ガチャの演出中
-  else if (hireGachaBgmOn) type = 'hireget'; // 採用ガチャの結果
+  else if (skGachaBgmOn) type = 'hireget'; // スキル・進化ガチャの結果のお祝いの曲
+  else if (compGachaHush) type = 'silent'; // 招集ガチャの演出中
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
   else if (document.getElementById('creditsModal').classList.contains('show') || document.getElementById('shareModal')?.classList.contains('show')) type = 'battle31'; // シェア画面もスタッフロールの曲 // スタッフロール専用の曲（エースの飛翔）
   else if (settingsModal.classList.contains('show')) type = 'settings'; // 設定画面

@@ -86,9 +86,7 @@ function tickGimmick(sp) {
   const touch = (o, r) => pls.find(b => Math.hypot(b.x - o.x, b.y - o.y) < (b.radius || 12) + r);
   // 出現
   if (gm.t >= gm.nextAt) {
-    if (key === 'stars') { gm.nextAt = gm.t + gRand(70, 130); const tx = gRand(A.l + 30, A.r - 30), ty = gRand(A.t + 40, A.b - 30); gm.fx.push({ kind: 'shoot', x: tx - 160, y: ty - 220, tx, ty, life: 1 }); }
-    else if (key === 'fireworks') { gm.nextAt = gm.t + gRand(35, 75); for (let k = Math.random() < 0.3 ? 2 : 1; k > 0; k--) { const x = gRand(A.l + 40, A.r - 40), y = gRand(A.t + 40, A.t + A.h * 0.45); gm.fx.push({ kind: 'rocket', x, y: A.b + k * 30, ty: y, life: 1, hue: Math.floor(Math.random() * 360) }); } playTone(300, 0.35, 'sine', 0.025, 900); } // ときどき2発同時
-    else if (key === 'thunder') { gm.nextAt = gm.t + gRand(170, 240); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'warn', target: e, x: e.x, y: e.y, t: 0 }); } }
+    if (key === 'thunder') { gm.nextAt = gm.t + gRand(170, 240); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'warn', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'castle') { gm.nextAt = gm.t + gRand(150, 230); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', chand: true, target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'rocks') { gm.nextAt = gm.t + gRand(140, 210); const foes = gimmickEnemies(); if (foes.length) { const e = foes[Math.floor(Math.random() * foes.length)]; gm.fx.push({ kind: 'rockfall', target: e, x: e.x, y: e.y, t: 0 }); } }
     else if (key === 'coinrain') { gm.nextAt = gm.t + gRand(14, 30); gm.items.push({ kind: 'coin', x: gRand(A.l + 16, A.r - 16), y: A.t - 10, vy: gRand(1.2, 2), spin: Math.random() * 6, landY: gRand(A.t + A.h * 0.3, A.b - 16) }); }
@@ -131,7 +129,6 @@ function tickGimmick(sp) {
   }
   for (const it of gm.items) {
     if (it.dead) continue;
-    else if (it.kind === 'star') { it.life -= 0.0028 * sp; if (it.life <= 0) it.dead = true; else if (touch(it, 12)) popGimmickItem(it); }
     else if (it.kind === 'coin') { if (it.y < it.landY) it.y += it.vy * sp; else it.ground = (it.ground || 0) + sp; it.spin += 0.15 * sp; if (it.ground > 360) it.dead = true; else if (touch(it, 9)) popGimmickItem(it); }
     else if (it.kind === 'firefly') { it.ph += 0.05 * sp; it.x += (it.vx + Math.sin(it.ph * 0.7) * 0.4) * sp; it.y += (it.vy + Math.cos(it.ph * 0.5) * 0.4) * sp; if (it.x < A.l + 10 || it.x > A.r - 10) it.vx *= -1; if (it.y < A.t + 10 || it.y > A.b - 10) it.vy *= -1; it.x = Math.max(A.l + 10, Math.min(A.r - 10, it.x)); it.y = Math.max(A.t + 10, Math.min(A.b - 10, it.y)); if (touch(it, 8)) popGimmickItem(it); }
     else if (it.kind === 'snowman') { snowmanMove(it, sp, A); if (!it.cool || it.cool < gm.t) { const b = touch(it, 14); if (b) { it.cool = gm.t + 30; it.hp--; it.shake = now; /* 雪だるまは当たっても動かさない（揺れるだけ） */ playTone(500, 0.06, 'square', 0.05, 300); spawnHitParticles(it.x, it.y, '#ffffff'); if (it.hp <= 0) popGimmickItem(it); } } }
@@ -139,10 +136,7 @@ function tickGimmick(sp) {
   gm.items = gm.items.filter(i => !i.dead);
   // 演出
   for (const f of gm.fx) {
-    if (f.kind === 'shoot') { f.life -= 0.05 * sp; if (f.life <= 0) { f.dead = true; gm.items.push({ kind: 'star', x: f.tx, y: f.ty, life: 1 }); playTone(1500, 0.12, 'sine', 0.04, 2400); spawnHitParticles(f.tx, f.ty, '#fff6b0'); } }
-    else if (f.kind === 'rocket') { f.y -= 5 * sp; f.trail = f.trail || []; f.trail.push({ x: f.x + gRand(-1, 1), y: f.y, l: 1 }); for (const t of f.trail) t.l -= 0.06 * sp; f.trail = f.trail.filter(t => t.l > 0); if (f.y <= f.ty) { f.dead = true; gm.fx.push(makeFireworkBurst(f.x, f.ty, f.hue)); thump(90, 40, 0.25, 0.25); playNoiseBurst(0.18, 0.12); } }
-    else if (f.kind === 'burst') { f.life -= (f.type === 'willow' ? 0.010 : 0.014) * sp; for (const p of f.parts) { p.px = p.x; p.py = p.y; p.x += p.vx * sp; p.y += p.vy * sp; p.vy += (f.type === 'willow' ? 0.045 : 0.03) * sp; p.vx *= Math.pow(0.975, sp); p.vy *= Math.pow(0.985, sp); } if (f.life <= 0) f.dead = true; }
-    else if (f.kind === 'warn' || f.kind === 'rockfall') {
+    if (f.kind === 'warn' || f.kind === 'rockfall') {
       f.t += sp; if (f.target && !f.target.isDying && f.target.hp > 0) { f.x = f.target.x; f.y = f.target.y; }
       if (f.t >= 50) { f.dead = true; gimmickStrike(f); }
     }
@@ -155,8 +149,7 @@ function tickGimmick(sp) {
 }
 function popGimmickItem(it) {
   it.dead = true;
-  if (it.kind === 'star') { playCoinChime(5); playTone(1800, 0.15, 'triangle', 0.05, 2600); for (let i = 0; i < 4; i++) spawnHitParticles(it.x, it.y, '#fff3a0'); gimmickGiveCoins(it.x, it.y, 0.4, '🌠'); }
-  else if (it.kind === 'coin') { playCoinChime(Math.floor(Math.random() * 6)); gimmickGiveCoins(it.x, it.y, 0.1, ''); }
+  if (it.kind === 'coin') { playCoinChime(Math.floor(Math.random() * 6)); gimmickGiveCoins(it.x, it.y, 0.1, ''); }
   else if (it.kind === 'firefly') { playTone(2000, 0.08, 'sine', 0.04, 2600); spawnHitParticles(it.x, it.y, '#d6ff7a'); gimmickGiveCoins(it.x, it.y, 0.2, '✨'); }
   else if (it.kind === 'snowman') { if (typeof playSnowmanBreak === 'function') playSnowmanBreak(); else playNoiseBurst(0.2, 0.25); for (let i = 0; i < 6; i++) spawnHitParticles(it.x + gRand(-10, 10), it.y + gRand(-10, 10), '#ffffff'); gimmickGiveCoins(it.x, it.y, 0.6, '⛄'); }
 }
@@ -213,9 +206,7 @@ function drawGimmickDark(A, col, lightR) { // 暗闇（味方とホタルのま�
 }
 function gStar(x, y, r) { ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
 function drawGimmickItem(it, now) {
-  if (it.kind === 'star') {
-    const s = 9 + Math.sin(now / 120) * 2; ctx.globalAlpha = Math.min(1, it.life * 3); ctx.shadowColor = '#fff3a0'; ctx.shadowBlur = 16; ctx.fillStyle = '#ffe75c'; gStar(it.x, it.y, s); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-  } else if (it.kind === 'coin') {
+  if (it.kind === 'coin') {
     const w = Math.abs(Math.cos(it.spin)) * 7 + 1; ctx.fillStyle = '#ffcf3a'; ctx.strokeStyle = '#a8740a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(it.x, it.y, w, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   } else if (it.kind === 'firefly') {
     const a = 0.6 + 0.4 * Math.sin(it.ph * 3); ctx.fillStyle = `rgba(214,255,122,${a})`; ctx.shadowColor = '#d6ff7a'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(it.x, it.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
@@ -233,7 +224,7 @@ function drawGimmickItem(it, now) {
     if (it.flip) ctx.restore();
   }
 }
-// ===== 花火：加算合成で光る（光の粒は色ごとにぼかした絵を作って使い回す） =====
+// ===== 光の粒（色ごとにぼかした絵を作って使い回す） =====
 const gGlowCache = {};
 function gGlow(hue, light = 70) {
   const k = hue + ':' + light; if (gGlowCache[k]) return gGlowCache[k];
@@ -242,46 +233,8 @@ function gGlow(hue, light = 70) {
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.18, `hsla(${hue},100%,${Math.min(95, light + 15)}%,0.95)`); g.addColorStop(0.45, `hsla(${hue},100%,${light}%,0.45)`); g.addColorStop(1, `hsla(${hue},100%,${light - 20}%,0)`);
   c.fillStyle = g; c.fillRect(0, 0, 32, 32); return (gGlowCache[k] = cv);
 }
-const FIREWORK_TYPES = ['peony', 'peony', 'ring', 'double', 'willow', 'multi'];
-function makeFireworkBurst(x, y, hue) {
-  const type = FIREWORK_TYPES[Math.floor(Math.random() * FIREWORK_TYPES.length)], parts = [];
-  const add = (n, sMin, sMax, h) => { for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + gRand(-0.05, 0.05), s = gRand(sMin, sMax); parts.push({ x, y, px: x, py: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, hue: h, tw: Math.random() * 6 }); } };
-  if (type === 'ring') add(48, 3.0, 3.2, hue);
-  else if (type === 'double') { add(40, 2.6, 3.4, hue); add(24, 1.1, 1.6, (hue + 150) % 360); }
-  else if (type === 'willow') add(56, 1.4, 3.0, 42); // 金色のしだれ柳
-  else if (type === 'multi') { for (let i = 0; i < 60; i++) { const a = Math.random() * Math.PI * 2, s = gRand(0.8, 3.4); parts.push({ x, y, px: x, py: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, hue: Math.floor(Math.random() * 360), tw: Math.random() * 6 }); } }
-  else add(60, 1.0, 3.4, hue);
-  return { kind: 'burst', type, x, y, hue, parts, life: 1 };
-}
-function drawFireworkBurst(f) {
-  ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  const age = 1 - f.life;
-  if (age < 0.25) { // 開いた瞬間のまぶしい光
-    const r = 30 + age * 360, a = (1 - age / 0.25) * 0.55, g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
-    g.addColorStop(0, `hsla(${f.hue},100%,90%,${a})`); g.addColorStop(0.4, `hsla(${f.hue},100%,65%,${a * 0.45})`); g.addColorStop(1, `hsla(${f.hue},100%,50%,0)`);
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2); ctx.fill();
-  }
-  const t = Date.now() / 60, fade = Math.min(1, f.life * 1.6), sz = f.type === 'willow' ? 9 : 11;
-  ctx.lineCap = 'round';
-  for (const p of f.parts) {
-    let al = fade;
-    if (f.life < 0.35) al *= 0.45 + 0.55 * Math.abs(Math.sin(t + p.tw * 3)); // 消えぎわにチカチカ
-    ctx.globalAlpha = al * 0.7; ctx.strokeStyle = `hsl(${p.hue},100%,65%)`; ctx.lineWidth = 2;
-    const tl = f.type === 'willow' ? 7 : 4; // 尾の長さ
-    ctx.beginPath(); ctx.moveTo(p.x - p.vx * tl, p.y - p.vy * tl); ctx.lineTo(p.x, p.y); ctx.stroke();
-    ctx.globalAlpha = al; ctx.drawImage(gGlow(p.hue), p.x - sz / 2, p.y - sz / 2, sz, sz);
-  }
-  ctx.restore();
-}
 function drawGimmickFx(f, now) {
-  if (f.kind === 'shoot') { const t = 1 - f.life, x = f.x + (f.tx - f.x) * t, y = f.y + (f.ty - f.y) * t; const g = ctx.createLinearGradient(x - 40, y - 55, x, y); g.addColorStop(0, 'rgba(255,250,200,0)'); g.addColorStop(1, 'rgba(255,250,200,0.95)'); ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 40, y - 55); ctx.lineTo(x, y); ctx.stroke(); }
-  else if (f.kind === 'rocket') { // 上がっていく火の玉と火の粉の尾（加算合成で光る）
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (const t of f.trail || []) { ctx.globalAlpha = t.l * 0.8; ctx.drawImage(gGlow(40), t.x - 5, t.y - 5, 10, 10); }
-    ctx.globalAlpha = 1; ctx.drawImage(gGlow(45), f.x - 12, f.y - 12, 24, 24); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.restore(); }
-  else if (f.kind === 'burst') drawFireworkBurst(f);
-  else if (f.kind === 'warn' || f.kind === 'rockfall') { const p = f.t / 50; ctx.strokeStyle = f.kind === 'warn' ? `rgba(255,230,90,${0.4 + p * 0.5})` : `rgba(255,120,60,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  if (f.kind === 'warn' || f.kind === 'rockfall') { const p = f.t / 50; ctx.strokeStyle = f.kind === 'warn' ? `rgba(255,230,90,${0.4 + p * 0.5})` : `rgba(255,120,60,${0.4 + p * 0.5})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (1.3 - p * 0.3), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     if (f.kind === 'rockfall') { const A = gArea(), y = A.t - 30 + (f.y - A.t + 30) * p * p; ctx.globalAlpha = 0.25 + p * 0.3; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, 16 * p + 4, 6 * p + 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; if (f.chand) drawChandelier(f.x, y, 1); else if (!(typeof drawObstacleSprite === 'function' && drawObstacleSprite('rock', f.x, y, 34, p * 4))) { ctx.fillStyle = '#7d766c'; ctx.beginPath(); ctx.arc(f.x, y, 15, 0, Math.PI * 2); ctx.fill(); } } }
   else if (f.kind === 'bolt') { const A = gArea(); ctx.strokeStyle = `rgba(255,250,200,${f.life})`; ctx.lineWidth = 4; ctx.shadowColor = '#fff6a0'; ctx.shadowBlur = 18; ctx.beginPath(); let x = f.x + gRand(-20, 20), y = A.t; ctx.moveTo(x, y); const n = 7; for (let i = 1; i <= n; i++) { y = A.t + (f.y - A.t) * i / n; x = i === n ? f.x : f.x + gRand(-18, 18); ctx.lineTo(x, y); } ctx.stroke(); ctx.shadowBlur = 0; }
   else if (f.kind === 'crash') { ctx.strokeStyle = `rgba(200,180,150,${f.life})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(f.x, f.y, 34 * (2 - f.life), 0, Math.PI * 2); ctx.stroke(); }
@@ -440,88 +393,6 @@ function openTansu(o) {
   updateStatsUI();
 }
 
-// ===== ドーピングの種（ドラクエの「ちからのたね」風）=====
-// タンス・壺・宝箱から出る。使うとその周回のあいだ能力アップ（転生でリセット）。使わなければ転生しても持ち越せる
-const SEEDS = {
-  atk: { icon: '🌰', img: 'assets/img/icons/bag_seedAtk.webp', name: 'パワーの種', stat: '攻撃力', col: '#ff8a5c' },
-  hp:  { icon: '🍎', img: 'assets/img/icons/bag_seedHp.webp', name: 'HPの種', stat: '最大HP', col: '#7ee787' },
-};
-const SEED_PER_USE = 0.05; // 1個につき +5%
-const SEED_CHEST_CHANCE = {}; // ドーピングの種はなくした（宝箱からも出ない）
-const SEED_CHEST_CHANCE_OLD = { common: 0.01, rare: 0.03, epic: 0.08, legendary: 0.12, mythic: 0.2 }; // 宝箱から種が出る確率：N1%・R3%・SR8%・SSR12%・UR20%
-const SEED_CHEST_COUNT = { common: 1, rare: 1, epic: 1, legendary: 2, mythic: 3 };
-function seedHeld(k) { return ((game.seeds || {})[k]) || 0; }
-function seedUsed(k) { return ((game.seedUsed || {})[k]) || 0; }
-function gainSeed(k, n = 1) { game.seeds = game.seeds || {}; game.seeds[k] = seedHeld(k) + n; updateSeedButton(); }
-function randomSeedKey() { return Math.random() < 0.5 ? 'atk' : 'hp'; }
-{ const orig = computeBonuses; computeBonuses = function () { const b = orig.apply(this, arguments); b.atkMult *= 1 + seedUsed('atk') * SEED_PER_USE; b.hpMult *= 1 + seedUsed('hp') * SEED_PER_USE; return b; }; }
-function useSeed(k, n) {
-  n = Math.min(n, seedHeld(k)); if (n <= 0) return;
-  game.seeds[k] -= n; game.seedUsed = game.seedUsed || {}; game.seedUsed[k] = seedUsed(k) + n;
-  if (typeof refreshPlayerBallStats === 'function') refreshPlayerBallStats(false);
-  const S = SEEDS[k], pl = balls.find(isMainPlayerBall);
-  if (pl) { spawnDamageText(pl.x, pl.y - pl.radius - 20, `${S.stat} +${n * SEED_PER_USE * 100 | 0}%！`, S.col, 0.012, true); for (let i = 0; i < 14; i++) spawnHitParticles(pl.x + gRand(-18, 18), pl.y + gRand(-18, 18), i % 2 ? S.col : '#fff6c0'); }
-  seedUseFx(k, n);
-  try { playTone(392, 0.09, 'square', 0.05, 523); setTimeout(() => playTone(523, 0.09, 'square', 0.05, 659), 80); setTimeout(() => playTone(659, 0.09, 'square', 0.05, 784), 160); setTimeout(() => playTone(784, 0.12, 'square', 0.05, 1047), 240);
-    setTimeout(() => { playTone(1047, 0.35, 'triangle', 0.08, 2093); thump(110, 50, 0.3, 0.35); playCoinChime(9); }, 340); } catch (e) {}
-  if (typeof shakeScreenLight === 'function') setTimeout(shakeScreenLight, 340);
-  updateSeedButton(); updateStatsUI(); saveGame();
-}
-function seedUseFx(k, n) { // 種を使った演出：ダイアログの中央で種がはじけて、効果を大きく表示
-  const S = SEEDS[k], host = document.querySelector('.seed-ov .seed-panel') || document.body;
-  const el = document.createElement('div'); el.className = 'seed-use-fx' + (k === 'hp' ? ' hp' : '');
-  el.innerHTML = `<div class="suf-rays"></div><img class="suf-ico" src="${S.img}" alt=""><div class="suf-txt">${S.stat} UP!</div><div class="suf-sub">${S.name}を${n}個使った　<b>+${Math.round(n * SEED_PER_USE * 100)}%</b>（合計 +${Math.round(seedUsed(k) * SEED_PER_USE * 100)}%）</div>`
-    + Array.from({ length: 16 }, (_, i) => `<i class="suf-spark" style="--a:${i * 22.5}deg;--d:${70 + (i % 3) * 26}px;animation-delay:${280 + (i % 4) * 30}ms"></i>`).join('');
-  host.appendChild(el);
-  const row = document.querySelector(`.seed-ov [data-seed="${k}"]`); const card = row && row.closest('.sd2-row'); if (card) { card.classList.remove('seed-flash'); void card.offsetWidth; card.classList.add('seed-flash'); }
-  setTimeout(() => el.remove(), 1500);
-}
-const seedBtn = document.getElementById('seedBtn');
-function updateSeedButton() {
-  const held = seedHeld('atk') + seedHeld('hp'), used = seedUsed('atk') + seedUsed('hp');
-  seedBtn.style.display = 'none'; { const tb = document.getElementById('towerSeedBtn'); if (tb) tb.style.display = 'none'; } // ドーピングの種はなくした
-  const html = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt=""><b>×${held}</b>`; if (seedBtn.dataset.html !== html) { seedBtn.innerHTML = html; seedBtn.dataset.html = html; }
-  seedBtn.classList.toggle('is-disabled', !held);
-  const t = document.getElementById('towerSeedBtn'); if (t) { t.style.display = held || used ? '' : 'none'; t.innerHTML = `<img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">種でドーピング <small>所持 ${held}個${used ? `／使用中 ${used}個` : ''}</small>`; }
-  const ov = document.querySelector('.seed-ov'); if (ov) renderSeedPanel(ov);
-}
-function renderSeedPanel(ov) { // 見本の絵（seed_panel.webp）の上に、数字とボタンを重ねる。並びは絵どおり HPの種 → パワーの種
-  ['hp', 'atk'].forEach(k => {
-    const row = ov.querySelector(`.sd2-row[data-k="${k}"]`); if (!row) return;
-    const S = SEEDS[k], h = seedHeld(k), u = seedUsed(k), pct = Math.max(1, Math.floor(h * 0.1));
-    row.querySelector('.sd2-stat').innerHTML = `所持 <b class="sd2-n">${h}</b> 個<br>いまの効果 <b class="sd2-eff ${k}">+${Math.round(u * SEED_PER_USE * 100)}%</b> ${u}個`;
-    row.querySelector('.sd2-pctn').textContent = `${h ? pct : 0}個`;
-    row.querySelectorAll('[data-seed]').forEach(b => { b.disabled = !h; b.classList.toggle('is-disabled', !h); });
-  });
-}
-function openSeedPanel() {
-  if (document.querySelector('.seed-ov')) return;
-  const ov = document.createElement('div'); ov.className = 'cl-overlay show seed-ov';
-  const row = (k, y) => `<div class="sd2-row" data-k="${k}" style="--y:${y}"><div class="sd2-stat"></div>`
-    + `<button class="sd2-b b-all" data-seed="${k}" data-n="all" aria-label="全部使う"></button>`
-    + `<button class="sd2-b b-pct" data-seed="${k}" data-n="pct" aria-label="10%使う"><span class="sd2-pctn"></span></button>`
-    + `<button class="sd2-b b-one" data-seed="${k}" data-n="1" aria-label="1個使う"></button></div>`;
-  ov.innerHTML = `<div class="cl-panel seed-panel sd2" role="dialog" aria-label="ドーピングの種">${row('hp', 0)}${row('atk', 1)}<button class="cl-close sd2-close" aria-label="閉じる"></button></div>`;
-  document.body.appendChild(ov); renderSeedPanel(ov);
-  ov.addEventListener('click', ev => {
-    const b = ev.target.closest('[data-seed]'); if (b) { if (b.disabled) return; const k = b.dataset.seed, h = seedHeld(k); useSeed(k, b.dataset.n === 'all' ? h : b.dataset.n === 'pct' ? Math.max(1, Math.floor(h * 0.1)) : 1); return; }
-    if (ev.target === ov || ev.target.closest('.cl-close')) ov.remove();
-  });
-}
-seedBtn.addEventListener('click', openSeedPanel);
-document.getElementById('towerSeedBtn').addEventListener('click', openSeedPanel);
-updateSeedButton();
-// 入手：タンスの引き出し・壺・宝箱
-function seedDropText(k, n, x, y) { const S = SEEDS[k]; spawnDamageText(x, y, `${S.icon} ${S.name}${n > 1 ? ` ×${n}` : ''}を見つけた！`, S.col, 0.012, true); playCoinChime(11); }
-{ const orig = openTansu; openTansu = function (o) {
-  const before = gm.broke; orig.apply(this, arguments);
-  // ドーピングの種はなくした
-}; }
-{ const orig = breakObstacleLoot; breakObstacleLoot = function (o) {
-  orig.apply(this, arguments);
-  // ドーピングの種はなくした
-}; }
-// 宝箱の種は、宝箱の中身の1つとして決まった確率で出る（battle.js の openTreasureChest）
 // ★4（SSR）・★5（UR）の宝箱の中身の1つとして、仲間が出る。だれが出るかは招集ガチャと同じ重み（N30・R25・SR10・SSR2・UR1）。持っている仲間ならキャラ進化
 const CHEST_COMP_CHANCE = { common: 0.01, rare: 0.01, epic: 0.01, legendary: 0.15, mythic: 0.15 }; // N・R・SRの宝箱は1%
 const CHEST_COMP_UP = { common: 'rare', rare: 'epic', epic: 'legendary' }, CHEST_COMP_UP_CHANCE = { common: 0.001, rare: 0.001, epic: 0.001 }; // さらに0.1%で、1つ上のレア度の仲間 // N・Rの宝箱からもまれに（0.1%）。Nの仲間もダブってキャラ進化できるように // SSRの宝箱は転生でもらうものになったので、仲間が出やすく
@@ -547,18 +418,10 @@ function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーテ�
 // ★3（SR）・★4（SSR）・★5（UR）の宝箱の中身の1つとして、自キャラが出て進化する（攻撃力かHPの初期Lv+1）
 const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
 function chestHeroLoot() { // 宝箱の中身「自キャラ」：攻撃力かHPの初期Lv+1
-  const hid = getHeroChar(), name = hid ? COMPANIONS[hid].name : userNameHtml('勇者'), t = heroEvolve();
+  const name = userNameHtml('勇者'), t = heroEvolve();
   setTimeout(() => { try { renderMyCharCard(); } catch (e) {} }, 0);
-  return { misc: 'hero', n: 1, icon: hid ? companionIconHtml(hid) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 自キャラ（${name}）`, cardName: `自キャラ（${name}）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
+  return { misc: 'hero', n: 1, icon: `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 自キャラ（${name}）`, cardName: `自キャラ（${name}）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
 }
-// 転生で使った種の効果はリセット（持っている種はそのまま）
-// 使ったドーピングの種は、転生のときに進化の羽で還元（1個につき羽 SEED_FEATHER_REFUND 枚。転生報酬の羽に上乗せ）
-const SEED_FEATHER_REFUND = 1;
-function seedRefundFeathers() { return (seedUsed('atk') + seedUsed('hp')) * SEED_FEATHER_REFUND; }
-{ const orig = getRebirthFeatherGain; getRebirthFeatherGain = function () { return orig.apply(this, arguments) + seedRefundFeathers(); }; }
-{ const orig = completeReincarnation; completeReincarnation = function () { const used = seedUsed('atk') + seedUsed('hp'), r = orig.apply(this, arguments); game.seedUsed = {}; updateSeedButton(); if (used) setTimeout(() => showNotice(`🌱 使った種 ${used}個 → 進化の羽 +${used * SEED_FEATHER_REFUND}枚に還元！`), 600); return r; }; }
-{ const orig = rebornGoalsHtml; rebornGoalsHtml = function () { const h = orig.apply(this, arguments), used = seedUsed('atk') + seedUsed('hp'); if (!used) return h; return h.replace(/<\/div>$/, `<div class="rg-item"><img src="${SEEDS.atk.img}" alt=""><span>使った種 ${used}個 → 進化の羽 +${used * SEED_FEATHER_REFUND}枚に還元（転生報酬に込み）</span></div></div>`); }; }
-
 // ===== ショップの「所持品」タブ：持っている消耗品・宝箱・種などを一覧（使えるものはここから使う） =====
 
 // ===== 宝箱から出る使いきりアイテム（持ち越し可。Lv倍増券だけは1周回に1回まで） =====
@@ -583,16 +446,9 @@ const CHEST_ITEM_DROP = {
   legendary: [['doll', 0.03], ['lv15', 0.02], ['ret15', 0.05], ['lifeglass', 0.03]],
   mythic: [['doll', 0.03], ['lv15', 0.01], ['lv2', 0.01], ['ret2', 0.05], ['midare', 0.01], ['nitoryu', 0.02], ['yamabiko', 0.02], ['ageage', 0.02]],
 };
-const MANEKI_MS = 5 * 60 * 1000;
 function itemHeld(k) { return ((game.items || {})[k]) || 0; }
 function gainItem(k, n = 1) { game.items = game.items || {}; game.items[k] = itemHeld(k) + n; updateItemTicketBtns(); }
 function spendItem(k) { if (!itemHeld(k)) return false; game.items[k]--; updateItemTicketBtns(); return true; }
-{ const orig = computeBonuses; computeBonuses = function () { const b = orig.apply(this, arguments); if (b && Date.now() < (game.manekiUntil || 0)) b.coinMult *= 2; return b; }; } // 招き猫の間はコイン2倍
-function useManeki(ev) {
-  if (!spendItem('maneki')) return;
-  game.manekiUntil = Math.max(Date.now(), game.manekiUntil || 0) + MANEKI_MS; playRegisterSound(); saveGame();
-  showNotice(`🐱 金の招き猫！ ${Math.round((game.manekiUntil - Date.now()) / 60000)}分間 コイン2倍`); renderBagList();
-}
 // ===== 次のボスを倒すまで効く巻物・ダンス（みだれうち×4・にとうりゅう×2・やまびこ・アゲアゲダンス） =====
 function bossBuffOn(k) { return !!(game.bossBuffs || {})[k]; }
 function useBossBuff(k) {
@@ -704,7 +560,6 @@ function bagRows() {
   const rows = [], hc = getHeldChests();
   rows.push({ icon: '🧪', name: '回復ポーション', n: game.potions || 0, desc: 'HPを最大値の45%回復（ボス戦で、ゲーム画面左上のボタンから使用）' });
   rows.push({ icon: '<i class="ico-redpot"></i>', name: 'スキルポーション', n: game.redPotions || 0, desc: 'すべてのスキルの待ち時間をリセット（ゲーム画面のスキル列の左端から使用）' });
-  if (false) for (const [k, S] of Object.entries(SEEDS)) rows.push({ icon: `<img class="ico-img" src="${S.img}" alt="">`, name: S.name, n: seedHeld(k), desc: `1個で${S.stat} +${SEED_PER_USE * 100}%（転生まで）。使わなければ転生後も持ち越し${seedUsed(k) ? `／いま ${seedUsed(k)}個 使用中` : ''}`, btn: seedHeld(k) ? `<button data-bag-seed="1">使う</button>` : '' });
   for (const r of CHEST_RARITIES) { const n = (hc[r] || 0) + rebirthChestCount(r); if (!n) continue; const info = RARITY_INFO[r];
     rows.push({ icon: xi(CHEST_ICON[r]) || '🎁', name: `<span style="color:${info.color}">${rarityStars(r)}</span> ${info.label}の宝箱`, n, desc: 'コインや遺物が入っている', btn: `<button data-bag-chest="${r}">開ける</button>` }); }
   for (const r of FEA_RARITIES) { const n = feaCount(r); // 進化の羽はレア度ごと（0枚でも5種とも表示）
@@ -718,9 +573,8 @@ function bagRows() {
     rows.push({ icon: art ? `<span class="sr-ico su-i_${art}" style="display:inline-block;width:100%;height:100%"></span>` : ico(item), name: item.name + (SHOP_MULTI_ITEMS[id] ? ` Lv${n}` : item.toggleKind ? '（ON）' : ''), n, desc: SHOP_MULTI_ITEMS[id] ? `${SHOP_MULTI_ITEMS[id]} ${shopMultiRate(id)}倍` : item.desc, shop: true });
   }
   for (const [k, I] of Object.entries(CHEST_ITEMS)) { const n = itemHeld(k); if (!n) continue;
-    const btn = CHEST_ITEMS[k].buff ? (bossBuffOn(CHEST_ITEMS[k].buff) ? '<button class="is-disabled" disabled>効いている</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'lifeglass' ? '' : k === 'maneki' ? '<button data-bag-item="maneki">使う</button>' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
-    rows.push({ icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc + (k === 'maneki' && Date.now() < (game.manekiUntil || 0) ? `（いま効いている：あと${Math.ceil((game.manekiUntil - Date.now()) / 60000)}分）` : ''), btn }); }
-  if (game.hireTickets) rows.push({ icon: '<img class="ico-img" src="assets/img/icons/bag_ticket.webp" alt="">', name: 'ピックアップ採用券', n: game.hireTickets, desc: '★4・★5の仲間を1人、条件なしで採用できる（仲間タブで使用）', btn: `<button data-bag-go="chara">仲間タブへ</button>` });
+    const btn = CHEST_ITEMS[k].buff ? (bossBuffOn(CHEST_ITEMS[k].buff) ? '<button class="is-disabled" disabled>効いている</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'lifeglass' ? '' : (k === 'lv15' || k === 'lv2') ? (game.lvTicketUsed ? '<button class="is-disabled" disabled>転生まで使えない</button>' : `<button data-bag-item="${k}">使う</button>`) : k === 'skillTicket' ? '<button data-bag-item="goSkill">使う</button>' : k === 'compTicket' ? '<button data-bag-item="goChara">使う</button>' : '';
+    rows.push({ icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="bag-emoji">${I.icon}</span>`, name: I.name, n, desc: I.desc, btn }); }
   return rows;
 }
 function renderBagList() {
@@ -731,9 +585,7 @@ function renderBagList() {
 { const orig = showShopTab; showShopTab = function (key) { orig.apply(this, arguments); if (key === 'bag') renderBagList(); }; }
 document.getElementById('bagList').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.bagSeed) { openSeedPanel(); return; }
   if (b.dataset.bagChest) { switchTab('game'); setTimeout(() => { if (phase === 'battle') openChestBatchDialog(b.dataset.bagChest); else showNotice('戦闘中に開けられます'); }, 200); return; }
-  if (b.dataset.bagItem === 'maneki') { useManeki(ev); return; }
   if (b.dataset.bagItem && CHEST_ITEMS[b.dataset.bagItem] && CHEST_ITEMS[b.dataset.bagItem].buff) { useBossBuff(b.dataset.bagItem); return; }
   if (b.dataset.bagItem === 'lv15' || b.dataset.bagItem === 'lv2') { useLvTicket(b.dataset.bagItem); return; }
   if (b.dataset.bagItem === 'goSkill') { switchTab('coinshop'); return; } // スキルガチャの下の「券で回す」で使う
@@ -741,7 +593,6 @@ document.getElementById('bagList').addEventListener('click', ev => {
   if (b.dataset.bagGo === 'gacha') switchTab('gacha');
   if (b.dataset.bagGo === 'chara') switchTab('companion'); // ショップの仲間タブは削除したので仲間ページへ
 });
-{ const orig = updateSeedButton; updateSeedButton = function () { orig.apply(this, arguments); const sec = document.querySelector('[data-shop-sec="bag"]'); if (sec && !sec.hidden) renderBagList(); }; }
 if (document.querySelector('[data-shop-sec="bag"]') && !document.querySelector('[data-shop-sec="bag"]').hidden) renderBagList();
 
 // ===== 王城の決戦：赤じゅうたん・石の柱・王家の旗・たいまつ、落ちてくるシャンデリア =====
@@ -1024,10 +875,5 @@ if (!game.gimmickCleared) game.gimmickCleared = Object.assign({}, game.gimmickSe
   }
   return r;
 }; }
-// ドーピングの種・金の招き猫・自キャラの変更はなくした：持っていた種（使った分も）と招き猫は、1つにつきN羽1枚にして返す
-if (!game.seedGone) {
-  const n = (seedHeld('atk') + seedHeld('hp') + seedUsed('atk') + seedUsed('hp')) + itemHeld('maneki');
-  game.seeds = {}; game.seedUsed = {}; if (game.items) delete game.items.maneki; game.manekiUntil = 0; game.heroChar = null; game.seedGone = true;
-  if (n > 0) { addFea('common', n); setTimeout(() => showNotice(`🪶 ドーピングの種・金の招き猫はなくなりました。持っていた分を 進化のN羽 ×${n} にして返しました`, false, 6000), 3000); }
-  try { updateSeedButton(); refreshPlayerBallStats(false); saveGame(); } catch (e) {}
-}
+// ドーピングの種・金の招き猫・自キャラの変更は削除済み（リリース前なので返金なし）。古いセーブに残っていれば消す
+delete game.seeds; delete game.seedUsed; delete game.seedGone; delete game.manekiUntil; delete game.heroChar; if (game.items) delete game.items.maneki;

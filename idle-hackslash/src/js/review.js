@@ -25,7 +25,7 @@ function openReviewAsk(force) {
   game.review.asked = (game.review.asked || 0) + 1;
   const prev = phase; phase = 'paused';
   const ov = document.createElement('div'); ov.className = 'modal-overlay show'; ov.style.zIndex = 86;
-  const hid = getHeroChar(), img = hid ? companionIconHtml(hid) : `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
+  const img = `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`;
   ov.innerHTML = `<div class="modal-panel rv-panel"><div class="rv-ico">${img}</div>
     <div class="rv-title">冒険、楽しんでる？</div>
     <div class="rv-text">ここまで遊んでくれてありがとう！<br>もし気に入ってくれたら、<b>★5のレビュー</b>で応援してもらえると開発の励みになります🙏</div>

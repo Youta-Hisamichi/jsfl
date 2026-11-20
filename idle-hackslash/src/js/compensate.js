@@ -219,8 +219,6 @@ function powerBreakdown() {
   bonusTraceOn = true; let b; try { b = computeBonuses(); } finally { bonusTraceOn = false; }
   const tr = b._trace || [], rows = { atk: [], hp: [], cAtk: [], cHp: [] };
   for (let i = 0; i < tr.length; i++) { const p = i ? tr[i - 1] : { atk: 1, hp: 1, cAtk: 1, cHp: 1 }; for (const k in rows) { const r = p[k] ? tr[i][k] / p[k] : 1; if (Math.abs(r - 1) > 0.0005) rows[k].push([tr[i].label, r]); } }
-  const sA = 1 + seedUsed('atk') * SEED_PER_USE, sH = 1 + seedUsed('hp') * SEED_PER_USE;
-  if (sA !== 1) rows.atk.push(['パワーの種', sA]); if (sH !== 1) rows.hp.push(['HPの種', sH]);
   const sub = getSubStatMult(); if (sub !== 1) { rows.atk.push(['紋章（サブスク）', sub]); rows.hp.push(['紋章（サブスク）', sub]); }
   const atkUp = (Date.now() < atkUpEndAt) ? atkUpMult() : 1; if (atkUp !== 1) rows.atk.push(['攻撃力UPスキル', atkUp]);
   const accel = Date.now() < accelEndAt ? b.accelDmgMult : 1; if (accel !== 1) rows.atk.push(['加速スキル（発動中）', accel]);

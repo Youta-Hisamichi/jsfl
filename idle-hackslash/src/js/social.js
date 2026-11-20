@@ -22,7 +22,7 @@ async function makeShareCard() {
   c.fillStyle = '#fff'; c.font = '900 64px sans-serif'; c.shadowColor = '#000'; c.shadowBlur = 12;
   fitText(c, head, S / 2, 190, S - 140); c.shadowBlur = 0;
   // 自キャラ
-  const hid = getHeroChar(), heroSrc = hid ? COMPANION_SPRITES[hid] : PLAYER_SPRITE;
+  const heroSrc = PLAYER_SPRITE;
   const hero = await loadImgOnce(heroSrc);
   const glow = c.createRadialGradient(S / 2, 430, 20, S / 2, 430, 230); glow.addColorStop(0, 'rgba(255,230,140,0.55)'); glow.addColorStop(1, 'rgba(255,230,140,0)');
   c.fillStyle = glow; c.beginPath(); c.arc(S / 2, 430, 230, 0, Math.PI * 2); c.fill();

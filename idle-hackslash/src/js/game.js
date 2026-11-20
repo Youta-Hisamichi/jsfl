@@ -854,7 +854,6 @@ function tryBossCompanionJoin() {
   const rule = BOSS_JOIN_RULES[have];
   if (game.bossJoinSince <= rule.wait || Math.random() >= rule.chance) return;
   game.bossJoinSince = 0;
-  if (getPartyLimit() <= have) game.companionSlots = have + 1; // 枠が足りなければ3人まではタダで広げる
   let id = pickCompanionId();
   for (let i = 0; i < 30 && getCompanionCount(id) > 0; i++) id = pickCompanionId(); // できるだけまだいない仲間を
   const r = grantCompanion(id);
@@ -976,7 +975,7 @@ function buildGameOverTips() {
   if (atkLv + hpLv >= 2) tips.push(`⚔️ 強化で攻撃力・HPを上げよう（今のコインで 攻撃力+${atkLv}Lv / HP+${hpLv}Lv）`);
   if (ownedSkills.length > eq.length && eq.length < getSkillSlots()) tips.push('✨ 解放済みのスキルを装備しよう（スキルページ）');
   else if (!ownedSkills.length && cheapestSkill && game.coins >= cheapestSkill) tips.push('✨ スキルを解放して装備しよう（回復やバリアがおすすめ）');
-  if (getCompanionTotal() < getPartyLimit() && canAffordSummon()) tips.push('🐾 仲間を招集して一緒に戦おう');
+  if (canAffordSummon()) tips.push('🐾 仲間を招集して一緒に戦おう');
   if (game.stage % 10 === 0) tips.push('👑 ボスは強力。HPを上げるか、回復・バリアのスキルで粘ろう');
   if (game.stage >= 3) tips.push('🌌 「転生」を選ぶと遺物がもらえて、次の周回が楽になります');
   if (!tips.length) tips.push('⚔️ コインを貯めて強化タブで攻撃力を上げよう');
@@ -1097,7 +1096,7 @@ function completeReincarnation() {
   const feaGot = rollRebirthFeathers(featherGain); // 転生の羽は羽ガチャ：1枚ずつレア度を抽選
   const compGachaStage = game.stage; // 仲間ガチャのレア率はステージを戻す前の到達ステージで決める
   game.coins = 0; game.stage = 1; game.bossLoop = 0;
-  game.skillSlots = 2; game.weaponSlots = 1; game.companionSlots = 1; // スキル・サブウェポン・パーティの枠も転生でリセット
+  game.skillSlots = 2; game.weaponSlots = 1; // スキル・サブウェポンの枠も転生でリセット
   coinFx = []; coinDisplayHold = 0; pendingChestCoins = 0; pendingChestCoinPts = 0; // 飛んでいる途中のコインも転生で消える
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0;
   game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 };
@@ -1105,7 +1104,7 @@ function completeReincarnation() {
   game.skillGachaPulls = 0; game.weaponGachaPulls = 0; game.skillGachaDisc = 0; game.skillGachaGemFree = false; game.skillGachaExtra = 0; game.lvTicketUsed = false; /* Lv倍増券はまた1回使える */ /* スキルガチャの回数の上限も転生でリセット */
   game.skillOn = rollSkillOn(); // ONのスキルは転生のたびにランダムな3つに選び直す
   for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
-  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.weaponDup = {}; game.equippedWeapons = []; game.runBuffs = {}; weaponProj = []; weaponFx = [];
+  game.skillLevels = {}; game.equippedSkills = []; game.weapons = {}; game.weaponDup = {}; game.equippedWeapons = []; weaponProj = []; weaponFx = [];
   barrierHits = 0; barrierOrbs = [];
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   balls = balls.filter(ball => !ball.isCompanion);
@@ -1119,7 +1118,7 @@ function completeReincarnation() {
   applyCompEvoLevels(); // キャラ進化した仲間は初期Lvが上がった状態から
   applyHeroEvoLevels(); // 自キャラも進化した分の初期Lvから
   if (compGacha) { if ((game.companionBook || {})[compGacha.id]) compGacha.evo = compEvolve(compGacha.id); /* ダブり → キャラ進化 */ else { if (!game.companionBook) game.companionBook = {}; game.companionBook[compGacha.id] = true; } }
-  game.heroChar = null; renderCompanionList(); // 転生後のパーティはいつも勇者1人（仲間ガチャで出た仲間は図鑑と招集ガチャへ。パーティには入れない）
+  renderCompanionList(); // 転生後のパーティはいつも勇者1人（仲間ガチャで出た仲間は図鑑と招集ガチャへ。パーティには入れない）
   renderArtifactList();
   updateStatsUI();
   saveGame();
@@ -2160,13 +2159,13 @@ function drawBall(ball) {
     }
   }
   if (isMainPlayerBall(ball) && playerSpriteImg.complete && playerSpriteImg.naturalWidth) {
-    const hc = getHeroChar(), sz = ball.radius * (hc ? 3.6 : 2.9) * (hc && COMPANION_DRAW_SCALE[hc] || 1); // 仲間を自キャラにしたときは仲間の絵（余白が多いので大きめ）
-    drawFacingSprite(playerSpriteImg, ball, hc || 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
+    const sz = ball.radius * 2.9;
+    drawFacingSprite(playerSpriteImg, ball, 'hero', ball.x, ball.y - ball.radius * 0.15, sz);
   }
 
   if (ball.isCompanion) {
-    const swapped = ball.companionId === getHeroChar(); // 自キャラと交代した仲間の枠には勇者が入る
-    const img = swapped ? braveImg : companionSpriteImgs[ball.companionId];
+    const swapped = false;
+    const img = companionSpriteImgs[ball.companionId];
     ctx.save();
     if (img && img.complete && img.naturalWidth) {
       const sz = Math.max(ball.radius, COMPANION_SPRITE_MIN_RADIUS) * (swapped ? 2.9 : 3.3 * (COMPANION_DRAW_SCALE[ball.companionId] || 1)); // 丸より大きめに（新しい仲間の絵は余白があるので2.9→3.6）。小さい仲間も自機と同じ大きさで描く

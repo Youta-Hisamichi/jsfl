@@ -1279,7 +1279,7 @@ const DASH_DMG_MULT = 2, DASH_POWER_MS = 3000; // ダッシュパネルを通っ
 const HERO_WAIT_MAX_SHOW_S = 1.5; // 溜めが満タンになってから「MAX ×3」を出しておく秒数（そのあとは赤い輪だけ）
 const HERO_WAIT_RATE_MS = 1500, HERO_WAIT_MAX = 3; // 3秒で溜めMAX（×3）
 function heroWaitMult(ball) { if (!ball || !isMainPlayerBall(ball)) return 1; return Math.min(HERO_WAIT_MAX, 1 + (Date.now() - (ball.lastAtkAt || 0)) / heroWaitRateMs()); }
-function heroWaitRateMs() { return HERO_WAIT_RATE_MS * heroCharMods().charge; } // スピード型の自キャラは溜めが速い
+function heroWaitRateMs() { return HERO_WAIT_RATE_MS; }
 // 反射玉の数値：×1〜×16（掛け算だけ）。×1から始まり、射出したタックルで当てると反射玉が高速で跳ね回り、
 // 反射するたびに数値が1ずつ増える（最大値の次は×1に戻る。最大値は×8から、秘宝で×16まで）。敵に当たると「反射玉に当てたときの自キャラのダメージ × 今の数値」。
 // 反射玉（数値と場所）は次のステージへ持ち越す（game.refl に保存するので、読み込み直しても続きから）
@@ -1713,7 +1713,7 @@ function stepMovingObstacle(o, speedMult, pl) {
     const dx = o.x - q.x, dy = o.y - q.y, d = Math.hypot(dx, dy) || 1, min = o.r + q.r;
     if (d >= min) continue;
     const nx = dx / d, ny = dy / d; o.x = q.x + nx * min; o.y = q.y + ny * min;
-    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); if (refl && q.kind === 'reflector') reflectorStruck(q, o); }
+    const dot = o.mvx * nx + o.mvy * ny; if (dot < 0) { if (obstacleMovable(q)) { q.mvx = (q.mvx || 0) + dot * nx * 0.9; q.mvy = (q.mvy || 0) + dot * ny * 0.9; q.hitSet = new Set(); } o.mvx -= 2 * dot * nx * (refl ? 1 : 0.8); o.mvy -= 2 * dot * ny * (refl ? 1 : 0.8); if (refl) reflectorBounced(o); }
   }
   if (typeof gm !== 'undefined' && gm && Array.isArray(gm.items)) for (const it of gm.items) { // ステージの置き物（雪だるまなど）でも跳ね返る
     const R = !it.dead && GIMMICK_SOLID_R[it.kind]; if (!R) continue;
@@ -1758,11 +1758,6 @@ function stepMovingObstacle(o, speedMult, pl) {
 // 反射玉のダメージ：反射玉に当てたときの自キャラのダメージ × 今の数値
 const REFLECT_HIT_RATE = 3; // 反射玉の命中率はタックルの3倍（上限100%）
 const REFLECT_LAUNCH = 26, REFLECT_FRICTION = 0.993, REFLECT_REHIT_MS = 280;
-function reflectorStruck(q, o) { // ダブル反射玉：飛んでいる反射玉が、もう1つの反射玉にぶつかったら、ぶつけられた方も反射したことにして飛ばす（倍率+・敵に当たる）
-  const now = Date.now(); if (q.struckAt && now - q.struckAt < 120) return; q.struckAt = now; // 重なっている間に何度も数えない
-  if (!q.launched) { q.launched = true; q.launchMult = o.launchMult || 1; q.hitMap = new Map(); q.flyAt = now; }
-  reflectorBounced(q);
-}
 function reflectorBounced(o) { // 反射するたびに数値+1（音も数値に合わせて高くなる）
   const before = o.bm; if (!(o.chainN > 0) || o.bm <= reflMin()) o.chainN = Math.max(0, Math.round((o.bm - reflMin()) / reflStep())); stepBounceValue(o); o.chainN = o.bm < before ? 0 : o.chainN + 1; // 連鎖の数：反射するたびに+1（上限で倍率が止まっても数える）。×1に戻ったら数え直す
   const now = Date.now(); if (typeof playReflChain === 'function' && now - (o.wallTickAt || 0) > 50) { o.wallTickAt = now; if (o.bm < before) playReflReset(); else { playReflChain(o.chainN, 16); /* 音は反射した回数で上がる（上限に届いて倍率が止まっても、音は上がり続けてくり返す） */ if (o.bm >= reflMax() && before < o.bm && typeof playReflMaxUp === 'function') { playReflMaxUp(); spawnDamageText(o.x, o.y - o.r - 24, `🌟 MAX ×${o.bm}！`, '#ffe45c', 0.02, true); if (typeof reflMaxTalk === 'function') reflMaxTalk(); } } } // 最大値になった瞬間はパワーアップ音 // パズルの連鎖のように上がっていく音。×1に戻ったら下がる音

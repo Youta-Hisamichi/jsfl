@@ -274,13 +274,11 @@ function showAllyInfo(b) {
   let el = document.getElementById('enemyInfoPop');
   if (!el) { el = document.createElement('div'); el.id = 'enemyInfoPop'; el.className = 'enemy-info-pop'; host.appendChild(el); }
   const isMain = isMainPlayerBall(b), cid = b.companionId;
-  const hero = getHeroChar(), swapped = !isMain && cid && cid === hero; // 自キャラと交代した仲間の枠は勇者が入る
-  const id = isMain ? hero : swapped ? null : cid;
+  const id = isMain ? null : cid;
   const name = id ? COMPANIONS[id].name : '勇者';
   const role = isMain ? '自キャラ' : '仲間';
   const lv = !isMain && cid && game.companions.level ? `Lv.${(game.companions.level[cid] || 0) + 1}　` : '';
-  const info = isMain && typeof heroTypeInfo === 'function' ? heroTypeInfo(hero) : null;
-  const typeTxt = isMain ? (info ? `${info.t.icon} ${info.t.name}（▲${info.up}・▼${info.down}）` : '⚖️ バランス') : (id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '');
+  const typeTxt = !isMain && id && COMPANIONS[id].desc ? COMPANIONS[id].desc : '';
   el.innerHTML = `<div class="eip-name eip-ally">${isMain ? '⭐ ' : '🐾 '}${name}<small>${role}　${lv}HP ${formatCoinNumber(Math.ceil(Math.max(0, b.hp)))}/${formatCoinNumber(Math.ceil(b.maxHp || b.hp))}　攻撃 ${formatCoinNumber(Math.round(b.atk || 0))}</small></div>`
     + (typeTxt ? `<div class="eip-row eip-sub">${typeTxt}</div>` : '');
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');

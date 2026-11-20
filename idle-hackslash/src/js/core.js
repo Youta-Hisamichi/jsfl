@@ -245,7 +245,7 @@ function switchTab(name) {
   if (name === 'game') resizeCanvas();
   if (name === 'game' && typeof resumeGameOverForTab === 'function') resumeGameOverForTab();
   if (name === 'game' && gemShopReturn && gemShopReturn.mustResume) runGemShopReturn();
-  if (name === 'gemshop') { renderRebirthShopList(); shopSortOrder = null; renderShopList(); if (typeof renderCompLockList === 'function') renderCompLockList(); } // 完売品を下へ並べ替えるのはショップを開き直したときだけ
+  if (name === 'gemshop') { renderRebirthShopList(); shopSortOrder = null; renderShopList(); } // 完売品を下へ並べ替えるのはショップを開き直したときだけ
   refreshBgm();
 }
 tabBar.addEventListener('click', event => {
@@ -770,7 +770,6 @@ function simpleChoice(o) { // 軽い2択ダイアログ
 SHOP_ITEMS.potion = { icon: '🧪', name: '回復ポーション ×3', desc: 'HPを最大値の45%回復（ゲーム画面のボタンで使用）。1回で3個手に入る', cost: 2, consumableKey: 'potions', bundle: 3 };
 SHOP_ITEMS.redPotion = { icon: '<i class="ico-redpot"></i>', name: 'スキルポーション ×3', desc: 'すべてのスキルの待ち時間を一瞬でリセット（ゲーム画面のスキル列の左端で使用）。1回で3個手に入る', cost: 2, consumableKey: 'redPotions', bundle: 3 };
 // ピックアップ採用券はショップから外した（持っている券は今までどおり使える）
-SHOP_ITEMS.partySlot = { hideInShop: true, icon: '🐾', name: 'パーティ枠 +1', desc: '一緒に戦える仲間の人数が1人増える（転生でリセット）', slot: { label: 'パーティ枠', unit: '人', cur: () => getPartyLimit(), max: () => COMPANION_PARTY_MAX, cost: () => getPartySlotCost(), buy: () => { game.companionSlots = getPartyLimit() + 1; renderCompanionList(); } } };
 SHOP_ITEMS.skillSlot = { hideInShop: true, icon: '🎒', name: 'スキル枠 +1', desc: '装備できるスキルが1つ増える（転生でリセット）', slot: { label: 'スキル枠', unit: '枠', cur: () => getSkillSlots(), max: () => SKILL_SLOT_MAX, cost: () => getSkillSlotCost(), buy: () => { game.skillSlots = getSkillSlots() + 1; renderCoinShopList(); } } };
 SHOP_ITEMS.weaponSlot = { hideInShop: true, icon: '⚔️', name: 'サブウェポン枠 +1', desc: '装備できるサブウェポンが1つ増える（転生でリセット）', slot: { label: 'サブウェポン枠', unit: '枠', cur: () => getWeaponSlots(), max: () => WEAPON_SLOT_MAX, cost: () => getWeaponSlotCost(), buy: () => { game.weaponSlots = getWeaponSlots() + 1; renderCoinShopList(); } } };
 // 禁断の遺物はショップのいちばん下に1本ずつだけ
@@ -1123,31 +1122,8 @@ function companionIconHtml(id) {
   return COMPANION_SPRITES[id] ? `<img class="comp-sprite" src="${COMPANION_SPRITES[id]}" alt="">` : COMPANIONS[id].icon;
 }
 const COMPANION_IDS = Object.keys(COMPANIONS);
-// 自キャラ：仲間の中から選べる（見た目と属性が変わる）。未選択なら勇者（属性なし）
 function isCharSummoned(id) { return !!(game.companions && game.companions.recruited && game.companions.recruited[id]) && isCharObtained(id); } // いま招集している（パーティに入れている）仲間だけ
-function getHeroChar() { return null; } // 自キャラの変更はなくした（いつも勇者）
-const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 交代で仲間に入った勇者の絵
-// 自キャラのタイプ：仲間の得意分野で決まり、長所はレア度が高いほど大きい。短所は固定。勇者は補正なし・属性なし（相性の不利も受けない）
-const HERO_TYPES = {
-  atk:   { icon: '⚔️', name: 'アタッカー', up: p => `攻撃力 +${p}%`, down: '最大HP -20%', mods: p => ({ atk: 1 + p / 100, hp: 0.8 }) },
-  hp:    { icon: '🛡️', name: 'タンク', up: p => `最大HP +${p * 2}%`, down: '攻撃力 -15%', mods: p => ({ hp: 1 + p * 2 / 100, atk: 0.85 }) },
-  speed: { icon: '💨', name: 'スピード', up: p => `移動速度 +${Math.round(p / 2)}%・溜め時間 -${Math.min(40, Math.round(p / 2))}%`, down: '最大HP -15%', mods: p => ({ speed: 1 + p / 200, charge: 1 - Math.min(0.4, p / 200), hp: 0.85 }) },
-  coin:  { icon: '💰', name: 'トレジャー', up: p => `コイン +${p * 2}%`, down: '攻撃力 -15%', mods: p => ({ coin: 1 + p * 2 / 100, atk: 0.85 }) },
-};
-const HERO_TYPE_PCT = { common: 15, rare: 25, epic: 40, legendary: 60, mythic: 100 };
-function heroTypeInfo(id) { // { type, pct, up, down } または勇者なら null
-  const c = id && COMPANIONS[id]; if (!c || !HERO_TYPES[c.stat]) return null;
-  const t = HERO_TYPES[c.stat], pct = HERO_TYPE_PCT[c.rarity] || 15;
-  return { key: c.stat, t, pct, up: t.up(pct), down: t.down };
-}
-let heroModsCache = { id: undefined, v: null };
-function heroCharMods() {
-  const id = getHeroChar();
-  if (heroModsCache.id === id && heroModsCache.v) return heroModsCache.v;
-  const info = heroTypeInfo(id), m = info ? info.t.mods(info.pct) : {};
-  const v = { atk: m.atk || 1, hp: m.hp || 1, coin: m.coin || 1, speed: m.speed || 1, charge: m.charge || 1 };
-  heroModsCache = { id, v }; return v;
-}
+const braveImg = new Image(); braveImg.src = PLAYER_SPRITE; // 勇者の絵
 const COMPANION_UNLOCK_COST = { epic: 80, legendary: 200 };
 function isCharObtained(id) { return !!COMPANIONS[id]; } // 採用ガチャは廃止：どのキャラも最初から採用・解雇できる
 function companionNeedsUnlock(id) { return false; } // 永続ショップ廃止：仲間は最初から全員召喚に出る（出したくない仲間は「解雇」で外す）
@@ -1189,7 +1165,6 @@ const game = {
   bgmBook: {}, // BGM図鑑 { 曲キー: 登録したステージ }（転生しても残る）
   tackleUnlocked: false, superTackleUnlocked: false, // 転生ショップで開放（転生しても残る）
   tacklePierceLv: 0, // ジェムショップ「貫きの蹄鉄」の購入数（タックルのヒット後持続 +0.1秒ずつ）
-  companionSlots: 1, // 仲間のパーティ枠（ジェム1個ずつ最大8まで。転生でリセット）
   subscriptions: {}, // サブスク（紋章）の有効期限 { hero: 時刻, veteran: 時刻 }
   rebirthOfferSlots: 3, // 転生ショップの商品枠（ジェムで最大10まで増やせる。転生しても残る）
   rebirthSeenItems: {}, rebirthShopNew: [], rebirthRerolls: 0, // 転生ショップ：一度並んだ商品 / 今回のNEW / 今回の引き直し回数
@@ -1276,11 +1251,9 @@ function computeBonuses() {
   snap('ショップ（流星剣・月の盾）');
   if (typeof applyComboBonuses === 'function') applyComboBonuses(b); // 仲間の組み合わせボーナス
   snap('仲間の組み合わせ');
-  { const hm = heroCharMods(); b.atkMult *= hm.atk; b.hpMult *= hm.hp; b.coinMult *= hm.coin; } // 自キャラのタイプ補正（長所と短所）
-  snap('自キャラのタイプ補正');
   b.speedOver = Math.max(0, b.speedMult - SPEED_MULT_CAP); // 上限を超えた移動速度は、攻撃力に換算する（伸びはゆるやか：超えた分が2倍になるごとに +50%）
   b.speedOverMult = overflowDmgMult(b.speedOver); b.atkMult *= b.speedOverMult;
-  b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult) * heroCharMods().speed; // 移動速度の仲間を育てすぎても超高速にならないよう上限（スピード型の自キャラはその上に上乗せ）
+  b.speedMult = Math.min(SPEED_MULT_CAP, b.speedMult); // 移動速度の仲間を育てすぎても超高速にならないよう上限
   return b;
 }
 
@@ -1348,7 +1321,7 @@ function renderUpgradeList() { // 自キャラの強化（仲間カードの強�
 }
 var shopSortOrder = null;
 const SHOP_KEEP_TOGETHER = [['upPct', 'upMax']]; // ショップで隣に並べる品（10%LvUP と MAXLvUP）
-const SHOP_ITEM_ART = { reborn: 'reborn', upPct: 'pct', upMax: 'upmax', sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'auto', potion: 'bluepot', redPotion: 'redpot', partySlot: 'party', skillSlot: 'book', weaponSlot: 'axe', summoner: 'emblem' }; // ショップの絵のアイコン
+const SHOP_ITEM_ART = { reborn: 'reborn', upPct: 'pct', upMax: 'upmax', sword: 'sword', shield: 'shield', meteor: 'meteor', fairy: 'fairy', autoUpgrade: 'auto', potion: 'bluepot', redPotion: 'redpot', skillSlot: 'book', weaponSlot: 'axe', summoner: 'emblem' }; // ショップの絵のアイコン
 function renderShopList() {
   const ids = Object.keys(SHOP_ITEMS).filter(id => (CLONES_ENABLED || !CLONE_ONLY_ITEMS.includes(id)) && !SHOP_ITEMS[id].hideInShop); // 枠を増やす品は各ページのボタンから（転生でリセットされるのでショップには並べない）
   const sold = {}; ids.forEach(id => { sold[id] = isShopItemOwned(id); });

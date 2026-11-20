@@ -301,7 +301,7 @@ function fullReset() {
   game.stage = 1; game.coins = 0; game.gems = 0; game.superGems = 0;
   game.reincarnations = 0; game.rebirthLv = 0; game.bossLoop = 0; game.bestStage = 1; game.totalKills = 0; game.totalTaps = 0; game.totalBounces = 0; game.maxBounceChain = 0;
   game.upgrades = newUpgradeLevels(); game.coinCloneSlots = 0; game.shopOwned = {}; game.autoUpgrade = false; game.autoUpgradeUnlocked = false; game.skillLevels = {}; game.skillGachaPulls = 0; game.skillGachaDisc = 0; game.weaponGachaPulls = 0; game.skillGachaOffer = null; game.skillSlots = 2; game.weaponSlots = 1; game.equippedWeapons = []; game.equippedSkills = [];
-  game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.companionSlots = 1; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
+  game.ownedArtifacts = {}; game.evoFea = {}; game.feaUseBuys = 0; game.rebirthChests = []; game.bestiary = {}; game.companionBook = {}; game.companionUnlocks = {}; game.rebirthShopBuys = {}; game.rebirthOfferSlots = 3; game.rebirthShopOffer = null; game.rebirthShopVisits = 0; game.rebirthSeenItems = {}; game.rebirthShopNew = []; game.tackleUnlocked = false; game.superTackleUnlocked = false; game.rebirthBonus = { atk: 0, hp: 0, cloneSlots: 0 }; game.skipChallenge = null;
   game.companions = { recruited: {}, awaken: {}, count: {}, level: companionMap(0), hpLv: companionMap(0), hp: companionMap(0), alive: companionMap(true) };
   lastSpecialAt = Date.now() - SPECIAL_COOLDOWN;
   lastAccelAt = Date.now() - ACCEL_COOLDOWN;
@@ -658,13 +658,12 @@ debugRow.addEventListener('click', event => {
     renderShopList(); renderSupergemShopList(); renderUpgradeList(); renderCoinShopList(); renderCompanionList();
     saveGame();
   }
-  if (action === 'companionUnlockAll') { // 仲間をすべて開放（召喚で出る・図鑑に登録）し、パーティ枠も最大に
+  if (action === 'companionUnlockAll') { // 仲間をすべて開放（召喚で出る・図鑑に登録）し
     if (!game.companionUnlocks) game.companionUnlocks = {};
     if (!game.companionBook) game.companionBook = {};
     COMPANION_IDS.forEach(id => { if (companionNeedsUnlock(id)) game.companionUnlocks[id] = true; game.companionBook[id] = true; });
-    game.companionSlots = COMPANION_PARTY_MAX;
     renderCompanionList(); renderRebirthShopList(); saveGame();
-    showNotice(`DEBUG: 仲間${COMPANION_IDS.length}種をすべて開放し、パーティ枠を最大（${COMPANION_PARTY_MAX}人）にしました`); return;
+    showNotice(`DEBUG: 仲間${COMPANION_IDS.length}種をすべて開放ししました`); return;
   }
   if (action === 'clearSkillsWeapons') { // 取得したスキル・サブウェポンを全部なくす（転生と同じ状態。ガチャの値段も最初に戻す）
     for (const id in SKILL_GACHA_SKILLS) delete game.shopOwned[id];
@@ -681,8 +680,7 @@ debugRow.addEventListener('click', event => {
     renderCompanionList(); refreshPlayerBallStats(false); updateStatsUI(); saveGame();
     return;
   }
-  if (action === 'resetCompSlots' || action === 'resetSkillSlots' || action === 'resetWeaponSlots') { // 枠数を1に戻す（はみ出した装備は外す）
-    if (action === 'resetCompSlots') { game.companionSlots = 1; showNotice('🐾 仲間のパーティ枠を1に戻しました'); renderCompanionList(); }
+  if (action === 'resetSkillSlots' || action === 'resetWeaponSlots') { // 枠数を1に戻す（はみ出した装備は外す）
     if (action === 'resetSkillSlots') { game.skillSlots = 2; game.equippedSkills = getEquippedSkills().slice(0, 1); game.equippedWeapons = getEquippedWeapons().slice(0, 1); showNotice('✨ スキルの装備枠を1に戻しました'); }
     if (action === 'resetWeaponSlots') { game.weaponSlots = 1; game.equippedWeapons = getEquippedWeapons().slice(0, 1); showNotice('🗡️ サブウェポンの装備枠を1に戻しました'); }
     renderCoinShopList(); updateSkillButtonVisibility(); saveGame();
@@ -934,7 +932,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'dmgGuide') { // 通常攻撃のダメージ目安（いまの攻撃力・強化から計算。敵の防御や属性・弱点は入れない）
     const b = computeBonuses(), atk = getPlayerAtk(), F = v => formatCoinNumber(Math.round(v)), mel = b.meleeMult || 1, rush = b.rushDmgUp || 1, cm = CRIT_MULT + b.critMultBonus;
     const combo = n => 1 + Math.min(n - 1, COMBO_MAX_STACKS) * (COMBO_STEP + b.comboGrowth) * getEvoRate('combo');
-    const pull = c => (1 + (RUSH_RUN_MAX - 1) * c) * (1 + 0.25 * getRunBuff('pull')) * rush;
+    const pull = c => (1 + (RUSH_RUN_MAX - 1) * c) * rush;
     const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${F(v)}${n ? `<small>${n}</small>` : ''}</div>`;
     const html = `<div class="dbg-list"><div class="dl-h">基本</div>${row('攻撃力', atk)}
       <div class="dl-h">近接攻撃（ぶつかったとき）</div>${row('ふつう（手動）', atk * mel, `攻撃力 × 接近戦の強化 ×${+mel.toFixed(2)}`)}${row('AUTO中', atk * mel * AUTO_ATK_MULT, `× ${AUTO_ATK_MULT}（放置中は控えめ）`)}${row('溜めMAX（3秒待ってから当てる）', atk * mel * HERO_WAIT_MAX, `× ${HERO_WAIT_MAX}`)}
@@ -1143,12 +1141,6 @@ function showShopPurchaseFx(iconHtml, name, line, kicker = '購入しました�
 }
 // 解雇・採用：解雇した仲間は仲間召喚に出なくなる（ジェムで切り替え）
 // 値段はレア度が高いほどかなり高い。★2以上は最初「解雇中」（採用すると召喚に出る）
-const COMP_LOCK_GEMS = { common: 3, rare: 10, epic: 50, legendary: 200, mythic: 800 };
-function compLockCost(id) { return COMP_LOCK_GEMS[COMPANIONS[id].rarity] || 3; }
-function compLockDefault(id) { return id !== 'villager'; } // 村人以外は最初「採用前」（★1も採用ガチャで出るまで採用しない）
-function compFiredCount() { return COMPANION_IDS.filter(id => game.compLocked && game.compLocked[id] === true).length; } // 解雇中（採用したあと解雇した）人数
-function compHiredTotal() { return COMPANION_IDS.filter(id => !isCompLocked(id)).length + compFiredCount(); } // これまでに採用した人数（解雇中も含む）
-function compFireMax() { return Math.floor(compHiredTotal() / 2); } // 解雇できるのは採用した人数の半分まで
 function isCompLocked(id) { return !isHireUnlocked(id); } // 採用（解雇・採用ガチャ）はやめた：転生回数・最高ステージの条件を満たした仲間は自動で招集ガチャの候補に入る
 // ★3以上の仲間は、転生1回ごとに1人ずつ採用できるようになる（★3→★4→★5の順）
 const RARE_HIRE_ORDER = COMPANION_IDS.filter(id => RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('epic')).sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
@@ -1160,196 +1152,10 @@ const HIRE_STAGE_OVERRIDE = { pegasus: 2500, king: 5000, archangel: 10000, baham
 function hireStageNeed(id) { if (HIRE_STAGE_OVERRIDE[id]) return HIRE_STAGE_OVERRIDE[id]; if (COMPANIONS[id] && COMPANIONS[id].rarity === 'mythic') return MYTHIC_HIRE_STAGE; const i = RARE_HIRE_ORDER.indexOf(id); return i < 0 ? 0 : HIRE_STAGE_STEPS[Math.min(i, HIRE_STAGE_STEPS.length - 1)]; }
 function isHireUnlocked(id) { return !!(game.ticketUnlocked && game.ticketUnlocked[id]) || (game.reincarnations || 0) >= hireRebirthNeed(id) && (game.bestStage || 1) >= hireStageNeed(id); } // 転生回数と最高到達ステージの両方
 function hireNeedText(id) { const r = (game.reincarnations || 0) >= hireRebirthNeed(id), s = (game.bestStage || 1) >= hireStageNeed(id); return [r ? '' : `転生${hireRebirthNeed(id)}回`, s ? '' : `ステージ${formatStageNumber(hireStageNeed(id))}到達`].filter(Boolean).join('＋'); }
-function onCompLockClick(ev) {
-  const b = ev.target.closest('[data-cl-toggle]'); if (!b) return;
-  const id = b.dataset.clToggle, locking = !isCompLocked(id);
-  if (!locking && !isHireUnlocked(id) && typeof useHireTicket === 'function' && RARITY_ORDER.indexOf(COMPANIONS[id].rarity) >= RARITY_ORDER.indexOf('legendary') && useHireTicket(id)) return; // ★4・★5はピックアップ採用券で解放できる
-  if (!locking && !isHireUnlocked(id)) { showTapError(`🔒 ${hireNeedText(id)}で採用できます`, ev.clientX, ev.clientY); return; }
-  if (locking && COMPANION_IDS.filter(x => !isCompLocked(x)).length <= 1) { showTapError('全員は解雇できません', ev.clientX, ev.clientY); return; }
-  if (locking && compFiredCount() + 1 > compFireMax()) { showTapError(`解雇できるのは採用した人数の半分（${compFireMax()}人）までです`, ev.clientX, ev.clientY); return; }
-  const cost = compLockCost(id);
-  if (game.gems < cost) { promptGemShortage(cost, { iconHtml: companionIconHtml(id) }); return; }
-  game.gems -= cost;
-  if (!game.compLocked) game.compLocked = {};
-  game.compLocked[id] = locking;
-  if (!Array.isArray(game.summonGuarantee)) game.summonGuarantee = [];
-  game.summonGuarantee = game.summonGuarantee.filter(x => x !== id);
-  if (!locking) game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
-  showShopPurchaseFx(companionIconHtml(id), COMPANIONS[id].name, locking ? '仲間招集に出なくなりました' : '次の招集ガチャで必ず出ます！', locking ? '解雇しました！' : '採用しました！');
-  playRegisterSound(); updateStatsUI(); renderCompLockList(); renderCompanionList(); saveGame();
-}
-function openCompLockModal() {
-  let ov = document.getElementById('compLockOverlay');
-  if (!ov) {
-    ov = document.createElement('div'); ov.id = 'compLockOverlay'; ov.className = 'cl-overlay';
-    ov.innerHTML = '<div class="cl-panel"><div class="cl-note">解雇した仲間は仲間招集に出なくなります。★2以上は最初は採用前です。採用した仲間は次の招集ガチャで必ず出ます。★3・★4は転生1回ごとに1人ずつ、★5は転生30回で採用できるようになります（最高到達ステージの条件もあります）。切り替えるたびにジェムが必要で、レア度が高いほど高くなります（今いる仲間はそのまま）</div><div class="cl-gems"></div><div class="cl-list"></div><button class="cl-close">閉じる</button></div>';
-    document.body.appendChild(ov);
-    ov.addEventListener('click', ev => {
-      if (ev.target === ov || ev.target.closest('.cl-close')) { ov.classList.remove('show'); return; }
-      onCompLockClick(ev);
-    });
-  }
-  renderCompLockList();
-  ov.classList.add('show');
-}
-function renderCompLockList() { // ショップの「キャラ」タブと、仲間ページから開くダイアログの両方を描く（レア度の低い順）
-  const ids = [...COMPANION_IDS].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity));
-  const html = ids.map(id => {
-    const c = COMPANIONS[id], off = isCompLocked(id), rar = RARITY_INFO[c.rarity];
-    const st = off ? '<em>採用前</em>' : '採用中', guar = !off && (game.summonGuarantee || []).includes(id) ? '<b class="cl-guar">次の招集で確定</b>' : '';
-    const btn = off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? `<button class="cl-btn notyet" data-cl-toggle="${id}"><span class="cl-act">🔒 未解放</span><span class="cl-lock">${hireNeedText(id)}で解放</span></button>`
-      : off ? `<span class="cl-btn notyet cl-gacha-only"><span class="cl-act">🎰 ガチャで採用</span><span class="cl-lock">採用ガチャから出ます</span></span>` // 採用はガチャだけ
-      : `<button class="cl-btn ${off ? 'hire' : 'fire'} ${game.gems < compLockCost(id) || !off && compFiredCount() >= compFireMax() ? 'is-disabled' : ''}" data-cl-toggle="${id}"><span class="cl-act">${off ? '採用する' : '解雇する'}</span><span class="cl-plate su-price"><b>${compLockCost(id)}</b></span></button>`; // ショップのアイテムと同じ価格プレート
-    return `<div class="cl-row ${off ? 'off' : ''} ${off && !isHireUnlocked(id) && id !== HIRE_FREE_LEGEND ? 'hire-locked' : ''}" style="--rc:${rar.color}"><span class="cl-ico">${companionIconHtml(id)}</span><span class="cl-name"><b class="su-name">${c.name}</b><small>${rarityStars(c.rarity)} ${st}${guar}</small></span>${btn}</div>`;
-  }).join('');
-  for (const root of [document.getElementById('compLockOverlay'), document.getElementById('shopCharaSec')]) {
-    if (!root) continue;
-    const g = root.querySelector('.cl-gems'); if (g) g.innerHTML = `所持 💎${Math.floor(game.gems).toLocaleString('ja-JP')}`;
-    root.querySelector('.cl-list').innerHTML = html;
-  }
-  renderHireGacha();
-}
-function showHireGachaInfo(id, anchor) { // 候補アイコンをタップしたら、その仲間の概要を吹き出しで
-  document.querySelectorAll('.hg-pop').forEach(el => el.remove());
-  const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity], r = anchor.getBoundingClientRect();
-  const el = document.createElement('div'); el.className = 'hg-pop'; el.style.setProperty('--rc', rar.color);
-  el.innerHTML = `<div class="hgp-head">${companionIconHtml(id)}<div><b>${c.name}</b><small>${rarityStars(c.rarity)}</small></div></div><div class="hgp-desc">${c.desc || ''}</div><div class="hgp-st">${isCompLocked(id) ? '📜 採用前（出たら採用）' : `✅ 採用中（ダブると強化Lv +${HIRE_DUP_LV}）`}</div>`;
-  document.body.appendChild(el);
-  const w = el.offsetWidth, h = el.offsetHeight;
-  el.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
-  el.style.top = (r.top - h - 6 > 8 ? r.top - h - 6 : r.bottom + 6) + 'px';
-  const close = e => { if (e && el.contains(e.target)) return; el.remove(); document.removeEventListener('pointerdown', close, true); };
-  setTimeout(() => document.addEventListener('pointerdown', close, true), 0);
-  clearTimeout(showHireGachaInfo.t); showHireGachaInfo.t = setTimeout(close, 4000);
-}
-// ===== 採用ガチャ：解放ずみの仲間から1人をランダムに（★が高いほど出にくい）。採用前なら採用、採用中のキャラがダブったら少し強化 =====
-const HIRE_GACHA_GEMS = 5;
-// レア度ごとの排出率（%）。★3以上は条件で解放された人数が増えるほど base → max へ上がる（同じレア度の中は均等）
-const HIRE_GACHA_RATE = { common: { base: 66 }, rare: { base: 20 }, epic: { base: 6, max: 8 }, legendary: { base: 1, max: 3.5 }, mythic: { base: 0.1, max: 1 } };
-const HIRE_FREE_LEGEND = RARE_HIRE_ORDER.find(id => COMPANIONS[id].rarity === 'legendary'); // ★4の最初の1体は条件なしでガチャから出る
-function hireGachaRates(pool) { // { rarity: % }（候補がいないレア度は除く。★1が残りを受け持って合計100%）
-  const raw = {};
-  for (const r of RARITY_ORDER) {
-    const n = pool.filter(id => COMPANIONS[id].rarity === r).length, cfg = HIRE_GACHA_RATE[r]; if (!n || !cfg) continue;
-    const all = COMPANION_IDS.filter(id => COMPANIONS[id].rarity === r).length;
-    raw[r] = cfg.max == null || all <= 1 ? cfg.base : cfg.base + (cfg.max - cfg.base) * Math.min(1, (n - 1) / (all - 1));
-  }
-  if (raw.common != null) { raw.common = 0; raw.common = Math.max(0, 100 - Object.values(raw).reduce((a, b) => a + b, 0)); return raw; } // ★2以上は指定どおり、★1は残り全部
-  const sum = Object.values(raw).reduce((a, b) => a + b, 0) || 1;
-  for (const r in raw) raw[r] = raw[r] / sum * 100;
-  return raw;
-}
-const HIRE_DUP_LV = 2; // ダブったときの強化（攻撃・HPの強化Lv）
-function hireGachaPool() { return COMPANION_IDS.filter(id => isHireUnlocked(id) || id === HIRE_FREE_LEGEND); }
-let hireGachaRolling = false;
-function renderHireGacha() {
-  if (getActiveTab() !== 'gemshop' && document.getElementById('hireGachaBox').dataset.html) return; // 見ていないときは描かない
-  const box = document.getElementById('hireGachaBox'); if (!box || hireGachaRolling) return;
-  const pool = hireGachaPool(), rates = hireGachaRates(pool);
-  const odds = RARITY_ORDER.map(r => rates[r] ? `<span style="--rc:${RARITY_INFO[r].color}">${rarityStars(r)} ${rates[r] < 1 ? rates[r].toFixed(2) : rates[r].toFixed(1)}%</span>` : '').join('');
-  const cols = pool.length <= 27 ? 9 : pool.length <= 33 ? 11 : 13; // 3段に収まるよう列を増やす
-  const html = `<div class="hg-cnt">${pool.length}</div>
-    <div class="hg-faces" style="--cols:${cols}">${pool.length ? [...pool].sort((a, b) => RARITY_ORDER.indexOf(COMPANIONS[a].rarity) - RARITY_ORDER.indexOf(COMPANIONS[b].rarity)).map(id => `<span class="hg-cell" data-hg-info="${id}" style="--rc:${RARITY_INFO[COMPANIONS[id].rarity].color}"><span class="hg-face ${isCompLocked(id) && !(game.compLocked && game.compLocked[id] === true) ? 'new' : ''}">${companionIconHtml(id)}</span><small class="hg-star">${'★'.repeat(RARITY_ORDER.indexOf(COMPANIONS[id].rarity) + 1)}</small></span>`).join('') : '<span class="hg-empty">いま採用できる仲間はいません（転生や到達ステージで増えます）</span>'}</div>
-    <div class="hg-note">採用前の仲間が出たら採用。採用中の仲間がダブったら攻撃・HPの強化Lv +${HIRE_DUP_LV}<br>解雇中 <b>${compFiredCount()} / ${compFireMax()}人</b>（解雇できるのは採用した人数の半分まで）</div>
-    <div class="hg-odds">${odds}</div>
-    <button class="hg-btn ${!pool.length || game.gems < HIRE_GACHA_GEMS ? 'is-disabled' : ''}" id="hireGachaBtn" aria-label="採用ガチャを引く 💎${HIRE_GACHA_GEMS}"></button>`; // ボタンの文字・コストは下地の絵に入っている
-  if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
-}
-document.getElementById('hireGachaBox').addEventListener('click', ev => {
-  const info = ev.target.closest('[data-hg-info]');
-  if (info && !hireGachaRolling) { showHireGachaInfo(info.dataset.hgInfo, info); return; }
-  if (!ev.target.closest('#hireGachaBtn') || hireGachaRolling) return;
-  const r = hireGachaDraw(ev); if (r) openHireGachaDialog(r);
-});
-function hireGachaDraw(ev) { // ジェムを払って1人決める（結果はすぐ保存。演出はダイアログで）
-  const pool = hireGachaPool();
-  if (!pool.length) { showTapError('いま採用できる仲間はいません（転生や到達ステージで増えます）', ev.clientX, ev.clientY); return null; }
-  if (game.gems < HIRE_GACHA_GEMS) { promptGemShortage(HIRE_GACHA_GEMS); return null; }
-  game.gems -= HIRE_GACHA_GEMS;
-  const rates = hireGachaRates(pool); let pick = Math.random() * 100, rar = Object.keys(rates).pop();
-  for (const k of Object.keys(rates)) { pick -= rates[k]; if (pick <= 0) { rar = k; break; } }
-  const same = pool.filter(x => COMPANIONS[x].rarity === rar), id = same[Math.floor(Math.random() * same.length)]; // 同じレア度の中は均等
-  const dup = !isCompLocked(id);
-  if (!game.companionBook) game.companionBook = {};
-  const bookNew = !game.companionBook[id]; game.companionBook[id] = true; // 採用ガチャで出た仲間は仲間図鑑に登録
-  if (dup) { // ダブり：少し強化
-    setCompUpLv(id, 'atk', compUpLv(id, 'atk') + HIRE_DUP_LV); setCompUpLv(id, 'hp', compUpLv(id, 'hp') + HIRE_DUP_LV);
-    if (typeof refreshPlayerBallStats === 'function') refreshPlayerBallStats(false);
-  } else {
-    if (!game.compLocked) game.compLocked = {};
-    game.compLocked[id] = false;
-    if (!Array.isArray(game.summonGuarantee)) game.summonGuarantee = [];
-    game.summonGuarantee = game.summonGuarantee.filter(x => x !== id); game.summonGuarantee.push(id); // 採用したら次の招集ガチャで必ず出る
-  }
-  saveGame(); updateStatsUI();
-  if (!game.hireCounts) game.hireCounts = {};
-  const hireNth = game.hireCounts[id] = (game.hireCounts[id] || (dup ? 1 : 0)) + 1; // この仲間が出たのは何体目か（ダブりの表示用）
-  return { id, dup, pool, bookNew, hireNth };
-}
-function playDrumRollHit(v) { // ドラムロールの1打（スネアの短いノイズ＋胴鳴り）
-  if (!audioCtx) return;
-  const t = audioCtx.currentTime, vol = game.sfxVolume ?? 0.7, len = 0.07, buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * len), audioCtx.sampleRate), d = buf.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-  const src = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
-  src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 2200 + Math.random() * 600; f.Q.value = 0.8;
-  g.gain.setValueAtTime(0.32 * v * vol * (0.85 + Math.random() * 0.3), t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start(t);
-  const o = audioCtx.createOscillator(), og = audioCtx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.05);
-  og.gain.setValueAtTime(0.12 * v * vol, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06); o.connect(og); og.connect(audioCtx.destination); o.start(t); o.stop(t + 0.07);
-}
-function openHireGachaDialog({ id, dup, pool, bookNew, hireNth }) { // 画面を切り替えて正方形のダイアログでルーレット→結果（タップで結果までスキップ）
-  hireGachaRolling = true;
-  hireGachaBgmOn = false; hireGachaHush = true; stopBgm(true); refreshBgm(); // 押した瞬間に曲を止めて（残響も）、ドラムロール
-  let beat = 0; const heart = setInterval(() => { beat++; playDrumRollHit(Math.min(1, 0.25 + beat * 0.012)); }, 55); // ダララララ…とだんだん大きく
-  let ov = document.getElementById('hireGachaModal');
-  if (!ov) { ov = document.createElement('div'); ov.id = 'hireGachaModal'; ov.className = 'modal-overlay hgm-ov'; ov.style.zIndex = 84; document.body.appendChild(ov); }
-  // 見本の絵（下地）に、キャラ・★・名前・文字だけを重ねる
-  ov.innerHTML = `<div class="evr-rays"><i></i><i></i><b></b></div><div class="hg2-panel"><div class="hg2-tint"></div><div class="hg2-bigglow"><i></i></div><div class="hg2-portrait"><div class="hg2-bg"><div class="hg2-glow"></div></div><div class="hg2-char"></div><div class="hg2-frame"></div></div>
-    <div class="hg2-stars"></div><div class="hg2-name">抽選中…</div><div class="hg2-line">タップでスキップ</div><div class="hg2-book"></div>
-    <button class="hg2-btn hg2-again" aria-label="もう1回"></button><button class="hg2-btn hg2-close" aria-label="閉じる"></button><div class="hg2-btncover"></div></div>`;
-  ov.dataset.rar = '';
-  ov.classList.add('show');
-  const panel = ov.querySelector('.hg2-panel'), roll = ov.querySelector('.hg2-char'), btns = ov.querySelector('.hg2-btncover');
-  let n = 0, timer = null, done = false;
-  const starsEl = ov.querySelector('.hg2-stars'); let lastStar = -1;
-  const starTimer = setInterval(() => { lastStar = (lastStar + 1) % 5; starsEl.innerHTML = rarityStarsImg(RARITY_ORDER[lastStar]); }, 70); // シャッフル中の★はキャラと関係なく 1→2→3→4→5→1… と順番に
-  const finish = () => {
-    if (done) return; done = true; clearTimeout(timer); clearInterval(heart); clearInterval(starTimer);
-    const c = COMPANIONS[id], rar = RARITY_INFO[c.rarity];
-    roll.innerHTML = companionIconHtml(id);
-    panel.style.setProperty('--rc', rar.color); panel.classList.add('hit', 'r-' + c.rarity); ov.dataset.rar = c.rarity; // 背景の色をレア度で変える
-    { const rays = ov.querySelector('.evr-rays'); rays.style.setProperty('--rc', rar.color); rays.classList.add('show'); } // 結果が出たら背景いっぱいに後光（進化の結果画面と同じ）
-    ov.querySelector('.hg2-stars').innerHTML = rarityStarsImg(c.rarity);
-    ov.querySelector('.hg2-name').textContent = c.name;
-    ov.querySelector('.hg2-line').innerHTML = dup ? `<span class="hg2-dup">強化${hireNth}体目！</span> 攻撃・HPの強化Lv <b>+${HIRE_DUP_LV}</b><small>（攻撃Lv${compUpLv(id, 'atk')}・HP Lv${compUpLv(id, 'hp')}）</small>` : `<span class="hg2-new">採用！</span>`;
-    { const ids = Object.keys(COMPANIONS), got = ids.filter(x => game.companionBook && game.companionBook[x]).length, pct = (Math.floor(got / ids.length * 1000) / 10).toFixed(1);
-      ov.querySelector('.hg2-book').innerHTML = `<span>📖 仲間図鑑 <b>${got} / ${ids.length}</b>（${pct}%）${bookNew ? '<em>NEW +1</em>' : ''}</span><i style="--p:${pct}%"></i>`; }
-    thump(110, 42, 0.4, 0.8); noiseSweep(1.2, 9000, 3000, 'highpass', 0.7, 0.35); playTone(1047, 0.12, 'square', 0.06, 1568); // ドラムロールの締めの「ドン！シャーン！」
-    hireGachaHush = false; hireGachaBgmOn = true; refreshBgm(); // 決まった瞬間にお祝いの曲へ
-    setTimeout(() => { btns.style.display = 'none'; hireGachaRolling = false; }, 400);
-    const box = document.getElementById('hireGachaBox'); box.dataset.html = ''; renderCompLockList(); renderCompanionList();
-  };
-  const tick = () => {
-    if (done) return;
-    if (n >= 22) { finish(); return; }
-    const cur = pool[Math.floor(Math.random() * pool.length)];
-    roll.innerHTML = companionIconHtml(cur);
-    roll.classList.remove('flip'); void roll.offsetWidth; roll.classList.add('flip');
-    playTone(620 + (n % 5) * 90, 0.04, 'square', 0.03);
-    n++; timer = setTimeout(tick, 45 + n * n * 0.6);
-  };
-  ov.onclick = e => { if (!done) finish(); }; // 回っている間はどこをタップしても結果へ
-  const close = () => { ov.classList.remove('show'); clearInterval(heart); clearInterval(starTimer); hireGachaHush = false; hireGachaBgmOn = false; refreshBgm(); };
-  ov.querySelector('.hg2-close').onclick = e => { e.stopPropagation(); if (!hireGachaRolling) close(); };
-  ov.querySelector('.hg2-again').onclick = e => { e.stopPropagation(); if (hireGachaRolling) return; const r = hireGachaDraw(e); if (r) openHireGachaDialog(r); };
-  tick();
-}
-document.getElementById('shopCharaSec').addEventListener('click', onCompLockClick);
 // ショップのタブ：アイテム／キャラ（解雇・採用）／課金（リアルマネー）
 function showShopTab(key) {
   document.querySelectorAll('[data-shop-tab]').forEach(t => t.classList.toggle('active', t.dataset.shopTab === key));
   document.querySelectorAll('[data-shop-sec]').forEach(sec => { sec.hidden = sec.dataset.shopSec !== key; });
-  if (key === 'chara') renderCompLockList();
   if (typeof refreshBgm === 'function') refreshBgm(); // 課金ページだけ専用の曲
   try { localStorage.setItem('shopTab', key); } catch (e) {}
 }
@@ -1357,10 +1163,6 @@ document.querySelectorAll('[data-shop-tab]').forEach(t => t.addEventListener('cl
 { let first = 'item'; try { first = localStorage.getItem('shopTab') || 'item'; } catch (e) {} showShopTab(['item', 'charge', 'bag'].includes(first) ? first : 'item'); } // 仲間タブは削除
 // 自キャラの変更はなくした（カードを押しても何もしない）
 applyHeroChar();
-document.getElementById('compLockBtn')?.addEventListener('click', () => { // 仲間ページから、ショップの解雇・採用（仲間タブ）へ
-  switchTab('gemshop'); showShopTab('chara');
-  const t = document.querySelector('.shop-tabs'); if (t) { t.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); }
-});
 
 const potionBtn = document.getElementById('potionBtn');
 function updatePotionButton() {
@@ -1652,7 +1454,6 @@ function weaponGachaPull(event, isReroll) {
   showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : `自キャラ攻撃力 ×${+weaponMult(lv - 1).toFixed(2)} → ×${+weaponMult(lv).toFixed(2)}`, () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
-document.getElementById('weaponGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('装備枠がいっぱいです（枠を増やすとまた回せます）', event.clientX, event.clientY); return; } weaponGachaPull(event, false); });
 function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
   const inf = event.target.closest('[data-sk-info]'); if (!inf) return false;
   const sid = inf.dataset.skInfo, { it, auto, name, desc } = skillToggleInfo(sid), lv = sid.startsWith('w:') ? getWeaponLv(sid.slice(2)) : getSkillLevel(sid);

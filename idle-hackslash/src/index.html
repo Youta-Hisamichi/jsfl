@@ -139,7 +139,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="enemy-trait-badge" id="enemyTraitBadge"></div>
       <div class="chest-tray" id="chestTray"></div>
       <div class="boss-final-panel" id="bossFinalPanel"></div>
-      <button class="seed-float" id="seedBtn" title="ドーピングの種"><img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt=""><b>×0</b></button>
+      
       <button class="game-pause-btn" id="gamePauseBtn" aria-label="一時停止">⏸</button>
       <div class="combo-badge" id="comboBadge"></div>
       <div class="loot-popup" id="lootPopup"></div>
@@ -252,7 +252,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       <div class="debug-cat">⚔️ 戦闘テスト</div>
       <button data-debug="playerHp1">❤️ 自分HP1</button><button data-debug="enemyHp1">💔 敵HP1</button><button data-debug="die">💀 死亡確認</button><button data-debug="special">スキルリセット</button>
       <div class="debug-cat">🔓 解放・付与</div>
-      <button data-debug="size">📦 容量</button><button data-debug="arenaRect">⬛ 四角/丸</button><button data-debug="rebornAlways" id="dbgRebornAlwaysBtn">🌌 転生ボタン常時表示：OFF</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="dismissCompanions">🐾 仲間全員解除</button><button data-debug="resetCompSlots">🐾 仲間枠リセット</button><button data-debug="clearSkillsWeapons">🗑 スキル・サブウェポン全解除</button><button data-debug="resetSkillSlots">✨ スキル枠リセット</button><button data-debug="resetWeaponSlots">🗡️ サブウェポン枠リセット</button><button data-debug="clearSubs">🚫 サブスク解除</button>
+      <button data-debug="size">📦 容量</button><button data-debug="arenaRect">⬛ 四角/丸</button><button data-debug="rebornAlways" id="dbgRebornAlwaysBtn">🌌 転生ボタン常時表示：OFF</button><button data-debug="unlockSkills">🔓 全スキル解放</button><button data-debug="allCompanions">🐾 仲間全員追加</button><button data-debug="dismissCompanions">🐾 仲間全員解除</button><button data-debug="clearSkillsWeapons">🗑 スキル・サブウェポン全解除</button><button data-debug="resetSkillSlots">✨ スキル枠リセット</button><button data-debug="resetWeaponSlots">🗡️ サブウェポン枠リセット</button><button data-debug="clearSubs">🚫 サブスク解除</button>
       <div class="debug-cat">🪟 画面表示</div>
       <button data-debug="rebirthShop">🛒 永続アイテム表示</button><button data-debug="gimmick">🎪 ステージイベント切替</button><button data-debug="runStart">📜 周回の掟ダイアログ</button><button data-debug="opening">🎬 オープニング</button><button data-debug="eventDbg">🎪 その他の確認</button><button data-debug="artifactDbg">🏺 遺物一覧</button><button id="dbgSerifBtn">💬 セリフ一覧</button><button id="dbgGemBtn">💎 ジェム入手一覧</button><button id="dbgCompBtn">📮 補填・セーブ調整</button><button id="dbgRebirthBtn">🔁 転生報酬の目安</button><button id="dbgNewsBtn">📢 お知らせ管理</button><button data-debug="rewardAdReset">🎬 動画CTリセット</button>
       <button class="debug-cat dbg-fold" id="debugBgmCat">🎵 BGM（押すと再生） <b id="dbgBgmFoldMark">▼ 開く</b></button>
@@ -282,9 +282,8 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
         <p>装備した分だけゲーム画面にボタンが出ます。装備したスキルは転生するまで外せない・入れ替えられません。</p>
         <p>スキルガチャは1周回（転生まで）5回まで（転生でリセット）。ダブったらLvが1.5倍。解放・Lv・ガチャの回数と値段は転生でリセットされます。</p>
       </div>
-      <div class="gacha-pair"><!-- スキルガチャとサブウェポンガチャを横に並べる -->
+      <div class="gacha-pair">
         <button class="gacha-art-btn" id="skillGachaBtn" aria-label="スキルガチャ"></button>
-        <button class="gacha-art-btn" id="weaponGachaBtn" aria-label="サブウェポンガチャ"></button>
       </div>
       <div class="party-row skill-count-row"><div class="weapon-slot-head party-slot-head" id="skillCountRow"></div></div>
       <button class="modal-shop-btn skill-slot-btn" id="skillSlotBtn" hidden></button>
@@ -352,12 +351,6 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
         <div class="sub-tabs" id="rebirthShopTabs"></div>
         <div class="modal-shop-list two" id="rebirthShopList"></div>
       </div>
-      </div>
-      <div class="shop-sec" data-shop-sec="chara" id="shopCharaSec" hidden>
-        <details class="cp-help cg-help"><summary><i class="ch-i">i</i>しくみ</summary><p>村人以外の仲間は最初は採用前です。<b>採用ガチャ</b>を引くと、採用前で解放ずみの仲間から1人がランダムに採用されます（★が高いほど出にくい）。採用した仲間は次の招集ガチャで必ず出ます。★3・★4は転生1回ごとに1人ずつ、★5は転生30回で採用できるようになります（最高到達ステージの条件もあります）。採用中の仲間はジェムを払って解雇でき、解雇した仲間は仲間招集に出なくなります（今いる仲間はそのまま）</p></details>
-        <div class="hire-gacha" id="hireGachaBox"></div>
-        <div class="cp-stat cp-book-stat"><span class="cp-stat-label">📖 仲間図鑑</span><span class="cp-stat-val" id="companionProgress">0 / 0</span><div class="cp-bar"><i id="compBookBar"></i></div></div>
-        <div class="cl-list"></div>
       </div>
       <div class="shop-sec" data-shop-sec="bag" hidden>
         <div class="bag-list" id="bagList"></div>
@@ -508,7 +501,7 @@ body { font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, -apple-
       </div>
       <div class="custom-skip-info" id="customSkipInfo">登るステージ数を入力してください</div>
     </div>
-    <button class="tower-seed-btn" id="towerSeedBtn"><img class="seed-btn-ico" src="assets/img/icons/bag_seedAtk.webp" alt="">種でドーピングしてから挑む</button>
+    
     <div class="modal-shop-list tower-floors" id="stageSkipList"></div>
     <button class="modal-close-btn" id="stageSkipCloseBtn">塔を降りる</button>
   </div>
