@@ -74,19 +74,24 @@ function blastFormulaHtml(lv, maxed) { // スキルページの大爆発：自�
 const SKILL_ON_DEFAULT = ['skillSpecial', 'w:axe', 'skillHeal'];
 // スキルの解放：解放したスキル（自動スキルも）だけがONにでき、ガチャに出る。解放はSSR・URの宝箱（転生でもらえる）から。転生しても残る
 const SKILL_UNLOCK_DEFAULT = ['skillSpecial', 'skillHeal', 'skillAccel', 'skillAtkUp', 'w:axe', 'w:knife'];
-function isSkillUnlocked(id) {
-  if (!game.skillUnlocked) { game.skillUnlocked = {}; SKILL_UNLOCK_DEFAULT.forEach(k => { game.skillUnlocked[k] = true; }); (Array.isArray(game.skillOn) ? game.skillOn : []).forEach(k => { game.skillUnlocked[k] = true; }); for (const k in SKILL_GACHA_SKILLS) if (game.shopOwned && game.shopOwned[k]) game.skillUnlocked[k] = true; for (const k in (game.weapons || {})) if (game.weapons[k]) game.skillUnlocked['w:' + k] = true; } // 前からのセーブは、ONのもの・持っているものを解放ずみに
-  return !!game.skillUnlocked[id];
-}
-function lockedSkillIds() { return skillToggleIds().filter(id => !isSkillUnlocked(id)); }
-function unlockRandomSkill() { const ks = lockedSkillIds(); if (!ks.length) return null; const id = ks[Math.floor(Math.random() * ks.length)]; game.skillUnlocked[id] = true; if (typeof renderSkillToggleList === 'function') renderSkillToggleList(); return id; }
+function isSkillUnlocked(id) { return skillToggleIds().includes(id); } // スキルの解放はなくした：全部のスキルが最初から転生の候補
 function rollSkillOn() { const a = skillToggleIds().filter(isSkillUnlocked); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, SKILL_REBIRTH_ON); }
+// ===== スキルの初期Lv：宝箱から出ると、そのスキルをスキルガチャで手に入れたときのLvが+1（1つにつき最大+10・転生しても残る） =====
+const SKILL_INIT_MAX = 10;
+function skillInitLv(id) { return Math.max(0, Math.min(SKILL_INIT_MAX, Math.floor((game.skillInit && game.skillInit[id]) || 0))); }
+function skillInitPool() { return skillToggleIds().filter(id => skillInitLv(id) < SKILL_INIT_MAX); }
+function raiseSkillInit(id) { // 初期Lvを+1。今の周回で持っていれば、そのLvにもすぐ+1
+  if (!game.skillInit) game.skillInit = {}; const b = skillInitLv(id); game.skillInit[id] = Math.min(SKILL_INIT_MAX, b + 1);
+  if (id.startsWith('w:')) { const k = id.slice(2); if (getWeaponLv(k) > 0) game.weapons[k] = Math.min(WEAPON_MAX_LV, getWeaponLv(k) + 1); }
+  else if (game.shopOwned[id]) { if (!game.skillLevels) game.skillLevels = {}; game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1); }
+  return [b, skillInitLv(id)];
+}
 function skillToggleIds() { return [...Object.keys(SKILL_GACHA_SKILLS), ...Object.keys(WEAPONS).map(k => 'w:' + k)]; } // 自動スキル（元サブウェポン）は w: を付けて区別
 function isSkillItemOn(id) { if (!Array.isArray(game.skillOn)) game.skillOn = SKILL_ON_DEFAULT.slice(); return game.skillOn.includes(id) && isSkillUnlocked(id); }
 function skillToggleInfo(id) { const w = id.startsWith('w:'), it = w ? WEAPONS[id.slice(2)] : SKILL_GACHA_SKILLS[id]; return { it, auto: w, name: it.name, desc: it.desc }; }
 function skillTileHtml(id, locked) { // スキルの1行（スキルページ・スキル図鑑）
   const { it, auto, name, desc } = skillToggleInfo(id), icon = auto ? `<span class="item-icon">${ico(it)}</span>` : ico(it);
-  return `<button class="skt-item ${locked ? 'off skt-locked' : 'on'}" ${locked ? `data-sk-toggle="${id}"` : `data-sk-info="${id}"`}><span class="skt-ico" ${locked ? '' : `data-sk-info="${id}"`}>${icon}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}</span><span class="skt-desc">${desc}</span></span>${locked ? '<span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span>' : ''}</button>`;
+  return `<button class="skt-item ${locked ? 'off skt-locked' : 'on'}" ${locked ? `data-sk-toggle="${id}"` : `data-sk-info="${id}"`}><span class="skt-ico" ${locked ? '' : `data-sk-info="${id}"`}>${icon}</span><span class="skt-main"><span class="skt-name">${name}${auto ? '<i class="sk-auto">自動</i>' : ''}${skillInitLv(id) ? `<i class="sk-init">初期Lv${skillInitLv(id) + 1}</i>` : ''}</span><span class="skt-desc">${desc}</span></span>${locked ? '<span class="skt-side"><i class="evo-tg">🔒</i><span class="skt-cost">SSR宝箱</span></span>' : ''}</button>`;
 }
 function renderSkillToggleList() { // スキルページ：いまスキルガチャに出るスキル（転生のときに選ばれたもの）だけ。ON/OFFの表示・切り替えはしない
   const el = document.getElementById('skillToggleList'); if (!el) return;

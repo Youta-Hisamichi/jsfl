@@ -5244,3 +5244,6 @@ details.pb-formula > summary, details.pb-note > summary { cursor: pointer; font-
 details.pb-formula > summary::before, details.pb-note > summary::before { content: '▶ '; font-size: 0.8em; }
 details.pb-formula[open] > summary::before, details.pb-note[open] > summary::before { content: '▼ '; }
 details.pb-formula[open] > summary, details.pb-note[open] > summary { margin-bottom: 3px; }
+
+/* スキル図鑑：宝箱で上げた初期Lv */
+.skt-name .sk-init { margin-left: 4px; padding: 0 5px; border-radius: 6px; background: #7a4fd0; color: #fff; font-style: normal; font-size: 0.62rem; font-weight: 800; vertical-align: 1px; }

@@ -491,7 +491,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['welcome', 'rankWin1', 'login7Test', 'admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['skillInitAll', 'welcome', 'rankWin1', 'login7Test', 'admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -825,7 +825,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'firstBossGift') { showFirstBossGift(); return; } // 見た目の確認だけ（ジェムは増えない）
   if (action === 'clockInfo') { showClockInfo(); return; }
   if (action === 'graceAdd') { for (const k in GRACE_ITEMS) gainGraceItem(k, 100); refreshPlayerBallStats(false); updateStatsUI(); saveGame(); showNotice('DEBUG: 味方バフ・自分バフのアイテムを100個ずつ追加 ' + Object.keys(GRACE_ITEMS).map(k => `${GRACE_ITEMS[k].icon}${graceItemCount(k)}`).join(' ')); return; }
-  if (action === 'skillUnlockAll') { const all = !lockedSkillIds().length; game.skillUnlocked = {}; if (!all) skillToggleIds().forEach(k => { game.skillUnlocked[k] = true; }); else SKILL_UNLOCK_DEFAULT.forEach(k => { game.skillUnlocked[k] = true; }); renderSkillToggleList(); saveGame(); showNotice(all ? 'DEBUG: スキルの解放を最初の6つに戻しました' : 'DEBUG: スキルを全部解放しました'); return; }
+  if (action === 'skillInitAll') { skillToggleIds().forEach(id => { if (skillInitLv(id) < SKILL_INIT_MAX) raiseSkillInit(id); }); renderSkillToggleList(); renderSkillBook(); renderCoinShopList(); saveGame(); showNotice('DEBUG: 全スキルの初期Lv +1'); return; }
   if (action === 'rbChest') { const st = Math.max(game.stage, game.bestStage || 1), o = rollRebirthChests(st), hc = getHeldChests(); for (const r in o) hc[r] = Math.min(CHEST_STOCK_MAX, (hc[r] || 0) + o[r]); renderChestTray(); saveGame(); showNotice(`DEBUG: 転生の宝箱（ステージ${formatStageNumber(st)}）SSR×${o.legendary}・UR×${o.mythic}`); return; }
   if (action === 'bondInfo') { // 自分バフ・味方バフの一覧
     const F = v => formatCoinNumber(Math.round(v)), P = v => `${+(v * 100).toFixed(1)}%`, inParty = Object.keys(COMPANIONS).filter(id => getCompanionCount(id) > 0);
@@ -1355,7 +1355,7 @@ function skillGachaPull(event, isReroll) {
   const id = gachaPick(pool), sk = SKILL_GACHA_SKILLS[id], owned = !!game.shopOwned[id];
   if (!game.skillLevels) game.skillLevels = {};
   if (!owned) {
-    game.shopOwned[id] = true; game.skillLevels[id] = 1;
+    game.shopOwned[id] = true; game.skillLevels[id] = 1 + skillInitLv(id); /* 宝箱で上げた初期Lv */
     const eq = getEquippedSkills();
     if (eq.length < getSkillSlots() && !PASSIVE_SKILLS.includes(id)) { eq.push(id); lastSetSkill = id; } // 空き枠に自動で装備（転生まで外せない）
   } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, skillDupLv(getSkillLevel(id))); // ガチャでダブったらLv1.5倍
@@ -1372,8 +1372,6 @@ function skillGachaPull(event, isReroll) {
 // ガチャは1つ：スキルと自動スキル（元サブウェポン）の引けるものをまとめて、その中から1つ。値段はスキルガチャ
 ['skillToggleList', 'skillBookList'].forEach(lid => document.getElementById(lid)?.addEventListener('click', event => { // スキル：押したら概要（ON/OFFは転生のときのガチャだけで決まる）
   if (openSkillInfoFromEvent(event)) return;
-  const b = event.target.closest('[data-sk-toggle]'); if (!b) return; // まだ解放していないスキル
-  showTapError('まだ解放していません\nSSR・URの宝箱（転生でもらえる）から「スキルの解放」が出ると使えます', event.clientX, event.clientY);
 }));
 // スキルを発動したら、そのスキルの絵を画面中央に大きく出して、派手な発動音を鳴らす
 function skillLastTimes() { return [lastSpecialAt, lastAccelAt, lastHealAt, lastBarrierAt, lastHomingAt, lastPoisonAt, lastParalyzeAt, lastSleepAt, lastAtkUpAt, lastRegenAt, lastSilenceAt, lastSacrificeAt, lastDeathAt, lastCoinStrikeAt, lastZeniAt, lastMysteryAt, lastCompRushAt, lastNovaAt, lastBlastAt, lastHalveAt]; }
@@ -1448,10 +1446,10 @@ function weaponGachaPull(event, isReroll) {
   const dupBefore = weaponCount(id);
   if (getWeaponLv(id) > 0) game.weaponDup[id] = (game.weaponDup[id] || 0) + 1; // ガチャでダブったら個数+1
   const countUp = weaponCount(id) > dupBefore;
-  const prevLv = getWeaponLv(id), lv = game.weapons[id] = prevLv ? Math.min(WEAPON_MAX_LV, skillDupLv(prevLv)) : 1; /* ダブったらLv1.5倍 */ weaponCd[id] = 20; if (lv === 1) autoEquipWeapon(id);
+  const prevLv = getWeaponLv(id), isNewW = !prevLv, lv = game.weapons[id] = prevLv ? Math.min(WEAPON_MAX_LV, skillDupLv(prevLv)) : 1 + skillInitLv('w:' + id); /* ダブったらLv1.5倍・初めては初期Lv */ weaponCd[id] = 20; if (isNewW) autoEquipWeapon(id);
   saveGame(); updateStatsUI();
   const undo = ev => { game.weapons = snap.weapons; game.equippedWeapons = snap.eq; game.weaponDup = snap.dup; renderCoinShopList(); weaponGachaPull(ev, true); };
-  showSkGachaReveal(skGachaRarity(lv === 1, lv), `<span class="item-icon">${ico(W)}</span>`, lv === 1 ? `${W.name} 獲得！` : `${W.name} Lv${lv}！`, lv === 1 ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : `自キャラ攻撃力 ×${+weaponMult(lv - 1).toFixed(2)} → ×${+weaponMult(lv).toFixed(2)}`, () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
+  showSkGachaReveal(skGachaRarity(isNewW, lv), `<span class="item-icon">${ico(W)}</span>`, isNewW ? `${W.name} 獲得！${lv > 1 ? ` Lv${lv}` : ''}` : `${W.name} Lv${lv}！`, isNewW ? '装備して自動で発動' : countUp ? `ダブり！ 個数が ${weaponCount(id)}つに！` : `自キャラ攻撃力 ×${+weaponMult(lv - 1).toFixed(2)} → ×${+weaponMult(lv).toFixed(2)}`, () => { renderCoinShopList(); flashGachaCard('weaponList', id); }, undo, { noStars: true });
 }
 document.getElementById('skillGachaBtn').addEventListener('click', event => { if (skGachaBusy) return; if (event.currentTarget.dataset.full) { showTapError('引けるスキルがありません', event.clientX, event.clientY); return; } unifiedGachaPull(event); });
 function openSkillInfoFromEvent(event) { // スキル・自動スキルのアイコンを押したら概要（威力が関係ないスキルは中身のパラメータ）
@@ -1477,7 +1475,7 @@ document.getElementById('skillLevelList').addEventListener('click', event => {
     spendCoins(cost);
     if (!game.skillLevels) game.skillLevels = {};
     if (!owned) {
-      game.shopOwned[id] = true; game.skillLevels[id] = 1;
+      game.shopOwned[id] = true; game.skillLevels[id] = 1 + skillInitLv(id); /* 宝箱で上げた初期Lv */
       const eq = getEquippedSkills();
       if (eq.length < getSkillSlots()) { eq.push(id); lastSetSkill = id; } // 空き枠があれば自動で装備
     } else game.skillLevels[id] = Math.min(SKILL_MAX_LEVEL, getSkillLevel(id) + 1);
