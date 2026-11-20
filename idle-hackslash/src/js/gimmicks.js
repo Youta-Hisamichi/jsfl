@@ -420,7 +420,7 @@ const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
 function chestHeroLoot() { // 宝箱の中身「自キャラ」：攻撃力かHPの初期Lv+1
   const name = userNameHtml('勇者'), t = heroEvolve();
   setTimeout(() => { try { renderMyCharCard(); } catch (e) {} }, 0);
-  return { misc: 'hero', n: 1, icon: `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 自キャラ（${name}）`, cardName: `自キャラ（${name}）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
+  return { misc: 'hero', n: 1, icon: `<img class="comp-sprite" src="${PLAYER_SPRITE}" alt="">`, main: `🦸 ${name}（自キャラ）`, cardName: `${name}（自キャラ）`, cardDesc: '進化して初期Lv+1', color: '#ffd76b', sub: `進化！ ${t}` };
 }
 // ===== ショップの「所持品」タブ：持っている消耗品・宝箱・種などを一覧（使えるものはここから使う） =====
 
