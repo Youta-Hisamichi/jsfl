@@ -78,13 +78,13 @@ function showAnnivList() { // デバッグ用：設定してある記念日の�
 // 起動してほかのダイアログが閉じたら、届いているお詫びを出す（コード入力のものは除く）
 { let tries = 0; const t = setInterval(() => {
   if (++tries > 60) { clearInterval(t); return; }
-  if (!game.openingSeen || (typeof openingOn !== 'undefined' && openingOn) || document.querySelector('.modal-overlay.show, .op-ov')) return;
+  if (document.querySelector('.modal-overlay.show')) return;
   clearInterval(t);
   const list = COMPENSATIONS.filter(c => !c.code && compActive(c)).concat(annivToday());
   if (list.length) showCompDialog(list);
 }, 2000); }
 // 設定に「補填コードを入力」
-{ const ob = document.getElementById('openingBtn') || document.getElementById('creditsBtn');
+{ const ob = document.getElementById('creditsBtn');
   if (ob) { ob.insertAdjacentHTML('afterend', '<button class="modal-shop-btn" id="compCodeBtn"><span class="msb-name">🎁 補填コードを入力</span></button>');
     { const cd = document.getElementById('cloudDeleteBtn'); if (cd) document.getElementById('compCodeBtn').after(cd); } // 「クラウドのデータ削除」は補填コードのすぐ下
     document.getElementById('compCodeBtn').addEventListener('click', () => {

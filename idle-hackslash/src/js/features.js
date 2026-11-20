@@ -392,7 +392,7 @@ function showLogin7(day, got) {
     return `<div class="lb7-cell ${st}" style="left:${(x0 / 1111 * 100).toFixed(2)}%;top:${(y0 / 1415 * 100).toFixed(2)}%;width:${((x1 - x0) / 1111 * 100).toFixed(2)}%;height:${((y1 - y0) / 1415 * 100).toFixed(2)}%"><b class="lb7-dn">${d}</b><div class="lb7-rw">${lb7Icon(k)}<b>${n}</b></div>${st === 'got' ? '<span class="lb7-chk">✔</span>' : ''}</div>`; }).join('');
   const gid = pickGreeter(), gs = GREET_SAY[gid]; let say = gs[1]; if (Array.isArray(say)) say = say[Math.floor(Math.random() * say.length)];
   const face = gid === 'hero' ? `<span class="lb7-face lb8-hero"><img class="comp-sprite" src="${PLAYER_SPRITE}" alt=""></span>` : `<span class="lb7-face">${companionIconHtml(gid)}</span>`;
-  const todayIco = day <= 6 ? `${lb7Icon(LOGIN7_SHOW[day - 1][0])}<b>${LOGIN7_SHOW[day - 1][1].replace('×', '')}</b>` : `<img class="lb7-ico" src="assets/img/ui/lb8/chest.webp" alt="">${LB7_ICON.gem}<b>10</b>`;
+  const todayIco = login7Ico(day, 1);
   const ov = document.createElement('div'); ov.className = 'modal-overlay show lb7-ov'; ov.style.zIndex = 74;
   ov.innerHTML = `<div class="modal-panel l7-panel lb8">
     <div class="lb8-base">
@@ -403,19 +403,33 @@ function showLogin7(day, got) {
       ${cells}
       <div class="lb7-day7 lb8-d7 ${day === 7 ? 'today' : ''}" style="left:6.2%;top:72.2%;width:87.8%;height:11%"></div>
       <button class="lb7-ok lb8-ok" style="left:5.5%;top:85.2%;width:89%;height:10.1%" aria-label="受け取る"></button>
-    </div></div>`;
+    </div><button class="modal-close-btn lb7-ad">${isAdFree() ? '🎁 紋章特典で3倍にする' : '🎬 動画を見て3倍にする'}</button></div>`;
   document.body.appendChild(ov);
   ov.querySelectorAll('.lb8-face .lb7-face img').forEach(fitSpriteToFace);
   playLoginBonusSound && playLoginBonusSound();
   ov.querySelector('.lb7-ok').addEventListener('click', ev => claimLogin7(ov, day, todayIco), { once: true });
+  const adBtn = ov.querySelector('.lb7-ad'), triple = () => { // 動画を見たら、今日の報酬をあと2回分配る（合わせて3倍）
+    if (ov.dataset.tripled || ov.querySelector('.lb7-ok').disabled) return; ov.dataset.tripled = '1';
+    LOGIN7[day - 1].give(); LOGIN7[day - 1].give(); saveGame(); updateStatsUI();
+    claimLogin7(ov, day, login7Ico(day, 3), true);
+  };
+  adBtn.addEventListener('click', () => {
+    if (ov.dataset.tripled || ov.querySelector('.lb7-ok').disabled) return;
+    if (isAdFree()) { triple(); return; }
+    playRewardedVideo(() => { rewardAdModal.classList.remove('show'); setTimeout(triple, 350); }, '、今日のログインボーナスが3倍になります');
+  });
 }
-function claimLogin7(ov, day, icoHtml) { // 受け取った演出：今日のマスに✔スタンプ → 中央に報酬が飛び出して「GET!」 → 少し見せてから閉じる
-  const btn = ov.querySelector('.lb7-ok'); btn.disabled = true;
+function login7Ico(day, m) { // 受け取った演出に出す報酬（m 倍）
+  if (day <= 6) { const [k, n] = LOGIN7_SHOW[day - 1]; return `${lb7Icon(k)}<b>${+n.replace('×', '') * m}</b>`; }
+  return `<img class="lb7-ico" src="assets/img/ui/lb8/chest.webp" alt="">${m > 1 ? `<b>×${m}</b>` : ''}${LB7_ICON.gem}<b>${10 * m}</b>`;
+}
+function claimLogin7(ov, day, icoHtml, tripled) { // 受け取った演出：今日のマスに✔スタンプ → 中央に報酬が飛び出して「GET!」 → 少し見せてから閉じる
+  const btn = ov.querySelector('.lb7-ok'); btn.disabled = true; ov.querySelector('.lb7-ad')?.classList.add('is-disabled');
   const cell = ov.querySelectorAll('.lb7-cell')[day - 1];
   if (cell && !cell.querySelector('.lb7-chk')) { cell.classList.add('got', 'just-got'); cell.insertAdjacentHTML('beforeend', '<span class="lb7-chk lb7-stamp">✔</span>'); }
   if (day === 7) ov.querySelector('.lb7-day7')?.classList.add('just-got');
   const pop = document.createElement('div'); pop.className = 'lb7-claim';
-  pop.innerHTML = `<div class="lb7-claim-rays"></div><div class="lb7-claim-ico">${icoHtml}</div><div class="lb7-claim-txt">GET!</div><div class="lb7-claim-sub">${day}日目のログインボーナスを受け取りました</div>`
+  pop.innerHTML = `<div class="lb7-claim-rays"></div><div class="lb7-claim-ico">${icoHtml}</div><div class="lb7-claim-txt">GET!</div><div class="lb7-claim-sub">${day}日目のログインボーナスを受け取りました${tripled ? '（3倍！）' : ''}</div>`
     + Array.from({ length: 14 }, (_, i) => `<i class="lb7-spark" style="--a:${i * 360 / 14}deg;--d:${80 + (i % 3) * 30}px;animation-delay:${(i % 4) * 40}ms"></i>`).join('');
   ov.appendChild(pop);
   try { playCoinChime(5); setTimeout(() => playCoinChime(8), 140); setTimeout(() => playTone(1568, 0.25, 'triangle', 0.05, 2093), 260); } catch (e) {}
@@ -1128,7 +1142,6 @@ function buildSerifList() {
   const out = [], sec = (t, lv = 2) => out.push({ h: t, lv }), add = (arr, tag) => (arr || []).forEach(t => out.push({ t: (tag ? `【${tag}】` : '') + (typeof t === 'function' ? '（数字が入る）' + t.toString().replace(/^\(\) => `|`$/g, '').replace(/\$\{[^}]*\}/g, '○') : t) }));
   const sub = t => out.push({ s: t });
   const cname = id => (COMPANIONS[id] ? COMPANIONS[id].name : id === 'hero' ? '勇者' : id);
-  sec('オープニング'); add(OPENING_SCENES.map(s => s.text).filter(Boolean));
   sec('勇者（自キャラを変えていないとき）');
   const CHN = { idle: 'ひとりごと', kill: '敵を倒したとき', charge: 'タメ攻撃', boss: 'ボス戦開始', bossKill: 'ボス撃破', pinch: 'ピンチ', pinch2: 'ピンチ2', escape: '敵が逃げそうなとき', event: 'イベント', down: '倒れたとき', timeout: '時間切れ' };
   for (const k in CHUUNI) { sub(CHN[k] || k); add(CHUUNI[k]); }

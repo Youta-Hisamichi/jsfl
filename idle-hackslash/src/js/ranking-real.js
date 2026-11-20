@@ -145,11 +145,18 @@ async function rankYesterdayResult() {
   try {
     const above = await rankSrv().rankAbove(null, c, y); if (above == null) return;
     game.rankResultShown = y; saveGame(); const r = above + 1;
-    rankYesterdayInfo = { r, c, day: y }; // シェアの文に使う
-    simpleChoice({ icon: `<img class="rk-y-badge" src="${['assets/img/ui/rankbadge/etc.webp', 'assets/img/ui/rankbadge/1.webp', 'assets/img/ui/rankbadge/2.webp', 'assets/img/ui/rankbadge/3.webp'][r <= 3 ? r : 0]}" alt="${r}位">`, title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div><button class="share-btn rk-y-share" data-share="yesterday" onclick="this.closest('.modal-overlay').remove()">📤 結果をシェア</button>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
-    { const ov = [...document.querySelectorAll('.modal-overlay')].pop(); if (ov) { ov.classList.add('rk-y-ov', r <= 3 ? 'rk-y-top' + r : 'rk-y-etc'); const h = document.createElement('div'); h.className = 'rk-y-halo'; ov.insertBefore(h, ov.firstChild); } } // ダイアログの後ろに後光
-    try { playSummonFanfare(r === 1 ? 'mythic' : r <= 3 ? 'legendary' : r <= 10 ? 'epic' : 'rare'); } catch (e) {} // ファンファーレ（順位が高いほど豪華）
+    rankYesterdayShow(r, c, y);
   } catch (e) {}
+}
+function rankYesterdayShow(r, c, y) { // 昨日の結果の画面（デバッグからも出せる）
+  rankYesterdayInfo = { r, c, day: y }; // シェアの文に使う
+  simpleChoice({ icon: `<img class="rk-y-badge" src="${['assets/img/ui/rankbadge/etc.webp', 'assets/img/ui/rankbadge/1.webp', 'assets/img/ui/rankbadge/2.webp', 'assets/img/ui/rankbadge/3.webp'][r <= 3 ? r : 0]}" alt="${r}位">`, title: '昨日のクリア数ランキング', text: `<div class="sc-text">昨日の結果は <b style="font-size:1.4em;color:#ffd76b">${r}位</b>（${c}クリア）でした！</div><button class="share-btn rk-y-share" data-share="yesterday" onclick="this.closest('.modal-overlay').remove()">📤 結果をシェア</button>`, sub: r <= 10 ? 'お見事！ 今日もこの調子で' : '今日のランキングで巻き返そう', yes: 'ランキングを見る', no: '閉じる', onYes: () => switchTab('ranking') });
+  { const ov = [...document.querySelectorAll('.modal-overlay')].pop(); if (ov) { ov.classList.add('rk-y-ov', r <= 3 ? 'rk-y-top' + r : 'rk-y-etc'); const h = document.createElement('div'); h.className = 'rk-y-halo'; ov.insertBefore(h, ov.firstChild); } } // ダイアログの後ろに後光
+  try { playSummonFanfare(r === 1 ? 'mythic' : r <= 3 ? 'legendary' : r <= 10 ? 'epic' : 'rare'); } catch (e) {} // ファンファーレ（順位が高いほど豪華）
+  if (r === 1) { // 1位はファンファーレのあと、豪華なエンディングの曲を流す（画面を閉じたら元の曲へ）
+    setTimeout(() => { if (!document.querySelector('.rk-y-top1')) return; rankWinBgm = true; try { refreshBgm(); } catch (e) {}
+      const t = setInterval(() => { if (document.querySelector('.modal-overlay.show.rk-y-top1')) return; clearInterval(t); rankWinBgm = false; try { refreshBgm(); } catch (e) {} }, 400); }, 2200);
+  }
 }
 { let tries = 0; const t = setInterval(() => { if (rankReal() || ++tries > 30) { clearInterval(t); setTimeout(rankYesterdayResult, 6000); } }, 2000); }
 setInterval(() => { if (rankReal()) rankYesterdayResult(); }, 10 * 60000); // 起動したまま日付をまたいだとき

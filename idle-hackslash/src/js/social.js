@@ -26,7 +26,7 @@ async function makeShareCard() {
   const hero = await loadImgOnce(heroSrc);
   const glow = c.createRadialGradient(S / 2, 430, 20, S / 2, 430, 230); glow.addColorStop(0, 'rgba(255,230,140,0.55)'); glow.addColorStop(1, 'rgba(255,230,140,0)');
   c.fillStyle = glow; c.beginPath(); c.arc(S / 2, 430, 230, 0, Math.PI * 2); c.fill();
-  if (hero) { c.imageSmoothingEnabled = false; const flip = hid && (SPRITE_FACING[hid] || 0) < 0; c.save(); c.translate(S / 2, 430); if (flip) c.scale(-1, 1); c.drawImage(hero, -170, -170, 340, 340); c.restore(); c.imageSmoothingEnabled = true; }
+  if (hero) { c.imageSmoothingEnabled = false; const flip = false; c.save(); c.translate(S / 2, 430); if (flip) c.scale(-1, 1); c.drawImage(hero, -170, -170, 340, 340); c.restore(); c.imageSmoothingEnabled = true; }
   // 仲間（最大6人）
   const party = COMPANION_IDS.filter(id => game.companions.recruited[id]).slice(0, 6);
   for (let i = 0; i < party.length; i++) {

@@ -492,7 +492,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['rankWin1', 'login7Test', 'admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -812,7 +812,6 @@ debugRow.addEventListener('click', event => {
     simpleChoice({ icon: '🗑️', title: 'ゲームリセット', text: 'セーブを消して、最初からやり直しますか？<br>（進化・ジェム・仲間など、すべて最初の状態に戻ります）', yes: 'リセットする', no: 'やめる', onYes: async () => { window.__noSave = true; clearSave(); try { const P = typeof cloudProvider === 'function' ? cloudProvider() : null; if (P) await Promise.race([P.save(CLOUD_CLEAR()), new Promise(r => setTimeout(r, 3000))]); } catch (e) {} location.reload(); } }); // クラウドの控えもその場で消す（読み込み直したあとにも、念のためもう一度消す）
     return;
   }
-  if (action === 'opening') { playOpening(); return; }
   if (action === 'eventDbg') { openEventDebug(); return; }
   if (action === 'artifactDbg') { openArtifactDebug(); return; }
   if (action === 'runStart') { if (typeof openRunStartDialog === 'function') openRunStartDialog(); return; }
@@ -878,6 +877,8 @@ debugRow.addEventListener('click', event => {
   if (action === 'admobTest') { admobDebugTest(); return; }
   if (action === 'admobFreeze') { admobFreezeTest(); return; }
   if (action === 'admobFreezeProd') { admobFreezeTest(true); return; }
+  if (action === 'rankWin1') { rankYesterdayShow(1, Math.max(1, Math.floor(getDailyClearsForDate(jstDateKey(Date.now(), -1)) || 0)) || 123, jstDateKey(Date.now(), -1)); return; }
+  if (action === 'login7Test') { const n = dayNumOf(trustNow()); game.login7Num = n - 1; game.login7Date = null; checkDailyLogin(); return; } // 今日の分をもう一度（連続日数は進む）
   if (action === 'subExpire') { // 紋章（サブスク）の期限を今すぐ切らす（期限切れの動きを確かめる）。ストアで加入中なら、アプリに戻ったときや「購入を復元」でまた有効になる
     const had = Object.keys(SUBSCRIPTIONS).filter(isSubActive);
     game.subscriptions = {}; if (game.iapSubSeen) for (const k in game.iapSubSeen) game.iapSubSeen[k] = false;
@@ -2927,7 +2928,7 @@ document.getElementById('dbgMonCopy').addEventListener('click', () => {
 document.getElementById('dbgMonRestore').addEventListener('click', () => { game.removedEnemies = {}; saveGame(); renderDebugMonsters(); showNotice('DEBUG: 削除した敵を全部戻しました'); });
 document.getElementById('dbgEnemyWrap').insertAdjacentHTML('beforeend', ENEMY_BOOK.filter(en => ENEMY_TRAITS[en.key])
   .map(en => `<button data-debug="enemy:${en.key}">${en.kind === 'boss' ? '👑' : ''}${en.name}（${ENEMY_TRAIT_LABELS[ENEMY_TRAITS[en.key]]}）</button>`).join(''));
-const BGM_NEWEST_ORDER = ['battle41', 'boss32', 'boss31', 'boss30', 'tboss5', 'rebirth', 'battle39', 'boss29', 'boss27', 'hireget', 'charge', 'bgmbook', 'skillget', 'rebornconfirm', 'news', 'dailybonus', 'loginbonus', 'boss24', 'boss23', 'boss22', 'coinshop', 'battle30', 'battle34', 'boss16', 'boss17', 'boss21', 'boss18', 'battle31', 'tboss4', 'boss12', 'boss11', 'boss9', 'gemshop', 'boss', 'continue', 'settings', 'upgrade', 'battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'levelup', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'tboss1', 'tboss3', 'companion', 'artifact', 'tower', 'gacha', 'records', 'ranking', 'gameover']; // 曲を作った順（新しい順）。ここに無い曲＝これから足す新曲は一番上に出る
+const BGM_NEWEST_ORDER = ['rankwin', 'battle41', 'boss32', 'boss31', 'boss30', 'tboss5', 'rebirth', 'battle39', 'boss29', 'boss27', 'hireget', 'charge', 'bgmbook', 'skillget', 'rebornconfirm', 'news', 'dailybonus', 'loginbonus', 'boss24', 'boss23', 'boss22', 'coinshop', 'battle30', 'battle34', 'boss16', 'boss17', 'boss21', 'boss18', 'battle31', 'tboss4', 'boss12', 'boss11', 'boss9', 'gemshop', 'boss', 'continue', 'settings', 'upgrade', 'battle3', 'battle4', 'battle5', 'battle7', 'battle12', 'battle14', 'battle15', 'battle20', 'battle22', 'battle24', 'battle27', 'battle28', 'levelup', 'boss2', 'boss3', 'boss5', 'boss6', 'boss8', 'tboss1', 'tboss3', 'companion', 'artifact', 'tower', 'gacha', 'records', 'ranking', 'gameover']; // 曲を作った順（新しい順）。ここに無い曲＝これから足す新曲は一番上に出る
 const bgmNewestRank = k => { const i = BGM_NEWEST_ORDER.indexOf(k); return i < 0 ? -1 : i; };
 document.getElementById('dbgBgmWrap').innerHTML = BGM_INFO.slice().sort((x, y) => bgmNewestRank(x.key) - bgmNewestRank(y.key)).map(b => `<button data-debug="bgm:${b.key}">🎵 ${b.name}</button>`).join(''); // BGMの一覧は最初は畳んでおく
 document.getElementById('debugBgmCat').addEventListener('click', () => { const w = document.getElementById('dbgBgmWrap'), o = !w.classList.contains('open'); w.classList.toggle('open', o); document.getElementById('dbgBgmFoldMark').textContent = o ? '▲ 閉じる' : '▼ 開く'; });

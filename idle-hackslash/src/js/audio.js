@@ -501,6 +501,20 @@ const BGM_SONGS = {
     ],
     drums: 'k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k h s h k k s h | k k s s ks ks ks ks',
   },
+  rankwin: { // 栄冠のエンディング：昨日のクリア数ランキング1位の画面。ゆったりした8ビートと太いベースに乗って、ブラスの雄大な旋律と弦の分散和音が高らかに鳴り響く、物語の大団円のような曲（ハ長調・オリジナル）
+    bpm: 104,
+    echo: { time: 0.3, feedback: 0.32, wet: 0.24 },
+    tracks: [
+      { type: 'gbabrass', gain: 0.05, notes: 'E5 = = = G5 = C6 = | B5 = = A5 G5 = D5 = | C6 = = B5 A5 = E5 = | G5 = = = = = - - | A5 = = G5 F5 = A5 = | G5 = = E5 C5 = E5 = | F5 = = E5 D5 = A5 = | G5 = = = = = - - | E5 = G5 = C6 = = D6 | E6 = = D6 B5 = G#5 = | A5 = = B5 C6 = E6 = | G6 = = F6 E6 = A#5 = | A5 = C6 = F6 = = E6 | D6 = C6 = G#5 = = = | G5 = C6 = E6 = = D6 | D6 = = = B5 = = =' },
+      { type: 'gbabrass', gain: 0.022, notes: 'C5 = = = E5 = = = | D5 = = = B4 = = = | E5 = = = C5 = = = | B4 = = = = = - - | C5 = = = A4 = = = | C5 = = = G4 = = = | A4 = = = F4 = = = | B4 = = = = = - - | C5 = = = E5 = = = | G#4 = = = B4 = = = | C5 = = = E5 = = = | E5 = = = A#4 = = = | C5 = = = A4 = = = | G#4 = = = C5 = = = | E5 = = = G5 = = = | B4 = = = G4 = = =' },
+      { type: 'gbastring', gain: 0.026, notes: 'C4 E4 G4 C5 E5 C5 G4 E4 | B3 D4 G4 B4 D5 B4 G4 D4 | A3 C4 E4 A4 C5 A4 E4 C4 | G3 B3 E4 G4 B4 G4 E4 B3 | A3 C4 F4 A4 C5 A4 F4 C4 | G3 C4 E4 G4 C5 G4 E4 C4 | A3 D4 F4 A4 D5 A4 F4 D4 | G3 B3 D4 G4 B4 G4 D4 B3 | C4 E4 G4 C5 E5 C5 G4 E4 | G#3 B3 E4 G#4 B4 G#4 E4 B3 | A3 C4 E4 A4 C5 A4 E4 C4 | A#3 C4 E4 A#4 C5 A#4 E4 C4 | A3 C4 F4 A4 C5 A4 F4 C4 | G#3 C4 F4 G#4 C5 G#4 F4 C4 | G3 C4 E4 G4 C5 G4 E4 C4 | G3 B3 D4 G4 B4 G4 D4 B3' },
+      { type: 'vrc6pulse12', gain: 0.01, notes: 'C4+E4+G4 = = = = = = = | B3+D4+G4 = = = = = = = | A3+C4+E4 = = = = = = = | G3+B3+E4 = = = = = = = | A3+C4+F4 = = = = = = = | G3+C4+E4 = = = = = = = | A3+D4+F4 = = = = = = = | G3+B3+D4+F4 = = = = = = = | C4+E4+G4 = = = = = = = | G#3+B3+E4 = = = = = = = | A3+C4+E4 = = = = = = = | A#3+C4+E4+G4 = = = = = = = | A3+C4+F4 = = = = = = = | G#3+C4+F4 = = = = = = = | G3+C4+E4 = = = = = = = | G3+B3+D4+F4 = = = = = = =' },
+      { type: 'triangle', gain: 0.07, notes: '- - - - G6 - - - | - - - - G6 - - - | - - - - E6 - - - | - - - - E6 - - - | - - - - F6 - - - | - - - - E6 - - - | - - - - F6 - - - | - - - - F6 - - - | - - - - G6 - - - | - - - - E6 - - - | - - - - E6 - - - | - - - - G6 - - - | - - - - F6 - - - | - - - - F6 - - - | - - - - E6 - - - | - - - - F6 - - -' },
+      { type: 'gbabass', gain: 0.066, notes: 'C2 = = = C3 = G2 = | G1 = = = G2 = D2 = | A1 = = = A2 = E2 = | E2 = = = E3 = B2 = | F1 = = = F2 = C2 = | C2 = = = C3 = G2 = | D2 = = = D3 = A2 = | G1 = = = G2 = D2 = | C2 = = = C3 = G2 = | E2 = = = E3 = B2 = | A1 = = = A2 = E2 = | C2 = = = C3 = G2 = | F1 = = = F2 = C2 = | F1 = = = F2 = C2 = | G1 = = = G2 = D2 = | G1 = = = G2 = D2 =' },
+    ],
+    drums: 'k - - h s - - h | k - - h s - k h | k - - h s - - h | k - - h s - k h | k - - h s - - h | k - - h s - k h | k - - h s - - h | k - s - s s ks ks | k - - h s - - h | k - - h s - k h | k - - h s - - h | k - - h s - k h | k - - h s - - h | k - - h s - k h | k - - h s - - h | ks - ks - s s s s',
+    kickBoost: 1.3,
+  },
   rebirth: { // 転生：天の光が降りてくるような荘厳な曲。ゆっくりとしたオルガンのような和音と、きらめくハープの分散和音の上で、聖歌のような旋律が高く伸びる（ニ長調・オリジナル）
     bpm: 76,
     echo: { time: 0.42, feedback: 0.45, wet: 0.38 },
@@ -972,6 +986,7 @@ const BGM_INFO = [
   { key: 'battle31', name: 'スタッフロール エースの飛翔', desc: '重く刻むパワーコードと突き進む8ビートのベースに乗って、雄大な旋律が大空へ舞い上がる。エースパイロットの出撃。VRC6風チップチューン。ロ短調→ニ長調（80年代スカイアクション映画のロックの作風）・BPM140' },
   { key: 'skillget', name: 'スキルガチャ 新たな力', desc: 'スキルガチャの結果で流れる、弾むオクターブベースと裏打ちの和音に乗って、手に入れた力を祝う明るく誇らしい曲。VRC6風チップチューン。ハ長調・BPM140' },
   { key: 'rebornconfirm', name: '転生 運命の分かれ道', desc: '転生の確認画面で流れる、時を刻むような分散和音と心臓の鼓動のようなベースに乗って、問いかけるような旋律が少しずつ高まり決断を迫る曲。VRC6風チップチューン。ハ短調・BPM120' },
+  { key: 'rankwin', name: 'ランキング1位 栄冠のエンディング', desc: '昨日のクリア数ランキングで1位になったときの画面で流れる。ゆったりした8ビートと太いベースに乗って、ブラスの雄大な旋律と弦の分散和音が高らかに鳴り響く、物語の大団円のような曲。GBA風。ハ長調・BPM104' },
   { key: 'rebirth', name: '転生 天上への階', desc: '転生の演出中に流れる。オルガンのような和音ときらめくハープの分散和音の上で、聖歌のような旋律が高く伸びる、天の光が降りてくるような荘厳な曲。オリジナル曲。ニ長調。' },
   { key: 'continue', name: 'コンテニュー インサートコイン', desc: 'カウントダウンに急かされる、レトロなゲーセンのコンテニュー待ちのような焦りをあおる短調の疾走曲。VRC6風チップチューン。ハ短調・BPM150' },
   { key: 'gameover', name: 'コンテニュー ラストチャンス', desc: 'ゲームオーバー時に流れる。ファンキーなオクターブベースと劇的な高音リードのチップチューンロック。イ短調（ベルトスクロール格闘アクション系の作風）・BPM126' },
@@ -1014,6 +1029,7 @@ document.getElementById('bgmBookList').addEventListener('click', ev => {
   renderBgmBook();
 });
 let compGachaHush = false; // 仲間の招集ガチャの演出中（押した瞬間から結果が出るまで曲を止める）
+let rankWinBgm = false; // 昨日のクリア数ランキング1位の画面（ファンファーレのあと）
 let skGachaBgmOn = false; // スキルガチャの結果を出している間（ファンファーレのあと）
 let rebirthFlow = false;      // 転生演出〜転生ショップを閉じるまで
 let rebirthRewardBgm = false; // 転生報酬（宝箱演出〜結果表示）中
@@ -1025,14 +1041,11 @@ function updateSkipBtnVisibility() {
   document.body.classList.toggle('gameover-lock', gameOverBgm);
   if (typeof updateBossRetryBtn === 'function') updateBossRetryBtn();
 }
-function openingPending() { // 初めて遊ぶ人：オープニングが始まる前（スクリプトの読み込み中など）は、ふつうの戦闘の曲を流さない
-  try { return typeof game !== 'undefined' && !game.openingSeen && (game.bestStage || 1) <= 1 && !((game.reincarnations || 0) > 0) && !(typeof openingOn !== 'undefined' && openingOn); } catch (e) { return false; }
-}
 function refreshBgm() {
   if (!audioCtx) return;
-  if (openingPending()) { stopBgm(true); return; }
   let type = battleBgmType;
   if (document.getElementById('rebornConfirmModal')?.classList.contains('show')) type = 'rebornconfirm'; // 転生の確認画面
+  else if (rankWinBgm && document.querySelector('.modal-overlay.show.rk-y-top1')) type = 'rankwin'; // 昨日のクリア数ランキング1位の画面
   else if (skGachaBgmOn) type = 'hireget'; // スキル・進化ガチャの結果のお祝いの曲
   else if (compGachaHush) type = 'silent'; // 招集ガチャの演出中
   else if (typeof bossContModal !== 'undefined' && bossContModal.classList.contains('show')) type = 'continue'; // ボス戦のコンテニュー画面
