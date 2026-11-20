@@ -407,13 +407,13 @@ function rollChestCompanion(rarity) {
 function chestCompUpPool(rarity) { const up = CHEST_COMP_UP[rarity]; return up ? compPoolIds().filter(id => COMPANIONS[id].rarity === up) : []; }
 function chestCompPool(rarity) { const ex = CHEST_COMP_EXCLUDE[rarity] || []; return compPoolIds().filter(id => !ex.includes(COMPANIONS[id].rarity)); }
 let chestCompRenderT = 0;
-function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーティには入れず、新しければ図鑑に登録、ダブりならキャラ進化（up＝1つ上のレア度の仲間）
+function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーティには入れず、初めてでもダブりでもキャラ進化（初期Lvが上がる。新しければ図鑑にも登録）（up＝1つ上のレア度の仲間）
   let id; if (up) { const pool = chestCompUpPool(rarity); id = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null; } else id = rollChestCompanion(rarity); if (!id) return null;
-  const c = COMPANIONS[id], dup = !!(game.companionBook || {})[id], evo = dup ? compEvolve(id) : '';
-  if (!dup) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
-  const t = dup ? `ダブり → キャラ進化！ ${evo}` : 'NEW！ 図鑑に登録';
+  const c = COMPANIONS[id], isNew = !(game.companionBook || {})[id], evo = compEvolve(id);
+  if (isNew) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
+  const t = `${isNew ? 'NEW！ 図鑑に登録・' : ''}キャラ進化！ ${evo}`;
   if (!chestCompRenderT) chestCompRenderT = setTimeout(() => { chestCompRenderT = 0; try { renderCompanionList(); } catch (e) {} }, 0); // まとめて開けても描き直しは1回
-  return { misc: 'comp:' + id, n: 1, icon: companionIconHtml(id), main: `🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）`, cardName: c.name, cardDesc: dup ? 'ダブり → キャラ進化' : 'NEW！ 図鑑に登録', color: RARITY_INFO[c.rarity].color, sub: t };
+  return { misc: 'comp:' + id, n: 1, icon: companionIconHtml(id), main: `🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）`, cardName: c.name, cardDesc: `${isNew ? 'NEW！ ' : ''}キャラ進化（初期Lvアップ）`, color: RARITY_INFO[c.rarity].color, sub: t };
 }
 // ★3（SR）・★4（SSR）・★5（UR）の宝箱の中身の1つとして、自キャラが出て進化する（攻撃力かHPの初期Lv+1）
 const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
