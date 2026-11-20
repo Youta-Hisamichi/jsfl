@@ -426,7 +426,7 @@ function chestHeroLoot() { // 宝箱の中身「自キャラ」：攻撃力かHP
 
 // ===== 宝箱から出る使いきりアイテム（持ち越し可。Lv倍増券だけは1周回に1回まで） =====
 const CHEST_ITEMS = {
-  skillTicket: { icon: '🎫', name: 'スキルガチャ券', desc: 'スキルガチャを1回、コインなしで回せる（回数の上限にも数えない）', col: '#8ad0ff' },
+  skillTicket: { icon: '🎫', name: 'スキルガチャ券', desc: 'スキルガチャを1回、コインなしで回せる（回数には数える）', col: '#8ad0ff' },
   compTicket:  { icon: '📜', name: '招集ガチャ券', desc: '招集ガチャを1回、コインなしで回せる', col: '#ffc46b' },
   doll:        { icon: '🪆', name: '身代わり人形', desc: 'ボス戦・試練の塔で倒れたとき、1回だけHP50%で立ち直る（自動で使う）', col: '#ff9a9a' },
   lv15:        { icon: '🎟️', img: 'assets/img/icons/bag_ticket.webp', name: 'Lv1.5倍券', desc: 'パーティの仲間の攻撃力Lv・HPLvと、持っているスキルのLvを全部1.5倍（Lv倍増券は1周回に1回まで）', col: '#c28aff' },
@@ -529,8 +529,9 @@ function useSkillTicket(ev) {
   if (typeof skGachaBusy !== 'undefined' && skGachaBusy) return;
   const sp = skillGachaPool().length, wp = weaponGachaPool().length;
   if (!sp && !wp) { showTapError('引けるスキルがありません', ev.clientX, ev.clientY); return; }
-  spendItem('skillTicket'); saveGame();
-  if (Math.random() * (sp + wp) < sp) skillGachaPull(ev, true); else weaponGachaPull(ev, true); // コインも回数もかからない
+  if (!skillGachaLeft()) { showTapError('スキルガチャは上限まで回しました', ev.clientX, ev.clientY); return; }
+  spendItem('skillTicket'); game.skillGachaPulls = (game.skillGachaPulls || 0) + 1; saveGame(); // コインはかからない・回数には数える
+  if (Math.random() * (sp + wp) < sp) skillGachaPull(ev, true); else weaponGachaPull(ev, true);
 }
 function useCompTicket(ev) {
   if (!itemHeld('compTicket') || compSummoning) return;
