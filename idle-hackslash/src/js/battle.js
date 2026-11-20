@@ -1715,8 +1715,8 @@ loginBonusCloseBtn.addEventListener('click', () => {
   loginBonusModal.classList.remove('show');
   if (typeof spawnCoinDrop === 'function' && typeof arena !== 'undefined') { spawnCoinDrop(arena.x, arena.y, 0, 14); for (let i = 0; i < 10; i++) setTimeout(() => playCoinChime(i), 300 + i * 45); } // 受け取り演出：コインがはじけて飛び出す
 });
-// 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを1個もらえる
-const LOGIN_AD_MULT = 3, LOGIN_AD_GEMS = 1;
+// 帰還ボーナスの動画ボタン：コイン（放置中の戦果ふくむ）が3倍になり、ジェムを5個もらえる
+const LOGIN_AD_MULT = 3, LOGIN_AD_GEMS = 5;
 const loginBonusAdBtn = document.getElementById('loginBonusAdBtn');
 let loginAdReward = null;
 loginBonusAdBtn.addEventListener('click', ev => {
@@ -2061,7 +2061,7 @@ function openChestBatchDialog(rarity) {
     while ((hc[rarity] || 0) > 0) { // ふつうの宝箱
       hc[rarity]--;
       const before = game.coins, loot = openTreasureChest(rarity, mult, true);
-      results.push(loot.misc ? { misc: loot.misc, n: loot.n || 1, icon: loot.icon, name: loot.cardName || loot.main, desc: loot.cardDesc || '', color: loot.color } : loot.art ? { art: loot.art, n: loot.n || mult, fea: loot.fea } : { coins: game.coins - before });
+      results.push(loot.misc ? { misc: loot.misc, n: loot.n || 1, icon: loot.icon, name: loot.cardName || loot.main, desc: loot.cardDesc || '', color: loot.color, own: loot.own } : loot.art ? { art: loot.art, n: loot.n || mult, fea: loot.fea } : { coins: game.coins - before });
     }
     if (!Array.isArray(game.rebirthChests)) game.rebirthChests = []; // 新しいセーブでは未作成
     for (let i = game.rebirthChests.length - 1; i >= 0; i--) { // 転生ガチャの宝箱（中身は抽選済みの遺物）
@@ -2078,6 +2078,7 @@ function openChestBatchDialog(rarity) {
     for (const r of results) {
       const key = r.coins != null ? 'coin' : r.misc ? 'misc' + r.misc : r.art.id + (r.fea || '');
       const g = groups.get(key) || { ...r, count: 0, coins: 0, n: 0, sure: 0 };
+      if (r.own) g.own = [g.own ? g.own[0] : r.own[0], r.own[1], r.own[2]]; // 所持数は最初の前 → 最後の後
       g.count++; if (r.coins != null) g.coins += r.coins; else { g.n += r.n; if (r.rebirth) g.sure++; }
       groups.set(key, g);
     }
@@ -2086,11 +2087,11 @@ function openChestBatchDialog(rarity) {
     const cards = [...groups.values()].sort((x, y) => order(x) - order(y)).map((g, i) => {
       const delay = `animation-delay:${Math.min(i, 20) * 0.06}s`;
       const t0 = Math.min(i, 20) * 0.06;
-      if (g.misc) return `<div class="cl-card" style="--rc:${g.color};${delay}">${lootStackHtml(g.icon, g.n, t0)}<div class="cl-name">${g.name}</div><div class="cl-desc">${g.desc}</div></div>`;
+      if (g.misc) return `<div class="cl-card" style="--rc:${g.color};${delay}">${lootStackHtml(g.icon, g.n, t0)}<div class="cl-name">${g.name}</div><div class="cl-desc">${g.desc}</div>${g.own ? ownTransHtml(...g.own) : ''}</div>`;
       if (!g.art) return `<div class="cl-card coin" style="--rc:#d18b00;${delay}">${lootStackHtml(chestCoinIco(rarity) || COIN_ICO, g.count, t0)}<div class="cl-name">${chestCoinName(rarity)}</div><div class="cl-desc">1個 ザコ${CHEST_COIN_MULT[rarity] * mult}体ぶんのコイン</div><div class="cl-n">合計 ${formatCoinNumber(g.coins)}</div></div>`;
-      if (g.fea) { const fc = RARITY_INFO[g.fea].color, nn = feaCount(g.fea); return `<div class="cl-card" style="--rc:${fc};${delay}">${lootStackHtml(chestArtIco(g.art, g.fea), g.n, t0)}<div class="cl-name">進化の${feaName(g.fea)}</div><div class="cl-desc">進化1回で1枚使い、倍率×${FEA_MULT[g.fea]}</div><div class="cl-trans">${nn - g.n}枚 → <b>${nn}枚</b></div></div>`; } // 進化の羽はレア度ごと
+      if (g.fea) { const fc = RARITY_INFO[g.fea].color, nn = feaCount(g.fea); return `<div class="cl-card" style="--rc:${fc};${delay}">${lootStackHtml(chestArtIco(g.art, g.fea), g.n, t0)}<div class="cl-name">進化の${feaName(g.fea)}</div><div class="cl-desc">倍率×${FEA_MULT[g.fea]}</div>${ownTransHtml(nn - g.n, nn, '枚')}</div>`; } // 進化の羽はレア度ごと
       const c = RARITY_INFO[g.art.rarity].color;
-      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(g.rebirth ? ico(g.art) : chestArtIco(g.art, rarity), g.n, t0)}<div class="cl-name">${g.art.name}</div>${ARTIFACT_STACK_LIMIT[g.art.id] === 1 ? '' /* 1個だけの遺物（レアリングなど）は下の効果と同じ文になるので出さない */ : `<div class="cl-desc">${g.art.id === 'evoFeather' ? '進化を加速させる素材' : (g.n > 1 ? '合計 ' : '') + sumDesc(g.art.desc, g.n)}</div>`}${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}</div>`;
+      return `<div class="cl-card" style="--rc:${c};${delay}">${g.sure ? '<span class="cl-tag">確定</span>' : ''}${lootStackHtml(g.rebirth ? ico(g.art) : chestArtIco(g.art, rarity), g.n, t0)}<div class="cl-name">${g.art.name}</div>${ARTIFACT_STACK_LIMIT[g.art.id] === 1 ? '' /* 1個だけの遺物（レアリングなど）は下の効果と同じ文になるので出さない */ : `<div class="cl-desc">${g.art.id === 'evoFeather' ? '進化を加速させる素材' : (g.n > 1 ? '合計 ' : '') + sumDesc(g.art.desc, g.n)}</div>`}${artifactTransitionHtml(g.art.id, ownedBefore[g.art.id] || 0)}${g.art.id === 'evoFeather' ? '' : ownTransHtml(ownedBefore[g.art.id] || 0, game.ownedArtifacts[g.art.id] || 0, '個')}</div>`;
     });
     const coinSum = results.reduce((t, r) => t + (r.coins || 0), 0);
     { const sorted = [...groups.values()].sort((x, y) => order(x) - order(y)); playLootPopChain(sorted.map(g => g.art ? (g.fea || g.art.rarity) : 'coin')); } // カードが並ぶのに合わせてポンポン
@@ -2172,10 +2173,11 @@ function closeChestDialog() {
   if (chestPausedPhase === 'battle' && phase === 'paused') phase = 'battle';
   chestPausedPhase = null;
 }
+function ownTransHtml(b, a, unit) { return `<div class="cl-trans">所持 ${formatCoinNumber(b)}${unit} → <b>${formatCoinNumber(a)}${unit}</b></div>`; } // 所持数の増減（宝箱の結果の最後の行・緑の字）
 function showChestResult(rarity, loot, mult) {
   document.getElementById('chestModalIcon').className = 'chest-big';
   document.getElementById('chestModalIcon').innerHTML = loot.icon;
-  document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:${loot.color}">${loot.main}${mult > 1 ? ' <span style="color:#ff5c6c">×3！</span>' : ''}</div>${loot.sub || ''}`;
+  document.getElementById('chestModalText').innerHTML = `<div class="chest-loot" style="color:${loot.color}">${loot.main}${mult > 1 ? ' <span style="color:#ff5c6c">×3！</span>' : ''}</div>${loot.sub || ''}${loot.own ? ownTransHtml(...loot.own) : ''}`;
   document.getElementById('chestModalBtns').innerHTML = `<button class="modal-close-btn" id="chestCloseBtn">閉じる</button><button class="modal-shop-btn" id="chestOddsBtn">📋 ${RARITY_INFO[rarity].label}の宝箱で出るもの</button>`; document.getElementById('chestOddsBtn').onclick = () => showChestOdds(rarity);
   document.getElementById('chestCloseBtn').onclick = closeChestDialog;
 }
@@ -2194,13 +2196,13 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
   else if (sp === 'hero') loot = chestHeroLoot();
   else if (sp === 'tie') { game.feaUseBuys = (game.feaUseBuys || 0) + 1; if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'tie', n: 1, icon: '<img class="ico-img" src="assets/img/icons/fea_bundle.webp" alt="">', main: '羽の束ね紐', cardDesc: `進化1回で使える羽 ${getFeaUseMax()}枚に`, color: '#ffd76b', sub: `進化1回で使える羽が ${getFeaUseMax()}枚に` }; }
   else if (sp === 'evoUnlock') { const ks = (EVO_UNLOCK_BY_CHEST[rarity] || []).filter(k => !isEvoKindUnlocked(k)), k = ks[Math.floor(Math.random() * ks.length)]; unlockEvoKind(k); if (typeof renderEvolutionList === 'function') renderEvolutionList(); loot = { misc: 'evoUnlock', n: 1, icon: `<img class="ico-img" src="assets/img/ui/evo2/icon_${k}.webp" alt="">`, main: `進化項目「${EVO_KIND_NAME[k]}」解放`, cardDesc: '進化ページでONにすると、進化のランダムに入る', color: '#7fe8ff', sub: `進化項目「${EVO_KIND_NAME[k]}」が解放された！（進化ページでONにできる）` }; }
-  else if (sp && sp.startsWith('grace:')) { const k = sp.slice(6), G = GRACE_ITEMS[k], [lo, hi] = graceChestRange(k, rarity), n = gainGraceItem(k, (lo + Math.floor(Math.random() * (hi - lo + 1))) * mult); refreshPlayerBallStats(false); loot = { misc: sp, n, icon: `<span class="chest-emoji">${G.icon}</span>`, main: `${G.name} ×${n}`, cardName: G.name, cardDesc: `${G.desc}／1個・所持 ${formatCoinNumber(graceItemCount(k))}個`, color: '#ffd76b', sub: `${G.desc}（1個ごと）。所持 ${formatCoinNumber(graceItemCount(k))}／${formatCoinNumber(G.max)}個（転生しても残る）` }; }
+  else if (sp && sp.startsWith('grace:')) { const k = sp.slice(6), G = GRACE_ITEMS[k], [lo, hi] = graceChestRange(k, rarity), n = gainGraceItem(k, (lo + Math.floor(Math.random() * (hi - lo + 1))) * mult); refreshPlayerBallStats(false); loot = { misc: sp, n, icon: `<span class="chest-emoji">${G.icon}</span>`, main: `${G.name} ×${n}`, cardName: G.name, cardDesc: `${G.desc}（1個ごと）`, color: '#ffd76b', sub: `${G.desc}（1個ごと・転生しても残る）`, own: [graceItemCount(k) - n, graceItemCount(k), '個'] }; }
   else if (sp === 'skillUnlock') { const id = unlockRandomSkill(), I = skillToggleInfo(id); loot = { misc: 'skillUnlock', n: 1, icon: '<span class="chest-emoji">🔓</span>', main: `スキル解放：${I.name}`, cardName: 'スキルの解放', cardDesc: `${I.name}がガチャに出せるようになった`, color: '#b48cff', sub: `「${I.name}」${I.auto ? '（自動スキル）' : ''}をスキルガチャに出せるようになった（スキルページでONにできる・転生しても残る）` }; }
   else if (sp === 'reflStart') { game.reflStart2 = true; { for (const o of reflectors()) if (o.bm < reflMin()) { o.bm = reflMin(); saveReflector(o); } } loot = { misc: 'reflStart', n: 1, icon: '<span class="chest-emoji">⏫</span>', main: '反射の初期値上昇', cardDesc: '反射玉が×1ではなく×2から始まる（×1に戻るところも×2に）', color: '#7fe8ff', sub: '反射玉の初期倍率が×2になった！（1個だけのレアアイテム）' }; }
   else if (sp === 'overheal') { game.overHealBuys = overHealCount() + 1; loot = { misc: 'overheal', n: 1, icon: '<span class="chest-emoji">💖</span>', main: '回復限界突破', cardDesc: `最大HPの${overHealMult()}倍まで回復できる`, color: '#ff8adf', sub: `回復の上限が最大HPの${overHealMult()}倍に` }; }
-  else if (sp === 'potion') { game.potions = (game.potions || 0) + mult; updatePotionButton(); loot = { misc: 'potion', n: mult, icon: '<span class="chest-emoji">🧪</span>', main: `回復ポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: '回復ポーション', cardDesc: `所持 ${game.potions}個`, color: '#ff7eb6', sub: `HPを最大値の45%回復・所持 ${game.potions}個` }; }
-  else if (sp === 'redPotion') { game.redPotions = (game.redPotions || 0) + mult; updateRedPotionButton(); loot = { misc: 'redPotion', n: mult, icon: '<i class="ico-redpot chest-redpot"></i>', main: `スキルポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: 'スキルポーション', cardDesc: `所持 ${game.redPotions}個`, color: '#ff5c6c', sub: `スキルの待ち時間をリセット・所持 ${game.redPotions}個` }; }
-  else if (sp && sp.startsWith('item:')) { const k = sp.slice(5), I = CHEST_ITEMS[k]; gainItem(k, mult); loot = { misc: 'item' + k, n: mult, icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="chest-emoji">${I.icon}</span>`, main: `${I.name}${mult > 1 ? ` ×${mult}` : ''}`, cardName: I.name, cardDesc: I.desc, color: I.col, sub: `${I.desc}・所持 ${itemHeld(k)}個` }; }
+  else if (sp === 'potion') { game.potions = (game.potions || 0) + mult; updatePotionButton(); loot = { misc: 'potion', n: mult, icon: '<span class="chest-emoji">🧪</span>', main: `回復ポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: '回復ポーション', cardDesc: 'HPを最大値の45%回復', color: '#ff7eb6', sub: 'HPを最大値の45%回復', own: [game.potions - mult, game.potions, '個'] }; }
+  else if (sp === 'redPotion') { game.redPotions = (game.redPotions || 0) + mult; updateRedPotionButton(); loot = { misc: 'redPotion', n: mult, icon: '<i class="ico-redpot chest-redpot"></i>', main: `スキルポーション${mult > 1 ? ` ×${mult}` : ''}`, cardName: 'スキルポーション', cardDesc: 'スキルの待ち時間をリセット', color: '#ff5c6c', sub: 'スキルの待ち時間をリセット', own: [game.redPotions - mult, game.redPotions, '個'] }; }
+  else if (sp && sp.startsWith('item:')) { const k = sp.slice(5), I = CHEST_ITEMS[k]; gainItem(k, mult); loot = { misc: 'item' + k, n: mult, icon: I.img ? `<img class="ico-img" src="${I.img}" alt="">` : `<span class="chest-emoji">${I.icon}</span>`, main: `${I.name}${mult > 1 ? ` ×${mult}` : ''}`, cardName: I.name, cardDesc: I.desc, color: I.col, sub: I.desc, own: [itemHeld(k) - mult, itemHeld(k), '個'] }; }
   const isCoin = !loot && Math.random() >= CHEST_ARTIFACT_CHANCE[rarity];
   if (loot) { if (quiet) showNotice(`🎁 宝箱から${loot.main}！`); }
   else if (isCoin) {
@@ -2212,13 +2214,13 @@ function openTreasureChest(rarity = 'common', mult = 1, quiet = false) {
     const pick = pickWeightedArtifact(ARTIFACT_POOL, { [rarity]: 1 }); // 宝箱と同じレア度の遺物
     if (pick.id === 'evoFeather') { // 進化の羽は宝箱と同じレア度の羽（N宝箱→N羽 … UR宝箱→UR羽）
       const beforeF = feaCount(rarity); addFea(rarity, mult);
-      loot = { art: pick, fea: rarity, n: mult, icon: chestArtIco(pick, rarity), main: `進化の${feaName(rarity)}${mult > 1 ? ` ×${mult}` : ''}`, color: RARITY_INFO[rarity].color, sub: `進化1回で1枚使い、倍率×${FEA_MULT[rarity]}<br>${beforeF}枚 → ${feaCount(rarity)}枚` };
+      loot = { art: pick, fea: rarity, n: mult, icon: chestArtIco(pick, rarity), main: `進化の${feaName(rarity)}${mult > 1 ? ` ×${mult}` : ''}`, color: RARITY_INFO[rarity].color, sub: `倍率×${FEA_MULT[rarity]}`, own: [beforeF, feaCount(rarity), '枚'] };
     } else {
     const beforeN = game.ownedArtifacts[pick.id] || 0;
     const per = 1;
     for (let i = 0; i < mult * per; i++) gainArtifact(pick.id);
     const info = RARITY_INFO[pick.rarity];
-    loot = { art: pick, n: mult * per, icon: chestArtIco(pick, rarity), main: `${pick.name}${mult * per > 1 ? ` ×${mult * per}` : ''}`, color: info.color, sub: pick.id === 'evoFeather' ? `進化を加速させる素材<br>${beforeN}枚 → ${game.ownedArtifacts[pick.id]}枚` : `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}<br>所持 x${game.ownedArtifacts[pick.id]}${artifactTransitionHtml(pick.id, beforeN)}` }; // 進化の羽は短く
+    loot = { art: pick, n: mult * per, icon: chestArtIco(pick, rarity), main: `${pick.name}${mult * per > 1 ? ` ×${mult * per}` : ''}`, color: info.color, sub: pick.id === 'evoFeather' ? `進化を加速させる素材<br>${beforeN}枚 → ${game.ownedArtifacts[pick.id]}枚` : `<span style="color:${info.color}">${rarityStarsImg(pick.rarity)} ${info.label}</span>　${pick.desc}${artifactTransitionHtml(pick.id, beforeN)}`, own: [beforeN, game.ownedArtifacts[pick.id], '個'] }; // 進化の羽は短く
     }
     if (!quiet) renderArtifactList();
   }
