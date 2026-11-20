@@ -2163,7 +2163,6 @@ function crashHit(en, sp, x, y, what) { // 激突ダメージ（必ず当たる�
   en.hp -= dmg; trackDamage(dmg);
   for (let i = 0; i < 2; i++) spawnHitParticles(x, y, i ? '#ffd27a' : '#ffffff');
   spawnAttackDamageText(en, dmg, crit, '#ffcf8a', en.isAdd ? 6 : undefined);
-  spawnDamageText(x, y - 20, `💥 ${what}激突！`, '#ffb35c', 0.03);
   if (typeof thump === 'function') { thump(150, 50, 0.16, 0.3, 'square'); thump(70, 35, 0.2, 0.25, 'sine', 0.01); }
   if (typeof playNoiseBurst === 'function') playNoiseBurst(0.08, 0.12);
   if (sp >= CRASH_SPEED_REF && typeof shakeScreenLight === 'function') shakeScreenLight();
