@@ -542,10 +542,10 @@ function runCompanionGacha(count, cost, event, isReroll = false) {
   const reveal = () => { // 進化ガチャと同じ召喚演出のあとで開封（引き直しも同じ）
     if (!compSummoning) return;
     compSummoning = false;
-    compGachaHush = false; refreshBgm(); // 結果が出たら曲を戻す
     compSummonReveal = null;
-    if (activeTabCache !== 'companion') { box.style.display = 'none'; renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
+    if (activeTabCache !== 'companion') { box.style.display = 'none'; compGachaHush = false; refreshBgm(); renderCompanionList(); return; } // 演出中に他のページへ移ったら結果は出さずに閉じる
     showCompanionGachaResult(box, results, results.length, bestRarity, { pw0, pw1 }); // ステージボーナスで増えた分も並べる
+    compGachaHush = false; refreshBgm(); // 結果を出してから戻す（結果の間は「ファー」の音。閉じたら元の曲へ）
     box.classList.add('gc-flash'); setTimeout(() => box.classList.remove('gc-flash'), 500);
     renderCompanionList();
   };

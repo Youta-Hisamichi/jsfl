@@ -3428,7 +3428,10 @@ function stopHolyPad() {
   oscs.forEach(o => { try { o.stop(t + 0.7); } catch (e) {} });
   refreshBgm(); // 元の曲に戻す
 }
-{ const orig = refreshBgm; refreshBgm = function () { if (holyPad) { if (currentBgmType) stopBgm(); return; } return orig.apply(this, arguments); }; }
+function gachaResultShowing() { // 仲間・進化ガチャの結果を出している（「ファー」の音を流す・流す直前）
+  return ['compGachaResult', 'gachaResult'].some(id => { const b = document.getElementById(id); return b && b.style.display !== 'none' && !b.classList.contains('gacha-summoning') && b.innerHTML.trim(); });
+}
+{ const orig = refreshBgm; refreshBgm = function () { if (holyPad || (gachaResultShowing() && bgmVol() > 0)) { if (currentBgmType) stopBgm(); return; } return orig.apply(this, arguments); }; } // 結果が出てから「ファー」が始まるまでの間も、元の曲は鳴らさない
 (() => {
   const boxes = ['compGachaResult', 'gachaResult'].map(id => document.getElementById(id)).filter(Boolean);
   let startTimer = 0;
