@@ -492,7 +492,7 @@ function noteDebugUse(action) {
   setTimeout(renderDebugRecent, 0);
 }
 // 新しく作ったデバッグボタンは、使う前から「🕘 最近使った」に出す（新しいものを足したらここの先頭に足す。1回だけ入れる）
-const DBG_NEW = ['rankWin1', 'login7Test', 'admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
+const DBG_NEW = ['welcome', 'rankWin1', 'login7Test', 'admobFreezeProd', 'admobFreeze', 'floorNext', 'rankNewId', 'towerUnlock', 'subExpire', 'androidBuild', 'admobTest', 'reflFormula', 'firstBossGift', 'bondInfo', 'graceAdd', 'skillUnlockAll', 'rbChest', 'clockInfo', 'notifySchedule', 'adminConsole', 'evoUnlockAll', 'compList', 'evoFormula', 'meteorResist', 'mysteryList', 'allSkills', 'reflMaxUp', 'reflStart2'];
 try { const seeded = JSON.parse(localStorage.getItem('dbgNewSeeded') || '[]'), add = DBG_NEW.filter(a => !seeded.includes(a));
   if (add.length) { const l = dbgRecentList().filter(a => !add.includes(a)); localStorage.setItem(DBG_RECENT_KEY, JSON.stringify([...add, ...l].slice(0, Math.max(DBG_RECENT_MAX, add.length)))); localStorage.setItem('dbgNewSeeded', JSON.stringify([...seeded, ...add])); } } catch (e) {}
 renderDebugRecent(); setTimeout(renderDebugRecent, 2000); // あとから足されるデバッグボタンにも対応
@@ -877,6 +877,7 @@ debugRow.addEventListener('click', event => {
   if (action === 'admobTest') { admobDebugTest(); return; }
   if (action === 'admobFreeze') { admobFreezeTest(); return; }
   if (action === 'admobFreezeProd') { admobFreezeTest(true); return; }
+  if (action === 'welcome') { openWelcome(); return; }
   if (action === 'rankWin1') { rankYesterdayShow(1, Math.max(1, Math.floor(getDailyClearsForDate(jstDateKey(Date.now(), -1)) || 0)) || 123, jstDateKey(Date.now(), -1)); return; }
   if (action === 'login7Test') { const n = dayNumOf(trustNow()); game.login7Num = n - 1; game.login7Date = null; checkDailyLogin(); return; } // 今日の分をもう一度（連続日数は進む）
   if (action === 'subExpire') { // 紋章（サブスク）の期限を今すぐ切らす（期限切れの動きを確かめる）。ストアで加入中なら、アプリに戻ったときや「購入を復元」でまた有効になる

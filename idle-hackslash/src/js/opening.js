@@ -21,6 +21,35 @@ function openFinalGoal(first) {
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   try { playLoginBonusSound(); } catch (e) {}
 }
+// ===== 初めて遊ぶときの説明（1枚）：反射・仲間・スキル・転生で、ステージ100万を目指す =====
+function openWelcome() {
+  if (document.querySelector('.wc-panel')) return;
+  game.welcomeSeen = true; game.finalGoalSeen = true; saveGame();
+  const boss = ENEMY_SPRITES.b_fireDragon ? `<img class="wc-boss" src="${ENEMY_SPRITES.b_fireDragon}" alt="">` : '';
+  const card = (img, t, d) => `<div class="wc-card"><img class="wc-ico" src="${img}" alt=""><b>${t}</b><span>${d}</span></div>`;
+  const ov = document.createElement('div'); ov.className = 'modal-overlay show wc-ov'; ov.style.zIndex = 86;
+  ov.innerHTML = `<div class="modal-panel wc-panel">
+    <div class="wc-top">${boss}<img class="wc-hero" src="${PLAYER_SPRITE}" alt="">
+      <div class="wc-goal"><small>目指すは魔王の玉座</small><b>STAGE <em>1,000,000</em></b></div></div>
+    <div class="wc-lead">放っておいても勇者は自動で戦い続ける。<br>4つの力で強くなって、<b>ステージ100万</b>を目指そう！</div>
+    <div class="wc-grid">
+      ${card('assets/img/ui/rk/i_refl.webp', '🔁 反射', '引っ張って放つと体当たり。壁や反射玉で跳ね返るほど大ダメージ')}
+      ${card('assets/img/icons/tab_companion.webp', '🐾 仲間', '招集ガチャで仲間を集めて、一緒に戦ってもらおう')}
+      ${card('assets/img/icons/sk_skillNova.webp', '✨ スキル', 'スキルガチャで技を覚えると、戦いの中で自動で発動')}
+      ${card('assets/img/icons/art_rebirthOrb.webp', '🌌 転生', '行き詰まったら転生。ジェムと永続の力を持って、もっと先へ')}
+    </div>
+    <button class="modal-close-btn wc-ok">冒険に出発！</button></div>`;
+  document.body.appendChild(ov);
+  const close = () => { ov.classList.add('wc-closing'); setTimeout(() => ov.remove(), 250); try { refreshBgm(); } catch (e) {} };
+  ov.querySelector('.wc-ok').addEventListener('click', close, { once: true });
+  try { playLoginBonusSound(); } catch (e) {}
+}
+// 初めて起動したとき（まだ何も進めていない）に出す。ログインボーナスより手前に重ねる
+setTimeout(() => {
+  if (game.welcomeSeen) return;
+  if ((game.bestStage || 1) > 1 || (game.reincarnations || 0) > 0) { game.welcomeSeen = true; return; } // すでに遊んでいる人には出さない
+  openWelcome();
+}, 0);
 // 最終目標を一度だけ見せる（ほかのダイアログが開いていないとき）
 { let tries = 0; const t = setInterval(() => {
   if (game.finalGoalSeen || ++tries > 40) { clearInterval(t); return; }
