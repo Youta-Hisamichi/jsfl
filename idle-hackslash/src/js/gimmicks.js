@@ -413,7 +413,7 @@ function chestCompLoot(rarity, up) { // 宝箱の中身「仲間」：パーテ�
   if (isNew) { if (!game.companionBook) game.companionBook = {}; game.companionBook[id] = true; }
   const t = `${isNew ? 'NEW！ 図鑑に登録・' : ''}キャラ進化！ ${evo}`;
   if (!chestCompRenderT) chestCompRenderT = setTimeout(() => { chestCompRenderT = 0; try { renderCompanionList(); } catch (e) {} }, 0); // まとめて開けても描き直しは1回
-  return { misc: 'comp:' + id, n: 1, icon: companionIconHtml(id), main: `🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）`, cardName: c.name, cardDesc: `${isNew ? 'NEW！ ' : ''}キャラ進化（初期Lvアップ）`, color: RARITY_INFO[c.rarity].color, sub: t };
+  return { misc: 'comp:' + id, n: 1, icon: companionIconHtml(id), main: `🐾 ${c.name}（${RARITY_INFO[c.rarity].label}）`, cardName: c.name, cardDesc: `${isNew ? 'NEW！ ' : ''}キャラ進化（初期レベルアップ）`, color: RARITY_INFO[c.rarity].color, sub: t };
 }
 // ★3（SR）・★4（SSR）・★5（UR）の宝箱の中身の1つとして、自キャラが出て進化する（攻撃力かHPの初期Lv+1）
 const CHEST_HERO_CHANCE = { epic: 0.03, legendary: 0.08, mythic: 0.15 };
