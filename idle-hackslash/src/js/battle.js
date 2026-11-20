@@ -1004,24 +1004,6 @@ const PARALYZE_DMG_MULT = 0.5;
 let lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
 let lightningFx = null; // 落雷エフェクト { x, y, until }
 function isParalyzed(ball) { return !!ball && ball.paralyzedUntil > Date.now(); }
-function castParalyze(enemy) {
-  const player = balls.find(ball => ball.isPlayer && !ball.isClone && !ball.isCompanion);
-  const dur = enemy.isBoss ? PARALYZE_BOSS_MS : PARALYZE_MS;
-  enemy.paralyzedUntil = Date.now() + dur;
-  lightningFx = { x: enemy.x, y: enemy.y, until: Date.now() + 350 };
-  const { dmg, crit } = rollCrit(Math.max(1, Math.round((player ? player.atk : getPlayerAtk()) * PARALYZE_DMG_MULT * skillPower('skillParalyze'))), enemy);
-  enemy.hp -= dmg;
-  trackDamage(dmg);
-  spawnAttackDamageText(enemy, dmg, crit, '#fff1a8');
-  spawnDamageText(enemy.x, enemy.y + enemy.radius + 26, `⚡ 麻痺 ${dur / 1000}秒`, '#ffe14f', 0.012);
-  for (let i = 0; i < 12; i++) {
-    const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3;
-    particles.push({ x: enemy.x, y: enemy.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: '#ffe14f', decay: 0.035 });
-  }
-  playParalyzeSound();
-  updateHPUI();
-  if (enemy.hp <= 0) triggerEnemyDefeat(enemy, enemy.x, enemy.y - 1);
-}
 function drawLightningBolt(x1, y1, x2, y2, width, color) {
   ctx.beginPath();
   ctx.moveTo(x1, y1);

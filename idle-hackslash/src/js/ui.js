@@ -356,8 +356,7 @@ function fullReset() {
   updateHealButton();
   updateBarrierButton();
   updatePoisonButton();
-  updateParalyzeButton();
-  updateAtkUpButton();
+    updateAtkUpButton();
   updateRegenButton();
   updateSilenceButton();
   updateDeathButton();
@@ -724,8 +723,7 @@ debugRow.addEventListener('click', event => {
     poisonBuffEndAt = 0;
     updatePoisonButton();
     lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN;
-    updateParalyzeButton();
-    lastSleepAt = Date.now() - SLEEP_COOLDOWN;
+        lastSleepAt = Date.now() - SLEEP_COOLDOWN;
     lastAtkUpAt = Date.now() - ATK_UP_COOLDOWN;
     atkUpEndAt = 0;
     updateAtkUpButton();
@@ -905,7 +903,7 @@ debugRow.addEventListener('click', event => {
     const powAt = lv => 1 + 0.1 * (lv - 1);
     const row = (k, v, n) => `<div class="dl-r"><b>${k}</b>　${v}${n ? `<small>${n}</small>` : ''}</div>`;
     const DMG = { skillSpecial: ['メテオ（1発）', () => METEOR_ATK_MULT * shopMultiRate('meteor') * b.specialMult * b.specialDmgMult, ''],
-      skillPoison: ['毒（1スタック・1回）', () => POISON_DMG_MULT, POISON_DMG_MULT], skillParalyze: ['麻痺の雷（1発）', () => PARALYZE_DMG_MULT, PARALYZE_DMG_MULT],
+      skillPoison: ['毒（1スタック・1回）', () => POISON_DMG_MULT, POISON_DMG_MULT],
       skillBlast: ['大爆発（敵1体）', () => BLAST_DMG_MULT, BLAST_DMG_MULT] };
     let h = `<div class="dbg-list"><div class="dl-h">基本</div>${row('自キャラ攻撃力', F(atk))}${row('最大HP', F(getPlayerMaxHP()))}
       <div class="dl-h">手動スキルの倍率（Lvで上がる）</div>${row('倍率', 'Lv1 ×1、Lvごとに +0.1', '10Lv・100Lvごとの飛躍はなし')}${row('待機', '最低5分', 'Lvで短くなるが5分より短くはならない')}`;
@@ -2549,16 +2547,7 @@ regenBtn.addEventListener('click', event => {
 });
 
 
-paralyzeBtn.addEventListener('click', event => {
-  if (!game.shopOwned.skillParalyze) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
-  if (phase !== 'battle') { showTapError('今は麻痺を使えません', event.clientX, event.clientY); return; }
-  if (Date.now() - lastParalyzeAt < skillCd('skillParalyze', PARALYZE_COOLDOWN)) { tryGemResetSkill('paralyze', event, () => { lastParalyzeAt = Date.now() - PARALYZE_COOLDOWN; }, updateParalyzeButton); return; }
-  const enemy = balls.find(ball => !ball.isPlayer);
-  if (!enemy || enemy.isDying || enemy.spawnTimer > 0) { showTapError('敵がいません', event.clientX, event.clientY); return; }
-  lastParalyzeAt = Date.now();
-  castParalyze(enemy);
-  updateParalyzeButton();
-});
+
 
 poisonBtn.addEventListener('click', event => {
   if (!game.shopOwned.skillPoison) { showTapError('スキルページで解放・装備してください', event.clientX, event.clientY); return; }
@@ -2771,7 +2760,6 @@ setInterval(updateAccelButton, 1000);
 setInterval(updateHealButton, 1000);
 setInterval(updateBarrierButton, 1000);
 setInterval(updatePoisonButton, 500);
-setInterval(updateParalyzeButton, 1000);
 setInterval(updateAtkUpButton, 500);
 setInterval(updateRegenButton, 500);
 setInterval(updateSilenceButton, 500);
@@ -2972,6 +2960,8 @@ if (!Array.isArray(game.compOn) || !game.compOnInit) { if (!Array.isArray(game.c
 if (!game.weaponDup) { game.weaponDup = {}; for (const k in (game.weapons || {})) { const lv = game.weapons[k] || 0; const old = lv ? Math.floor((Math.min(lv, 5) - 1) / 2) : 0; if (old) game.weaponDup[k] = old; } } // 個数がLvで増えていた頃のセーブは、今の個数をそのまま引き継ぐ
 if (!game.atkUpBtnMig) { game.atkUpBtnMig = true; if (game.shopOwned.skillAtkUp && Array.isArray(game.equippedSkills) && !game.equippedSkills.includes('skillAtkUp') && getEquippedSkills().length < getSkillSlots()) game.equippedSkills.push('skillAtkUp'); } // 攻撃UPはボタン発動に戻したので、空き枠があれば装備しておく
 if (Array.isArray(game.equippedSkills)) game.equippedSkills = game.equippedSkills.filter(x => !REMOVED_SKILLS.includes(x)); // 削除したスキルは枠からも外す
+if (Array.isArray(game.skillOn)) { const on = game.skillOn.filter(x => skillToggleIds().includes(x)); if (on.length < game.skillOn.length) { const add = skillToggleIds().filter(k => isSkillUnlocked(k) && !on.includes(k)); while (on.length < SKILL_REBIRTH_ON && add.length) on.push(add.splice(Math.floor(Math.random() * add.length), 1)[0]); game.skillOn = on; } } // 削除したスキルがONに入っていたら、ほかの解放ずみのスキルと入れかえる
+if (game.skillUnlocked) REMOVED_SKILLS.forEach(id => delete game.skillUnlocked[id]);
 updateSkillButtonVisibility(); // セーブを読み込んだ後に、装備中スキルのボタンを出す
 if (game.companions) for (const k of ['recruited', 'awaken', 'count', 'level', 'hp', 'alive']) if (game.companions[k]) { delete game.companions[k].cook; delete game.companions[k].lumber; } // 削除した仲間（きこりのジャック）も
 if (game.companionBook) delete game.companionBook.lumber; if (game.companionUnlocks) delete game.companionUnlocks.lumber; // 削除した仲間（陽気な料理人）
@@ -3038,7 +3028,6 @@ updateAccelButton();
 updateHealButton();
 updateBarrierButton();
 updatePoisonButton();
-updateParalyzeButton();
 updateAtkUpButton();
 updateRegenButton();
 updateSilenceButton();
@@ -3486,7 +3475,7 @@ function showFormulaDebug() {
       `HP 100 × ${M(compLvMult(hlv))} × ${rb} × ${rebirthPowerMult()} × ${compKind(id) === 'golem' ? GOLEM_HP_MULT : 1} × ${M(b.companionHpMult)} = ${F(getCompanionMaxHP(id))}`);
   }
   sec('スキル（ダメージ = 自キャラ攻撃力 × 倍率）');
-  const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillParalyze: ['マヒ', () => PARALYZE_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };
+  const SK = { skillNova: ['ノヴァ', () => NOVA_DMG_MULT], skillBlast: ['大爆発', () => BLAST_DMG_MULT], skillPoison: ['毒（1スタック）', () => POISON_DMG_MULT], skillCompRush: ['仲間特攻（仲間の攻撃力×）', () => COMP_RUSH_DMG_MULT * 1.15] };
   for (const id of Object.keys(SKILL_GACHA_SKILLS)) {
     if (!game.shopOwned[id]) continue;
     const name = SKILL_GACHA_SKILLS[id].name, pw = skillPower(id), lv = getSkillLevel(id);

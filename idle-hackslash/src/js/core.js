@@ -54,7 +54,6 @@ const accelBtn = document.getElementById('accelBtn');
 const healBtn = document.getElementById('healBtn');
 const barrierBtn = document.getElementById('barrierBtn');
 const poisonBtn = document.getElementById('poisonBtn');
-const paralyzeBtn = document.getElementById('paralyzeBtn');
 const atkUpBtn = document.getElementById('atkUpBtn');
 const regenBtn = document.getElementById('regenBtn');
 const silenceBtn = document.getElementById('silenceBtn');
@@ -829,7 +828,6 @@ const SKILL_GACHA_SKILLS = {
   skillAccel:    { icon: '⏩', name: '加速',     desc: 'しばらく2.5倍速' },
   skillHeal:     { icon: '💗', name: '回復',     desc: 'HPを回復' },
   skillPoison:   { icon: '☠️', name: '毒',       desc: '当てた敵を毒状態に' },
-  skillParalyze: { icon: '⚡', name: '麻痺',     desc: '雷で敵を麻痺させる' },
   skillAtkUp:    { icon: '💪', name: '攻撃UP',   desc: 'ボタンを押すと20秒間 攻撃力1.5倍（Lvで少しずつ上がる）' },
   skillDeath:    { icon: '💀', name: '即死魔法', desc: '一定確率で敵を即死させる（ボスには効きにくい）' },
   skillCoinStrike:{ icon: '🪙', name: 'コイン盗み', desc: '一定時間 敵からコインを吸い取り続け、攻撃を当てるとコインが大噴出（Lvで長くなる）' },
@@ -839,7 +837,7 @@ const SKILL_GACHA_SKILLS = {
   skillBlast:    { icon: '💣', name: '大爆発', desc: '画面全体を吹き飛ばす大爆発！敵すべてに超特大ダメージ（待機長め）' },
   skillHalve:    { icon: '🌗', name: '半減魔法', desc: '敵のHPを一瞬で半分にする（ボスに効く確率はLv1で10%・Lvごとに+1%。効いてもボス1体に1回だけ）' }
 };
-const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen']; // 削除したスキル（古いセーブからも外す）
+const REMOVED_SKILLS = ['skillBarrier', 'skillSilence', 'skillNova', 'skillRegen', 'skillParalyze']; // 麻痺は雷の杖とかぶるので削除 // 削除したスキル（古いセーブからも外す）
 const SKILL_MAX_LEVEL = 9999; // インフレ放置ゲー寄り：上限は実質なし
 const SKILL_CD_CUT_PER_LV = 0.06; // Lv1つごとに待機時間 -6%（Lv10で -54%）
 const SKILL_GACHA_BASE_COST = 100, SKILL_GACHA_COST_GROWTH = 2; // 1回ごとに値段が2倍（転生でリセット）

@@ -1851,24 +1851,6 @@ function updateRegenButton() {
   regenBtn.classList.toggle('is-disabled', !isSkillResetPending('regen'));
   regenBtn.textContent = cooldownLabel('regen', '🌿 リヒール', remaining);
 }
-function updateParalyzeButton() {
-  if (!game.shopOwned.skillParalyze) {
-    paralyzeBtn.disabled = false;
-    paralyzeBtn.classList.add('is-disabled');
-    paralyzeBtn.textContent = '🔒 麻痺';
-    return;
-  }
-  const remaining = Math.max(0, skillCd('skillParalyze', PARALYZE_COOLDOWN) - (Date.now() - lastParalyzeAt));
-  if (remaining === 0) {
-    paralyzeBtn.disabled = false;
-    paralyzeBtn.classList.toggle('is-disabled', phase !== 'battle');
-    paralyzeBtn.textContent = '⚡ 麻痺';
-    return;
-  }
-  paralyzeBtn.disabled = false;
-  paralyzeBtn.classList.toggle('is-disabled', !isSkillResetPending('paralyze'));
-  paralyzeBtn.textContent = cooldownLabel('paralyze', '⚡ 麻痺', remaining);
-}
 function updatePoisonButton() {
   poisonBtn.classList.remove('buffing');
   if (!game.shopOwned.skillPoison) {

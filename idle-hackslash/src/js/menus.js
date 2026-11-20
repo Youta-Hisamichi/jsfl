@@ -1095,7 +1095,6 @@ function updateStatsUI() {
   updateHealButton();
   updateBarrierButton();
   updatePoisonButton();
-  updateParalyzeButton();
   updateAtkUpButton();
   updateRegenButton();
   updateSilenceButton();
@@ -2037,7 +2036,7 @@ function deathChance(boss, stage = deathStage(), lv) {
 }
 const pct1 = v => (Math.round(v * 1000) / 10) + '%';
 // スキルLv（威力）が効くスキル。ほかは威力を出さず、関係するパラメータを出す
-const POWER_SKILLS = ['skillSpecial', 'skillPoison', 'skillParalyze', 'skillCompRush', 'skillBlast', 'skillHeal', 'skillRegen', 'skillNova'];
+const POWER_SKILLS = ['skillSpecial', 'skillPoison', 'skillCompRush', 'skillBlast', 'skillHeal', 'skillRegen', 'skillNova'];
 function skillParamHtml(id, lv, brief) { // 威力が関係ないスキルの中身（カードと概要で使う）
   const s = deathStage();
   if (id === 'skillDeath' && !brief) return `🎯 即死率 ザコ <b>${pct1(deathChance(false, s, lv))}</b>／ボス <b>${pct1(deathChance(true, s, lv))}</b>（例外あり）`; // カードは%だけ。決まりは概要に
