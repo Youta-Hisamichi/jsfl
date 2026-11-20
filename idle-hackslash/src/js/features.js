@@ -363,11 +363,11 @@ function heroSignature(ball) { return 1; } // 溜めMAXで当てたとき（勇�
 // ===== 7日ログイン（7日目は★5宝箱＋ジェム10個が確定） =====
 const LOGIN7 = [
   { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
-  { label: '🧪×2', give: () => { game.potions = (game.potions || 0) + 2; return '回復ポーション×2'; } },
   { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
-  { label: '💎4', give: () => { game.gems += 4; return '💎4'; } },
-  { label: '<i class="ico-redpot"></i>×3', give: () => { game.redPotions = (game.redPotions || 0) + 3; return 'スキルポーション×3'; } },
-  { label: '💎4', give: () => { game.gems += 4; return '💎4'; } },
+  { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
+  { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
+  { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
+  { label: '💎3', give: () => { game.gems += 3; return '💎3'; } },
   { label: '★5宝箱＋💎10', give: () => { game.gems += 10; if (typeof dropTreasureChest === 'function') dropTreasureChest('mythic', true); if (typeof renderChestTray === 'function') renderChestTray(); return '★5の宝箱＋💎10'; } }, // 7日目は★5宝箱とジェム10個が確定
 ];
 function todayKey(d = new Date(trustNow())) { return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; }
@@ -383,7 +383,7 @@ function checkDailyLogin() { // 日付は信用できる時計で決める。前
 }
 // 7日ログインの画面（ui/lb8 の絵：見本の絵を下地に、日にち・報酬アイコン・数・あいさつだけ重ねる。位置は下地 1111×1415 の座標）
 const LB7_ICON = { gem: '<img class="lb7-ico" src="assets/img/ui/lb8/gem.webp" alt="">', pot: '<img class="lb7-ico" src="assets/img/ui/lb8/pot.webp" alt="">', red: '<img class="lb7-ico" src="assets/img/ui/lb8/red.webp" alt="">', party: '<img class="lb7-ico lb7-party" src="assets/img/icons/tab_companion.webp" alt="">' };
-const LOGIN7_SHOW = [['gem', '×3'], ['pot', '×2'], ['gem', '×3'], ['gem', '×4'], ['red', '×3'], ['gem', '×4']];
+const LOGIN7_SHOW = [['gem', '×3'], ['gem', '×3'], ['gem', '×3'], ['gem', '×3'], ['gem', '×3'], ['gem', '×3']]; // 1〜6日目はどれも💎3
 function lb7Icon(k) { return k === 'feather' ? `<img class="lb7-ico" src="${ICON_IMAGES.x_feather}" alt="">` : LB7_ICON[k]; }
 function showLogin7(day, got) {
   const P = (x, y) => `left:${(x / 1111 * 100).toFixed(2)}%;top:${(y / 1415 * 100).toFixed(2)}%`;
